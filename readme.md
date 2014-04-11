@@ -14,10 +14,10 @@ With OneGet, you can
 
 Download  [here](http://www.microsoft.com/en-us/download/details.aspx?id=42316) -- currently it's in the WMF 5.0 CTP (WMF is where you get PowerShell!)  -- once the source is up, we'll post a build of just the OneGet bits.
 
-* Learn how to use the powershell cmdlets : [Example cmdlet usage]
-* Read our [General Q and A]
-* Learn about the [8 Laws of Software Installation]...
-* See the [documentation](https://oneget.codeplex.com/documentation) tab for more info.
+* Learn how to [use the powershell cmdlets](https://github.com/OneGet/oneget/wiki/cmdlets) 
+* Read our [General Q and A](https://github.com/OneGet/oneget/wiki/Q-and-A)
+* Learn about the [8 Laws of Software Installation](https://github.com/OneGet/oneget/wiki/8-Laws-of-Software-Installation)
+* See the [documentation](https://github.com/OneGet/oneget/wiki) tab for more info.
 
 OneGet should be shipping inside future versions of PowerShell, and by extension, would ship in future versions of Windows.
 
