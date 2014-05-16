@@ -1,0 +1,618 @@
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ output extension=".txt" #>
+<#@ assembly name="System.Core" #> 
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System" #> 
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #>
+Files updated Successfully <#= System.DateTime.Now #>
+
+Notes: 
+
+	This script attempts to update in-place content related to the OneGet API
+	definitions so that we don't have to keep them up-to-date manaully.
+
+	It also generates the API stubs in the dependent places, which ensures that
+	our default impementations are kept up-to-date with new APIs that are provided
+	by OneGet.
+
+<# // Init Template Stuff
+	string path = this.Host.ResolvePath("..");
+	Directory.SetCurrentDirectory(path);
+
+	// first, find all the categories.
+	var sourceFiles = Directory.EnumerateFiles(path, "*.cs", SearchOption.AllDirectories);
+
+	var declareRegion = new Regex(@"#region\s*declare\s*(?<name>.*?)-callbacks\s*(?<content>.*?)#endregion", RegexOptions.Singleline);
+	var declareDlg = new Regex(@"\s*(?<preamble>.*?)public\s*delegate\s*(?<TRet>\S*)\s*(?<name>\w+)\((?<params>.*?)\).*?;", RegexOptions.Singleline);
+
+	var all = new Dictionary<string, Dictionary<string, Tuple<string,string,string,string>>>();
+
+	foreach (var sourceFile in sourceFiles) {
+	 // load each file
+	 var text = File.ReadAllText(sourceFile);
+
+	 // look for declare *-callback regions
+	 var matches = declareRegion.Matches(text);
+	 if (matches.Count > 0) {
+		 foreach (Match m in matches) {
+
+			 var regionName  = m.Groups["name"].Value;
+			 var regionContent = m.Groups["content"].Value;
+			
+				// regionName.Dump();
+				// regionContent.Dump();
+
+				// ensure category is created
+				if( !all.ContainsKey( regionName ) ) {
+					all.Add( regionName, new Dictionary<string, Tuple<string,string,string,string>>());
+				}
+				var category = all[regionName];
+			
+				var dlgMatches = declareDlg.Matches( regionContent );
+				if( dlgMatches.Count > 0 ) {
+					foreach( Match dlgMatch in dlgMatches ) {
+						// dlgMatches.Dump();
+			   			var preamble = dlgMatch.Groups["preamble"].Value;
+						var returnType = dlgMatch.Groups["TRet"].Value;
+						var dlgName = dlgMatch.Groups["name"].Value;
+						var dlgParams = dlgMatch.Groups["params"].Value;
+						category.Add( dlgName, new Tuple<string,string,string,string>(dlgName, preamble, returnType, dlgParams) );
+			   		}
+				}
+		 }
+	 }
+	}
+
+#>
+
+Results:
+
+	First, we're going to go out and find out which classes declare delegates that
+	we're going to consume:
+
+	StartingFolder: <#=  Directory.GetCurrentDirectory() #>
+
+	Categories:
+<# foreach( var category in all.Keys ) {
+#>		<#= category #>
+<#}#>
+
+	Now, we're going to scan thru all the files and find the ones where there are
+	places to copy the results into.
+
+<#
+	var destFiles = Directory.EnumerateFiles(path, "*.cs", SearchOption.AllDirectories);
+	var copyRegion = new Regex(@"#region\s*copy\s*(?<name>.*?)-callbacks\s*(?<content>.*?)#endregion", RegexOptions.Singleline);
+	var genRegion =  new Regex(@"#region\s*generate-resolved\s*(?<name>.*?)-callbacks\s*(?<content>.*?)#endregion", RegexOptions.Singleline);
+	var crackParams = new Regex(@"\s*(?<type>[\w,\<\>]*)\s*(?<name>\w*)\s*(?<init>=\s*[\w\.]*\s*)?\s*?(?:\,)");
+	 
+	foreach (var d in destFiles) {
+		var destFile = Path.GetFullPath( d );
+		var text = File.ReadAllText(destFile);
+		var modified = false;
+
+		// look for copy *-callback regions
+		{
+			var newText = copyRegion.Replace(text, new MatchEvaluator(match => {
+        		var name = match.Groups["name"].Value;
+				var dict = all[name];
+				var result = string.Format("#region copy {0}-callbacks", name);
+				foreach( var i in dict.Keys ) {
+					result += string.Format( "\r\n    {0}public delegate {1} {2} ({3});\r\n", dict[i].Item2, dict[i].Item3,dict[i].Item1,dict[i].Item4) ;
+				}
+				result += "    #endregion";
+			
+				return result ;
+			}));
+		
+			if( newText != text ) {
+				modified = true;
+			}
+			text = newText;
+		}
+
+
+		// next, look for generate-resolved *-callbacks
+		{
+			var newText = genRegion.Replace(text, new MatchEvaluator(match => {
+        		var name = match.Groups["name"].Value;
+				var dict = all[name];
+				var result = string.Format("#region generate-resolved {0}-callbacks", name);
+				foreach( var i in dict.Keys ) {
+					if( i == "Invoke") {
+						// skip the master callback.
+						continue;
+					}
+					
+
+					var genParamsDecl = string.IsNullOrEmpty(dict[i].Item4) ? "" :  crackParams.Replace( dict[i].Item4 +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						pResult = string.Format( ", {0} {1}", pType, pName );
+						return pResult;
+					}));
+
+					var genParamsUse = string.IsNullOrEmpty(dict[i].Item4) ? "" : crackParams.Replace( dict[i].Item4 +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						pResult = string.Format( ", {0}", pName );
+						return pResult;
+					}));
+
+					genParamsUse = genParamsUse.Trim(',');
+
+					var genParamsUse2 = string.IsNullOrEmpty(dict[i].Item4) ? "" : crackParams.Replace( dict[i].Item4 +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						pResult = string.Format( ", p{0}", pName );
+						return pResult;
+					}));
+
+					genParamsUse2 = genParamsUse2.Trim(',');
+
+
+					result += string.Format(
+@"
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(""Microsoft.Performance"", ""CA1811:AvoidUncalledPrivateCode"", Justification = ""Still in development!"")]
+		public static {0} {1}(this Callback c {2} ) {{
+            {6} (c.Resolve<{1}>() ?? (({4})=> {5} ) )({3});
+        }}
+", dict[i].Item3, dict[i].Item1, genParamsDecl , genParamsUse, genParamsUse2, dict[i].Item3 == "void" ? "{ }" : string.Format( "default({0})",dict[i].Item3 ),dict[i].Item3 == "void" ? "" : "return" );
+				}
+				result += "        #endregion";
+			
+				return result ;
+			}));
+		
+			if( newText != text ) {
+				modified = true;
+			}
+			text = newText;
+		}
+
+
+		var genDispatcherRegion =  new Regex(@"#region\s*generate-dispatcher\s*(?<name>.*?)-callbacks\s*(?<content>.*?)#endregion", RegexOptions.Singleline);
+		// next, look for generate-resolved *-callbacks
+		{
+			var newText = genDispatcherRegion .Replace(text, new MatchEvaluator(match => {
+        		var name = match.Groups["name"].Value;
+				var dict = all[name];
+				var result = string.Format("#region generate-dispatcher {0}-callbacks", name);
+				foreach( var i in dict.Keys ) {
+					if( i == "Invoke") {
+						// skip the master callback.
+						continue;
+					}
+
+					var genParamsDecl = string.IsNullOrEmpty(dict[i].Item4) ? "" :  crackParams.Replace( dict[i].Item4 +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						if( pType == "IEnumerable<object>" && pName == "args") {
+							pType = "params object[]";
+						}
+						pResult = string.Format( ",{0} {1}", pType, pName );
+						return pResult;
+					}));
+
+					var genParamsUse = string.IsNullOrEmpty(dict[i].Item4) ? "" : crackParams.Replace( dict[i].Item4 +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						pResult = string.Format( ", {0}", pName );
+						return pResult;
+					}));
+
+					genParamsUse = genParamsUse.Trim(',');
+
+					var genParamsUse2 = string.IsNullOrEmpty(dict[i].Item4) ? "" : crackParams.Replace( dict[i].Item4 +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						pResult = string.Format( ", p{0}", pName );
+						return pResult;
+					}));
+					genParamsDecl = genParamsDecl.Trim(',');
+					genParamsUse2 = genParamsUse2.Trim(',');
+
+
+					result += string.Format(
+@"
+		private {1} _{1};
+		[System.Diagnostics.CodeAnalysis.SuppressMessage(""Microsoft.Performance"", ""CA1811:AvoidUncalledPrivateCode"", Justification = ""Still in development!"")]
+		public {0} {1}({2} ) {{
+		    CheckDisposed();
+            {6} (_{1} ?? (_{1} = (_callback.Resolve<{1}>() ?? (({4})=> {5} ) )))({3});
+        }}
+", dict[i].Item3, dict[i].Item1, genParamsDecl , genParamsUse, genParamsUse2, dict[i].Item3 == "void" ? "{ }" : string.Format( "default({0})",dict[i].Item3 ),dict[i].Item3 == "void" ? "" : "return" );
+				}
+				result += "        #endregion";
+			
+				return result ;
+			}));
+		
+			if( newText != text ) {
+				modified = true;
+			}
+			text = newText;
+		}
+
+		var genDispatcherDisposeRegion =  new Regex(@"#region\s*dispose-dispatcher\s*(?<name>.*?)-callbacks\s*(?<content>.*?)#endregion", RegexOptions.Singleline);
+		// next, look for generate-resolved *-callbacks
+		{
+			var newText = genDispatcherDisposeRegion .Replace(text, new MatchEvaluator(match => {
+        		var name = match.Groups["name"].Value;
+				var dict = all[name];
+				var result = string.Format("#region dispose-dispatcher {0}-callbacks", name);
+				foreach( var i in dict.Keys ) {
+					if( i == "Invoke") {
+						// skip the master callback.
+						continue;
+					}
+
+					var genParamsDecl = string.IsNullOrEmpty(dict[i].Item4) ? "" :  crackParams.Replace( dict[i].Item4 +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						pResult = string.Format( ",{0} {1}", pType, pName );
+						return pResult;
+					}));
+
+					var genParamsUse = string.IsNullOrEmpty(dict[i].Item4) ? "" : crackParams.Replace( dict[i].Item4 +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						pResult = string.Format( ", {0}", pName );
+						return pResult;
+					}));
+
+					genParamsUse = genParamsUse.Trim(',');
+
+					var genParamsUse2 = string.IsNullOrEmpty(dict[i].Item4) ? "" : crackParams.Replace( dict[i].Item4 +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						pResult = string.Format( ", p{0}", pName );
+						return pResult;
+					}));
+					genParamsDecl = genParamsDecl.Trim(',');
+					genParamsUse2 = genParamsUse2.Trim(',');
+
+
+					result += string.Format(
+@"
+		_{0} = null;", dict[i].Item1 );
+				}
+				result += "\r\n            #endregion";
+			
+				return result ;
+			}));
+		
+			if( newText != text ) {
+				modified = true;
+			}
+			text = newText;
+		}
+
+		var genNamesRegion = new Regex(@"#region\s*generate-names\s*(?<name>.*?)-callbacks\s*(?<content>.*?)#endregion", RegexOptions.Singleline);
+		// next, look for generate-names *-callbacks
+		{
+			var newText = genNamesRegion.Replace(text, new MatchEvaluator(match => {
+        		var name = match.Groups["name"].Value;
+				var dict = all[name];
+				var result = string.Format("#region generate-names {0}-callbacks\r\n", name);
+				result += "\r\n                ";
+				result += dict.Keys.Aggregate("", (current, i) => current + "\"" + i +"\"" + ", ");
+				result += "\r\n                #endregion";
+			
+				return result ;
+			}));
+		
+			if( newText != text ) {
+				modified = true;
+			}
+			text = newText;
+		}
+		
+		var genVACRegion = new Regex(@"#region\s*generate-call\s*(?<name>.*?)-callbacks\s*(?<content>.*?)#endregion", RegexOptions.Singleline);
+		// next, look for generate-call *-callbacks
+		{
+			var newText = genVACRegion.Replace(text, new MatchEvaluator(match => {
+        		var name = match.Groups["name"].Value;
+				var dict = all[name];
+				var result = string.Format("#region generate-call {0}-callbacks\r\n", name);
+				
+				 
+				foreach( var k in dict.Keys ) {
+					var item = dict[k];
+					var itemParams = item.Item4.Trim();
+					var itemName = item.Item1; 
+					var itemPreamble = item.Item2;
+					var itemReturnType = item.Item3;
+					
+					result += string.Format("                    ({0}){0},\r\n", itemName);
+				}
+				result += "                    #endregion";
+			
+				return result ;
+			}));
+		
+			if( newText != text ) {
+				modified = true;
+			}
+			text = newText;
+		}
+
+		/*
+		var genVACRegion = new Regex(@"#region\s*generate-verify-and-call\s*(?<name>.*?)-callbacks\s*(?<content>.*?)#endregion", RegexOptions.Singleline);
+		// next, look for generate-names *-callbacks
+		{
+			var newText = genVACRegion.Replace(text, new MatchEvaluator(match => {
+        		var name = match.Groups["name"].Value;
+				var dict = all[name];
+				var result = string.Format("#region generate-verify-and-call {0}-callbacks", name);
+				result += "\r\n                ";
+
+				foreach( var k in dict.Keys ) {
+					var item = dict[k];
+					var itemParams = item.Item4.Trim();
+					var itemName = item.Item1;
+					var itemPreamble = item.Item2;
+					var itemReturnType = item.Item3;
+					
+					var genTypeParams = string.IsNullOrEmpty(item.Item4) ? "" :  crackParams.Replace( item.Item4 +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						pResult = string.Format( ", {0}", pType);
+						return pResult;
+					}));
+					genTypeParams = genTypeParams.Trim(',',' ');
+
+					var genParamsUse2 = string.IsNullOrEmpty(item.Item4) ? "" : crackParams.Replace( item.Item4 +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						pResult = string.Format( ", p{0}", pName );
+						return pResult;
+					}));
+					genParamsUse2 = genParamsUse2.Trim(',');
+
+					if( string.IsNullOrEmpty(itemParams)) {
+
+						if( itemReturnType == "void") {
+							result += string.Format(@"
+					case ""{0}"":
+						if (arguments == null) {{
+							return ({3})Instance.Service.{3};
+						}};
+						Instance.Service.{3}();
+						return null;
+						", item.Item1.ToLower(), genTypeParams, item.Item3, item.Item1 );							
+							
+						} else {
+							result = result + string.Format(@"
+					case ""{0}"":
+						return (arguments == null) ? (object)({3})Instance.Service.{3} : Instance.Service.{3}();
+						", item.Item1.ToLower(), genTypeParams, item.Item3, item.Item1 );
+					}
+					} else {
+
+						result = result + string.Format(@"
+                case ""{0}"":
+                    return arguments.VerifyAndCall<{1}>(new {5}<{1}{2}>(Instance.Service.{3}), ({4}) => Instance.Service.{3}({4}));
+", item.Item1.ToLower(), genTypeParams, itemReturnType == "void" ?  "" : ","+itemReturnType , item.Item1, genParamsUse2, itemReturnType == "void" ? "Action" : "Func" );
+					}
+
+				}
+				result += "\r\n                        #endregion";
+			
+				return result ;
+			}));
+		
+			if( newText != text ) {
+				modified = true;
+			}
+			text = newText;
+		}
+		*/
+
+		// and now handle implement *-callbacks
+		var genImplementRegion = new Regex(@"#region\s*implement\s*(?<name>[\w,\-]*?)-callbacks\s*(?<content>.*?)#endregion", RegexOptions.Singleline);
+		{
+			var newText = genImplementRegion.Replace(text, new MatchEvaluator(match => {
+        		var name = match.Groups["name"].Value;
+				var content = match.Groups["content"].Value;
+
+				var dict = all[name];
+				var result = string.Format("#region implement {0}-callbacks\r\n", name);
+
+				// this one is a bit different than the rest.
+				foreach( var key in dict.Keys ) {
+					var item = dict[key];
+					var itemParams = item.Item4.Trim();
+					var itemName = item.Item1;
+					var itemPreamble = item.Item2;
+					var itemReturnType = item.Item3;
+					
+ 					var rxFunc = new Regex(@"\[Implementation\]\s*public\s*(?<TRet>\S*)\s(?<name>"+itemName+@")\s*\((?<params>.*?)\)(?<code>.*)", RegexOptions.Singleline);
+
+					if( rxFunc.Match(content ).Success ) {
+						content = rxFunc.Replace( content ,new MatchEvaluator(me => {
+							var retType =  me.Groups["TRet"].Value;
+							var fnName =  me.Groups["name"].Value;
+							var parm = me.Groups["params"].Value;
+							var code = me.Groups["code"].Value;
+							
+							return string.Format( "[Implementation]\r\n        public {0} {1}({2}){3}", itemReturnType, itemName, itemParams, code );
+						} ));
+					} else {
+						content = content + string.Format( "\r\n        [Implementation]\r\n        public {0} {1}({2}){{\r\n            \r\n        }}\r\n        ", itemReturnType, itemName, itemParams  );
+					}
+				
+				}
+				
+				result += content;	
+				result += "#endregion";
+			
+				return result.Replace("\r\n\r\n" , "\r\n");
+			}));
+		
+			if( newText != text ) {
+				modified = true;
+			}
+			// keep that off till we're ready
+			text = newText;
+		}
+
+
+		// and now handle implement *-callbacks
+		var genPowershellRegion = new Regex(@"#region\s*generate-powershell\s*(?<name>[\w,\-]*?)-callbacks\s*(?<content>.*?)#endregion", RegexOptions.Singleline);
+		{
+			var newText = genPowershellRegion.Replace(text, new MatchEvaluator(match => {
+        		var name = match.Groups["name"].Value;
+				
+
+				var dict = all[name];
+				var result = string.Format("#region generate-powershell {0}-callbacks\r\n", name);
+
+				result += string.Format( "\r\npublic static string PowerShellScript{0} = @\"\r\n", name.Replace("-","" ));
+
+				// this one is a bit different than the rest.
+				foreach( var key in dict.Keys ) {
+					var item = dict[key];
+					var itemParams = item.Item4.Trim();
+					var itemName = item.Item1;
+					var itemPreamble = item.Item2;
+					var itemReturnType = item.Item3;
+					
+					result += string.Format( @"
+		function fn-{0} {{
+", itemName ); 
+					if( !string.IsNullOrEmpty( itemParams )) {
+					int n = 0;
+
+					result += @"
+			param(";
+
+					
+					 result += crackParams.Replace( itemParams +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						if( pType == "IEnumerable<object>") {
+							pType = "object[]";
+						}
+
+						if( pType == "IEnumerable<string>") {
+							pType = "string[]";
+						}
+
+						if( n++ == 0 ) {
+							pResult = string.Format( @"
+				[{0}] $p_{1}", pType, pName );
+						} else {
+							pResult = string.Format( @", 
+				[{0}] $p_{1}", pType, pName );
+						}
+
+						
+						return pResult;
+					}));
+
+					
+					result += @")";
+					 n = 0;
+					result += string.Format( @"
+			return $_callback.Invoke( """"{0}"""", @({1}) )", itemName ,crackParams.Replace( itemParams +"," , new MatchEvaluator(me => {
+						var pResult = "";
+						var pType= me.Groups["type"].Value;
+						var pName = me.Groups["name"].Value;
+						var pInit = me.Groups["init"].Value;
+						
+
+						if( n++ == 0 ) {
+							pResult = string.Format( @"$p_{0}",  pName );
+						} else {
+							pResult = string.Format( @",$p_{0}",pName );
+						}
+						return pResult;
+					})) );
+
+					}
+
+					else {
+						result += string.Format( @"
+			return $_callback.Invoke( """"{0}"""",@() )", itemName );
+					}
+
+
+
+					result += @"
+		}
+";
+				
+				}
+				result += "\";\r\n";
+
+				result += "#endregion";
+			
+				return result.Replace("\r\n\r\n" , "\r\n");
+			}));
+		
+			if( newText != text ) {
+				modified = true;
+			}
+			// keep that off till we're ready
+			text = newText;
+		}
+
+		// finally, let's write them out.
+		if( modified ) {
+		#>
+		Updating:  <#= destFile #>
+		<#
+			File.WriteAllText(destFile, text);
+		}
+	}
+
+#>
+ 
+<#+
+
+
+
+#>

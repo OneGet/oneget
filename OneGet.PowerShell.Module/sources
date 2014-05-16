@@ -1,0 +1,51 @@
+# Copyright (C) 2014 Microsoft Corporation
+
+#CLSCompliant        = true
+
+TARGETNAME          = Microsoft.PowerShell.OneGet
+TARGETTYPE          = DYNLINK
+TARGET_DESTINATION  = monad
+# this will make AssemblyVersion = 1.0.0.0
+ASSEMBLY_IDENTITY_VERSION_NAME=monadv1
+
+MANAGED_CODE        = 1
+URT_VER=4.5
+
+REFERENCES=\
+	$(OBJ_PATH)\..\OneGet.Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll; \
+	$(OBJ_PATH)\..\OneGet.API\$(O)\Microsoft.OneGet.metadata_dll; \
+	$(CLR_REF_PATH)\System.metadata_dll; \
+	$(CLR_REF_PATH)\System.ComponentModel.Composition.metadata_dll; \
+	$(CLR_REF_PATH)\System.Core.metadata_dll; \
+	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll; \
+	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
+	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll; \
+	$(CLR_REF_PATH)\System.Data.metadata_dll; \
+	$(CLR_REF_PATH)\System.Data.DataSetExtensions.metadata_dll
+
+#region sourcefiles
+SOURCES=\
+	CmdLets\AddPackageSource.cs \
+ 	CmdLets\FindInstallCmdlet.cs \
+ 	CmdLets\FindPackage.cs \
+ 	CmdLets\GetPackage.cs \
+ 	CmdLets\GetPackageProvider.cs \
+ 	CmdLets\GetPackageSource.cs \
+ 	CmdLets\InstallPackage.cs \
+ 	CmdLets\PackagingCmdlet.cs \
+ 	CmdLets\RemovePackageSource.cs \
+ 	CmdLets\UninstallPackage.cs \
+ 	Core\AsyncCmdLet.cs \
+ 	Core\DynamicParametersExtensions.cs \
+ 	Core\OneGetCmdlet.cs \
+ 
+
+#endregion
+
+
+
+
+PASS0_BINPLACE=\
+	OneGet.format.ps1xml \
+	OneGet.psd1
+

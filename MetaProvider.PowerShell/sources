@@ -1,0 +1,40 @@
+# Copyright (C) 2014 Microsoft Corporation
+
+#CLSCompliant        = true
+
+TARGETNAME          = Microsoft.OneGet.Plugin.PowerShell
+TARGETTYPE          = DYNLINK
+TARGET_DESTINATION  = monad
+# this will make AssemblyVersion = 1.0.0.0
+ASSEMBLY_IDENTITY_VERSION_NAME=monadv1
+
+MANAGED_CODE        = 1
+URT_VER=4.5
+
+REFERENCES=\
+	$(OBJ_PATH)\..\OneGet.Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll; \
+	$(OBJ_PATH)\..\OneGet.API\$(O)\Microsoft.OneGet.metadata_dll; \
+	$(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
+	$(CLR_REF_PATH)\System.metadata_dll; \
+	$(CLR_REF_PATH)\System.ComponentModel.Composition.metadata_dll; \
+	$(CLR_REF_PATH)\System.Core.metadata_dll; \
+	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll; \
+	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
+	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll; \
+	$(CLR_REF_PATH)\System.Data.metadata_dll; \
+	$(CLR_REF_PATH)\System.Data.DataSetExtensions.metadata_dll
+	
+#region sourcefiles
+SOURCES=\
+	Core\DynamicPowershell.cs \
+ 	Core\DynamicPowershellCommand.cs \
+ 	Core\DynamicPowershellResult.cs \
+ 	CallbackExtensions.cs \
+ 	PowershellPlugin.cs \
+ 	PowerShellProvider.cs
+#endregion
+
+INTERNALS_VISIBLE_TO=\
+	Microsoft.OneGet.Plugin.Chocolatey, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
+
+

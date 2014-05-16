@@ -1,0 +1,10 @@
+DIRS=\
+	OneGet.Utility \
+    OneGet \
+	OneGet.API \
+	Plugin.PowerShell \
+	Plugin.Chocolatey \
+    
+
+# Unit test directories should be placed in the OPTIONAL_DIRS section
+OPTIONAL_DIRS=\

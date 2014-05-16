@@ -1,0 +1,48 @@
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+ 
+ 
+Files updated Successfully 03/20/2014 15:05:15
+
+Notes: 
+
+	This script attempts to update in-place content related to the OneGet API
+	definitions so that we don't have to keep them up-to-date manaully.
+
+	It also generates the API stubs in the dependent places, which ensures that
+	our default impementations are kept up-to-date with new APIs that are provided
+	by OneGet.
+
+
+Results:
+
+	First, we're going to go out and find out which classes declare delegates that
+	we're going to consume:
+
+	StartingFolder: C:\root\oneget
+
+	Categories:
+		host-supplied
+		collection
+		core-supplied
+		service-api
+
+	Now, we're going to scan thru all the files and find the ones where there are
+	places to copy the results into.
+
+		Updating:  C:\root\oneget\OneGet.API\Core\Api\ServiceApiImpl.cs
+				Updating:  C:\root\oneget\Plugin.Chocolatey\CallbackExtensions.cs
+				Updating:  C:\root\oneget\Plugin.Chocolatey\Dispatcher.cs
+				Updating:  C:\root\oneget\Plugin.PowerShell\CallbackExtensions.cs
+		 

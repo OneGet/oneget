@@ -93,3 +93,5 @@ Scratch/test2.props
 /_unused_code.cs
 /mar25.txt
 .syncignore
+*.bak
+/AbstractDesign

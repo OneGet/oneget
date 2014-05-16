@@ -1,0 +1,87 @@
+# Copyright (C) 2014 Microsoft Corporation
+
+#CLSCompliant        = true
+
+TARGETNAME          = Microsoft.OneGet.Utility
+TARGETTYPE          = DYNLINK
+# this will make AssemblyVersion = 1.0.0.0
+ASSEMBLY_IDENTITY_VERSION_NAME=monadv1
+
+ASSEMBLY_IDENTITY_PUBLIC_KEY_NAME   = windows
+
+MANAGED_CODE        = 1
+URT_VER=4.5
+
+#PASS1_PUBLISH = {$(OBJ_PATH)\$(O)\$(TARGETNAME).metadata_dll=$(PROJECT_REF_PATH)\$(TARGETNAME).metadata_dll}
+
+REFERENCES=\
+	$(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
+	$(CLR_REF_PATH)\System.metadata_dll; \
+	$(CLR_REF_PATH)\System.Core.metadata_dll; \
+	$(CLR_REF_PATH)\System.Data.metadata_dll; \
+	$(CLR_REF_PATH)\System.Data.DataSetExtensions.metadata_dll; \
+	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
+	$(CLR_REF_PATH)\System.IO.Compression.metadata_dll; \
+	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll;
+
+#region sourcefiles
+SOURCES=\
+	Core\AppDomains\PluginAssemblyResolver.cs \
+ 	Core\AppDomains\PluginDomain.cs \
+ 	Core\AppDomains\Proxy.cs \
+ 	Core\AppDomains\WrappedAction.cs \
+ 	Core\AppDomains\WrappedDelegate.cs \
+ 	Core\AppDomains\WrappedFunc.cs \
+ 	Core\Collections\AbstractDictionary.cs \
+ 	Core\Collections\ByRefCollection.cs \
+ 	Core\Collections\ByRefEnumerable.cs \
+ 	Core\Collections\ByRefEnumerator.cs \
+ 	Core\Collections\CancellableBlockingCollection.cs \
+ 	Core\Collections\CancellableEnumerable.cs \
+ 	Core\Collections\CancellableEnumerator.cs \
+ 	Core\Collections\DelegateDictionary.cs \
+ 	Core\Collections\ICancellable.cs \
+ 	Core\Collections\ReadOnlyDelegateDictionary.cs \
+ 	Core\Collections\VirtualEnumerator.cs \
+ 	Core\DuckTyping\DuckTypedClass.cs \
+ 	Core\DuckTyping\DuckTypedExtensions.cs \
+ 	Core\Extensions\CollectionExtensions.cs \
+ 	Core\Extensions\DelegateExtensions.cs \
+ 	Core\Extensions\DictionaryExtensions.cs \
+ 	Core\Extensions\DisposableExtensions.cs \
+ 	Core\Extensions\ExceptionExtensions.cs \
+ 	Core\Extensions\FilesystemExtensions.cs \
+ 	Core\Extensions\HashtableExtensions.cs \
+ 	Core\Extensions\LazyReadOnlyDelgateDictionary.cs \
+ 	Core\Extensions\StringExtensions.cs \
+ 	Core\Extensions\TypeExtensions.cs \
+ 	Core\Platform\AdminPrivilege.cs \
+ 	Core\Platform\AsyncProcess.cs \
+ 	Core\Platform\CLSID.cs \
+ 	Core\Platform\EnvironmentUtility.cs \
+ 	Core\Platform\IID.cs \
+ 	Core\Platform\IShellLink.cs \
+ 	Core\Platform\KnownFolder.cs \
+ 	Core\Platform\KnownFolders.cs \
+ 	Core\Platform\MoveFileFlags.cs \
+ 	Core\Platform\NativeMethods.cs \
+ 	Core\Platform\ShellLink.cs \
+ 	Core\Platform\SLGP.cs \
+ 	Core\Platform\STGM.cs \
+ 	Core\Platform\Win32FindData.cs \
+ 	Core\Tasks\CurrentTask.cs \
+ 	Core\Tasks\Event.cs \
+ 	Core\Tasks\XTask.cs \
+ 	Core\Versions\FourPartVersion.cs \
+    Core\Platform\ShellApplication.cs
+
+#endregion
+
+
+
+
+INTERNALS_VISIBLE_TO=\
+	Microsoft.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+	Microsoft.OneGet.Plugin.Chocolatey, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+	Microsoft.OneGet.Plugin.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
+

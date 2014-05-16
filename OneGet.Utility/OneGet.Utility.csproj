@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7044B856-6D51-498F-8192-01F219908192}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.OneGet</RootNamespace>
+    <AssemblyName>Microsoft.OneGet.Utility</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <Import Project="$(SolutionPath).props" Condition="Exists('$(SolutionPath).props')" />
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Core\AppDomains\WrappedAction.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>WrappedAction.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Core\AppDomains\WrappedFunc.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>WrappedFunc.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Core\Collections\ByRefCollection.cs" />
+    <Compile Include="Core\Collections\ByRefEnumerable.cs" />
+    <Compile Include="Core\AppDomains\WrappedDelegate.cs" />
+    <Compile Include="Core\AppDomains\Proxy.cs" />
+    <Compile Include="Core\Collections\AbstractDictionary.cs" />
+    <Compile Include="Core\Collections\ByRefEnumerator.cs" />
+    <Compile Include="Core\Collections\CancellableBlockingCollection.cs" />
+    <Compile Include="Core\Collections\CancellableEnumerable.cs" />
+    <Compile Include="Core\Collections\CancellableEnumerator.cs" />
+    <Compile Include="Core\Collections\DelegateDictionary.cs" />
+    <Compile Include="Core\Collections\ICancellable.cs" />
+    <Compile Include="Core\Collections\ReadOnlyDelegateDictionary.cs" />
+    <Compile Include="Core\Collections\VirtualEnumerator.cs" />
+    <Compile Include="Core\DuckTyping\DuckTypedExtensions.cs" />
+    <Compile Include="Core\DuckTyping\PrivateProxy.cs" />
+    <Compile Include="Core\DuckTyping\RemotableDynamicObject.cs" />
+    <Compile Include="Core\Extensions\CancellationTokenSourceExtensions.cs" />
+    <Compile Include="Core\Extensions\DelegateExtensions.cs" />
+    <Compile Include="Core\Extensions\DisposableExtensions.cs" />
+    <Compile Include="Core\AppDomains\PluginAssemblyResolver.cs" />
+    <Compile Include="Core\AppDomains\PluginDomain.cs" />
+    <Compile Include="Core\Extensions\CollectionExtensions.cs" />
+    <Compile Include="Core\Extensions\DictionaryExtensions.cs" />
+    <Compile Include="Core\Extensions\ExceptionExtensions.cs" />
+    <Compile Include="Core\Extensions\FilesystemExtensions.cs" />
+    <Compile Include="Core\Extensions\HashtableExtensions.cs" />
+    <Compile Include="Core\Extensions\InvokableDispatcher.cs" />
+    <Compile Include="Core\Platform\AdminPrivilege.cs" />
+    <Compile Include="Core\Platform\CLSID.cs" />
+    <Compile Include="Core\Platform\EnvironmentUtility.cs" />
+    <Compile Include="Core\Platform\IID.cs" />
+    <Compile Include="Core\Platform\IShellLink.cs" />
+    <Compile Include="Core\Extensions\LazyReadOnlyDelgateDictionary.cs" />
+    <Compile Include="Core\Platform\KnownFolder.cs" />
+    <Compile Include="Core\Platform\MoveFileFlags.cs" />
+    <Compile Include="Core\Platform\NativeMethods.cs" />
+    <Compile Include="Core\Extensions\StringExtensions.cs" />
+    <Compile Include="Core\Extensions\TypeExtensions.cs" />
+    <Compile Include="Core\Platform\AsyncProcess.cs" />
+    <Compile Include="Core\Platform\KnownFolders.cs" />
+    <Compile Include="Core\Platform\ShellLink.cs" />
+    <Compile Include="Core\Platform\SLGP.cs" />
+    <Compile Include="Core\Platform\STGM.cs" />
+    <Compile Include="Core\Platform\ShellApplication.cs" />
+    <Compile Include="Core\Platform\Win32FindData.cs" />
+    <Compile Include="Core\Tasks\CurrentTask.cs" />
+    <Compile Include="Core\Tasks\Event.cs" />
+    <Compile Include="Core\Tasks\XTask.cs" />
+    <Compile Include="Core\DuckTyping\DuckTypedClass.cs" />
+    <Compile Include="Core\Versions\FourPartVersion.cs" />
+    <Compile Include="CoreAPIs.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Core\AppDomains\WrappedAction.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>WrappedAction.cs</LastGenOutput>
+    </None>
+    <None Include="Core\AppDomains\WrappedFunc.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>WrappedFunc.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Core\Process\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

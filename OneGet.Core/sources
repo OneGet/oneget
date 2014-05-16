@@ -1,0 +1,55 @@
+# Copyright (C) 2014 Microsoft Corporation
+
+#CLSCompliant        = true
+
+TARGETNAME          = Microsoft.OneGet
+
+TARGETTYPE          = DYNLINK
+TARGET_DESTINATION  = monad
+MANAGED_CODE        = 1
+URT_VER=4.5
+# this will make AssemblyVersion = 1.0.0.0
+ASSEMBLY_IDENTITY_VERSION_NAME=monadv1
+
+REFERENCES=\
+	$(OBJ_PATH)\..\OneGet.Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll; \
+	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll; \
+	$(CLR_REF_PATH)\System.metadata_dll; \
+	$(CLR_REF_PATH)\System.Core.metadata_dll; \
+	$(CLR_REF_PATH)\System.Data.metadata_dll; \
+	$(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
+	$(CLR_REF_PATH)\System.IO.Compression.metadata_dll; \
+	$(CLR_REF_PATH)\System.Data.DataSetExtensions.metadata_dll;
+
+#region sourcefiles
+SOURCES=\
+	Core\Api\Compression\ZipArchive.cs \
+ 	Core\Api\Bootstrapper.cs \
+ 	Core\Api\Downloader.cs \
+ 	Core\Api\HostSuppliedAPIs.cs \
+ 	Core\Api\Instance.cs \
+ 	Core\Api\InvokableDispatcher.cs \
+ 	Core\Api\Plugin.cs \
+ 	Core\Api\Provider.cs \
+ 	Core\Api\RequestAPIs.cs \
+ 	Core\Api\ServiceApiImpl.cs \
+ 	Core\Api\ServiceAPIs.cs \
+ 	Core\Extensions\CancellationTokenSourceExtensions.cs \
+ 	Core\Packaging\Entity.cs \
+ 	Core\Packaging\Evidence.cs \
+ 	Core\Packaging\InstallationOptions.cs \
+ 	Core\Packaging\Link.cs \
+ 	Core\Packaging\Meta.cs \
+ 	Core\Packaging\PackageSource.cs \
+ 	Core\Packaging\Payload.cs \
+ 	Core\Packaging\SoftwareIdentity.cs \
+ 	HostApi.cs \
+ 
+
+#endregion
+
+
+INTERNALS_VISIBLE_TO=\
+	Microsoft.OneGet.Plugin.Chocolatey, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+	Microsoft.OneGet.Plugin.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
+
