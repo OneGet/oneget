@@ -13,6 +13,8 @@
 //  
 
 namespace Microsoft.OneGet.PackageProvider.Test {
+    using System;
+    using System.Collections.Generic;
     using Utility;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
 
