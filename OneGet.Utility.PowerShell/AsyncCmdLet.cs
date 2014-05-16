@@ -282,8 +282,6 @@ namespace Microsoft.OneGet {
                     // we'll just return the stopping state.
                     return IsCancelled();
                 });
-
-                _localEventSource.Events += new GetHostDelegate(() => {return Invoke;});
             }
         }
 
@@ -593,8 +591,6 @@ namespace Microsoft.OneGet {
                         (Progress)((s, ie, p4, p5) => Event<Progress>.Raise(s, ie, p4, p5)),
                         (StartProgress)((p1,p2,p3) => Event<StartProgress>.Raise(p1,p2,p3)),
                         (CompleteProgress)((s, b)=> Event<CompleteProgress>.Raise(s, b)),
-                        (GetHostDelegate)(() => this.Invoke),
-                    
                     }));
                 }
             }

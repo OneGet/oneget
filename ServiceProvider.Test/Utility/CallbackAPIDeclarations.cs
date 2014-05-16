@@ -43,8 +43,6 @@ namespace Microsoft.OneGet.ServiceProvider.Test.Utility {
 
     public delegate bool CompleteProgress(int activityId, bool isSuccessful);
 
-    public delegate Callback GetHostDelegate();
-
     /// <summary>
     ///     The provider can query to see if the operation has been cancelled.
     ///     This provides for a gentle way for the caller to notify the callee that
@@ -110,21 +108,21 @@ namespace Microsoft.OneGet.ServiceProvider.Test.Utility {
     // 
     #region copy service-apis
 
-    public delegate string GetNuGetExePath();
+    public delegate string GetNuGetExePath(Callback c);
 
-    public delegate string GetNuGetDllPath();
+    public delegate string GetNuGetDllPath(Callback c);
 
-    public delegate string DownloadFile(string remoteLocation, string localLocation);
+    public delegate string DownloadFile(string remoteLocation, string localLocation, Callback c);
 
-    public delegate void AddPinnedItemToTaskbar(string item);
+    public delegate void AddPinnedItemToTaskbar(string item, Callback c);
 
-    public delegate void RemovePinnedItemFromTaskbar(string item);
+    public delegate void RemovePinnedItemFromTaskbar(string item, Callback c);
 
-    public delegate bool CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments);
+    public delegate bool CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c);
 
-    public delegate IEnumerable<string> UnzipFileIncremental(string zipFile, string folder);
+    public delegate IEnumerable<string> UnzipFileIncremental(string zipFile, string folder, Callback c);
 
-    public delegate IEnumerable<string> UnzipFile(string zipFile, string folder);
+    public delegate IEnumerable<string> UnzipFile(string zipFile, string folder, Callback c);
 
     public delegate void AddFileAssociation();
 
@@ -134,9 +132,9 @@ namespace Microsoft.OneGet.ServiceProvider.Test.Utility {
 
     public delegate void RemoveExplorerMenuItem();
 
-    public delegate bool SetEnvironmentVariable(string variable, string value, string context);
+    public delegate bool SetEnvironmentVariable(string variable, string value, string context, Callback c);
 
-    public delegate bool RemoveEnvironmentVariable(string variable, string context);
+    public delegate bool RemoveEnvironmentVariable(string variable, string context, Callback c);
 
     public delegate void AddFolderToPath();
 
@@ -162,17 +160,17 @@ namespace Microsoft.OneGet.ServiceProvider.Test.Utility {
 
     public delegate void GetSystemBinFolder();
 
-    public delegate bool CopyFile(string sourcePath, string destinationPath);
+    public delegate bool CopyFile(string sourcePath, string destinationPath, Callback c);
 
     public delegate void CopyFolder();
 
-    public delegate void Delete(string path);
+    public delegate void Delete(string path, Callback c);
 
-    public delegate void DeleteFolder(string folder);
+    public delegate void DeleteFolder(string folder, Callback c);
 
-    public delegate void CreateFolder(string folder);
+    public delegate void CreateFolder(string folder, Callback c);
 
-    public delegate void DeleteFile(string filename);
+    public delegate void DeleteFile(string filename, Callback c);
 
     public delegate void BeginTransaction();
 
@@ -182,9 +180,11 @@ namespace Microsoft.OneGet.ServiceProvider.Test.Utility {
 
     public delegate void GenerateUninstallScript();
 
-    public delegate string GetKnownFolder(string knownFolder);
+    public delegate string GetKnownFolder(string knownFolder, Callback c);
 
-    public delegate bool IsElevated();
+    public delegate bool IsElevated(Callback c);
+
+    public delegate object GetPackageManagementService(Callback c);
     #endregion
 
     //

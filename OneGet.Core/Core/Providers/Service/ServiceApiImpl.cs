@@ -50,7 +50,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
 
         #region implement service-apis
 [Implementation]
-        public string DownloadFile(string remoteLocation, string localLocation) {
+        public string DownloadFile(string remoteLocation, string localLocation, Callback c) {
             if (localLocation == null) {
                 localLocation = Path.Combine(FilesystemExtensions.TempPath, "file.bin");
             }
@@ -67,7 +67,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
                 localLocation.TryHardToDelete();
             }
 
-            Verbose("Downloading", "'{0}' to '{1}'", remoteLocation, localLocation);
+            Verbose(c,"Downloading", "'{0}' to '{1}'", remoteLocation, localLocation);
             var webClient = new WebClient();
 
             // Apparently, places like Codeplex know to let this thru!
@@ -76,7 +76,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
             var done = new ManualResetEvent(false);
 
             webClient.DownloadFileCompleted += (sender, args) => {
-                CompleteProgress(2,true);
+                CompleteProgress(c,2,true);
                 if (args.Cancelled || args.Error != null) {
                     localLocation = null;
                 }
@@ -84,7 +84,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
             };
             webClient.DownloadProgressChanged += (sender, args) => {
                 var percent = (args.BytesReceived*100)/args.TotalBytesToReceive;
-                Progress(2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
+                Progress(c,2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
             };
             webClient.DownloadFileAsync(new Uri(remoteLocation), localLocation);
             done.WaitOne();
@@ -95,32 +95,32 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         }
 
                 [Implementation]
-        public void AddPinnedItemToTaskbar(string item) {
+        public void AddPinnedItemToTaskbar(string item, Callback c) {
         }
 
                 [Implementation]
-        public void RemovePinnedItemFromTaskbar(string item) {
+        public void RemovePinnedItemFromTaskbar(string item, Callback c) {
             //comment
         }
 
                 [Implementation]
-        public bool CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments) {
+        public bool CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c) {
             if (File.Exists(linkPath)) {
-                Verbose("Creating Shortcut", "'{0}' => '{1}'", linkPath, targetPath);
+                Verbose(c,"Creating Shortcut", "'{0}' => '{1}'", linkPath, targetPath);
                 ShellLink.CreateShortcut(linkPath, targetPath, description, workingDirectory, arguments);
                 return true;
             }
-            Error("Unable to create shortcut", "target '{0}' does not exist", targetPath);
+            Error(c,"Unable to create shortcut", "target '{0}' does not exist", targetPath);
             return false;
         }
 
                 [Implementation]
-        public IEnumerable<string> UnzipFile(string zipFile, string folder) {
-            return UnzipFileIncremental(zipFile, folder).ToArray();
+        public IEnumerable<string> UnzipFile(string zipFile, string folder, Callback c) {
+            return UnzipFileIncremental(zipFile, folder,c).ToArray();
         }
 
                 [Implementation]
-        public IEnumerable<string> UnzipFileIncremental(string zipFile, string folder) {
+        public IEnumerable<string> UnzipFileIncremental(string zipFile, string folder, Callback c) {
             Directory.CreateDirectory(folder);
             if (File.Exists(zipFile)) {
                 using (var zipStream = File.Open(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read)) {
@@ -163,7 +163,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
                         index++;
                         var outputFilename = Path.Combine(folder, zipEntry.Name);
                         using (var stream = zipEntry.Open()) {
-                            Progress(2,(index*100)/total, "Processing {0} of {1} -- '{2}'", index, total, outputFilename);
+                            Progress(c,2,(index*100)/total, "Processing {0} of {1} -- '{2}'", index, total, outputFilename);
                             try {
                                 Directory.CreateDirectory(Path.GetDirectoryName(outputFilename));
                                 using (var outputStream = File.Create(outputFilename)) {
@@ -177,7 +177,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
                         yield return outputFilename;
                     }
                 }
-                CompleteProgress(2, true);
+                CompleteProgress(c,2, true);
                 yield break;
             }
             throw new Exception("Zipfile '{0}' missing.".format(zipFile));
@@ -200,22 +200,22 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         }
 
                 [Implementation]
-        public bool SetEnvironmentVariable(string variable, string value, string context) {
+        public bool SetEnvironmentVariable(string variable, string value, string context, Callback c) {
             if (string.IsNullOrEmpty(value)) {
-                return RemoveEnvironmentVariable(variable, context);
+                return RemoveEnvironmentVariable(variable, context, c);
             }
             context = context ?? string.Empty;
             switch (context.ToLowerInvariant()) {
                 case "machine":
-                    if (!IsElevated()) {
-                        Warning("SetEnvironmentVariable Failed", "Admin Elevation required to set variable '{0}' in machine context", variable);
+                    if (!IsElevated(c)) {
+                        Warning(c,"SetEnvironmentVariable Failed", "Admin Elevation required to set variable '{0}' in machine context", variable);
                         return false;
                     }
-                    Verbose("SetEnvironmentVariable (machine)", "'{0}' = '{1}'", variable, value);
+                    Verbose(c,"SetEnvironmentVariable (machine)", "'{0}' = '{1}'", variable, value);
                     Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.Machine);
                     break;
                 default:
-                    Verbose("SetEnvironmentVariable (user)", "'{0}' = '{1}'", variable, value);
+                    Verbose(c,"SetEnvironmentVariable (user)", "'{0}' = '{1}'", variable, value);
                     Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User);
                     break;
             }
@@ -224,26 +224,26 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         }
 
                 [Implementation]
-        public bool RemoveEnvironmentVariable(string variable, string context) {
+        public bool RemoveEnvironmentVariable(string variable, string context, Callback c) {
             context = context ?? string.Empty;
             if (string.IsNullOrEmpty(variable)) {
                 return false;
             }
             switch (context.ToLowerInvariant()) {
                 case "user":
-                    Verbose("RemoveEnvironmentVariable (user)", "'{0}'", variable);
+                    Verbose(c,"RemoveEnvironmentVariable (user)", "'{0}'", variable);
                     Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
                     break;
                 case "machine":
-                    if (!IsElevated()) {
-                        Warning("RemoveEnvironmentVariable Failed", "Admin Elevation required to remove variable '{0}' from machine context", variable);
+                    if (!IsElevated(c)) {
+                        Warning(c,"RemoveEnvironmentVariable Failed", "Admin Elevation required to remove variable '{0}' from machine context", variable);
                         return false;
                     }
-                    Verbose("RemoveEnvironmentVariable (machine)", "'{0}'", variable);
+                    Verbose(c,"RemoveEnvironmentVariable (machine)", "'{0}'", variable);
                     Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Machine);
                     break;
                 default:
-                    Verbose("RemoveEnvironmentVariable (all)", "'{0}'", variable);
+                    Verbose(c,"RemoveEnvironmentVariable (all)", "'{0}'", variable);
                     Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
                     Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Machine);
                     break;
@@ -301,7 +301,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         }
 
                 [Implementation]
-        public bool CopyFile(string sourcePath, string destinationPath) {
+        public bool CopyFile(string sourcePath, string destinationPath, Callback c) {
             if (sourcePath == null) {
                 throw new ArgumentNullException("sourcePath");
             }
@@ -323,7 +323,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         }
 
                 [Implementation]
-        public void DeleteFolder(string folder) {
+        public void DeleteFolder(string folder, Callback c) {
             if (string.IsNullOrEmpty(folder)) {
                 return;
             }
@@ -333,7 +333,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         }
 
                 [Implementation]
-        public void DeleteFile(string filename) {
+        public void DeleteFile(string filename, Callback c) {
             if (string.IsNullOrEmpty(filename)) {
                 return;
             }
@@ -349,19 +349,17 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         }
 
                 [Implementation]
-        public string GetNuGetExePath() {
-            var c = Event<GetHostDelegate>.Raise();
+        public string GetNuGetExePath(Callback c) {
             return c == null ? null : Bootstrapper.GetNuGetExePath(this, c);
         }
 
                 [Implementation]
-        public string GetNuGetDllPath() {
-            var c = Event<GetHostDelegate>.Raise();
+        public string GetNuGetDllPath(Callback c) {
             return c == null ? null : Bootstrapper.GetNuGetDllPath(this, c);
         }
 
                 [Implementation]
-        public string GetKnownFolder(string knownFolder) {
+        public string GetKnownFolder(string knownFolder, Callback c) {
             if (!string.IsNullOrEmpty(knownFolder)) {
                 if (knownFolder.Equals("tmp", StringComparison.OrdinalIgnoreCase) || knownFolder.Equals("temp", StringComparison.OrdinalIgnoreCase)) {
                     return FilesystemExtensions.TempPath;
@@ -375,13 +373,13 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         }
 
                 [Implementation]
-        public bool IsElevated() {
-            Verbose("Current Process is", AdminPrivilege.IsElevated ? "Elevated" : "NOT Elevated");
+        public bool IsElevated(Callback c) {
+            Verbose(c,"Current Process is", AdminPrivilege.IsElevated ? "Elevated" : "NOT Elevated");
             return AdminPrivilege.IsElevated;
         }
 
                 [Implementation]
-        public void Delete(string path) {
+        public void Delete(string path, Callback c) {
             if (string.IsNullOrEmpty(path)) {
                 return;
             }
@@ -390,18 +388,18 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         }
 
                 [Implementation]
-        public void CreateFolder(string folder) {
+        public void CreateFolder(string folder, Callback c) {
             if (!Directory.Exists(folder)) {
                 try {
                     Directory.CreateDirectory(folder);
-                    Verbose("CreateFolder Success", folder);
+                    Verbose(c,"CreateFolder Success", folder);
                     return;
                 } catch (Exception e) {
-                    Error("CreateFolder Failed", "'{0}' -- {1}", folder, e.Message);
+                    Error(c,"CreateFolder Failed", "'{0}' -- {1}", folder, e.Message);
                     return;
                 }
             }
-            Verbose("CreateFolder -- Already Exists", folder);
+            Verbose(c,"CreateFolder -- Already Exists", folder);
         }
 
         // AFTER_CTP
@@ -422,6 +420,11 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         }
 
         // end AFTER_CTP
+
+                [Implementation]
+        public object GetPackageManagementService(Callback c) {
+                    return null;
+                }
 
         #endregion
 
@@ -474,29 +477,29 @@ namespace Microsoft.OneGet.Core.Providers.Service {
             }
         }
 
-        private void Error(string message, params object[] args) {
-            Event<GetHostDelegate>.Raise().Lookup<Error>()(message, args);
+        private void Error(Callback c , string message, params object[] args) {
+            c.Lookup<Error>()(message, args);
         }
 
-        private void Warning( string message, params object[] args) {
-            Event<GetHostDelegate>.Raise().Lookup<Warning>()( message, args);
+        private void Warning(Callback c, string message, params object[] args) {
+            c.Lookup<Warning>()( message, args);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Still in development!")]
-        private void Message( string message, params object[] args) {
-            Event<GetHostDelegate>.Raise().Lookup<Message>()(message, args);
+        private void Message(Callback c, string message, params object[] args) {
+            c.Lookup<Message>()(message, args);
         }
 
-        private void Verbose( string message, params object[] args) {
-            Event<GetHostDelegate>.Raise().Lookup<Verbose>()(message, args);
+        private void Verbose(Callback c,string message, params object[] args) {
+            c.Lookup<Verbose>()(message, args);
         }
 
-        private void Progress(int activityId, int progress, string message, params object[] args) {
-            Event<GetHostDelegate>.Raise().Lookup<Progress>()(activityId, progress, message, args);
+        private void Progress(Callback c, int activityId, int progress, string message, params object[] args) {
+            c.Lookup<Progress>()(activityId, progress, message, args);
         }
 
-        private void CompleteProgress(int activityId,bool isSuccessful) {
-            Event<GetHostDelegate>.Raise().Lookup<CompleteProgress>()(activityId,isSuccessful);
+        private void CompleteProgress(Callback c, int activityId, bool isSuccessful) {
+        c.Lookup<CompleteProgress>()(activityId,isSuccessful);
         }
     }
 

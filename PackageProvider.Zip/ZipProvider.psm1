@@ -309,7 +309,7 @@ function Get-OptionDefinition {
 <# 
 
 #>
-function Get-Feature {
+function Get-Feature { 
     param(
     )
     # TODO: Fill in implementation
@@ -325,7 +325,7 @@ function Get-Feature {
 <# 
 // --- Optimization features -----------------------------------------------------------------------------------------------------
 #>
-function Get-MagicSignature {
+function Get-MagicSignature { 
     param(
     )
     # TODO: Fill in implementation
@@ -338,7 +338,7 @@ function Get-MagicSignature {
 <# 
 
 #>
-function Get-Scheme {
+function Get-Scheme { 
     param(
     )
     # TODO: Fill in implementation
@@ -351,7 +351,7 @@ function Get-Scheme {
 <# 
 
 #>
-function Get-FileExtension {
+function Get-FileExtension { 
     param(
     )
     # TODO: Fill in implementation
@@ -364,7 +364,7 @@ function Get-FileExtension {
 <# 
 
 #>
-function Get-IsSourceRequired {
+function Get-IsSourceRequired { 
     param(
     )
     # TODO: Fill in implementation
@@ -377,7 +377,7 @@ function Get-IsSourceRequired {
 <# 
 // --- operations on a package ---------------------------------------------------------------------------------------------------
 #>
-function Download-Package {
+function Download-Package { 
     param(
         [string] $fastPath,
         [string] $location
@@ -395,7 +395,7 @@ function Download-Package {
 <# 
 
 #>
-function Get-PackageDependencie {
+function Get-PackageDependencie { 
     param(
         [string] $fastPath
     )
@@ -412,7 +412,7 @@ function Get-PackageDependencie {
 <# 
 
 #>
-function Get-PackageDetail {
+function Get-PackageDetail { 
     param(
         [string] $fastPath
     )
@@ -429,7 +429,7 @@ function Get-PackageDetail {
 <# 
 
 #>
-function Install-Package {
+function Install-Package { 
     param(
         [string] $fastPath
     )

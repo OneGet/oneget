@@ -76,7 +76,7 @@ namespace Microsoft.OneGet {
             if (_instance == null) {
                 lock (_lockObject) {
                     try {
-                        if (Instance.Service.GetNuGetDllPath().IsEmptyOrNull()) {
+                        if (Instance.Service.GetNuGetDllPath(callback).IsEmptyOrNull()) {
                             // we are unable to bootstrap NuGet correctly.
                             // We can't really declare that the providers are ready, and we should just 
                             // return as if we never really succeded (as it may have been that this got called as 
@@ -228,8 +228,6 @@ namespace Microsoft.OneGet {
                 pd.Invoke(c => {CurrentTask.Events += new ExceptionThrown(c.Invoke);},
                     typeof (ExceptionThrown).CreateWrappedProxy(new ExceptionThrown((e, m, s) => Event<ExceptionThrown>.Raise(e, m, s))) as WrappedFunc<string, string, string, bool>);
 
-                pd.Invoke(c => {CurrentTask.Events += new GetHostDelegate(c.Invoke);}, typeof (GetHostDelegate).CreateWrappedProxy(new GetHostDelegate(() => Event<GetHostDelegate>.Raise())) as WrappedFunc<Callback>);
-                
                 pd.LoadFileWithReferences(Assembly.GetExecutingAssembly().Location);
 
                 return pd;

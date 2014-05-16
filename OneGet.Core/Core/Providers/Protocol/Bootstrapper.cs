@@ -94,12 +94,12 @@ namespace Microsoft.OneGet.Core.Providers.Protocol {
                 if ((bool)_callback.DynamicInvoke<AskPermission>("The NuGet Package Manager is required to continue. Can we please go get it?")) {
                     // try and get the packaged version first.
                     foreach (var location in NuGetPackageDownloadLocations) {
-                        var downloadedFile = _serviceApi.DownloadFile(location, FilesystemExtensions.TempPath);
+                        var downloadedFile = _serviceApi.DownloadFile(location, FilesystemExtensions.TempPath, _callback);
 
                         if (downloadedFile != null && downloadedFile.FileExists()) {
                             // unpack this file
                             try {
-                                var files = _serviceApi.UnzipFileIncremental(downloadedFile, Path.GetFileName(downloadedFile).GenerateTemporaryFilename());
+                                var files = _serviceApi.UnzipFileIncremental(downloadedFile, Path.GetFileName(downloadedFile).GenerateTemporaryFilename(), _callback);
 
                                 // grab the NuGet EXE from it
                                 foreach (var f in files) {
@@ -110,7 +110,7 @@ namespace Microsoft.OneGet.Core.Providers.Protocol {
                                         if (ver > _minimumNuGetVersion) {
                                             // awesome. good enough.
                                             // copy this to the target path...
-                                            if (_serviceApi.CopyFile(f, targetPath)) {
+                                            if (_serviceApi.CopyFile(f, targetPath, _callback)) {
                                                 // we got it.
                                                 return targetPath;
                                             }
@@ -128,7 +128,7 @@ namespace Microsoft.OneGet.Core.Providers.Protocol {
 
                     // fallback to getting the EXE
                     foreach (var location in NuGetExeDownloadLocations) {
-                        var downloadedFile = _serviceApi.DownloadFile(location, FilesystemExtensions.TempPath);
+                        var downloadedFile = _serviceApi.DownloadFile(location, FilesystemExtensions.TempPath, _callback);
 
                         if (downloadedFile != null && downloadedFile.FileExists()) {
                             // check to see if it's new enough
@@ -136,7 +136,7 @@ namespace Microsoft.OneGet.Core.Providers.Protocol {
                             if (ver > _minimumNuGetVersion) {
                                 // awesome. good enough.
                                 // copy this to the target path...
-                                if (_serviceApi.CopyFile(downloadedFile, targetPath)) {
+                                if (_serviceApi.CopyFile(downloadedFile, targetPath, _callback)) {
                                     // we got it.
                                     return targetPath;
                                 }
@@ -175,7 +175,7 @@ namespace Microsoft.OneGet.Core.Providers.Protocol {
 
                 // ok, now we can copy it to a DLL
                 var tempFile = NuGetDll.GenerateTemporaryFilename();
-                _serviceApi.CopyFile(exe, tempFile);
+                _serviceApi.CopyFile(exe, tempFile, _callback);
 
                 // and patch it:
                 // TODO : SUPER CHEAT! THIS NEEDS TO GET FIXED ASAP AFTER THE CTP.
@@ -194,7 +194,7 @@ namespace Microsoft.OneGet.Core.Providers.Protocol {
                 var targetPath = IsElevated ? Path.Combine(SystemBin, NuGetExe) : Path.Combine(UserBin, NuGetDll);
 
                 // and copy it into place.
-                if (_serviceApi.CopyFile(tempFile, targetPath)) {
+                if (_serviceApi.CopyFile(tempFile, targetPath, _callback)) {
                     return targetPath;
                 }
 

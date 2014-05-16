@@ -40,9 +40,6 @@ namespace Microsoft.OneGet {
 
     public delegate bool CompleteProgress(int activityId, bool isSuccessful);
 
-    public delegate Callback GetHostDelegate();
-
-
     /// <summary>
     ///     The provider can query to see if the operation has been cancelled.
     ///     This provides for a gentle way for the caller to notify the callee that

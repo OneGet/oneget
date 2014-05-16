@@ -118,7 +118,7 @@ namespace Microsoft.PowerShell.OneGet.Core {
                         (ExceptionThrown)((s, s1, ie) => Event<ExceptionThrown>.Raise(s, s1, ie)),
                         (Progress)((s, s1, ie, p4, p5) => Event<Progress>.Raise(s, s1, ie, p4, p5)),
                         (CompleteProgress)((s, s1, s2, s3) => Event<CompleteProgress>.Raise(s, s1, s2, s3)),
-                        (GetHostDelegate)(() => this.Invoke),
+                        
                          */
 
                         (AskPermission)((p1) => _cmdlet.ShouldContinue(p1, "RequiresInformation").Result),

@@ -411,7 +411,7 @@ namespace CustomCodeGenerator {
 {1}public ${returnType} ${fnName}(${parameterText}){2}".format(fn, whitespace,fn.code);
                                 }));
                             } else {
-                                newContent += @"{1}[Implementation]}
+                                newContent += @"{1}[Implementation]
 {1}public ${returnType} ${delegateName}(${parameterText}){{
 {1} // TODO: Fill in implementation
 {1}}}".format(api, whitespace);

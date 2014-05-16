@@ -57,43 +57,43 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell.Utility {
         #region generate-resolved service-apis
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static string GetNuGetExePath (this Callback c   ) {
-            return (c.Resolve<GetNuGetExePath>() ?? (()=>default(string) ) )();
+        public static string GetNuGetExePath (this Callback c , Callback c ) {
+            return (c.Resolve<GetNuGetExePath>() ?? ((pc)=>default(string) ) )(c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static string GetNuGetDllPath (this Callback c   ) {
-            return (c.Resolve<GetNuGetDllPath>() ?? (()=>default(string) ) )();
+        public static string GetNuGetDllPath (this Callback c , Callback c ) {
+            return (c.Resolve<GetNuGetDllPath>() ?? ((pc)=>default(string) ) )(c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static string DownloadFile (this Callback c , string remoteLocation, string localLocation ) {
-            return (c.Resolve<DownloadFile>() ?? ((premoteLocation,plocalLocation)=>default(string) ) )(remoteLocation,localLocation);
+        public static string DownloadFile (this Callback c , string remoteLocation, string localLocation, Callback c ) {
+            return (c.Resolve<DownloadFile>() ?? ((premoteLocation,plocalLocation,pc)=>default(string) ) )(remoteLocation,localLocation,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static void AddPinnedItemToTaskbar (this Callback c , string item ) {
-            (c.Resolve<AddPinnedItemToTaskbar>() ?? ((pitem)=>{ } ) )(item);
+        public static void AddPinnedItemToTaskbar (this Callback c , string item, Callback c ) {
+            (c.Resolve<AddPinnedItemToTaskbar>() ?? ((pitem,pc)=>{ } ) )(item,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static void RemovePinnedItemFromTaskbar (this Callback c , string item ) {
-            (c.Resolve<RemovePinnedItemFromTaskbar>() ?? ((pitem)=>{ } ) )(item);
+        public static void RemovePinnedItemFromTaskbar (this Callback c , string item, Callback c ) {
+            (c.Resolve<RemovePinnedItemFromTaskbar>() ?? ((pitem,pc)=>{ } ) )(item,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static bool CreateShortcutLink (this Callback c , string linkPath, string targetPath, string description, string workingDirectory, string arguments ) {
-            return (c.Resolve<CreateShortcutLink>() ?? ((plinkPath,ptargetPath,pdescription,pworkingDirectory,parguments)=>default(bool) ) )(linkPath,targetPath,description,workingDirectory,arguments);
+        public static bool CreateShortcutLink (this Callback c , string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c ) {
+            return (c.Resolve<CreateShortcutLink>() ?? ((plinkPath,ptargetPath,pdescription,pworkingDirectory,parguments,pc)=>default(bool) ) )(linkPath,targetPath,description,workingDirectory,arguments,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static IEnumerable<string> UnzipFileIncremental (this Callback c , string zipFile, string folder ) {
-            return (c.Resolve<UnzipFileIncremental>() ?? ((pzipFile,pfolder)=>default(IEnumerable<string>) ) )(zipFile,folder);
+        public static IEnumerable<string> UnzipFileIncremental (this Callback c , string zipFile, string folder, Callback c ) {
+            return (c.Resolve<UnzipFileIncremental>() ?? ((pzipFile,pfolder,pc)=>default(IEnumerable<string>) ) )(zipFile,folder,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static IEnumerable<string> UnzipFile (this Callback c , string zipFile, string folder ) {
-            return (c.Resolve<UnzipFile>() ?? ((pzipFile,pfolder)=>default(IEnumerable<string>) ) )(zipFile,folder);
+        public static IEnumerable<string> UnzipFile (this Callback c , string zipFile, string folder, Callback c ) {
+            return (c.Resolve<UnzipFile>() ?? ((pzipFile,pfolder,pc)=>default(IEnumerable<string>) ) )(zipFile,folder,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
@@ -117,13 +117,13 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell.Utility {
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static bool SetEnvironmentVariable (this Callback c , string variable, string value, string context ) {
-            return (c.Resolve<SetEnvironmentVariable>() ?? ((pvariable,pvalue,pcontext)=>default(bool) ) )(variable,value,context);
+        public static bool SetEnvironmentVariable (this Callback c , string variable, string value, string context, Callback c ) {
+            return (c.Resolve<SetEnvironmentVariable>() ?? ((pvariable,pvalue,pcontext,pc)=>default(bool) ) )(variable,value,context,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static bool RemoveEnvironmentVariable (this Callback c , string variable, string context ) {
-            return (c.Resolve<RemoveEnvironmentVariable>() ?? ((pvariable,pcontext)=>default(bool) ) )(variable,context);
+        public static bool RemoveEnvironmentVariable (this Callback c , string variable, string context, Callback c ) {
+            return (c.Resolve<RemoveEnvironmentVariable>() ?? ((pvariable,pcontext,pc)=>default(bool) ) )(variable,context,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
@@ -187,8 +187,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell.Utility {
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static bool CopyFile (this Callback c , string sourcePath, string destinationPath ) {
-            return (c.Resolve<CopyFile>() ?? ((psourcePath,pdestinationPath)=>default(bool) ) )(sourcePath,destinationPath);
+        public static bool CopyFile (this Callback c , string sourcePath, string destinationPath, Callback c ) {
+            return (c.Resolve<CopyFile>() ?? ((psourcePath,pdestinationPath,pc)=>default(bool) ) )(sourcePath,destinationPath,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
@@ -197,23 +197,23 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell.Utility {
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static void Delete (this Callback c , string path ) {
-            (c.Resolve<Delete>() ?? ((ppath)=>{ } ) )(path);
+        public static void Delete (this Callback c , string path, Callback c ) {
+            (c.Resolve<Delete>() ?? ((ppath,pc)=>{ } ) )(path,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static void DeleteFolder (this Callback c , string folder ) {
-            (c.Resolve<DeleteFolder>() ?? ((pfolder)=>{ } ) )(folder);
+        public static void DeleteFolder (this Callback c , string folder, Callback c ) {
+            (c.Resolve<DeleteFolder>() ?? ((pfolder,pc)=>{ } ) )(folder,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static void CreateFolder (this Callback c , string folder ) {
-            (c.Resolve<CreateFolder>() ?? ((pfolder)=>{ } ) )(folder);
+        public static void CreateFolder (this Callback c , string folder, Callback c ) {
+            (c.Resolve<CreateFolder>() ?? ((pfolder,pc)=>{ } ) )(folder,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static void DeleteFile (this Callback c , string filename ) {
-            (c.Resolve<DeleteFile>() ?? ((pfilename)=>{ } ) )(filename);
+        public static void DeleteFile (this Callback c , string filename, Callback c ) {
+            (c.Resolve<DeleteFile>() ?? ((pfilename,pc)=>{ } ) )(filename,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
@@ -237,13 +237,18 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell.Utility {
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static string GetKnownFolder (this Callback c , string knownFolder ) {
-            return (c.Resolve<GetKnownFolder>() ?? ((pknownFolder)=>default(string) ) )(knownFolder);
+        public static string GetKnownFolder (this Callback c , string knownFolder, Callback c ) {
+            return (c.Resolve<GetKnownFolder>() ?? ((pknownFolder,pc)=>default(string) ) )(knownFolder,c);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static bool IsElevated (this Callback c   ) {
-            return (c.Resolve<IsElevated>() ?? (()=>default(bool) ) )();
+        public static bool IsElevated (this Callback c , Callback c ) {
+            return (c.Resolve<IsElevated>() ?? ((pc)=>default(bool) ) )(c);
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
+        public static object GetPackageManagementService (this Callback c , Callback c ) {
+            return (c.Resolve<GetPackageManagementService>() ?? ((pc)=>default(object) ) )(c);
         }
 
         #endregion
@@ -294,11 +299,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell.Utility {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
         public static bool CompleteProgress (this Callback c , int activityId, bool isSuccessful ) {
             return (c.Resolve<CompleteProgress>() ?? ((pactivityId,pisSuccessful)=>default(bool) ) )(activityId,isSuccessful);
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Generated Code")]
-        public static Callback GetHostDelegate (this Callback c   ) {
-            return (c.Resolve<GetHostDelegate>() ?? (()=>default(Callback) ) )();
         }
 
         /// <summary>

@@ -246,7 +246,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
             return  default(bool);
         }
-
         public void GetFeatures(Callback c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
@@ -266,7 +265,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             return  default(IEnumerable<string>);
         }
-
         public IEnumerable<string> GetSchemes(){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
@@ -274,7 +272,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             return  default(IEnumerable<string>);
         }
-
         public IEnumerable<string> GetFileExtensions(){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
@@ -282,7 +279,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             return  default(IEnumerable<string>);
         }
-
         public bool GetIsSourceRequired(){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
@@ -303,7 +299,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             return  default(bool);
         }
-
         public bool GetPackageDependencies(string fastPath, Callback c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
@@ -315,7 +310,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             return  default(bool);
         }
-
         public bool GetPackageDetails(string fastPath, Callback c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
