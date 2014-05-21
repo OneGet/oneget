@@ -43,7 +43,8 @@ function Find-Package {
         [string] $name,
         [string] $requiredVersion,
         [string] $minimumVersion,
-        [string] $maximumVersion
+        [string] $maximumVersion,
+        [int] $id
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -60,7 +61,8 @@ function Find-Package {
 #>
 function Find-PackageByFile { 
     param(
-        [string] $file
+        [string] $file,
+        [int] $id
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -77,7 +79,8 @@ function Find-PackageByFile {
 #>
 function Find-PackageByUri { 
     param(
-        [Uri] $uri
+        [Uri] $uri,
+        [int] $id
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -300,7 +303,7 @@ function Get-OptionDefinition {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'GetOptionDefinitions'" );
+    $request.Debug("Information","Calling 'GetDynamicOptions'" );
 
     # expected return type : void
     #  $null;
@@ -438,6 +441,56 @@ function Install-Package {
 
     # use the request object to interact with the OneGet core:
     $request.Debug("Information","Calling 'InstallPackage'" );
+
+    # expected return type : bool
+    # return  $null;
+}
+
+<# 
+
+#>
+function Get-DynamicOption { 
+    param(
+        [int] $category
+    )
+    # TODO: Fill in implementation
+    # Delete this method if you do not need to implement it
+
+    # use the request object to interact with the OneGet core:
+    $request.Debug("Information","Calling 'GetDynamicOptions'" );
+
+    # expected return type : void
+    #  $null;
+}
+
+<# 
+
+#>
+function Start-Find { 
+    param(
+    )
+    # TODO: Fill in implementation
+    # Delete this method if you do not need to implement it
+
+    # use the request object to interact with the OneGet core:
+    $request.Debug("Information","Calling 'StartFind'" );
+
+    # expected return type : int
+    # return  $null;
+}
+
+<# 
+
+#>
+function Complete-Find { 
+    param(
+        [int] $id
+    )
+    # TODO: Fill in implementation
+    # Delete this method if you do not need to implement it
+
+    # use the request object to interact with the OneGet core:
+    $request.Debug("Information","Calling 'CompleteFind'" );
 
     # expected return type : bool
     # return  $null;

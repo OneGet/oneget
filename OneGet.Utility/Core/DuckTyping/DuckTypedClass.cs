@@ -22,6 +22,7 @@ namespace Microsoft.OneGet.Core.DuckTyping {
 
     public class DuckTypedClass : MarshalByRefObject {
         private readonly object _instance;
+        private readonly CreateDelegate _createDelegateImpl;
         private readonly HashSet<string> _supportedMethods = new HashSet<string>();
 
         // we don't want these objects being gc's out because they remain unused...
@@ -37,6 +38,7 @@ namespace Microsoft.OneGet.Core.DuckTyping {
 
         internal DuckTypedClass(object instance) {
             _instance = instance;
+#if OLD_DYNAMIC_DUCK_TYPING
             var duckType = GetType();
             // this model lets us construct the proxy
             // class without knowing how the original object
@@ -111,6 +113,7 @@ namespace Microsoft.OneGet.Core.DuckTyping {
 
                 member.SetValue(this, expectedDelegateType.CreateProxiedDelegate(instance, method));
             }
+#endif
         }
 
         protected T GetOptionalDelegate<T>(object instance) {
@@ -118,6 +121,7 @@ namespace Microsoft.OneGet.Core.DuckTyping {
         }
 
         protected T GetRequiredDelegate<T>(object instance) {
+            // instance.CreateProxiedDelegate<T>(null);
             return default(T);
         }
 

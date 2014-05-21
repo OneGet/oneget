@@ -20,37 +20,37 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
     using Core;
     using Microsoft.OneGet;
-    using Microsoft.OneGet.Core.Api;
     using Microsoft.OneGet.Core.Extensions;
     using Microsoft.OneGet.Core.Packaging;
     using Microsoft.OneGet.Core.Providers.Package;
     using Microsoft.OneGet.Core.Tasks;
 
     public class FindInstallCmdlet : PackagingCmdlet {
+        internal FindInstallCmdlet() {
+            // populate the matching providers at first request.
+            _providers = new Lazy<IEnumerable<PackageProvider>>(() => PackageManagementService.SelectProviders(Provider, Source));
+        }
+
         [Parameter(ParameterSetName = "PackageBySearch")]
         public string[] Source {get; set;}
 
         [Parameter(ParameterSetName = "PackageBySearch")]
-        public string RequiredVersion { get; set; }
+        public string RequiredVersion {get; set;}
 
         [Parameter(ParameterSetName = "PackageBySearch")]
-        public string MinimumVersion { get; set; }
+        public string MinimumVersion {get; set;}
 
         [Parameter(ParameterSetName = "PackageBySearch")]
-        public string MaximumVersion { get; set; }
+        public string MaximumVersion {get; set;}
 
         public override IEnumerable<string> GetPackageSources() {
             return Source;
         }
 
-        internal FindInstallCmdlet() {
-            // populate the matching providers at first request.
-            _providers = new Lazy<IEnumerable<PackageProvider>>(() => PackageManagementService.SelectProviders(Provider, Source));
-        }
         internal bool FindViaUri(PackageProvider packageProvider, string packageuri, Action<SoftwareIdentity> onPackageFound) {
             var found = false;
             if (Uri.IsWellFormedUriString(packageuri, UriKind.Absolute)) {
-                using (var packages = CancelWhenStopped(packageProvider.FindPackageByUri(new Uri( packageuri), Invoke))) {
+                using (var packages = CancelWhenStopped(packageProvider.FindPackageByUri(new Uri(packageuri), 0, Invoke))) {
                     foreach (var p in packages) {
                         found = true;
                         onPackageFound(p);
@@ -70,14 +70,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 // first, try to resolve the filenames
                 try {
                     ProviderInfo providerInfo = null;
-                    var files = GetResolvedProviderPathFromPSPath(filePath, out providerInfo).Where( File.Exists);
+                    var files = GetResolvedProviderPathFromPSPath(filePath, out providerInfo).Where(File.Exists);
 
                     if (files.Any()) {
                         // found at least some files
                         // this is probably the right path.
                         foreach (var file in files) {
                             var foundThisFile = false;
-                            using (var packages = CancelWhenStopped(packageProvider.FindPackageByFile(file, Invoke))) {
+                            using (var packages = CancelWhenStopped(packageProvider.FindPackageByFile(file, 0, Invoke))) {
                                 foreach (var p in packages) {
                                     foundThisFile = true;
                                     found = true;
@@ -88,7 +88,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             if (foundThisFile == false) {
                                 // one of the files we found on disk, isn't actually a recognized package 
                                 // let's whine about this.
-                                Event<Warning>.Raise("Package File Not Recognized {0}",new [] { file});
+                                Event<Warning>.Raise("Package File Not Recognized {0}", new[] {
+                                    file
+                                });
                             }
                         }
                     }
@@ -104,7 +106,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool GenerateDynamicParameters() {
-
             // Todo: We should really expand dynamic parameters to be operation specific. 
             // todo: so that we can have operations like get-package have different dynamic parameters than
             // todo: find-package
@@ -112,7 +113,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             // if the provider (or source) is selected, we can get package metadata keys from the provider
             // hmm. let's just grab *all* of them.
 
-            foreach (var md in _providers.Value.SelectMany(provider => provider.GetOptionDefinitons(OptionCategory.Package,Invoke))) {
+            foreach (var md in _providers.Value.SelectMany(provider => provider.GetOptionDefinitons(OptionCategory.Package, Invoke))) {
                 DynamicParameters.Add(md.Name, md.CreateRuntimeDynamicParameter());
             }
             return true;
@@ -121,7 +122,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         internal bool FindViaName(PackageProvider packageProvider, string name, Action<SoftwareIdentity> onPackageFound) {
             var found = false;
 
-            using (var packages = CancelWhenStopped(packageProvider.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, Invoke))) {
+            using (var packages = CancelWhenStopped(packageProvider.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, 0, Invoke))) {
                 foreach (var p in packages) {
                     found = true;
                     onPackageFound(p);
@@ -130,7 +131,5 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             return found;
         }
-
-
     }
 }

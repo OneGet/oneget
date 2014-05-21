@@ -31,6 +31,8 @@ namespace Microsoft.OneGet.Core.Packaging {
 
         public string Status {get; internal set;}
 
+        public string SearchKey {get; internal set;}
+
         public string Summary {get; internal set;}
 
 #if AFTER_CTP

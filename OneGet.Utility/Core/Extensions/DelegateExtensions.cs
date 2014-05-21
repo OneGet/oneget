@@ -63,8 +63,8 @@ namespace Microsoft.OneGet.Core.Extensions {
             return invoke.GetParameters().Select(each => each.Name);
         }
 
-        internal static IEnumerable<Type> GetParameterTypes(this MethodInfo methodInfo) {
-            return methodInfo.GetParameters().Select(each => each.ParameterType);
+        internal static Type[] GetParameterTypes(this MethodInfo methodInfo) {
+            return methodInfo.GetParameters().Select(each => each.ParameterType).ToArray();
         }
 
         internal static bool IsDelegateAssignableFromMethod(this Type delegateType, MethodInfo methodInfo) {

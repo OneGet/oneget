@@ -45,26 +45,27 @@ namespace Microsoft.OneGet.Core.Extensions {
                 Expression.Convert(Expression.Convert(Expression.Convert(_parameter, fromType), targetType), typeof (object)), _parameter).Compile());
         }
 
-        private class TwoTypes {
-            private readonly Type _first;
-            private readonly Type _second;
+        
+    }
+    internal class TwoTypes {
+        private readonly Type _first;
+        private readonly Type _second;
 
-            public TwoTypes(Type first, Type second) {
-                _first = first;
-                _second = second;
-            }
+        public TwoTypes(Type first, Type second) {
+            _first = first;
+            _second = second;
+        }
 
-            public override int GetHashCode() {
-                return 31*_first.GetHashCode() + _second.GetHashCode();
-            }
+        public override int GetHashCode() {
+            return 31 * _first.GetHashCode() + _second.GetHashCode();
+        }
 
-            public override bool Equals(object obj) {
-                if (obj == this) {
-                    return true;
-                }
-                var other = obj as TwoTypes;
-                return other != null && (_first == other._first && _second == other._second);
+        public override bool Equals(object obj) {
+            if (obj == this) {
+                return true;
             }
+            var other = obj as TwoTypes;
+            return other != null && (_first == other._first && _second == other._second);
         }
     }
 }

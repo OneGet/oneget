@@ -31,7 +31,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
             }
 
         }
-        public bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, Callback c){
+        public bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -42,7 +42,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public bool FindPackageByFile(string file, Callback c){
+        public bool FindPackageByFile(string file, int id, Callback c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -53,7 +53,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public bool FindPackageByUri(Uri uri, Callback c){
+        public bool FindPackageByUri(Uri uri, int id, Callback c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -75,13 +75,13 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public void GetOptionDefinitions(int category, Callback c){
+        public void GetDynamicOptions(int category, Callback c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = new Request(c)) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'GetOptionDefinitions'" );
+                request.Debug("Information","Calling 'GetDynamicOptions'" );
             }
 
         }
@@ -267,6 +267,28 @@ namespace Microsoft.OneGet.PackageProvider.Test {
             using (var request = new Request(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'GetPackageDetails'" );
+            }
+
+            return  default(bool);
+        }
+        public int StartFind(Callback c){
+             // TODO: Fill in implementation
+             // Delete this method if you do not need to implement it
+             // Please don't throw an not implemented exception, it's not optimal.
+            using (var request = new Request(c)) {
+                // use the request object to interact with the OneGet core:
+                request.Debug("Information","Calling 'StartFind'" );
+            }
+
+            return  default(int);
+        }
+        public bool CompleteFind(int id, Callback c){
+             // TODO: Fill in implementation
+             // Delete this method if you do not need to implement it
+             // Please don't throw an not implemented exception, it's not optimal.
+            using (var request = new Request(c)) {
+                // use the request object to interact with the OneGet core:
+                request.Debug("Information","Calling 'CompleteFind'" );
             }
 
             return  default(bool);

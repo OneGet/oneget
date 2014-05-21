@@ -18,6 +18,9 @@ namespace Microsoft.OneGet.Core.Providers.Package {
     using System.Dynamic;
     using System.Linq;
     using System.Reflection;
+    using System.Reflection.Emit;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
     using System.Threading.Tasks;
     using Api;
     using Collections;
@@ -28,6 +31,112 @@ namespace Microsoft.OneGet.Core.Providers.Package {
     using Tasks;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
 
+    public interface IPackageProvider {
+        #region pretend-declarre PackageProvider-interface
+        [DuckTypedClass.Required]
+        string GetPackageProviderName();
+
+        void InitializeProvider(Callback c);
+        #endregion
+    }
+
+  
+#if fale
+    public class foo {
+        public foo() {
+            object xyz;
+
+            if (DuckTyper.IsCompatible<IPackageProvider>(xyz)) {
+                var x = DuckTyper.DuckType<IPackageProvider>(xyz);
+                x.GetPackageProviderName();
+            }
+
+            AppDomain myCurrentDomain = AppDomain.CurrentDomain;
+            AssemblyName myAssemblyName = new AssemblyName();
+            myAssemblyName.Name = "TempAssembly";
+
+            AssemblyBuilder myAssemblyBuilder;
+
+            myAssemblyBuilder = myCurrentDomain.DefineDynamicAssembly
+                     (myAssemblyName, AssemblyBuilderAccess.Run);
+
+            // Define a dynamic module in this assembly.
+            ModuleBuilder myModuleBuilder = myAssemblyBuilder.
+                                            DefineDynamicModule("TempModule");
+
+            // Define a runtime class with specified name and attributes.
+            TypeBuilder myTypeBuilder = myModuleBuilder.DefineType
+                                             ("TempClass", TypeAttributes.Public,typeof(IPackageProvider));
+
+            var f = myTypeBuilder.DefineField("_GetPackageProviderName", typeof (Func<string>), FieldAttributes.Public);
+
+            var methodBuilder = myTypeBuilder.DefineMethod("GetPackageProviderName", MethodAttributes.Public);
+            var t = myTypeBuilder.CreateType();
+            var instance = Activator.CreateInstance(t);
+            setDelegates(instance, remoteInstance);
+            var pp = instance as IPackageProvider;
+
+        }
+
+        void consume() {
+
+            Assembly asm;
+            dynamic duckTyper = asm.CreateInstance("OneGet.DuckTyper");
+            IPackageManagementService service = duckTyper.Bind<IPackageManagementService>(asm.CreateInstance("OneGet.PackageManagementService"));
+            IPackageManagementService service2 = duckTyper.Create<IPackageManagementService>("OneGet.PackageManagementService");
+            Type ppType;
+            duckTyper.FindCompatibleTypes<IPackageProvider>();
+
+            IPackageProvider pp = duckTyper.Create<IPackageProvider>(ppType);
+
+            object ppInstance;
+            IPackageProvider pp2 = duckTyper.Create<IPackageProvider>(ppInstance);
+
+            /*
+            Assembly asm;
+            dynamic pms = asm.CreateInstance("OneGet.PackageManagementService");
+            IPackageManagementService service = pms.CastTo<IPackageManagementService>();
+            service.GetProviders()
+
+            IPackageProvider instance = DuckTyper.CreateInstance<IDisposable>(remote_instance);
+
+            instance.InitializeProvider(null);
+            */
+        }
+    }
+
+        public interface IPackageManagementService {
+        IEnumerable<IPackageProvider> GetProviders();
+    }
+
+#endif
+    internal class PackageProviderImpl {
+
+        private Func<string> _getPackageProviderName;
+        private Action<Callback> _initializeProvider;
+
+        private object foo;
+
+        PackageProviderImpl(object instance) {
+            var members = instance.GetType().GetMembers();
+
+            //_getPackageProviderName = GenerateDelegate<Func<string>>(instance, members, "GetPackageProviderName");
+
+            //typeof(IPackageProvider).GetMembers()[0].Get
+        }
+
+        public string GetPackageProviderName() {
+            return _getPackageProviderName != null ?_getPackageProviderName() : default(string);
+        }
+
+        public void InitializeProvider(Callback c) {
+            if (_initializeProvider != null) {
+                _initializeProvider(c);
+            }
+        }
+
+    }
+
     public class PackageProviderInstance : DuckTypedClass {
 
         internal PackageProviderInstance(object instance) : base(instance) {
@@ -35,7 +144,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             GetPackageProviderName = GetRequiredDelegate<Interface.GetPackageProviderName>(instance);
             InitializeProvider = GetOptionalDelegate<Interface.InitializeProvider>(instance);
             GetFeatures = GetOptionalDelegate<Interface.GetFeatures>(instance);
-            GetOptionDefinitions = GetOptionalDelegate<Interface.GetOptionDefinitions>(instance);
+            GetDynamicOptions = GetOptionalDelegate<Interface.GetDynamicOptions>(instance);
             GetMagicSignatures = GetOptionalDelegate<Interface.GetMagicSignatures>(instance);
             GetSchemes = GetOptionalDelegate<Interface.GetSchemes>(instance);
             GetFileExtensions = GetOptionalDelegate<Interface.GetFileExtensions>(instance);
@@ -43,6 +152,8 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             AddPackageSource = GetOptionalDelegate<Interface.AddPackageSource>(instance);
             GetPackageSources = GetOptionalDelegate<Interface.GetPackageSources>(instance);
             RemovePackageSource = GetOptionalDelegate<Interface.RemovePackageSource>(instance);
+            StartFind = GetOptionalDelegate<Interface.StartFind>(instance);
+            CompleteFind = GetOptionalDelegate<Interface.CompleteFind>(instance);
             FindPackage = GetOptionalDelegate<Interface.FindPackage>(instance);
             FindPackageByFile = GetOptionalDelegate<Interface.FindPackageByFile>(instance);
             FindPackageByUri = GetOptionalDelegate<Interface.FindPackageByUri>(instance);
@@ -83,7 +194,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         internal readonly Interface.GetPackageProviderName GetPackageProviderName;
         internal readonly Interface.InitializeProvider InitializeProvider;
         internal readonly Interface.GetFeatures GetFeatures;
-        internal readonly Interface.GetOptionDefinitions GetOptionDefinitions;
+        internal readonly Interface.GetDynamicOptions GetDynamicOptions;
         internal readonly Interface.GetMagicSignatures GetMagicSignatures;
         internal readonly Interface.GetSchemes GetSchemes;
         internal readonly Interface.GetFileExtensions GetFileExtensions;
@@ -91,6 +202,8 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         internal readonly Interface.AddPackageSource AddPackageSource;
         internal readonly Interface.GetPackageSources GetPackageSources;
         internal readonly Interface.RemovePackageSource RemovePackageSource;
+        internal readonly Interface.StartFind StartFind;
+        internal readonly Interface.CompleteFind CompleteFind;
         internal readonly Interface.FindPackage FindPackage;
         internal readonly Interface.FindPackageByFile FindPackageByFile;
         internal readonly Interface.FindPackageByUri FindPackageByUri;
@@ -113,7 +226,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             internal delegate void InitializeProvider(Callback c);
 
             internal delegate void GetFeatures(Callback c);
-            internal delegate void GetOptionDefinitions(int category, Callback c);
+            internal delegate void GetDynamicOptions(int category, Callback c);
 
             // --- Optimization features -----------------------------------------------------------------------------------------------------
             internal delegate IEnumerable<string> GetMagicSignatures();
@@ -125,6 +238,10 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             internal delegate void AddPackageSource(string name, string location, bool trusted, Callback c);
             internal delegate bool GetPackageSources(Callback c);
             internal delegate void RemovePackageSource(string name, Callback c);
+
+            internal delegate int StartFind(Callback c);
+
+            internal delegate bool CompleteFind(int id, Callback c);
 
             // --- Finds packages ---------------------------------------------------------------------------------------------------
             /// <summary>
@@ -141,10 +258,11 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             /// <param name="maximumVersion"></param>
             /// <param name="c"></param>
             /// <returns></returns>
-            internal delegate bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, Callback c);
+            internal delegate bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c);
 
-            internal delegate bool FindPackageByFile(string file, Callback c);
-            internal delegate bool FindPackageByUri(Uri uri, Callback c);
+            internal delegate bool FindPackageByFile(string file, int id, Callback c);
+            internal delegate bool FindPackageByUri(Uri uri, int id, Callback c);
+
             internal delegate bool GetInstalledPackages(string name, Callback c);
 
             // --- operations on a package ---------------------------------------------------------------------------------------------------
@@ -171,7 +289,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         GetPackageProviderName,
         InitializeProvider,
         GetFeatures,
-        GetOptionDefinitions,
+        GetDynamicOptions,
         GetMagicSignatures,
         GetSchemes,
         GetFileExtensions,
@@ -179,6 +297,8 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         AddPackageSource,
         GetPackageSources,
         RemovePackageSource,
+        StartFind,
+        CompleteFind,
         FindPackage,
         FindPackageByFile,
         FindPackageByUri,
@@ -259,8 +379,8 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                     return _provider.InitializeProvider.IsSupported();
                  case PackageProviderApi.GetFeatures:
                     return _provider.GetFeatures.IsSupported();
-                 case PackageProviderApi.GetOptionDefinitions:
-                    return _provider.GetOptionDefinitions.IsSupported();
+                 case PackageProviderApi.GetDynamicOptions:
+                    return _provider.GetDynamicOptions.IsSupported();
                  case PackageProviderApi.GetMagicSignatures:
                     return _provider.GetMagicSignatures.IsSupported();
                  case PackageProviderApi.GetSchemes:
@@ -275,6 +395,10 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                     return _provider.GetPackageSources.IsSupported();
                  case PackageProviderApi.RemovePackageSource:
                     return _provider.RemovePackageSource.IsSupported();
+                 case PackageProviderApi.StartFind:
+                    return _provider.StartFind.IsSupported();
+                 case PackageProviderApi.CompleteFind:
+                    return _provider.CompleteFind.IsSupported();
                  case PackageProviderApi.FindPackage:
                     return _provider.FindPackage.IsSupported();
                  case PackageProviderApi.FindPackageByFile:
@@ -319,12 +443,12 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             _provider.RemovePackageSource(name, new InvokableDispatcher(c, Instance.Service.Invoke));
         }
 
-        public CancellableEnumerable<SoftwareIdentity> FindPackageByUri(Uri u, Callback c) {
+        public CancellableEnumerable<SoftwareIdentity> FindPackageByUri(Uri u, int id, Callback c) {
             var providerName = Name;
 
             return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
                 c, // inherited callback
-                nc => _provider.FindPackageByUri(u, nc), // actual call
+                nc => _provider.FindPackageByUri(u, id, nc), // actual call
                 (collection, okToContinue) => ((fastpath, name, version, scheme, summary, source) => {
                     collection.Add(new SoftwareIdentity {
                         FastPath = fastpath,
@@ -340,12 +464,12 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                 }));
         }
 
-        public CancellableEnumerable<SoftwareIdentity> FindPackageByFile(string filename, Callback c) {
+        public CancellableEnumerable<SoftwareIdentity> FindPackageByFile(string filename, int id, Callback c) {
             var providerName = Name;
 
             return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
                 c, // inherited callback
-                nc => _provider.FindPackageByFile(filename, nc), // actual call
+                nc => _provider.FindPackageByFile(filename,id, nc), // actual call
                 (collection, okToContinue) => ((fastpath, name, version, scheme, summary, source) => {
                     collection.Add(new SoftwareIdentity {
                         FastPath = fastpath,
@@ -361,12 +485,52 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                 }));
         }
 
-        public CancellableEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, Callback c) {
+        public int StartFind(Callback c) {
+            return _provider.StartFind(c);
+        }
+
+        public CancellableEnumerable<SoftwareIdentity> CompleteFind(int i, Callback c) {
+            var providerName = Name;
+
+            return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
+               c, // inherited callback
+               nc => _provider.CompleteFind(i, nc), // actual call
+               (collection, okToContinue) => ((fastpath, name, version, scheme, summary, source) => {
+                   collection.Add(new SoftwareIdentity {
+                       FastPath = fastpath,
+                       Name = name,
+                       Version = version,
+                       VersionScheme = scheme,
+                       Summary = summary,
+                       ProviderName = providerName,
+                       Source = source,
+                       Status = "Available"
+                   });
+                   return okToContinue();
+               }));
+        }
+
+        public CancellableEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, Callback c) {
+            var id = StartFind(c);
+            return new CancellableEnumerable<SoftwareIdentity>( new CancellationTokenSource(), names.SelectMany(each => FindPackage(each, requiredVersion, minimumVersion, maximumVersion, id, c)).Concat(CompleteFind(id, c)));
+        }
+
+        public CancellableEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, Callback c) {
+            var id = StartFind(c);
+            return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), uris.SelectMany(each => FindPackageByUri(each, id, c)).Concat(CompleteFind(id, c)));
+        }
+
+        public CancellableEnumerable<SoftwareIdentity> FindPackagesByFiles(string[] filenames, Callback c) {
+            var id = StartFind(c);
+            return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), filenames.SelectMany(each => FindPackageByFile(each, id, c)).Concat(CompleteFind(id, c)));
+        }
+
+        public CancellableEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c) {
             var providerName = Name;
 
             return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
                 c, // inherited callback
-                nc => _provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, nc), // actual call
+                nc => _provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, nc), // actual call
                 (collection, okToContinue) => ((fastpath, n, version, scheme, summary, source) => {
                     collection.Add(new SoftwareIdentity {
                         FastPath = fastpath,
@@ -512,12 +676,12 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             return result;
         }
 
-        public CancellableEnumerable<OptionDefinition> GetOptionDefinitons(OptionCategory operation, Callback c) {
-            return CallAndCollectResults<OptionDefinition, YieldOptionDefinition>(
+        public CancellableEnumerable<DynamicOption> GetOptionDefinitons(OptionCategory operation, Callback c) {
+            return CallAndCollectResults<DynamicOption, YieldOptionDefinition>(
                 c,
-                nc => _provider.GetOptionDefinitions((int)operation, nc),
+                nc => _provider.GetDynamicOptions((int)operation, nc),
                 (collection, okToContinue) => ((category, name, type, isRequired, values) => {
-                    collection.Add(new OptionDefinition {
+                    collection.Add(new DynamicOption {
                         Category = category,
                         Name = name,
                         Type = type,

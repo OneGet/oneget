@@ -18,6 +18,7 @@ namespace Microsoft.OneGet.Core.DuckTyping {
     using System.Linq;
     using System.Reflection;
     using System.Runtime.InteropServices;
+    using AppDomains;
     using Extensions;
 
     public static class DuckTypedExtensions {
@@ -50,6 +51,14 @@ namespace Microsoft.OneGet.Core.DuckTyping {
             }
             return Enumerable.Empty<FieldInfo>();
         }
+
+        internal static IEnumerable<PropertyInfo> GetPublicProperties(this Type candidateType) {
+            if (candidateType != null) {
+                return candidateType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            }
+            return Enumerable.Empty<PropertyInfo>();
+        }
+
 
         public static Type[] WhereCompatibleWith<T>(this IEnumerable<Type> types) {
             return types.Where(each => typeof (T).IsTypeCompatible(each)).ToArray();

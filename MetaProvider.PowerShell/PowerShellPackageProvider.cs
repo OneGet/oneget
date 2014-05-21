@@ -15,11 +15,8 @@
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Management.Automation;
-    using System.Text.RegularExpressions;
     using Core;
-    using Core.AppDomains;
     using Core.Extensions;
     using Utility;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
@@ -27,6 +24,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     public interface IYieldable {
         void YieldResult(Request r);
     }
+
     public class SoftwareIdentity : IYieldable {
         public void YieldResult(Request r) {
             r.YieldPackage("", "", "", "", "", "");
@@ -38,19 +36,24 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
     }
 
-    public class Option : IYieldable {
+    public class DynamicOption : IYieldable {
         public void YieldResult(Request r) {
         }
     }
 
     internal class PowerShellProviderBase : IDisposable {
+        private readonly Dictionary<string, CommandInfo> _methods = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
         private PSModuleInfo _module;
         private DynamicPowershell _powershell;
         private DynamicPowershellResult _result;
-        private readonly Dictionary<string, CommandInfo> _methods = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
 
         public PowerShellProviderBase(DynamicPowershell ps, PSModuleInfo module) {
             _powershell = ps;
+        }
+
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing) {
@@ -77,16 +80,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             // hmm, it is possible to get the parameter types to match better when binding.
             // module.ExportedFunctions.FirstOrDefault().Value.Parameters.Values.First().ParameterType
-
-        }
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         protected object CallPowerShell(PowerShellRequest request, params object[] args) {
-
             _powershell["request"] = request;
 
             try {
@@ -106,29 +102,24 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     var y = value as IYieldable;
                     if (y != null) {
                         y.YieldResult(request);
-                    }
-                    else {
+                    } else {
                         finalValue = result;
                     }
                 }
                 return finalValue;
-
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.Dump();
-            }
-            finally {
+            } finally {
                 _powershell["request"] = null;
             }
             return null;
         }
-
     }
 
     internal class PowerShellRequest : Request {
         internal CommandInfo CommandInfo;
 
-        internal PowerShellRequest(Callback c, PowerShellProviderBase provider, string methodName ) : base(c) {
+        internal PowerShellRequest(Callback c, PowerShellProviderBase provider, string methodName) : base(c) {
             CommandInfo = provider.GetMethod(methodName);
             if (CommandInfo == null) {
                 Debug("METHOD_NOT_IMPLEMENTED", methodName);
@@ -140,11 +131,11 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 return CommandInfo != null;
             }
         }
-
     }
 
     internal class PowerShellPackageProvider : PowerShellProviderBase {
-        public PowerShellPackageProvider(DynamicPowershell ps, PSModuleInfo module) : base(ps,module) {
+
+        public PowerShellPackageProvider(DynamicPowershell ps, PSModuleInfo module) : base(ps, module) {
         }
 
         public bool IsMethodImplemented(string methodName) {
@@ -153,173 +144,187 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         #region implement PackageProvider-interface
 
-        public void AddPackageSource(string name, string location, bool trusted, Callback c){
-            using (var request = new PowerShellRequest(c,this,"AddPackageSource")) {
+        public void AddPackageSource(string name, string location, bool trusted, Callback c) {
+            using (var request = new PowerShellRequest(c, this, "AddPackageSource")) {
                 if (request.IsImplemented) {
                     CallPowerShell(request, name, location, trusted);
                 }
             }
-
         }
-        public bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, Callback c){
+        public bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c) {
             using (var request = new PowerShellRequest(c, this, "FindPackage")) {
                 if (request.IsImplemented) {
                 }
-
             }
-            return  default(bool);
+            return default(bool);
         }
-        public bool FindPackageByFile(string file, Callback c){
+        public bool FindPackageByFile(string file, int id, Callback c) {
             using (var request = new PowerShellRequest(c, this, "FindPackageByFile")) {
                 if (request.IsImplemented) {
                 }
             }
 
-            return  default(bool);
+            return default(bool);
         }
-        public bool FindPackageByUri(Uri uri, Callback c){
+        public bool FindPackageByUri(Uri uri, int id, Callback c) {
             using (var request = new PowerShellRequest(c, this, "FindPackageByUri")) {
                 if (request.IsImplemented) {
                 }
             }
-            return  default(bool);
+            return default(bool);
         }
-        public bool GetInstalledPackages(string name, Callback c){
+        public bool GetInstalledPackages(string name, Callback c) {
             using (var request = new PowerShellRequest(c, this, "GetInstalledPackages")) {
                 if (request.IsImplemented) {
                 }
             }
 
-            return  default(bool);
+            return default(bool);
         }
-        public void GetOptionDefinitions(int category, Callback c) {
-            using (var request = new PowerShellRequest(c, this, "GetOptionDefinitions")) {
+        public void GetDynamicOptions(int category, Callback c) {
+            using (var request = new PowerShellRequest(c, this, "GetDynamicOptions")) {
                 if (request.IsImplemented) {
                 }
             }
-
         }
 
         /// <summary>
-            /// Returns the name of the Provider. Doesn't need a callback .
-            /// </summary>
-            /// <required/>
-            /// <returns>the name of the package provider</returns>
-        public string GetPackageProviderName(){
-
-            return  "modulename";
+        ///     Returns the name of the Provider. Doesn't need a callback .
+        /// </summary>
+        /// <required />
+        /// <returns>the name of the package provider</returns>
+        public string GetPackageProviderName() {
+            return "modulename";
         }
-        public bool GetPackageSources(Callback c){
-
+        public bool GetPackageSources(Callback c) {
             using (var request = new PowerShellRequest(c, this, "GetPackageSources")) {
                 if (request.IsImplemented) {
                 }
             }
-            return  default(bool);
+            return default(bool);
         }
-        public void InitializeProvider(Callback c){
+        public void InitializeProvider(Callback c) {
             using (var request = new PowerShellRequest(c, this, "InitializeProvider")) {
                 if (request.IsImplemented) {
                 }
             }
         }
-        public bool InstallPackage(string fastPath, Callback c){
+        public bool InstallPackage(string fastPath, Callback c) {
             using (var request = new PowerShellRequest(c, this, "InstallPackage")) {
                 if (request.IsImplemented) {
                 }
             }
 
-            return  default(bool);
+            return default(bool);
         }
-        public void RemovePackageSource(string name, Callback c){
+        public void RemovePackageSource(string name, Callback c) {
             using (var request = new PowerShellRequest(c, this, "RemovePackageSource")) {
                 if (request.IsImplemented) {
                 }
             }
-
         }
-        public bool UninstallPackage(string fastPath, Callback c){
+        public bool UninstallPackage(string fastPath, Callback c) {
             using (var request = new PowerShellRequest(c, this, "UninstallPackage")) {
                 if (request.IsImplemented) {
-
                 }
             }
-            return  default(bool);
+            return default(bool);
         }
-        public void GetFeatures(Callback c){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
+        public void GetFeatures(Callback c) {
+            // TODO: Fill in implementation
+            // Delete this method if you do not need to implement it
+            // Please don't throw an not implemented exception, it's not optimal.
             using (var request = new Request(c)) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'GetFeatures'" );
+                request.Debug("Information", "Calling 'GetFeatures'");
             }
-
         }
 
         // --- Optimization features -----------------------------------------------------------------------------------------------------
-        public IEnumerable<string> GetMagicSignatures(){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
+        public IEnumerable<string> GetMagicSignatures() {
+            // TODO: Fill in implementation
+            // Delete this method if you do not need to implement it
+            // Please don't throw an not implemented exception, it's not optimal.
 
-            return  default(IEnumerable<string>);
+            return default(IEnumerable<string>);
         }
-        public IEnumerable<string> GetSchemes(){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
+        public IEnumerable<string> GetSchemes() {
+            // TODO: Fill in implementation
+            // Delete this method if you do not need to implement it
+            // Please don't throw an not implemented exception, it's not optimal.
 
-            return  default(IEnumerable<string>);
+            return default(IEnumerable<string>);
         }
-        public IEnumerable<string> GetFileExtensions(){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
+        public IEnumerable<string> GetFileExtensions() {
+            // TODO: Fill in implementation
+            // Delete this method if you do not need to implement it
+            // Please don't throw an not implemented exception, it's not optimal.
 
-            return  default(IEnumerable<string>);
+            return default(IEnumerable<string>);
         }
-        public bool GetIsSourceRequired(){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
+        public bool GetIsSourceRequired() {
+            // TODO: Fill in implementation
+            // Delete this method if you do not need to implement it
+            // Please don't throw an not implemented exception, it's not optimal.
 
-            return  default(bool);
+            return default(bool);
         }
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        public bool DownloadPackage(string fastPath, string location, Callback c){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
+        public bool DownloadPackage(string fastPath, string location, Callback c) {
+            // TODO: Fill in implementation
+            // Delete this method if you do not need to implement it
+            // Please don't throw an not implemented exception, it's not optimal.
             using (var request = new Request(c)) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'DownloadPackage'" );
+                request.Debug("Information", "Calling 'DownloadPackage'");
             }
 
-            return  default(bool);
+            return default(bool);
         }
-        public bool GetPackageDependencies(string fastPath, Callback c){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
+        public bool GetPackageDependencies(string fastPath, Callback c) {
+            // TODO: Fill in implementation
+            // Delete this method if you do not need to implement it
+            // Please don't throw an not implemented exception, it's not optimal.
             using (var request = new Request(c)) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'GetPackageDependencies'" );
+                request.Debug("Information", "Calling 'GetPackageDependencies'");
             }
 
-            return  default(bool);
+            return default(bool);
         }
-        public bool GetPackageDetails(string fastPath, Callback c){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
+        public bool GetPackageDetails(string fastPath, Callback c) {
+            // TODO: Fill in implementation
+            // Delete this method if you do not need to implement it
+            // Please don't throw an not implemented exception, it's not optimal.
             using (var request = new Request(c)) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'GetPackageDetails'" );
+                request.Debug("Information", "Calling 'GetPackageDetails'");
             }
 
-            return  default(bool);
+            return default(bool);
+        }
+
+        private static int findId = 1;
+        public int StartFind(Callback c) {
+            lock (this) {
+                return findId++;
+            }
+        }
+        public bool CompleteFind(int id, Callback c) {
+            if (id == 0) {
+                return false;
+            }
+
+            // TODO: Fill in implementation
+            // Delete this method if you do not need to implement it
+            // Please don't throw an not implemented exception, it's not optimal.
+            using (var request = new Request(c)) {
+                // use the request object to interact with the OneGet core:
+                request.Debug("Information", "Calling 'CompleteFind'");
+            }
+
+            return true;
         }
 
         #endregion
@@ -384,7 +389,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             return Delegate.CreateDelegate(targetDelegateType, cmd, "Invoke");
         }
-#endif 
-
+#endif
     }
 }

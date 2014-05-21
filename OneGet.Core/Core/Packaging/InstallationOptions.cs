@@ -38,7 +38,7 @@ namespace Microsoft.OneGet.Core.Packaging {
         Dependency
     }
 
-    public class OptionDefinition : MarshalByRefObject {
+    public class DynamicOption : MarshalByRefObject {
         private IEnumerable<string> _values;
         public OptionCategory Category { get; internal set; }
         public string Name { get; internal set; }

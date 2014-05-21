@@ -16,10 +16,80 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell.Utility {
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
+    using Core.Extensions;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
 
     public class Request : IDisposable {
         private Func<string, IEnumerable<object>, object> _callback;
+
+        public static implicit operator Callback(Request request) {
+            return request._callback;
+        }
+
+        public Request Override(IEnumerable<string> sources, Hashtable options) {
+            // create a new instance of this request,
+            // but substitute the sources and options
+            // for the ones that it's providing.
+
+            var packageSources = new PackageSources(() => {
+                return sources;
+            });
+
+            var getOptionKeys = new GetOptionKeys((category) => {
+                return options.Keys.ToEnumerable<string>();
+            });
+
+            var getOptionValues = new GetOptionValues((category, key) => {
+                foreach (var k in options.Keys) {
+                    if (string.Equals(k.ToString(), key, StringComparison.OrdinalIgnoreCase)) {
+                        // todo: must return collection of items.
+                        return null; // options[k];
+                    }
+                }
+                return null;
+            });
+
+            return new Request( new Callback((fn, args) => {
+                if (string.IsNullOrEmpty(fn)) {
+                    var results = _callback(null, null) as IEnumerable<string>;
+                    if (results == null) {
+                        return null;
+                    }
+                    return results.Union(new[] {
+                        "PackageSources",
+                        "GetOptionKeys",
+                        "GetOptionValues"
+                    });
+
+                }
+
+                if (args == null) {
+                    switch (fn.ToLowerInvariant()) {
+                        case "packagesources":
+                            return packageSources;
+                        case "getoptionkeys":
+                            return getOptionKeys;
+                        case "getoptionvalues":
+                            return getOptionValues;
+                    }
+                    return _callback(fn,null);
+                }
+
+                switch (fn.ToLowerInvariant()) {
+                    case "packagesources":
+                        return packageSources();
+                    case "getoptionkeys":
+                        var a = args.ToArray();
+                        return getOptionKeys((string)a[0]);
+                    case "getoptionvalues":
+                        var b = args.ToArray();
+                        return getOptionValues((string)b[0], (string)b[1]);
+                }
+
+                return _callback(fn, args);
+            }));
+        }
 
         internal Request(Func<string, IEnumerable<object>, object> c) {
             _callback = c;

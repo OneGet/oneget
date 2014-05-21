@@ -24,7 +24,7 @@ namespace Microsoft.PowerShell.OneGet.Core {
     using Microsoft.OneGet.Core.Providers.Package;
 
     internal static class DynamicParametersExtensions {
-        public static RuntimeDefinedParameter CreateRuntimeDynamicParameter(this OptionDefinition definition ) {
+        public static RuntimeDefinedParameter CreateRuntimeDynamicParameter(this DynamicOption definition ) {
             var values = definition.PossibleValues.ToArray();
 
             Type parameterType;

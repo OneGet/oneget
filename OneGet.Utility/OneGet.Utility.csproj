@@ -66,6 +66,9 @@
     <Compile Include="Core\Collections\ReadOnlyDelegateDictionary.cs" />
     <Compile Include="Core\Collections\VirtualEnumerator.cs" />
     <Compile Include="Core\DuckTyping\DuckTypedExtensions.cs" />
+    <Compile Include="Core\DuckTyping\DynamicInterface.cs" />
+    <Compile Include="Core\DuckTyping\DynamicInterfaceExtensions.cs" />
+    <Compile Include="Core\DuckTyping\FluentIlExtensions.cs" />
     <Compile Include="Core\DuckTyping\PrivateProxy.cs" />
     <Compile Include="Core\DuckTyping\RemotableDynamicObject.cs" />
     <Compile Include="Core\Extensions\CancellationTokenSourceExtensions.cs" />

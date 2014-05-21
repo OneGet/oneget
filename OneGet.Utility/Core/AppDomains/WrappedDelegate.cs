@@ -23,7 +23,6 @@ namespace Microsoft.OneGet.Core.AppDomains {
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
 
     internal delegate Delegate CreateDelegate(string memberName, string[] parameterNames, Type[] parameterTypes, Type returnType);
-    internal delegate bool HasMatchingMember(string memberName, string[] parameterNames, Type[] parameterTypes, Type returnType);
 
     public static class WrappedDelegate {
 
@@ -57,6 +56,7 @@ namespace Microsoft.OneGet.Core.AppDomains {
                 throw new ApplicationException("Not a delegate.");
             }
 
+            
             var member = instance.GetType().GetMember(methodName);
 
             if (member.Length > 0) {
