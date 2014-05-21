@@ -12,7 +12,7 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.OneGet.ServiceProvider.Common.Utility {
+namespace Microsoft.OneGet.ServicesProvider.Common.Utility {
     using System;
     using System.Collections.Generic;
 

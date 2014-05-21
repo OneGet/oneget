@@ -32,6 +32,8 @@ namespace Microsoft.OneGet.Test {
         string Four(int a);
 
         string Five(int a, string b);
+
+        bool IsImplemented(string name);
     }
 
     public class DynInst {
@@ -72,6 +74,12 @@ namespace Microsoft.OneGet.Test {
             Assert.Equal("Three", idyn.Three());
             Assert.Equal("Four4", idyn.Four(4));
             Assert.Equal("Four5hi", idyn.Five(5, "hi"));
+
+            Assert.True(idyn.IsImplemented("One"));
+            Assert.True(idyn.IsImplemented("Two"));
+            Assert.True(idyn.IsImplemented("Three"));
+            Assert.True(idyn.IsImplemented("Four"));
+            Assert.True(idyn.IsImplemented("Five"));
         }
 
         [Fact]
@@ -82,6 +90,13 @@ namespace Microsoft.OneGet.Test {
                 One = new Action(() => {}),
                 Two = new Func<bool>(() => {return true;})
             });
+
+            Assert.True(idyn2.IsImplemented("One"));
+            Assert.True(idyn2.IsImplemented("Two"));
+            Assert.False(idyn2.IsImplemented("Three"));
+            Assert.False(idyn2.IsImplemented("Four"));
+            Assert.False(idyn2.IsImplemented("Five"));
+
 
             idyn2.One();
 

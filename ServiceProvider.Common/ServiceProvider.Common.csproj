@@ -7,8 +7,8 @@
     <ProjectGuid>{AA5B27C8-1047-4088-8602-B4B151973118}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.OneGet.ServiceProvider.Common</RootNamespace>
-    <AssemblyName>Microsoft.OneGet.ServiceProvider.Common</AssemblyName>
+    <RootNamespace>Microsoft.OneGet.ServicesProvider.Common</RootNamespace>
+    <AssemblyName>Microsoft.OneGet.ServicesProvider.Common</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>

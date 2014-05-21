@@ -13,91 +13,44 @@
 //  
 
 namespace Microsoft.OneGet.Core.Providers.Meta {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
     using DuckTyping;
-    using Extensions;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
 
-    public class NewMetaProvider : DuckTypedClass {
-        public NewMetaProvider(object instance)
-            : base(instance) {
-            #region generate-memberinit MetaProvider-interface
-            CreateProvider = GetOptionalDelegate<Interface.CreateProvider>(instance);
-            GetMetaProviderName = GetOptionalDelegate<Interface.GetMetaProviderName>(instance);
-            GetProviderNames = GetOptionalDelegate<Interface.GetProviderNames>(instance);
-            InitializeProvider = GetOptionalDelegate<Interface.InitializeProvider>(instance);
-            #endregion
+    public interface IMetaProvider {
+        bool IsImplemented(string method);
 
-        }
+        #region declare MetaProvider-interface
 
-        public NewMetaProvider(Type type)
-            : this(Activator.CreateInstance(type)) {
-        }
+        /// <summary>
+        ///     Will instantiate an instance of a provider given it's name
+        /// </summary>
+        /// <param name="name">the name of the provider to create</param>
+        /// <returns>an instance of the provider.</returns>
+        [Required]
+        object CreateProvider(string name);
 
-        public static bool IsInstanceCompatible(object instance) {
-            return instance != null && IsTypeCompatible(instance.GetType());
-        }
+        /// <summary>
+        ///     Gets the name of this MetaProvider
+        /// </summary>
+        /// <returns>the name of the MetaProvider.</returns>
+        [Required]
+        string GetMetaProviderName();
 
-        public static bool IsTypeCompatible(Type type) {
-            if (type == null) {
-                return false;
-            }
+        /// <summary>
+        ///     Returns a collection of all the names of Providers this MetaProvider can create.
+        /// </summary>
+        /// <returns>a collection of all the names of Providers this MetaProvider can create</returns>
+        [Required]
+        IEnumerable<string> GetProviderNames();
 
-            var publicMethods = type.GetPublicMethods().ToArray();
+        /// <summary>
+        ///     Allows the MetaProvider to do one-time initialization.
+        ///     This is called after the MetaProvider is instantiated and DuckTyped.
+        /// </summary>
+        /// <param name="c">Callback Delegate Reference</param>
+        void InitializeProvider(Callback c);
 
-            return true 
-
-                #region generate-istypecompatible MetaProvider-interface
-
-                #endregion
-
-                ;
-        }
-
-        public class Interface {
-            #region declare MetaProvider-interface
-
-            /// <summary>
-            ///     Will instantiate an instance of a provider given it's name
-            /// </summary>
-            /// <required />
-            /// <param name="name">the name of the provider to create</param>
-            /// <returns>an instance of the provider.</returns>
-            public delegate object CreateProvider(string name);
-
-            /// <summary>
-            ///     Gets the name of this MetaProvider
-            /// </summary>
-            /// <required />
-            /// <returns>the name of the MetaProvider.</returns>
-            public delegate string GetMetaProviderName();
-
-            /// <summary>
-            ///     Returns a collection of all the names of Providers this MetaProvider can create.
-            /// </summary>
-            /// <required />
-            /// <returns>a collection of all the names of Providers this MetaProvider can create</returns>
-            public delegate IEnumerable<string> GetProviderNames();
-
-            /// <summary>
-            ///     Allows the MetaProvider to do one-time initialization.
-            ///     This is called after the MetaProvider is instantiated and DuckTyped.
-            /// </summary>
-            /// <optional />
-            /// <param name="c">Callback Delegate Reference</param>
-            public delegate void InitializeProvider(Callback c);
-
-            #endregion
-        }
-
-        #region generate-members MetaProvider-interface
-        internal readonly Interface.CreateProvider CreateProvider;
-        internal readonly Interface.GetMetaProviderName GetMetaProviderName;
-        internal readonly Interface.GetProviderNames GetProviderNames;
-        internal readonly Interface.InitializeProvider InitializeProvider;
         #endregion
-
     }
 }

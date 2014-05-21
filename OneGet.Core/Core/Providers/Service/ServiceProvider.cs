@@ -22,119 +22,45 @@ namespace Microsoft.OneGet.Core.Providers.Service {
     using Extensions;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
 
-    public class ServiceProviderInstance : DuckTypedClass {
-        internal ServiceProviderInstance(object instance)
-            : base(instance) {
-            #region generate-memberinit ServiceProvider-interface
-            GetServiceProviderName = GetRequiredDelegate<Interface.GetServiceProviderName>(instance);
-            InitializeProvider = GetOptionalDelegate<Interface.InitializeProvider>(instance);
-            SupportedDownloadSchemes = GetOptionalDelegate<Interface.SupportedDownloadSchemes>(instance);
-            DownloadFile = GetOptionalDelegate<Interface.DownloadFile>(instance);
-            SupportedArchiveExtensions = GetOptionalDelegate<Interface.SupportedArchiveExtensions>(instance);
-            IsSupportedArchive = GetOptionalDelegate<Interface.IsSupportedArchive>(instance);
-            UnpackArchive = GetOptionalDelegate<Interface.UnpackArchive>(instance);
-            #endregion
+    public interface IServicesProvider {
+        bool IsImplemented(string method);
+        #region declare ServicesProvider-interface
+        /// <summary>
+        /// Returns the name of the Provider. Doesn't need callback .
+        /// </summary>
+        /// <returns></returns>
+        [Required]
+        string GetServicesProviderName();
 
-        }
+        void InitializeProvider(Callback c);
 
-        #region generate-members ServiceProvider-interface
-        internal readonly Interface.GetServiceProviderName GetServiceProviderName;
-        internal readonly Interface.InitializeProvider InitializeProvider;
-        internal readonly Interface.SupportedDownloadSchemes SupportedDownloadSchemes;
-        internal readonly Interface.DownloadFile DownloadFile;
-        internal readonly Interface.SupportedArchiveExtensions SupportedArchiveExtensions;
-        internal readonly Interface.IsSupportedArchive IsSupportedArchive;
-        internal readonly Interface.UnpackArchive UnpackArchive;
+        IEnumerable<string> SupportedDownloadSchemes(Callback c);
+        void DownloadFile(Uri remoteLocation, string localFilename, Callback c);
+
+        IEnumerable<string> SupportedArchiveExtensions(Callback c);
+        bool IsSupportedArchive(string localFilename, Callback c);
+
+        void UnpackArchive(string localFilename, string destinationFolder, Callback c);
+
         #endregion
-
-        internal ServiceProviderInstance(Type type)
-            : this(Activator.CreateInstance(type)) {
-        }
-
-        public static bool IsInstanceCompatible(object instance) {
-            return instance != null && IsTypeCompatible(instance.GetType());
-        }
-
-        public static bool IsTypeCompatible(Type type) {
-            if (type == null) {
-                return false;
-            }
-
-            var publicMethods = type.GetPublicMethods().ToArray();
-
-            return true
-            #region generate-istypecompatible ServiceProvider-interface
-                && publicMethods.Any(each => DuckTypedExtensions.IsNameACloseEnoughMatch(each.Name, "GetServiceProviderName") && typeof (Interface.GetServiceProviderName).IsDelegateAssignableFromMethod(each))
-            #endregion
-
-            ;
-        }
-
-        public class Interface {
-            #region declare ServiceProvider-interface
-            /// <summary>
-            /// Returns the name of the Provider. Doesn't need callback .
-            /// </summary>
-            /// <required/>
-            /// <returns></returns>
-            internal delegate string GetServiceProviderName();
-
-            internal delegate void InitializeProvider(Callback c);
-
-            internal delegate IEnumerable<string> SupportedDownloadSchemes(Callback c);
-            internal delegate void DownloadFile(Uri remoteLocation, string localFilename, Callback c);
-
-            internal delegate IEnumerable<string> SupportedArchiveExtensions(Callback c);
-            internal delegate bool IsSupportedArchive(string localFilename, Callback c);
-
-            internal delegate void UnpackArchive(string localFilename, string destinationFolder ,Callback c);
-
-            #endregion
-        }
     }
 
-    public enum ServiceProviderApi {
-        #region generate-enum ServiceProvider-interface
-        GetServiceProviderName,
-        InitializeProvider,
-        SupportedDownloadSchemes,
-        DownloadFile,
-        SupportedArchiveExtensions,
-        IsSupportedArchive,
-        UnpackArchive,
-        #endregion
+    
 
-    }
 
-    public class ServiceProvider {
-        private readonly ServiceProviderInstance _provider;
+    public class ServicesProvider : MarshalByRefObject {
+        private readonly IServicesProvider _provider;
 
-        internal ServiceProvider(ServiceProviderInstance provider) {
+        internal ServicesProvider(IServicesProvider provider) {
             _provider = provider;
         }
 
-        public bool IsSupported(ServiceProviderApi api) {
-            switch (api) {
-                #region generate-issupported ServiceProvider-interface
-                 case ServiceProviderApi.GetServiceProviderName:
-                    return _provider.GetServiceProviderName.IsSupported();
-                 case ServiceProviderApi.InitializeProvider:
-                    return _provider.InitializeProvider.IsSupported();
-                 case ServiceProviderApi.SupportedDownloadSchemes:
-                    return _provider.SupportedDownloadSchemes.IsSupported();
-                 case ServiceProviderApi.DownloadFile:
-                    return _provider.DownloadFile.IsSupported();
-                 case ServiceProviderApi.SupportedArchiveExtensions:
-                    return _provider.SupportedArchiveExtensions.IsSupported();
-                 case ServiceProviderApi.IsSupportedArchive:
-                    return _provider.IsSupportedArchive.IsSupported();
-                 case ServiceProviderApi.UnpackArchive:
-                    return _provider.UnpackArchive.IsSupported();
-                #endregion
-
-            }
-            return false;
+        public bool IsImplemented(string method) {
+            return _provider.IsImplemented(method);
         }
 
+        public string Name { get {
+            return _provider.GetServicesProviderName();
+        } }
     }
 }

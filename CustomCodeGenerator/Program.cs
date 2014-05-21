@@ -176,6 +176,7 @@ namespace CustomCodeGenerator {
 
             var parameterRx = new Regex(@"\s*(?<type>[\w,\<\>]+)\s*(?<name>\w+)\s*(?<init>=\s*[\w\.]*\s*)?\s*?(?:\,)?");
             var delegateRx = new Regex(@"\s*(?<preamble>.*?)(?<scope>public|internal)\s*delegate\s*(?<TRet>\S*)\s*(?<name>\w+)\((?<params>.*?)\).*?;", RegexOptions.Singleline);
+            var interfaceRx = new Regex(@"\s*(?<preamble>.*?)\s*(?<TRet>\S*)\s*(?<name>\w+)\((?<params>.*?)\).*?;", RegexOptions.Singleline);
 
             // ------------------------------------------------------------------------------------------------------------------------------
             // scan for #region declare *-apis
@@ -203,7 +204,7 @@ namespace CustomCodeGenerator {
                 // yieldWithType = ScanForYieldWithAttribute(match.GetValue("preamble").TrimWhitespace(),""),
                 delegateName = match.GetValue("name"),
                 psDelegateName = GetPsDelegateName( match.GetValue("name")),
-                scope = match.GetValue("scope"),
+                // scope = match.GetValue("scope"),
                 parameterText = match.GetValue("params") ,
                 isVoid = match.GetValue("TRet") == "void",
                 returnKeyword = match.GetValue("TRet") == "void" ? "" : "return ",
@@ -269,7 +270,7 @@ namespace CustomCodeGenerator {
                 WhiteSpace = match.GetValue("whitespace")
             })).ToArray();
 
-            var interfaceDeclarations = interfaces.SelectMany(region => delegateRx.FindIn(region.Content).Select(match => new {
+            var interfaceDeclarations = interfaces.SelectMany(region => interfaceRx.FindIn(region.Content).Select(match => new {
                 category = region.Name,
                 whiteSpace = region.WhiteSpace,
                 preamble = RemoveReturnsAttribute(match.GetValue("preamble").TrimWhitespace()),
@@ -279,7 +280,7 @@ namespace CustomCodeGenerator {
                 // yieldWithType = ScanForYieldWithAttribute(match.GetValue("preamble").TrimWhitespace(), ""),
                 delegateName = match.GetValue("name"),
                 psDelegateName = GetPsDelegateName(match.GetValue("name")),
-                scope = match.GetValue("scope"),
+                // scope = match.GetValue("scope"),
                 parameterText = match.GetValue("params"),
                 isVoid = match.GetValue("TRet") == "void",
                 returnKeyword = match.GetValue("TRet") == "void" ? "" : "return ",
@@ -597,10 +598,14 @@ function ${psDelegateName} {{
                         return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"{1}${delegateName},".format(fn, whitespace)).Combined();
                     });
 
+                    /*
                     text = ReplaceRegion("generate-issupported", "interface", text, (name, content, whitespace) => {
                         return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"{1} case {2}Api.${delegateName}:
 {1}    return _provider.${delegateName}.IsSupported();".format(fn, whitespace,name)).Combined();
                     });
+                    */
+
+                    
 
                     text = ReplaceRegion("generate-istypecompatible", "interface", text, (name, content, whitespace) => {
                         return interfaceDeclarations.Where(each => each.category == name).Where( fn => fn.IsRequired ).Select(fn => @"{1}    && publicMethods.Any(each => DuckTypedExtensions.IsNameACloseEnoughMatch(each.Name, ""${delegateName}"") && typeof (Interface.${delegateName}).IsDelegateAssignableFromMethod(each))".format(fn, whitespace, name)).Combined();

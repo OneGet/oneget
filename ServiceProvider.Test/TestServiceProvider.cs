@@ -12,19 +12,19 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.ServiceProvider.Test {
+namespace Microsoft.OneGet.ServicesProvider.Test {
     using System;
     using System.Collections.Generic;
     using Utility;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
 
-    public class TestServiceProvider {
-        #region implement ServiceProvider-interface
+    public class TestServicesProvider {
+        #region implement ServicesProvider-interface
 /// <summary>
         ///     Returns the name of the Provider. Doesn't need callback .
         /// </summary>
         /// <returns></returns>
-        public string GetServiceProviderName() {
+        public string GetServicesProviderName() {
             // TODO: Fill in implementation
             // Delete this method if you do not need to implement it
             // Please don't throw an not implemented exception, it's not optimal.

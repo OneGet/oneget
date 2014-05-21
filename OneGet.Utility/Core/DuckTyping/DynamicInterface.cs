@@ -21,6 +21,10 @@ namespace Microsoft.OneGet.Core.DuckTyping {
     using AppDomains;
     using Extensions;
 
+
+    internal class RequiredAttribute : Attribute {
+    }
+
     public class DynamicInterface {
         private static int _counter = 1;
         private readonly Dictionary<TwoTypes, bool> _compatibilityMatrix = new Dictionary<TwoTypes, bool>();
@@ -168,11 +172,29 @@ namespace Microsoft.OneGet.Core.DuckTyping {
             il.Return();
 
             var isMethodImplemented = IsMethodImplentedFunction(actualInstance);
+            var implementedMethods = new HashSet<string>();
+            FieldBuilder implementedMethodsField;
 
             foreach (var method in interfaceType.GetMethods()) {
                 var parameterTypes = method.GetParameterTypes();
                 var methodBuilder = dynamicType.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual, CallingConventions.HasThis, method.ReturnType, parameterTypes);
                 il = methodBuilder.GetILGenerator();
+
+                if (method.Name == "IsImplemented") {
+                    // special case -- the IsImplemented method can give the interface owner information as to
+                    // which methods are actually implemented.
+                    implementedMethodsField = dynamicType.DefineField("__implementedMethods", typeof (HashSet<string>), FieldAttributes.Private);
+
+                    il.LoadThis();
+                    il.LoadField(implementedMethodsField);
+                    il.LoadArgument(1);
+                    il.CallVirutal(typeof(HashSet<string>).GetMethod("Contains"));
+                    il.Return();
+                    
+                    implementedMethods.Add(method.Name);
+                    continue;
+                }
+                
 
                 if (isMethodImplemented(method.Name)) {
                     var instanceMethod = candidateMethods.FindMethod(method);
@@ -188,7 +210,7 @@ namespace Microsoft.OneGet.Core.DuckTyping {
 
                         il.CallVirutal(instanceMethod);
                         il.Return();
-
+                        implementedMethods.Add(method.Name);
                         continue;
                     }
 
@@ -215,10 +237,11 @@ namespace Microsoft.OneGet.Core.DuckTyping {
                             var f = instance.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
                             f.SetValue(instance, instanceDelegate);
                         });
-
+                        implementedMethods.Add(method.Name);
                         continue;
                     }
                 }
+
                 // did not find a matching method or signature, or the instance told us that it doesn't actually support it 
                 // that's ok, if we get here, it must not be a required method.
                 // we'll implement a placeholder method for it.
@@ -276,11 +299,31 @@ namespace Microsoft.OneGet.Core.DuckTyping {
                 action(proxyInstance);
             }
 
+            var imf = proxyType.GetField("__implementedMethods", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (imf != null) {
+                imf.SetValue(proxyInstance, implementedMethods);
+            }
+
             return (T)proxyInstance;
         }
 
         private MethodInfo[] GetRequiredMethods<T>() {
             return _requiredMethods.GetOrAdd(typeof (T), () => typeof (T).GetMethods().Where(each => each.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("RequiredAttribute", StringComparison.OrdinalIgnoreCase))).ToArray());
+        }
+
+        public IEnumerable<Type> FilterTypesCompatibleTo<T>(IEnumerable<Type> types) {
+            if (types == null) {
+                return Enumerable.Empty<Type>();
+            }
+
+            return types.Where(IsTypeCompatible<T>);
+        }
+
+        public IEnumerable<Type> FilterTypesCompatibleTo<T>(Assembly assembly) {
+            if (assembly == null) {
+                return Enumerable.Empty<Type>();
+            }
+            return assembly.GetTypes().Where(each => each.IsPublic && each.BaseType != typeof(MulticastDelegate) && IsTypeCompatible<T>(each));
         }
     }
 }

@@ -12,19 +12,19 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.ServiceProvider.Common {
+namespace Microsoft.OneGet.ServicesProvider.Common {
     using System;
     using System.Collections.Generic;
     using Utility;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
 
-    public class CommonServiceProvider {
-        #region implement ServiceProvider-interface
+    public class CommonServicesProvider {
+        #region implement ServicesProvider-interface
 /// <summary>
         ///     Returns the name of the Provider. Doesn't need callback .
         /// </summary>
         /// <returns></returns>
-        public string GetServiceProviderName() {
+        public string GetServicesProviderName() {
             return "Common";
         }
         public void InitializeProvider(Callback c){

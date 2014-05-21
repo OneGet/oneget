@@ -45,7 +45,7 @@ namespace Microsoft.OneGet {
     /// </summary>
     public class PackageManagementService : MarshalByRefObject {
         private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>();
-        private readonly IDictionary<string, ServiceProvider> _serviceProviders = new Dictionary<string, ServiceProvider>();
+        private readonly IDictionary<string, ServicesProvider> _servicesProviders = new Dictionary<string, ServicesProvider>();
 
         private static PackageManagementService _instance;
         
@@ -147,12 +147,13 @@ namespace Microsoft.OneGet {
         }
 
         
-        private void AddPackageProvider(string name, PackageProviderInstance provider) {
+        private void AddPackageProvider(string name, IPackageProvider provider) {
             // wrap this in a caller-friendly wrapper 
             _packageProviders.Add(name, new PackageProvider(provider));
         }
-        private void AddServiceProvider(string name, ServiceProviderInstance provider) {
-            _serviceProviders.Add(name, new ServiceProvider(provider));
+
+        private void AddServicesProvider(string name, IServicesProvider provider) {
+            _servicesProviders.Add(name, new ServicesProvider(provider));
         }
 
         /// <summary>
@@ -172,8 +173,8 @@ namespace Microsoft.OneGet {
             var pluginDomain = CreatePluginDomain();
 
             pluginDomain.Invoke(ProviderLoader.AcquireProviders, assemblyPath, callback,
-                 (Action<string, PackageProviderInstance>)(AddPackageProvider),
-                 (Action<string, ServiceProviderInstance>)(AddServiceProvider)
+                 (Action<string, IPackageProvider>)(AddPackageProvider),
+                 (Action<string, IServicesProvider>)(AddServicesProvider)
                 );
 
             return true;
@@ -283,76 +284,75 @@ namespace Microsoft.OneGet {
             return null;
         }
 
-#if AFTER_CTP
-        private static bool TryToLoadNativeProvider(string dllName) {
-            // the idea here is to allow someone to code a provider as a native C DLL
-            // with a specific set of exports that would allow us to dynamically bind to it.
-            //
-            // quite a few options for implementation.
-            // ideally, a very small exported interface that can be queried to ask for
-            // a set of providers.
-            //
-            // I don't see a really good reason to push this one out into a seperate assembly
-            // since it's just an unnecessary further abstraction.
-
-            return false;
-        }
-#endif
     }
 
     internal static class ProviderLoader {
-        internal static void AcquireProviders(string assemblyPath, Callback callback, Action<string, PackageProviderInstance> yieldPackageProvider, Action<string, ServiceProviderInstance> yieldServiceProvider) {
+        internal static void AcquireProviders(string assemblyPath, Callback callback, Action<string, IPackageProvider> yieldPackageProvider, Action<string, IServicesProvider> yieldServicesProvider) {
+            var dynInterface = new DynamicInterface();
+
             var asm = Assembly.LoadFile(assemblyPath);
             if (asm == null) {
                 return;
             }
-            // check to see if the assembly has something that looks like a Provider class
-            var publicTypes = asm.GetTypes().Where(each => each.IsPublic && each.BaseType != typeof(MulticastDelegate)).ToArray();
 
-            // see if there is any MetaProviders that want to hand-craft us some other providers...
-            var metaProviderTypes = publicTypes.Where(NewMetaProvider.IsTypeCompatible);
+            foreach (var provider in dynInterface.FilterTypesCompatibleTo<IMetaProvider>(asm).Select(dynInterface.Create<IMetaProvider>)) {
+                try {
+                    provider.InitializeProvider(callback);
+                    foreach (var name in provider.GetProviderNames()) {
+                        var instance = provider.CreateProvider(name);
+                        if (instance != null) {
 
-            foreach (var providerType in metaProviderTypes) {
-                var provider = new NewMetaProvider(providerType);
-                provider.InitializeProvider(callback);
-                foreach (var name in provider.GetProviderNames()) {
-                    var instance = provider.CreateProvider(name);
-                    if (instance != null) {
-                        if (PackageProviderInstance.IsInstanceCompatible(instance)) {
-                            yieldPackageProvider(name, new PackageProviderInstance(instance));
-                            continue;
-                        }
-                        if (ServiceProviderInstance.IsInstanceCompatible(instance)) {
-                            yieldServiceProvider(name, new ServiceProviderInstance(instance));
-                            continue;
+                            // check if it's a Package Provider
+                            if (dynInterface.IsInstanceCompatible<IPackageProvider>(instance)) {
+                                try {
+                                    var packageProvider = dynInterface.Create<IPackageProvider>(instance);
+                                    packageProvider.InitializeProvider(callback);
+                                    yieldPackageProvider(packageProvider .GetPackageProviderName(), packageProvider );
+                                } catch (Exception e) {
+                                    e.Dump();
+                                }
+                            }
+
+                            // check if it's a Services Provider
+                            if (dynInterface.IsInstanceCompatible<IServicesProvider>(instance)) {
+                                try {
+                                    var servicesProvider = dynInterface.Create<IServicesProvider>(instance);
+                                    servicesProvider.InitializeProvider(callback);
+                                    yieldServicesProvider(servicesProvider.GetServicesProviderName(), servicesProvider);
+                                }
+                                catch (Exception e) {
+                                    e.Dump();
+                                }
+                            }
+
                         }
                     }
+                    
+                }
+                catch (Exception e) {
+                    e.Dump();
                 }
             }
 
-            foreach (var providerType in publicTypes.Where(PackageProviderInstance.IsTypeCompatible)) {
+            foreach (var provider in dynInterface.FilterTypesCompatibleTo<IPackageProvider>(asm).Select(dynInterface.Create<IPackageProvider>)) {
                 try {
-                    var provider = new PackageProviderInstance(providerType);
                     provider.InitializeProvider(callback);
                     yieldPackageProvider(provider.GetPackageProviderName(), provider);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     e.Dump();
                 }
             }
 
-            foreach (var providerType in publicTypes.Where(ServiceProviderInstance.IsTypeCompatible)) {
+            foreach( var provider in dynInterface.FilterTypesCompatibleTo<IServicesProvider >(asm).Select(dynInterface.Create<IServicesProvider >)) {
                 try {
-                    var provider = new ServiceProviderInstance(providerType);
                     provider.InitializeProvider(callback);
-                    yieldServiceProvider(provider.GetServiceProviderName(), provider);
+                    yieldServicesProvider(provider.GetServicesProviderName(), provider);
                 } catch (Exception e) {
                     e.Dump();
                 }
-
             }
 
         }
-       
     }
-
 }
