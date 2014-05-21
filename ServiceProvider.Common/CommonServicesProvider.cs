@@ -80,7 +80,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
 
             return  default(bool);
         }
-        public void UnpackArchive(string localFilename, string destinationFolder ,Callback c){
+        public void UnpackArchive(string localFilename, string destinationFolder, Callback c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.

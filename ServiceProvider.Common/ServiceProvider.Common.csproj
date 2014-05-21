@@ -42,7 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommonServiceProvider.cs" />
+    <Compile Include="CommonServicesProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\CallbackAPIDeclarations.cs" />
     <Compile Include="Utility\CallbackExtensions.cs" />

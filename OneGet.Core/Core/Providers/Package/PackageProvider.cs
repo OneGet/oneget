@@ -41,20 +41,27 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         /// <returns>the name of the package provider</returns>
         [Required]
         string GetPackageProviderName();
+
         void InitializeProvider(Callback c);
 
         void GetFeatures(Callback c);
+
         void GetDynamicOptions(int category, Callback c);
 
         // --- Optimization features -----------------------------------------------------------------------------------------------------
         IEnumerable<string> GetMagicSignatures();
+
         IEnumerable<string> GetSchemes();
+
         IEnumerable<string> GetFileExtensions();
-        bool GetIsSourceRequired(); // or should we imply this from the GetPackageSources() == null/empty?
+
+        bool GetIsSourceRequired(); // or should we imply this from the GetPackageSources == null/empty?
 
         // --- Manages package sources ---------------------------------------------------------------------------------------------------
         void AddPackageSource(string name, string location, bool trusted, Callback c);
+
         bool GetPackageSources(Callback c);
+
         void RemovePackageSource(string name, Callback c);
 
         int StartFind(Callback c);
@@ -67,7 +74,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         /// 
         /// Notes:
         /// 
-        ///  - If a call to GetPackageSources() on this object returns no sources, the cmdlet won't call FindPackage on this source
+        ///  - If a call to GetPackageSources on this object returns no sources, the cmdlet won't call FindPackage on this source
         ///  - (ie, the expectation is that you have to provide a source in order to use find package)
         /// </summary>
         /// <param name="name"></param>
