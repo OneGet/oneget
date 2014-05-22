@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Microsoft.OneGet.Core.DuckTyping {
+﻿namespace Microsoft.OneGet.Core.Dynamic {
+    using System;
+    using System.Collections.Generic;
     using System.Dynamic;
     using System.Linq.Expressions;
     using System.Reflection;

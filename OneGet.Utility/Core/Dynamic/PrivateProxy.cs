@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Core.DuckTyping {
+namespace Microsoft.OneGet.Core.Dynamic {
     using System;
     using System.Dynamic;
     using System.Linq;

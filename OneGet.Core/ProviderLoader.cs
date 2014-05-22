@@ -17,7 +17,7 @@ namespace Microsoft.OneGet {
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using Core.DuckTyping;
+    using Core.Dynamic;
     using Core.Extensions;
     using Core.Providers.Meta;
     using Core.Providers.Package;

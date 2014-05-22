@@ -65,12 +65,11 @@
     <Compile Include="Core\Collections\ICancellable.cs" />
     <Compile Include="Core\Collections\ReadOnlyDelegateDictionary.cs" />
     <Compile Include="Core\Collections\VirtualEnumerator.cs" />
-    <Compile Include="Core\DuckTyping\DuckTypedExtensions.cs" />
-    <Compile Include="Core\DuckTyping\DynamicInterface.cs" />
-    <Compile Include="Core\DuckTyping\DynamicInterfaceExtensions.cs" />
-    <Compile Include="Core\DuckTyping\FluentIlExtensions.cs" />
-    <Compile Include="Core\DuckTyping\PrivateProxy.cs" />
-    <Compile Include="Core\DuckTyping\RemotableDynamicObject.cs" />
+    <Compile Include="Core\Dynamic\DynamicInterface.cs" />
+    <Compile Include="Core\Dynamic\DynamicInterfaceExtensions.cs" />
+    <Compile Include="Core\Dynamic\FluentIlExtensions.cs" />
+    <Compile Include="Core\Dynamic\PrivateProxy.cs" />
+    <Compile Include="Core\Dynamic\RemotableDynamicObject.cs" />
     <Compile Include="Core\Extensions\CancellationTokenSourceExtensions.cs" />
     <Compile Include="Core\Extensions\DelegateExtensions.cs" />
     <Compile Include="Core\Extensions\DisposableExtensions.cs" />
@@ -87,7 +86,6 @@
     <Compile Include="Core\Platform\EnvironmentUtility.cs" />
     <Compile Include="Core\Platform\IID.cs" />
     <Compile Include="Core\Platform\IShellLink.cs" />
-    <Compile Include="Core\Extensions\LazyReadOnlyDelgateDictionary.cs" />
     <Compile Include="Core\Platform\KnownFolder.cs" />
     <Compile Include="Core\Platform\MoveFileFlags.cs" />
     <Compile Include="Core\Platform\NativeMethods.cs" />
@@ -103,7 +101,6 @@
     <Compile Include="Core\Tasks\CurrentTask.cs" />
     <Compile Include="Core\Tasks\Event.cs" />
     <Compile Include="Core\Tasks\XTask.cs" />
-    <Compile Include="Core\DuckTyping\DuckTypedClass.cs" />
     <Compile Include="Core\Versions\FourPartVersion.cs" />
     <Compile Include="CoreAPIs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

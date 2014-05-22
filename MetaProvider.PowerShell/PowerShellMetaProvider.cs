@@ -27,8 +27,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     /// <summary>
     /// A OneGet MetaProvider class that loads Providers implemented as a PowerShell Module.
     /// 
-    /// It connects the functions in the PowerShell module to the expected delegates that the 
-    /// DuckType interface expects.
+    /// It connects the functions in the PowerShell module to the expected functions that the 
+    /// interface expects.
     /// </summary>
     public class PowerShellMetaProvider : IDisposable {
         private readonly Dictionary<string, string> _providerModules = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

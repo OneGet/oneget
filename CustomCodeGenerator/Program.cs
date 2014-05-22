@@ -606,10 +606,12 @@ function ${psDelegateName} {{
                     */
 
                     
-
+                    /*
                     text = ReplaceRegion("generate-istypecompatible", "interface", text, (name, content, whitespace) => {
                         return interfaceDeclarations.Where(each => each.category == name).Where( fn => fn.IsRequired ).Select(fn => @"{1}    && publicMethods.Any(each => DuckTypedExtensions.IsNameACloseEnoughMatch(each.Name, ""${delegateName}"") && typeof (Interface.${delegateName}).IsDelegateAssignableFromMethod(each))".format(fn, whitespace, name)).Combined();
                     });
+                    */
+
 
                     // copy *-types =============================================================================================
                     text = ReplaceRegion("copy", "types", text, (name, content, whitespace) => {

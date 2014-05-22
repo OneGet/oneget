@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Core.DuckTyping {
+namespace Microsoft.OneGet.Core.Dynamic {
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -29,47 +29,47 @@ namespace Microsoft.OneGet.Core.DuckTyping {
         private static int _counter = 1;
         private readonly Dictionary<TwoTypes, bool> _compatibilityMatrix = new Dictionary<TwoTypes, bool>();
 
-        public T Create<T>(Type actualType) {
-            if (!typeof (T).IsInterface) {
-                throw new Exception("Type '{0}' is not an interface".format(typeof (T).FullName));
+        public TInterface Create<TInterface>(Type actualType) {
+            if (!typeof (TInterface).IsInterface) {
+                throw new Exception("Type '{0}' is not an interface".format(typeof (TInterface).FullName));
             }
 
-            if (!IsTypeCompatible<T>(actualType)) {
-                throw new Exception("Type '{0}' is not compatible with interface '{1}'".format(actualType.FullName, typeof (T).FullName));
+            if (!IsTypeCompatible<TInterface>(actualType)) {
+                throw new Exception("Type '{0}' is not compatible with interface '{1}'".format(actualType.FullName, typeof (TInterface).FullName));
             }
 
             // create actual instance 
             var actualInstance = Activator.CreateInstance(actualType);
 
-            return CreateProxy<T>(actualInstance);
+            return CreateProxy<TInterface>(actualInstance);
         }
 
-        public T Create<T>(string typeName) {
-            if (!typeof (T).IsInterface) {
-                throw new Exception("Type '{0}' is not an interface".format(typeof (T).FullName));
+        public TInterface Create<TInterface>(string typeName) {
+            if (!typeof (TInterface).IsInterface) {
+                throw new Exception("Type '{0}' is not an interface".format(typeof (TInterface).FullName));
             }
 
-            return Create<T>(Type.GetType(typeName));
+            return Create<TInterface>(Type.GetType(typeName));
         }
 
-        public T Create<T>(object instance) {
+        public TInterface Create<TInterface>(object instance) {
             if (instance == null) {
                 throw new ArgumentNullException("instance");
             }
 
-            if (!typeof (T).IsInterface) {
-                throw new Exception("Type '{0}' is not an interface".format(typeof (T).FullName));
+            if (!typeof (TInterface).IsInterface) {
+                throw new Exception("Type '{0}' is not an interface".format(typeof (TInterface).FullName));
             }
 
-            if (!IsInstanceCompatible<T>(instance)) {
-                throw new Exception("Object of type '{0}' is not compatible with interface '{1}'".format(instance.GetType().FullName, typeof (T).FullName));
+            if (!IsInstanceCompatible<TInterface>(instance)) {
+                throw new Exception("Object of type '{0}' is not compatible with interface '{1}'".format(instance.GetType().FullName, typeof (TInterface).FullName));
             }
 
-            return CreateProxy<T>(instance);
+            return CreateProxy<TInterface>(instance);
         }
 
-        public bool IsTypeCompatible<T>(Type type) {
-            return _compatibilityMatrix.GetOrAdd(new TwoTypes(typeof (T), type), () => {
+        public bool IsTypeCompatible<TInterface>(Type type) {
+            return _compatibilityMatrix.GetOrAdd(new TwoTypes(typeof (TInterface), type), () => {
                 // type-compatible implies a public parameterless constructor
                 if (type.GetConstructor(new Type[] {
                 }) == null) {
@@ -79,17 +79,17 @@ namespace Microsoft.OneGet.Core.DuckTyping {
                 // verify that required methods are present.
                 var publicMethods = type.GetPublicMethods();
 
-                return typeof (T).GetRequiredMethods().All(method => publicMethods.FindMethod(method) != null);
+                return typeof (TInterface).GetRequiredMethods().All(method => publicMethods.FindMethod(method) != null);
             });
         }
 
-        public bool IsInstanceCompatible<T>(object actualInstance) {
+        public bool IsInstanceCompatible<TInterface>(object actualInstance) {
             if (actualInstance == null) {
                 return false;
             }
 
             // this will be faster if this type has been checked before.
-            if (IsTypeCompatible<T>(actualInstance.GetType())) {
+            if (IsTypeCompatible<TInterface>(actualInstance.GetType())) {
                 return true;
             }
 
@@ -101,7 +101,7 @@ namespace Microsoft.OneGet.Core.DuckTyping {
             var instanceFields = instanceType.GetPublicDelegateFields();
             var instanceProperties = instanceType.GetPublicDelegateProperties();
 
-            return typeof (T).GetRequiredMethods().All(
+            return typeof (TInterface).GetRequiredMethods().All(
                 method =>
                     instanceSupportsMethod(method.Name) && (
                         instanceMethods.FindMethod(method) != null ||
@@ -123,21 +123,21 @@ namespace Microsoft.OneGet.Core.DuckTyping {
             return imiMethodInfo == null ? (s) => true : actualInstance.CreateProxiedDelegate<Func<string, bool>>(imiMethodInfo);
         }
 
-        private T CreateProxy<T>(object actualInstance) {
-            var interfaceType = typeof (T);
-            var candidateType = actualInstance.GetType();
+        private TInterface CreateProxy<TInterface>(object actualInstance) {
+            var interfaceType = typeof (TInterface);
+            var instanceType = actualInstance.GetType();
 
-            Event<Debug>.Raise("Creating Proxy {0} for {1}".format(interfaceType.Name, candidateType.Name));
+            Event<Debug>.Raise("Creating Proxy {0} for {1}".format(interfaceType.Name, instanceType.Name));
 
-            var instanceMethods = candidateType.GetPublicMethods();
-            var instanceFields = candidateType.GetPublicDelegateFields();
-            var instanceProperties = candidateType.GetPublicDelegateProperties();
+            var instanceMethods = instanceType.GetPublicMethods();
+            var instanceFields = instanceType.GetPublicDelegateFields();
+            var instanceProperties = instanceType.GetPublicDelegateProperties();
 
-            var dynamicType = DefineDynamicType<T>(candidateType.Name);
+            var dynamicType = DefineDynamicType<TInterface>(instanceType.Name);
 
             var afterInstantiation = new List<Action<object>>();
 
-            var backingField = dynamicType.DefineConstructorWithBackingField(candidateType);
+            var backingField = dynamicType.DefineConstructorWithBackingField(instanceType);
 
             dynamicType.OverrideInitializeLifetimeService();
 
@@ -195,11 +195,11 @@ namespace Microsoft.OneGet.Core.DuckTyping {
                 imf.SetValue(proxyInstance, implementedMethods);
             }
 
-            return (T)proxyInstance;
+            return (TInterface)proxyInstance;
         }
 
-        private static TypeBuilder DefineDynamicType<T>(string actualInstanceName) {
-            var interfaceType = typeof (T);
+        private static TypeBuilder DefineDynamicType<TInterface>(string actualInstanceName) {
+            var interfaceType = typeof (TInterface);
             var proxyName = "proxy_{0}{1}_{2}".format(interfaceType.Name, actualInstanceName, _counter++);
 
             var dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("{0}.Assembly".format(proxyName)), AssemblyBuilderAccess.Run);
@@ -213,19 +213,19 @@ namespace Microsoft.OneGet.Core.DuckTyping {
             return dynamicType;
         }
 
-        public IEnumerable<Type> FilterTypesCompatibleTo<T>(IEnumerable<Type> types) {
+        public IEnumerable<Type> FilterTypesCompatibleTo<TInterface>(IEnumerable<Type> types) {
             if (types == null) {
                 return Enumerable.Empty<Type>();
             }
 
-            return types.Where(IsTypeCompatible<T>);
+            return types.Where(IsTypeCompatible<TInterface>);
         }
 
-        public IEnumerable<Type> FilterTypesCompatibleTo<T>(Assembly assembly) {
+        public IEnumerable<Type> FilterTypesCompatibleTo<TInterface>(Assembly assembly) {
             if (assembly == null) {
                 return Enumerable.Empty<Type>();
             }
-            return assembly.GetTypes().Where(each => each.IsPublic && each.BaseType != typeof (MulticastDelegate) && IsTypeCompatible<T>(each));
+            return assembly.GetTypes().Where(each => each.IsPublic && each.BaseType != typeof (MulticastDelegate) && IsTypeCompatible<TInterface>(each));
         }
     }
 

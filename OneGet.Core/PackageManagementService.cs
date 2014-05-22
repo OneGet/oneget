@@ -13,7 +13,7 @@
 //  
 
 namespace Microsoft.OneGet {
-    using Core.DuckTyping;
+    using Core.Dynamic;
 
     /// <summary>
     /// The public interface to accessing the fetaures of the Package Management Service
@@ -59,7 +59,7 @@ namespace Microsoft.OneGet {
         /// <summary>
         /// Provides Access to the PackageManagementService instance
         /// </summary>
-        /// <typeparam name="T">An caller-supplied interface type to dynamically generate a duck-typed binding for.</typeparam>
+        /// <typeparam name="T">An caller-supplied interface type to dynamically generate a an implementation for.</typeparam>
         /// <returns>The PackageManagementService as an instance of the supplied interface type.</returns>
         public T GetInstance<T>() {
             return new DynamicInterface().Create<T>(Instance);

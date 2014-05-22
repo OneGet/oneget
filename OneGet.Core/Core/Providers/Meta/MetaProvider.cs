@@ -14,7 +14,7 @@
 
 namespace Microsoft.OneGet.Core.Providers.Meta {
     using System.Collections.Generic;
-    using DuckTyping;
+    using Dynamic;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
 
     public interface IMetaProvider {
@@ -46,7 +46,7 @@ namespace Microsoft.OneGet.Core.Providers.Meta {
 
         /// <summary>
         ///     Allows the MetaProvider to do one-time initialization.
-        ///     This is called after the MetaProvider is instantiated and DuckTyped.
+        ///     This is called after the MetaProvider is instantiated .
         /// </summary>
         /// <param name="c">Callback Delegate Reference</param>
         void InitializeProvider(Callback c);

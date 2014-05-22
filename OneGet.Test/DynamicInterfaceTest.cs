@@ -15,7 +15,7 @@
 namespace Microsoft.OneGet.Test {
     using System;
     using System.Security.Policy;
-    using Core.DuckTyping;
+    using Core.Dynamic;
     using CSharp.RuntimeBinder;
     using Xunit;
 

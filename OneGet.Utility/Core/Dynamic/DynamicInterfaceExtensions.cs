@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Core.DuckTyping {
+namespace Microsoft.OneGet.Core.Dynamic {
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -56,18 +56,18 @@ namespace Microsoft.OneGet.Core.DuckTyping {
             return member.GetParameterTypes().SequenceEqual(each.GetParameterTypes()) && member.ReturnType == each.ReturnType;
         }
 
-        internal static MethodInfo[] GetPublicMethods(this Type candidateType) {
-            return _methodCache.GetOrAdd(candidateType, () => {
-                if (candidateType != null) {
-                    return candidateType.GetMethods(BindingFlags.Instance | BindingFlags.Public);
+        internal static MethodInfo[] GetPublicMethods(this Type type) {
+            return _methodCache.GetOrAdd(type, () => {
+                if (type != null) {
+                    return type.GetMethods(BindingFlags.Instance | BindingFlags.Public);
                 }
                 return new MethodInfo[0];
             });
         }
 
-        internal static IEnumerable<FieldInfo> GetPublicFields(this Type candidateType) {
-            if (candidateType != null) {
-                return candidateType.GetFields(BindingFlags.Instance | BindingFlags.Public);
+        internal static IEnumerable<FieldInfo> GetPublicFields(this Type type) {
+            if (type != null) {
+                return type.GetFields(BindingFlags.Instance | BindingFlags.Public);
             }
             return Enumerable.Empty<FieldInfo>();
         }
@@ -80,9 +80,9 @@ namespace Microsoft.OneGet.Core.DuckTyping {
             return _delegatePropertiesCache.GetOrAdd(type, () => type.GetPublicProperties().Where(each => each.PropertyType.BaseType == typeof (MulticastDelegate)).ToArray());
         }
 
-        internal static IEnumerable<PropertyInfo> GetPublicProperties(this Type candidateType) {
-            if (candidateType != null) {
-                return candidateType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        internal static IEnumerable<PropertyInfo> GetPublicProperties(this Type type) {
+            if (type != null) {
+                return type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
             }
             return Enumerable.Empty<PropertyInfo>();
         }

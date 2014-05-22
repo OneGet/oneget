@@ -17,7 +17,6 @@ namespace Microsoft.OneGet.Test {
     using System.Collections.Generic;
     using System.Dynamic;
     using Core.AppDomains;
-    using Core.DuckTyping;
     using PowerShell.OneGet.CmdLets;
     using Xunit;
 

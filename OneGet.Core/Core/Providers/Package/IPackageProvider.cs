@@ -15,7 +15,7 @@
 namespace Microsoft.OneGet.Core.Providers.Package {
     using System;
     using System.Collections.Generic;
-    using DuckTyping;
+    using Dynamic;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
     public interface IPackageProvider {
         bool IsImplemented(string methodName);

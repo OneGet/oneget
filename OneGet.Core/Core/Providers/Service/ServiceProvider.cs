@@ -18,7 +18,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
     using System.Collections.Generic;
     using System.Dynamic;
     using System.Linq;
-    using DuckTyping;
+    using Dynamic;
     using Extensions;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
 
