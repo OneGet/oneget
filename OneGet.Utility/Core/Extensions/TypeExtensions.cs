@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Core.Extensions {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Linq.Expressions;
     using System.Runtime.CompilerServices;
 
@@ -44,9 +45,8 @@ namespace Microsoft.OneGet.Core.Extensions {
             return _typeCoercers.GetOrAdd(new TwoTypes(fromType, targetType), () => (Func<object, object>)Expression.Lambda(
                 Expression.Convert(Expression.Convert(Expression.Convert(_parameter, fromType), targetType), typeof (object)), _parameter).Compile());
         }
-
-        
     }
+
     internal class TwoTypes {
         private readonly Type _first;
         private readonly Type _second;
@@ -65,6 +65,28 @@ namespace Microsoft.OneGet.Core.Extensions {
                 return true;
             }
             var other = obj as TwoTypes;
+            return other != null && (_first == other._first && _second == other._second);
+        }
+    }
+
+    internal class Types {
+        private readonly Type _first;
+        private readonly Type[] _second;
+
+        public Types(Type first, params Type[] second) {
+            _first = first;
+            _second = second;
+        }
+
+        public override int GetHashCode() {
+            return 31*_first.GetHashCode() + _second.Sum(each => each.GetHashCode());
+        }
+
+        public override bool Equals(object obj) {
+            if (obj == this) {
+                return true;
+            }
+            var other = obj as Types;
             return other != null && (_first == other._first && _second == other._second);
         }
     }

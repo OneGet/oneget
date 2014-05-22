@@ -16,7 +16,11 @@ namespace Microsoft.OneGet.Test {
     using System;
     using System.Collections.Generic;
     using System.Dynamic;
+    using System.Linq;
+    using System.Runtime.Hosting;
+    using System.Security.Cryptography.X509Certificates;
     using Core.AppDomains;
+    using Core.Dynamic;
     using PowerShell.OneGet.CmdLets;
     using Xunit;
 
@@ -31,6 +35,54 @@ namespace Microsoft.OneGet.Test {
             proxy.AddPackageSource3("NameValue", "LocationValue");
             proxy.AddPackageSource4("NameValue", "LocationValue");
            
+        }
+
+        [Fact]
+        public void TestAssumptionAboutParams() {
+            var a = ItemsViaParams("very", "happy", "person");
+            var b = ItemsWithoutParams(new[] {
+                "very", "happy", "person"
+            });
+            var c = ItemsViaParams(a);
+
+            Assert.True(a.SequenceEqual(b));
+            Assert.True(a.SequenceEqual(c));
+            Assert.True(c.SequenceEqual(b));
+
+        }
+
+        internal static object[] ItemsViaParams(params object[] items) {
+            return items;
+        }
+        internal static object[] ItemsWithoutParams(object[] items) {
+            return items;
+        }
+
+        [Fact]
+        public void TestWhichWayWorksForAggregate() {
+            var a = new string[] {
+                "one"
+            };
+            var b = new string[] {
+                "one", "two"
+            };
+            var c = new string[] {
+                "one", "two", "three"
+            };
+
+            var aa = a.Aggregate((current, each) => current + "," + each);
+            var bb = b.Aggregate((current, each) => current + "," + each);
+            var cc = c.Aggregate((current, each) => current + "," + each);
+
+            Console.WriteLine(aa);
+            Console.WriteLine(bb);
+            Console.WriteLine(cc);
+
+            Console.WriteLine(GetType().GetMethod("SampleMethod").ToSignatureString());
+        }
+
+        public void SampleMethod(int a, int b, string c, Func<object, Int32> d) {
+            
         }
     }
 
@@ -57,6 +109,10 @@ namespace Microsoft.OneGet.Test {
 
         public PackageProviderProxy(Type type): this(Activator.CreateInstance(type)) {
         }
+
+     
+        
+
     }
 
     public class PPInstance {
@@ -83,13 +139,14 @@ namespace Microsoft.OneGet.Test {
             }
             return null;
         }
+
     }
 
     // So:
     // Take the Interface, generate a proxy class that has the <Member>Delegates and instances of the Delegates
     // and then generate the Constructor which takes an object instance.
     
-    public interface IPackageProvider {
+    public interface IPretendProvider {
 
         bool AddPackageSource(string name, string location);
 
@@ -100,5 +157,7 @@ namespace Microsoft.OneGet.Test {
     public interface IDelegateCreator {
         Delegate CreateDelegate(string memberName, IEnumerable<string> pNames, IEnumerable<Type> pTypes, Type returnType);
     }
+
+    
    
 }

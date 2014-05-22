@@ -32,7 +32,7 @@ namespace Microsoft.OneGet {
                 return;
             }
 
-            foreach (var provider in dynInterface.FilterTypesCompatibleTo<IMetaProvider>(asm).Select(dynInterface.Create<IMetaProvider>)) {
+            foreach (var provider in dynInterface.FilterTypesCompatibleTo<IMetaProvider>(asm).Select( each => dynInterface.Create<IMetaProvider>(each) )) {
                 try {
                     provider.InitializeProvider(callback);
                     foreach (var name in provider.GetProviderNames()) {
@@ -66,7 +66,7 @@ namespace Microsoft.OneGet {
                 }
             }
 
-            foreach (var provider in dynInterface.FilterTypesCompatibleTo<IPackageProvider>(asm).Select(dynInterface.Create<IPackageProvider>)) {
+            foreach (var provider in dynInterface.FilterTypesCompatibleTo<IPackageProvider>(asm).Select(each => dynInterface.Create<IPackageProvider>(each))) {
                 try {
                     provider.InitializeProvider(callback);
                     yieldPackageProvider(provider.GetPackageProviderName(), provider);
@@ -75,7 +75,7 @@ namespace Microsoft.OneGet {
                 }
             }
 
-            foreach (var provider in dynInterface.FilterTypesCompatibleTo<IServicesProvider>(asm).Select(dynInterface.Create<IServicesProvider>)) {
+            foreach (var provider in dynInterface.FilterTypesCompatibleTo<IServicesProvider>(asm).Select(each => dynInterface.Create<IServicesProvider>(each))) {
                 try {
                     provider.InitializeProvider(callback);
                     yieldServicesProvider(provider.GetServicesProviderName(), provider);

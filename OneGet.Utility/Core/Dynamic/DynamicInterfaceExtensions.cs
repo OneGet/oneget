@@ -17,12 +17,16 @@ namespace Microsoft.OneGet.Core.Dynamic {
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using AppDomains;
     using Extensions;
 
     internal static class DynamicInterfaceExtensions {
+        private readonly static Type[] _emptyTypes = { };
+
         private static readonly IDictionary<Tuple<Type, Type>, bool> _compatibilityMatrix = new Dictionary<Tuple<Type, Type>, bool>();
 
         private static readonly IDictionary<Type, MethodInfo[]> _methodCache = new Dictionary<Type, MethodInfo[]>();
+        private static readonly IDictionary<Type[], MethodInfo[]> _methodCacheForTypes = new Dictionary<Type[], MethodInfo[]>();
         private static readonly IDictionary<Type, FieldInfo[]> _delegateFieldsCache = new Dictionary<Type, FieldInfo[]>();
         private static readonly IDictionary<Type, PropertyInfo[]> _delegatePropertiesCache = new Dictionary<Type, PropertyInfo[]>();
         private static readonly Dictionary<Type, MethodInfo[]> _requiredMethodsCache = new Dictionary<Type, MethodInfo[]>();
@@ -65,6 +69,10 @@ namespace Microsoft.OneGet.Core.Dynamic {
             });
         }
 
+        internal static MethodInfo[] GetPublicMethods(this Type[] types) {
+            return _methodCacheForTypes.GetOrAdd(types, () => types.SelectMany(each => each.GetPublicMethods()).ToArray());
+        }
+
         internal static IEnumerable<FieldInfo> GetPublicFields(this Type type) {
             if (type != null) {
                 return type.GetFields(BindingFlags.Instance | BindingFlags.Public);
@@ -89,6 +97,49 @@ namespace Microsoft.OneGet.Core.Dynamic {
 
         internal static MethodInfo[] GetRequiredMethods(this Type type) {
             return _requiredMethodsCache.GetOrAdd(type, () => type.GetMethods().Where(each => each.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("RequiredAttribute", StringComparison.OrdinalIgnoreCase))).ToArray());
+        }
+
+        internal static ConstructorInfo GetDefaultConstructor(this Type t) {
+            return t.GetConstructor(_emptyTypes);
+        }
+
+        internal static string ToSignatureString(this MethodInfo method) {
+            return "{0} {1}({2})".format(method.ReturnType.Name, method.Name, method.GetParameters().Select( each => "{0} {1}".format( each.ParameterType.NiceName(), each.Name)).JoinWithComma());
+        }
+
+        public static string NiceName(this Type type) {
+            if (!type.IsGenericType) {
+                return type.Name;
+            }
+            var typeName = type.GetGenericTypeDefinition().Name;
+            typeName = typeName.Substring(0, typeName.IndexOf('`'));
+            return typeName + "<" + string.Join(",", type.GetGenericArguments().Select(NiceName).ToArray()) + ">";
+        }
+
+        public static string FullNiceName(this Type type) {
+            if (!type.IsGenericType) {
+                return type.FullName;
+            }
+            var typeName = type.GetGenericTypeDefinition().FullName;
+            typeName = typeName.Substring(0, typeName.IndexOf('`'));
+            return typeName + "<" + string.Join(",", type.GetGenericArguments().Select(NiceName).ToArray()) + ">";
+        }
+
+
+        internal static Func<string, bool> GenerateInstancesSupportsMethod(object[] actualInstance) {
+            var ism = actualInstance.Select(GenerateInstanceSupportsMethod).ToArray();
+            return (s) => ism.Any(each => each(s));
+        }
+
+        internal static Func<string, bool> GenerateInstanceSupportsMethod(object actualInstance) {
+            // if the object implements an IsMethodImplemented Method, we'll be using that 
+            // to see if the method is actually supposed to be used.
+            // this enables an implementor to physically implement the function in the class
+            // yet treat it as if it didn't. (see the PowerShellPackageProvider)
+            var imiMethodInfo = actualInstance.GetType().GetMethod("IsMethodImplemented", new[] {
+                typeof (string)
+            });
+            return imiMethodInfo == null ? (s) => true : actualInstance.CreateProxiedDelegate<Func<string, bool>>(imiMethodInfo);
         }
     }
 }

@@ -14,6 +14,7 @@
 
 namespace Microsoft.OneGet.Test {
     using System;
+    using System.IO;
     using System.Security.Policy;
     using Core.Dynamic;
     using CSharp.RuntimeBinder;
@@ -106,6 +107,53 @@ namespace Microsoft.OneGet.Test {
             Assert.Equal(null, idyn2.Four(4));
         }
 
+
+
+        [Fact]
+        public void TestDynamicInterfaceAgainstAnonymousObjects() {
+            var di = new DynamicInterface();
+
+            var dynamicInstance = di.Create<IDynTest>(new {
+                One = new Action(() => { }),
+            }, new {
+                Two = new Func<bool>(() => { return true; })
+            }, new {
+                Four = new Func<int, string>((i)=> "::"+i)
+            });
+
+            Assert.True(dynamicInstance.IsImplemented("One"));
+            Assert.True(dynamicInstance.IsImplemented("Two"));
+            Assert.False(dynamicInstance.IsImplemented("Three"));
+            Assert.True(dynamicInstance.IsImplemented("Four"));
+            Assert.False(dynamicInstance.IsImplemented("Five"));
+
+            Assert.True(dynamicInstance.Two());
+            Assert.Equal("::4", dynamicInstance.Four(4));
+        }
+
+        [Fact]
+        public void TestDynamicInterfaceAgainstAnonymousObjectsInDifferentOrder() {
+            var di = new DynamicInterface();
+
+            var dynamicInstance = di.Create<IDynTest>( new {
+                Two = new Func<bool>(() => { return true; })
+            }, new {
+                Four = new Func<int, string>((i) => "::" + i)
+            },new {
+                One = new Action(() => { }),
+            });
+
+            Assert.True(dynamicInstance.IsImplemented("One"));
+            Assert.True(dynamicInstance.IsImplemented("Two"));
+            Assert.False(dynamicInstance.IsImplemented("Three"));
+            Assert.True(dynamicInstance.IsImplemented("Four"));
+            Assert.False(dynamicInstance.IsImplemented("Five"));
+
+            Assert.True(dynamicInstance.Two());
+            Assert.Equal("::4", dynamicInstance.Four(4));
+        }
+
+
         [Fact]
         public void TestDynamicInterfaceRequired() {
             var di = new DynamicInterface();
@@ -123,6 +171,16 @@ namespace Microsoft.OneGet.Test {
                 dynamic x = new TUSODT();
                 Console.WriteLine(x.Hello());
             });
+        }
+
+        [Fact]
+        public void CreateTypeWithBadArguments() {
+            var di = new DynamicInterface();
+
+            Assert.Throws<Exception>(() => {
+                di.Create<IDynTest>(typeof (object), typeof (File));
+            });
+
         }
 
         public class TUSODT {

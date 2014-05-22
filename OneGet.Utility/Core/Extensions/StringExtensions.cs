@@ -154,5 +154,24 @@ namespace Microsoft.OneGet.Core.Extensions {
             return str.Equals(str2, StringComparison.OrdinalIgnoreCase);
         }
         // ReSharper restore InconsistentNaming
+
+        public static IEnumerable<string> Quote(this IEnumerable<string> items) {
+            return items.Select(each => "'" + each + "'");
+        }
+
+        public static string JoinWithComma(this IEnumerable<string> items) {
+            return items.JoinWith(",");
+        }
+        public static string JoinWith(this IEnumerable<string> items, string delimiter) {
+            return items.SafeAggregate((current, each) => current + delimiter + each);
+        }
+
+        public static TSource SafeAggregate<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, TSource> func) {
+            if (source != null && source.Any()) {
+                return source.Aggregate(func);
+            }
+            return default(TSource);
+        }
+
     }
 }

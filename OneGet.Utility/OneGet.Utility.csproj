@@ -69,6 +69,7 @@
     <Compile Include="Core\Dynamic\DynamicInterfaceExtensions.cs" />
     <Compile Include="Core\Dynamic\FluentIlExtensions.cs" />
     <Compile Include="Core\Dynamic\PrivateProxy.cs" />
+    <Compile Include="Core\Dynamic\ProxyClass.cs" />
     <Compile Include="Core\Dynamic\RemotableDynamicObject.cs" />
     <Compile Include="Core\Extensions\CancellationTokenSourceExtensions.cs" />
     <Compile Include="Core\Extensions\DelegateExtensions.cs" />
