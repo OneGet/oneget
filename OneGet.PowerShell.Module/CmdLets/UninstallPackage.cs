@@ -120,7 +120,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         private bool UninstallPackages(IEnumerable<SoftwareIdentity> packagesToUnInstall) {
             foreach (var pkg in packagesToUnInstall) {
-                var provider = PackageManagementService.SelectProviders(pkg.ProviderName).FirstOrDefault();
+                var provider = _packageManagementService.SelectProviders(pkg.ProviderName).FirstOrDefault();
 
                 try {
                     foreach (var installedPkg in CancelWhenStopped(provider.UninstallPackage(pkg, Invoke))) {

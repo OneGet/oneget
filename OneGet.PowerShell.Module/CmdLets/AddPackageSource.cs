@@ -53,7 +53,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 #endif
 
         public override bool ProcessRecordAsync() {
-            var provider = PackageManagementService.SelectProviders(Provider).FirstOrDefault();
+            var provider = _packageManagementService.SelectProviders(Provider).FirstOrDefault();
             if (provider == null) {
                 Event<Error>.Raise("Unknown Provider", new string[] {Provider});
                 return false;

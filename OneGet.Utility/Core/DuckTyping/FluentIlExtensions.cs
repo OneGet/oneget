@@ -47,7 +47,7 @@ namespace Microsoft.OneGet.Core.DuckTyping {
                 il.Emit(index[argument]);
                 return;
             }
-            il.Emit(index[index.Length], argument);
+            il.Emit(index[index.Length-1], argument);
         }
 
         public static void Return(this ILGenerator il) {

@@ -28,7 +28,7 @@ namespace Microsoft.OneGet.Core.Providers.Meta {
         /// <param name="name">the name of the provider to create</param>
         /// <returns>an instance of the provider.</returns>
         [Required]
-        object CreateProvider(string name);
+        object CreateProvider(string name);     
 
         /// <summary>
         ///     Gets the name of this MetaProvider

@@ -20,7 +20,7 @@ namespace Microsoft.OneGet.Core.DuckTyping {
     using System.Reflection.Emit;
     using AppDomains;
     using Extensions;
-
+    using Tasks;
 
     internal class RequiredAttribute : Attribute {
     }
@@ -125,8 +125,14 @@ namespace Microsoft.OneGet.Core.DuckTyping {
         }
 
         private T CreateProxy<T>(object actualInstance) {
+
+
             var interfaceType = typeof (T);
             var candidateType = actualInstance.GetType();
+
+
+            Event<Debug>.Raise("Creating Proxy {0} for {1}".format(interfaceType.Name, candidateType.Name));
+
 
             var candidateMethods = candidateType.GetPublicMethods().ToArray();
             var candidateFields = candidateType.GetPublicFields().Where(each => each.FieldType.BaseType == typeof (MulticastDelegate)).ToArray();

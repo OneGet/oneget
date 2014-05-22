@@ -95,7 +95,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
 
-            return  default(string);
+            return "TestPackageProvider";
         }
         public bool GetPackageSources(Callback c){
              // TODO: Fill in implementation

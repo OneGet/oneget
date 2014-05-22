@@ -28,7 +28,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     public class FindInstallCmdlet : PackagingCmdlet {
         internal FindInstallCmdlet() {
             // populate the matching providers at first request.
-            _providers = new Lazy<IEnumerable<PackageProvider>>(() => PackageManagementService.SelectProviders(Provider, Source));
+            _providers = new Lazy<IEnumerable<PackageProvider>>(() => _packageManagementService.SelectProviders(Provider, Source));
         }
 
         [Parameter(ParameterSetName = "PackageBySearch")]
@@ -113,7 +113,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             // if the provider (or source) is selected, we can get package metadata keys from the provider
             // hmm. let's just grab *all* of them.
 
-            foreach (var md in _providers.Value.SelectMany(provider => provider.GetOptionDefinitons(OptionCategory.Package, Invoke))) {
+            foreach (var md in _providers.Value.SelectMany(provider => provider.GetDynamicOptions(OptionCategory.Package, Invoke))) {
                 DynamicParameters.Add(md.Name, md.CreateRuntimeDynamicParameter());
             }
             return true;

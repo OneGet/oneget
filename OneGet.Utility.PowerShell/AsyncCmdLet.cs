@@ -202,7 +202,7 @@ namespace Microsoft.OneGet {
                 _localEventSource.Events += new Debug(( message, objects) => {
 
                     if (IsInvocation) {
-                        WriteDebug( GetLocalizedMessage(message,objects));
+                        WriteVerbose( GetLocalizedMessage(message,objects));
                     }
 
                     // rather than wait on the result of the async WriteVerbose,

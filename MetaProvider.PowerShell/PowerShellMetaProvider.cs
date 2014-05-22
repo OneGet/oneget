@@ -14,9 +14,12 @@
 
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Management.Automation;
+    using System.Net.Configuration;
     using Core;
     using Core.Extensions;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
@@ -31,6 +34,39 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         private readonly Dictionary<string, string> _providerModules = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         private List<PowerShellPackageProvider> _providerInstances = new List<PowerShellPackageProvider>();
+
+        internal IEnumerable<string> ScanForModules() {
+            using (dynamic ps = new DynamicPowershell()) {
+                DynamicPowershellResult results = ps.ImportModule(ListAvailable: true);
+                foreach (var result in results) {
+                    var module = result as PSModuleInfo;
+                    if (module != null) {
+
+                        var privateData = module.PrivateData as Hashtable;
+                        if (privateData != null) {
+                            var providers = privateData.GetStringCollection("OneGet.Providers").ToArray();
+                            if (providers.Length > 0) {
+                                // found a module that is advertizing one or more OneGet Providers.
+                                var folder = Path.GetDirectoryName(module.Path);
+
+                                foreach (var provider in providers) {
+                                    var fullPath = provider;
+                                    if (!Path.IsPathRooted(provider)) {
+                                        fullPath = Path.GetFullPath(Path.Combine(folder, provider));
+                                    }
+                                    if (Directory.Exists(fullPath) || File.Exists(fullPath)) {
+                                        // looks like we have something that could definitely be a 
+                                        // a module path.
+
+                                        yield return fullPath;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         internal object CreateProvider(string name) {
             if (_providerModules.ContainsKey(name)) {
@@ -112,7 +148,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
 
             // to do : get modules to load (from configuration ?)
-            var modules = Enumerable.Empty<string>(); // c.GetConfiguration("Providers/Module");
+            var modules = ScanForModules().ToArray();
 
             // try to create each module at least once.
             foreach (var modulePath in modules) {

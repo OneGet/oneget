@@ -14,104 +14,28 @@
 
 namespace Microsoft.OneGet.Core.Providers.Package {
     using System;
-    using System.Collections.Generic;
-    using System.Dynamic;
     using System.Linq;
-    using System.Reflection;
-    using System.Reflection.Emit;
-    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using Api;
     using Collections;
-    using DuckTyping;
     using Extensions;
     using Packaging;
     using Service;
     using Tasks;
     using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
 
-    internal interface IPackageProvider {
-        bool IsImplemented(string methodName);
-
-        #region declare PackageProvider-interface
-        /// <summary>
-        /// Returns the name of the Provider. Doesn't need a callback .
-        /// </summary>
-        /// <returns>the name of the package provider</returns>
-        [Required]
-        string GetPackageProviderName();
-
-        void InitializeProvider(Callback c);
-
-        void GetFeatures(Callback c);
-
-        void GetDynamicOptions(int category, Callback c);
-
-        // --- Optimization features -----------------------------------------------------------------------------------------------------
-        IEnumerable<string> GetMagicSignatures();
-
-        IEnumerable<string> GetSchemes();
-
-        IEnumerable<string> GetFileExtensions();
-
-        bool GetIsSourceRequired(); // or should we imply this from the GetPackageSources == null/empty?
-
-        // --- Manages package sources ---------------------------------------------------------------------------------------------------
-        void AddPackageSource(string name, string location, bool trusted, Callback c);
-
-        bool GetPackageSources(Callback c);
-
-        void RemovePackageSource(string name, Callback c);
-
-        int StartFind(Callback c);
-
-        bool CompleteFind(int id, Callback c);
-
-        // --- Finds packages ---------------------------------------------------------------------------------------------------
-        /// <summary>
-        /// 
-        /// 
-        /// Notes:
-        /// 
-        ///  - If a call to GetPackageSources on this object returns no sources, the cmdlet won't call FindPackage on this source
-        ///  - (ie, the expectation is that you have to provide a source in order to use find package)
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="requiredVersion"></param>
-        /// <param name="minimumVersion"></param>
-        /// <param name="maximumVersion"></param>
-        /// <param name="c"></param>
-        /// <returns></returns>
-        bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c);
-
-        bool FindPackageByFile(string file, int id, Callback c);
-        bool FindPackageByUri(Uri uri, int id, Callback c);
-
-        bool GetInstalledPackages(string name, Callback c);
-
-        // --- operations on a package ---------------------------------------------------------------------------------------------------
-        bool DownloadPackage(string fastPath, string location, Callback c);
-        bool GetPackageDependencies(string fastPath, Callback c);
-        bool GetPackageDetails(string fastPath, Callback c);
-
-        bool InstallPackage(string fastPath, Callback c);
-        // auto-install-dependencies
-        // skip-dependency-check
-        // continue-on-failure
-        // location system/user/folder
-        // callback for each package installed when installing dependencies?
-
-        bool UninstallPackage(string fastPath, Callback c);
-
-        #endregion
-    }
-
-    public class PackageProvider :  MarshalByRefObject {
-
+    public class PackageProvider : MarshalByRefObject {
         private readonly IPackageProvider _provider;
+
         internal PackageProvider(IPackageProvider provider) {
             _provider = provider;
+        }
+
+        public string Name {
+            get {
+                return _provider.GetPackageProviderName();
+            }
         }
 
         // we don't want these objects being gc's out because they remain unused...
@@ -127,12 +51,6 @@ namespace Microsoft.OneGet.Core.Providers.Package {
 
         public void InitializeProvider(Callback c) {
             _provider.InitializeProvider(c);
-        }
-
-        public string Name {
-            get {
-                return _provider.GetPackageProviderName();
-            }
         }
 
         public void AddPackageSource(string name, string location, bool trusted, Callback c) {
@@ -169,7 +87,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
 
             return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
                 c, // inherited callback
-                nc => _provider.FindPackageByFile(filename,id, nc), // actual call
+                nc => _provider.FindPackageByFile(filename, id, nc), // actual call
                 (collection, okToContinue) => ((fastpath, name, version, scheme, summary, source) => {
                     collection.Add(new SoftwareIdentity {
                         FastPath = fastpath,
@@ -193,26 +111,26 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             var providerName = Name;
 
             return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
-               c, // inherited callback
-               nc => _provider.CompleteFind(i, nc), // actual call
-               (collection, okToContinue) => ((fastpath, name, version, scheme, summary, source) => {
-                   collection.Add(new SoftwareIdentity {
-                       FastPath = fastpath,
-                       Name = name,
-                       Version = version,
-                       VersionScheme = scheme,
-                       Summary = summary,
-                       ProviderName = providerName,
-                       Source = source,
-                       Status = "Available"
-                   });
-                   return okToContinue();
-               }));
+                c, // inherited callback
+                nc => _provider.CompleteFind(i, nc), // actual call
+                (collection, okToContinue) => ((fastpath, name, version, scheme, summary, source) => {
+                    collection.Add(new SoftwareIdentity {
+                        FastPath = fastpath,
+                        Name = name,
+                        Version = version,
+                        VersionScheme = scheme,
+                        Summary = summary,
+                        ProviderName = providerName,
+                        Source = source,
+                        Status = "Available"
+                    });
+                    return okToContinue();
+                }));
         }
 
         public CancellableEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, Callback c) {
             var id = StartFind(c);
-            return new CancellableEnumerable<SoftwareIdentity>( new CancellationTokenSource(), names.SelectMany(each => FindPackage(each, requiredVersion, minimumVersion, maximumVersion, id, c)).Concat(CompleteFind(id, c)));
+            return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), names.SelectMany(each => FindPackage(each, requiredVersion, minimumVersion, maximumVersion, id, c)).Concat(CompleteFind(id, c)));
         }
 
         public CancellableEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, Callback c) {
@@ -267,8 +185,6 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                 }));
         }
 
-        /* CTP */
-
         public CancellableEnumerable<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, Callback c) {
             if (softwareIdentity == null) {
                 throw new ArgumentNullException("softwareIdentity");
@@ -285,8 +201,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                         c.DynamicInvoke<Error>("Cancelled", "User declined to trust package source ", null);
                         throw new Exception("cancelled");
                     }
-                }
-                catch {
+                } catch {
                     c.DynamicInvoke<Error>("Cancelled", "User declined to trust package source ", null);
                     throw new Exception("cancelled");
                 }
@@ -356,19 +271,16 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                     }) {
                         try {
                             action(cb);
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             if (cancelOnException) {
                                 result.Cancel();
                                 Event<ExceptionThrown>.Raise(e.GetType().Name, e.Message, e.StackTrace);
                             }
                         }
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.Dump();
-                }
-                finally {
+                } finally {
                     result.CompleteAdding();
                 }
             });
@@ -376,7 +288,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             return result;
         }
 
-        public CancellableEnumerable<DynamicOption> GetOptionDefinitons(OptionCategory operation, Callback c) {
+        public CancellableEnumerable<DynamicOption> GetDynamicOptions(OptionCategory operation, Callback c) {
             return CallAndCollectResults<DynamicOption, YieldOptionDefinition>(
                 c,
                 nc => _provider.GetDynamicOptions((int)operation, nc),
@@ -415,10 +327,10 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                     return okToContinue();
                 }));
         }
-
     }
 
     #region declare PackageProvider-types
+
     public enum OptionCategory {
         Package = 0,
         Provider = 1,
@@ -439,11 +351,11 @@ namespace Microsoft.OneGet.Core.Providers.Package {
 
     internal static class CallbackExt {
         public static T Lookup<T>(this Callback c) where T : class {
-            return c(typeof(T).Name, null) as T ?? typeof(T).CreateEmptyDelegate() as T;
+            return c(typeof (T).Name, null) as T ?? typeof (T).CreateEmptyDelegate() as T;
         }
 
         public static object DynamicInvoke<T>(this Callback c, params object[] args) where T : class {
-            return c(typeof(T).Name, args);
+            return c(typeof (T).Name, args);
         }
     }
 }

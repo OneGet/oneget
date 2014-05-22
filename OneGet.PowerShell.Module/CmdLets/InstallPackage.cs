@@ -154,7 +154,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (!WhatIf) {
                     WriteMasterProgress("Installing", 1, "Installing package '{0}' ({1} of {2})", pkg.Name, n++, packagesToInstall.Length);
                 }
-                var provider = PackageManagementService.SelectProviders(pkg.ProviderName).FirstOrDefault();
+                var provider = _packageManagementService.SelectProviders(pkg.ProviderName).FirstOrDefault();
 
                 try {
                     foreach (var installedPkg in CancelWhenStopped(provider.InstallPackage(pkg, Invoke))) {

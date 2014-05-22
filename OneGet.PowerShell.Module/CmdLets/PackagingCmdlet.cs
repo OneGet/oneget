@@ -50,7 +50,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         internal PackagingCmdlet() {
             // populate the matching providers at first request.
-            _providers = new Lazy<IEnumerable<PackageProvider>>(() => PackageManagementService.SelectProviders(Provider, null));
+            _providers = new Lazy<IEnumerable<PackageProvider>>(() => _packageManagementService.SelectProviders(Provider, null));
         }
 
         public override Hashtable GetRequestMetadata() {

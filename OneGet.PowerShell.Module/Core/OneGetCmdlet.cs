@@ -18,7 +18,7 @@ namespace Microsoft.PowerShell.OneGet.Core {
         private static readonly object _lockObject = new object();
         private HostMessageDispatcher _hostMessageDispatcher;
 
-
+        protected static IPackageManagementService _packageManagementService = new PackageManagementService().Instance;
 
         protected override Callback Invoke {
             get {
@@ -34,15 +34,7 @@ namespace Microsoft.PowerShell.OneGet.Core {
                 lock (_lockObject) {
                     if (!IsInitialized) {
                         try {
-                            var privateData = MyInvocation.MyCommand.Module.PrivateData as Hashtable;
-
-                            var assemblyProviders = privateData.GetStringCollection("Providers/Assembly");
-
-                            if (assemblyProviders.IsNullOrEmpty()) {
-                                Event<Error>.Raise( "PrivateData is null");
-                                return;
-                            }
-                            IsInitialized = PackageManagementService.Initialize(Invoke, assemblyProviders, !IsInvocation);
+                            IsInitialized = _packageManagementService.Initialize(Invoke, !IsInvocation);
                         }
                         catch (Exception e) {
                             e.Dump();

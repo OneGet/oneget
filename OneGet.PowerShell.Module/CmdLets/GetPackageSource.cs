@@ -32,13 +32,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public string Provider {get; set;}
 
         public override bool ProcessRecordAsync() {
-            var providers = PackageManagementService.SelectProviders(Provider);
+            var providers = _packageManagementService.SelectProviders(Provider);
             if (providers == null) {
                 Event<Error>.Raise("Unknown Provider", new string[] { Provider});
                 return false;
             }
-
-            
 
             foreach( var provider in providers){
                 bool found = false;
@@ -74,7 +72,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         Event<Error>.Raise("Provider '{0}' returned no package sources (Location = '{1}')", new[] { provider.Name, Location });
                         continue;
                     }
-
                     Event<Error>.Raise("Provider '{0}' returned no package sources".format(provider.Name ));
                 }
 

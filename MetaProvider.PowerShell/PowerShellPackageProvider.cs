@@ -194,6 +194,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// <required />
         /// <returns>the name of the package provider</returns>
         public string GetPackageProviderName() {
+            
             return "modulename";
         }
         public bool GetPackageSources(Callback c) {

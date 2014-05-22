@@ -46,7 +46,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             PackageProvider packageProvider = null;
 
             if (string.IsNullOrEmpty(Provider)) {
-                var providers = PackageManagementService.SelectProviders(Provider, new[] {
+                var providers = _packageManagementService.SelectProviders(Provider, new[] {
                     Name
                 }).ToArray();
 
@@ -58,7 +58,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     return false;
                 }
             } else {
-                packageProvider = PackageManagementService.SelectProviders(Provider).FirstOrDefault();
+                packageProvider = _packageManagementService.SelectProviders(Provider).FirstOrDefault();
                 if (packageProvider == null) {
                     Event<Error>.Raise("Unknown Provider : {0}", new string[] {Provider});
                     return false;
