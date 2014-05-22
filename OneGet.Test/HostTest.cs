@@ -13,12 +13,19 @@
 //  
 
 namespace Microsoft.OneGet.Test {
+    using System;
+    using System.Diagnostics;
     using Xunit;
+
+    public class ICallback {
+        
+    }
 
     public class PackageManagementServiceTest {
 
         [Fact]
         public void Load() {
+            //System.Diagnostics.Debug.Listeners.Add(new DefaultTraceListener());
             var pms = new PackageManagementService().Instance;
             
         }

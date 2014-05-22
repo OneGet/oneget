@@ -28,7 +28,6 @@ namespace Microsoft.OneGet.Core.DuckTyping {
     public class DynamicInterface {
         private static int _counter = 1;
         private readonly Dictionary<TwoTypes, bool> _compatibilityMatrix = new Dictionary<TwoTypes, bool>();
-        private readonly Dictionary<Type, MethodInfo[]> _requiredMethods = new Dictionary<Type, MethodInfo[]>();
 
         public T Create<T>(Type actualType) {
             if (!typeof (T).IsInterface) {
@@ -78,9 +77,9 @@ namespace Microsoft.OneGet.Core.DuckTyping {
                 }
 
                 // verify that required methods are present.
-                var candidateMethods = type.GetPublicMethods().ToArray();
+                var publicMethods = type.GetPublicMethods();
 
-                return GetRequiredMethods<T>().All(method => candidateMethods.FindMethod(method) != null);
+                return typeof (T).GetRequiredMethods().All(method => publicMethods.FindMethod(method) != null);
             });
         }
 
@@ -94,26 +93,26 @@ namespace Microsoft.OneGet.Core.DuckTyping {
                 return true;
             }
 
-            var isMethodImplemented = IsMethodImplentedFunction(actualInstance);
+            var instanceSupportsMethod = GenerateInstanceSupportsMethod(actualInstance);
 
-            var candidateType = actualInstance.GetType();
+            var instanceType = actualInstance.GetType();
 
-            var candidateMethods = candidateType.GetPublicMethods().ToArray();
-            var candidateFields = candidateType.GetPublicFields().Where(each => each.FieldType.BaseType == typeof (MulticastDelegate)).ToArray();
-            var candidateProperties = candidateType.GetPublicProperties().Where(each => each.PropertyType.BaseType == typeof (MulticastDelegate)).ToArray();
+            var instanceMethods = instanceType.GetPublicMethods();
+            var instanceFields = instanceType.GetPublicDelegateFields();
+            var instanceProperties = instanceType.GetPublicDelegateProperties();
 
-            return GetRequiredMethods<T>().All(
+            return typeof (T).GetRequiredMethods().All(
                 method =>
-                    isMethodImplemented(method.Name) && (
-                        candidateMethods.FindMethod(method) != null ||
-                        candidateFields.FindDelegate(actualInstance, method) != null ||
-                        candidateProperties.FindDelegate(actualInstance, method) != null));
+                    instanceSupportsMethod(method.Name) && (
+                        instanceMethods.FindMethod(method) != null ||
+                        instanceFields.FindDelegate(actualInstance, method) != null ||
+                        instanceProperties.FindDelegate(actualInstance, method) != null));
 
             // later, we can check for a delegate-creation function that can deliver a delegate to us by name and parameter types.
             // currently, we don't need that, so we're not going to implement it right away.
         }
 
-        private Func<string, bool> IsMethodImplentedFunction(object actualInstance) {
+        private Func<string, bool> GenerateInstanceSupportsMethod(object actualInstance) {
             // if the object implements an IsMethodImplemented Method, we'll be using that 
             // to see if the method is actually supposed to be used.
             // this enables an implementor to physically implement the function in the class
@@ -125,121 +124,50 @@ namespace Microsoft.OneGet.Core.DuckTyping {
         }
 
         private T CreateProxy<T>(object actualInstance) {
-
-
             var interfaceType = typeof (T);
             var candidateType = actualInstance.GetType();
 
-
             Event<Debug>.Raise("Creating Proxy {0} for {1}".format(interfaceType.Name, candidateType.Name));
 
+            var instanceMethods = candidateType.GetPublicMethods();
+            var instanceFields = candidateType.GetPublicDelegateFields();
+            var instanceProperties = candidateType.GetPublicDelegateProperties();
 
-            var candidateMethods = candidateType.GetPublicMethods().ToArray();
-            var candidateFields = candidateType.GetPublicFields().Where(each => each.FieldType.BaseType == typeof (MulticastDelegate)).ToArray();
-            var candidateProperties = candidateType.GetPublicProperties().Where(each => each.PropertyType.BaseType == typeof (MulticastDelegate)).ToArray();
+            var dynamicType = DefineDynamicType<T>(candidateType.Name);
 
-            var proxyName = "proxy_{0}{1}_{2}".format(interfaceType.Name, actualInstance.GetType().Name, _counter++);
+            var afterInstantiation = new List<Action<object>>();
 
-            var dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("{0}.Assembly".format(proxyName)), AssemblyBuilderAccess.Run);
+            var backingField = dynamicType.DefineConstructorWithBackingField(candidateType);
 
-            // Define a dynamic module in this assembly.
-            var dynamicModule = dynamicAssembly.DefineDynamicModule("{0}.Module".format(proxyName));
+            dynamicType.OverrideInitializeLifetimeService();
 
-            // Define a runtime class with specified name and attributes.
-            var dynamicType = dynamicModule.DefineType(proxyName, TypeAttributes.Public, typeof (MarshalByRefObject));
-            dynamicType.AddInterfaceImplementation(interfaceType);
+            var instanceSupportsMethod = GenerateInstanceSupportsMethod(actualInstance);
 
-            // backing store for the object instance
-            var backingField = dynamicType.DefineField("_instance", candidateType, FieldAttributes.Private);
-
-            // add constructor that takes the specific type of object that we're going to bind
-            var constructor = dynamicType.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] {
-                candidateType
-            });
-
-            var il = constructor.GetILGenerator();
-
-            var delegatesToLoad = new List<Action<object>>();
-
-            // store actualInstance in backingField
-            il.LoadArgument(0);
-            il.LoadArgument(1);
-            il.StoreField(backingField);
-
-            // return
-            il.Return();
-
-            // add override of InitLifetimeService so this object doesn't fall prey to timeouts
-            var ils = dynamicType.DefineMethod("InitializeLifetimeService", MethodAttributes.Public, CallingConventions.HasThis, typeof (object), new Type[] {
-            });
-            il = ils.GetILGenerator();
-
-            il.LoadNull();
-            il.Return();
-
-            var isMethodImplemented = IsMethodImplentedFunction(actualInstance);
             var implementedMethods = new HashSet<string>();
-            FieldBuilder implementedMethodsField;
 
             foreach (var method in interfaceType.GetMethods()) {
-                var parameterTypes = method.GetParameterTypes();
-                var methodBuilder = dynamicType.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual, CallingConventions.HasThis, method.ReturnType, parameterTypes);
-                il = methodBuilder.GetILGenerator();
-
                 if (method.Name == "IsImplemented") {
-                    // special case -- the IsImplemented method can give the interface owner information as to
-                    // which methods are actually implemented.
-                    implementedMethodsField = dynamicType.DefineField("__implementedMethods", typeof (HashSet<string>), FieldAttributes.Private);
+                    dynamicType.GenerateIsImplemented(method);
 
-                    il.LoadThis();
-                    il.LoadField(implementedMethodsField);
-                    il.LoadArgument(1);
-                    il.CallVirutal(typeof(HashSet<string>).GetMethod("Contains"));
-                    il.Return();
-                    
                     implementedMethods.Add(method.Name);
                     continue;
                 }
-                
 
-                if (isMethodImplemented(method.Name)) {
-                    var instanceMethod = candidateMethods.FindMethod(method);
+                if (instanceSupportsMethod(method.Name)) {
+                    var instanceMethod = instanceMethods.FindMethod(method);
                     if (instanceMethod != null) {
-                        // the target object has a method that matches.
-                        // let's use that.
-                        il.LoadThis();
-                        il.LoadField(backingField);
+                        dynamicType.GenerateMethodForDirectCall(method, backingField, instanceMethod);
 
-                        for (var i = 0; i < parameterTypes.Length; i++) {
-                            il.LoadArgument(i + 1);
-                        }
-
-                        il.CallVirutal(instanceMethod);
-                        il.Return();
                         implementedMethods.Add(method.Name);
                         continue;
                     }
 
-                    var instanceDelegate = candidateFields.FindDelegate(actualInstance, method) ?? candidateProperties.FindDelegate(actualInstance, method);
+                    var instanceDelegate = instanceFields.FindDelegate(actualInstance, method) ?? instanceProperties.FindDelegate(actualInstance, method);
                     if (instanceDelegate != null) {
-                        var fieldName = "__{0}".format(method.Name);
-
-                        // the target object has a property or field that matches the signature we're looking for.
-                        // let's use that.
-
-                        var delegateType = WrappedDelegate.GetFuncOrActionType(parameterTypes, method.ReturnType);
-                        var field = dynamicType.DefineField(fieldName, delegateType, FieldAttributes.Private);
-
-                        il.LoadThis();
-                        il.LoadField(field);
-                        for (var i = 0; i < parameterTypes.Length; i++) {
-                            il.LoadArgument(i + 1);
-                        }
-                        il.CallVirutal(delegateType.GetMethod("Invoke"));
-                        il.Return();
+                        var fieldName = dynamicType.GenerateMethodForDelegateCall(method);
 
                         // make sure this object loads the value of delegate into the field after instantiation time.
-                        delegatesToLoad.Add((instance) => {
+                        afterInstantiation.Add((instance) => {
                             var f = instance.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
                             f.SetValue(instance, instanceDelegate);
                         });
@@ -251,57 +179,14 @@ namespace Microsoft.OneGet.Core.DuckTyping {
                 // did not find a matching method or signature, or the instance told us that it doesn't actually support it 
                 // that's ok, if we get here, it must not be a required method.
                 // we'll implement a placeholder method for it.
-
-                do {
-                    if (method.ReturnType != typeof (void)) {
-                        if (method.ReturnType.IsPrimitive) {
-                            if (method.ReturnType == typeof (double)) {
-                                il.LoadDouble(0.0);
-                                break;
-                            }
-
-                            if (method.ReturnType == typeof (float)) {
-                                il.LoadFloat(0.0F);
-                                break;
-                            }
-
-                            il.LoadInt32(0);
-
-                            if (method.ReturnType == typeof (long) || method.ReturnType == typeof (ulong)) {
-                                il.ConvertToInt64();
-                            }
-
-                            break;
-                        }
-
-                        if (method.ReturnType.IsEnum) {
-                            // should really find out the actual default?
-                            il.LoadInt32(0);
-                            break;
-                        }
-
-                        if (method.ReturnType.IsValueType) {
-                            var result = il.DeclareLocal(method.ReturnType);
-                            il.LoadLocalAddress(result);
-                            il.InitObject(method.ReturnType);
-                            il.LoadLocation(0);
-                            break;
-                        }
-
-                        il.LoadNull();
-                    }
-                } while (false);
-                il.Return();
+                dynamicType.GenerateDefaultMethod(method);
             }
 
             var proxyType = dynamicType.CreateType();
-            var proxyConstructor = proxyType.GetConstructor(new[] {
-                candidateType
-            });
-            var proxyInstance = proxyConstructor.Invoke(new[] {
-                actualInstance
-            });
-            foreach (var action in delegatesToLoad) {
+
+            var proxyInstance = proxyType.CreateInstance(actualInstance);
+
+            foreach (var action in afterInstantiation) {
                 action(proxyInstance);
             }
 
@@ -313,8 +198,19 @@ namespace Microsoft.OneGet.Core.DuckTyping {
             return (T)proxyInstance;
         }
 
-        private MethodInfo[] GetRequiredMethods<T>() {
-            return _requiredMethods.GetOrAdd(typeof (T), () => typeof (T).GetMethods().Where(each => each.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("RequiredAttribute", StringComparison.OrdinalIgnoreCase))).ToArray());
+        private static TypeBuilder DefineDynamicType<T>(string actualInstanceName) {
+            var interfaceType = typeof (T);
+            var proxyName = "proxy_{0}{1}_{2}".format(interfaceType.Name, actualInstanceName, _counter++);
+
+            var dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("{0}.Assembly".format(proxyName)), AssemblyBuilderAccess.Run);
+
+            // Define a dynamic module in this assembly.
+            var dynamicModule = dynamicAssembly.DefineDynamicModule("{0}.Module".format(proxyName));
+
+            // Define a runtime class with specified name and attributes.
+            var dynamicType = dynamicModule.DefineType(proxyName, TypeAttributes.Public, typeof (MarshalByRefObject));
+            dynamicType.AddInterfaceImplementation(interfaceType);
+            return dynamicType;
         }
 
         public IEnumerable<Type> FilterTypesCompatibleTo<T>(IEnumerable<Type> types) {
@@ -329,7 +225,149 @@ namespace Microsoft.OneGet.Core.DuckTyping {
             if (assembly == null) {
                 return Enumerable.Empty<Type>();
             }
-            return assembly.GetTypes().Where(each => each.IsPublic && each.BaseType != typeof(MulticastDelegate) && IsTypeCompatible<T>(each));
+            return assembly.GetTypes().Where(each => each.IsPublic && each.BaseType != typeof (MulticastDelegate) && IsTypeCompatible<T>(each));
+        }
+    }
+
+    internal static class DynamicTypeExtensions {
+        internal static FieldBuilder DefineConstructorWithBackingField(this TypeBuilder dynamicType, Type instanceType) {
+            // backing store for the object instance
+            var backingField = dynamicType.DefineField("_instance", instanceType, FieldAttributes.Private);
+
+            // add constructor that takes the specific type of object that we're going to bind
+            var constructor = dynamicType.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] {
+                instanceType
+            });
+
+            var il = constructor.GetILGenerator();
+
+            // store actualInstance in backingField
+            il.LoadArgument(0);
+            il.LoadArgument(1);
+            il.StoreField(backingField);
+
+            // return
+            il.Return();
+            return backingField;
+        }
+
+        internal static void OverrideInitializeLifetimeService(this TypeBuilder dynamicType) {
+            // add override of InitLifetimeService so this object doesn't fall prey to timeouts
+            var ils = dynamicType.DefineMethod("InitializeLifetimeService", MethodAttributes.Public, CallingConventions.HasThis, typeof (object), new Type[] {
+            });
+            var il = ils.GetILGenerator();
+
+            il.LoadNull();
+            il.Return();
+        }
+
+        internal static void GenerateIsImplemented(this TypeBuilder dynamicType, MethodInfo method) {
+            // special case -- the IsImplemented method can give the interface owner information as to
+            // which methods are actually implemented.
+            var implementedMethodsField = dynamicType.DefineField("__implementedMethods", typeof (HashSet<string>), FieldAttributes.Private);
+
+            var il = dynamicType.CreateMethod(method);
+
+            il.LoadThis();
+            il.LoadField(implementedMethodsField);
+            il.LoadArgument(1);
+            il.CallVirutal(typeof (HashSet<string>).GetMethod("Contains"));
+            il.Return();
+        }
+
+        internal static void GenerateMethodForDirectCall(this TypeBuilder dynamicType, MethodInfo method, FieldBuilder backingField, MethodInfo instanceMethod) {
+            var il = dynamicType.CreateMethod(method);
+            // the target object has a method that matches.
+            // let's use that.
+            il.LoadThis();
+            il.LoadField(backingField);
+
+            for (var i = 0; i < method.GetParameterTypes().Length; i++) {
+                il.LoadArgument(i + 1);
+            }
+
+            il.CallVirutal(instanceMethod);
+            il.Return();
+        }
+
+        internal static ILGenerator CreateMethod(this TypeBuilder dynamicType, MethodInfo method) {
+            var methodBuilder = dynamicType.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual, CallingConventions.HasThis, method.ReturnType, method.GetParameterTypes());
+            return methodBuilder.GetILGenerator();
+        }
+
+        internal static string GenerateMethodForDelegateCall(this TypeBuilder dynamicType, MethodInfo method) {
+            var il = dynamicType.CreateMethod(method);
+            var fieldName = "__{0}".format(method.Name);
+
+            // the target object has a property or field that matches the signature we're looking for.
+            // let's use that.
+
+            var delegateType = WrappedDelegate.GetFuncOrActionType(method.GetParameterTypes(), method.ReturnType);
+            var field = dynamicType.DefineField(fieldName, delegateType, FieldAttributes.Private);
+
+            il.LoadThis();
+            il.LoadField(field);
+            for (var i = 0; i < method.GetParameterTypes().Length; i++) {
+                il.LoadArgument(i + 1);
+            }
+            il.CallVirutal(delegateType.GetMethod("Invoke"));
+            il.Return();
+            return fieldName;
+        }
+
+        internal static void GenerateDefaultMethod(this TypeBuilder dynamicType, MethodInfo method) {
+            var il = dynamicType.CreateMethod(method);
+            do {
+                if (method.ReturnType != typeof (void)) {
+                    if (method.ReturnType.IsPrimitive) {
+                        if (method.ReturnType == typeof (double)) {
+                            il.LoadDouble(0.0);
+                            break;
+                        }
+
+                        if (method.ReturnType == typeof (float)) {
+                            il.LoadFloat(0.0F);
+                            break;
+                        }
+
+                        il.LoadInt32(0);
+
+                        if (method.ReturnType == typeof (long) || method.ReturnType == typeof (ulong)) {
+                            il.ConvertToInt64();
+                        }
+
+                        break;
+                    }
+
+                    if (method.ReturnType.IsEnum) {
+                        // should really find out the actual default?
+                        il.LoadInt32(0);
+                        break;
+                    }
+
+                    if (method.ReturnType.IsValueType) {
+                        var result = il.DeclareLocal(method.ReturnType);
+                        il.LoadLocalAddress(result);
+                        il.InitObject(method.ReturnType);
+                        il.LoadLocation(0);
+                        break;
+                    }
+
+                    il.LoadNull();
+                }
+            } while (false);
+            il.Return();
+        }
+
+        internal static object CreateInstance(this Type proxyType, object actualInstance) {
+            var proxyConstructor = proxyType.GetConstructor(new[] {
+                actualInstance.GetType()
+            });
+
+            var proxyInstance = proxyConstructor.Invoke(new[] {
+                actualInstance
+            });
+            return proxyInstance;
         }
     }
 }

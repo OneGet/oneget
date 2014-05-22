@@ -31,9 +31,7 @@ namespace Microsoft.OneGet.Test {
             proxy.AddPackageSource2("NameValue", "LocationValue");
             proxy.AddPackageSource3("NameValue", "LocationValue");
             proxy.AddPackageSource4("NameValue", "LocationValue");
-            if (proxy.AddPackageSource4.IsSupported()) {
-                // then it's ok...
-            }
+           
         }
     }
 

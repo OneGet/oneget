@@ -14,7 +14,9 @@
 
 namespace Microsoft.OneGet.Test {
     using System;
+    using System.Security.Policy;
     using Core.DuckTyping;
+    using CSharp.RuntimeBinder;
     using Xunit;
 
     public class RequiredAttribute : Attribute {
@@ -113,6 +115,20 @@ namespace Microsoft.OneGet.Test {
                     One = new Action(() => {})
                 });
             });
+        }
+
+        [Fact]
+        public void TestUsingStaticOnDyanmicType() {
+            Assert.Throws<RuntimeBinderException>(() => {
+                dynamic x = new TUSODT();
+                Console.WriteLine(x.Hello());
+            });
+        }
+
+        public class TUSODT {
+            public static string Hello() {
+                return "Hello";
+            }
         }
     }
 }

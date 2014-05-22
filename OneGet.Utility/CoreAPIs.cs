@@ -19,7 +19,6 @@ namespace Microsoft.OneGet {
 
     public delegate bool OnMainThread(Func<bool> onMainThreadDelegate);
 
-
     #region declare core-apis
     // Core Callbacks that we'll both use internally and pass on down to providers.
     public delegate bool Warning( string message, IEnumerable<object> args = null);

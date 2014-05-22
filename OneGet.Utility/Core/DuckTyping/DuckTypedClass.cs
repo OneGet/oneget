@@ -20,6 +20,7 @@ namespace Microsoft.OneGet.Core.DuckTyping {
     using AppDomains;
     using Extensions;
 
+#if OLD_DUCKTYPER
     public class DuckTypedClass : MarshalByRefObject {
         private readonly object _instance;
         private readonly CreateDelegate _createDelegateImpl;
@@ -174,5 +175,5 @@ namespace Microsoft.OneGet.Core.DuckTyping {
 
      
     }
- 
+#endif
 }

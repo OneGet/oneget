@@ -18,9 +18,11 @@ namespace Microsoft.OneGet.Core.Extensions {
     using Collections;
     using DuckTyping;
 
+#if OLD_DUCKTYPER
     public class LazyReadOnlyDelgateDictionary<K, V> : Lazy<IDictionary<K, V>> {
         public LazyReadOnlyDelgateDictionary(Func<ICollection<K>> keyCollectionFn, Func<K, V> valueLookupFn)
             : base(() => keyCollectionFn.IsSupported() && valueLookupFn.IsSupported() ? (IDictionary<K, V>)new ReadOnlyDelegateDictionary<K, V>(keyCollectionFn().ByRef, valueLookupFn) : new Dictionary<K, V>()) {
         }
     }
+#endif
 }
