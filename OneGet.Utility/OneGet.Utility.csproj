@@ -67,6 +67,7 @@
     <Compile Include="Core\Collections\VirtualEnumerator.cs" />
     <Compile Include="Core\Dynamic\DynamicInterface.cs" />
     <Compile Include="Core\Dynamic\DynamicInterfaceExtensions.cs" />
+    <Compile Include="Core\Dynamic\DynamicTypeExtensions.cs" />
     <Compile Include="Core\Dynamic\FluentIlExtensions.cs" />
     <Compile Include="Core\Dynamic\PrivateProxy.cs" />
     <Compile Include="Core\Dynamic\ProxyClass.cs" />

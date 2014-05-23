@@ -153,6 +153,51 @@ namespace Microsoft.OneGet.Test {
             Assert.Equal("::4", dynamicInstance.Four(4));
         }
 
+        [Fact]
+        public void TestChaining() {
+
+            var di = new DynamicInterface();
+            var instance = di.Create<IDynTest>(
+                new {
+                    One = new Action(() => {
+                        Console.WriteLine("Instance1::One");
+                    }),
+                }, new {
+                    Two = new Func<bool>(() => {
+                        Console.WriteLine("Instance1::Two");
+                        return true;
+                    })
+                }
+            );
+
+
+            instance.One();
+            
+            // override 1:one
+            var instance2 = di.Create<IDynTest>(
+                new {
+                    One = new Action(() => {
+                        Console.WriteLine("Instance3::One");
+                    }), 
+                    Two = new Func<bool>(() => {return instance.Two();}) }
+                , instance);
+
+            var instance3 = di.Create<IDynTest>(
+                new {
+                    Four = new Func<int, string>((i) => {
+                        Console.WriteLine("Instance3::Four");
+                        return "::" + i;
+                    }),
+                }, instance2);
+            
+
+            instance3.One();
+            instance3.Two();
+            instance3.Three();
+            instance3.Four(100);
+            instance3.Five(100,"hi");
+        }
+
 
         [Fact]
         public void TestDynamicInterfaceRequired() {
