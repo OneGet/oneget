@@ -175,7 +175,7 @@ namespace CustomCodeGenerator {
             var contents = sourceFiles.Select(File.ReadAllText).ToArray();
 
             var parameterRx = new Regex(@"\s*(?<type>[\w,\<\>]+)\s*(?<name>\w+)\s*(?<init>=\s*[\w\.]*\s*)?\s*?(?:\,)?");
-            var delegateRx = new Regex(@"\s*(?<preamble>.*?)(?<scope>public|internal)\s*delegate\s*(?<TRet>\S*)\s*(?<name>\w+)\((?<params>.*?)\).*?;", RegexOptions.Singleline);
+            // var delegateRx = new Regex(@"\s*(?<preamble>.*?)(?<scope>public|internal)\s*delegate\s*(?<TRet>\S*)\s*(?<name>\w+)\((?<params>.*?)\).*?;", RegexOptions.Singleline);
             var interfaceRx = new Regex(@"\s*(?<preamble>.*?)\s*(?<TRet>\S*)\s*(?<name>\w+)\((?<params>.*?)\).*?;", RegexOptions.Singleline);
 
             // ------------------------------------------------------------------------------------------------------------------------------
@@ -194,7 +194,7 @@ namespace CustomCodeGenerator {
                 WhiteSpace = match.GetValue("whitespace")
             })).ToArray();
 
-            var apiDeclarations = apis.SelectMany(region => delegateRx.FindIn(region.Content).Select(match => new {
+            var apiDeclarations = apis.SelectMany(region => interfaceRx.FindIn(region.Content).Select(match => new {
                 category = region.Name,
                 whiteSpace = region.WhiteSpace,
                 preamble = RemoveReturnsAttribute(match.GetValue("preamble").TrimWhitespace()),
@@ -361,6 +361,7 @@ namespace CustomCodeGenerator {
                     var text = originalText;
 
 
+#if NOT_USED
                     // generate-resolved *-apis =============================================================================================
                     text = ReplaceRegion("generate-resolved", "apis", text, (name, content,whitespace)=> {
                         return apiDeclarations.Where(each => each.category == name).Select(api => @"
@@ -390,6 +391,8 @@ namespace CustomCodeGenerator {
                     text = ReplaceRegion("dispose-dispatcher", "apis", text, (name, content, whitespace) => {
                         return apiDeclarations.Where(each => each.category == name).Select(api => @"{1}_${delegateName} = null;".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);
                     });
+
+#endif 
 
                     // implement *-apis =============================================================================================
                     text = ReplaceRegion("implement", "apis", text, (name, content, whitespace) => {
@@ -428,7 +431,7 @@ namespace CustomCodeGenerator {
                     text = ReplaceRegion("copy", "apis", text, (name, content, whitespace) => {
                         return  apiDeclarations.Where(each => each.category == name).Select(api => @"
 {1}${preamble}
-{1}public delegate ${returnType} ${delegateName}(${parameterText});".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);
+{1}public abstract ${returnType} ${delegateName}(${parameterText});".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);
                     });
 
 
@@ -460,7 +463,7 @@ namespace CustomCodeGenerator {
     {1} // TODO: Fill in implementation
     {1} // Delete this method if you do not need to implement it
     {1} // Please don't throw an not implemented exception, it's not optimal.
-    {1}using (var request = new Request(c)) {{
+    {1}using (var request = Request.New(c)) {{
     {1}    // use the request object to interact with the OneGet core:
     {1}    request.Debug(""Information"",""Calling '${delegateName}'"" );
     {1}}}

@@ -55,7 +55,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public override bool ProcessRecordAsync() {
             var provider = _packageManagementService.SelectProviders(Provider).FirstOrDefault();
             if (provider == null) {
-                Event<Error>.Raise("Unknown Provider", new string[] {Provider});
+                Error("Unknown Provider", new string[] {Provider});
                 return false;
             }
             using (var sources = CancelWhenStopped(provider.GetPackageSources(Invoke))) {

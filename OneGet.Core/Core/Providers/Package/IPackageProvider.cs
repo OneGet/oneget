@@ -16,9 +16,26 @@ namespace Microsoft.OneGet.Core.Providers.Package {
     using System;
     using System.Collections.Generic;
     using Dynamic;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
-    public interface IPackageProvider {
-        bool IsImplemented(string methodName);
+    // using Callback = System.Object;
+    using Callback = System.Object;
+
+    public interface IProvider {
+        
+        /// <summary>
+        ///     Allows the Provider to do one-time initialization.
+        ///     This is called after the Provider is instantiated .
+        /// 
+        /// 
+        /// </summary>
+        /// <param name="dynamicInterface">A reference to the DynamicInterface class -- used to implement late-binding</param>
+        /// <param name="c">Callback Delegate Reference</param>
+        [Required]
+        void InitializeProvider(dynamic dynamicInterface, Callback c);
+
+    }
+
+    public interface IPackageProvider : IProvider {
+        bool IsMethodImplemented(string methodName);
 
         #region declare PackageProvider-interface
 
@@ -28,8 +45,6 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         /// <returns>the name of the package provider</returns>
         [Required]
         string GetPackageProviderName();
-
-        void InitializeProvider(Callback c);
 
         void GetFeatures(Callback c);
 

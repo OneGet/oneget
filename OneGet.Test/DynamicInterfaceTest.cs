@@ -36,8 +36,29 @@ namespace Microsoft.OneGet.Test {
 
         string Five(int a, string b);
 
-        bool IsImplemented(string name);
+        bool IsMethodImplemented(string name);
     }
+
+    public abstract class AbstractDynTest {
+        [Required]
+        public abstract void One();
+
+        [Required]
+        public abstract bool Two();
+
+        public abstract string Three();
+
+        public abstract string Four(int a);
+
+        public virtual string Five(int a, string b) {
+            Console.WriteLine("DefaultImplementation");
+            return "NO ANSWER";
+        }
+
+        public abstract bool IsMethodImplemented(string name);
+    }
+
+    
 
     public class DynInst {
         public void One() {
@@ -78,33 +99,36 @@ namespace Microsoft.OneGet.Test {
             Assert.Equal("Four4", idyn.Four(4));
             Assert.Equal("Four5hi", idyn.Five(5, "hi"));
 
-            Assert.True(idyn.IsImplemented("One"));
-            Assert.True(idyn.IsImplemented("Two"));
-            Assert.True(idyn.IsImplemented("Three"));
-            Assert.True(idyn.IsImplemented("Four"));
-            Assert.True(idyn.IsImplemented("Five"));
+            Assert.True(idyn.IsMethodImplemented("One"));
+            Assert.True(idyn.IsMethodImplemented("Two"));
+            Assert.True(idyn.IsMethodImplemented("Three"));
+            Assert.True(idyn.IsMethodImplemented("Four"));
+            Assert.True(idyn.IsMethodImplemented("Five"));
         }
 
         [Fact]
         public void TestDynamicInterfaceAgainstAnonymousObject() {
             var di = new DynamicInterface();
 
-            var idyn2 = di.Create<IDynTest>(new {
-                One = new Action(() => {}),
-                Two = new Func<bool>(() => {return true;})
-            });
+            // proves that it reuses generated ProxyClasses.
+            for (int i = 0; i < 10; i++) {
+                var idyn2 = di.Create<IDynTest>(new {
+                    One = new Action(() => {}),
+                    Two = new Func<bool>(() => {return true;})
+                });
 
-            Assert.True(idyn2.IsImplemented("One"));
-            Assert.True(idyn2.IsImplemented("Two"));
-            Assert.False(idyn2.IsImplemented("Three"));
-            Assert.False(idyn2.IsImplemented("Four"));
-            Assert.False(idyn2.IsImplemented("Five"));
+                Assert.True(idyn2.IsMethodImplemented("One"));
+                Assert.True(idyn2.IsMethodImplemented("Two"));
+                Assert.False(idyn2.IsMethodImplemented("Three"));
+                Assert.False(idyn2.IsMethodImplemented("Four"));
+                Assert.False(idyn2.IsMethodImplemented("Five"));
 
 
-            idyn2.One();
+                idyn2.One();
 
-            Assert.True(idyn2.Two());
-            Assert.Equal(null, idyn2.Four(4));
+                Assert.True(idyn2.Two());
+                Assert.Equal(null, idyn2.Four(4));
+            }
         }
 
 
@@ -121,14 +145,82 @@ namespace Microsoft.OneGet.Test {
                 Four = new Func<int, string>((i)=> "::"+i)
             });
 
-            Assert.True(dynamicInstance.IsImplemented("One"));
-            Assert.True(dynamicInstance.IsImplemented("Two"));
-            Assert.False(dynamicInstance.IsImplemented("Three"));
-            Assert.True(dynamicInstance.IsImplemented("Four"));
-            Assert.False(dynamicInstance.IsImplemented("Five"));
+            Assert.True(dynamicInstance.IsMethodImplemented("One"));
+            Assert.True(dynamicInstance.IsMethodImplemented("Two"));
+            Assert.False(dynamicInstance.IsMethodImplemented("Three"));
+            Assert.True(dynamicInstance.IsMethodImplemented("Four"));
+            Assert.False(dynamicInstance.IsMethodImplemented("Five"));
 
             Assert.True(dynamicInstance.Two());
             Assert.Equal("::4", dynamicInstance.Four(4));
+        }
+
+        private delegate bool Two(); 
+
+        [Fact]
+        public void TestAsFunction() {
+            var d = new DynInst();
+            var t = d.As<Two>();
+            t();
+
+            var p = new {
+                Two = new Func<bool>(() => {
+                    Console.WriteLine("In Func<bool> for Two!");
+                    return true;
+                })
+            };
+
+            var q = p.As<Two>();
+            q();
+
+            var z = new {
+            };
+
+
+            // this can't work, as the function doesn't exist.
+            Assert.Throws<Exception>(() => {
+                var tz = z.As<Two>();
+                tz();
+            });
+
+            Func<bool> fTwo = new Func<bool>(() => {
+                Console.WriteLine("In fTwo");
+                return true;
+            });
+
+            fTwo.As<Two>()();
+
+            Assert.Throws<Exception>(() => {
+                Func<string> fThree = new Func<string>(() => {
+                    Console.WriteLine("In fThree");
+                    return "true";
+                });
+
+                fThree.As<Two>()();
+            });
+        }
+
+        [Fact]
+        public void TestClassImplementation() {
+            var dynamicInstance = DynamicInterface.Instance.Create<AbstractDynTest>(new {
+                One = new Action(() => { }),
+            }, new {
+                Two = new Func<bool>(() => { return true; })
+            }, new {
+                Four = new Func<int, string>((i) => "::" + i)
+            });
+
+            Assert.True(dynamicInstance.IsMethodImplemented("One"));
+            Assert.True(dynamicInstance.IsMethodImplemented("Two"));
+            Assert.False(dynamicInstance.IsMethodImplemented("Three"));
+            Assert.True(dynamicInstance.IsMethodImplemented("Four"));
+            Assert.False(dynamicInstance.IsMethodImplemented("Five"));
+
+            dynamicInstance.One();
+            dynamicInstance.Two();
+            dynamicInstance.Three();
+            dynamicInstance.Four(100);
+            dynamicInstance.Five(100, "hi");
         }
 
         [Fact]
@@ -143,11 +235,11 @@ namespace Microsoft.OneGet.Test {
                 One = new Action(() => { }),
             });
 
-            Assert.True(dynamicInstance.IsImplemented("One"));
-            Assert.True(dynamicInstance.IsImplemented("Two"));
-            Assert.False(dynamicInstance.IsImplemented("Three"));
-            Assert.True(dynamicInstance.IsImplemented("Four"));
-            Assert.False(dynamicInstance.IsImplemented("Five"));
+            Assert.True(dynamicInstance.IsMethodImplemented("One"));
+            Assert.True(dynamicInstance.IsMethodImplemented("Two"));
+            Assert.False(dynamicInstance.IsMethodImplemented("Three"));
+            Assert.True(dynamicInstance.IsMethodImplemented("Four"));
+            Assert.False(dynamicInstance.IsMethodImplemented("Five"));
 
             Assert.True(dynamicInstance.Two());
             Assert.Equal("::4", dynamicInstance.Four(4));

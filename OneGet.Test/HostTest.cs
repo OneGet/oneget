@@ -17,9 +17,6 @@ namespace Microsoft.OneGet.Test {
     using System.Diagnostics;
     using Xunit;
 
-    public class ICallback {
-        
-    }
 
     public class PackageManagementServiceTest {
 
@@ -41,7 +38,7 @@ namespace Microsoft.OneGet.Test {
         }
 
         [Fact]
-        public void Provider_IsImplemented() {
+        public void Provider_IsMethodImplemented() {
 
         }
 

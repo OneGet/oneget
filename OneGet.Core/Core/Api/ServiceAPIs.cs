@@ -14,87 +14,90 @@
 
 namespace Microsoft.OneGet.Core.Api {
     using System.Collections.Generic;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Callback = System.Object;
 
+
+    public interface IServicesApi {
     #region declare service-apis
 
-    public delegate string GetNuGetExePath(Callback c);
+        string GetNuGetExePath(Callback c);
 
-    public delegate string GetNuGetDllPath(Callback c);
+        string GetNuGetDllPath(Callback c);
 
-    public delegate string DownloadFile(string remoteLocation, string localLocation, Callback c);
+        string DownloadFile(string remoteLocation, string localLocation, Callback c);
 
-    public delegate void AddPinnedItemToTaskbar(string item, Callback c);
+        void AddPinnedItemToTaskbar(string item, Callback c);
 
-    public delegate void RemovePinnedItemFromTaskbar(string item, Callback c);
+        void RemovePinnedItemFromTaskbar(string item, Callback c);
 
-    public delegate bool CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c);
+        bool CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c);
 
-    public delegate IEnumerable<string> UnzipFileIncremental(string zipFile, string folder, Callback c);
+        IEnumerable<string> UnzipFileIncremental(string zipFile, string folder, Callback c);
 
-    public delegate IEnumerable<string> UnzipFile(string zipFile, string folder, Callback c);
+        IEnumerable<string> UnzipFile(string zipFile, string folder, Callback c);
 
-    public delegate void AddFileAssociation();
+        void AddFileAssociation();
 
-    public delegate void RemoveFileAssociation();
+        void RemoveFileAssociation();
 
-    public delegate void AddExplorerMenuItem();
+        void AddExplorerMenuItem();
 
-    public delegate void RemoveExplorerMenuItem();
+        void RemoveExplorerMenuItem();
 
-    public delegate bool SetEnvironmentVariable(string variable, string value, string context, Callback c);
+        bool SetEnvironmentVariable(string variable, string value, string context, Callback c);
 
-    public delegate bool RemoveEnvironmentVariable(string variable, string context, Callback c);
+        bool RemoveEnvironmentVariable(string variable, string context, Callback c);
 
-    public delegate void AddFolderToPath();
+        void AddFolderToPath();
 
-    public delegate void RemoveFolderFromPath();
+        void RemoveFolderFromPath();
 
-    public delegate void InstallMSI();
+        void InstallMSI();
 
-    public delegate void RemoveMSI();
+        void RemoveMSI();
 
-    public delegate void StartProcess();
+        void StartProcess();
 
-    public delegate void InstallVSIX();
+        void InstallVSIX();
 
-    public delegate void UninstallVSIX();
+        void UninstallVSIX();
 
-    public delegate void InstallPowershellScript();
+        void InstallPowershellScript();
 
-    public delegate void UninstallPowershellScript();
+        void UninstallPowershellScript();
 
-    public delegate void SearchForExecutable();
+        void SearchForExecutable();
 
-    public delegate void GetUserBinFolder();
+        void GetUserBinFolder();
 
-    public delegate void GetSystemBinFolder();
+        void GetSystemBinFolder();
 
-    public delegate bool CopyFile(string sourcePath, string destinationPath, Callback c);
+        bool CopyFile(string sourcePath, string destinationPath, Callback c);
 
-    public delegate void CopyFolder();
+        void CopyFolder();
 
-    public delegate void Delete(string path, Callback c);
+        void Delete(string path, Callback c);
 
-    public delegate void DeleteFolder(string folder, Callback c);
+        void DeleteFolder(string folder, Callback c);
 
-    public delegate void CreateFolder(string folder, Callback c);
+        void CreateFolder(string folder, Callback c);
 
-    public delegate void DeleteFile(string filename, Callback c);
+        void DeleteFile(string filename, Callback c);
 
-    public delegate void BeginTransaction();
+        void BeginTransaction();
 
-    public delegate void AbortTransaction();
+        void AbortTransaction();
 
-    public delegate void EndTransaction();
+        void EndTransaction();
 
-    public delegate void GenerateUninstallScript();
+        void GenerateUninstallScript();
 
-    public delegate string GetKnownFolder(string knownFolder, Callback c);
+        string GetKnownFolder(string knownFolder, Callback c);
 
-    public delegate bool IsElevated(Callback c);
+        bool IsElevated(Callback c);
 
-    public delegate object GetPackageManagementService(Callback c);
+        object GetPackageManagementService(Callback c);
 
-    #endregion
+        #endregion
+    }
 }

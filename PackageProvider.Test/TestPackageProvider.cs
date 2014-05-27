@@ -15,8 +15,7 @@
 namespace Microsoft.OneGet.PackageProvider.Test {
     using System;
     using System.Collections.Generic;
-    using Utility;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Callback = System.Object;
 
     public class TestPackageProvider {
         #region implement PackageProvider-interface
@@ -25,7 +24,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'AddPackageSource'" );
             }
@@ -35,7 +34,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'FindPackage'" );
             }
@@ -46,7 +45,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'FindPackageByFile'" );
             }
@@ -57,7 +56,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'FindPackageByUri'" );
             }
@@ -68,7 +67,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'GetInstalledPackages'" );
             }
@@ -79,7 +78,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'GetDynamicOptions'" );
             }
@@ -101,7 +100,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'GetPackageSources'" );
             }
@@ -112,7 +111,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'InitializeProvider'" );
             }
@@ -122,7 +121,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'InstallPackage'" );
             }
@@ -135,7 +134,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'InstallPackageByFile'" );
             }
@@ -146,7 +145,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'InstallPackageByUri'" );
             }
@@ -157,7 +156,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'IsTrustedPackageSource'" );
             }
@@ -168,7 +167,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'IsValidPackageSource'" );
             }
@@ -179,7 +178,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'RemovePackageSource'" );
             }
@@ -189,7 +188,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'UninstallPackage'" );
             }
@@ -200,7 +199,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'GetFeatures'" );
             }
@@ -242,7 +241,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'DownloadPackage'" );
             }
@@ -253,7 +252,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'GetPackageDependencies'" );
             }
@@ -264,7 +263,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'GetPackageDetails'" );
             }
@@ -275,7 +274,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'StartFind'" );
             }
@@ -286,7 +285,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'CompleteFind'" );
             }

@@ -34,7 +34,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public override bool ProcessRecordAsync() {
             var providers = _packageManagementService.SelectProviders(Provider);
             if (providers == null) {
-                Event<Error>.Raise("Unknown Provider", new string[] { Provider});
+                Error("Unknown Provider", new string[] { Provider});
                 return false;
             }
 
@@ -61,18 +61,18 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (!found) {
                     if (!string.IsNullOrEmpty(Name)) {
                         if (!string.IsNullOrEmpty(Location)) {
-                            Event<Error>.Raise("Provider '{0}' returned no package sources (Name = '{1}' Location='{2}')", new [] { provider.Name, Name, Location });
+                            Error("Provider '{0}' returned no package sources (Name = '{1}' Location='{2}')", new [] { provider.Name, Name, Location });
                             continue;
                         }
-                        Event<Error>.Raise("Provider '{0}' returned no package sources (Name = '{1}')", new[] { provider.Name, Name });
+                        Error("Provider '{0}' returned no package sources (Name = '{1}')", new[] { provider.Name, Name });
                         continue;
                     }
 
                     if (!string.IsNullOrEmpty(Location)) {
-                        Event<Error>.Raise("Provider '{0}' returned no package sources (Location = '{1}')", new[] { provider.Name, Location });
+                        Error("Provider '{0}' returned no package sources (Location = '{1}')", new[] { provider.Name, Location });
                         continue;
                     }
-                    Event<Error>.Raise("Provider '{0}' returned no package sources".format(provider.Name ));
+                    Error("Provider '{0}' returned no package sources".format(provider.Name ));
                 }
 
             }

@@ -12,21 +12,34 @@
 //  limitations under the License.
 //  
 
+using System.Collections.Generic;
+using Microsoft.OneGet;
+using Microsoft.OneGet.Core.Api;
+
+internal interface IRequest : IHostApis, ICoreApis, IRequestApis, IServicesApi {
+}
+
+public delegate bool IsCancelled();
+public delegate bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source);
+public delegate bool YieldPackageDetails(object serializablePackageDetailsObject);
+public delegate bool YieldSource(string name, string location, bool isTrusted);
+public delegate bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired, IEnumerable<string> permittedValues);
+
 namespace Microsoft.OneGet.Core.Providers.Package {
     using System;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using Api;
     using Collections;
+    using Dynamic;
     using Extensions;
     using Packaging;
-    using Service;
-    using Tasks;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Callback = System.Object;
 
     public class PackageProvider : MarshalByRefObject {
         private readonly IPackageProvider _provider;
+
+        private string _name;
 
         internal PackageProvider(IPackageProvider provider) {
             _provider = provider;
@@ -34,7 +47,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
 
         public string Name {
             get {
-                return _provider.GetPackageProviderName();
+                return _name ?? (_name = _provider.GetPackageProviderName());
             }
         }
 
@@ -43,64 +56,78 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             return null;
         }
 
-        public bool IsImplemented(string methodName) {
-            return _provider.IsImplemented(methodName);
+        public bool IsMethodImplemented(string methodName) {
+            return _provider.IsMethodImplemented(methodName);
         }
 
         // Friendly APIs
 
         public void InitializeProvider(Callback c) {
-            _provider.InitializeProvider(c);
+            _provider.InitializeProvider(DynamicInterface.Instance , c);
         }
 
         public void AddPackageSource(string name, string location, bool trusted, Callback c) {
-            _provider.AddPackageSource(name, location, trusted, new InvokableDispatcher(c, Instance.Service.Invoke));
+            _provider.AddPackageSource(name, location, trusted, DynamicInterface.Instance.Create<IRequest>(c, this));
         }
 
         public void RemovePackageSource(string name, Callback c) {
-            _provider.RemovePackageSource(name, new InvokableDispatcher(c, Instance.Service.Invoke));
+            _provider.RemovePackageSource(name, DynamicInterface.Instance.Create<IRequest>(c, this));
+        }
+
+        private CancellableEnumerable<T> CallAndCollect<T>(Action<CancellableBlockingCollection<T>> call) {
+            var collection = new CancellableBlockingCollection<T>();
+            Task.Factory.StartNew(() => {
+                try {
+                    call(collection);
+                } catch (Exception e) {
+                    e.Dump();
+                } finally {
+                    collection.CompleteAdding();
+                }
+            });
+            return collection;
         }
 
         public CancellableEnumerable<SoftwareIdentity> FindPackageByUri(Uri u, int id, Callback c) {
-            var providerName = Name;
+            var isCancelled = c.As<IsCancelled>();
 
-            return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
-                c, // inherited callback
-                nc => _provider.FindPackageByUri(u, id, nc), // actual call
-                (collection, okToContinue) => ((fastpath, name, version, scheme, summary, source) => {
-                    collection.Add(new SoftwareIdentity {
-                        FastPath = fastpath,
-                        Name = name,
-                        Version = version,
-                        VersionScheme = scheme,
-                        Summary = summary,
-                        ProviderName = providerName,
-                        Source = source,
-                        Status = "Available"
-                    });
-                    return okToContinue();
-                }));
+            return CallAndCollect<SoftwareIdentity>(collection =>
+                _provider.FindPackageByUri(u, id, c.Extend<IRequest>(new {
+                    YieldPackage = new YieldPackage((fastpath, name, version, scheme, summary, source) => {
+                        collection.Add(new SoftwareIdentity {
+                            FastPath = fastpath,
+                            Name = name,
+                            Version = version,
+                            VersionScheme = scheme,
+                            Summary = summary,
+                            ProviderName = Name,
+                            Source = source,
+                            Status = "Available"
+                        });
+                        return !(isCancelled() || collection.IsCancelled);
+                    })
+                })));
         }
 
         public CancellableEnumerable<SoftwareIdentity> FindPackageByFile(string filename, int id, Callback c) {
-            var providerName = Name;
+            var isCancelled = c.As<IsCancelled>();
 
-            return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
-                c, // inherited callback
-                nc => _provider.FindPackageByFile(filename, id, nc), // actual call
-                (collection, okToContinue) => ((fastpath, name, version, scheme, summary, source) => {
-                    collection.Add(new SoftwareIdentity {
-                        FastPath = fastpath,
-                        Name = name,
-                        Version = version,
-                        VersionScheme = scheme,
-                        Summary = summary,
-                        ProviderName = providerName,
-                        Source = source,
-                        Status = "Available"
-                    });
-                    return okToContinue();
-                }));
+            return CallAndCollect<SoftwareIdentity>(result =>
+                _provider.FindPackageByFile(filename, id, c.Extend<IRequest>(new {
+                    YieldPackage = new YieldPackage((fastpath, name, version, scheme, summary, source) => {
+                        result.Add(new SoftwareIdentity {
+                            FastPath = fastpath,
+                            Name = name,
+                            Version = version,
+                            VersionScheme = scheme,
+                            Summary = summary,
+                            ProviderName = Name,
+                            Source = source,
+                            Status = "Available"
+                        });
+                        return !(isCancelled() || result.IsCancelled);
+                    })
+                })));
         }
 
         public int StartFind(Callback c) {
@@ -108,24 +135,25 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         }
 
         public CancellableEnumerable<SoftwareIdentity> CompleteFind(int i, Callback c) {
-            var providerName = Name;
+            var isCancelled = c.As<IsCancelled>();
 
-            return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
-                c, // inherited callback
-                nc => _provider.CompleteFind(i, nc), // actual call
-                (collection, okToContinue) => ((fastpath, name, version, scheme, summary, source) => {
-                    collection.Add(new SoftwareIdentity {
-                        FastPath = fastpath,
-                        Name = name,
-                        Version = version,
-                        VersionScheme = scheme,
-                        Summary = summary,
-                        ProviderName = providerName,
-                        Source = source,
-                        Status = "Available"
-                    });
-                    return okToContinue();
-                }));
+            return CallAndCollect<SoftwareIdentity>(result =>
+                _provider.CompleteFind(i, c.Extend<IRequest>(new {
+                    // add YieldPackage method to the callback
+                    YieldPackage = new YieldPackage((fastpath, name, version, scheme, summary, source) => {
+                        result.Add(new SoftwareIdentity {
+                            FastPath = fastpath,
+                            Name = name,
+                            Version = version,
+                            VersionScheme = scheme,
+                            Summary = summary,
+                            ProviderName = Name,
+                            Source = source,
+                            Status = "Available"
+                        });
+                        return !(isCancelled() || result.IsCancelled);
+                    })
+                })));
         }
 
         public CancellableEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, Callback c) {
@@ -144,48 +172,54 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         }
 
         public CancellableEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c) {
-            var providerName = Name;
+            var isCancelled = c.As<IsCancelled>();
 
-            return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
-                c, // inherited callback
-                nc => _provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, nc), // actual call
-                (collection, okToContinue) => ((fastpath, n, version, scheme, summary, source) => {
-                    collection.Add(new SoftwareIdentity {
-                        FastPath = fastpath,
-                        Name = n,
-                        Version = version,
-                        VersionScheme = scheme,
-                        Summary = summary,
-                        ProviderName = providerName,
-                        Source = source,
-                        Status = "Available"
-                    });
-                    return okToContinue();
-                }), false);
+            return CallAndCollect<SoftwareIdentity>(result =>
+                _provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, c.Extend<IRequest>(new {
+                    // add YieldPackage method to the callback
+                    YieldPackage = new YieldPackage((fastpath, n, version, scheme, summary, source) => {
+                        result.Add(new SoftwareIdentity {
+                            FastPath = fastpath,
+                            Name = n,
+                            Version = version,
+                            VersionScheme = scheme,
+                            Summary = summary,
+                            ProviderName = Name,
+                            Source = source,
+                            Status = "Available"
+                        });
+                        return !(isCancelled() || result.IsCancelled);
+                    })
+                })));
         }
 
         public CancellableEnumerable<SoftwareIdentity> GetInstalledPackages(string name, Callback c) {
-            var providerName = Name;
+            var isCancelled = c.As<IsCancelled>();
 
-            return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
-                c, // inherited callback
-                nc => _provider.GetInstalledPackages(name, nc), // actual call
-                (collection, okToContinue) => ((fastpath, n, version, scheme, summary, source) => {
-                    collection.Add(new SoftwareIdentity {
-                        FastPath = fastpath,
-                        Name = n,
-                        Version = version,
-                        VersionScheme = scheme,
-                        Summary = summary,
-                        ProviderName = providerName,
-                        Source = source,
-                        Status = "Installed"
-                    });
-                    return okToContinue();
+            return CallAndCollect<SoftwareIdentity>(result =>
+                _provider.GetInstalledPackages(name, new {
+                    // add YieldPackage method to the callback
+                    YieldPackage = new YieldPackage((fastpath, n, version, scheme, summary, source) => {
+                        result.Add(new SoftwareIdentity {
+                            FastPath = fastpath,
+                            Name = n,
+                            Version = version,
+                            VersionScheme = scheme,
+                            Summary = summary,
+                            ProviderName = Name,
+                            Source = source,
+                            Status = "Installed"
+                        });
+                        return !(isCancelled() || result.IsCancelled);
+                    })
                 }));
         }
 
         public CancellableEnumerable<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, Callback c) {
+            var isCancelled = c.As<IsCancelled>();
+
+            var request = c.As<IRequest>();
+
             if (softwareIdentity == null) {
                 throw new ArgumentNullException("softwareIdentity");
             }
@@ -193,115 +227,72 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             if (c == null) {
                 throw new ArgumentNullException("c");
             }
-            var providerName = Name;
 
             if (!IsTrustedPackageSource(softwareIdentity.Source, c)) {
                 try {
-                    if (!(bool)c.DynamicInvoke<ShouldContinueWithUntrustedPackageSource>(softwareIdentity.Name, softwareIdentity.Source)) {
-                        c.DynamicInvoke<Error>("Cancelled", "User declined to trust package source ", null);
+                    if (!request.ShouldContinueWithUntrustedPackageSource(softwareIdentity.Name, softwareIdentity.Source)) {
+                        request.Error("User declined to trust package source ");
                         throw new Exception("cancelled");
                     }
                 } catch {
-                    c.DynamicInvoke<Error>("Cancelled", "User declined to trust package source ", null);
+                    request.Error("User declined to trust package source ");
                     throw new Exception("cancelled");
                 }
             }
 
-            return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
-                c, // inherited callback
-                nc => _provider.InstallPackage(softwareIdentity.FastPath, nc), // actual call
-                (collection, okToContinue) => ((fastpath, n, version, scheme, summary, source) => {
-                    collection.Add(new SoftwareIdentity {
+            return CallAndCollect<SoftwareIdentity>(result => _provider.InstallPackage(softwareIdentity.FastPath, c.Extend<IRequest>(new {
+                YieldPackage = new YieldPackage((fastpath, n, version, scheme, summary, source) => {
+                    result.Add(new SoftwareIdentity {
                         FastPath = fastpath,
                         Name = n,
                         Version = version,
                         VersionScheme = scheme,
                         Summary = summary,
-                        ProviderName = providerName,
+                        ProviderName = Name,
                         Source = source,
                         Status = "Installed"
                     });
-                    return okToContinue();
-                }));
+                    return !(isCancelled() || result.IsCancelled);
+                })
+            })));
         }
 
         public CancellableEnumerable<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, Callback c) {
-            var providerName = Name;
+            var isCancelled = c.As<IsCancelled>();
 
-            return CallAndCollectResults<SoftwareIdentity, YieldPackage>(
-                c, // inherited callback
-                nc => _provider.UninstallPackage(softwareIdentity.FastPath, nc), // actual call
-                (collection, okToContinue) => ((fastpath, n, version, scheme, summary, source) => {
-                    collection.Add(new SoftwareIdentity {
-                        FastPath = fastpath,
-                        Name = n,
-                        Version = version,
-                        VersionScheme = scheme,
-                        Summary = summary,
-                        ProviderName = providerName,
-                        Source = source,
-                        Status = "Not Installed"
-                    });
-                    return okToContinue();
-                }));
-        }
-
-        /// <summary>
-        ///     I noticed that most of my functions ended up as a pattern that was extremely common.
-        ///     I've therefore decided to distill this down to eliminate fat-fingered mistakes when cloning the pattern.
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <typeparam name="OnResultFn"></typeparam>
-        /// <param name="c"></param>
-        /// <param name="action"></param>
-        /// <param name="onResultFn"></param>
-        /// <returns></returns>
-        private CancellableEnumerable<TResult> CallAndCollectResults<TResult, OnResultFn>(Callback c, Action<Callback> action,
-            Func<CancellableBlockingCollection<TResult>, OkToContinue, OnResultFn> onResultFn, bool cancelOnException = true) {
-            var result = new CancellableBlockingCollection<TResult>();
-
-            Task.Factory.StartNew(() => {
-                try {
-                    // callback.DynamicInvoke<Verbose>("Hello", "World", null);
-                    var isOkToContinueFn = new OkToContinue(() => !(result.IsCancelled || (bool)c.DynamicInvoke<IsCancelled>()));
-
-                    using (var cb = new InvokableDispatcher(c, Instance.Service.Invoke) {
-                        isOkToContinueFn,
-                        onResultFn(result, isOkToContinueFn)
-                    }) {
-                        try {
-                            action(cb);
-                        } catch (Exception e) {
-                            if (cancelOnException) {
-                                result.Cancel();
-                                Event<ExceptionThrown>.Raise(e.GetType().Name, e.Message, e.StackTrace);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    e.Dump();
-                } finally {
-                    result.CompleteAdding();
-                }
-            });
-
-            return result;
+            return CallAndCollect<SoftwareIdentity>(result =>
+                _provider.UninstallPackage(softwareIdentity.FastPath, c.Extend<IRequest>(new {
+                    YieldPackage = new YieldPackage((fastpath, n, version, scheme, summary, source) => {
+                        result.Add(new SoftwareIdentity {
+                            FastPath = fastpath,
+                            Name = n,
+                            Version = version,
+                            VersionScheme = scheme,
+                            Summary = summary,
+                            ProviderName = Name,
+                            Source = source,
+                            Status = "Not Installed"
+                        });
+                        return !(isCancelled() || result.IsCancelled);
+                    })
+                })));
         }
 
         public CancellableEnumerable<DynamicOption> GetDynamicOptions(OptionCategory operation, Callback c) {
-            return CallAndCollectResults<DynamicOption, YieldOptionDefinition>(
-                c,
-                nc => _provider.GetDynamicOptions((int)operation, nc),
-                (collection, okToContinue) => ((category, name, type, isRequired, values) => {
-                    collection.Add(new DynamicOption {
-                        Category = category,
-                        Name = name,
-                        Type = type,
-                        IsRequired = isRequired,
-                        PossibleValues = values
-                    });
-                    return okToContinue();
-                }));
+            var isCancelled = c.As<IsCancelled>();
+            return CallAndCollect<DynamicOption>(
+                result => _provider.GetDynamicOptions((int)operation, c.Extend<IRequest>(new {
+                    YieldDynamicOption = new YieldDynamicOption((category, name, type, isRequired, values) => {
+                        result.Add(new DynamicOption {
+                            Category = (OptionCategory)category,
+                            Name = name,
+                            Type = (OptionType)type,
+                            IsRequired = isRequired,
+                            PossibleValues = values
+                        });
+                        return !(isCancelled() || result.IsCancelled);
+                    })
+                })));
         }
 
         public bool IsValidPackageSource(string packageSource, Callback c) {
@@ -314,18 +305,20 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         }
 
         public CancellableEnumerable<PackageSource> GetPackageSources(Callback c) {
-            return CallAndCollectResults<PackageSource, YieldSource>(
-                c,
-                nc => _provider.GetPackageSources(nc),
-                (collection, okToContinue) => ((name, location, isTrusted) => {
-                    collection.Add(new PackageSource {
-                        Name = name,
-                        Location = location,
-                        Provider = Name,
-                        IsTrusted = isTrusted
-                    });
-                    return okToContinue();
-                }));
+            var isCancelled = c.As<IsCancelled>();
+
+            return CallAndCollect<PackageSource>(result =>
+                _provider.GetPackageSources(c.Extend<IRequest>(new {
+                    YieldSource = new YieldSource((name, location, isTrusted) => {
+                        result.Add(new PackageSource {
+                            Name = name,
+                            Location = location,
+                            Provider = Name,
+                            IsTrusted = isTrusted
+                        });
+                        return !(isCancelled() || result.IsCancelled);
+                    })
+                })));
         }
     }
 
@@ -349,13 +342,4 @@ namespace Microsoft.OneGet.Core.Providers.Package {
 
     #endregion
 
-    internal static class CallbackExt {
-        public static T Lookup<T>(this Callback c) where T : class {
-            return c(typeof (T).Name, null) as T ?? typeof (T).CreateEmptyDelegate() as T;
-        }
-
-        public static object DynamicInvoke<T>(this Callback c, params object[] args) where T : class {
-            return c(typeof (T).Name, args);
-        }
-    }
 }

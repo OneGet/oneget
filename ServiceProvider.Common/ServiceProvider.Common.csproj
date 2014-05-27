@@ -44,9 +44,7 @@
   <ItemGroup>
     <Compile Include="CommonServicesProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utility\CallbackAPIDeclarations.cs" />
-    <Compile Include="Utility\CallbackExtensions.cs" />
-    <Compile Include="Utility\Request.cs" />
+    <Compile Include="Request.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

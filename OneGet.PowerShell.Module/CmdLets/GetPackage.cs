@@ -39,7 +39,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             }
                         }
                         if (!found) {
-                            Event<Error>.Raise("No installed packages found.");
+                            Error("No installed packages found.");
                         }
                         return;
                     }
@@ -52,7 +52,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             }
                         }
                         if (!found) {
-                            Event<Error>.Raise("No installed packages found for Name '{0}'.".format(name));
+                            Error("No installed packages found for Name '{0}'.".format(name));
                         }
                     }
                 } catch (Exception e) {

@@ -12,6 +12,8 @@
 //  limitations under the License.
 //  
 
+#if _MOVE_TO_SERVICES_PROVIDER_
+
 namespace Microsoft.OneGet.Core.Providers.Service {
     using System;
     using System.Collections.Generic;
@@ -27,7 +29,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
     using Platform;
     using Protocol;
     using Tasks;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Callback = System.Object;
 
 #if FRAMEWORKv40
     using Compression;
@@ -43,7 +45,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
     ///     - Creating Shell links, updating environment variables, etc.
     /// </summary>
     public class ServiceApiImpl : MarshalByRefObject {
-        private InvokableDispatcher _dispatcher;
+        // private InvokableDispatcher _dispatcher;
 
         internal ServiceApiImpl() {
         }
@@ -430,6 +432,8 @@ namespace Microsoft.OneGet.Core.Providers.Service {
 
         internal Callback Invoke {
             get {
+                return this;
+#if OLD_EVNTING
                 return _dispatcher ?? (_dispatcher =
                     new InvokableDispatcher {
                         #region generate-call service-apis
@@ -474,35 +478,37 @@ namespace Microsoft.OneGet.Core.Providers.Service {
 
                         #endregion
                     });
+#endif
             }
         }
 
         private void Error(Callback c , string message, params object[] args) {
-            c.Lookup<Error>()(message, args);
+            // c.Lookup<Error>()(message, args);
         }
 
         private void Warning(Callback c, string message, params object[] args) {
-            c.Lookup<Warning>()( message, args);
+            // c.Lookup<Warning>()( message, args);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Still in development!")]
         private void Message(Callback c, string message, params object[] args) {
-            c.Lookup<Message>()(message, args);
+            // c.Lookup<Message>()(message, args);
         }
 
         private void Verbose(Callback c,string message, params object[] args) {
-            c.Lookup<Verbose>()(message, args);
+            // c.Lookup<Verbose>()(message, args);
         }
 
         private void Progress(Callback c, int activityId, int progress, string message, params object[] args) {
-            c.Lookup<Progress>()(activityId, progress, message, args);
+            // c.Lookup<Progress>()(activityId, progress, message, args);
         }
 
         private void CompleteProgress(Callback c, int activityId, bool isSuccessful) {
-        c.Lookup<CompleteProgress>()(activityId,isSuccessful);
+            // c.Lookup<CompleteProgress>()(activityId,isSuccessful);
         }
     }
 
     public class ImplementationAttribute : Attribute {
     }
 }
+#endif

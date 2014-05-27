@@ -88,7 +88,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             if (foundThisFile == false) {
                                 // one of the files we found on disk, isn't actually a recognized package 
                                 // let's whine about this.
-                                Event<Warning>.Raise("Package File Not Recognized {0}", new[] {
+                                Warning("Package File Not Recognized {0}", new[] {
                                     file
                                 });
                             }

@@ -1,103 +1,46 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.OneGet.Core.AppDomains {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
     using Extensions;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Callback = System.Object;
 
     internal delegate Delegate CreateDelegate(string memberName, string[] parameterNames, Type[] parameterTypes, Type returnType);
 
     public static class WrappedDelegate {
 
-        internal static bool XXX<T>(this CreateDelegate delegateCreator, object instance, out T proxy) where T : class {
-            var name = typeof(T).Name;
-            if (name.EndsWith("delegate", StringComparison.OrdinalIgnoreCase)) {
-                name = name.Substring(0, name.Length - 8);
-            }
-            
-            proxy = instance.CreateProxiedDelegate<T>(name, delegateCreator);
-            return true;
+        internal static T CreateProxiedDelegate<T>(this Delegate delegateInstance) {
+            return (T)(object)delegateInstance.CreateProxiedDelegate(typeof(T));
         }
 
-        internal static T CreateProxiedDelegate<T>(this object instance, CreateDelegate delegateCreator = null) where T : class {
-            var name = typeof (T).Name;
-            if (name.EndsWith("delegate", StringComparison.OrdinalIgnoreCase)) {
-                name = name.Substring(0, name.Length - 8);
-            }
-            return instance.CreateProxiedDelegate<T>(name, delegateCreator);
+        internal static Delegate CreateProxiedDelegate(this Delegate dlg,Type expectedDelegateType) {
+            // the delegate to the proxy object
+            return Delegate.CreateDelegate(expectedDelegateType, expectedDelegateType.CreateWrappedProxy(dlg), "Invoke");
         }
 
-        internal static T CreateProxiedDelegate<T>(this object instance, string methodName, CreateDelegate delegateCreator = null) where T:class {
-            var expectedDelegateType = typeof (T);
-
-            if (expectedDelegateType.BaseType != typeof(MulticastDelegate)) {
-                throw new ApplicationException("Not a delegate.");
-            }
-
-            var invoke = expectedDelegateType.GetMethod("Invoke");
-            if (invoke == null) {
-                throw new ApplicationException("Not a delegate.");
-            }
-
-            
-            var member = instance.GetType().GetMember(methodName);
-
-            if (member.Length > 0) {
-
-                switch (member[0].MemberType) {
-
-                    case MemberTypes.Field: {
-                        var dlg = instance.GetType().GetField(methodName).GetValue(instance) as MulticastDelegate;
-                        if (dlg != null && expectedDelegateType.IsDelegateAssignableFromDelegate(dlg.GetType())) {
-                            return (T)(object)(expectedDelegateType.CreateProxiedDelegate(dlg));
-                        }
-                        break;
-                    }
-
-                    case MemberTypes.Property: {
-                        var dlg = instance.GetType().GetProperty(methodName).GetValue(instance) as MulticastDelegate;
-                        if (dlg != null && expectedDelegateType.IsDelegateAssignableFromDelegate(dlg.GetType())) {
-                            return (T)(object)(expectedDelegateType.CreateProxiedDelegate(dlg));
-                        }
-                        break;
-                    }
-
-                    case MemberTypes.Method:
-                        return (T)(object)expectedDelegateType.CreateProxiedDelegate(instance, instance.GetType().GetMethod(methodName));
-                }
-            }
-            if (delegateCreator != null) {
-                var dlg = delegateCreator(methodName, invoke.GetParameters().Select(each => each.Name).ToArray(), invoke.GetParameters().Select(each => each.ParameterType).ToArray(), invoke.ReturnType);
-                if (dlg != null) {
-                    return (T)(object)(expectedDelegateType.CreateProxiedDelegate(dlg));
-                }
-            } 
-
-            return typeof (T).CreateEmptyDelegate() as T;
-        }
 
         internal static T CreateProxiedDelegate<T>(this object instance, MethodInfo method) {
-            return (T)(object) typeof (T).CreateProxiedDelegate(instance, method);
+            return (T)(object)CreateProxiedDelegate(instance, method, typeof(T));
         }
 
-        internal static Delegate CreateProxiedDelegate(this Type expectedDelegateType, object instance, MethodInfo method) {
+        internal static Delegate CreateProxiedDelegate(this object instance, MethodInfo method,Type expectedDelegateType) {
             #region DEAD CODE
 
             // we need our public delegate to be calling an object that is MarshalByRef
@@ -133,7 +76,7 @@ namespace Microsoft.OneGet.Core.AppDomains {
             return Delegate.CreateDelegate(expectedDelegateType, proxyObject, "Invoke");
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Called from Friend Assembly")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Called from Friend Assembly")]
         internal static object DynamicInvoke(this Type delegateType, object targetDelegate, object[] args) {
             return ((Invokable)delegateType.CreateWrappedProxy((Delegate)targetDelegate)).DynamicInvoke(args);
         }
@@ -163,14 +106,9 @@ namespace Microsoft.OneGet.Core.AppDomains {
             });
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Still in development.")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Still in development.")]
         internal static Delegate Wrap(this Delegate dlg) {
             return Delegate.CreateDelegate(dlg.GetType(), dlg.GetType().CreateWrappedProxy(dlg), "Invoke");
-        }
-
-        internal static Delegate CreateProxiedDelegate(this Type expectedDelegateType, Delegate dlg) {
-            // the delegate to the proxy object
-            return Delegate.CreateDelegate(expectedDelegateType, expectedDelegateType.CreateWrappedProxy(dlg), "Invoke");
         }
 
         public static Type GetWrappedDelegateType(this MethodInfo method) {
@@ -280,8 +218,7 @@ namespace Microsoft.OneGet.Core.AppDomains {
         }
     }
 
-   
-
+#if OLD_EVENTING
     public class WrappedCallback : Invokable {
         private readonly Callback _func;
 
@@ -311,4 +248,5 @@ namespace Microsoft.OneGet.Core.AppDomains {
             return Invoke((string)args[0], (IEnumerable<string>)args[1]);
         }
     }
+#endif
 }

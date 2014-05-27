@@ -20,10 +20,11 @@ namespace Microsoft.OneGet.Core.Providers.Service {
     using System.Linq;
     using Dynamic;
     using Extensions;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Package;
+    using Callback = System.Object;
 
-    public interface IServicesProvider {
-        bool IsImplemented(string method);
+    public interface IServicesProvider : IProvider {
+        bool IsMethodImplemented(string method);
         #region declare ServicesProvider-interface
         /// <summary>
         /// Returns the name of the Provider. Doesn't need callback .
@@ -31,8 +32,6 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         /// <returns></returns>
         [Required]
         string GetServicesProviderName();
-
-        void InitializeProvider(Callback c);
 
         IEnumerable<string> SupportedDownloadSchemes(Callback c);
         void DownloadFile(Uri remoteLocation, string localFilename, Callback c);
@@ -55,8 +54,8 @@ namespace Microsoft.OneGet.Core.Providers.Service {
             _provider = provider;
         }
 
-        public bool IsImplemented(string method) {
-            return _provider.IsImplemented(method);
+        public bool IsMethodImplemented(string method) {
+            return _provider.IsMethodImplemented(method);
         }
 
         public string Name { get {

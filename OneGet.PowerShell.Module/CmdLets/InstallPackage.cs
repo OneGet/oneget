@@ -104,7 +104,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             }
                         })) {
                             // nothing found?
-                            Event<Warning>.Raise("No Packages Found -- (no package names/criteria listed)");
+                            Warning("No Packages Found -- (no package names/criteria listed)");
                         }
                     }
                 } catch (Exception e) {
@@ -116,7 +116,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (noMatchNames.Any()) {
                 // whine about things not matched.
                 foreach (var name in noMatchNames) {
-                    Event<Error>.Raise("No Package Found {0}",new [] { name});
+                    Error("No Package Found {0}",new [] { name});
                 }
 
                 // not going to install.
@@ -128,7 +128,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 failing = true;
                 // bad, matched too many packages
                 foreach (var name in noMatchNames) {
-                    Event<Error>.Raise(" '{0}' matches multiple packages '{1}'", new[] {
+                    Error(" '{0}' matches multiple packages '{1}'", new[] {
                         name
                     });
                 }
@@ -166,7 +166,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 } catch (Exception e) {
                     e.Dump();
-                    Event<Error>.Raise("Installation Failure {0}",new [] { pkg.Name});
+                    Error("Installation Failure {0}",new [] { pkg.Name});
                     return false;
                 }
             }

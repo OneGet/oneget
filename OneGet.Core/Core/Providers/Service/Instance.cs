@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Core.Providers.Service {
     using System;
 
+#if NOT_USED_HERE_ANYMORE
     public class Instance {
         private static readonly Lazy<ServiceApiImpl> _providerApi = new Lazy<ServiceApiImpl>(() => new ServiceApiImpl());
 
@@ -27,4 +28,5 @@ namespace Microsoft.OneGet.Core.Providers.Service {
             }
         }
     }
+#endif
 }

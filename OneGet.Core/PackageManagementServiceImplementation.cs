@@ -19,13 +19,15 @@ namespace Microsoft.OneGet {
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
+    using Core.Api;
     using Core.AppDomains;
+    using Core.Dynamic;
     using Core.Extensions;
     using Core.Packaging;
     using Core.Providers.Package;
     using Core.Providers.Service;
     using Core.Tasks;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Callback = System.Object;
 
     /// <summary>
     ///     The Client API is designed for use by installation hosts:
@@ -36,6 +38,7 @@ namespace Microsoft.OneGet {
     ///     The Client API provides high-level consumer functions to support SDII functionality.
     /// </summary>
     internal class PackageManagementServiceImplementation : MarshalByRefObject, IPackageManagementService {
+        private DynamicInterface _dynamicInterface = new DynamicInterface();
         private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>();
         private readonly IDictionary<string, ServicesProvider> _servicesProviders = new Dictionary<string, ServicesProvider>();
 
@@ -65,23 +68,29 @@ namespace Microsoft.OneGet {
         private bool _initialized;
 
         public bool Initialize(Callback callback, bool userInteractionPermitted) {
+            
+            // var request = _dynamicInterface.Create<IHostAndCoreAPIs>(callback);
+
             lock (_lockObject) {
                 if (!_initialized) {
+#if _MOVE_TO_BOOTSTRAP_PROVIDER
                     try {
+
+
                         if (Instance.Service.GetNuGetDllPath(callback).IsEmptyOrNull()) {
                             // we are unable to bootstrap NuGet correctly.
                             // We can't really declare that the providers are ready, and we should just 
                             // return as if we never really succeded (as it may have been that this got called as 
                             // the result of a tab-completion and we can't fully bootstrap if that was the case.
-                            Event<Error>.Raise(Messages.Miscellaneous.NuGetRequired);
-                            //Event<Error>.Raise("MISC001");
+                            request.Error(Messages.Miscellaneous.NuGetRequired);
 
                             return false;
+
                         }
                     } catch {
                         return false;
                     }
-
+#endif
                     LoadProviders(callback);
 
                     _initialized = true;
@@ -100,6 +109,8 @@ namespace Microsoft.OneGet {
         /// </summary>
         /// <param name="callback"></param>
         private void LoadProviders(Callback callback) {
+            var request = callback.As<IRequest>();
+
             // todo: load provider assembly list from the registry.
             IEnumerable<string> providerAssemblies = new string[] {
                 "Microsoft.OneGet.MetaProvider.PowerShell.dll",
@@ -113,16 +124,16 @@ namespace Microsoft.OneGet {
             Parallel.ForEach(providerAssemblies, providerAssemblyName => {
                 try {
                     if (TryToLoadProviderAssembly(callback, providerAssemblyName)) {
-                        Event<Debug>.Raise("Loading Provider Assembly", new string[] {
+                        request.Debug("Loading Provider Assembly", new string[] {
                             providerAssemblyName
                         });
                     } else {
-                        Event<Debug>.Raise("Failed to load any providers", new string[] {
+                        request.Debug("Failed to load any providers", new string[] {
                             providerAssemblyName
                         });
                     }
                 } catch (Exception e) {
-                    Event<ExceptionThrown>.Raise(e.GetType().Name, e.Message, e.StackTrace);
+                    request.ExceptionThrown(e.GetType().Name, e.Message, e.StackTrace);
                 }
             });
         }
@@ -212,7 +223,7 @@ namespace Microsoft.OneGet {
                 // this needs to load the assembly in it's own domain
                 // so that we can drop them when necessary.
                 var pd = new PluginDomain();
-
+                /*
                 // add event listeners to the new appdomain.
                 pd.Invoke(c => {CurrentTask.Events += new Verbose(c.Invoke);}, typeof (Verbose).CreateWrappedProxy(new Verbose((f, o) => Event<Verbose>.Raise(f, o.ByRef()))) as WrappedFunc<string, IEnumerable<object>, bool>);
                 pd.Invoke(c => {CurrentTask.Events += new Warning(c.Invoke);}, typeof (Warning).CreateWrappedProxy(new Warning((f, o) => Event<Warning>.Raise(f, o.ByRef()))) as WrappedFunc<string, IEnumerable<object>, bool>);
@@ -231,6 +242,7 @@ namespace Microsoft.OneGet {
 
                 pd.Invoke(c => {CurrentTask.Events += new ExceptionThrown(c.Invoke);},
                     typeof (ExceptionThrown).CreateWrappedProxy(new ExceptionThrown((e, m, s) => Event<ExceptionThrown>.Raise(e, m, s))) as WrappedFunc<string, string, string, bool>);
+                */
 
                 pd.LoadFileWithReferences(Assembly.GetExecutingAssembly().Location);
 

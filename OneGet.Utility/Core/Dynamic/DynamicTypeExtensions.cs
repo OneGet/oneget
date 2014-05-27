@@ -15,30 +15,29 @@
 namespace Microsoft.OneGet.Core.Dynamic {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
-    using System.Security.Cryptography.X509Certificates;
     using AppDomains;
     using Extensions;
 
     internal static class DynamicTypeExtensions {
-        private readonly static Type[] _emptyTypes = { };
+        private static readonly Type[] _emptyTypes = {
+        };
 
         internal static void OverrideInitializeLifetimeService(this TypeBuilder dynamicType) {
             // add override of InitLifetimeService so this object doesn't fall prey to timeouts
-            var il = dynamicType.DefineMethod("InitializeLifetimeService", MethodAttributes.Public, CallingConventions.HasThis, typeof(object), _emptyTypes).GetILGenerator();
+            var il = dynamicType.DefineMethod("InitializeLifetimeService", MethodAttributes.Public, CallingConventions.HasThis, typeof (object), _emptyTypes).GetILGenerator();
 
             il.LoadNull();
             il.Return();
         }
 
-        internal static void GenerateIsImplemented(this TypeBuilder dynamicType, MethodInfo method) {
-            // special case -- the IsImplemented method can give the interface owner information as to
+        internal static void GenerateIsMethodImplemented(this TypeBuilder dynamicType) {
+            // special case -- the IsMethodImplemented method can give the interface owner information as to
             // which methods are actually implemented.
             var implementedMethodsField = dynamicType.DefineField("__implementedMethods", typeof (HashSet<string>), FieldAttributes.Private);
 
-            var il = dynamicType.CreateMethod(method);
+            var il = dynamicType.CreateMethod("IsMethodImplemented", typeof (bool), typeof (string));
 
             il.LoadThis();
             il.LoadField(implementedMethodsField);
@@ -63,20 +62,22 @@ namespace Microsoft.OneGet.Core.Dynamic {
         }
 
         internal static ILGenerator CreateMethod(this TypeBuilder dynamicType, MethodInfo method) {
-            var methodBuilder = dynamicType.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual |MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Final , CallingConventions.HasThis, method.ReturnType, method.GetParameterTypes());
-            
+            return dynamicType.CreateMethod(method.Name, method.ReturnType, method.GetParameterTypes());
+        }
+
+        internal static ILGenerator CreateMethod(this TypeBuilder dynamicType, string methodName, Type returnType, params Type[] parameterTypes) {
+            var methodBuilder = dynamicType.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig, CallingConventions.HasThis, returnType, parameterTypes);
+
             return methodBuilder.GetILGenerator();
         }
 
-        internal static string GenerateMethodForDelegateCall(this TypeBuilder dynamicType, MethodInfo method) {
+        internal static void GenerateMethodForDelegateCall(this TypeBuilder dynamicType, MethodInfo method, FieldBuilder field) {
             var il = dynamicType.CreateMethod(method);
-            var fieldName = "__{0}".format(method.Name);
 
             // the target object has a property or field that matches the signature we're looking for.
             // let's use that.
 
             var delegateType = WrappedDelegate.GetFuncOrActionType(method.GetParameterTypes(), method.ReturnType);
-            var field = dynamicType.DefineField(fieldName, delegateType, FieldAttributes.Private);
 
             il.LoadThis();
             il.LoadField(field);
@@ -85,10 +86,9 @@ namespace Microsoft.OneGet.Core.Dynamic {
             }
             il.CallVirutal(delegateType.GetMethod("Invoke"));
             il.Return();
-            return fieldName;
         }
 
-        internal static void GenerateDefaultMethod(this TypeBuilder dynamicType, MethodInfo method) {
+        internal static void GenerateStubMethod(this TypeBuilder dynamicType, MethodInfo method) {
             var il = dynamicType.CreateMethod(method);
             do {
                 if (method.ReturnType != typeof (void)) {

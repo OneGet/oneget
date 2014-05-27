@@ -15,46 +15,64 @@
 namespace Microsoft.OneGet.Core.Dynamic {
     using System;
     using System.Collections.Generic;
-    using System.Data.SqlTypes;
-    using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
+    using Collections;
     using Extensions;
 
     internal class ProxyClass {
-        private static int _counter = 1;
-        private readonly List<Action<object>> _afterInstantiation = new List<Action<object>>();
+        private static int _typeCounter = 1;
+        
         private readonly TypeBuilder _dynamicType;
         private readonly HashSet<string> _implementedMethods = new HashSet<string>();
-        private readonly object[] _instances;
+        private readonly List<FieldBuilder> _storageFields = new List<FieldBuilder>();
         private AssemblyBuilder _dynamicAssembly;
         private string _proxyName;
 
-        private readonly Dictionary<FieldBuilder, object> _backing = new Dictionary<FieldBuilder, object>();
-
-        private object _instance;
         private Type _type;
 
-        internal ProxyClass(Type interfaceType, params object[] instances) {
-            _instances = instances;
+        internal ProxyClass(Type interfaceType, OrderedDictionary<Type, List<MethodInfo, MethodInfo>> methods, List<Delegate, MethodInfo> delegates, List<MethodInfo> stubs) {
+            int counter = 0;
 
-            _dynamicType = DefineDynamicType(interfaceType, instances.Select(each => each.GetType().Name).JoinWith("_"));
+            _dynamicType = DefineDynamicType(interfaceType);
 
-            // implement the methods that we can.
-            var unimplementedMethods = instances.Aggregate((IEnumerable<MethodInfo>)interfaceType.GetMethods(), (current, actualInstance) => ImplementMethodsForInstance(actualInstance, current));
+            foreach (var instanceType in methods.Keys) {
+                // generate storage for object
+                var field = _dynamicType.DefineField("_instance_{0}".format(++counter), instanceType, FieldAttributes.Private);
+                _storageFields.Add(field);
 
-            foreach (var method in unimplementedMethods) {
+                // create methods
+
+                foreach (var method in methods[instanceType]) {
+                    _dynamicType.GenerateMethodForDirectCall(method.Key, field, method.Value);
+                    _implementedMethods.Add(method.Key.Name);
+                }
+            }
+
+            foreach (var d in delegates) {
+                var field = _dynamicType.DefineField("_delegate_{0}".format(++counter), d.Key.GetType(), FieldAttributes.Private);
+                _storageFields.Add(field);
+                _implementedMethods.Add(d.Value.Name);
+
+                _dynamicType.GenerateMethodForDelegateCall(d.Value, field);
+            }
+
+            foreach (var method in stubs) {
                 // did not find a matching method or signature, or the instance told us that it doesn't actually support it 
                 // that's ok, if we get here, it must not be a required method.
                 // we'll implement a placeholder method for it.
-                _dynamicType.GenerateDefaultMethod(method);
+                _dynamicType.GenerateStubMethod(method);
             }
 
-            // generate the constructor for the class.
-            DefineConstructorWithBackingField();
+            // generate the IsMethodImplemented function
+            _dynamicType.GenerateIsMethodImplemented();
 
-            _dynamicType.OverrideInitializeLifetimeService();
+            // generate the constructor for the class.
+            DefineConstructor();
+            if (typeof (MarshalByRefObject).IsAssignableFrom(_dynamicType)) {
+                _dynamicType.OverrideInitializeLifetimeService();
+            }
         }
 
         internal Type Type {
@@ -63,87 +81,19 @@ namespace Microsoft.OneGet.Core.Dynamic {
             }
         }
 
-        internal object Instance {
-            get {
-                if (_instance == null) {
-                    var proxyConstructor = Type.GetConstructors()[0];
-
-                    var proxyInstance = proxyConstructor.Invoke(_backing.Values.ToArray());
-                    _instance = proxyInstance;
-
-                    foreach (var action in _afterInstantiation) {
-                        action(_instance);
-                    }
-
-                    var imf = Type.GetField("__implementedMethods", BindingFlags.NonPublic | BindingFlags.Instance);
-                    if (imf != null) {
-                        imf.SetValue(_instance, _implementedMethods);
-                    }
-
-                    // only needed for testing.
-                    // _dynamicAssembly.Save("{0}.dll".format(_proxyName));
-                }
-                return _instance;
+        internal object CreateInstance(List<object> instances, List<Delegate, MethodInfo> delegates) {
+            var proxyConstructor = Type.GetConstructors()[0];
+            var instance = proxyConstructor.Invoke(instances.Concat(delegates.Select(each => each.Key)).ToArray());
+            // set the implemented methods collection 
+            var imf = Type.GetField("__implementedMethods", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (imf != null) {
+                imf.SetValue(instance, _implementedMethods);
             }
+            return instance;
         }
 
-        private IEnumerable<MethodInfo> ImplementMethodsForInstance(object actualInstance, IEnumerable<MethodInfo> methodsToImplement) {
-            var instanceSupportsMethod = DynamicInterfaceExtensions.GenerateInstanceSupportsMethod(actualInstance);
-
-            var instanceType = actualInstance.GetType();
-            var instanceMethods = instanceType.GetPublicMethods();
-            var instanceFields = instanceType.GetPublicDelegateFields();
-            var instanceProperties = instanceType.GetPublicDelegateProperties();
-
-            FieldBuilder backingField = null;
-            
-
-            foreach (var method in methodsToImplement) {
-                if (method.Name == "IsImplemented") {
-                    _dynamicType.GenerateIsImplemented(method);
-
-                    _implementedMethods.Add(method.Name);
-                    continue;
-                }
-
-                if (instanceSupportsMethod(method.Name)) {
-                    var instanceMethod = instanceMethods.FindMethod(method);
-                    if (instanceMethod != null) {
-                        if (backingField == null) {
-                            var name = "_instance_{0}".format(++_counter);
-                            backingField = _dynamicType.DefineField(name, instanceType, FieldAttributes.Private);
-                            _backing.Add(backingField, actualInstance);
-                        }
-
-                        _dynamicType.GenerateMethodForDirectCall(method, backingField, instanceMethod);
-
-                        _implementedMethods.Add(method.Name);
-                        continue;
-                    }
-
-                    var instanceDelegate = instanceFields.FindDelegate(actualInstance, method) ?? instanceProperties.FindDelegate(actualInstance, method);
-                    if (instanceDelegate != null) {
-                        var fieldName = _dynamicType.GenerateMethodForDelegateCall(method);
-
-                        // make sure this object loads the value of delegate into the field after instantiation time.
-                        _afterInstantiation.Add((instance) => {
-                            var f = instance.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-                            if (f == null) {
-                                throw new Exception("delegate storage field can't possibly be null.");
-                            }
-
-                            f.SetValue(instance, instanceDelegate);
-                        });
-                        _implementedMethods.Add(method.Name);
-                        continue;
-                    }
-                }
-                yield return method;
-            }
-        }
-
-        private TypeBuilder DefineDynamicType(Type interfaceType, string actualInstanceName) {
-            _proxyName = "{0}_proxy_{2}".format(interfaceType.NiceName().MakeSafeFileName(), actualInstanceName.MakeSafeFileName(), _counter++);
+        private TypeBuilder DefineDynamicType(Type interfaceType) {
+            _proxyName = "{0}_proxy_{1}".format(interfaceType.NiceName().MakeSafeFileName(), _typeCounter++);
 
             _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.Run);
 
@@ -152,21 +102,26 @@ namespace Microsoft.OneGet.Core.Dynamic {
             var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName);
 
             // Define a runtime class with specified name and attributes.
-            var dynamicType = dynamicModule.DefineType(_proxyName, TypeAttributes.Public, typeof(MarshalByRefObject));
-            dynamicType.AddInterfaceImplementation(interfaceType);
-            return dynamicType;
+            if (interfaceType.IsInterface) {
+                var dynamicType = dynamicModule.DefineType(_proxyName, TypeAttributes.Public, typeof (MarshalByRefObject));
+                dynamicType.AddInterfaceImplementation(interfaceType);
+                return dynamicType;
+            } else {
+                var dynamicType = dynamicModule.DefineType(_proxyName, TypeAttributes.Public, interfaceType);
+                return dynamicType;
+            }
         }
 
-        internal void DefineConstructorWithBackingField() {
+        internal void DefineConstructor() {
             // add constructor that takes the specific type of object that we're going to bind
 
-            var types = _backing.Values.Select(each => each.GetType()).ToArray();
+            var types = _storageFields.Select(each => each.FieldType).ToArray();
 
             var constructor = _dynamicType.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, types);
 
             var il = constructor.GetILGenerator();
-            int index = 1;
-            foreach (var backingField in _backing.Keys) {
+            var index = 1;
+            foreach (var backingField in _storageFields) {
                 // store actualInstance in backingField
                 il.LoadArgument(0);
                 il.LoadArgument(index++);
@@ -174,7 +129,6 @@ namespace Microsoft.OneGet.Core.Dynamic {
             }
             // return
             il.Return();
-
         }
     }
 }

@@ -63,6 +63,7 @@
     <Compile Include="Core\Collections\CancellableEnumerator.cs" />
     <Compile Include="Core\Collections\DelegateDictionary.cs" />
     <Compile Include="Core\Collections\ICancellable.cs" />
+    <Compile Include="Core\Collections\OrderedDictionary.cs" />
     <Compile Include="Core\Collections\ReadOnlyDelegateDictionary.cs" />
     <Compile Include="Core\Collections\VirtualEnumerator.cs" />
     <Compile Include="Core\Dynamic\DynamicInterface.cs" />
@@ -82,7 +83,6 @@
     <Compile Include="Core\Extensions\ExceptionExtensions.cs" />
     <Compile Include="Core\Extensions\FilesystemExtensions.cs" />
     <Compile Include="Core\Extensions\HashtableExtensions.cs" />
-    <Compile Include="Core\Extensions\InvokableDispatcher.cs" />
     <Compile Include="Core\Platform\AdminPrivilege.cs" />
     <Compile Include="Core\Platform\CLSID.cs" />
     <Compile Include="Core\Platform\EnvironmentUtility.cs" />

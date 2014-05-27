@@ -14,28 +14,22 @@
 
 namespace Microsoft.OneGet.Test {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Dynamic;
     using System.Linq;
+    using System.Net.Sockets;
     using System.Runtime.Hosting;
+    using System.Runtime.InteropServices;
     using System.Security.Cryptography.X509Certificates;
     using Core.AppDomains;
     using Core.Dynamic;
+    using Core.Extensions;
     using PowerShell.OneGet.CmdLets;
     using Xunit;
 
     public class DynamicTest {
-        [Fact]
-        public void VerifyConceptAboutDynamic() {
-            var instance = new PPInstance();
-            var proxy = new PackageProviderProxy(instance);
-            proxy.AddPackageSource("test", "value");
-            
-            proxy.AddPackageSource2("NameValue", "LocationValue");
-            proxy.AddPackageSource3("NameValue", "LocationValue");
-            proxy.AddPackageSource4("NameValue", "LocationValue");
-           
-        }
+  
 
         [Fact]
         public void TestAssumptionAboutParams() {
@@ -49,9 +43,49 @@ namespace Microsoft.OneGet.Test {
             Assert.True(a.SequenceEqual(c));
             Assert.True(c.SequenceEqual(b));
 
+            var items = Flatten(a, "more").ToArray();
+            
+
+            foreach (var i in items) {
+                Console.WriteLine(i);
+            }
+
+            var q = new int[] {
+                1, 2, 3
+            };
+
+            IEnumerable twoItems = a.Take(2).Concat(c).ConcatSingleItem(new string[] {"Help",null, "me"}).ConcatSingleItem(q);
+            
+            foreach (var i in Flatten(twoItems)) {
+                Console.WriteLine(i);
+            }
+
+        }
+
+
+        private IEnumerable<object> Flatten(IEnumerable<object> items) {
+            if (items == null) {
+                yield break;
+            }
+            foreach (var item in items) {
+                if (item is object[] || item is IEnumerable<object>) {
+                    foreach (var inner in Flatten(item as IEnumerable<object>)) {
+                        if (inner != null) {
+                            yield return inner;
+                        }
+                    }
+                    continue;
+                }
+                yield return item;
+            }
+        }
+
+        private IEnumerable<object> Flatten(params object[] items) {
+            return Flatten(items as IEnumerable<object>);
         }
 
         internal static object[] ItemsViaParams(params object[] items) {
+            
             return items;
         }
         internal static object[] ItemsWithoutParams(object[] items) {
@@ -84,6 +118,38 @@ namespace Microsoft.OneGet.Test {
         public void SampleMethod(int a, int b, string c, Func<object, Int32> d) {
             
         }
+
+        [Fact]
+        public void TestInterfaceQuestion() {
+            var foobar = new FooBar();
+            IOne iOne = foobar;
+            ITwo iTwo = foobar;
+
+            // Pity:
+            // IOneAndTwo iBoth = foobar;
+
+        }
+        public interface IOne {
+            void Foo();
+        }
+
+        public interface ITwo {
+            void Bar();
+        }
+
+        public interface IOneAndTwo : IOne, ITwo {
+            
+        }
+
+        public class FooBar : IOne, ITwo {
+            public void Foo() {
+                
+            }
+
+            public void Bar() {
+                
+            }
+        }
     }
 
 
@@ -96,7 +162,11 @@ namespace Microsoft.OneGet.Test {
         public delegate bool AddPackageSourceDelegate(string name, string location);
 
         public PackageProviderProxy(object instance) {
+
+#if OLD_SAD_WAY
             var createDelegate = instance.CreateProxiedDelegate<CreateDelegate>("CreateDelegate" );
+
+            instance.As<CreateDelegate>();
 
             AddPackageSource = instance.CreateProxiedDelegate<Func<string, string, bool>>("AddPackageSource", createDelegate);
 
@@ -105,6 +175,7 @@ namespace Microsoft.OneGet.Test {
 
             AddPackageSource3 = instance.CreateProxiedDelegate<AddPackageSourceDelegate>("AddPackageSourceFunc", createDelegate);
             AddPackageSource4 = instance.CreateProxiedDelegate<AddPackageSourceDelegate>("AddPackageSource4", createDelegate);
+#endif
         }
 
         public PackageProviderProxy(Type type): this(Activator.CreateInstance(type)) {

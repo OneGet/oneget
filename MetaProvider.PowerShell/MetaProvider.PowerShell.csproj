@@ -56,12 +56,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ArbitraryFunc.tt</DependentUpon>
     </Compile>
-    <Compile Include="Utility\CallbackApiDeclarations.cs" />
-    <Compile Include="Utility\CallbackExtensions.cs" />
     <Compile Include="PowerShellMetaProvider.cs" />
     <Compile Include="PowerShellPackageProvider.cs" />
+    <Compile Include="PowerShellProviderBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utility\Request.cs" />
+    <Compile Include="Request.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneGet.Utility.PowerShell\OneGet.Utility.PowerShell.csproj">

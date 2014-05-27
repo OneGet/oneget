@@ -12,6 +12,8 @@
 //  limitations under the License.
 //  
 
+#if _MOVE_TO_BOOTSTRAPPER_PROVIDER_
+
 namespace Microsoft.OneGet.Core.Providers.Protocol {
     using System;
     using System.Collections.Generic;
@@ -25,7 +27,7 @@ namespace Microsoft.OneGet.Core.Providers.Protocol {
     using Service;
     using Tasks;
     using Versions;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Callback = System.Object;
 
     internal class Bootstrapper {
         private const string NuGetExe = "NuGet.exe";
@@ -274,3 +276,4 @@ namespace Microsoft.OneGet.Core.Providers.Protocol {
         internal FourPartVersion Version {get; set;}
     }
 }
+#endif

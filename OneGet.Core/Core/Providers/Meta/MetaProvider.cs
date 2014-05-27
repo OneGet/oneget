@@ -15,10 +15,11 @@
 namespace Microsoft.OneGet.Core.Providers.Meta {
     using System.Collections.Generic;
     using Dynamic;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Package;
+    using Callback = System.Object;
 
-    public interface IMetaProvider {
-        bool IsImplemented(string method);
+    public interface IMetaProvider : IProvider {
+        bool IsMethodImplemented(string method);
 
         #region declare MetaProvider-interface
 
@@ -43,13 +44,6 @@ namespace Microsoft.OneGet.Core.Providers.Meta {
         /// <returns>a collection of all the names of Providers this MetaProvider can create</returns>
         [Required]
         IEnumerable<string> GetProviderNames();
-
-        /// <summary>
-        ///     Allows the MetaProvider to do one-time initialization.
-        ///     This is called after the MetaProvider is instantiated .
-        /// </summary>
-        /// <param name="c">Callback Delegate Reference</param>
-        void InitializeProvider(Callback c);
 
         #endregion
     }

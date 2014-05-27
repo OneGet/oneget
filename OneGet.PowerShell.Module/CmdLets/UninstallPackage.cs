@@ -59,7 +59,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (Name.IsNullOrEmpty()) {
-                Event<Error>.Raise("Required value : Package Name");
+                Error("Required value : Package Name");
                 return false;
             }
             
@@ -89,7 +89,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (noMatchNames.Any()) {
                 // whine about things not matched.
                 foreach (var name in noMatchNames) {
-                    Event<Error>.Raise("No Package Found {0}",new [] { name });
+                    Error("No Package Found {0}",new [] { name });
                 }
 
                 // not going to uninstall.
@@ -101,7 +101,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (resultsPerName[key].Count > 1) {
                     failing = true;
                     foreach (var foundPackage in resultsPerName[key]) {
-                        Event<Error>.Raise( " '{0}' matches multiple packages '{1}'", new[] {
+                        Error( " '{0}' matches multiple packages '{1}'", new[] {
                         key, foundPackage.Name
                     }); 
                     }
@@ -131,7 +131,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 } catch (Exception e) {
                     e.Dump();
-                    Event<Error>.Raise("Uninstallation Failure {0}",new [] {pkg.Name});
+                    Error("Uninstallation Failure {0}",new [] {pkg.Name});
                     return false;
                 }
                 

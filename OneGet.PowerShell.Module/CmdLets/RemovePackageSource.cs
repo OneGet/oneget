@@ -54,13 +54,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     packageProvider = providers[0];
                     Provider = packageProvider.Name;
                 } else {
-                    Event<Error>.Raise("Conflict/Multiple providers have source '{0}'; must specify -Provider ".format(Name));
+                    Error("Conflict/Multiple providers have source '{0}'; must specify -Provider ".format(Name));
                     return false;
                 }
             } else {
                 packageProvider = _packageManagementService.SelectProviders(Provider).FirstOrDefault();
                 if (packageProvider == null) {
-                    Event<Error>.Raise("Unknown Provider : {0}", new string[] {Provider});
+                    Error("Unknown Provider : {0}", new string[] {Provider});
                     return false;
                 }
             }
@@ -74,7 +74,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                     return false;
                 } else {
-                    Event<Error>.Raise("Unknown Source : {0}", new string[] {Name});
+                    Error("Unknown Source : {0}", new string[] {Name});
                 }
             }
 

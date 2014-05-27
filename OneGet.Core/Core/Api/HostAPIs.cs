@@ -14,53 +14,55 @@
 
 namespace Microsoft.OneGet.Core.Api {
     using System.Collections.Generic;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Callback = System.Object;
 
-    #region declare host-apis
+    public interface IHostApis {
+        #region declare host-apis
 
-    /// <summary>
-    ///     Used by a provider to request what metadata keys were passed from the user
-    /// </summary>
-    /// <returns></returns>
-    public delegate IEnumerable<string> GetOptionKeys(string category);
+        /// <summary>
+        ///     Used by a provider to request what metadata keys were passed from the user
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<string> GetOptionKeys(string category);
 
-    public delegate IEnumerable<string> GetOptionValues(string category, string key);
+        IEnumerable<string> GetOptionValues(string category, string key);
 
-    public delegate IEnumerable<string> PackageSources();
+        IEnumerable<string> PackageSources();
 
-    /// <summary>
-    ///     Returns a string collection of values from a specified path in a hierarchal
-    ///     configuration hashtable.
-    /// </summary>
-    /// <param name="path">
-    ///     Path to the configuration key. Nodes are traversed by specifying a '/' character:
-    ///     Example: "Providers/Module" ""
-    /// </param>
-    /// <returns>
-    ///     A collection of string values from the configuration.
-    ///     Returns an empty collection if no data is found for that path
-    /// </returns>
-    public delegate IEnumerable<string> GetConfiguration(string path);
+        /// <summary>
+        ///     Returns a string collection of values from a specified path in a hierarchal
+        ///     configuration hashtable.
+        /// </summary>
+        /// <param name="path">
+        ///     Path to the configuration key. Nodes are traversed by specifying a '/' character:
+        ///     Example: "Providers/Module" ""
+        /// </param>
+        /// <returns>
+        ///     A collection of string values from the configuration.
+        ///     Returns an empty collection if no data is found for that path
+        /// </returns>
+        IEnumerable<string> GetConfiguration(string path);
 
 
-  
-    public delegate bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
-    public delegate bool ShouldProcessPackageInstall(string packageName, string version, string source);
+        bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
-    public delegate bool ShouldProcessPackageUninstall(string packageName, string version);
+        bool ShouldProcessPackageInstall(string packageName, string version, string source);
 
-    public delegate bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source);
+        bool ShouldProcessPackageUninstall(string packageName, string version);
 
-    public delegate bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source);
+        bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source);
 
-    public delegate bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation);
+        bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source);
 
-    public delegate bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation);
+        bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation);
 
-    public delegate bool AskPermission(string permission);
+        bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation);
 
-    public delegate bool WhatIf();
+        bool AskPermission(string permission);
 
-    #endregion
+        bool WhatIf();
+
+        #endregion
+    }
 }

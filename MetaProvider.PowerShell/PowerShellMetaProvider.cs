@@ -22,7 +22,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Net.Configuration;
     using Core;
     using Core.Extensions;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Callback = System.Object;
 
     /// <summary>
     /// A OneGet MetaProvider class that loads Providers implemented as a PowerShell Module.

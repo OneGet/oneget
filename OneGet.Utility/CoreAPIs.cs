@@ -15,37 +15,41 @@
 namespace Microsoft.OneGet {
     using System;
     using System.Collections.Generic;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Callback = System.Object;
 
-    public delegate bool OnMainThread(Func<bool> onMainThreadDelegate);
 
-    #region declare core-apis
-    // Core Callbacks that we'll both use internally and pass on down to providers.
-    public delegate bool Warning( string message, IEnumerable<object> args = null);
+    internal interface ICoreApis {
 
-    public delegate bool Error(string message, IEnumerable<object> args = null);
+        #region declare core-apis
 
-    public delegate bool Message(string message, IEnumerable<object> args = null);
+        // Core Callbacks that we'll both use internally and pass on down to providers.
+        bool Warning(string message, params object[] args);
 
-    public delegate bool Verbose(string message, IEnumerable<object> args = null);
+        bool Error(string message, params object[] args);
 
-    public delegate bool Debug(string message, IEnumerable<object> args = null);
+        bool Message(string message, params object[] args);
 
-    public delegate bool ExceptionThrown(string exceptionType, string message, string stacktrace);
+        bool Verbose(string message, params object[] args);
 
-    public delegate int StartProgress(int parentActivityId, string message, IEnumerable<object> args = null);
+        bool Debug(string message, params object[] args);
 
-    public delegate bool Progress(int activityId, int progress, string message, IEnumerable<object> args = null);
+        bool ExceptionThrown(string exceptionType, string message, string stacktrace);
 
-    public delegate bool CompleteProgress(int activityId, bool isSuccessful);
+        int StartProgress(int parentActivityId, string message, params object[] args);
 
-    /// <summary>
-    ///     The provider can query to see if the operation has been cancelled.
-    ///     This provides for a gentle way for the caller to notify the callee that
-    ///     they don't want any more results.
-    /// </summary>
-    /// <returns>returns TRUE if the operation has been cancelled.</returns>
-    public delegate bool IsCancelled();
-    #endregion 
+        bool Progress(int activityId, int progress, string message, params object[] args);
+
+        bool CompleteProgress(int activityId, bool isSuccessful);
+
+        /// <summary>
+        ///     The provider can query to see if the operation has been cancelled.
+        ///     This provides for a gentle way for the caller to notify the callee that
+        ///     they don't want any more results.
+        /// </summary>
+        /// <returns>returns TRUE if the operation has been cancelled.</returns>
+        bool IsCancelled();
+
+        #endregion
+    }
 
 }

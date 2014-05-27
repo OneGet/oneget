@@ -53,7 +53,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         // no package name passed in.
                         if (!FindViaName(provider, string.Empty, (p) => WriteObject(p))) {
                             // nothing found?
-                            Event<Warning>.Raise("No Packages Found (no package names/criteria listed)");
+                            Warning("No Packages Found (no package names/criteria listed)");
                         }
                     }
                 } catch (Exception e) {
@@ -63,7 +63,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             // whine about things not matched.
             foreach (var name in noMatchNames) {
-                Event<Warning>.Raise("No Package Found", new string[] {name});
+                Warning("No Package Found", new string[] {name});
             }
 
             return true;

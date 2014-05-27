@@ -13,11 +13,11 @@
 //  
 
 namespace Microsoft.OneGet.Core.Extensions {
+    using System;
     using System.Threading;
-    using Api;
-
+    
     public static class CancellationTokenSourceExtensions {
-        public static bool OkToContinue(this CancellationTokenSource cts, IsCancelled isCancelled) {
+        public static bool OkToContinue(this CancellationTokenSource cts, Func<bool> isCancelled) {
             if (isCancelled()) {
                 cts.Cancel();
             }

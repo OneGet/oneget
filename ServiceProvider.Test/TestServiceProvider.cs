@@ -15,8 +15,8 @@
 namespace Microsoft.OneGet.ServicesProvider.Test {
     using System;
     using System.Collections.Generic;
-    using Utility;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using ServiceProvider.Test;
+    using Callback = System.Object;
 
     public class TestServicesProvider {
         #region implement ServicesProvider-interface
@@ -35,7 +35,7 @@ namespace Microsoft.OneGet.ServicesProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'InitializeProvider'" );
             }
@@ -45,7 +45,7 @@ namespace Microsoft.OneGet.ServicesProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'SupportedDownloadSchemes'" );
             }
@@ -56,7 +56,7 @@ namespace Microsoft.OneGet.ServicesProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'DownloadFile'" );
             }
@@ -66,7 +66,7 @@ namespace Microsoft.OneGet.ServicesProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'SupportedArchiveExtensions'" );
             }
@@ -77,7 +77,7 @@ namespace Microsoft.OneGet.ServicesProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'IsSupportedArchive'" );
             }
@@ -88,7 +88,7 @@ namespace Microsoft.OneGet.ServicesProvider.Test {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'UnpackArchive'" );
             }

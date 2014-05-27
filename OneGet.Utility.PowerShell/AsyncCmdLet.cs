@@ -12,7 +12,6 @@
 //  limitations under the License.
 //  
 
-
 namespace Microsoft.OneGet {
     using System;
     using System.Collections;
@@ -22,11 +21,12 @@ namespace Microsoft.OneGet {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Microsoft.OneGet.Core.Api;
-    using Microsoft.OneGet.Core.Collections;
-    using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Tasks;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Core.Collections;
+    using Core.Extensions;
+    using Core.Tasks;
+    using Callback = System.Object;
+
+    public delegate bool OnMainThread(Func<bool> onMainThreadDelegate);
 
     public abstract class AsyncCmdlet : PSCmdlet, IDynamicParameters, IDisposable {
         private List<ICancellable> _cancelWhenStopped = new List<ICancellable>();
@@ -34,7 +34,7 @@ namespace Microsoft.OneGet {
         private RuntimeDefinedParameterDictionary _dynamicParameters;
         private HashSet<string> _errors = new HashSet<string>();
         protected bool _failing = false;
-        private SystemMessageDispatcher _systemMessageDispatcher;
+
         private LocalEventSource _localEventSource;
 
         private BlockingCollection<TaskCompletionSource<bool>> _messages;
@@ -71,9 +71,9 @@ namespace Microsoft.OneGet {
             }
         }
 
-        protected virtual new Callback Invoke {
+        protected new virtual Callback Invoke {
             get {
-                return (_systemMessageDispatcher ?? (_systemMessageDispatcher = new SystemMessageDispatcher(this))).Invoke;
+                return this;
             }
         }
 
@@ -158,147 +158,145 @@ namespace Microsoft.OneGet {
             });
         }
 
-        private void InitLocalEventSource() {
-            if (_localEventSource == null) {
-                _localEventSource = CurrentTask.Local;
-
-                // this handles calls back to the main thread -- this will block waiting for the main thread to execute (or get thru whatever other msgs are there)
-                _localEventSource.Events += new OnMainThread(onMainThreadDelegate => ExecuteOnMainThread(onMainThreadDelegate).Result);
-
-                _localEventSource.Events += new Error(( message, objects) => {
-                    message = GetLocalizedMessage(message,objects);
-
-                    _failing = true;
-                    // queue the message to run on the main thread.
-                    if (IsInvocation) {
-                        var error =  message;
-
-                        if (!_errors.Contains(error)) {
-                            if (!_errors.Any()) {
-                                // todo : this should really have better error types. this is terrible..
-                                WriteError(new ErrorRecord(new Exception(error), "errorid", ErrorCategory.OperationStopped, this));
-                            }
-                            _errors.Add(error);
-                        }
-
-                        //QueueMessage(() => Host.UI.WriteErrorLine("{0}:{1}".format(code, message.formatWithIEnumerable(objects))));
-                    }
-                    // rather than wait on the result of the async'd message,
-                    // we'll just return the stopping state.
-                    return IsCancelled();
-                });
-
-                _localEventSource.Events += new ExceptionThrown((type, message, stacktrace) => {
-                    // queue the message to run on the main thread.
-                    if (IsInvocation) {
-                        // we should probably put this on the veryverbose channel
-                        // QueueMessage(() => Host.UI.WriteErrorLine("{0}:{1}\r\n{2}".format(type, message, stacktrace)));
-                    }
-                    // rather than wait on the result of the async'd message,
-                    // we'll just return the stopping state.
-                    return IsCancelled();
-                });
-
-                _localEventSource.Events += new Debug(( message, objects) => {
-
-                    if (IsInvocation) {
-                        WriteVerbose( GetLocalizedMessage(message,objects));
-                    }
-
-                    // rather than wait on the result of the async WriteVerbose,
-                    // we'll just return the stopping state.
-                    return IsCancelled();
-                });
-
-                _localEventSource.Events += new Verbose((message, objects) => {
-                    if (IsInvocation) {
-                        // Message is going to go to the verbose channel
-                        // and Verbose will only be output if VeryVerbose is true.
-                        WriteVerbose(GetLocalizedMessage(message,objects));
-                    }
-                    // rather than wait on the result of the async WriteVerbose,
-                    // we'll just return the stopping state.
-                    return IsCancelled();
-                });
-
-                _localEventSource.Events += new Progress((activityId, progress, message, objects) => {
-
-                    if (IsInvocation) {
-                        if (_parentProgressId == null) {
-                            WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", GetLocalizedMessage(message, objects)) {
-                                PercentComplete = progress
-                            });
-                        } else {
-                            WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup;", GetLocalizedMessage(message, objects)) {
-                                ParentActivityId = (int)_parentProgressId,
-                                PercentComplete = progress
-                            });
-                        }
-                    }
-
-                    // rather than wait on the result of the async WriteVerbose,
-                    // we'll just return the stopping state.
-                    return IsCancelled();
-                });
-
-                _localEventSource.Events += new CompleteProgress((activityId, isSuccessful) => {
-                    if (IsInvocation) {
-                        if (_parentProgressId == null) {
-                            WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", "") {
-                                PercentComplete = 100,
-                                RecordType = ProgressRecordType.Completed
-                            });
-                        } else {
-                            WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", "") {
-                                ParentActivityId = (int)_parentProgressId,
-                                PercentComplete = 100,
-                                RecordType = ProgressRecordType.Completed
-                            });
-                        }
-                    }
-                    // rather than wait on the result of the async WriteVerbose,
-                    // we'll just return the stopping state.
-                    return IsCancelled();
-                });
-
-                _localEventSource.Events += new Warning((message, objects) => {
-                    if (IsInvocation) {
-                        WriteWarning(GetLocalizedMessage(message, objects));
-                    }
-                    // rather than wait on the result of the async WriteVerbose,
-                    // we'll just return the stopping state.
-                    return IsCancelled();
-                });
-
-                _localEventSource.Events += new Message(( message, objects) => {
-                    // queue the message to run on the main thread.
-                    if (IsInvocation) {
-                        //  QueueMessage(() => Host.UI.WriteLine("{0}::{1}".format(code, message.formatWithIEnumerable(objects))));
-                        // Message is going to go to the verbose channel
-                        // and Verbose will only be output if VeryVerbose is true.
-                        WriteVerbose(GetLocalizedMessage(message, objects));
-                    }
-                    // rather than wait on the result of the async WriteVerbose,
-                    // we'll just return the stopping state.
-                    return IsCancelled();
-                });
+        public bool Warning(string message, params object[] args) {
+            if (IsInvocation) {
+                WriteWarning(GetLocalizedMessage(message, args));
             }
+            // rather than wait on the result of the async WriteVerbose,
+            // we'll just return the stopping state.
+            return IsCancelled();
         }
 
-        private string GetLocalizedMessage(string message, IEnumerable<object> objects) {
+        public bool Error(string message, params object[] args) {
+            message = GetLocalizedMessage(message, args);
 
+            _failing = true;
+            // queue the message to run on the main thread.
+            if (IsInvocation) {
+                var error = message;
+
+                if (!_errors.Contains(error)) {
+                    if (!_errors.Any()) {
+                        // todo : this should really have better error types. this is terrible..
+                        WriteError(new ErrorRecord(new Exception(error), "errorid", ErrorCategory.OperationStopped, this));
+                    }
+                    _errors.Add(error);
+                }
+
+                //QueueMessage(() => Host.UI.WriteErrorLine("{0}:{1}".format(code, message.formatWithIEnumerable(objects))));
+            }
+            // rather than wait on the result of the async'd message,
+            // we'll just return the stopping state.
+            return IsCancelled();
+        }
+
+        public bool Message(string message, params object[] args) {
+            // queue the message to run on the main thread.
+            if (IsInvocation) {
+                //  QueueMessage(() => Host.UI.WriteLine("{0}::{1}".format(code, message.formatWithIEnumerable(objects))));
+                // Message is going to go to the verbose channel
+                // and Verbose will only be output if VeryVerbose is true.
+                WriteVerbose(GetLocalizedMessage(message, args));
+            }
+            // rather than wait on the result of the async WriteVerbose,
+            // we'll just return the stopping state.
+            return IsCancelled();
+        }
+
+        public bool Verbose(string message, params object[] args) {
+            if (IsInvocation) {
+                // Message is going to go to the verbose channel
+                // and Verbose will only be output if VeryVerbose is true.
+                WriteVerbose(GetLocalizedMessage(message, args));
+            }
+            // rather than wait on the result of the async WriteVerbose,
+            // we'll just return the stopping state.
+            return IsCancelled();
+        }
+
+        public bool Debug(string message, params object[] args) {
+            if (IsInvocation) {
+                WriteVerbose(GetLocalizedMessage(message, args));
+            }
+
+            // rather than wait on the result of the async WriteVerbose,
+            // we'll just return the stopping state.
+            return IsCancelled();
+        }
+
+        public bool ExceptionThrown(string exceptionType, string message, string stacktrace) {
+            // queue the message to run on the main thread.
+            if (IsInvocation) {
+                // we should probably put this on the veryverbose channel
+                // QueueMessage(() => Host.UI.WriteErrorLine("{0}:{1}\r\n{2}".format(type, message, stacktrace)));
+            }
+            // rather than wait on the result of the async'd message,
+            // we'll just return the stopping state.
+            return IsCancelled();
+        }
+
+        public int StartProgress(int parentActivityId, string message, params object[] args) {
+            return 0;
+        }
+
+        public bool Progress(int activityId, int progress, string message, params object[] args) {
+            if (IsInvocation) {
+                if (_parentProgressId == null) {
+                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", GetLocalizedMessage(message, args)) {
+                        PercentComplete = progress
+                    });
+                } else {
+                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup;", GetLocalizedMessage(message, args)) {
+                        ParentActivityId = (int)_parentProgressId,
+                        PercentComplete = progress
+                    });
+                }
+            }
+
+            // rather than wait on the result of the async WriteVerbose,
+            // we'll just return the stopping state.
+            return IsCancelled();
+        }
+
+        public bool CompleteProgress(int activityId, bool isSuccessful) {
+            if (IsInvocation) {
+                if (_parentProgressId == null) {
+                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", "") {
+                        PercentComplete = 100,
+                        RecordType = ProgressRecordType.Completed
+                    });
+                } else {
+                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", "") {
+                        ParentActivityId = (int)_parentProgressId,
+                        PercentComplete = 100,
+                        RecordType = ProgressRecordType.Completed
+                    });
+                }
+            }
+            // rather than wait on the result of the async WriteVerbose,
+            // we'll just return the stopping state.
+            return IsCancelled();
+        }
+
+        /// <summary>
+        ///     The provider can query to see if the operation has been cancelled.
+        ///     This provides for a gentle way for the caller to notify the callee that
+        ///     they don't want any more results.
+        /// </summary>
+        /// <returns>returns TRUE if the operation has been cancelled.</returns>
+        public bool IsCancelled() {
+            return Stopping || _failing;
+        }
+
+
+        private string GetLocalizedMessage(string message, IEnumerable<object> objects) {
             // TODO: lookup message as a message code first.
             // TODO: ie: message = LookupMessage(message).formatWithIEnumerable(objects);
 
             return message.formatWithIEnumerable(objects);
         }
 
-        public bool IsCancelled() {
-            return Stopping || _failing;
-        }
-
         private void AsyncRun(Func<bool> asyncAction) {
-            InitLocalEventSource();
             _messages = new BlockingCollection<TaskCompletionSource<bool>>();
 
             // spawn the activity off in another thread.
@@ -548,8 +546,6 @@ namespace Microsoft.OneGet {
             return null;
         }
 
-   
-
         protected virtual void Dispose(bool disposing) {
             if (disposing) {
                 _cancelWhenStopped.Clear();
@@ -569,31 +565,5 @@ namespace Microsoft.OneGet {
             }
         }
 
-        private class SystemMessageDispatcher : MarshalByRefObject {
-            private readonly AsyncCmdlet _cmdlet;
-
-            private InvokableDispatcher _dispatcher;
-
-            public SystemMessageDispatcher(AsyncCmdlet cmdlet) {
-                _cmdlet = cmdlet;
-            }
-
-            internal Callback Invoke {
-                get {
-                    return (_dispatcher ?? (_dispatcher = new InvokableDispatcher {
-                        (IsCancelled)(() => _cmdlet.IsCancelled()),
-                        (Warning)((s,  ie) => Event<Warning>.Raise(s, ie)),
-                        (Message)((s, ie) => Event<Message>.Raise(s, ie)),
-                        (Error)((s, ie) => Event<Error>.Raise(s, ie)),
-                        (Debug)((s, ie) => Event<Debug>.Raise(s, ie)),
-                        (Verbose)((s, ie) => Event<Verbose>.Raise(s, ie)),
-                        (ExceptionThrown)((s, s1, ie) => Event<ExceptionThrown>.Raise(s, s1, ie)),
-                        (Progress)((s, ie, p4, p5) => Event<Progress>.Raise(s, ie, p4, p5)),
-                        (StartProgress)((p1,p2,p3) => Event<StartProgress>.Raise(p1,p2,p3)),
-                        (CompleteProgress)((s, b)=> Event<CompleteProgress>.Raise(s, b)),
-                    }));
-                }
-            }
-        }
     }
 }

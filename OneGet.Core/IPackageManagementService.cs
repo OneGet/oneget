@@ -16,7 +16,7 @@ namespace Microsoft.OneGet {
     using System;
     using System.Collections.Generic;
     using Core.Providers.Package;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Callback = System.Object;
 
     /// <summary>
     /// The current Package Management Service Interface 

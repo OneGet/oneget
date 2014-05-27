@@ -14,7 +14,6 @@
 
 namespace Microsoft.OneGet {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using Core.Dynamic;
@@ -22,9 +21,10 @@ namespace Microsoft.OneGet {
     using Core.Providers.Meta;
     using Core.Providers.Package;
     using Core.Providers.Service;
+    using Callback = System.Object;
 
     internal static class ProviderLoader {
-        internal static void AcquireProviders(string assemblyPath, Func<string, IEnumerable<object>, object> callback, Action<string, IPackageProvider> yieldPackageProvider, Action<string, IServicesProvider> yieldServicesProvider) {
+        internal static void AcquireProviders(string assemblyPath, Callback callback, Action<string, IPackageProvider> yieldPackageProvider, Action<string, IServicesProvider> yieldServicesProvider) {
             var dynInterface = new DynamicInterface();
 
             var asm = Assembly.LoadFile(assemblyPath);
@@ -34,7 +34,7 @@ namespace Microsoft.OneGet {
 
             foreach (var provider in dynInterface.FilterTypesCompatibleTo<IMetaProvider>(asm).Select( each => dynInterface.Create<IMetaProvider>(each) )) {
                 try {
-                    provider.InitializeProvider(callback);
+                    provider.InitializeProvider(DynamicInterface.Instance, callback);
                     foreach (var name in provider.GetProviderNames()) {
                         var instance = provider.CreateProvider(name);
                         if (instance != null) {
@@ -42,7 +42,7 @@ namespace Microsoft.OneGet {
                             if (dynInterface.IsInstanceCompatible<IPackageProvider>(instance)) {
                                 try {
                                     var packageProvider = dynInterface.Create<IPackageProvider>(instance);
-                                    packageProvider.InitializeProvider(callback);
+                                    packageProvider.InitializeProvider(DynamicInterface.Instance, callback);
                                     yieldPackageProvider(packageProvider.GetPackageProviderName(), packageProvider);
                                 } catch (Exception e) {
                                     e.Dump();
@@ -53,7 +53,7 @@ namespace Microsoft.OneGet {
                             if (dynInterface.IsInstanceCompatible<IServicesProvider>(instance)) {
                                 try {
                                     var servicesProvider = dynInterface.Create<IServicesProvider>(instance);
-                                    servicesProvider.InitializeProvider(callback);
+                                    servicesProvider.InitializeProvider(DynamicInterface.Instance, callback);
                                     yieldServicesProvider(servicesProvider.GetServicesProviderName(), servicesProvider);
                                 } catch (Exception e) {
                                     e.Dump();
@@ -68,7 +68,7 @@ namespace Microsoft.OneGet {
 
             foreach (var provider in dynInterface.FilterTypesCompatibleTo<IPackageProvider>(asm).Select(each => dynInterface.Create<IPackageProvider>(each))) {
                 try {
-                    provider.InitializeProvider(callback);
+                    provider.InitializeProvider(DynamicInterface.Instance, callback);
                     yieldPackageProvider(provider.GetPackageProviderName(), provider);
                 } catch (Exception e) {
                     e.Dump();
@@ -77,7 +77,7 @@ namespace Microsoft.OneGet {
 
             foreach (var provider in dynInterface.FilterTypesCompatibleTo<IServicesProvider>(asm).Select(each => dynInterface.Create<IServicesProvider>(each))) {
                 try {
-                    provider.InitializeProvider(callback);
+                    provider.InitializeProvider(DynamicInterface.Instance, callback);
                     yieldServicesProvider(provider.GetServicesProviderName(), provider);
                 } catch (Exception e) {
                     e.Dump();

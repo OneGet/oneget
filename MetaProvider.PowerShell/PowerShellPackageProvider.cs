@@ -17,9 +17,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Collections.Generic;
     using System.Management.Automation;
     using Core;
-    using Core.Extensions;
-    using Utility;
-    using Callback = System.Func<string, System.Collections.Generic.IEnumerable<object>, object>;
+    using Callback = System.Object;
 
     public interface IYieldable {
         void YieldResult(Request r);
@@ -41,97 +39,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
     }
 
-    internal class PowerShellProviderBase : IDisposable {
-        private readonly Dictionary<string, CommandInfo> _methods = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
-        private PSModuleInfo _module;
-        private DynamicPowershell _powershell;
-        private DynamicPowershellResult _result;
-
-        public PowerShellProviderBase(DynamicPowershell ps, PSModuleInfo module) {
-            _powershell = ps;
-        }
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (disposing) {
-                if (_powershell != null) {
-                    _powershell.Dispose();
-                    _powershell = null;
-                }
-                if (_result != null) {
-                    _result.Dispose();
-                    _result = null;
-                }
-                _module = null;
-            }
-        }
-
-        internal CommandInfo GetMethod(string methodName) {
-            return _methods.GetOrAdd(methodName, () => {
-                // look for a matching function in the module
-
-                // can't find one, return null.
-                return null;
-            });
-
-            // hmm, it is possible to get the parameter types to match better when binding.
-            // module.ExportedFunctions.FirstOrDefault().Value.Parameters.Values.First().ParameterType
-        }
-
-        protected object CallPowerShell(PowerShellRequest request, params object[] args) {
-            _powershell["request"] = request;
-
-            try {
-                request.Debug("INVOKING", request.CommandInfo.Name);
-                // make sure we don't pass the callback to the function.
-                var result = _powershell.NewTryInvokeMemberEx(request.CommandInfo.Name, new string[0], args);
-
-                // instead, loop thru results and get 
-                if (result == null) {
-                    // failure! 
-                    throw new Exception("Powershell script/function failed.");
-                }
-
-                object finalValue = null;
-
-                foreach (var value in result) {
-                    var y = value as IYieldable;
-                    if (y != null) {
-                        y.YieldResult(request);
-                    } else {
-                        finalValue = result;
-                    }
-                }
-                return finalValue;
-            } catch (Exception e) {
-                e.Dump();
-            } finally {
-                _powershell["request"] = null;
-            }
-            return null;
-        }
-    }
-
-    internal class PowerShellRequest : Request {
-        internal CommandInfo CommandInfo;
-
-        internal PowerShellRequest(Callback c, PowerShellProviderBase provider, string methodName) : base(c) {
-            CommandInfo = provider.GetMethod(methodName);
-            if (CommandInfo == null) {
-                Debug("METHOD_NOT_IMPLEMENTED", methodName);
-            }
-        }
-
-        internal bool IsImplemented {
-            get {
-                return CommandInfo != null;
-            }
-        }
-    }
+   
 
     internal class PowerShellPackageProvider : PowerShellProviderBase {
 
@@ -145,45 +53,45 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         #region implement PackageProvider-interface
 
         public void AddPackageSource(string name, string location, bool trusted, Callback c) {
-            using (var request = new PowerShellRequest(c, this, "AddPackageSource")) {
-                if (request.IsImplemented) {
+            using (var request = Request.New(c, this, "AddPackageSource")) {
+                if (request.IsMethodImplemented) {
                     CallPowerShell(request, name, location, trusted);
                 }
             }
         }
         public bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c) {
-            using (var request = new PowerShellRequest(c, this, "FindPackage")) {
-                if (request.IsImplemented) {
+            using (var request = Request.New(c, this, "FindPackage")) {
+                if (request.IsMethodImplemented) {
                 }
             }
             return default(bool);
         }
         public bool FindPackageByFile(string file, int id, Callback c) {
-            using (var request = new PowerShellRequest(c, this, "FindPackageByFile")) {
-                if (request.IsImplemented) {
+            using (var request = Request.New(c, this, "FindPackageByFile")) {
+                if (request.IsMethodImplemented) {
                 }
             }
 
             return default(bool);
         }
         public bool FindPackageByUri(Uri uri, int id, Callback c) {
-            using (var request = new PowerShellRequest(c, this, "FindPackageByUri")) {
-                if (request.IsImplemented) {
+            using (var request = Request.New(c, this, "FindPackageByUri")) {
+                if (request.IsMethodImplemented) {
                 }
             }
             return default(bool);
         }
         public bool GetInstalledPackages(string name, Callback c) {
-            using (var request = new PowerShellRequest(c, this, "GetInstalledPackages")) {
-                if (request.IsImplemented) {
+            using (var request = Request.New(c, this, "GetInstalledPackages")) {
+                if (request.IsMethodImplemented) {
                 }
             }
 
             return default(bool);
         }
         public void GetDynamicOptions(int category, Callback c) {
-            using (var request = new PowerShellRequest(c, this, "GetDynamicOptions")) {
-                if (request.IsImplemented) {
+            using (var request = Request.New(c, this, "GetDynamicOptions")) {
+                if (request.IsMethodImplemented) {
                 }
             }
         }
@@ -194,39 +102,39 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// <required />
         /// <returns>the name of the package provider</returns>
         public string GetPackageProviderName() {
-            
+
             return "modulename";
         }
         public bool GetPackageSources(Callback c) {
-            using (var request = new PowerShellRequest(c, this, "GetPackageSources")) {
-                if (request.IsImplemented) {
+            using (var request = Request.New(c, this, "GetPackageSources")) {
+                if (request.IsMethodImplemented) {
                 }
             }
             return default(bool);
         }
         public void InitializeProvider(Callback c) {
-            using (var request = new PowerShellRequest(c, this, "InitializeProvider")) {
-                if (request.IsImplemented) {
+            using (var request = Request.New(c, this, "InitializeProvider")) {
+                if (request.IsMethodImplemented) {
                 }
             }
         }
         public bool InstallPackage(string fastPath, Callback c) {
-            using (var request = new PowerShellRequest(c, this, "InstallPackage")) {
-                if (request.IsImplemented) {
+            using (var request = Request.New(c, this, "InstallPackage")) {
+                if (request.IsMethodImplemented) {
                 }
             }
 
             return default(bool);
         }
         public void RemovePackageSource(string name, Callback c) {
-            using (var request = new PowerShellRequest(c, this, "RemovePackageSource")) {
-                if (request.IsImplemented) {
+            using (var request = Request.New(c, this, "RemovePackageSource")) {
+                if (request.IsMethodImplemented) {
                 }
             }
         }
         public bool UninstallPackage(string fastPath, Callback c) {
-            using (var request = new PowerShellRequest(c, this, "UninstallPackage")) {
-                if (request.IsImplemented) {
+            using (var request = Request.New(c, this, "UninstallPackage")) {
+                if (request.IsMethodImplemented) {
                 }
             }
             return default(bool);
@@ -235,7 +143,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             // TODO: Fill in implementation
             // Delete this method if you do not need to implement it
             // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information", "Calling 'GetFeatures'");
             }
@@ -276,7 +184,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             // TODO: Fill in implementation
             // Delete this method if you do not need to implement it
             // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information", "Calling 'DownloadPackage'");
             }
@@ -287,7 +195,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             // TODO: Fill in implementation
             // Delete this method if you do not need to implement it
             // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information", "Calling 'GetPackageDependencies'");
             }
@@ -298,7 +206,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             // TODO: Fill in implementation
             // Delete this method if you do not need to implement it
             // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information", "Calling 'GetPackageDetails'");
             }
@@ -320,7 +228,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             // TODO: Fill in implementation
             // Delete this method if you do not need to implement it
             // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = new Request(c)) {
+            using (var request = Request.New(c)) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information", "Calling 'CompleteFind'");
             }

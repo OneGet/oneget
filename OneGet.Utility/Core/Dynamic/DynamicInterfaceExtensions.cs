@@ -23,16 +23,19 @@ namespace Microsoft.OneGet.Core.Dynamic {
     internal static class DynamicInterfaceExtensions {
         private readonly static Type[] _emptyTypes = { };
 
-        private static readonly IDictionary<Tuple<Type, Type>, bool> _compatibilityMatrix = new Dictionary<Tuple<Type, Type>, bool>();
-
-        private static readonly IDictionary<Type, MethodInfo[]> _methodCache = new Dictionary<Type, MethodInfo[]>();
-        private static readonly IDictionary<Type[], MethodInfo[]> _methodCacheForTypes = new Dictionary<Type[], MethodInfo[]>();
-        private static readonly IDictionary<Type, FieldInfo[]> _delegateFieldsCache = new Dictionary<Type, FieldInfo[]>();
-        private static readonly IDictionary<Type, PropertyInfo[]> _delegatePropertiesCache = new Dictionary<Type, PropertyInfo[]>();
+        private static readonly Dictionary<Type, MethodInfo[]> _methodCache = new Dictionary<Type, MethodInfo[]>();
+        private static readonly Dictionary<Type[], MethodInfo[]> _methodCacheForTypes = new Dictionary<Type[], MethodInfo[]>();
+        private static readonly Dictionary<Type, FieldInfo[]> _delegateFieldsCache = new Dictionary<Type, FieldInfo[]>();
+        private static readonly Dictionary<Type, PropertyInfo[]> _delegatePropertiesCache = new Dictionary<Type, PropertyInfo[]>();
         private static readonly Dictionary<Type, MethodInfo[]> _requiredMethodsCache = new Dictionary<Type, MethodInfo[]>();
+        private static readonly Dictionary<Type, MethodInfo[]> _virtualMethodsCache = new Dictionary<Type, MethodInfo[]>();
 
         public static MethodInfo FindMethod(this MethodInfo[] methods, MethodInfo methodSignature) {
             return methods.FirstOrDefault(each => DoNamesMatchAcceptably(methodSignature.Name, each.Name) && DoSignaturesMatchAcceptably(methodSignature, each));
+        }
+
+        public static MethodInfo FindMethod(this MethodInfo[] methods, Type delegateType ) {
+            return methods.FirstOrDefault(each => DoNamesMatchAcceptably(delegateType.Name, each.Name) && delegateType.IsDelegateAssignableFromMethod(each));
         }
 
         public static Delegate FindDelegate(this FieldInfo[] fields, object actualInstance, MethodInfo signature) {
@@ -47,6 +50,20 @@ namespace Microsoft.OneGet.Core.Dynamic {
                 let value = property.GetValue(actualInstance) as Delegate
                 where DoNamesMatchAcceptably(signature.Name, property.Name) && property.PropertyType.IsDelegateAssignableFromMethod(signature) && value != null
                 select value).FirstOrDefault();
+        }
+
+        public static Delegate FindDelegate(this FieldInfo[] fields, object actualInstance, Type delegateType) {
+            return (from field in fields
+                    let value = field.GetValue(actualInstance) as Delegate
+                    where DoNamesMatchAcceptably(delegateType.Name, field.Name) && field.FieldType.IsDelegateAssignableFromDelegate(delegateType) && value != null
+                    select value).FirstOrDefault();
+        }
+
+        public static Delegate FindDelegate(this PropertyInfo[] properties, object actualInstance, Type delegateType) {
+            return (from property in properties
+                    let value = property.GetValue(actualInstance) as Delegate
+                    where DoNamesMatchAcceptably(delegateType.Name, property.Name) && property.PropertyType.IsDelegateAssignableFromDelegate(delegateType) && value != null
+                    select value).FirstOrDefault();
         }
 
         private static bool DoNamesMatchAcceptably(string originalName, string candidateName) {
@@ -95,8 +112,12 @@ namespace Microsoft.OneGet.Core.Dynamic {
             return Enumerable.Empty<PropertyInfo>();
         }
 
+        internal static MethodInfo[] GetVirtualMethods(this Type type) {
+            return _virtualMethodsCache.GetOrAdd( type, ()=>  (type.IsInterface ? (IEnumerable<MethodInfo>)type.GetMethods() : (IEnumerable<MethodInfo>)type.GetMethods().Where(each => each.IsAbstract || each.IsVirtual)).ToArray());
+        }
+
         internal static MethodInfo[] GetRequiredMethods(this Type type) {
-            return _requiredMethodsCache.GetOrAdd(type, () => type.GetMethods().Where(each => each.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("RequiredAttribute", StringComparison.OrdinalIgnoreCase))).ToArray());
+            return _requiredMethodsCache.GetOrAdd(type, () => type.GetVirtualMethods().Where(each => each.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("RequiredAttribute", StringComparison.OrdinalIgnoreCase))).ToArray());
         }
 
         internal static ConstructorInfo GetDefaultConstructor(this Type t) {
@@ -140,6 +161,53 @@ namespace Microsoft.OneGet.Core.Dynamic {
                 typeof (string)
             });
             return imiMethodInfo == null ? (s) => true : actualInstance.CreateProxiedDelegate<Func<string, bool>>(imiMethodInfo);
+        }
+
+        public static TInterface As<TInterface>(this object instance) {
+            if (typeof (TInterface).IsDelegate()) {
+                // find a function in this object that matches the delegate that we are given
+                // and return that instead.
+                if (instance.GetType().IsDelegate()) {
+                    if (typeof (TInterface).IsDelegateAssignableFromDelegate(instance.GetType())) {
+                        return ((Delegate)instance).CreateProxiedDelegate<TInterface>();
+                    }
+                    throw new Exception("Delegate '{0}' can not be created from Delegate '{1}'.".format(typeof (TInterface).NiceName(), instance.GetType().NiceName()));
+                }
+
+
+                var instanceSupportsMethod = GenerateInstanceSupportsMethod(instance);
+                var instanceType = instance.GetType();
+
+                var instanceMethods = instanceType.GetPublicMethods();
+                var instanceFields = instanceType.GetPublicDelegateFields();
+                var instanceProperties = instanceType.GetPublicDelegateProperties();
+
+                if (!instanceSupportsMethod(typeof (TInterface).Name)) {
+                    throw new Exception("Generation of Delegate '{0}' not supported from object.".format(typeof (TInterface).NiceName()));
+                }
+
+                var method = instanceMethods.FindMethod(typeof (TInterface));
+                if (method != null) {
+                    return instance.CreateProxiedDelegate<TInterface>(method);
+                }
+                var instanceDelegate = instanceFields.FindDelegate(instance, typeof (TInterface)) ?? instanceProperties.FindDelegate(instance, typeof (TInterface));
+                if (instanceDelegate != null) {
+                    if (instanceDelegate is TInterface) {
+                        return (TInterface)(object)instanceDelegate;
+                    }
+                    return instanceDelegate.CreateProxiedDelegate<TInterface>();
+                }
+                throw new Exception("Delegate '{0}' not matched in object.".format(typeof (TInterface).NiceName()));
+            }
+            return DynamicInterface.Instance.Create<TInterface>(instance);
+        }
+
+        public static TInterface Extend<TInterface>(this object obj, params object[] objects) {
+            return DynamicInterface.Instance.Create<TInterface>(objects, obj);
+        }
+
+        public static bool IsDelegate(this Type t) {
+            return t.BaseType == typeof (MulticastDelegate);
         }
     }
 }

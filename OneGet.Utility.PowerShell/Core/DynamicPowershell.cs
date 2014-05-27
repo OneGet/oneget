@@ -152,40 +152,6 @@ namespace Microsoft.OneGet.Core {
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result) {
             result = NewTryInvokeMemberEx(binder.Name, binder.CallInfo.ArgumentNames.ToArray(), args);
             return result != null;
-#if OLD_WAY
-    // make sure that we're clear to drop the last DPSC.
-            Wait();
-
-            try {
-                // command
-                _currentCommand = new DynamicPowershellCommand(CreatePipeline()) {
-                    Command = new Command(GetPropertyValue(LookupCommand(binder.Name), "Name"))
-                };
-                
-                // parameters
-                var unnamedCount = args.Length - binder.CallInfo.ArgumentNames.Count();
-                var namedArguments = binder.CallInfo.ArgumentNames.Select((each, index) => new KeyValuePair<string, object>(each, args[index + unnamedCount]));
-                _currentCommand.SetParameters(args.Take(unnamedCount), namedArguments);
-
-#if DETAILED_DEBUG
-                try {
-                    Console.WriteLine("[DynamicInvoke] {0} {1}", _currentCommand.Command.CommandText,
-                        _currentCommand.Command.Parameters != null && _currentCommand.Command.Parameters.Any()
-                            ? _currentCommand.Command.Parameters.Select(each => (each.Name.Is() ? "-"+each.Name : " ") + " " + each.Value.ToString()).Aggregate((each, current) => current + " " + each) : "");
-                } catch  {
-                    
-                }
-#endif
-                // invoke
-                result = _currentCommand.InvokeAsyncIfPossible();
-
-                return true;
-            } catch (Exception e) {
-                e.Dump();
-                result = null;
-                return false;
-            }
-#endif
         }
 
         public bool TryInvokeMemberEx(string name, out object result, string[] argumentNames,  params object[] args ) {
