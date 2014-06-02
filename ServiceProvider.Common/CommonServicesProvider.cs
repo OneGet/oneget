@@ -26,21 +26,19 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         public string GetServicesProviderName() {
             return "Common";
         }
-        public void InitializeProvider(Callback c){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = Request.New(c)) {
-                // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'InitializeProvider'" );
-            }
+        public void InitializeProvider(object dynamicInterface, Callback c) {
+            DynamicExtensions.DynamicInterface = dynamicInterface;
 
+            using (var request = c.As<Request>()) {
+                // use the request object to interact with the OneGet core:
+                request.Debug("Information", "Calling 'InitializeProvider'");
+            }
         }
         public IEnumerable<string> SupportedDownloadSchemes(Callback c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = Request.New(c)) {
+            using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'SupportedDownloadSchemes'" );
             }
@@ -51,7 +49,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = Request.New(c)) {
+            using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'DownloadFile'" );
             }
@@ -61,7 +59,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = Request.New(c)) {
+            using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'SupportedArchiveExtensions'" );
             }
@@ -72,7 +70,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = Request.New(c)) {
+            using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'IsSupportedArchive'" );
             }
@@ -83,7 +81,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = Request.New(c)) {
+            using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'UnpackArchive'" );
             }

@@ -16,17 +16,18 @@ using System.Collections.Generic;
 using Microsoft.OneGet;
 using Microsoft.OneGet.Core.Api;
 
-internal interface IRequest : IHostApis, ICoreApis, IRequestApis, IServicesApi {
+public interface IRequest : IHostApis, ICoreApis, IRequestApis, IServicesApi {
 }
 
 public delegate bool IsCancelled();
 public delegate bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source);
 public delegate bool YieldPackageDetails(object serializablePackageDetailsObject);
-public delegate bool YieldSource(string name, string location, bool isTrusted);
+public delegate bool YieldPackageSource(string name, string location, bool isTrusted);
 public delegate bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired, IEnumerable<string> permittedValues);
 
 namespace Microsoft.OneGet.Core.Providers.Package {
     using System;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -34,6 +35,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
     using Dynamic;
     using Extensions;
     using Packaging;
+    using Platform;
     using Callback = System.Object;
 
     public class PackageProvider : MarshalByRefObject {
@@ -41,6 +43,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
 
         private string _name;
 
+     
         internal PackageProvider(IPackageProvider provider) {
             _provider = provider;
         }
@@ -51,6 +54,15 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             }
         }
 
+
+        public object GetPackageManagementService() {
+            return new PackageManagementService().Instance;
+        }
+
+        public string GetMessageString(string message) {
+            return message;
+        }
+
         // we don't want these objects being gc's out because they remain unused...
         public override object InitializeLifetimeService() {
             return null;
@@ -58,6 +70,18 @@ namespace Microsoft.OneGet.Core.Providers.Package {
 
         public bool IsMethodImplemented(string methodName) {
             return _provider.IsMethodImplemented(methodName);
+        }
+
+        private object RequestStuff {
+            get {
+                return new {
+                    GetPackageManagementService = new Func<object>(() => new PackageManagementService().Instance),
+                    GetMessageString = new Func<string, string>((s) => s)
+#if DEBUG
+                    ,Debug = new Action<string>((s) => { NativeMethods.OutputDebugString(s); })
+#endif
+                };
+            }
         }
 
         // Friendly APIs
@@ -71,7 +95,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         }
 
         public void RemovePackageSource(string name, Callback c) {
-            _provider.RemovePackageSource(name, DynamicInterface.Instance.Create<IRequest>(c, this));
+            _provider.RemovePackageSource(name, DynamicInterface.Instance.Create<IRequest>(c, RequestStuff));
         }
 
         private CancellableEnumerable<T> CallAndCollect<T>(Action<CancellableBlockingCollection<T>> call) {
@@ -88,14 +112,14 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             return collection;
         }
 
-        public CancellableEnumerable<SoftwareIdentity> FindPackageByUri(Uri u, int id, Callback c) {
+        public CancellableEnumerable<SoftwareIdentity> FindPackageByUri(Uri uri, int id, Callback c) {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(collection =>
-                _provider.FindPackageByUri(u, id, c.Extend<IRequest>(new {
+                _provider.FindPackageByUri(uri, id, c.Extend<IRequest>(RequestStuff, new {
                     YieldPackage = new YieldPackage((fastpath, name, version, scheme, summary, source) => {
                         collection.Add(new SoftwareIdentity {
-                            FastPath = fastpath,
+                            FastPackageReference = fastpath,
                             Name = name,
                             Version = version,
                             VersionScheme = scheme,
@@ -113,10 +137,10 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(result =>
-                _provider.FindPackageByFile(filename, id, c.Extend<IRequest>(new {
+                _provider.FindPackageByFile(filename, id, c.Extend<IRequest>(RequestStuff, new {
                     YieldPackage = new YieldPackage((fastpath, name, version, scheme, summary, source) => {
                         result.Add(new SoftwareIdentity {
-                            FastPath = fastpath,
+                            FastPackageReference = fastpath,
                             Name = name,
                             Version = version,
                             VersionScheme = scheme,
@@ -138,11 +162,11 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(result =>
-                _provider.CompleteFind(i, c.Extend<IRequest>(new {
+                _provider.CompleteFind(i, c.Extend<IRequest>(RequestStuff, new {
                     // add YieldPackage method to the callback
                     YieldPackage = new YieldPackage((fastpath, name, version, scheme, summary, source) => {
                         result.Add(new SoftwareIdentity {
-                            FastPath = fastpath,
+                            FastPackageReference = fastpath,
                             Name = name,
                             Version = version,
                             VersionScheme = scheme,
@@ -157,16 +181,19 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         }
 
         public CancellableEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, Callback c) {
+            c = c.Extend<IRequest>(RequestStuff);
             var id = StartFind(c);
             return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), names.SelectMany(each => FindPackage(each, requiredVersion, minimumVersion, maximumVersion, id, c)).Concat(CompleteFind(id, c)));
         }
 
         public CancellableEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, Callback c) {
+            c = c.Extend<IRequest>(RequestStuff);
             var id = StartFind(c);
             return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), uris.SelectMany(each => FindPackageByUri(each, id, c)).Concat(CompleteFind(id, c)));
         }
 
         public CancellableEnumerable<SoftwareIdentity> FindPackagesByFiles(string[] filenames, Callback c) {
+            c = c.Extend<IRequest>(RequestStuff);
             var id = StartFind(c);
             return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), filenames.SelectMany(each => FindPackageByFile(each, id, c)).Concat(CompleteFind(id, c)));
         }
@@ -175,11 +202,11 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(result =>
-                _provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, c.Extend<IRequest>(new {
+                _provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, c.Extend<IRequest>(RequestStuff, new {
                     // add YieldPackage method to the callback
                     YieldPackage = new YieldPackage((fastpath, n, version, scheme, summary, source) => {
                         result.Add(new SoftwareIdentity {
-                            FastPath = fastpath,
+                            FastPackageReference = fastpath,
                             Name = n,
                             Version = version,
                             VersionScheme = scheme,
@@ -197,11 +224,11 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(result =>
-                _provider.GetInstalledPackages(name, new {
+                _provider.GetInstalledPackages(name, c.Extend<IRequest>(RequestStuff , new {
                     // add YieldPackage method to the callback
                     YieldPackage = new YieldPackage((fastpath, n, version, scheme, summary, source) => {
                         result.Add(new SoftwareIdentity {
-                            FastPath = fastpath,
+                            FastPackageReference = fastpath,
                             Name = n,
                             Version = version,
                             VersionScheme = scheme,
@@ -212,13 +239,13 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                         });
                         return !(isCancelled() || result.IsCancelled);
                     })
-                }));
+                })));
         }
 
         public CancellableEnumerable<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, Callback c) {
             var isCancelled = c.As<IsCancelled>();
 
-            var request = c.As<IRequest>();
+            var request = c.Extend<IRequest>(RequestStuff);
 
             if (softwareIdentity == null) {
                 throw new ArgumentNullException("softwareIdentity");
@@ -240,10 +267,10 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                 }
             }
 
-            return CallAndCollect<SoftwareIdentity>(result => _provider.InstallPackage(softwareIdentity.FastPath, c.Extend<IRequest>(new {
+            return CallAndCollect<SoftwareIdentity>(result => _provider.InstallPackage(softwareIdentity.FastPackageReference, c.Extend<IRequest>(RequestStuff, new {
                 YieldPackage = new YieldPackage((fastpath, n, version, scheme, summary, source) => {
                     result.Add(new SoftwareIdentity {
-                        FastPath = fastpath,
+                        FastPackageReference = fastpath,
                         Name = n,
                         Version = version,
                         VersionScheme = scheme,
@@ -261,10 +288,10 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(result =>
-                _provider.UninstallPackage(softwareIdentity.FastPath, c.Extend<IRequest>(new {
+                _provider.UninstallPackage(softwareIdentity.FastPackageReference, c.Extend<IRequest>(RequestStuff, new {
                     YieldPackage = new YieldPackage((fastpath, n, version, scheme, summary, source) => {
                         result.Add(new SoftwareIdentity {
-                            FastPath = fastpath,
+                            FastPackageReference = fastpath,
                             Name = n,
                             Version = version,
                             VersionScheme = scheme,
@@ -280,8 +307,20 @@ namespace Microsoft.OneGet.Core.Providers.Package {
 
         public CancellableEnumerable<DynamicOption> GetDynamicOptions(OptionCategory operation, Callback c) {
             var isCancelled = c.As<IsCancelled>();
+            /*
+            var extended = c.Extend<IRequest>(RequestStuff, new {
+                YieldDynamicOption = new YieldDynamicOption((category, name, type, isRequired, values) => {
+                    Console.WriteLine("YIELD DYNAMIC OPTION");
+                    return !(isCancelled());
+                })
+            });
+
+            _provider.GetDynamicOptions((int)operation, extended);
+            */
+
             return CallAndCollect<DynamicOption>(
-                result => _provider.GetDynamicOptions((int)operation, c.Extend<IRequest>(new {
+                result => _provider.GetDynamicOptions((int)operation, c.Extend<IRequest>(RequestStuff, new {
+                    GetMessageString = new Func<string, string>(s => s),
                     YieldDynamicOption = new YieldDynamicOption((category, name, type, isRequired, values) => {
                         result.Add(new DynamicOption {
                             Category = (OptionCategory)category,
@@ -308,8 +347,8 @@ namespace Microsoft.OneGet.Core.Providers.Package {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<PackageSource>(result =>
-                _provider.GetPackageSources(c.Extend<IRequest>(new {
-                    YieldSource = new YieldSource((name, location, isTrusted) => {
+                _provider.GetPackageSources(c.Extend<IRequest>(RequestStuff, new {
+                    YieldPackageSource = new YieldPackageSource((name, location, isTrusted) => {
                         result.Add(new PackageSource {
                             Name = name,
                             Location = location,

@@ -34,5 +34,7 @@ namespace Microsoft.OneGet {
         IEnumerable<PackageProvider> SelectProviders(string providerName, IEnumerable<string> sourceNames);
 
         bool Initialize(Callback c, bool userInteractionPermitted);
+
+        IEnumerable<string> ProviderNames {get;}
     }
 }

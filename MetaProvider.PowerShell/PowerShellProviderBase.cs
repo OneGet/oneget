@@ -1,18 +1,47 @@
+// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//  http://www.apache.org/licenses/LICENSE-2.0
+//  
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//  
+
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Management.Automation;
     using Core;
     using Core.Extensions;
 
-    internal class PowerShellProviderBase : IDisposable {
+    public class PowerShellProviderBase : IDisposable {
+        private readonly Dictionary<string, CommandInfo> _allCommands = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, CommandInfo> _methods = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
-        private PSModuleInfo _module;
+        protected PSModuleInfo _module;
         private DynamicPowershell _powershell;
         private DynamicPowershellResult _result;
 
         public PowerShellProviderBase(DynamicPowershell ps, PSModuleInfo module) {
             _powershell = ps;
+            _module = module;
+
+            // combine all the cmdinfos we care about
+            // but normalize the keys as we go (remove any '-' '_' chars)
+            foreach (var k in _module.ExportedAliases.Keys) {
+                _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedFunctions[k]);
+            }
+            foreach (var k in _module.ExportedCmdlets.Keys) {
+                _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedFunctions[k]);
+            }
+            foreach (var k in _module.ExportedFunctions.Keys) {
+                _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedFunctions[k]);
+            }
         }
 
         public void Dispose() {
@@ -36,7 +65,33 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         internal CommandInfo GetMethod(string methodName) {
             return _methods.GetOrAdd(methodName, () => {
-                // look for a matching function in the module
+                if (_allCommands.ContainsKey(methodName)) {
+                    return _allCommands[methodName];
+                }
+
+                // try simple plurals to single
+                if (methodName.EndsWith("s")) {
+                    var meth = methodName.Substring(0, methodName.Length - 1);
+                    if (_allCommands.ContainsKey(meth)) {
+                        return _allCommands[meth];
+                    }
+                }
+
+                // try words like Dependencies to Dependency
+                if (methodName.EndsWith("cies")) {
+                    var meth = methodName.Substring(0, methodName.Length - 4) + "cy";
+                    if (_allCommands.ContainsKey(meth)) {
+                        return _allCommands[meth];
+                    }
+                }
+
+                // try IsFoo to Test-IsFoo 
+                if (methodName.StartsWith("Is")) {
+                    var meth = "test" + methodName;
+                    if (_allCommands.ContainsKey(meth)) {
+                        return _allCommands[meth];
+                    }
+                }
 
                 // can't find one, return null.
                 return null;
@@ -46,11 +101,26 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             // module.ExportedFunctions.FirstOrDefault().Value.Parameters.Values.First().ParameterType
         }
 
-        protected object CallPowerShell(Request request, params object[] args) {
+        internal object CallPowerShellWithoutRequest(string method, params object[] args ) {
+            var cmdInfo = GetMethod(method);
+            if (cmdInfo == null) {
+                return null;
+            }
+
+            var result = _powershell.NewTryInvokeMemberEx(cmdInfo.Name, new string[0], args);
+            if (result == null) {
+                // failure! 
+                throw new Exception("Powershell script/function failed.");
+            }
+
+            return result.Last();
+        }
+
+        internal object CallPowerShell(Request request, params object[] args) {
             _powershell["request"] = request;
 
             try {
-                request.Debug("INVOKING", request.CommandInfo.Name);
+                request.Debug("INVOKING PowerShell Fn {0}", request.CommandInfo.Name);
                 // make sure we don't pass the callback to the function.
                 var result = _powershell.NewTryInvokeMemberEx(request.CommandInfo.Name, new string[0], args);
 
@@ -63,7 +133,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 object finalValue = null;
 
                 foreach (var value in result) {
-                    var y = value as IYieldable;
+                    var y = value as Yieldable;
                     if (y != null) {
                         y.YieldResult(request);
                     } else {

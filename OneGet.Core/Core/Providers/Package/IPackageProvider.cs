@@ -30,7 +30,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         /// <param name="dynamicInterface">A reference to the DynamicInterface class -- used to implement late-binding</param>
         /// <param name="c">Callback Delegate Reference</param>
         [Required]
-        void InitializeProvider(dynamic dynamicInterface, Callback c);
+        void InitializeProvider(object dynamicInterface, Callback c);
 
     }
 
@@ -51,24 +51,24 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         void GetDynamicOptions(int category, Callback c);
 
         // --- Optimization features -----------------------------------------------------------------------------------------------------
-        IEnumerable<string> GetMagicSignatures();
+        void GetMagicSignatures(Callback c);
 
-        IEnumerable<string> GetSchemes();
+        void GetSchemes(Callback c);
 
-        IEnumerable<string> GetFileExtensions();
+        void GetFileExtensions(Callback c);
 
         bool GetIsSourceRequired(); // or should we imply this from the GetPackageSources == null/empty?
 
         // --- Manages package sources ---------------------------------------------------------------------------------------------------
         void AddPackageSource(string name, string location, bool trusted, Callback c);
 
-        bool GetPackageSources(Callback c);
+        void GetPackageSources(Callback c);
 
         void RemovePackageSource(string name, Callback c);
 
         int StartFind(Callback c);
 
-        bool CompleteFind(int id, Callback c);
+        void CompleteFind(int id, Callback c);
 
         // --- Finds packages ---------------------------------------------------------------------------------------------------
         /// <summary>
@@ -83,26 +83,26 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         /// <param name="maximumVersion"></param>
         /// <param name="c"></param>
         /// <returns></returns>
-        bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c);
+        void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c);
 
-        bool FindPackageByFile(string file, int id, Callback c);
-        bool FindPackageByUri(Uri uri, int id, Callback c);
+        void FindPackageByFile(string file, int id, Callback c);
+        void FindPackageByUri(Uri uri, int id, Callback c);
 
-        bool GetInstalledPackages(string name, Callback c);
+        void GetInstalledPackages(string name, Callback c);
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        bool DownloadPackage(string fastPath, string location, Callback c);
-        bool GetPackageDependencies(string fastPath, Callback c);
-        bool GetPackageDetails(string fastPath, Callback c);
+        void DownloadPackage(string fastPath, string location, Callback c);
+        void GetPackageDependencies(string fastPath, Callback c);
+        void GetPackageDetails(string fastPath, Callback c);
 
-        bool InstallPackage(string fastPath, Callback c);
+        void InstallPackage(string fastPath, Callback c);
         // auto-install-dependencies
         // skip-dependency-check
         // continue-on-failure
         // location system/user/folder
         // callback for each package installed when installing dependencies?
 
-        bool UninstallPackage(string fastPath, Callback c);
+        void UninstallPackage(string fastPath, Callback c);
 
         #endregion
     }

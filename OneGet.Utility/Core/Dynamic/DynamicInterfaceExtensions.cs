@@ -17,6 +17,7 @@ namespace Microsoft.OneGet.Core.Dynamic {
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Reflection.Emit;
     using AppDomains;
     using Extensions;
 
@@ -29,6 +30,7 @@ namespace Microsoft.OneGet.Core.Dynamic {
         private static readonly Dictionary<Type, PropertyInfo[]> _delegatePropertiesCache = new Dictionary<Type, PropertyInfo[]>();
         private static readonly Dictionary<Type, MethodInfo[]> _requiredMethodsCache = new Dictionary<Type, MethodInfo[]>();
         private static readonly Dictionary<Type, MethodInfo[]> _virtualMethodsCache = new Dictionary<Type, MethodInfo[]>();
+        private static readonly Dictionary<Assembly, Type[]> _creatableTypesCache = new Dictionary<Assembly, Type[]>();
 
         public static MethodInfo FindMethod(this MethodInfo[] methods, MethodInfo methodSignature) {
             return methods.FirstOrDefault(each => DoNamesMatchAcceptably(methodSignature.Name, each.Name) && DoSignaturesMatchAcceptably(methodSignature, each));
@@ -67,9 +69,22 @@ namespace Microsoft.OneGet.Core.Dynamic {
         }
 
         private static bool DoNamesMatchAcceptably(string originalName, string candidateName) {
+            // transform non-leading underscores to nothing.
+            if (!candidateName.StartsWith("_")) {
+                candidateName = candidateName.Replace("_", "");
+            }
+
             if (originalName.EqualsIgnoreCase(candidateName)) {
                 return true;
             }
+
+            // get_ => get
+            if (candidateName.StartsWith("get_", StringComparison.OrdinalIgnoreCase)) {
+                if (originalName.EqualsIgnoreCase("get" + candidateName.Substring(4))) {
+                    return true;
+                }
+            }
+
             return false;
         }
 
@@ -80,7 +95,7 @@ namespace Microsoft.OneGet.Core.Dynamic {
         internal static MethodInfo[] GetPublicMethods(this Type type) {
             return _methodCache.GetOrAdd(type, () => {
                 if (type != null) {
-                    return type.GetMethods(BindingFlags.Instance | BindingFlags.Public);
+                    return type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
                 }
                 return new MethodInfo[0];
             });
@@ -92,7 +107,7 @@ namespace Microsoft.OneGet.Core.Dynamic {
 
         internal static IEnumerable<FieldInfo> GetPublicFields(this Type type) {
             if (type != null) {
-                return type.GetFields(BindingFlags.Instance | BindingFlags.Public);
+                return type.GetFields(BindingFlags.FlattenHierarchy|BindingFlags.Instance | BindingFlags.Public);
             }
             return Enumerable.Empty<FieldInfo>();
         }
@@ -107,17 +122,41 @@ namespace Microsoft.OneGet.Core.Dynamic {
 
         internal static IEnumerable<PropertyInfo> GetPublicProperties(this Type type) {
             if (type != null) {
-                return type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+                return type.GetProperties(BindingFlags.FlattenHierarchy|BindingFlags.Instance | BindingFlags.Public);
             }
             return Enumerable.Empty<PropertyInfo>();
         }
 
+        private static IEnumerable<MethodInfo> DisambiguateMethodsBySignature(params IEnumerable<MethodInfo>[] setsOfMethods) {
+            var unique = new HashSet<string>();
+
+            return setsOfMethods.SelectMany(methodSet => methodSet).Where(method => {
+                var sig = method.ToSignatureString();
+                if (!unique.Contains(sig)) {
+                    unique.Add(sig);
+                    return true;
+                }
+                return false;
+            });
+        }
+
         internal static MethodInfo[] GetVirtualMethods(this Type type) {
-            return _virtualMethodsCache.GetOrAdd( type, ()=>  (type.IsInterface ? (IEnumerable<MethodInfo>)type.GetMethods() : (IEnumerable<MethodInfo>)type.GetMethods().Where(each => each.IsAbstract || each.IsVirtual)).ToArray());
+            return _virtualMethodsCache.GetOrAdd(type, () => {
+                var methods = (type.IsInterface
+                    ? (IEnumerable<MethodInfo>)type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance)
+                    : (IEnumerable<MethodInfo>)type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance).Where(each => each.IsAbstract || each.IsVirtual));
+
+                var interfaceMethods = type.GetInterfaces().SelectMany(GetVirtualMethods);
+
+                return DisambiguateMethodsBySignature(methods, interfaceMethods).ToArray();
+            });
         }
 
         internal static MethodInfo[] GetRequiredMethods(this Type type) {
-            return _requiredMethodsCache.GetOrAdd(type, () => type.GetVirtualMethods().Where(each => each.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("RequiredAttribute", StringComparison.OrdinalIgnoreCase))).ToArray());
+            return _requiredMethodsCache.GetOrAdd(type, () => {
+                var i = type.GetVirtualMethods().Where(each => each.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("RequiredAttribute", StringComparison.OrdinalIgnoreCase))).ToArray();
+                return i;
+            });
         }
 
         internal static ConstructorInfo GetDefaultConstructor(this Type t) {
@@ -163,6 +202,7 @@ namespace Microsoft.OneGet.Core.Dynamic {
             return imiMethodInfo == null ? (s) => true : actualInstance.CreateProxiedDelegate<Func<string, bool>>(imiMethodInfo);
         }
 
+        
         public static TInterface As<TInterface>(this object instance) {
             if (typeof (TInterface).IsDelegate()) {
                 // find a function in this object that matches the delegate that we are given
@@ -173,7 +213,6 @@ namespace Microsoft.OneGet.Core.Dynamic {
                     }
                     throw new Exception("Delegate '{0}' can not be created from Delegate '{1}'.".format(typeof (TInterface).NiceName(), instance.GetType().NiceName()));
                 }
-
 
                 var instanceSupportsMethod = GenerateInstanceSupportsMethod(instance);
                 var instanceType = instance.GetType();
@@ -209,5 +248,10 @@ namespace Microsoft.OneGet.Core.Dynamic {
         public static bool IsDelegate(this Type t) {
             return t.BaseType == typeof (MulticastDelegate);
         }
+
+        public static IEnumerable<Type> CreatableTypes(this Assembly assembly) {
+            return _creatableTypesCache.GetOrAdd(assembly, () => assembly.GetTypes().Where(each => each.IsPublic && !each.IsEnum && !each.IsInterface && !each.IsAbstract && each.GetDefaultConstructor() != null && each.BaseType != typeof (MulticastDelegate)).ToArray());
+        }
+
     }
 }

@@ -79,7 +79,7 @@ namespace Microsoft.OneGet.Core.Extensions {
         }
 
         public override int GetHashCode() {
-            return 31*_first.GetHashCode() + _second.Sum(each => each.GetHashCode());
+            return  _second.Aggregate(_first.FullName.GetHashCode(), (current,each)=> current ^ each.GetHashCode() );
         }
 
         public override bool Equals(object obj) {
@@ -87,7 +87,7 @@ namespace Microsoft.OneGet.Core.Extensions {
                 return true;
             }
             var other = obj as Types;
-            return other != null && (_first == other._first && _second == other._second);
+            return other != null && (_first == other._first && _second.SequenceEqual(other._second));
         }
     }
 }

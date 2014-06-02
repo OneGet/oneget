@@ -20,6 +20,10 @@ namespace Microsoft.OneGet.Core.Packaging {
     ///     todo: Should this be serializable instead?
     /// </summary>
     public class PackageSource : MarshalByRefObject {
+        public override object InitializeLifetimeService() {
+            return null;
+        }
+
         public string Name {get; internal set;}
         public string Location {get; internal set;}
 

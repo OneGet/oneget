@@ -50,7 +50,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         internal bool FindViaUri(PackageProvider packageProvider, string packageuri, Action<SoftwareIdentity> onPackageFound) {
             var found = false;
             if (Uri.IsWellFormedUriString(packageuri, UriKind.Absolute)) {
-                using (var packages = CancelWhenStopped(packageProvider.FindPackageByUri(new Uri(packageuri), 0, Invoke))) {
+                using (var packages = CancelWhenStopped(packageProvider.FindPackageByUri(new Uri(packageuri), 0, this))) {
                     foreach (var p in packages) {
                         found = true;
                         onPackageFound(p);
@@ -77,7 +77,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         // this is probably the right path.
                         foreach (var file in files) {
                             var foundThisFile = false;
-                            using (var packages = CancelWhenStopped(packageProvider.FindPackageByFile(file, 0, Invoke))) {
+                            using (var packages = CancelWhenStopped(packageProvider.FindPackageByFile(file, 0, this))) {
                                 foreach (var p in packages) {
                                     foundThisFile = true;
                                     found = true;
@@ -113,7 +113,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             // if the provider (or source) is selected, we can get package metadata keys from the provider
             // hmm. let's just grab *all* of them.
 
-            foreach (var md in _providers.Value.SelectMany(provider => provider.GetDynamicOptions(OptionCategory.Package, Invoke))) {
+            foreach (var md in _providers.Value.SelectMany(provider => provider.GetDynamicOptions(OptionCategory.Package, this))) {
                 DynamicParameters.Add(md.Name, md.CreateRuntimeDynamicParameter());
             }
             return true;
@@ -122,7 +122,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         internal bool FindViaName(PackageProvider packageProvider, string name, Action<SoftwareIdentity> onPackageFound) {
             var found = false;
 
-            using (var packages = CancelWhenStopped(packageProvider.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, 0, Invoke))) {
+            using (var packages = CancelWhenStopped(packageProvider.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, 0, this))) {
                 foreach (var p in packages) {
                     found = true;
                     onPackageFound(p);

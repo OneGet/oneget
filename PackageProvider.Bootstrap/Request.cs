@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.ServicesProvider.Common {
+namespace OneGet.PackageProvider.Bootstrap {
     using System;
     using System.Collections.Generic;
     using Callback = System.Object;

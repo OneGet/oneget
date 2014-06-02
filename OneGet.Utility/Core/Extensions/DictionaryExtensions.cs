@@ -67,6 +67,15 @@ namespace Microsoft.OneGet.Core.Extensions {
         }
 
 
+        public static TValue TryPullValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key) {
+            if (dictionary.ContainsKey(key)) {
+                var v = dictionary[key];
+                dictionary.Remove(key);
+                return v;
+            }
+            return default(TValue);
+        }
+
         public static Dictionary<TKey, TElement> ToDictionaryNicely<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer) {
             if (source == null)
                 throw new ArgumentNullException("source");

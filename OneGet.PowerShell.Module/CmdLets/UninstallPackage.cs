@@ -70,7 +70,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             Parallel.ForEach(_providers.Value, provider => {
                 try {
                     foreach (var name in Name) {
-                        using (var packages = CancelWhenStopped(provider.GetInstalledPackages(name, Invoke))) {
+                        using (var packages = CancelWhenStopped(provider.GetInstalledPackages(name, this))) {
                             foreach (var p in packages) {
                                 lock (resultsPerName) {
                                     resultsPerName.GetOrAdd(name, () => new List<SoftwareIdentity>()).Add(p);
@@ -123,7 +123,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 var provider = _packageManagementService.SelectProviders(pkg.ProviderName).FirstOrDefault();
 
                 try {
-                    foreach (var installedPkg in CancelWhenStopped(provider.UninstallPackage(pkg, Invoke))) {
+                    foreach (var installedPkg in CancelWhenStopped(provider.UninstallPackage(pkg, this))) {
                         if (IsCancelled()) {
                             return false;
                         }

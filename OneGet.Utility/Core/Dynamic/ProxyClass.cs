@@ -15,26 +15,29 @@
 namespace Microsoft.OneGet.Core.Dynamic {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
+    using AppDomains;
     using Collections;
     using Extensions;
 
     internal class ProxyClass {
-        private static int _typeCounter = 1;
+        private static int _typeCounter  = 1;
         
         private readonly TypeBuilder _dynamicType;
         private readonly HashSet<string> _implementedMethods = new HashSet<string>();
         private readonly List<FieldBuilder> _storageFields = new List<FieldBuilder>();
         private AssemblyBuilder _dynamicAssembly;
         private string _proxyName;
-
+        private string _filename;
+        private string _directory;
+        private string _fullpath;
         private Type _type;
 
         internal ProxyClass(Type interfaceType, OrderedDictionary<Type, List<MethodInfo, MethodInfo>> methods, List<Delegate, MethodInfo> delegates, List<MethodInfo> stubs) {
-            int counter = 0;
-
+            var counter = 0;
             _dynamicType = DefineDynamicType(interfaceType);
 
             foreach (var instanceType in methods.Keys) {
@@ -65,11 +68,11 @@ namespace Microsoft.OneGet.Core.Dynamic {
                 _dynamicType.GenerateStubMethod(method);
             }
 
-            // generate the IsMethodImplemented function
             _dynamicType.GenerateIsMethodImplemented();
 
             // generate the constructor for the class.
             DefineConstructor();
+
             if (typeof (MarshalByRefObject).IsAssignableFrom(_dynamicType)) {
                 _dynamicType.OverrideInitializeLifetimeService();
             }
@@ -77,7 +80,19 @@ namespace Microsoft.OneGet.Core.Dynamic {
 
         internal Type Type {
             get {
-                return _type ?? (_type = _dynamicType.CreateType());
+                lock (DynamicInterface.DynamicAssemblyPaths) {
+                    try {
+                        if (_type == null) {
+                            _type = _dynamicType.CreateType();
+                            _dynamicAssembly.Save(_filename);
+                            DynamicInterface.DynamicAssemblyPaths.Add(_dynamicAssembly.FullName, _fullpath);
+                        }
+                        return _type;
+                    } catch (Exception e) {
+                        e.Dump();
+                        throw e;
+                    }
+                }
             }
         }
 
@@ -89,17 +104,22 @@ namespace Microsoft.OneGet.Core.Dynamic {
             if (imf != null) {
                 imf.SetValue(instance, _implementedMethods);
             }
+
             return instance;
         }
 
         private TypeBuilder DefineDynamicType(Type interfaceType) {
-            _proxyName = "{0}_proxy_{1}".format(interfaceType.NiceName().MakeSafeFileName(), _typeCounter++);
+            _proxyName = "{0}_proxy_{1}_in_{2}".format(interfaceType.NiceName().MakeSafeFileName(), _typeCounter++, AppDomain.CurrentDomain.FriendlyName.MakeSafeFileName().Replace("[","_").Replace("]","_"));
 
-            _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.Run);
+            _fullpath = (_proxyName+".dll").GenerateTemporaryFilename();
+            _directory = Path.GetDirectoryName(_fullpath);
+            _filename = Path.GetFileName(_fullpath);
+
+            _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.RunAndSave, _directory);
 
             // Define a dynamic module in this assembly.
             // , "{0}.dll".format(_proxyName)
-            var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName);
+            var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName,_filename);
 
             // Define a runtime class with specified name and attributes.
             if (interfaceType.IsInterface) {

@@ -36,7 +36,7 @@ namespace Microsoft.PowerShell.OneGet.Core {
                 lock (_lockObject) {
                     if (!IsInitialized) {
                         try {
-                            IsInitialized = _packageManagementService.Initialize(Invoke, !IsInvocation);
+                            IsInitialized = _packageManagementService.Initialize(this, !IsInvocation);
                         } catch (Exception e) {
                             e.Dump();
                         }

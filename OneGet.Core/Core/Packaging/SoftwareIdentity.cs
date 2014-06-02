@@ -21,7 +21,11 @@ namespace Microsoft.OneGet.Core.Packaging {
     ///     todo: Should this be serializable instead?
     /// </summary>
     public class SoftwareIdentity : MarshalByRefObject {
-        internal string FastPath {get; set;}
+        public override object InitializeLifetimeService() {
+            return null;
+        }
+
+        internal string FastPackageReference {get; set;}
         public string ProviderName {get; internal set;}
         public string Source {get; internal set;}
 

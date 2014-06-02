@@ -13,11 +13,52 @@
 //  
 
 namespace Microsoft.OneGet.Core.Api {
+    using System;
     using System.Collections.Generic;
     using Callback = System.Object;
 
+    public interface ICoreApis {
+
+        #region declare core-apis
+
+        string GetMessageString(string message);
+        
+        bool Warning(string message);
+
+        bool Error(string message);
+
+        bool Message(string message);
+
+        bool Verbose(string message);
+
+        bool Debug(string message);
+
+        bool ExceptionThrown(string exceptionType, string message, string stacktrace);
+
+        int StartProgress(int parentActivityId, string message);
+
+        bool Progress(int activityId, int progress, string message);
+
+        bool CompleteProgress(int activityId, bool isSuccessful);
+
+        /// <summary>
+        ///     The provider can query to see if the operation has been cancelled.
+        ///     This provides for a gentle way for the caller to notify the callee that
+        ///     they don't want any more results.
+        /// </summary>
+        /// <returns>returns TRUE if the operation has been cancelled.</returns>
+        bool IsCancelled();
+
+        #endregion
+    }
+
     public interface IHostApis {
         #region declare host-apis
+
+        object GetPackageManagementService();
+
+
+        
 
         /// <summary>
         ///     Used by a provider to request what metadata keys were passed from the user
@@ -27,23 +68,7 @@ namespace Microsoft.OneGet.Core.Api {
 
         IEnumerable<string> GetOptionValues(string category, string key);
 
-        IEnumerable<string> PackageSources();
-
-        /// <summary>
-        ///     Returns a string collection of values from a specified path in a hierarchal
-        ///     configuration hashtable.
-        /// </summary>
-        /// <param name="path">
-        ///     Path to the configuration key. Nodes are traversed by specifying a '/' character:
-        ///     Example: "Providers/Module" ""
-        /// </param>
-        /// <returns>
-        ///     A collection of string values from the configuration.
-        ///     Returns an empty collection if no data is found for that path
-        /// </returns>
-        IEnumerable<string> GetConfiguration(string path);
-
-
+        IEnumerable<string> GetSpecifiedPackageSources();
 
         bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 

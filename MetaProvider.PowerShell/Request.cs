@@ -15,11 +15,15 @@
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Management.Automation;
+    using Core;
+    using Callback = System.Object;
 
     public abstract class Request : IDisposable {
-        private static dynamic _dynamicInterface;
+
         internal CommandInfo CommandInfo;
+        private PowerShellProviderBase _provider;
 
         internal bool IsMethodImplemented {
             get {
@@ -27,24 +31,35 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
         }
 
+        public string[] PackageSources {
+            get {
+                var ps = GetSpecifiedPackageSources();
+                if (ps == null) {
+                    return new string[]{};
+                }
+                return ps.ToArray();
+            }
+        }
+
         #region copy core-apis
 
-        // Core Callbacks that we'll both use internally and pass on down to providers.
-        public abstract bool Warning(string message, params object[] args);
+        public abstract string GetMessageString(string message);
 
-        public abstract bool Error(string message, params object[] args);
+        public abstract bool Warning(string message);
 
-        public abstract bool Message(string message, params object[] args);
+        public abstract bool Error(string message);
 
-        public abstract bool Verbose(string message, params object[] args);
+        public abstract bool Message(string message);
 
-        public abstract bool Debug(string message, params object[] args);
+        public abstract bool Verbose(string message);
+
+        public abstract bool Debug(string message);
 
         public abstract bool ExceptionThrown(string exceptionType, string message, string stacktrace);
 
-        public abstract int StartProgress(int parentActivityId, string message, params object[] args);
+        public abstract int StartProgress(int parentActivityId, string message);
 
-        public abstract bool Progress(int activityId, int progress, string message, params object[] args);
+        public abstract bool Progress(int activityId, int progress, string message);
 
         public abstract bool CompleteProgress(int activityId, bool isSuccessful);
 
@@ -55,10 +70,11 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// </summary>
         /// <returns>returns TRUE if the operation has been cancelled.</returns>
         public abstract bool IsCancelled();
-
         #endregion
 
         #region copy host-apis
+
+        public abstract object GetPackageManagementService();
 
         /// <summary>
         ///     Used by a provider to request what metadata keys were passed from the user
@@ -68,21 +84,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract IEnumerable<string> GetOptionValues(string category, string key);
 
-        public abstract IEnumerable<string> PackageSources();
-
-        /// <summary>
-        ///     Returns a string collection of values from a specified path in a hierarchal
-        ///     configuration hashtable.
-        /// </summary>
-        /// <param name="path">
-        ///     Path to the configuration key. Nodes are traversed by specifying a '/' character:
-        ///     Example: "Providers/Module" ""
-        /// </param>
-        /// <returns>
-        ///     A collection of string values from the configuration.
-        ///     Returns an empty collection if no data is found for that path
-        /// </returns>
-        public abstract IEnumerable<string> GetConfiguration(string path);
+        public abstract IEnumerable<string> GetSpecifiedPackageSources();
 
         public abstract bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
@@ -101,26 +103,25 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract bool AskPermission(string permission);
 
         public abstract bool WhatIf();
-
         #endregion
 
         #region copy service-apis
 
-        public abstract string GetNuGetExePath(Object c);
+        public abstract string GetNuGetExePath(Callback c);
 
-        public abstract string GetNuGetDllPath(Object c);
+        public abstract string GetNuGetDllPath(Callback c);
 
-        public abstract string DownloadFile(string remoteLocation, string localLocation, Object c);
+        public abstract string DownloadFile(string remoteLocation, string localLocation, Callback c);
 
-        public abstract void AddPinnedItemToTaskbar(string item, Object c);
+        public abstract void AddPinnedItemToTaskbar(string item, Callback c);
 
-        public abstract void RemovePinnedItemFromTaskbar(string item, Object c);
+        public abstract void RemovePinnedItemFromTaskbar(string item, Callback c);
 
-        public abstract bool CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Object c);
+        public abstract bool CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c);
 
-        public abstract IEnumerable<string> UnzipFileIncremental(string zipFile, string folder, Object c);
+        public abstract IEnumerable<string> UnzipFileIncremental(string zipFile, string folder, Callback c);
 
-        public abstract IEnumerable<string> UnzipFile(string zipFile, string folder, Object c);
+        public abstract IEnumerable<string> UnzipFile(string zipFile, string folder, Callback c);
 
         public abstract void AddFileAssociation();
 
@@ -130,9 +131,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract void RemoveExplorerMenuItem();
 
-        public abstract bool SetEnvironmentVariable(string variable, string value, string context, Object c);
+        public abstract bool SetEnvironmentVariable(string variable, string value, string context, Callback c);
 
-        public abstract bool RemoveEnvironmentVariable(string variable, string context, Object c);
+        public abstract bool RemoveEnvironmentVariable(string variable, string context, Callback c);
 
         public abstract void AddFolderToPath();
 
@@ -158,17 +159,17 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract void GetSystemBinFolder();
 
-        public abstract bool CopyFile(string sourcePath, string destinationPath, Object c);
+        public abstract bool CopyFile(string sourcePath, string destinationPath, Callback c);
 
         public abstract void CopyFolder();
 
-        public abstract void Delete(string path, Object c);
+        public abstract void Delete(string path, Callback c);
 
-        public abstract void DeleteFolder(string folder, Object c);
+        public abstract void DeleteFolder(string folder, Callback c);
 
-        public abstract void CreateFolder(string folder, Object c);
+        public abstract void CreateFolder(string folder, Callback c);
 
-        public abstract void DeleteFile(string filename, Object c);
+        public abstract void DeleteFile(string filename, Callback c);
 
         public abstract void BeginTransaction();
 
@@ -178,12 +179,11 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract void GenerateUninstallScript();
 
-        public abstract string GetKnownFolder(string knownFolder, Object c);
+        public abstract string GetKnownFolder(string knownFolder, Callback c);
 
-        public abstract bool IsElevated(Object c);
+        public abstract bool IsElevated(Callback c);
 
-        public abstract object GetPackageManagementService(Object c);
-
+        public abstract object GetPackageManagementService(Callback c);
         #endregion
 
         #region copy request-apis
@@ -205,8 +205,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// <param name="versionScheme"></param>
         /// <param name="summary"></param>
         /// <param name="source"></param>
+        /// <param name="searchKey"></param>
         /// <returns></returns>
-        public abstract bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source);
+        public abstract bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey);
 
         public abstract bool YieldPackageDetails(object serializablePackageDetailsObject);
 
@@ -218,7 +219,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// <param name="name"></param>
         /// <param name="location"></param>
         /// <returns></returns>
-        public abstract bool YieldSource(string name, string location, bool isTrusted);
+        public abstract bool YieldPackageSource(string name, string location, bool isTrusted);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
@@ -227,30 +228,63 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// <param name="category"> one of ['provider', 'source', 'package', 'install']</param>
         /// <param name="name">the provider-defined name of the option</param>
         /// <param name="expectedType"> one of ['string','int','path','switch']</param>
-        /// <param name="permittedValues">either a collection of permitted values, or null for any valid value</param>
+        /// <param name="isRequired">if the parameter is mandatory</param>
         /// <returns></returns>
-        public abstract bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired, IEnumerable<string> permittedValues);
+        public abstract bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired);
 
+        public abstract bool YieldKeyValuePair(string key, string value);
+
+        public abstract bool YieldValue(string value);
         #endregion
+
+        #region copy Request-implementation
+public bool Warning(string message, params object[] args) {
+            return Warning(string.Format(GetMessageString(message) ?? message, args));
+        }
+
+        public bool Error(string message, params object[] args) {
+            return Error(string.Format(GetMessageString(message) ?? message, args));
+        }
+
+        public bool Message(string message, params object[] args) {
+            return Message(string.Format(GetMessageString(message) ?? message, args));
+        }
+
+        public bool Verbose(string message, params object[] args) {
+            return Verbose(string.Format(GetMessageString(message) ?? message, args));
+        }
+
+        public bool Debug(string message, params object[] args) {
+            return Debug(string.Format(GetMessageString(message) ?? message, args));
+        }
+
+        public int StartProgress(int parentActivityId, string message, params object[] args) {
+            return StartProgress(parentActivityId, string.Format(GetMessageString(message) ?? message, args));
+        }
+
+        public bool Progress(int activityId, int progress, string message, params object[] args) {
+            return Progress(activityId, progress, string.Format(GetMessageString(message) ?? message, args));
+        }
 
         public void Dispose() {
         }
 
-        public static Request New(Object c) {
-            return _dynamicInterface.Create<Request>(c);
-        }
+        #endregion
 
-        public void InitializeProvider(dynamic dynamicInterface, Object c) {
-            _dynamicInterface = dynamicInterface;
+        public object CallPowerShell(params object[] args ) {
+            if (IsMethodImplemented) {
+                return _provider.CallPowerShell(this, args);
+            }
+            return null;
         }
-
         internal static Request New(Object c, PowerShellProviderBase provider, string methodName) {
-            var req = _dynamicInterface.Create<Request>(c);
+            var req = c.As<Request>();
 
             req.CommandInfo = provider.GetMethod(methodName);
             if (req.CommandInfo == null) {
                 req.Debug("METHOD_NOT_IMPLEMENTED", methodName);
             }
+            req._provider = provider;
             return req;
         }
     }
@@ -357,4 +391,33 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
     }
 #endif
+
+    #region copy dynamicextension-implementation
+public static class DynamicExtensions {
+
+        private static dynamic _dynamicInterface;
+
+        public static dynamic DynamicInterface {
+            get {
+                return _dynamicInterface;
+            }
+            set {
+                // Write Once Property
+                if (_dynamicInterface == null) {
+                    _dynamicInterface = value;
+                    // _dynamicInterface = AppDomain.CurrentDomain.GetData("DynamicInterface");
+                }
+            }
+        }
+
+        public static T As<T>(this object instance) {
+            return DynamicInterface.Create<T>(instance);
+        }
+        public static T Extend<T>(this object obj, params object[] objects) {
+            return DynamicInterface.Create<T>(objects, obj);
+        }
+    }
+
+    #endregion
+
 }

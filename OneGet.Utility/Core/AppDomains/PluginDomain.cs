@@ -19,6 +19,8 @@ namespace Microsoft.OneGet.Core.AppDomains {
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Reflection.Emit;
+    using Dynamic;
     using Extensions;
 
     internal partial class PluginDomain : MarshalByRefObject, IDisposable {
@@ -28,34 +30,65 @@ namespace Microsoft.OneGet.Core.AppDomains {
         private Proxy<PluginAssemblyResolver> _proxyResolver;
         private PluginAssemblyResolver _resolver;
 
-        internal PluginDomain() :
-            this(new AppDomainSetup {
+        public override object InitializeLifetimeService() {
+            return null;
+        }
+
+        internal string ResolveFromThisDomain(string name) {
+            if (DynamicInterface.DynamicAssemblyPaths != null && DynamicInterface.DynamicAssemblyPaths.ContainsKey(name)) {
+                return DynamicInterface.DynamicAssemblyPaths[name];
+            }
+            return AppDomain.CurrentDomain.GetAssemblies().Where( each => each.FullName == name ).Select( each => each.Location).FirstOrDefault();
+            
+        }
+
+        internal PluginDomain(string name) :
+            this(name,new AppDomainSetup {
                 ApplicationBase = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                 PrivateBinPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                
+                LoaderOptimization = LoaderOptimization.MultiDomain
             }) {
         }
 
-        internal PluginDomain(AppDomainSetup appDomainSetup) {
+        internal PluginDomain(string name, AppDomainSetup appDomainSetup) {
             if (appDomainSetup == null) {
                 throw new ArgumentNullException("appDomainSetup");
             }
-            _identity = Guid.NewGuid().ToString();
+            _identity = name ?? Guid.NewGuid().ToString();
             appDomainSetup.ApplicationName = appDomainSetup.ApplicationName ?? "PluginDomain" + _identity;
 
             _appDomain = AppDomain.CreateDomain(_identity, null, appDomainSetup);
-            /*
-            _resolver = new PluginAssemblyResolver();
-            _resolver.AddPath(appDomainSetup.ApplicationBase);
-            _resolver.AddPath(appDomainSetup.PrivateBinPath);
-            AppDomain.CurrentDomain.AssemblyResolve += _resolver.Resolve;
-            */
+            
+            // _resolver = new PluginAssemblyResolver();
+            // _resolver.AddPath(appDomainSetup.ApplicationBase);
+            // _resolver.AddPath(appDomainSetup.PrivateBinPath);
+            // AppDomain.CurrentDomain.AssemblyResolve += _resolver.Resolve;
+            
 
             _proxyResolver = new Proxy<PluginAssemblyResolver>(this);
+            
             ((PluginAssemblyResolver)_proxyResolver).AddPath(appDomainSetup.ApplicationBase);
             ((PluginAssemblyResolver)_proxyResolver).AddPath(appDomainSetup.PrivateBinPath);
+            foreach (var a in AppDomain.CurrentDomain.GetAssemblies()) {
+                if (!a.IsDynamic) {
+                    var folder = Path.GetDirectoryName(a.Location);
+                    if (folder != null && Directory.Exists(folder)) {
+                        ((PluginAssemblyResolver)_proxyResolver).AddPath(folder);
+                    }
+                }
+            }
+
+            // push this assembly into the other domain.
+            LoadFileWithReferences(Assembly.GetExecutingAssembly().Location);
             
+            // setup the assembly resolver
             Invoke(resolver => {_appDomain.AssemblyResolve+= resolver.Resolve;}, ((PluginAssemblyResolver)_proxyResolver));
+
+            // if that can't find an assembly, ask this domain.
+            Invoke(resolver => { resolver.SetAlternatePathResolver(ResolveFromThisDomain); }, ((PluginAssemblyResolver)_proxyResolver));
+            
+            // Put a dynamic interface object into the target appdomain
+            Invoke((o) => { AppDomain.CurrentDomain.SetData("DynamicInterface", new DynamicInterface()); }, "");
         }
 
         public void Dispose() {

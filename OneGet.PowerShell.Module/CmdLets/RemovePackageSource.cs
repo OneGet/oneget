@@ -65,11 +65,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
             }
 
-            using (var sources = CancelWhenStopped(packageProvider.GetPackageSources(Invoke))) {
+            using (var sources = CancelWhenStopped(packageProvider.GetPackageSources(this))) {
                 var src = sources.FirstOrDefault(each => each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase));
                 if (src != null) {
                     if (ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}'".format(src.Name, src.Location, src.Provider)).Result) {
-                        packageProvider.RemovePackageSource(Name, Invoke);
+                        packageProvider.RemovePackageSource(Name, this);
                         return true;
                     }
                     return false;

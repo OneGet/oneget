@@ -71,12 +71,6 @@ namespace Microsoft.OneGet {
             }
         }
 
-        protected new virtual Callback Invoke {
-            get {
-                return this;
-            }
-        }
-
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -158,17 +152,25 @@ namespace Microsoft.OneGet {
             });
         }
 
+        public bool Warning(string message) {
+            return Warning(message, new object[] {});
+        }
+
         public bool Warning(string message, params object[] args) {
             if (IsInvocation) {
-                WriteWarning(GetLocalizedMessage(message, args));
+                WriteWarning(GetMessageString(message).format(args));
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
             return IsCancelled();
         }
 
+        public bool Error(string message) {
+            return Error(message, new object[]{});
+        }
+
         public bool Error(string message, params object[] args) {
-            message = GetLocalizedMessage(message, args);
+            message = GetMessageString(message).format(args);
 
             _failing = true;
             // queue the message to run on the main thread.
@@ -190,33 +192,44 @@ namespace Microsoft.OneGet {
             return IsCancelled();
         }
 
+
+        public bool Message(string message) {
+            return Message( message, new object[]{});
+        }
         public bool Message(string message, params object[] args) {
             // queue the message to run on the main thread.
             if (IsInvocation) {
                 //  QueueMessage(() => Host.UI.WriteLine("{0}::{1}".format(code, message.formatWithIEnumerable(objects))));
                 // Message is going to go to the verbose channel
                 // and Verbose will only be output if VeryVerbose is true.
-                WriteVerbose(GetLocalizedMessage(message, args));
+                WriteVerbose(GetMessageString(message).format());
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
             return IsCancelled();
         }
 
+        public bool Verbose(string message) {
+            return Verbose(message, new object[] { });
+        }
         public bool Verbose(string message, params object[] args) {
             if (IsInvocation) {
                 // Message is going to go to the verbose channel
                 // and Verbose will only be output if VeryVerbose is true.
-                WriteVerbose(GetLocalizedMessage(message, args));
+                WriteVerbose(GetMessageString(message).format(args));
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
             return IsCancelled();
         }
 
+        public bool Debug(string message) {
+            return Debug(message, new object[] { });
+        }
+
         public bool Debug(string message, params object[] args) {
             if (IsInvocation) {
-                WriteVerbose(GetLocalizedMessage(message, args));
+                WriteVerbose(GetMessageString(message).format(args));
             }
 
             // rather than wait on the result of the async WriteVerbose,
@@ -235,18 +248,27 @@ namespace Microsoft.OneGet {
             return IsCancelled();
         }
 
+        public int StartProgress(int parentActivityId, string message) {
+            return StartProgress(parentActivityId, message, new object[]{});
+        }
+
         public int StartProgress(int parentActivityId, string message, params object[] args) {
             return 0;
+        }
+
+
+        public bool Progress(int activityId, int progress, string message) {
+            return Progress(activityId,progress,message, new object[]{});
         }
 
         public bool Progress(int activityId, int progress, string message, params object[] args) {
             if (IsInvocation) {
                 if (_parentProgressId == null) {
-                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", GetLocalizedMessage(message, args)) {
+                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", GetMessageString(message).format(args)) {
                         PercentComplete = progress
                     });
                 } else {
-                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup;", GetLocalizedMessage(message, args)) {
+                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup;", GetMessageString(message).format(args)) {
                         ParentActivityId = (int)_parentProgressId,
                         PercentComplete = progress
                     });
@@ -289,11 +311,11 @@ namespace Microsoft.OneGet {
         }
 
 
-        private string GetLocalizedMessage(string message, IEnumerable<object> objects) {
+        public string GetMessageString(string message) {
             // TODO: lookup message as a message code first.
             // TODO: ie: message = LookupMessage(message).formatWithIEnumerable(objects);
 
-            return message.formatWithIEnumerable(objects);
+            return message;
         }
 
         private void AsyncRun(Func<bool> asyncAction) {

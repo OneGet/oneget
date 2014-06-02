@@ -15,85 +15,131 @@
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
     using System.Management.Automation;
     using Core;
+    using Core.Collections;
+    using Core.Extensions;
     using Callback = System.Object;
 
-    public interface IYieldable {
-        void YieldResult(Request r);
-    }
-
-    public class SoftwareIdentity : IYieldable {
-        public void YieldResult(Request r) {
-            r.YieldPackage("", "", "", "", "", "");
-        }
-    }
-
-    public class PackageSource : IYieldable {
-        public void YieldResult(Request r) {
-        }
-    }
-
-    public class DynamicOption : IYieldable {
-        public void YieldResult(Request r) {
-        }
-    }
-
-   
-
-    internal class PowerShellPackageProvider : PowerShellProviderBase {
+    public class PowerShellPackageProvider : PowerShellProviderBase {
+        private static int _findId = 0;
+        private readonly Lazy<Dictionary<int, List<string, string, string, string>>> _findByNameBatches = new Lazy<Dictionary<int, List<string, string, string, string>>>(() => new Dictionary<int, List<string, string, string, string>>());
+        private readonly Lazy<Dictionary<int, List<string>>> _findByFileBatches = new Lazy<Dictionary<int, List<string>>>(() => new Dictionary<int, List<string>>());
+        private readonly Lazy<Dictionary<int, List<Uri>>> _findByUriBatches = new Lazy<Dictionary<int, List<Uri>>>(() => new Dictionary<int, List<Uri>>());
 
         public PowerShellPackageProvider(DynamicPowershell ps, PSModuleInfo module) : base(ps, module) {
         }
 
+        private bool IsFirstParameterType<T>(string function) {
+            var method = GetMethod(function);
+            if (method == null) {
+                return false;
+            }
+
+            return method.Parameters.Values.First().ParameterType == typeof (T);
+        }
+
         public bool IsMethodImplemented(string methodName) {
+#if DEBUG
+            var r = GetMethod(methodName) != null;
+            if (!r) {
+                Debug.WriteLine(" -> '{0}' Not Found In PowerShell Module '{1}'".format(methodName, _module.Name));
+            }
+            return r;
+#else
             return GetMethod(methodName) != null;
+#endif
+        }
+
+        private object Call(string function, Callback c, params object[] args) {
+            using (var request = Request.New(c, this, function)) {
+                return request.CallPowerShell(args);
+            }
         }
 
         #region implement PackageProvider-interface
 
         public void AddPackageSource(string name, string location, bool trusted, Callback c) {
-            using (var request = Request.New(c, this, "AddPackageSource")) {
-                if (request.IsMethodImplemented) {
-                    CallPowerShell(request, name, location, trusted);
-                }
-            }
+            Call("AddPackageSource", c, name, location, trusted);
         }
-        public bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c) {
-            using (var request = Request.New(c, this, "FindPackage")) {
-                if (request.IsMethodImplemented) {
+
+        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c) {
+            // special case.
+            // if FindPackage is implemented taking an array of strings
+            // and the id > 0 then we need to hold onto the collection until 
+            // CompleteFind is called.
+
+            // if it expects multiples...
+            if (IsFirstParameterType<string[]>("FindPackage")) {
+                if (id > 0) {
+                    _findByNameBatches.Value.GetOrAdd(id, () => new List<string, string, string, string>()).Add(name, requiredVersion, minimumVersion, maximumVersion);
+                    return;
                 }
-            }
-            return default(bool);
-        }
-        public bool FindPackageByFile(string file, int id, Callback c) {
-            using (var request = Request.New(c, this, "FindPackageByFile")) {
-                if (request.IsMethodImplemented) {
-                }
+
+                // not passed in as a set.
+                Call("FindPackage", new string[] {
+                    name
+                }, requiredVersion, minimumVersion, maximumVersion);
+                return;
             }
 
-            return default(bool);
+            // otherwise, it has to take them one at a time and yield them anyway.
+            Call("FindPackage", name, requiredVersion, minimumVersion, maximumVersion);
         }
-        public bool FindPackageByUri(Uri uri, int id, Callback c) {
-            using (var request = Request.New(c, this, "FindPackageByUri")) {
-                if (request.IsMethodImplemented) {
+
+        public void FindPackageByFile(string file, int id, Callback c) {
+            // special case.
+            // if FindPackageByFile is implemented taking an array of strings
+            // and the id > 0 then we need to hold onto the collection until 
+            // CompleteFind is called.
+
+            // if it expects multiples...
+            if (IsFirstParameterType<string[]>("FindPackageByFile")) {
+                if (id > 0) {
+                    _findByFileBatches.Value.GetOrAdd(id, () => new List<string>()).Add(file);
+                    return;
                 }
-            }
-            return default(bool);
-        }
-        public bool GetInstalledPackages(string name, Callback c) {
-            using (var request = Request.New(c, this, "GetInstalledPackages")) {
-                if (request.IsMethodImplemented) {
-                }
+                // not passed in as a set.
+                Call("FindPackageByFile", new string[] {
+                    file
+                });
+                return;
             }
 
-            return default(bool);
+            Call("FindPackageByFile", file);
+            return;
         }
+
+        public void FindPackageByUri(Uri uri, int id, Callback c) {
+            // special case.
+            // if FindPackageByUri is implemented taking an array of strings
+            // and the id > 0 then we need to hold onto the collection until 
+            // CompleteFind is called.
+
+            // if it expects multiples...
+            if (IsFirstParameterType<string[]>("FindPackageByUri")) {
+                if (id > 0) {
+                    _findByUriBatches.Value.GetOrAdd(id, () => new List<Uri>()).Add(uri);
+                    return;
+                }
+                // not passed in as a set.
+                Call("FindPackageByUri", new Uri[] {
+                    uri
+                });
+                return;
+            }
+
+            Call("FindPackageByUri", uri);
+        }
+
+        public void GetInstalledPackages(string name, Callback c) {
+            Call("GetInstalledPackages", name);
+        }
+
         public void GetDynamicOptions(int category, Callback c) {
-            using (var request = Request.New(c, this, "GetDynamicOptions")) {
-                if (request.IsMethodImplemented) {
-                }
-            }
+            Call("GetInstalledPackages", (OptionCategory)category);
         }
 
         /// <summary>
@@ -102,75 +148,46 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// <required />
         /// <returns>the name of the package provider</returns>
         public string GetPackageProviderName() {
+            return (string)CallPowerShellWithoutRequest("GetPackageProviderName");
+        }
 
-            return "modulename";
+        public void GetPackageSources(Callback c) {
+            Call("GetPackageSources", c);
         }
-        public bool GetPackageSources(Callback c) {
-            using (var request = Request.New(c, this, "GetPackageSources")) {
-                if (request.IsMethodImplemented) {
-                }
-            }
-            return default(bool);
-        }
-        public void InitializeProvider(Callback c) {
-            using (var request = Request.New(c, this, "InitializeProvider")) {
-                if (request.IsMethodImplemented) {
-                }
-            }
-        }
-        public bool InstallPackage(string fastPath, Callback c) {
-            using (var request = Request.New(c, this, "InstallPackage")) {
-                if (request.IsMethodImplemented) {
-                }
-            }
 
-            return default(bool);
+        public void InitializeProvider(object dynamicInterface, Callback c) {
+            Call("InitializeProvider", c);
         }
+
+        public void InstallPackage(string fastPath, Callback c) {
+            Call("InstallPackage", c, fastPath);
+        }
+
         public void RemovePackageSource(string name, Callback c) {
-            using (var request = Request.New(c, this, "RemovePackageSource")) {
-                if (request.IsMethodImplemented) {
-                }
-            }
+            Call("RemovePackageSource", c, name);
         }
-        public bool UninstallPackage(string fastPath, Callback c) {
-            using (var request = Request.New(c, this, "UninstallPackage")) {
-                if (request.IsMethodImplemented) {
-                }
-            }
-            return default(bool);
+
+        public void UninstallPackage(string fastPath, Callback c) {
+            Call("UninstallPackage", c, fastPath);
         }
+
         public void GetFeatures(Callback c) {
-            // TODO: Fill in implementation
-            // Delete this method if you do not need to implement it
-            // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = Request.New(c)) {
-                // use the request object to interact with the OneGet core:
-                request.Debug("Information", "Calling 'GetFeatures'");
-            }
+            Call("GetFeatures", c);
         }
 
         // --- Optimization features -----------------------------------------------------------------------------------------------------
-        public IEnumerable<string> GetMagicSignatures() {
-            // TODO: Fill in implementation
-            // Delete this method if you do not need to implement it
-            // Please don't throw an not implemented exception, it's not optimal.
-
-            return default(IEnumerable<string>);
+        public void GetMagicSignatures(Callback c) {
+            Call("GetMagicSignatures", c);
         }
-        public IEnumerable<string> GetSchemes() {
-            // TODO: Fill in implementation
-            // Delete this method if you do not need to implement it
-            // Please don't throw an not implemented exception, it's not optimal.
 
-            return default(IEnumerable<string>);
+        public void GetSchemes(Callback c) {
+            Call("GetSchemes", c);
         }
-        public IEnumerable<string> GetFileExtensions() {
-            // TODO: Fill in implementation
-            // Delete this method if you do not need to implement it
-            // Please don't throw an not implemented exception, it's not optimal.
 
-            return default(IEnumerable<string>);
+        public void GetFileExtensions(Callback c) {
+            Call("GetFileExtensions", c);
         }
+
         public bool GetIsSourceRequired() {
             // TODO: Fill in implementation
             // Delete this method if you do not need to implement it
@@ -180,60 +197,74 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        public bool DownloadPackage(string fastPath, string location, Callback c) {
-            // TODO: Fill in implementation
-            // Delete this method if you do not need to implement it
-            // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = Request.New(c)) {
-                // use the request object to interact with the OneGet core:
-                request.Debug("Information", "Calling 'DownloadPackage'");
-            }
-
-            return default(bool);
-        }
-        public bool GetPackageDependencies(string fastPath, Callback c) {
-            // TODO: Fill in implementation
-            // Delete this method if you do not need to implement it
-            // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = Request.New(c)) {
-                // use the request object to interact with the OneGet core:
-                request.Debug("Information", "Calling 'GetPackageDependencies'");
-            }
-
-            return default(bool);
-        }
-        public bool GetPackageDetails(string fastPath, Callback c) {
-            // TODO: Fill in implementation
-            // Delete this method if you do not need to implement it
-            // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = Request.New(c)) {
-                // use the request object to interact with the OneGet core:
-                request.Debug("Information", "Calling 'GetPackageDetails'");
-            }
-
-            return default(bool);
+        public void DownloadPackage(string fastPath, string location, Callback c) {
+            Call("DownloadPackage", c, fastPath, location);
         }
 
-        private static int findId = 1;
+        public void GetPackageDependencies(string fastPath, Callback c) {
+            Call("GetPackageDependencies", c, fastPath);
+        }
+
+        public void GetPackageDetails(string fastPath, Callback c) {
+            Call("GetPackageDetails", c, fastPath);
+        }
+
         public int StartFind(Callback c) {
             lock (this) {
-                return findId++;
+                return ++_findId;
             }
         }
-        public bool CompleteFind(int id, Callback c) {
-            if (id == 0) {
-                return false;
+
+        public void CompleteFind(int id, Callback c) {
+            if (id < 1) {
+                return;
             }
 
-            // TODO: Fill in implementation
-            // Delete this method if you do not need to implement it
-            // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = Request.New(c)) {
-                // use the request object to interact with the OneGet core:
-                request.Debug("Information", "Calling 'CompleteFind'");
+            if (_findByNameBatches.IsValueCreated) {
+                var nameBatch = _findByNameBatches.Value.TryPullValue(id);
+                if (nameBatch != null) {
+                    if (IsFirstParameterType<string[]>("FindPackage")) {
+                        // it takes a batch at a time.
+
+                        var names = nameBatch.Select(each => each.Item1).ToArray();
+                        var p1 = nameBatch[0];
+
+                        Call("FindPackage", names, p1.Item2, p1.Item3, p1.Item4);
+                    } else {
+                        foreach (var each in nameBatch) {
+                            Call("FindPackage", each.Item1, each.Item2, each.Item3, each.Item4);
+                        }
+                    }
+                }
             }
 
-            return true;
+            if (_findByFileBatches.IsValueCreated) {
+                var fileBatch = _findByFileBatches.Value.TryPullValue(id);
+                if (fileBatch != null) {
+                    if (IsFirstParameterType<string[]>("FindPackageByFile")) {
+                        // it takes a batch at a time.
+                        Call("FindPackageByFile", fileBatch.ToArray());
+                    } else {
+                        foreach (var each in fileBatch) {
+                            Call("FindPackageByFile", each);
+                        }
+                    }
+                }
+            }
+
+            if (_findByUriBatches.IsValueCreated) {
+                var uriBatch = _findByUriBatches.Value.TryPullValue(id);
+                if (uriBatch != null) {
+                    if (IsFirstParameterType<string[]>("FindPackageByUri")) {
+                        // it takes a batch at a time.
+                        Call("FindPackageByUri", uriBatch.ToArray());
+                    } else {
+                        foreach (var each in uriBatch) {
+                            Call("FindPackageByUri", each);
+                        }
+                    }
+                }
+            }
         }
 
         #endregion

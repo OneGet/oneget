@@ -18,9 +18,7 @@ namespace CustomCodeGenerator {
     using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
-
 
     internal static class Extensions {
         public static string GetValue(this Match m, string name) {
@@ -38,10 +36,10 @@ namespace CustomCodeGenerator {
             return default(TSource);
         }
 
-
-        public static string Combined(this IEnumerable<string> strings ) {
+        public static string Combined(this IEnumerable<string> strings) {
             return strings.SafeAggregate((current, each) => current + "\r\n" + each);
         }
+
         public static string format(this string formatString, params object[] args) {
             if (args == null || args.Length == 0) {
                 return formatString;
@@ -51,7 +49,7 @@ namespace CustomCodeGenerator {
                 // first, try to replace 
                 formatString = new Regex(@"\$\{(?<macro>\w*?)\}").Replace(formatString, new MatchEvaluator((m) => {
                     var key = m.Groups["macro"].Value;
-                    int v = 0;
+                    var v = 0;
                     if (int.TryParse(key, out v)) {
                         return "${" + key + "}";
                     }
@@ -60,11 +58,10 @@ namespace CustomCodeGenerator {
                         return p.GetValue(args[0]).ToString();
                     }
 
-                    return "${{" + key+ "}}";
+                    return "${{" + key + "}}";
                 }));
                 return String.Format(CultureInfo.CurrentCulture, formatString, args);
-            }
-            catch (Exception) {
+            } catch (Exception) {
                 return formatString.Replace('{', '[').Replace('}', ']');
             }
         }
@@ -79,13 +76,26 @@ namespace CustomCodeGenerator {
             return string.IsNullOrEmpty(text) ? text : text.Trim('\t', ' ', '\r', '\n');
         }
     }
+
     internal class Program {
+        private string _solutionDir;
+        private string[] _targetDirs;
+
+        private Program(string solution, IEnumerable<string> targets) {
+            _solutionDir = Path.GetFullPath(solution);
+            if (!Directory.Exists(_solutionDir)) {
+                throw new Exception("Solution Directory does not exist.");
+            }
+
+            _targetDirs = targets.Select(Path.GetFullPath).ToArray();
+        }
 
         private static int Usage() {
             Console.Error.WriteLine("\r\nUsage:\r\n----------");
             Console.Error.WriteLine("CustomCodeGenerator <solutiondirectory> <targetdirectory1> [[targetdirectory2] [targetdirectory3]...]");
             return 1;
         }
+
         private static int Main(string[] args) {
             if (!args.Any()) {
                 Console.Error.WriteLine("No directories given.");
@@ -103,7 +113,7 @@ namespace CustomCodeGenerator {
                 Console.Error.WriteLine("{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace);
                 return 2;
             }
-       }
+        }
 
         private Regex RegionRx(string type, string suffix) {
             return new Regex(string.Format(@"(?<whitespace>[\x20\t]*)#region\s*{0}\s*(?<name>\w*?)-{1}\s*(?<content>.*?)#endregion", type, suffix), RegexOptions.Singleline);
@@ -113,23 +123,21 @@ namespace CustomCodeGenerator {
             return RegionRx(type, suffix).FindIn(text);
         }
 
-        private string ReplaceRegion(string type, string suffix, string text, Func<string,string,string,string> replaceFunc ) {
+        private string ReplaceRegion(string type, string suffix, string text, Func<string, string, string, string> replaceFunc) {
             return RegionRx(type, suffix).Replace(text, new MatchEvaluator((arg) =>
                 "{3}#region {0} {1}-{2}\r\n{4}\r\n{3}#endregion\r\n".format(
-                    type, 
-                    arg.GetValue("name"), 
-                    suffix, 
-                    arg.GetValue("whitespace"), 
+                    type,
+                    arg.GetValue("name"),
+                    suffix,
+                    arg.GetValue("whitespace"),
                     replaceFunc(arg.GetValue("name"), arg.GetValue("content"), arg.GetValue("whitespace"))
-                )));
-
+                    )));
         }
 
         private string ModifyRegion(string type, string suffix, string text, Func<string, string, string, string> replaceFunc) {
             return RegionRx(type, suffix).Replace(text, new MatchEvaluator((arg) =>
-                    replaceFunc(arg.GetValue("name"), arg.GetValue("content"), arg.GetValue("whitespace"))
+                replaceFunc(arg.GetValue("name"), arg.GetValue("content"), arg.GetValue("whitespace"))
                 ));
-
         }
 
         private static string InsertDashInCamelCaseString(string txt) {
@@ -144,14 +152,13 @@ namespace CustomCodeGenerator {
                     first = second;
                     continue;
                 }
-                return txt.Insert( second,"-");
+                return txt.Insert(second, "-");
             } while (true);
         }
 
         private static string GetPsDelegateName(string txt) {
-            return  InsertDashInCamelCaseString(txt).Trim('s');
+            return InsertDashInCamelCaseString(txt).Trim('s');
         }
-
 
         /*
         private string ScanForReturnsAttribute(string preamble, string returntype) {
@@ -166,12 +173,12 @@ namespace CustomCodeGenerator {
 
         private string RemoveReturnsAttribute(string preamble) {
             var returnsRx = new Regex(@"\s*\[Returns.*?\]\s*");
-            return returnsRx.Replace(preamble,"");
+            return returnsRx.Replace(preamble, "");
         }
 
         private int Run() {
-            var sourceFiles = Directory.EnumerateFiles(_solutionDir, "*.cs", SearchOption.AllDirectories).Where( each => each.IndexOf(@"\intermediate\" ) == -1 && each.IndexOf(@"\output\" ) == -1 &&each.IndexOf(@"\CustomCodeGenerator\" ) == -1 );
-            
+            var sourceFiles = Directory.EnumerateFiles(_solutionDir, "*.cs", SearchOption.AllDirectories).Where(each => each.IndexOf(@"\intermediate\") == -1 && each.IndexOf(@"\output\") == -1 && each.IndexOf(@"\CustomCodeGenerator\") == -1);
+
             var contents = sourceFiles.Select(File.ReadAllText).ToArray();
 
             var parameterRx = new Regex(@"\s*(?<type>[\w,\<\>]+)\s*(?<name>\w+)\s*(?<init>=\s*[\w\.]*\s*)?\s*?(?:\,)?");
@@ -188,7 +195,7 @@ namespace CustomCodeGenerator {
             // ------------------------------------------------------------------------------------------------------------------------------
 
             // ------------------------------------------------------------------------------------------------------------------------------
-            var apis = contents.SelectMany(text => GetRegion("declare","apis",text).Select(match => new {
+            var apis = contents.SelectMany(text => GetRegion("declare", "apis", text).Select(match => new {
                 Name = match.GetValue("name"),
                 Content = match.GetValue("content"),
                 WhiteSpace = match.GetValue("whitespace")
@@ -203,18 +210,18 @@ namespace CustomCodeGenerator {
                 // abstractReturnType = ScanForReturnsAttribute(match.GetValue("preamble").TrimWhitespace(), match.GetValue("TRet")),
                 // yieldWithType = ScanForYieldWithAttribute(match.GetValue("preamble").TrimWhitespace(),""),
                 delegateName = match.GetValue("name"),
-                psDelegateName = GetPsDelegateName( match.GetValue("name")),
+                psDelegateName = GetPsDelegateName(match.GetValue("name")),
                 // scope = match.GetValue("scope"),
-                parameterText = match.GetValue("params") ,
+                parameterText = match.GetValue("params"),
                 isVoid = match.GetValue("TRet") == "void",
                 returnKeyword = match.GetValue("TRet") == "void" ? "" : "return ",
                 defaultResult = match.GetValue("TRet") == "void" ? "{{ }}" : "default({0})".format(match.GetValue("TRet")),
                 generatedResult = match.GetValue("TRet") == "void" ? "" : "default({0});".format(match.GetValue("TRet")),
                 parameterCount = parameterRx.FindIn(match.GetValue("params")).Count(),
                 comma = parameterRx.FindIn(match.GetValue("params")).Any() ? "," : "",
-                parameterNames = parameterRx.FindIn(match.GetValue("params")).Select(p => p.GetValue("name")).SafeAggregate( (current,each) => current + ","+each )??"",
+                parameterNames = parameterRx.FindIn(match.GetValue("params")).Select(p => p.GetValue("name")).SafeAggregate((current, each) => current + "," + each) ?? "",
                 fixedParameterNames = parameterRx.FindIn(match.GetValue("params")).Select(p => "p" + p.GetValue("name")).SafeAggregate((current, each) => current + "," + each) ?? "",
-                parameterTypes = parameterRx.FindIn(match.GetValue("params")).Select(p => p.GetValue("type")).SafeAggregate((current, each) => current + "," + each)??"",
+                parameterTypes = parameterRx.FindIn(match.GetValue("params")).Select(p => p.GetValue("type")).SafeAggregate((current, each) => current + "," + each) ?? "",
                 customParameterText = parameterRx.FindIn(match.GetValue("params")).Select(p => {
                     var t = p.GetValue("type");
                     var n = p.GetValue("name");
@@ -222,9 +229,9 @@ namespace CustomCodeGenerator {
                     if (t == "IEnumerable<object>" && n == "args") {
                         return "params object[] args";
                     }
-                    return "{0} {1} {2}".format(t,n,i);
+                    return "{0} {1} {2}".format(t, n, i);
                 }).SafeAggregate((current, each) => current + "," + each) ?? "",
-                psParameterText = parameterRx.FindIn(match.GetValue("params")).Where( each => each.GetValue("type") != "Callback" ).Select(p => {
+                psParameterText = parameterRx.FindIn(match.GetValue("params")).Where(each => each.GetValue("type") != "Callback").Select(p => {
                     var t = p.GetValue("type");
                     if (t.Equals("IEnumerable<string>")) {
                         t = "string[]";
@@ -237,7 +244,6 @@ namespace CustomCodeGenerator {
                     var i = p.GetValue("init");
                     return "\r\n        [{0}] ${1}".format(t, n);
                 }).SafeAggregate((current, each) => current + "," + each) ?? "",
-
                 abstractParameterText = parameterRx.FindIn(match.GetValue("params")).Select(p => {
                     var t = p.GetValue("type");
                     var n = p.GetValue("name");
@@ -250,14 +256,12 @@ namespace CustomCodeGenerator {
                     }
                     return "{0} {1} {2}".format(t, n, i);
                 }).SafeAggregate((current, each) => current + "," + each) ?? "",
-
                 parameters = parameterRx.FindIn(match.GetValue("params")).Select(p => new {
                     type = p.GetValue("type"),
                     name = p.GetValue("name"),
                     init = p.GetValue("init"),
                 }).ToArray()
             })).ToArray();
-
 
             // ------------------------------------------------------------------------------------------------------------------------------
             // scan for #region declare *-interface
@@ -289,9 +293,9 @@ namespace CustomCodeGenerator {
                 parameterCount = parameterRx.FindIn(match.GetValue("params")).Count(),
                 comma = parameterRx.FindIn(match.GetValue("params")).Any() ? "," : "",
                 parameterNames = parameterRx.FindIn(match.GetValue("params")).Select(p => p.GetValue("name")).SafeAggregate((current, each) => current + "," + each) ?? "",
-                fixedParameterNames = parameterRx.FindIn(match.GetValue("params")).Select(p => "p"+p.GetValue("name")).SafeAggregate((current, each) => current + "," + each) ?? "",
+                fixedParameterNames = parameterRx.FindIn(match.GetValue("params")).Select(p => "p" + p.GetValue("name")).SafeAggregate((current, each) => current + "," + each) ?? "",
                 parameterTypes = parameterRx.FindIn(match.GetValue("params")).Select(p => p.GetValue("type")).SafeAggregate((current, each) => current + "," + each) ?? "",
-                IsRequired = match.GetValue("preamble").IndexOf("<required/>") > -1 ,
+                IsRequired = match.GetValue("preamble").IndexOf("<required/>") > -1,
                 customParameterText = parameterRx.FindIn(match.GetValue("params")).Select(p => {
                     var t = p.GetValue("type");
                     var n = p.GetValue("name");
@@ -301,7 +305,6 @@ namespace CustomCodeGenerator {
                     }
                     return "{0} {1} {2}".format(t, n, i);
                 }).SafeAggregate((current, each) => current + "," + each) ?? "",
-
                 abstractParameterText = parameterRx.FindIn(match.GetValue("params")).Select(p => {
                     var t = p.GetValue("type");
                     var n = p.GetValue("name");
@@ -314,8 +317,6 @@ namespace CustomCodeGenerator {
                     }
                     return "{0} {1} {2}".format(t, n, i);
                 }).SafeAggregate((current, each) => current + "," + each) ?? "",
-
-
                 psParameterText = parameterRx.FindIn(match.GetValue("params")).Where(each => each.GetValue("type") != "Callback").Select(p => {
                     var t = p.GetValue("type");
                     var n = p.GetValue("name");
@@ -336,8 +337,13 @@ namespace CustomCodeGenerator {
                 }).ToArray()
             })).ToArray();
 
-
             var types = contents.SelectMany(text => GetRegion("declare", "types", text).Select(match => new {
+                Name = match.GetValue("name"),
+                Content = match.GetValue("content"),
+                WhiteSpace = match.GetValue("whitespace")
+            })).ToArray();
+
+            var implementation = contents.SelectMany(text => GetRegion("declare", "implementation", text).Select(match => new {
                 Name = match.GetValue("name"),
                 Content = match.GetValue("content"),
                 WhiteSpace = match.GetValue("whitespace")
@@ -346,23 +352,20 @@ namespace CustomCodeGenerator {
             // ------------------------------------------------------------------------------------------------------------------------------
             // process code generation regions in files
 
-            
-
             foreach (var targetDir in _targetDirs) {
                 if (!Directory.Exists(targetDir)) {
                     throw new Exception(string.Format("Target dir {0} does not exist", targetDir));
                 }
 
                 // for c# files:
-                var targetFiles = Directory.EnumerateFiles(targetDir , "*.cs", SearchOption.AllDirectories).Where( each => each.IndexOf(@"\intermediate\" ) == -1 && each.IndexOf(@"\output\" ) == -1 &&each.IndexOf(@"\CustomCodeGenerator\" ) == -1 );
+                var targetFiles = Directory.EnumerateFiles(targetDir, "*.cs", SearchOption.AllDirectories).Where(each => each.IndexOf(@"\intermediate\") == -1 && each.IndexOf(@"\output\") == -1 && each.IndexOf(@"\CustomCodeGenerator\") == -1);
                 targetFiles = targetFiles.Union(Directory.EnumerateFiles(targetDir, "*.psm1", SearchOption.AllDirectories).Where(each => each.IndexOf(@"\intermediate\") == -1 && each.IndexOf(@"\output\") == -1 && each.IndexOf(@"\CustomCodeGenerator\") == -1));
                 foreach (var targetFile in targetFiles) {
                     var originalText = File.ReadAllText(targetFile);
                     var text = originalText;
 
-
 #if NOT_USED
-                    // generate-resolved *-apis =============================================================================================
+    // generate-resolved *-apis =============================================================================================
                     text = ReplaceRegion("generate-resolved", "apis", text, (name, content,whitespace)=> {
                         return apiDeclarations.Where(each => each.category == name).Select(api => @"
 {1}${preamble}
@@ -392,14 +395,14 @@ namespace CustomCodeGenerator {
                         return apiDeclarations.Where(each => each.category == name).Select(api => @"{1}_${delegateName} = null;".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);
                     });
 
-#endif 
+#endif
 
                     // implement *-apis =============================================================================================
                     text = ReplaceRegion("implement", "apis", text, (name, content, whitespace) => {
                         var newContent = content;
 
                         apiDeclarations.Where(each => each.category == name).ForEach(api => {
-                            var rxFunc = new Regex(@"\[Implementation\]\s*public\s*(?<TRet>\S*)\s(?<name>"+api.delegateName+@")\s*\((?<params>.*?)\)(?<code>.*)", RegexOptions.Singleline);
+                            var rxFunc = new Regex(@"\[Implementation\]\s*public\s*(?<TRet>\S*)\s(?<name>" + api.delegateName + @")\s*\((?<params>.*?)\)(?<code>.*)", RegexOptions.Singleline);
                             if (rxFunc.Match(content).Success) {
                                 newContent = rxFunc.Replace(newContent, new MatchEvaluator(me => {
                                     var fn = new {
@@ -412,7 +415,7 @@ namespace CustomCodeGenerator {
                                     };
 
                                     return @"[Implementation]
-{1}public ${returnType} ${fnName}(${parameterText}){2}".format(fn, whitespace,fn.code);
+{1}public ${returnType} ${fnName}(${parameterText}){2}".format(fn, whitespace, fn.code);
                                 }));
                             } else {
                                 newContent += @"{1}[Implementation]
@@ -420,20 +423,15 @@ namespace CustomCodeGenerator {
 {1} // TODO: Fill in implementation
 {1}}}".format(api, whitespace);
                             }
-                       });
+                        });
 
-
-                        return  newContent ;
+                        return newContent;
                     });
-
 
                     // copy *-apis =============================================================================================
-                    text = ReplaceRegion("copy", "apis", text, (name, content, whitespace) => {
-                        return  apiDeclarations.Where(each => each.category == name).Select(api => @"
+                    text = ReplaceRegion("copy", "apis", text, (name, content, whitespace) => {return apiDeclarations.Where(each => each.category == name).Select(api => @"
 {1}${preamble}
-{1}public abstract ${returnType} ${delegateName}(${parameterText});".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);
-                    });
-
+{1}public abstract ${returnType} ${delegateName}(${parameterText});".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);});
 
                     // implement *-interface =============================================================================================
                     text = ReplaceRegion("implement", "interface", text, (name, content, whitespace) => {
@@ -455,15 +453,14 @@ namespace CustomCodeGenerator {
                                     return @"
 {1}public ${returnType} ${fnName}(${parameterText}){2}".format(fn, whitespace, fn.code);
                                 }));
-                            }
-                            else {
+                            } else {
                                 if (api.parameterTypes.IndexOf("Callback") != -1) {
                                     newContent += @"{1}${preamble}
 {1}public ${returnType} ${delegateName}(${parameterText}){{
     {1} // TODO: Fill in implementation
     {1} // Delete this method if you do not need to implement it
     {1} // Please don't throw an not implemented exception, it's not optimal.
-    {1}using (var request = Request.New(c)) {{
+    {1}using (var request = c.As<Request>()) {{
     {1}    // use the request object to interact with the OneGet core:
     {1}    request.Debug(""Information"",""Calling '${delegateName}'"" );
     {1}}}
@@ -486,7 +483,6 @@ namespace CustomCodeGenerator {
                                 }
                             }
                         });
-
 
                         return newContent;
                     });
@@ -514,8 +510,7 @@ function ${fnName} {{
     param(${psParameterText}
     ){1}".format(fn, fn.code); // use the positional parameter, since fn.code has braces in it.
                                 }));
-                            }
-                            else {
+                            } else {
                                 if (api.parameterTypes.IndexOf("Callback") != -1) {
                                     newContent += @"<# 
 ${preamble}
@@ -534,8 +529,7 @@ function ${psDelegateName} {{
 }}
 
 ".format(api);
-                                }
-                                else {
+                                } else {
                                     newContent += @"<# 
 ${preamble}
 #>
@@ -554,52 +548,39 @@ function ${psDelegateName} {{
                             }
                         });
 
-
-                        return newContent ;
+                        return newContent;
                     });
 
                     // psgenerate-resolved *-interface =============================================================================================
-                    text = ReplaceRegion("generate-pswrapper", "apis", text, (name, content, whitespace) => {
-                        return apiDeclarations.Where(each => each.category == name).Select(api => @"<# 
+                    text = ReplaceRegion("generate-pswrapper", "apis", text, (name, content, whitespace) => {return apiDeclarations.Where(each => each.category == name).Select(api => @"<# 
 ${preamble}
 #>
 function ${psDelegateName} {{
     param(${psParameterText}
     )
-}}".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);
-                    });
-
-
+}}".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);});
 
                     // abstract *-interface =============================================================================================
-                    text = ReplaceRegion("abstract", "interface", text, (name, content, whitespace) => {
-                        return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"
+                    text = ReplaceRegion("abstract", "interface", text, (name, content, whitespace) => {return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"
 {1}${preamble}
 {1}public abstract ${abstractReturnType} ${delegateName}(${abstractParameterText});
-".format(fn, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);
-                    });
+".format(fn, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);});
 
                     // abstract *-interface =============================================================================================
-                    text = ReplaceRegion("abstract", "apis", text, (name, content, whitespace) => {
-                        return apiDeclarations.Where(each => each.category == name).Select(fn => @"
+                    text = ReplaceRegion("abstract", "apis", text, (name, content, whitespace) => {return apiDeclarations.Where(each => each.category == name).Select(fn => @"
 {1}${preamble}
 {1}public abstract ${abstractReturnType} ${delegateName}(${abstractParameterText});
-".format(fn, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);
-                    });
+".format(fn, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);});
 
+                    text = ReplaceRegion("generate-memberinit", "interface", text,
+                        (name, content, whitespace) => {
+                            return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"{1}${delegateName} = Get{2}Delegate<Interface.${delegateName}>(instance);".format(fn, whitespace, fn.IsRequired ? "Required" : "Optional")).Combined();
+                        });
 
+                    text = ReplaceRegion("generate-members", "interface", text,
+                        (name, content, whitespace) => {return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"{1}internal readonly Interface.${delegateName} ${delegateName};".format(fn, whitespace)).Combined();});
 
-                    text = ReplaceRegion("generate-memberinit", "interface", text, (name, content, whitespace) => {
-                        return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"{1}${delegateName} = Get{2}Delegate<Interface.${delegateName}>(instance);".format(fn, whitespace,fn.IsRequired ? "Required" : "Optional")).Combined();
-                    });
-
-                    text = ReplaceRegion("generate-members", "interface", text, (name, content, whitespace) => {
-                        return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"{1}internal readonly Interface.${delegateName} ${delegateName};".format(fn, whitespace)).Combined();
-                    });
-
-                    text = ReplaceRegion("generate-enum", "interface", text, (name, content, whitespace) => {
-                        return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"{1}${delegateName},".format(fn, whitespace)).Combined();
-                    });
+                    text = ReplaceRegion("generate-enum", "interface", text, (name, content, whitespace) => {return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"{1}${delegateName},".format(fn, whitespace)).Combined();});
 
                     /*
                     text = ReplaceRegion("generate-issupported", "interface", text, (name, content, whitespace) => {
@@ -608,19 +589,16 @@ function ${psDelegateName} {{
                     });
                     */
 
-                    
                     /*
                     text = ReplaceRegion("generate-istypecompatible", "interface", text, (name, content, whitespace) => {
                         return interfaceDeclarations.Where(each => each.category == name).Where( fn => fn.IsRequired ).Select(fn => @"{1}    && publicMethods.Any(each => DuckTypedExtensions.IsNameACloseEnoughMatch(each.Name, ""${delegateName}"") && typeof (Interface.${delegateName}).IsDelegateAssignableFromMethod(each))".format(fn, whitespace, name)).Combined();
                     });
                     */
 
-
                     // copy *-types =============================================================================================
-                    text = ReplaceRegion("copy", "types", text, (name, content, whitespace) => {
-                        return types.Where(each => each.Name == name).Select(t => t.Content).SafeAggregate((current, each) => current + "\r\n" + each);
-                    });
+                    text = ReplaceRegion("copy", "types", text, (name, content, whitespace) => {return types.Where(each => each.Name == name).Select(t => t.Content).SafeAggregate((current, each) => current + "\r\n" + each);});
 
+                    text = ReplaceRegion("copy", "implementation", text, (name, content, whitespace) => { return implementation.Where(each => each.Name == name).Select(t => t.Content).SafeAggregate((current, each) => current + "\r\n" + each); });
 
                     //-------------------------------------------------------------------------------------------------------------------------
                     //-------------------------------------------------------------------------------------------------------------------------
@@ -638,7 +616,6 @@ function ${psDelegateName} {{
                         text = text.TrimWhitespace();
                     }
 
-
                     // Save the file if it actually changed =============================================================================================
                     if (originalText != text) {
                         Console.WriteLine("Updating : {0}", targetFile);
@@ -650,7 +627,7 @@ function ${psDelegateName} {{
                         var count = Directory.EnumerateFiles(fileDir, filename + ".*.bak").Count();
                         var backup = Path.Combine(fileDir, string.Format("{0}.{1}.bak", filename, count));
 
-                        File.Move(targetFile,backup );
+                        File.Move(targetFile, backup);
                         if (File.Exists(targetFile)) {
                             throw new Exception(string.Format("File '{0}' didn't move to '{1}'", targetFile, backup));
                         }
@@ -658,22 +635,9 @@ function ${psDelegateName} {{
                         File.WriteAllText(targetFile, text);
                     }
                 }
-
             }
 
             return 0;
-        }
-
-        private string _solutionDir;
-        private string[] _targetDirs;
-
-        Program(string solution, IEnumerable<string> targets) {
-            _solutionDir = Path.GetFullPath(solution);
-            if (!Directory.Exists(_solutionDir)) {
-                throw new Exception("Solution Directory does not exist.");
-            }
-
-            _targetDirs = targets.Select(Path.GetFullPath).ToArray();
         }
     }
 }

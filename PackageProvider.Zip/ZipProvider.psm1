@@ -21,15 +21,15 @@
 #>
 function Add-PackageSource { 
     param(
-        [string] $name,
-        [string] $location,
+        [string] $name, 
+        [string] $location, 
         [bool] $trusted
-    )
+    )  
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'AddPackageSource'" );
+    $request.Debug("Calling 'AddPackageSource'" ); 
 
     # expected return type : void
     #  $null;
@@ -37,7 +37,7 @@ function Add-PackageSource {
 
 <# 
 
-#>
+#>  
 function Find-Package { 
     param(
         [string] $name,
@@ -50,13 +50,13 @@ function Find-Package {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'FindPackage'" );
+    $request.Debug("Calling 'FindPackage'", "" );
 
     # expected return type : bool
     # return  $null;
 }
 
-<# 
+<#  
 
 #>
 function Find-PackageByFile { 
@@ -68,7 +68,7 @@ function Find-PackageByFile {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'FindPackageByFile'" );
+    $request.Debug("Calling 'FindPackageByFile'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -86,7 +86,7 @@ function Find-PackageByUri {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'FindPackageByUri'" );
+    $request.Debug("Calling 'FindPackageByUri'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -103,7 +103,7 @@ function Get-InstalledPackage {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'GetInstalledPackages'" );
+    $request.Debug("Calling 'GetInstalledPackages'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -119,7 +119,7 @@ function Get-MetadataDefinition {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'GetMetadataDefinitions'" );
+    $request.Debug("Calling 'GetMetadataDefinitions'" , "" );
 
     # expected return type : void
     #  $null;
@@ -138,7 +138,7 @@ function Get-PackageProviderName {
     # Delete this method if you do not need to implement it
 
     # expected return type : string
-    # return  $null;
+    return "ZipProvider"
 }
 
 <# 
@@ -151,7 +151,7 @@ function Get-PackageSource {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'GetPackageSources'" );
+    $request.Debug("Calling 'GetPackageSources'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -167,7 +167,7 @@ function Initialize-Provider {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'InitializeProvider'" );
+    $request.Debug("Calling 'InitializeProvider'" , "" );
 
     # expected return type : void
     #  $null;
@@ -184,7 +184,7 @@ function Install-PackageByFastpath {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'InstallPackage'" );
+    $request.Debug("Calling 'InstallPackage'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -201,7 +201,7 @@ function Install-PackageByFile {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'InstallPackageByFile'" );
+    $request.Debug("Calling 'InstallPackageByFile'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -218,7 +218,7 @@ function Install-PackageByUri {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'InstallPackageByUri'" );
+    $request.Debug("Calling 'InstallPackageByUri'", "" );
 
     # expected return type : bool
     # return  $null;
@@ -235,7 +235,7 @@ function Is-TrustedPackageSource {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'IsTrustedPackageSource'" );
+    $request.Debug("Calling 'IsTrustedPackageSource'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -252,7 +252,7 @@ function Is-ValidPackageSource {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'IsValidPackageSource'" );
+    $request.Debug("Calling 'IsValidPackageSource'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -269,7 +269,7 @@ function Remove-PackageSource {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'RemovePackageSource'" );
+    $request.Debug("Calling 'RemovePackageSource'" , "" );
 
     # expected return type : void
     #  $null;
@@ -286,7 +286,7 @@ function Uninstall-Package {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'UninstallPackage'" );
+    $request.Debug("Calling 'UninstallPackage'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -303,7 +303,7 @@ function Get-OptionDefinition {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'GetDynamicOptions'" );
+    $request.Debug("Calling 'GetDynamicOptions'" , "" );
 
     # expected return type : void
     #  $null;
@@ -319,7 +319,7 @@ function Get-Feature {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'GetFeatures'" );
+    $request.Debug("Calling 'GetFeatures'" , "" );
 
     # expected return type : void
     #  $null;
@@ -357,11 +357,8 @@ function Get-Scheme {
 function Get-FileExtension { 
     param(
     )
-    # TODO: Fill in implementation
-    # Delete this method if you do not need to implement it
-
-    # expected return type : IEnumerable<string>
-    # return  $null;
+   
+   return "zip"
 }
 
 <# 
@@ -389,7 +386,7 @@ function Download-Package {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'DownloadPackage'" );
+    $request.Debug("Calling 'DownloadPackage'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -406,7 +403,7 @@ function Get-PackageDependencie {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'GetPackageDependencies'" );
+    $request.Debug("Calling 'GetPackageDependencies'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -423,7 +420,7 @@ function Get-PackageDetail {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'GetPackageDetails'" );
+    $request.Debug("Calling 'GetPackageDetails'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -440,7 +437,7 @@ function Install-Package {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'InstallPackage'" );
+    $request.Debug("Calling 'InstallPackage'" , "" );
 
     # expected return type : bool
     # return  $null;
@@ -457,7 +454,7 @@ function Get-DynamicOption {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'GetDynamicOptions'" );
+    $request.Debug("Calling 'GetDynamicOptions'" , "" );
 
     # expected return type : void
     #  $null;
@@ -473,7 +470,7 @@ function Start-Find {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'StartFind'" );
+    $request.Debug("Calling 'StartFind'" , "" );
 
     # expected return type : int
     # return  $null;
@@ -490,7 +487,7 @@ function Complete-Find {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Information","Calling 'CompleteFind'" );
+    $request.Debug("Calling 'CompleteFind'" , "" );
 
     # expected return type : bool
     # return  $null;

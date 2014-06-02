@@ -54,14 +54,7 @@
 	## to installing, detecting and loading providers.
 	##
    	PrivateData = @{
-		"OneGetModule" = "mymodule.psm1"
-		"Providers" = @{
-			'Assembly' = @( 
-				'OneGet.PackageProvider.Chocolatey'
-				#, 'Microsoft.OneGet.MetaProvider.PowerShell' 
-			)
-			'Module' = @( '.\ZipProvider.psm1' )
-			# 'Native'=  @( 'SomeNative.DLL' )
-		 }
+		"OneGet.Providers" = @( ".\ZipProvider.psm1", ".\TestPackageProvider.psm1" )
+
     }
 }

@@ -97,6 +97,7 @@ namespace Microsoft.OneGet.Core {
                 }
             };
 
+
             CommandPipeline.Error.DataReady += (sender, args) => {
                 lock (Result.Errors) {
                     if (Result.Errors.IsCompleted) {

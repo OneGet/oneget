@@ -18,38 +18,6 @@ namespace Microsoft.OneGet {
     using Callback = System.Object;
 
 
-    internal interface ICoreApis {
-
-        #region declare core-apis
-
-        // Core Callbacks that we'll both use internally and pass on down to providers.
-        bool Warning(string message, params object[] args);
-
-        bool Error(string message, params object[] args);
-
-        bool Message(string message, params object[] args);
-
-        bool Verbose(string message, params object[] args);
-
-        bool Debug(string message, params object[] args);
-
-        bool ExceptionThrown(string exceptionType, string message, string stacktrace);
-
-        int StartProgress(int parentActivityId, string message, params object[] args);
-
-        bool Progress(int activityId, int progress, string message, params object[] args);
-
-        bool CompleteProgress(int activityId, bool isSuccessful);
-
-        /// <summary>
-        ///     The provider can query to see if the operation has been cancelled.
-        ///     This provides for a gentle way for the caller to notify the callee that
-        ///     they don't want any more results.
-        /// </summary>
-        /// <returns>returns TRUE if the operation has been cancelled.</returns>
-        bool IsCancelled();
-
-        #endregion
-    }
+  
 
 }

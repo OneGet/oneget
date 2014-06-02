@@ -40,7 +40,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             foreach( var provider in providers){
                 bool found = false;
-                using(var sources = CancelWhenStopped(provider.GetPackageSources(Invoke) ) ){
+                using(var sources = CancelWhenStopped(provider.GetPackageSources(this) ) ){
                     foreach (var source in sources) {
                         if (!string.IsNullOrEmpty(Name)) {
                             if (!Name.EqualsIgnoreCase(source.Name)) {

@@ -84,7 +84,6 @@ namespace Microsoft.OneGet.Core.Extensions {
             };
         }
 
-
         public static IEnumerable<string> GetStringCollection(this Hashtable hashtable, string path) {
             if (hashtable.IsNullOrEmpty() || string.IsNullOrEmpty(path)) {
                 return Enumerable.Empty<string>();
@@ -111,6 +110,23 @@ namespace Microsoft.OneGet.Core.Extensions {
 
             var item = hashtable[paths[0]] as Hashtable;
             return item == null ? Enumerable.Empty<string>() : item.GetStringCollection(paths.Skip(1).ToArray());
+        }
+
+        public static IEnumerable<KeyValuePair<string, string>> Flatten(this Hashtable hashTable) {
+            foreach (var k in hashTable.Keys) {
+                var value = hashTable[k];
+                if (value == null) {
+                    continue;
+                }
+
+                if (value is Hashtable) {
+                    foreach (var kvp in (value as Hashtable).Flatten()) {
+                        yield return new KeyValuePair<string, string>(k.ToString() + "/" + kvp.Key, kvp.Value );
+                    }
+                } else {
+                    yield return new KeyValuePair<string, string>(k.ToString(),value.ToString());
+                }
+            }
         }
     }
 }

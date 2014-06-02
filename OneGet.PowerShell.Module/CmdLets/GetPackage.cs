@@ -32,7 +32,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 try {
                     if (Name.IsNullOrEmpty()) {
                         var found = false;
-                        using (var packages = CancelWhenStopped(provider.GetInstalledPackages("", Invoke))) {
+                        using (var packages = CancelWhenStopped(provider.GetInstalledPackages("", this))) {
                             foreach (var p in packages) {
                                 found = true;
                                 WriteObject(p);
@@ -45,7 +45,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                     foreach (var name in Name) {
                         var found = false;
-                        using (var packages = CancelWhenStopped(provider.GetInstalledPackages(name, Invoke))) {
+                        using (var packages = CancelWhenStopped(provider.GetInstalledPackages(name, this))) {
                             foreach (var p in packages) {
                                 found = true;
                                 WriteObject(p);

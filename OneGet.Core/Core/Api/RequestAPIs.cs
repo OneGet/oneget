@@ -15,7 +15,6 @@
 namespace Microsoft.OneGet.Core.Api {
     using System.Collections.Generic;
 
-    
     public interface IRequestApis {
         #region declare request-apis
 
@@ -36,8 +35,9 @@ namespace Microsoft.OneGet.Core.Api {
         /// <param name="versionScheme"></param>
         /// <param name="summary"></param>
         /// <param name="source"></param>
+        /// <param name="searchKey"></param>
         /// <returns></returns>
-        bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source);
+        bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey);
 
 
         bool YieldPackageDetails(object serializablePackageDetailsObject);
@@ -50,7 +50,7 @@ namespace Microsoft.OneGet.Core.Api {
         /// <param name="name"></param>
         /// <param name="location"></param>
         /// <returns></returns>
-        bool YieldSource(string name, string location, bool isTrusted);
+        bool YieldPackageSource(string name, string location, bool isTrusted);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
@@ -59,9 +59,14 @@ namespace Microsoft.OneGet.Core.Api {
         /// <param name="category"> one of ['provider', 'source', 'package', 'install']</param>
         /// <param name="name">the provider-defined name of the option</param>
         /// <param name="expectedType"> one of ['string','int','path','switch']</param>
-        /// <param name="permittedValues">either a collection of permitted values, or null for any valid value</param>
+        /// <param name="isRequired">if the parameter is mandatory</param>
         /// <returns></returns>
-        bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired, IEnumerable<string> permittedValues);
+        bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired);
+
+        bool YieldKeyValuePair(string key, string value);
+
+        bool YieldValue(string value);
+
         #endregion
     }
 

@@ -24,12 +24,13 @@ namespace Microsoft.OneGet {
     using Callback = System.Object;
 
     internal static class ProviderLoader {
-        internal static void AcquireProviders(string assemblyPath, Callback callback, Action<string, IPackageProvider> yieldPackageProvider, Action<string, IServicesProvider> yieldServicesProvider) {
+        internal static bool AcquireProviders(string assemblyPath, Callback callback, Action<string, IPackageProvider> yieldPackageProvider, Action<string, IServicesProvider> yieldServicesProvider) {
             var dynInterface = new DynamicInterface();
+            var result = false;
 
             var asm = Assembly.LoadFile(assemblyPath);
             if (asm == null) {
-                return;
+                return false;
             }
 
             foreach (var provider in dynInterface.FilterTypesCompatibleTo<IMetaProvider>(asm).Select( each => dynInterface.Create<IMetaProvider>(each) )) {
@@ -44,9 +45,11 @@ namespace Microsoft.OneGet {
                                     var packageProvider = dynInterface.Create<IPackageProvider>(instance);
                                     packageProvider.InitializeProvider(DynamicInterface.Instance, callback);
                                     yieldPackageProvider(packageProvider.GetPackageProviderName(), packageProvider);
+                                    result = true;
                                 } catch (Exception e) {
                                     e.Dump();
                                 }
+                                
                             }
 
                             // check if it's a Services Provider
@@ -55,9 +58,11 @@ namespace Microsoft.OneGet {
                                     var servicesProvider = dynInterface.Create<IServicesProvider>(instance);
                                     servicesProvider.InitializeProvider(DynamicInterface.Instance, callback);
                                     yieldServicesProvider(servicesProvider.GetServicesProviderName(), servicesProvider);
+                                    result = true;
                                 } catch (Exception e) {
                                     e.Dump();
                                 }
+                                
                             }
                         }
                     }
@@ -70,19 +75,24 @@ namespace Microsoft.OneGet {
                 try {
                     provider.InitializeProvider(DynamicInterface.Instance, callback);
                     yieldPackageProvider(provider.GetPackageProviderName(), provider);
+                    result = true;
                 } catch (Exception e) {
                     e.Dump();
                 }
+                
             }
 
             foreach (var provider in dynInterface.FilterTypesCompatibleTo<IServicesProvider>(asm).Select(each => dynInterface.Create<IServicesProvider>(each))) {
                 try {
                     provider.InitializeProvider(DynamicInterface.Instance, callback);
                     yieldServicesProvider(provider.GetServicesProviderName(), provider);
+                    result = true;
                 } catch (Exception e) {
                     e.Dump();
                 }
+                
             }
+            return result;
         }
     }
 }

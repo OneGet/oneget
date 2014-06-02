@@ -14,20 +14,18 @@
 
 namespace Microsoft.OneGet.Core.Providers.Service {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Dynamic;
-    using System.Linq;
     using Dynamic;
-    using Extensions;
     using Package;
     using Callback = System.Object;
 
     public interface IServicesProvider : IProvider {
         bool IsMethodImplemented(string method);
+
         #region declare ServicesProvider-interface
+
         /// <summary>
-        /// Returns the name of the Provider. Doesn't need callback .
+        ///     Returns the name of the Provider. Doesn't need callback .
         /// </summary>
         /// <returns></returns>
         [Required]
@@ -44,9 +42,6 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         #endregion
     }
 
-    
-
-
     public class ServicesProvider : MarshalByRefObject {
         private readonly IServicesProvider _provider;
 
@@ -54,12 +49,18 @@ namespace Microsoft.OneGet.Core.Providers.Service {
             _provider = provider;
         }
 
+        public string Name {
+            get {
+                return _provider.GetServicesProviderName();
+            }
+        }
+
         public bool IsMethodImplemented(string method) {
             return _provider.IsMethodImplemented(method);
         }
+        public override object InitializeLifetimeService() {
+            return null;
+        }
 
-        public string Name { get {
-            return _provider.GetServicesProviderName();
-        } }
     }
 }

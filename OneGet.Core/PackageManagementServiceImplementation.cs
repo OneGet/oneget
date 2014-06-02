@@ -68,15 +68,15 @@ namespace Microsoft.OneGet {
         private bool _initialized;
 
         public bool Initialize(Callback callback, bool userInteractionPermitted) {
-            
+            var request = callback.As<ICoreApis>();
+
+            request.Debug("starting Initialize");
             // var request = _dynamicInterface.Create<IHostAndCoreAPIs>(callback);
 
             lock (_lockObject) {
                 if (!_initialized) {
 #if _MOVE_TO_BOOTSTRAP_PROVIDER
                     try {
-
-
                         if (Instance.Service.GetNuGetDllPath(callback).IsEmptyOrNull()) {
                             // we are unable to bootstrap NuGet correctly.
                             // We can't really declare that the providers are ready, and we should just 
@@ -102,6 +102,11 @@ namespace Microsoft.OneGet {
         internal PackageManagementServiceImplementation() {
         }
 
+        public override object InitializeLifetimeService() {
+            return null;
+        }
+
+
         /// <summary>
         ///     This initializes the provider registry with the list of package providers.
         /// 
@@ -109,11 +114,13 @@ namespace Microsoft.OneGet {
         /// </summary>
         /// <param name="callback"></param>
         private void LoadProviders(Callback callback) {
-            var request = callback.As<IRequest>();
+            var request = callback.As<ICoreApis>();
+
+            request.Debug("Staring LoadProviders");
 
             // todo: load provider assembly list from the registry.
             IEnumerable<string> providerAssemblies = new string[] {
-                "Microsoft.OneGet.MetaProvider.PowerShell.dll",
+                 "Microsoft.OneGet.MetaProvider.PowerShell.dll",
                 "Microsoft.OneGet.ServiceProvider.Common.dll",
                 "OneGet.PackageProvider.Bootstrap.dll",
                 "OneGet.PackageProvider.Chocolatey.dll",
@@ -122,24 +129,28 @@ namespace Microsoft.OneGet {
 
             // there is no trouble with loading providers concurrently.
             Parallel.ForEach(providerAssemblies, providerAssemblyName => {
+            // foreach( var providerAssemblyName in providerAssemblies ) {
                 try {
                     if (TryToLoadProviderAssembly(callback, providerAssemblyName)) {
-                        request.Debug("Loading Provider Assembly", new string[] {
-                            providerAssemblyName
-                        });
+                        request.Debug("Loading Provider Assembly {0}".format( providerAssemblyName) );
                     } else {
-                        request.Debug("Failed to load any providers", new string[] {
-                            providerAssemblyName
-                        });
+                        request.Debug("Failed to load any providers {0}".format( providerAssemblyName) );
                     }
                 } catch (Exception e) {
                     request.ExceptionThrown(e.GetType().Name, e.Message, e.StackTrace);
                 }
-            });
+            }
+            );
         }
 
         public IEnumerable<PackageSource> GetAllSourceNames(Callback callback) {
             return _packageProviders.Values.SelectMany(each => each.GetPackageSources(callback));
+        }
+
+        public IEnumerable<string> ProviderNames {
+            get {
+                return _packageProviders.Keys;
+            }
         }
 
         public IEnumerable<PackageProvider> SelectProviders(string providerName) {
@@ -179,20 +190,19 @@ namespace Microsoft.OneGet {
         /// <returns></returns>
         private bool TryToLoadProviderAssembly(Callback callback, string providerAssemblyName) {
             // find all the matches for the assembly specified, order by version (descending)
+            
             var assemblyPath = FindAssembly(providerAssemblyName);
 
             if (assemblyPath == null) {
                 return false;
             }
 
-            var pluginDomain = CreatePluginDomain();
+            var pluginDomain = CreatePluginDomain(assemblyPath);
 
-            pluginDomain.Invoke(ProviderLoader.AcquireProviders, assemblyPath, callback,
+            return pluginDomain.InvokeFunc(ProviderLoader.AcquireProviders, assemblyPath, callback.As<ICoreApis>(),
                 (Action<string, IPackageProvider>)(AddPackageProvider),
                 (Action<string, IServicesProvider>)(AddServicesProvider)
                 );
-
-            return true;
         }
 
 #if AFTER_CTP
@@ -218,11 +228,12 @@ namespace Microsoft.OneGet {
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        private PluginDomain CreatePluginDomain() {
+        private PluginDomain CreatePluginDomain(string primaryAssemblyPath ) {
             try {
                 // this needs to load the assembly in it's own domain
                 // so that we can drop them when necessary.
-                var pd = new PluginDomain();
+                var name = Path.GetFileNameWithoutExtension(primaryAssemblyPath) ?? primaryAssemblyPath;
+                var pd = new PluginDomain(string.Format( "PluginDomain [{0}]",name.Substring(name.LastIndexOf('.')+1)));
                 /*
                 // add event listeners to the new appdomain.
                 pd.Invoke(c => {CurrentTask.Events += new Verbose(c.Invoke);}, typeof (Verbose).CreateWrappedProxy(new Verbose((f, o) => Event<Verbose>.Raise(f, o.ByRef()))) as WrappedFunc<string, IEnumerable<object>, bool>);

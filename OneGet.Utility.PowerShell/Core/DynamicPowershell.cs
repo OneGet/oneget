@@ -159,6 +159,7 @@ namespace Microsoft.OneGet.Core {
             Wait();
 
             try {
+                
                 // command
                 _currentCommand = new DynamicPowershellCommand(CreatePipeline()) {
                     Command = new Command(GetPropertyValue(LookupCommand(name), "Name"))

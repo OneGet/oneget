@@ -58,10 +58,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 Error("Unknown Provider", new string[] {Provider});
                 return false;
             }
-            using (var sources = CancelWhenStopped(provider.GetPackageSources(Invoke))) {
+            using (var sources = CancelWhenStopped(provider.GetPackageSources(this))) {
                 if (sources.Any(each => each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase))) {
                     if (Force || ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}' (Replace existing)".format(Name, Location, Provider)).Result) {
-                        provider.AddPackageSource(Name, Location, Trusted, Invoke);
+                        provider.AddPackageSource(Name, Location, Trusted, this);
                         return true;
                     }
                     return false;
@@ -69,7 +69,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}'".format(Name, Location, Provider)).Result) {
-                provider.AddPackageSource(Name, Location, Trusted, Invoke);
+                provider.AddPackageSource(Name, Location, Trusted, this);
                 return true;
             }
 

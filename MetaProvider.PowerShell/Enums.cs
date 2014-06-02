@@ -1,4 +1,4 @@
-﻿// 
+// 
 //  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -12,5 +12,24 @@
 //  limitations under the License.
 //  
 
-namespace OneGet.PackageProvider.Bootstrap {
+namespace Microsoft.OneGet.MetaProvider.PowerShell {
+    #region copy PackageProvider-types
+public enum OptionCategory {
+        Package = 0,
+        Provider = 1,
+        Source = 2,
+        Install = 3
+    }
+
+    public enum OptionType {
+        String = 0,
+        StringArray = 1,
+        Int = 2,
+        Switch = 3,
+        Path = 4,
+        Uri = 5
+    }
+
+    #endregion
+
 }

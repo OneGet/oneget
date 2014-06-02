@@ -15,12 +15,19 @@
 namespace Microsoft.OneGet.Test {
     using System;
     using System.IO;
+    using System.Reflection;
     using System.Security.Policy;
     using Core.Dynamic;
     using CSharp.RuntimeBinder;
     using Xunit;
 
     public class RequiredAttribute : Attribute {
+    }
+
+    public class BuildPSFirst {
+        public void Build() {
+            
+        }
     }
 
     public interface IDynTest {
@@ -246,6 +253,24 @@ namespace Microsoft.OneGet.Test {
         }
 
         [Fact]
+        public void TestGetTypes() {
+            var asm =  Assembly.GetExecutingAssembly();
+            var types = asm.GetTypes();
+
+
+            foreach (var t in types) {
+                if (t.IsEnum) {
+                    Console.WriteLine("ENUM: {0}", t.Name);
+                    continue;
+                }
+                if (t.IsDelegate()) {
+                    Console.WriteLine("Delegate: {0}", t.Name);
+                    continue;
+                }
+            }
+        }
+
+        [Fact]
         public void TestChaining() {
 
             var di = new DynamicInterface();
@@ -325,5 +350,7 @@ namespace Microsoft.OneGet.Test {
                 return "Hello";
             }
         }
+
+        
     }
 }

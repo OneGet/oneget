@@ -94,7 +94,7 @@ namespace Microsoft.OneGet.Core.Extensions {
         }
 
         public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> enumerable) {
-            return enumerable.Where(each => (object)each != null);
+            return enumerable == null ? Enumerable.Empty<T>() : enumerable.Where(each => (object)each != null);
         }
 
         public static IEnumerable<T> ToEnumerable<T>(this object obj) {

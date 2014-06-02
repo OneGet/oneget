@@ -83,13 +83,21 @@
       <Project>{7044b856-6d51-498f-8192-01f219908192}</Project>
       <Name>OneGet.Utility</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PackageProvider.Zip\PackageProvider.Zip.pssproj">
+      <Project>{6CAFC0C6-A428-4D30-A9F9-700E829FEA51}</Project>
+      <Name>PackageProvider.Zip</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly> 
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="BeforeBuild">
+    <MSBuild Projects="..\packageprovider.test.powershell\PackageProvider.test.PowerShell.pssproj" Properties="Configuration=$(Configuration)" Targets="Copy" />
+    <MSBuild Projects="..\packageprovider.template.powershell\PackageProvider.Template.PowerShell.pssproj" Properties="Configuration=$(Configuration)" Targets="Copy" />
     <MSBuild Projects="..\PackageProvider.Zip\PackageProvider.Zip.pssproj" Properties="Configuration=$(Configuration)" Targets="Copy" />
+    <MSBuild Projects="..\serviceprovider.template.powershell\ServiceProvider.Template.PowerShell.pssproj" Properties="Configuration=$(Configuration)" Targets="Copy" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

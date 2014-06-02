@@ -3,6 +3,7 @@
   <PropertyGroup>
     <!-- Defaults to .Net 4.0 -->
     <TargetFrameworkVersion Condition="$(TargetFrameworkVersion) == '' Or $(TargetFrameworkVersion) == '*Undefined*'">v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     
     <OutputPath>$(SolutionDir)output\$(TargetFrameworkVersion.Replace(".",""))\$(Platform)\$(Configuration)\bin\</OutputPath>
     <BaseIntermediateOutputPath>$(SolutionDir)intermediate\$(TargetFrameworkVersion.Replace(".",""))\$(Platform)\$(Configuration)\$(AssemblyName)\</BaseIntermediateOutputPath>
