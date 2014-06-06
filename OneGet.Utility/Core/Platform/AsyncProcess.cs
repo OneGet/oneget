@@ -12,7 +12,7 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.OneGet.Core.Process {
+namespace Microsoft.OneGet.Core.Platform {
     using System;
     using System.Collections;
     using System.Collections.Concurrent;
@@ -22,7 +22,6 @@ namespace Microsoft.OneGet.Core.Process {
     using System.Linq;
     using System.Threading;
     using Extensions;
-    using Platform;
 
     /// <summary>
     /// This is a wrapper around the Process class to provide easy access to asynchronous

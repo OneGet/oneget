@@ -45,6 +45,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Providers\Package\IPackageProvider.cs" />
+    <Compile Include="Core\Providers\Package\ProviderBase.cs" />
+    <Compile Include="Core\Providers\Service\AggregateServicesProvider.cs" />
     <Compile Include="Core\Providers\Service\Instance.cs" />
     <Compile Include="Core\Providers\Protocol\Bootstrapper.cs" />
     <Compile Include="Core\Api\RequestAPIs.cs" />
@@ -61,6 +63,7 @@
     <Compile Include="Core\Packaging\Payload.cs" />
     <Compile Include="Core\Providers\Package\PackageProvider.cs" />
     <Compile Include="Core\Providers\Meta\MetaProvider.cs" />
+    <Compile Include="Core\Providers\Service\IServicesProvider.cs" />
     <Compile Include="Core\Providers\Service\ServiceProvider.cs" />
     <Compile Include="IPackageManagementService.cs" />
     <Compile Include="Messages.cs" />

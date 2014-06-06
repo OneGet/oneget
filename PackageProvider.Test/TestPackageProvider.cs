@@ -204,36 +204,6 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
         }
 
-        // --- Optimization features -----------------------------------------------------------------------------------------------------
-        public IEnumerable<string> GetMagicSignatures(Callback c){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
-
-            return  default(IEnumerable<string>);
-        }
-        public IEnumerable<string> GetSchemes(Callback c){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
-
-            return  default(IEnumerable<string>);
-        }
-        public IEnumerable<string> GetFileExtensions(Callback c){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
-
-            return  default(IEnumerable<string>);
-        }
-        public bool GetIsSourceRequired(){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
-
-            return  default(bool);
-        }
-
         // --- operations on a package ---------------------------------------------------------------------------------------------------
         public bool DownloadPackage(string fastPath, string location, Callback c){
              // TODO: Fill in implementation
@@ -291,6 +261,15 @@ namespace Microsoft.OneGet.PackageProvider.Test {
             return  default(bool);
         }
 
+                // --- Optimization features -----------------------------------------------------------------------------------------------------
+        public bool GetIsSourceRequired(){
+             // TODO: Fill in implementation
+             // Delete this method if you do not need to implement it
+             // Please don't throw an not implemented exception, it's not optimal.
+
+            return  default(bool);
+        }
+
         #endregion
 
     }
@@ -310,6 +289,11 @@ public enum OptionCategory {
         Switch = 3,
         Path = 4,
         Uri = 5
+    }
+
+    public enum EnvironmentContext {
+        User = 0,
+        System = 1
     }
 
     #endregion

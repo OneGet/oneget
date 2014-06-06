@@ -13,30 +13,53 @@
 //  
 
 namespace Microsoft.OneGet.Core.Api {
+    using System;
     using System.Collections.Generic;
     using Callback = System.Object;
 
-
     public interface IServicesApi {
-    #region declare service-apis
+        #region declare service-apis
 
-        string GetNuGetExePath(Callback c);
+        void DownloadFile(Uri remoteLocation, string localFilename, Callback c);
 
-        string GetNuGetDllPath(Callback c);
+        bool IsSupportedArchive(string localFilename, Callback c);
 
-        string DownloadFile(string remoteLocation, string localLocation, Callback c);
+        IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Callback c);
 
         void AddPinnedItemToTaskbar(string item, Callback c);
 
         void RemovePinnedItemFromTaskbar(string item, Callback c);
 
-        bool CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c);
+        void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c);
 
-        IEnumerable<string> UnzipFileIncremental(string zipFile, string folder, Callback c);
+        void SetEnvironmentVariable(string variable, string value, int context, Callback c);
 
-        IEnumerable<string> UnzipFile(string zipFile, string folder, Callback c);
+        void RemoveEnvironmentVariable(string variable, int context, Callback c);
 
-        void AddFileAssociation();
+        void CopyFile(string sourcePath, string destinationPath, Callback c);
+
+        void Delete(string path, Callback c);
+
+        void DeleteFolder(string folder, Callback c);
+
+        void CreateFolder(string folder, Callback c);
+
+        void DeleteFile(string filename, Callback c);
+
+        string GetKnownFolder(string knownFolder, Callback c);
+
+        bool IsElevated(Callback c);
+        #endregion
+
+#if NOT_ADDED_YET
+
+        
+        void UnzipFileIncremental(string zipFile, string folder, Callback c);
+
+        void UnzipFile(string zipFile, string folder, Callback c);
+
+
+          void AddFileAssociation();
 
         void RemoveFileAssociation();
 
@@ -44,11 +67,7 @@ namespace Microsoft.OneGet.Core.Api {
 
         void RemoveExplorerMenuItem();
 
-        bool SetEnvironmentVariable(string variable, string value, string context, Callback c);
-
-        bool RemoveEnvironmentVariable(string variable, string context, Callback c);
-
-        void AddFolderToPath();
+                void AddFolderToPath();
 
         void RemoveFolderFromPath();
 
@@ -67,37 +86,20 @@ namespace Microsoft.OneGet.Core.Api {
         void UninstallPowershellScript();
 
         void SearchForExecutable();
-
-        void GetUserBinFolder();
-
-        void GetSystemBinFolder();
-
-        bool CopyFile(string sourcePath, string destinationPath, Callback c);
-
-        void CopyFolder();
-
-        void Delete(string path, Callback c);
-
-        void DeleteFolder(string folder, Callback c);
-
-        void CreateFolder(string folder, Callback c);
-
-        void DeleteFile(string filename, Callback c);
+                void CopyFolder();
 
         void BeginTransaction();
 
         void AbortTransaction();
 
         void EndTransaction();
-
+        
         void GenerateUninstallScript();
 
-        string GetKnownFolder(string knownFolder, Callback c);
+             string GetNuGetExePath(Callback c);
 
-        bool IsElevated(Callback c);
+        string GetNuGetDllPath(Callback c);
 
-        object GetPackageManagementService(Callback c);
-
-        #endregion
+#endif
     }
 }

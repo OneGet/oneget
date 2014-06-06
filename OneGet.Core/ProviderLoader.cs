@@ -14,8 +14,10 @@
 
 namespace Microsoft.OneGet {
     using System;
+    using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
+    using System.Threading.Tasks;
     using Core.Dynamic;
     using Core.Extensions;
     using Core.Providers.Meta;
@@ -34,9 +36,11 @@ namespace Microsoft.OneGet {
             }
 
             foreach (var provider in dynInterface.FilterTypesCompatibleTo<IMetaProvider>(asm).Select( each => dynInterface.Create<IMetaProvider>(each) )) {
+                Debug.WriteLine(string.Format("START MetaProvider {0}", provider.GetMetaProviderName()));
                 try {
                     provider.InitializeProvider(DynamicInterface.Instance, callback);
-                    foreach (var name in provider.GetProviderNames()) {
+                    Parallel.ForEach(provider.GetProviderNames(), name => {
+                        // foreach (var name in provider.GetProviderNames()) {
                         var instance = provider.CreateProvider(name);
                         if (instance != null) {
                             // check if it's a Package Provider
@@ -49,7 +53,7 @@ namespace Microsoft.OneGet {
                                 } catch (Exception e) {
                                     e.Dump();
                                 }
-                                
+
                             }
 
                             // check if it's a Services Provider
@@ -62,14 +66,16 @@ namespace Microsoft.OneGet {
                                 } catch (Exception e) {
                                     e.Dump();
                                 }
-                                
+
                             }
                         }
-                    }
+                    });
                 } catch (Exception e) {
                     e.Dump();
                 }
+                Debug.WriteLine(string.Format("FINISH MetaProvider {0}",provider.GetMetaProviderName()));
             }
+            
 
             foreach (var provider in dynInterface.FilterTypesCompatibleTo<IPackageProvider>(asm).Select(each => dynInterface.Create<IPackageProvider>(each))) {
                 try {

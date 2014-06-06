@@ -29,17 +29,21 @@ namespace Microsoft.OneGet.Core.AppDomains {
 
         private Proxy<PluginAssemblyResolver> _proxyResolver;
         private PluginAssemblyResolver _resolver;
+        public static Dictionary<string,string> DynamicAssemblyPaths = new Dictionary<string, string>();
 
         public override object InitializeLifetimeService() {
             return null;
         }
 
         internal string ResolveFromThisDomain(string name) {
-            if (DynamicInterface.DynamicAssemblyPaths != null && DynamicInterface.DynamicAssemblyPaths.ContainsKey(name)) {
-                return DynamicInterface.DynamicAssemblyPaths[name];
+            if (DynamicAssemblyPaths != null && DynamicAssemblyPaths.ContainsKey(name)) {
+                return DynamicAssemblyPaths[name];
             }
             return AppDomain.CurrentDomain.GetAssemblies().Where( each => each.FullName == name ).Select( each => each.Location).FirstOrDefault();
-            
+        }
+
+        internal void AddDynamicClassAssembly(string fullName, string fullPath) {
+            DynamicAssemblyPaths.Add(fullName, fullPath);
         }
 
         internal PluginDomain(string name) :
@@ -59,10 +63,11 @@ namespace Microsoft.OneGet.Core.AppDomains {
 
             _appDomain = AppDomain.CreateDomain(_identity, null, appDomainSetup);
             
-            // _resolver = new PluginAssemblyResolver();
-            // _resolver.AddPath(appDomainSetup.ApplicationBase);
-            // _resolver.AddPath(appDomainSetup.PrivateBinPath);
-            // AppDomain.CurrentDomain.AssemblyResolve += _resolver.Resolve;
+            _resolver = new PluginAssemblyResolver();
+            _resolver.AddPath(appDomainSetup.ApplicationBase);
+            _resolver.AddPath(appDomainSetup.PrivateBinPath);
+            _resolver.SetAlternatePathResolver(ResolveFromThisDomain);
+            AppDomain.CurrentDomain.AssemblyResolve += _resolver.Resolve;
             
 
             _proxyResolver = new Proxy<PluginAssemblyResolver>(this);
@@ -89,6 +94,11 @@ namespace Microsoft.OneGet.Core.AppDomains {
             
             // Put a dynamic interface object into the target appdomain
             Invoke((o) => { AppDomain.CurrentDomain.SetData("DynamicInterface", new DynamicInterface()); }, "");
+
+            // Put a dynamic interface object into the target appdomain
+            //Invoke((t) => {
+                _appDomain.SetData("RegisterDynamicAssembly", new Action<string, string>((n, l) => this.AddDynamicClassAssembly(n, l)));
+            //}, this);
         }
 
         public void Dispose() {

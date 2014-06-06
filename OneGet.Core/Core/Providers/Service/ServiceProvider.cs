@@ -16,51 +16,80 @@ namespace Microsoft.OneGet.Core.Providers.Service {
     using System;
     using System.Collections.Generic;
     using Dynamic;
+    using Extensions;
     using Package;
     using Callback = System.Object;
 
-    public interface IServicesProvider : IProvider {
-        bool IsMethodImplemented(string method);
+    internal class ServicesProvider : ProviderBase<IServicesProvider> {
+        private string _name;
 
-        #region declare ServicesProvider-interface
-
-        /// <summary>
-        ///     Returns the name of the Provider. Doesn't need callback .
-        /// </summary>
-        /// <returns></returns>
-        [Required]
-        string GetServicesProviderName();
-
-        IEnumerable<string> SupportedDownloadSchemes(Callback c);
-        void DownloadFile(Uri remoteLocation, string localFilename, Callback c);
-
-        IEnumerable<string> SupportedArchiveExtensions(Callback c);
-        bool IsSupportedArchive(string localFilename, Callback c);
-
-        void UnpackArchive(string localFilename, string destinationFolder, Callback c);
-
-        #endregion
-    }
-
-    public class ServicesProvider : MarshalByRefObject {
-        private readonly IServicesProvider _provider;
-
-        internal ServicesProvider(IServicesProvider provider) {
-            _provider = provider;
+        internal ServicesProvider(IServicesProvider provider) : base(provider) {
         }
 
-        public string Name {
+        public override string Name {
             get {
-                return _provider.GetServicesProviderName();
+                return _name ?? (_name = Provider.GetServicesProviderName());
             }
         }
-
-        public bool IsMethodImplemented(string method) {
-            return _provider.IsMethodImplemented(method);
-        }
-        public override object InitializeLifetimeService() {
-            return null;
+        
+        public void DownloadFile(Uri remoteLocation, string localFilename, Callback c) {
+            Provider.DownloadFile(remoteLocation, localFilename, c.Extend<IRequest>(Context));
         }
 
+        public bool IsSupportedArchive(string localFilename, Callback c) {
+            return Provider.IsSupportedArchive(localFilename, c.Extend<IRequest>(Context));
+        }
+
+        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Callback c) {
+            return Provider.UnpackArchive(localFilename, destinationFolder, c.Extend<IRequest>(Context)).ByRefEnumerable();
+        }
+
+        public void AddPinnedItemToTaskbar(string item, Callback c) {
+            Provider.AddPinnedItemToTaskbar(item, c.Extend<IRequest>(Context));
+        }
+
+        public void RemovePinnedItemFromTaskbar(string item, Callback c) {
+            Provider.RemovePinnedItemFromTaskbar(item, c.Extend<IRequest>(Context));
+        }
+
+        public void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c) {
+            Provider.CreateShortcutLink(linkPath, targetPath, description, workingDirectory, arguments, c.Extend<IRequest>(Context));
+        }
+
+        public void SetEnvironmentVariable(string variable, string value, int context, Callback c) {
+            Provider.SetEnvironmentVariable(variable, value, context, c.Extend<IRequest>(Context));
+        }
+
+        public void RemoveEnvironmentVariable(string variable, int context, Callback c) {
+            Provider.RemoveEnvironmentVariable(variable, context, c.Extend<IRequest>(Context));
+        }
+
+        public void CopyFile(string sourcePath, string destinationPath, Callback c) {
+            Provider.CopyFile(sourcePath, destinationPath, c.Extend<IRequest>(Context));
+        }
+
+        public void Delete(string path, Callback c) {
+            Provider.Delete(path, c.Extend<IRequest>(Context));
+        }
+
+        public void DeleteFolder(string folder, Callback c) {
+            Provider.DeleteFolder(folder, c.Extend<IRequest>(Context));
+        }
+
+        public void CreateFolder(string folder, Callback c) {
+            Provider.CreateFolder(folder, c.Extend<IRequest>(Context));
+        }
+
+        public void DeleteFile(string filename, Callback c) {
+            Provider.DeleteFile(filename, c.Extend<IRequest>(Context));
+        }
+
+        public string GetKnownFolder(string knownFolder, Callback c) {
+            return Provider.GetKnownFolder(knownFolder, c.Extend<IRequest>(Context));
+        }
+
+        public bool IsElevated(Callback c) {
+            return Provider.IsElevated(c.Extend<IRequest>(Context));
+        }
     }
 }

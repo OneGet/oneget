@@ -21,33 +21,72 @@ namespace Microsoft.OneGet.Test {
     using System.Net;
     using System.Reflection;
     using Core.Dynamic;
+    // using MetaProvider.PowerShell;
+    using Core.Extensions;
+    using Core.Packaging;
+    using Core.Providers.Package;
+    using PowerShell.OneGet.CmdLets;
     using Xunit;
+    using PackageSource = Core.Packaging.PackageSource;
 
     public class PackageManagementServiceTest : MarshalByRefObject {
 
         public class Req {
+
+            public bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
+                return true;
+            }
+
+            public bool ShouldProcessPackageInstall(string packageName, string version, string source) {
+                return true;
+            }
+
+            public bool ShouldProcessPackageUninstall(string packageName, string version) {
+                return true;
+            }
+
+            public bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source) {
+                return true;
+            }
+
+            public bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source) {
+                return true;
+            }
+
+            public bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
+                return true;
+            }
+
+            public bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation) {
+                return true;
+            }
+
+            public bool AskPermission(string permission) {
+                return true;
+            }
+
             public bool Warning(string message) {
                 Console.WriteLine("WARNING: {0}", message);
                 return true;
             }
 
             public bool Error(string message) {
-                Console.WriteLine("ERROR: {0}", string.Format(message));
+                Console.WriteLine("ERROR: {0}", message);
                 return true;
             }
 
             public bool Message(string message) {
-                Console.WriteLine("MESSAGE: {0}", string.Format(message));
+                Console.WriteLine("MESSAGE: {0}", message);
                 return true;
             }
 
             public bool Verbose(string message) {
-                Console.WriteLine("VERBOSE: {0}", string.Format(message));
+                Console.WriteLine("VERBOSE: {0}", message);
                 return true;
             }
 
             public bool Debug(string message) {
-                Console.WriteLine("DEBUG: {0}", string.Format(message));
+                Console.WriteLine("DEBUG: {0}", message);
                 return true;
             }
 
@@ -87,7 +126,7 @@ namespace Microsoft.OneGet.Test {
             return null;
         }
 
-       
+       private static object _lock = new object();
 
         /// <summary>
         ///     The provider can query to see if the operation has been cancelled.
@@ -166,73 +205,150 @@ namespace Microsoft.OneGet.Test {
             
         }
 
-        [Fact]
-        public void Provider_AddPackageSource() {
-
+        private Req Request {
+            get {
+                return new Req();
+            }
         }
 
         [Fact]
-        public void Provider_RemovePackageSource() {
+        public void Provider_AddRemovePackageSource() {
+            lock (_lock) {
+                var sources = TestPSProvider.GetPackageSources(Request).ToArray();
+                Assert.Equal(3, sources.Count());
 
+                TestPSProvider.AddPackageSource("sampleName", "http://foo/bar/test", false, Request );
+
+                sources = TestPSProvider.GetPackageSources(Request).ToArray();
+
+                Assert.Equal(4,sources.Count());
+
+                TestPSProvider.RemovePackageSource("sampleName", Request);
+
+                sources = TestPSProvider.GetPackageSources(Request).ToArray();
+                Assert.Equal(3, sources.Count());
+
+
+                TestPSProvider.AddPackageSource("sampleName", "http://foo/bar/test", false, Request);
+
+                sources = TestPSProvider.GetPackageSources(Request).ToArray();
+                Assert.Equal(4, sources.Count());
+
+                TestPSProvider.RemovePackageSource("http://foo/bar/test", Request);
+                sources = TestPSProvider.GetPackageSources(Request).ToArray();
+                Assert.Equal(3, sources.Count());
+            }
         }
 
+      
         [Fact]
         public void Provider_FindPackageByUri() {
+            var pkgs = TestPSProvider.FindPackageByUri(new Uri("http://foo/bar/x.testpkg"),0, Request).ToArray();
+            Assert.Equal(1, pkgs.Length);
 
         }
 
         [Fact]
         public void Provider_FindPackageByFile() {
-
+            var pkgs = TestPSProvider.FindPackageByFile(@"c:\test\x.testpkg", 0, Request).ToArray();
+            Assert.Equal(1, pkgs.Length);
         }
 
-        [Fact]
-        public void Provider_StartFind() {
-
-        }
 
         [Fact]
-        public void Provider_CompleteFind() {
+        public void Provider_MultiFind() {
+            var id = TestPSProvider.StartFind(Request);
+            Assert.NotEqual(0,id);
+            var pkgs = TestPSProvider.FindPackage(@"first", null, null, null, id, Request).ToArray();
+            pkgs = pkgs.Concat(TestPSProvider.FindPackage(@"second", null, null, null, id, Request)).ToArray();
+            pkgs = pkgs.Concat(TestPSProvider.FindPackage(@"third", null, null, null, id, Request)).ToArray();
+            pkgs = pkgs.Concat(TestPSProvider.FindPackage(@"fourth", null, null, null, id, Request)).ToArray();
+            pkgs = pkgs.Concat(TestPSProvider.CompleteFind(id, Request)).ToArray();
+            Assert.Equal(4,pkgs.Length);
 
-        }
 
-        [Fact]
-        public void Provider_FindPackages() {
-
-        }
-
-        [Fact]
-        public void Provider_FindPackagesByUris() {
-
-        }
-
-        [Fact]
-        public void Provider_FindPackagesByFiles() {
+            id = TestPSProvider.StartFind(Request);
+            Assert.NotEqual(0, id);
+            pkgs = TestPSProvider.FindPackageByFile(@"c:\test\a.testpkg", id, Request).ToArray();
+            pkgs = pkgs.Concat(TestPSProvider.FindPackageByFile(@"c:\test\b.testpkg", id, Request)).ToArray();
+            pkgs = pkgs.Concat(TestPSProvider.FindPackageByFile(@"c:\test\c.testpkg", id, Request)).ToArray();
+            pkgs = pkgs.Concat(TestPSProvider.FindPackageByFile(@"c:\test\d.testpkg", id, Request)).ToArray();
+            pkgs = pkgs.Concat(TestPSProvider.CompleteFind(id, Request)).ToArray();
+            Assert.Equal(4, pkgs.Length);
 
         }
 
         [Fact]
         public void Provider_FindPackage() {
+            var pkgs = TestPSProvider.FindPackage(@"single", null, null, null, 0, Request).ToArray();
+            Assert.Equal(1, pkgs.Length);
 
+            pkgs = TestPSProvider.FindPackage(@"multiple",null,null,null, 0, Request).ToArray();
+            Assert.Equal(3, pkgs.Length);
         }
+
+        [Fact]
+        public void Provider_FindPackages() {
+            var pkgs = TestPSProvider.FindPackages(new string[] { @"multiple", @"single" }, null, null, null, Request).ToArray();
+            Assert.Equal(4, pkgs.Length);
+        }
+
+        [Fact]
+        public void Provider_FindPackagesByUris() {
+            var pkgs = TestPSProvider.FindPackagesByUris(new Uri[] { new Uri("http://foo/bar/a.testpkg"), new Uri("http://foo/bar/b.testpkg")}, Request).ToArray();
+            Assert.Equal(2, pkgs.Length);
+        }
+
+        [Fact]
+        public void Provider_FindPackagesByFiles() {
+            var pkgs = TestPSProvider.FindPackagesByFiles(new string[] { @"c:\test\a.testpkg", @"c:\test\b.testpkg"}, Request).ToArray();
+            Assert.Equal(2, pkgs.Length);
+        }
+
+      
 
         [Fact]
         public void Provider_GetInstalledPackages() {
-
+            lock (_lock) {
+                var pkgs = TestPSProvider.GetInstalledPackages(null, Request).ToArray();
+                Assert.Equal(3, pkgs.Length);
+            }
         }
 
         [Fact]
-        public void Provider_InstallPackage() {
+        public void Provider_InstallandUninstallPackage() {
+            lock (_lock) {
+                var pkgs = TestPSProvider.FindPackageByFile(@"c:\test\x.testpkg", 0, Request).ToArray();
+                Assert.Equal(1, pkgs.Length);
 
+                SoftwareIdentity installedPkg = null;
+
+                foreach (var pkg in pkgs) {
+                    pkgs = TestPSProvider.InstallPackage(pkg, Request).ToArray();
+                    Assert.Equal(1, pkgs.Length);
+                    installedPkg = pkgs.FirstOrDefault();
+                }
+
+                pkgs = TestPSProvider.GetInstalledPackages(null, Request).ToArray();
+                Assert.Equal(4, pkgs.Length);
+
+                pkgs = TestPSProvider.UninstallPackage(installedPkg, Request).ToArray();
+                Assert.Equal(1, pkgs.Length);
+
+                pkgs = TestPSProvider.GetInstalledPackages(null, Request).ToArray();
+                Assert.Equal(3, pkgs.Length);
+            }
         }
 
         [Fact]
-        public void Provider_UninstallPackage() {
+        public void Provider_GetDynamicOptions() {
+            var options = TestPSProvider.GetDynamicOptions(OptionCategory.Package, Request).ToArray();
+            
+            foreach (var option in options) {
+                Console.WriteLine("Option: {0} {1} {2} {3} {4}", option.Name, option.Category, option.Type, option.IsRequired, option.PossibleValues.JoinWithComma());
+            }
 
-        }
-
-        [Fact]
-        public void Provider_GetOptionDefinitons() {
+            Assert.Equal(3, options.Length );
 
         }
 
@@ -248,42 +364,43 @@ namespace Microsoft.OneGet.Test {
 
         [Fact]
         public void Provider_GetPackageSources() {
+            lock (_lock) {
+                var sources = TestPSProvider.GetPackageSources(new Req()).ToArray();
+                DumpSources(sources);
 
-            var sources = TestPSProvider.GetPackageSources(new Req()).ToArray();
-            foreach (var i in sources) {
-                Console.WriteLine("Source: {0} -- {1} -- {2}", i.Name, i.Location , i.IsTrusted);
+                Assert.Equal(3, sources.Length);
+
+                sources = TestPSProvider.GetPackageSources(DynamicInterfaceExtensions.Extend<IRequest>(new Req(), new {
+                    GetSpecifiedPackageSources = new Func<IEnumerable<string>>(() => {
+                        return new string[] {
+                            "source1"
+                        };
+                    })
+                })).ToArray();
+
+                Assert.Equal(1, sources.Length);
+
+                DumpSources(sources);
+
+                sources = TestPSProvider.GetPackageSources(DynamicInterfaceExtensions.Extend<IRequest>(new Req(), new {
+                    GetSpecifiedPackageSources = new Func<IEnumerable<string>>(() => {
+                        return new string[] {
+                            "http://foo/bar", "http://test/test"
+                        };
+                    })
+                })).ToArray();
+
+                Assert.Equal(1, sources.Length);
+
+                DumpSources(sources);
+
             }
+        }
 
-            Assert.Equal(3, sources.Length);
-
-            sources = TestPSProvider.GetPackageSources(new Req().Extend<IRequest>( new {
-                GetSpecifiedPackageSources = new Func<IEnumerable<string>>(() => {
-                    return new string[] {
-                        "source1"
-                    };
-                })
-            })).ToArray();
-
-            Assert.Equal(1, sources.Length);
-
+        private static void DumpSources(PackageSource[] sources) {
             foreach (var i in sources) {
                 Console.WriteLine("Source: {0} -- {1} -- {2}", i.Name, i.Location, i.IsTrusted);
             }
-
-            sources = TestPSProvider.GetPackageSources(new Req().Extend<IRequest>(new {
-                GetSpecifiedPackageSources = new Func<IEnumerable<string>>(() => {
-                    return new string[] {
-                        "http://foo/bar", "http://test/test"
-                    };
-                })
-            })).ToArray();
-
-            Assert.Equal(1, sources.Length);
-
-            foreach (var i in sources) {
-                Console.WriteLine("Source: {0} -- {1} -- {2}", i.Name, i.Location, i.IsTrusted);
-            }
-
         }
     }
 }

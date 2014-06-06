@@ -505,127 +505,127 @@ namespace Microsoft.OneGet.Core.AppDomains {
              try {
                 return ((WrappedFunc<T0, TRet>)new Proxy<WrappedFunc<T0, TRet>>(this, action)).Invoke(tVal0);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1, TRet>(Func<T0 ,T1, TRet> action, T0 tVal0 ,T1 tVal1) {
+        public TRet InvokeFunc<T0 ,T1, TRet>(Func<T0, T1, TRet> action, T0 tVal0 ,T1 tVal1) {
              try {
-                return ((WrappedFunc<T0 ,T1, TRet>)new Proxy<WrappedFunc<T0 ,T1, TRet>>(this, action)).Invoke(tVal0 ,tVal1);
+                return ((WrappedFunc<T0, T1, TRet>)new Proxy<WrappedFunc<T0, T1, TRet>>(this, action)).Invoke(tVal0 ,tVal1);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2, TRet>(Func<T0 ,T1 ,T2, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2) {
+        public TRet InvokeFunc<T0 ,T1 ,T2, TRet>(Func<T0, T1, T2, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2);
+                return ((WrappedFunc<T0, T1, T2, TRet>)new Proxy<WrappedFunc<T0, T1, T2, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3, TRet>(Func<T0 ,T1 ,T2 ,T3, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3, TRet>(Func<T0, T1, T2, T3, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3);
+                return ((WrappedFunc<T0, T1, T2, T3, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4, TRet>(Func<T0 ,T1 ,T2 ,T3 ,T4, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4, TRet>(Func<T0, T1, T2, T3, T4, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4);
+                return ((WrappedFunc<T0, T1, T2, T3, T4, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, T4, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5, TRet>(Func<T0 ,T1 ,T2 ,T3 ,T4 ,T5, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5, TRet>(Func<T0, T1, T2, T3, T4, T5, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5);
+                return ((WrappedFunc<T0, T1, T2, T3, T4, T5, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, T4, T5, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6, TRet>(Func<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6, TRet>(Func<T0, T1, T2, T3, T4, T5, T6, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6);
+                return ((WrappedFunc<T0, T1, T2, T3, T4, T5, T6, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, T4, T5, T6, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7, TRet>(Func<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7, TRet>(Func<T0, T1, T2, T3, T4, T5, T6, T7, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7);
+                return ((WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8, TRet>(Func<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8, TRet>(Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8);
+                return ((WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9, TRet>(Func<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9, TRet>(Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9);
+                return ((WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10, TRet>(Func<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9 ,T10 tVal10) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10, TRet>(Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9 ,T10 tVal10) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9 ,tVal10);
+                return ((WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9 ,tVal10);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11, TRet>(Func<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9 ,T10 tVal10 ,T11 tVal11) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11, TRet>(Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9 ,T10 tVal10 ,T11 tVal11) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9 ,tVal10 ,tVal11);
+                return ((WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9 ,tVal10 ,tVal11);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12, TRet>(Func<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9 ,T10 tVal10 ,T11 tVal11 ,T12 tVal12) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12, TRet>(Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9 ,T10 tVal10 ,T11 tVal11 ,T12 tVal12) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9 ,tVal10 ,tVal11 ,tVal12);
+                return ((WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9 ,tVal10 ,tVal11 ,tVal12);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13, TRet>(Func<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9 ,T10 tVal10 ,T11 tVal11 ,T12 tVal12 ,T13 tVal13) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13, TRet>(Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9 ,T10 tVal10 ,T11 tVal11 ,T12 tVal12 ,T13 tVal13) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9 ,tVal10 ,tVal11 ,tVal12 ,tVal13);
+                return ((WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9 ,tVal10 ,tVal11 ,tVal12 ,tVal13);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13 ,T14, TRet>(Func<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13 ,T14, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9 ,T10 tVal10 ,T11 tVal11 ,T12 tVal12 ,T13 tVal13 ,T14 tVal14) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13 ,T14, TRet>(Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9 ,T10 tVal10 ,T11 tVal11 ,T12 tVal12 ,T13 tVal13 ,T14 tVal14) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13 ,T14, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13 ,T14, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9 ,tVal10 ,tVal11 ,tVal12 ,tVal13 ,tVal14);
+                return ((WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9 ,tVal10 ,tVal11 ,tVal12 ,tVal13 ,tVal14);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }
-        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13 ,T14 ,T15, TRet>(Func<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13 ,T14 ,T15, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9 ,T10 tVal10 ,T11 tVal11 ,T12 tVal12 ,T13 tVal13 ,T14 tVal14 ,T15 tVal15) {
+        public TRet InvokeFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13 ,T14 ,T15, TRet>(Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TRet> action, T0 tVal0 ,T1 tVal1 ,T2 tVal2 ,T3 tVal3 ,T4 tVal4 ,T5 tVal5 ,T6 tVal6 ,T7 tVal7 ,T8 tVal8 ,T9 tVal9 ,T10 tVal10 ,T11 tVal11 ,T12 tVal12 ,T13 tVal13 ,T14 tVal14 ,T15 tVal15) {
              try {
-                return ((WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13 ,T14 ,T15, TRet>)new Proxy<WrappedFunc<T0 ,T1 ,T2 ,T3 ,T4 ,T5 ,T6 ,T7 ,T8 ,T9 ,T10 ,T11 ,T12 ,T13 ,T14 ,T15, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9 ,tVal10 ,tVal11 ,tVal12 ,tVal13 ,tVal14 ,tVal15);
+                return ((WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TRet>)new Proxy<WrappedFunc<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TRet>>(this, action)).Invoke(tVal0 ,tVal1 ,tVal2 ,tVal3 ,tVal4 ,tVal5 ,tVal6 ,tVal7 ,tVal8 ,tVal9 ,tVal10 ,tVal11 ,tVal12 ,tVal13 ,tVal14 ,tVal15);
             } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
             }
             // return default(TRet);
         }

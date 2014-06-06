@@ -124,6 +124,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 // make sure we don't pass the callback to the function.
                 var result = _powershell.NewTryInvokeMemberEx(request.CommandInfo.Name, new string[0], args);
 
+               
+
                 // instead, loop thru results and get 
                 if (result == null) {
                     // failure! 
@@ -133,13 +135,30 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 object finalValue = null;
 
                 foreach (var value in result) {
+
+                    if (result.IsFailing) {
+                        foreach (var error in result.Errors) {
+                            request.Debug("POWERSHELL ERROR in '{0}' in module '{1}' :\r\n{2} {3}", request.CommandInfo.Name , _module.Name, error.CategoryInfo.Category, error.Exception.Message );
+                            return null;
+                        }
+                    }
+
                     var y = value as Yieldable;
                     if (y != null) {
                         y.YieldResult(request);
                     } else {
-                        finalValue = result;
+                        finalValue = value;
                     }
                 }
+
+
+                if (result.IsFailing) {
+                    foreach (var error in result.Errors) {
+                        request.Debug("POWERSHELL ERROR in '{0}' in module '{1}' :\r\n{2} {3}", request.CommandInfo.Name, _module.Name, error.CategoryInfo.Category, error.Exception.Message);
+                        return null;
+                    }
+                }
+
                 return finalValue;
             } catch (Exception e) {
                 e.Dump();

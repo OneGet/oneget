@@ -80,12 +80,17 @@ namespace Microsoft.OneGet.Core.Dynamic {
 
         internal Type Type {
             get {
-                lock (DynamicInterface.DynamicAssemblyPaths) {
+                lock (PluginDomain.DynamicAssemblyPaths) {
                     try {
                         if (_type == null) {
                             _type = _dynamicType.CreateType();
                             _dynamicAssembly.Save(_filename);
-                            DynamicInterface.DynamicAssemblyPaths.Add(_dynamicAssembly.FullName, _fullpath);
+                            var registerDynamicAssembly = AppDomain.CurrentDomain.GetData("RegisterDynamicAssembly") as Action<string, string>;
+                            if (registerDynamicAssembly != null) {
+                                registerDynamicAssembly(_dynamicAssembly.FullName, _fullpath);
+                            } else {
+                                PluginDomain.DynamicAssemblyPaths.Add(_dynamicAssembly.FullName, _fullpath);
+                            }
                         }
                         return _type;
                     } catch (Exception e) {

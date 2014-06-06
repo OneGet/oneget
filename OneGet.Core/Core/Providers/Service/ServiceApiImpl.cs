@@ -52,7 +52,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
 
         #region implement service-apis
 [Implementation]
-        public string DownloadFile(string remoteLocation, string localLocation, Callback c) {
+        public string DownloadFile(Uri remoteLocation, string localFilename, Callback c) {
             if (localLocation == null) {
                 localLocation = Path.Combine(FilesystemExtensions.TempPath, "file.bin");
             }
@@ -202,7 +202,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         }
 
                 [Implementation]
-        public bool SetEnvironmentVariable(string variable, string value, string context, Callback c) {
+        public bool SetEnvironmentVariable(string variable, string value, int context, Callback c) {
             if (string.IsNullOrEmpty(value)) {
                 return RemoveEnvironmentVariable(variable, context, c);
             }
@@ -226,7 +226,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         }
 
                 [Implementation]
-        public bool RemoveEnvironmentVariable(string variable, string context, Callback c) {
+        public bool RemoveEnvironmentVariable(string variable, int context, Callback c) {
             context = context ?? string.Empty;
             if (string.IsNullOrEmpty(variable)) {
                 return false;
@@ -428,6 +428,13 @@ namespace Microsoft.OneGet.Core.Providers.Service {
                     return null;
                 }
 
+                [Implementation]
+        public bool IsSupportedArchive(string localFilename, Callback c){
+         // TODO: Fill in implementation
+        }        [Implementation]
+        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Callback c){
+         // TODO: Fill in implementation
+        }
         #endregion
 
         internal Callback Invoke {

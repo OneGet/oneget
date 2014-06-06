@@ -47,7 +47,6 @@
     <Compile Include="Core\DynamicPowershell.cs" />
     <Compile Include="Core\DynamicPowershellCommand.cs" />
     <Compile Include="Core\DynamicPowershellResult.cs" />
-    <Compile Include="Core\DynamicPSHost.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

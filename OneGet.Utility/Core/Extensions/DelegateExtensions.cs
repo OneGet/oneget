@@ -18,6 +18,7 @@ namespace Microsoft.OneGet.Core.Extensions {
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
+    using Dynamic;
 
     internal static class DelegateExtensions {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "shhh.")]
@@ -73,7 +74,7 @@ namespace Microsoft.OneGet.Core.Extensions {
             }
 
             // are the return types the same?
-            if (methodInfo.ReturnType != delegateType.GetDelegateReturnType()) {
+            if (methodInfo.ReturnType != delegateType.GetDelegateReturnType() && !methodInfo.ReturnType.IsAssignableFrom(delegateType.GetDelegateReturnType())) {
                 return false;
             }
 
@@ -106,30 +107,33 @@ namespace Microsoft.OneGet.Core.Extensions {
                     return false;
             }
 #else
-            if (!methodInfo.GetParameterTypes().SequenceEqual(delegateType.GetDelegateParameterTypes())) {
+
+
+            if (!delegateType.GetDelegateParameterTypes().SequenceEqual(methodInfo.GetParameterTypes(), AssignableTypeComparer.Instance)) {
                 return false;
             }
 #endif
+
             return true;
         }
 
-        internal static bool IsDelegateAssignableFromDelegate(this Type delegateType, Type delegateType2) {
-            if (delegateType == null || delegateType2 == null) {
+        internal static bool IsDelegateAssignableFromDelegate(this Type delegateType, Type candidateDelegateType) {
+            if (delegateType == null || candidateDelegateType == null) {
                 return false;
             }
 
             // ensure both are actually delegates
-            if (delegateType.BaseType != typeof (MulticastDelegate) || delegateType2.BaseType != typeof (MulticastDelegate)) {
+            if (delegateType.BaseType != typeof (MulticastDelegate) || candidateDelegateType.BaseType != typeof (MulticastDelegate)) {
                 return false;
             }
 
             // are the return types the same?
-            if (delegateType2.GetDelegateReturnType() != delegateType.GetDelegateReturnType()) {
+            if (candidateDelegateType.GetDelegateReturnType() != delegateType.GetDelegateReturnType() && !delegateType.GetDelegateReturnType().IsAssignableFrom(candidateDelegateType.GetDelegateReturnType())) {
                 return false;
             }
 
             // are all the parameters the same types?
-            if (!delegateType2.GetDelegateParameterTypes().SequenceEqual(delegateType.GetDelegateParameterTypes())) {
+            if (!delegateType.GetDelegateParameterTypes().SequenceEqual(candidateDelegateType.GetDelegateParameterTypes(),AssignableTypeComparer.Instance)) {
                 return false;
             }
             return true;

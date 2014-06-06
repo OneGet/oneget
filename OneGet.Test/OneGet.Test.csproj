@@ -48,6 +48,7 @@
     <Compile Include="DynamicInterfaceTest.cs" />
     <Compile Include="DynamicTest.cs" />
     <Compile Include="HostTest.cs" />
+    <Compile Include="MiscTests.cs" />
     <Compile Include="SimpleTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

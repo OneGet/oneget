@@ -17,7 +17,7 @@ namespace Microsoft.OneGet.Core.Collections {
     using System.Collections.Generic;
     using System.Threading;
 
-    public class CancellableEnumerable<T> : ByRefEnumerable<T>, IDisposable, ICancellable {
+    public class CancellableEnumerable<T> : ByRefEnumerable<T>, ICancellableEnumerable<T> {
         protected CancellationTokenSource _cancellationTokenSource;
 
         public CancellableEnumerable(CancellationTokenSource cts, IEnumerable<T> enumerable) : base(enumerable) {

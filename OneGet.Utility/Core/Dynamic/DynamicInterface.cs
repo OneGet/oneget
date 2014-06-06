@@ -26,18 +26,22 @@ namespace Microsoft.OneGet.Core.Dynamic {
 
     public class DynamicInterface {
         public static readonly DynamicInterface Instance = new DynamicInterface();
-        public static Dictionary<string,string> DynamicAssemblyPaths = new Dictionary<string, string>();
+        
 
         private static readonly Dictionary<Types, bool> _isCompatibleCache = new Dictionary<Types, bool>();
         private static readonly Dictionary<string, ProxyClass> _proxyClassDefinitions = new Dictionary<string, ProxyClass>();
 
         public TInterface Create<TInterface>(params Type[] types) {
-            if (!typeof (TInterface).GetVirtualMethods().Any()) {
-                throw new Exception("Interface Type '{0}' doesn not have any virtual or abstract methods".format(typeof (TInterface).FullNiceName()));
+            return (TInterface)Create(typeof (TInterface), types);
+        }
+
+        public object Create(Type tInterface, params Type[] types) {
+            if (!tInterface.GetVirtualMethods().Any()) {
+                throw new Exception("Interface Type '{0}' doesn not have any virtual or abstract methods".format(tInterface.FullNiceName()));
             }
 
-            if (!IsTypeCompatible<TInterface>(types)) {
-                var missing = GetMissingMethods<TInterface>(types).ToArray();
+            if (!IsTypeCompatible(tInterface,types)) {
+                var missing = GetMissingMethods(tInterface,types).ToArray();
                 var badctors = FilterOnMissingDefaultConstructors(types).ToArray();
 
                 var msg = badctors.Length == 0 ? ""
@@ -46,18 +50,22 @@ namespace Microsoft.OneGet.Core.Dynamic {
                 msg += missing.Length == 0 ? "" :
                     "\r\nTypes ({0}) are missing the following methods from interface ('{1}'):\r\n  {2}".format(
                         types.Select(each => each.FullName).Quote().JoinWithComma(),
-                        typeof (TInterface).FullNiceName(),
+                        tInterface.FullNiceName(),
                         missing.Select(each => each.ToSignatureString()).Quote().JoinWith("\r\n  "));
 
                 throw new Exception(msg);
             }
 
             // create actual instance 
-            return CreateProxy<TInterface>(types.Select(Activator.CreateInstance).ToArray());
+            return CreateProxy(tInterface,types.Select(Activator.CreateInstance).ToArray());
+        }
+
+        public object Create(Type tInterface, params string[] typeNames) {
+            return Create(tInterface, (Type[])typeNames.Select(Type.GetType));
         }
 
         public TInterface Create<TInterface>(params string[] typeNames) {
-            return Create<TInterface>((Type[])typeNames.Select(Type.GetType));
+            return (TInterface)Create(typeof (TInterface), typeNames);
         }
 
 
@@ -83,12 +91,16 @@ namespace Microsoft.OneGet.Core.Dynamic {
         }
 
         public TInterface Create<TInterface>(params object[] instances) {
+            return (TInterface)Create(typeof (TInterface), instances);
+        }
+
+        public object Create(Type tInterface, params object[] instances) {
             if (instances.Length == 0) {
                 throw new ArgumentException("No instances given", "instances");
             }
 
-            if (!typeof(TInterface).GetVirtualMethods().Any()) {
-                throw new Exception("Interface Type '{0}' doesn not have any virtual or abstract methods".format(typeof(TInterface).FullNiceName()));
+            if (!tInterface.GetVirtualMethods().Any()) {
+                throw new Exception("Interface Type '{0}' doesn not have any virtual or abstract methods".format(tInterface.FullNiceName()));
             }
             instances = Flatten(instances).ToArray();
 
@@ -98,26 +110,26 @@ namespace Microsoft.OneGet.Core.Dynamic {
 
 
             // shortcut if the interface is already implemented in the object.
-            if (instances.Length == 1 && instances[0] is TInterface) {
-                return (TInterface)instances[0] ;
+            if (instances.Length == 1 && tInterface.IsInstanceOfType(instances[0])) {
+                return instances[0] ;
             }
 
-            if (!IsInstanceCompatible<TInterface>(instances)) {
-                var missing = GetMethodsMissingFromInstances<TInterface>(instances);
+            if (!IsInstanceCompatible(tInterface,instances)) {
+                var missing = GetMethodsMissingFromInstances(tInterface,instances);
                 var msg = "\r\nObjects are missing the following methods from interface ('{0}'):\r\n  {1}".format(
-                    typeof (TInterface).FullNiceName(),
+                    tInterface.FullNiceName(),
                     missing.Select(each => each.ToSignatureString()).Quote().JoinWith("\r\n  "));
 
                 throw new Exception(msg);
             }
 
-            return CreateProxy<TInterface>(instances);
+            return CreateProxy(tInterface, instances);
         }
 
-        public bool IsTypeCompatible<TInterface>(params Type[] types) {
-            return _isCompatibleCache.GetOrAdd(new Types(typeof (TInterface), types), () => {
+        public bool IsTypeCompatible(Type tInterface, params Type[] types) {
+            return _isCompatibleCache.GetOrAdd(new Types(tInterface, types), () => {
 #if DEEPDEBUG
-                Debug.WriteLine(String.Format("IsTypeCompatible {0}",typeof(TInterface).Name));
+                Debug.WriteLine(String.Format("IsTypeCompatible {0} for {1}",typeof(TInterface).Name , types[0].Name));
 
                 foreach (var s in types.Where(each => each.GetDefaultConstructor() == null).Select(each => string.Format("{0} has no default constructor", each.Name))) {
                     Debug.WriteLine(s);
@@ -140,20 +152,32 @@ namespace Microsoft.OneGet.Core.Dynamic {
                 }
 #endif
                 // verify that required methods are present.
-                return !GetMissingMethods<TInterface>(types).Any();
-            });
+                return !GetMissingMethods(tInterface,types).Any();
+            }); 
+        }
+
+        public bool IsTypeCompatible<TInterface>(params Type[] types) {
+            return IsTypeCompatible(typeof(TInterface), types);
         }
 
         private IEnumerable<Type> FilterOnMissingDefaultConstructors(params Type[] types) {
             return types.Where(actualType => actualType.GetDefaultConstructor() == null);
         }
 
-        private IEnumerable<MethodInfo> GetMissingMethods<TInterface>(params Type[] types) {
+        private IEnumerable<MethodInfo> GetMissingMethods(Type tInterface, params Type[] types) {
             var publicMethods = types.GetPublicMethods();
-            return typeof (TInterface).GetRequiredMethods().Where(method => publicMethods.FindMethod(method) == null);
+            return tInterface.GetRequiredMethods().Where(method => publicMethods.FindMethod(method) == null);
+        }
+
+        private IEnumerable<MethodInfo> GetMissingMethods<TInterface>(params Type[] types) {
+            return GetMissingMethods(typeof (TInterface), types);
         }
 
         public bool IsInstanceCompatible<TInterface>(params object[] instances) {
+            return IsInstanceCompatible(typeof (TInterface), instances);
+        }
+
+        public bool IsInstanceCompatible(Type tInterface, params object[] instances) {
             if (instances.Length == 0) {
                 throw new ArgumentException("No instances given", "instances");
             }
@@ -163,7 +187,7 @@ namespace Microsoft.OneGet.Core.Dynamic {
             }
 
             // this will be faster if this type has been checked before.
-            if (IsTypeCompatible<TInterface>(instances.Select(each => each.GetType()).ToArray())) {
+            if (IsTypeCompatible(tInterface, instances.Select(each => each.GetType()).ToArray())) {
                 return true;
             }
 
@@ -179,11 +203,15 @@ namespace Microsoft.OneGet.Core.Dynamic {
 #endif 
 
             // see if any specified object has something for every required method.
-            return !instances.Aggregate((IEnumerable<MethodInfo>)typeof (TInterface).GetRequiredMethods(), GetMethodsMissingFromInstance).Any();
+            return !instances.Aggregate((IEnumerable<MethodInfo>)tInterface.GetRequiredMethods(), GetMethodsMissingFromInstance).Any();
         }
 
         private IEnumerable<MethodInfo> GetMethodsMissingFromInstances<TInterface>(params object[] instances) {
-            return instances.Aggregate((IEnumerable<MethodInfo>)typeof (TInterface).GetRequiredMethods(), GetMethodsMissingFromInstance);
+            return GetMethodsMissingFromInstances(typeof (TInterface), instances);
+        }
+
+        private IEnumerable<MethodInfo> GetMethodsMissingFromInstances(Type tInterface, params object[] instances) {
+            return instances.Aggregate((IEnumerable<MethodInfo>)tInterface.GetRequiredMethods(), GetMethodsMissingFromInstance);
         }
 
         private IEnumerable<MethodInfo> GetMethodsMissingFromInstance(IEnumerable<MethodInfo> methods, object instance) {
@@ -206,6 +234,10 @@ namespace Microsoft.OneGet.Core.Dynamic {
         }
 
         private TInterface CreateProxy<TInterface>(params object[] instances) {
+            return (TInterface)CreateProxy(typeof (TInterface), instances);
+        }
+
+        private object CreateProxy(Type tInterface, params object[] instances) {
             var matrix = instances.Select(instance => new {
                 instance,
                 SupportsMethod = DynamicInterfaceExtensions.GenerateInstanceSupportsMethod(instance),
@@ -220,7 +252,7 @@ namespace Microsoft.OneGet.Core.Dynamic {
             var stubMethods = new List<MethodInfo>();
             var usedInstances = new List<object>();
 
-            foreach (var method in typeof (TInterface).GetVirtualMethods()) {
+            foreach (var method in tInterface.GetVirtualMethods()) {
                 // figure out where it's going to get implemented
                 var found = false;
                 foreach (var instance in matrix) {
@@ -249,7 +281,7 @@ namespace Microsoft.OneGet.Core.Dynamic {
                         }
                     }
                 }
-                if (!found && (typeof(TInterface).IsInterface || method.IsAbstract)) {
+                if (!found && (tInterface.IsInterface || method.IsAbstract)) {
 #if DEEPDEBUG
                     Debug.WriteLine(" Generating stub method for {0} -> {1}".format(typeof (TInterface).NiceName(), method.ToSignatureString()));
 #endif 
@@ -262,9 +294,9 @@ namespace Microsoft.OneGet.Core.Dynamic {
                       "::" + delegateMethods.Select(each => each.GetType().FullName).JoinWith(";\r\n") +
                       "::" + stubMethods.Select(mi => mi.ToSignatureString()).JoinWithComma();
 
-            var proxyClass = _proxyClassDefinitions.GetOrAdd(key, () => new ProxyClass(typeof (TInterface), instanceMethods, delegateMethods, stubMethods));
+            var proxyClass = _proxyClassDefinitions.GetOrAdd(key, () => new ProxyClass(tInterface, instanceMethods, delegateMethods, stubMethods));
 
-            return (TInterface)proxyClass.CreateInstance(usedInstances, delegateMethods);
+            return proxyClass.CreateInstance(usedInstances, delegateMethods);
         }
 
         public IEnumerable<Type> FilterTypesCompatibleTo<TInterface>(IEnumerable<Type> types) {

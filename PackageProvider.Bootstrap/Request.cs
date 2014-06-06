@@ -15,6 +15,7 @@
 namespace OneGet.PackageProvider.Bootstrap {
     using System;
     using System.Collections.Generic;
+    using System.Security;
     using Callback = System.Object;
 
     public abstract class Request : IDisposable {
@@ -48,21 +49,25 @@ namespace OneGet.PackageProvider.Bootstrap {
         /// </summary>
         /// <returns>returns TRUE if the operation has been cancelled.</returns>
         public abstract bool IsCancelled();
+
+        public abstract object GetPackageManagementService(Callback c);
         #endregion
 
         #region copy host-apis
-
-        public abstract object GetPackageManagementService();
 
         /// <summary>
         ///     Used by a provider to request what metadata keys were passed from the user
         /// </summary>
         /// <returns></returns>
-        public abstract IEnumerable<string> GetOptionKeys(string category);
+        public abstract IEnumerable<string> GetOptionKeys(int category);
 
-        public abstract IEnumerable<string> GetOptionValues(string category, string key);
+        public abstract IEnumerable<string> GetOptionValues(int category, string key);
 
         public abstract IEnumerable<string> GetSpecifiedPackageSources();
+
+        public abstract string GetCredentialUsername();
+
+        public abstract SecureString GetCredentialPassword();
 
         public abstract bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
@@ -81,65 +86,31 @@ namespace OneGet.PackageProvider.Bootstrap {
         public abstract bool AskPermission(string permission);
 
         public abstract bool WhatIf();
+
+        public abstract bool PackageInstalled(string packageName, string version, string source, string destination);
+
+        public abstract bool BeforePackageUninstall(string packageName, string version, string source, string destination);
         #endregion
 
         #region copy service-apis
 
-        public abstract string GetNuGetExePath(Callback c);
+        public abstract void DownloadFile(Uri remoteLocation, string localFilename, Callback c);
 
-        public abstract string GetNuGetDllPath(Callback c);
+        public abstract bool IsSupportedArchive(string localFilename, Callback c);
 
-        public abstract string DownloadFile(string remoteLocation, string localLocation, Callback c);
+        public abstract IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Callback c);
 
         public abstract void AddPinnedItemToTaskbar(string item, Callback c);
 
         public abstract void RemovePinnedItemFromTaskbar(string item, Callback c);
 
-        public abstract bool CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c);
+        public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c);
 
-        public abstract IEnumerable<string> UnzipFileIncremental(string zipFile, string folder, Callback c);
+        public abstract void SetEnvironmentVariable(string variable, string value, int context, Callback c);
 
-        public abstract IEnumerable<string> UnzipFile(string zipFile, string folder, Callback c);
+        public abstract void RemoveEnvironmentVariable(string variable, int context, Callback c);
 
-        public abstract void AddFileAssociation();
-
-        public abstract void RemoveFileAssociation();
-
-        public abstract void AddExplorerMenuItem();
-
-        public abstract void RemoveExplorerMenuItem();
-
-        public abstract bool SetEnvironmentVariable(string variable, string value, string context, Callback c);
-
-        public abstract bool RemoveEnvironmentVariable(string variable, string context, Callback c);
-
-        public abstract void AddFolderToPath();
-
-        public abstract void RemoveFolderFromPath();
-
-        public abstract void InstallMSI();
-
-        public abstract void RemoveMSI();
-
-        public abstract void StartProcess();
-
-        public abstract void InstallVSIX();
-
-        public abstract void UninstallVSIX();
-
-        public abstract void InstallPowershellScript();
-
-        public abstract void UninstallPowershellScript();
-
-        public abstract void SearchForExecutable();
-
-        public abstract void GetUserBinFolder();
-
-        public abstract void GetSystemBinFolder();
-
-        public abstract bool CopyFile(string sourcePath, string destinationPath, Callback c);
-
-        public abstract void CopyFolder();
+        public abstract void CopyFile(string sourcePath, string destinationPath, Callback c);
 
         public abstract void Delete(string path, Callback c);
 
@@ -149,19 +120,9 @@ namespace OneGet.PackageProvider.Bootstrap {
 
         public abstract void DeleteFile(string filename, Callback c);
 
-        public abstract void BeginTransaction();
-
-        public abstract void AbortTransaction();
-
-        public abstract void EndTransaction();
-
-        public abstract void GenerateUninstallScript();
-
         public abstract string GetKnownFolder(string knownFolder, Callback c);
 
         public abstract bool IsElevated(Callback c);
-
-        public abstract object GetPackageManagementService(Callback c);
         #endregion
 
         #region copy request-apis

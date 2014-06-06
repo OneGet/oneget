@@ -20,7 +20,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
     using Callback = System.Object;
 
     public interface IProvider {
-        
+        #region declare Provider-interface
         /// <summary>
         ///     Allows the Provider to do one-time initialization.
         ///     This is called after the Provider is instantiated .
@@ -32,10 +32,31 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         [Required]
         void InitializeProvider(object dynamicInterface, Callback c);
 
+        /// <summary>
+        /// Gets the features advertized from the provider
+        /// </summary>
+        /// <param name="c"></param>
+        void GetFeatures(Callback c);
+
+        /// <summary>
+        /// Gets dynamically defined options from the provider
+        /// </summary>
+        /// <param name="category"></param>
+        /// <param name="c"></param>
+        void GetDynamicOptions(int category, Callback c);
+
+        /// <summary>
+        /// Allows runtime examination of the implementing class to check if a given method is implemented.
+        /// </summary>
+        /// <param name="methodName"></param>
+        /// <returns></returns>
+        bool IsMethodImplemented(string methodName);
+        #endregion
+
     }
 
     public interface IPackageProvider : IProvider {
-        bool IsMethodImplemented(string methodName);
+        
 
         #region declare PackageProvider-interface
 
@@ -45,19 +66,6 @@ namespace Microsoft.OneGet.Core.Providers.Package {
         /// <returns>the name of the package provider</returns>
         [Required]
         string GetPackageProviderName();
-
-        void GetFeatures(Callback c);
-
-        void GetDynamicOptions(int category, Callback c);
-
-        // --- Optimization features -----------------------------------------------------------------------------------------------------
-        void GetMagicSignatures(Callback c);
-
-        void GetSchemes(Callback c);
-
-        void GetFileExtensions(Callback c);
-
-        bool GetIsSourceRequired(); // or should we imply this from the GetPackageSources == null/empty?
 
         // --- Manages package sources ---------------------------------------------------------------------------------------------------
         void AddPackageSource(string name, string location, bool trusted, Callback c);

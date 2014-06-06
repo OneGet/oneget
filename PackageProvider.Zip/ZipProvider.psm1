@@ -21,8 +21,8 @@
 #>
 function Add-PackageSource { 
     param(
-        [string] $name, 
-        [string] $location, 
+        [string] $name,
+        [string] $location,
         [bool] $trusted
     )  
     # TODO: Fill in implementation
@@ -37,7 +37,7 @@ function Add-PackageSource {
 
 <# 
 
-#>  
+#>
 function Find-Package { 
     param(
         [string] $name,
@@ -315,63 +315,10 @@ function Get-OptionDefinition {
 function Get-Feature { 
     param(
     )
-    # TODO: Fill in implementation
-    # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
     $request.Debug("Calling 'GetFeatures'" , "" );
 
-    # expected return type : void
-    #  $null;
-}
-
-<# 
-// --- Optimization features -----------------------------------------------------------------------------------------------------
-#>
-function Get-MagicSignature { 
-    param(
-    )
-    # TODO: Fill in implementation
-    # Delete this method if you do not need to implement it
-
-    # expected return type : IEnumerable<string>
-    # return  $null;
-}
-
-<# 
-
-#>
-function Get-Scheme { 
-    param(
-    )
-    # TODO: Fill in implementation
-    # Delete this method if you do not need to implement it
-
-    # expected return type : IEnumerable<string>
-    # return  $null;
-}
-
-<# 
-
-#>
-function Get-FileExtension { 
-    param(
-    )
-   
-   return "zip"
-}
-
-<# 
-
-#>
-function Get-IsSourceRequired { 
-    param(
-    )
-    # TODO: Fill in implementation
-    # Delete this method if you do not need to implement it
-
-    # expected return type : bool
-    # return  $null;
 }
 
 <# 
@@ -488,6 +435,19 @@ function Complete-Find {
 
     # use the request object to interact with the OneGet core:
     $request.Debug("Calling 'CompleteFind'" , "" );
+
+    # expected return type : bool
+    # return  $null;
+}
+
+<# 
+// --- Optimization features -----------------------------------------------------------------------------------------------------
+#>
+function Get-IsSourceRequired {
+    param(
+    )
+    # TODO: Fill in implementation
+    # Delete this method if you do not need to implement it
 
     # expected return type : bool
     # return  $null;

@@ -38,11 +38,20 @@ namespace Microsoft.OneGet {
     ///     The Client API provides high-level consumer functions to support SDII functionality.
     /// </summary>
     internal class PackageManagementServiceImplementation : MarshalByRefObject, IPackageManagementService {
-        private DynamicInterface _dynamicInterface = new DynamicInterface();
         private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>();
         private readonly IDictionary<string, ServicesProvider> _servicesProviders = new Dictionary<string, ServicesProvider>();
 
         private readonly object _lockObject = new object();
+
+        private AggregateServicesProvider _servicesProvider;
+        internal AggregateServicesProvider ServicesProvider {
+            get {
+                if (_servicesProvider == null) {
+                    _servicesProvider = new AggregateServicesProvider(_servicesProviders);
+                }
+                return _servicesProvider;
+            }
+        }
 
         public IEnumerable<string> PackageProviderNames {
             get {
@@ -121,7 +130,7 @@ namespace Microsoft.OneGet {
             // todo: load provider assembly list from the registry.
             IEnumerable<string> providerAssemblies = new string[] {
                  "Microsoft.OneGet.MetaProvider.PowerShell.dll",
-                "Microsoft.OneGet.ServiceProvider.Common.dll",
+                "Microsoft.OneGet.ServicesProvider.Common.dll",
                 "OneGet.PackageProvider.Bootstrap.dll",
                 "OneGet.PackageProvider.Chocolatey.dll",
                 "OneGet.PackageProvider.NuGet.dll",
@@ -256,6 +265,7 @@ namespace Microsoft.OneGet {
                 */
 
                 pd.LoadFileWithReferences(Assembly.GetExecutingAssembly().Location);
+                ((AppDomain)pd).SetData("IRequest", typeof(IRequest));
 
                 return pd;
             } catch (Exception e) {

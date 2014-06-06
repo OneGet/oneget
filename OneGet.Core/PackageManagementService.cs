@@ -39,7 +39,7 @@ namespace Microsoft.OneGet {
     /// </example>
     /// </summary>
     public class PackageManagementService {
-        private static PackageManagementServiceImplementation _instance;
+        internal static PackageManagementServiceImplementation _instance;
         private static object _lockObject = new object();
         
         /// <summary>

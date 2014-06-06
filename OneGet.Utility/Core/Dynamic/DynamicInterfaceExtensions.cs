@@ -15,9 +15,10 @@
 namespace Microsoft.OneGet.Core.Dynamic {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
-    using System.Reflection.Emit;
+    using System.Runtime.InteropServices;
     using AppDomains;
     using Extensions;
 
@@ -33,11 +34,11 @@ namespace Microsoft.OneGet.Core.Dynamic {
         private static readonly Dictionary<Assembly, Type[]> _creatableTypesCache = new Dictionary<Assembly, Type[]>();
 
         public static MethodInfo FindMethod(this MethodInfo[] methods, MethodInfo methodSignature) {
-            return methods.FirstOrDefault(each => DoNamesMatchAcceptably(methodSignature.Name, each.Name) && DoSignaturesMatchAcceptably(methodSignature, each));
+            return methods.FirstOrDefault(candidate => DoNamesMatchAcceptably(methodSignature.Name, candidate.Name) && DoSignaturesMatchAcceptably(methodSignature, candidate));
         }
 
         public static MethodInfo FindMethod(this MethodInfo[] methods, Type delegateType ) {
-            return methods.FirstOrDefault(each => DoNamesMatchAcceptably(delegateType.Name, each.Name) && delegateType.IsDelegateAssignableFromMethod(each));
+            return methods.FirstOrDefault(candidate => DoNamesMatchAcceptably(delegateType.Name, candidate.Name) && delegateType.IsDelegateAssignableFromMethod(candidate));
         }
 
         public static Delegate FindDelegate(this FieldInfo[] fields, object actualInstance, MethodInfo signature) {
@@ -55,16 +56,16 @@ namespace Microsoft.OneGet.Core.Dynamic {
         }
 
         public static Delegate FindDelegate(this FieldInfo[] fields, object actualInstance, Type delegateType) {
-            return (from field in fields
-                    let value = field.GetValue(actualInstance) as Delegate
-                    where DoNamesMatchAcceptably(delegateType.Name, field.Name) && field.FieldType.IsDelegateAssignableFromDelegate(delegateType) && value != null
+            return (from candidate in fields
+                    let value = candidate.GetValue(actualInstance) as Delegate
+                    where value != null && DoNamesMatchAcceptably(delegateType.Name, candidate.Name) && delegateType.IsDelegateAssignableFromDelegate(value.GetType()) 
                     select value).FirstOrDefault();
         }
 
         public static Delegate FindDelegate(this PropertyInfo[] properties, object actualInstance, Type delegateType) {
-            return (from property in properties
-                    let value = property.GetValue(actualInstance) as Delegate
-                    where DoNamesMatchAcceptably(delegateType.Name, property.Name) && property.PropertyType.IsDelegateAssignableFromDelegate(delegateType) && value != null
+            return (from candidate in properties
+                    let value = candidate.GetValue(actualInstance) as Delegate
+                    where value != null && DoNamesMatchAcceptably(delegateType.Name, candidate.Name) && delegateType.IsDelegateAssignableFromDelegate(value.GetType()) 
                     select value).FirstOrDefault();
         }
 
@@ -88,8 +89,8 @@ namespace Microsoft.OneGet.Core.Dynamic {
             return false;
         }
 
-        private static bool DoSignaturesMatchAcceptably(MethodInfo member, MethodInfo each) {
-            return member.GetParameterTypes().SequenceEqual(each.GetParameterTypes()) && member.ReturnType == each.ReturnType;
+        private static bool DoSignaturesMatchAcceptably(MethodInfo member, MethodInfo candidate) {
+            return candidate.GetParameterTypes().SequenceEqual(member.GetParameterTypes(), AssignableTypeComparer.Instance) && (member.ReturnType == candidate.ReturnType || member.ReturnType.IsAssignableFrom(candidate.ReturnType));
         }
 
         internal static MethodInfo[] GetPublicMethods(this Type type) {
@@ -250,8 +251,25 @@ namespace Microsoft.OneGet.Core.Dynamic {
         }
 
         public static IEnumerable<Type> CreatableTypes(this Assembly assembly) {
+#if DEEPDEBUG
+            var x = _creatableTypesCache.GetOrAdd(assembly, () => assembly.GetTypes().Where(each => each.IsPublic && !each.IsEnum && !each.IsInterface && !each.IsAbstract && each.GetDefaultConstructor() != null && each.BaseType != typeof(MulticastDelegate)).ToArray());
+            foreach (var i in x) {
+                Debug.WriteLine("Creatable Type in assembly {0} - {1}", assembly.GetName(), i.Name);
+            }
+#endif 
             return _creatableTypesCache.GetOrAdd(assembly, () => assembly.GetTypes().Where(each => each.IsPublic && !each.IsEnum && !each.IsInterface && !each.IsAbstract && each.GetDefaultConstructor() != null && each.BaseType != typeof (MulticastDelegate)).ToArray());
         }
 
+    }
+
+    public class AssignableTypeComparer : IEqualityComparer<Type> {
+        public static readonly AssignableTypeComparer Instance = new AssignableTypeComparer();
+        public bool Equals(Type x, Type y) {
+            return x == y || x.IsAssignableFrom(y);
+        }
+
+        public int GetHashCode(Type obj) {
+            throw new NotImplementedException();
+        }
     }
 }

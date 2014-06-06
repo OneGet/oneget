@@ -17,10 +17,31 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Linq;
     using Core.Extensions;
 
-    public class DynamicOption : Yieldable {
-        public string Name;
+    public class Feature : Yieldable {
+        private KeyValuePair<string, string[]> _pair;
 
-        public DynamicOption(string name, OptionCategory category, OptionType expectedType, bool isRequired, IEnumerable<object> permittedValues) {
+        public Feature(string name): this( name, new string[0]) {
+        }
+
+        public Feature(string name, string value) : this (name, new []{value}) {
+        }
+
+        public Feature(string name, string[] values) {
+            _pair = new KeyValuePair<string, string[]>(name, values);
+        }
+
+        public override bool YieldResult(Request r) {
+            if (_pair.Value.Length == 0) {
+                return r.YieldKeyValuePair(_pair.Key, null);
+            }
+            return _pair.Value.All(each => r.YieldKeyValuePair(_pair.Key, each));
+        }
+    }
+
+    public class DynamicOption : Yieldable {
+        
+
+        public DynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired, IEnumerable<object> permittedValues) {
             Name = name;
             Category = category;
             ExpectedType = expectedType;
@@ -28,13 +49,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             PermittedValues = permittedValues;
         }
 
-        public DynamicOption(string name, OptionCategory category, OptionType expectedType, bool isRequired) : this(name, category, expectedType, isRequired, null) {
+        public DynamicOption(OptionCategory category,string name,  OptionType expectedType, bool isRequired) : this(category, name , expectedType, isRequired, null) {
         }
 
         public DynamicOption() {
         }
 
         public OptionCategory Category {get; set;}
+        public string Name {get; set;}
         public OptionType ExpectedType {get; set;}
         public bool IsRequired {get; set;}
         public IEnumerable<object> PermittedValues {get; set;}

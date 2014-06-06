@@ -28,6 +28,10 @@ namespace Microsoft.OneGet.Core {
 
         internal ManualResetEvent StartedEvent = new ManualResetEvent(false);
         internal bool LastIsTerminatingError {get; set;}
+        public bool IsFailing {get; internal set;}
+        public void Wait() {
+            CompletedEvent.WaitOne();
+        }
 
         public object Value {
             get {

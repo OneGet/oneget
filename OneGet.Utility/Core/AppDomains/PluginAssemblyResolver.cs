@@ -133,10 +133,10 @@ namespace Microsoft.OneGet.Core.AppDomains {
                     }
                 }
 
-
-#if DEBUG
-               Debug.WriteLine(string.Format("FAILED RESOLVING ASSEMBLY {0}", args.Name));
 #endif
+#if DEEPDEBUG
+               Debug.WriteLine(string.Format("FAILED RESOLVING ASSEMBLY {0}", args.Name));
+
 #endif
                 return null;
             });

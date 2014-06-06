@@ -35,6 +35,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -63,6 +64,7 @@
     <Compile Include="Core\Collections\CancellableEnumerator.cs" />
     <Compile Include="Core\Collections\DelegateDictionary.cs" />
     <Compile Include="Core\Collections\ICancellable.cs" />
+    <Compile Include="Core\Collections\ICancellableEnumerable.cs" />
     <Compile Include="Core\Collections\OrderedDictionary.cs" />
     <Compile Include="Core\Collections\ReadOnlyDelegateDictionary.cs" />
     <Compile Include="Core\Collections\VirtualEnumerator.cs" />

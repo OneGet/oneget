@@ -12,29 +12,21 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.MetaProvider.PowerShell {
-    #region copy PackageProvider-types
-public enum OptionCategory {
-        Package = 0,
-        Provider = 1,
-        Source = 2,
-        Install = 3
+namespace Microsoft.OneGet.Core.Providers.Service {
+    using Api;
+    using Dynamic;
+    using Package;
+
+    public interface IServicesProvider : IProvider, IServicesApi {
+        #region declare ServicesProvider-interface
+
+        /// <summary>
+        ///     Returns the name of the Provider. Doesn't need callback .
+        /// </summary>
+        /// <returns></returns>
+        [Required]
+        string GetServicesProviderName();
+
+        #endregion
     }
-
-    public enum OptionType {
-        String = 0,
-        StringArray = 1,
-        Int = 2,
-        Switch = 3,
-        Path = 4,
-        Uri = 5
-    }
-
-    public enum EnvironmentContext {
-        User = 0,
-        System = 1
-    }
-
-    #endregion
-
 }

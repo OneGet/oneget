@@ -97,12 +97,13 @@ namespace Microsoft.OneGet.Core {
                 }
             };
 
-
+            
             CommandPipeline.Error.DataReady += (sender, args) => {
                 lock (Result.Errors) {
                     if (Result.Errors.IsCompleted) {
                         throw new Exception("Attempted to add to completed collection");
                     }
+                    Result.IsFailing = true;
 
                     var items = CommandPipeline.Error.NonBlockingRead();
                     foreach (var item in items) {
@@ -153,7 +154,7 @@ namespace Microsoft.OneGet.Core {
                             DropPipeline();
                         }
                         break;
-
+                        
                     case PipelineState.Stopped:
 
                         while (!CommandPipeline.Output.EndOfPipeline) {

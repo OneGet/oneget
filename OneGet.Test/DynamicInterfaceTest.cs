@@ -16,6 +16,7 @@ namespace Microsoft.OneGet.Test {
     using System;
     using System.IO;
     using System.Reflection;
+    using System.Security.Cryptography.X509Certificates;
     using System.Security.Policy;
     using Core.Dynamic;
     using CSharp.RuntimeBinder;
@@ -345,12 +346,149 @@ namespace Microsoft.OneGet.Test {
 
         }
 
+        [Fact]
+        public void IsAMemoryStreamAssignableToAFileStream() {
+            Assert.False(typeof (MemoryStream).IsAssignableFrom(typeof (FileStream)));
+            Assert.False(typeof(FileStream).IsAssignableFrom(typeof(MemoryStream)));
+
+
+            Assert.False(typeof(Stream) == (typeof(FileStream)));
+            Assert.False(typeof(FileStream) == (typeof(Stream)));
+
+
+            Assert.True(typeof(Stream).IsAssignableFrom(typeof(FileStream)));
+            Assert.False(typeof(FileStream).IsAssignableFrom(typeof(Stream)));
+        }
+
+        [Fact]
+        public void CheckForAcceptableTypes() {
+            var x = new ActualImplementation().As<ClientInterface>();
+            var y = x.ActuallyReturnsString();
+            var z = x.ActuallyReturnsFileStream();
+
+            Console.WriteLine("Y is {0}",y.GetType().Name);
+            Console.WriteLine("Z is {0}", z.GetType().Name);
+
+            // this function doesn't match anything in the implemention
+            // so a stub method gets created (which returns null)
+            MemoryStream a = x.ActuallyRetunsMemoryStream();
+            Assert.Null(a);
+
+            // the clientinterface is more restricted than the implementation
+            // but that's ok.
+            MemoryStream ms = new MemoryStream();
+            Assert.True( x.TakesAStream(ms));
+
+
+            // the clientinterface is less restrictive than the implementation
+            // and that's not ok.
+            Assert.False(x.TakesAFileStream(ms));
+
+            var shouldWork = new {
+                TakesAStream = new Func<Stream, bool>(stream => {
+                    return stream != null;
+                })
+            }.As<ClientInterface>();
+
+            Assert.True(shouldWork.TakesAStream(ms));
+
+            var shouldNotWork= new {
+                TakesAFileStream = new Func<MemoryStream, bool>(stream => {
+                    Console.WriteLine("never called");
+                    return stream != null;
+                })
+            }.As<ClientInterface>();
+
+            Assert.False(shouldWork.TakesAFileStream(ms));
+
+
+
+            var shouldWorkToo = new {
+                ActuallyReturnsString = new Func<object>(() => "hello")
+            }.As<ClientInterface>();
+
+            Assert.NotNull(shouldWorkToo.ActuallyReturnsString());
+
+
+            var shouldNotWorkToo = new {
+                ActuallyRetunsMemoryStream = new Func<Stream>(() => new MemoryStream())
+            }.As<ClientInterface>();
+
+            Assert.Null(shouldNotWorkToo.ActuallyRetunsMemoryStream());
+
+            Func<object> fReturnsAString= new Func<object>(() => "hello");
+
+            var fShouldWork = fReturnsAString.As<ReturnsAnObject>();
+
+            Assert.NotNull(fShouldWork());
+
+            Assert.Throws<Exception>(() => {
+                // this shouldn't work because the return type object
+                // can't be expressed as a string.
+                var fShouldNotWork = fReturnsAString.As<ReturnsAString>();
+            });
+
+        }
+
+        public delegate object ReturnsAnObject();
+
+        public delegate string ReturnsAString();
+
+        public class ActualImplementation {
+            public string ActuallyReturnsString() {
+                return "Hello";
+            }
+
+            public FileStream ActuallyReturnsFileStream() {
+                return new FileStream(Assembly.GetExecutingAssembly().Location , FileMode.Open, FileAccess.Read);
+            }
+
+            public Stream ActuallyRetunsMemoryStream() {
+                return new MemoryStream();
+            }
+
+
+            public bool TakesAStream(Stream s) {
+                return s != null;
+            }
+
+            public bool TakesAFileStream(FileStream ms) {
+                Console.WriteLine("HUH?");
+                Console.WriteLine("Type of stream is {0}",ms.GetType().Name);
+                Console.WriteLine("Name of stream is {0}", ms.Name);
+                return ms != null;
+            }
+
+        }
+
+        public interface ClientInterface {
+            object ActuallyReturnsString();
+
+            Stream ActuallyReturnsFileStream();
+
+            MemoryStream ActuallyRetunsMemoryStream();
+
+            bool TakesAStream(MemoryStream ms);
+
+            bool TakesAFileStream(Stream ms);
+        }
+
         public class TUSODT {
             public static string Hello() {
                 return "Hello";
             }
         }
 
-        
+
+        enum Some {
+            One = 1,
+            Two = 2,
+        }
+
+        [Fact]
+        public void TestEnum() {
+            Assert.False( typeof(Some).IsAssignableFrom(typeof(int)));
+            Assert.False(typeof(int).IsAssignableFrom(typeof(Some)));
+        }
     }
 }

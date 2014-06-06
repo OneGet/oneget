@@ -15,6 +15,8 @@
 namespace Microsoft.OneGet.Core.Api {
     using System;
     using System.Collections.Generic;
+    using System.Security;
+    using System.Security.Cryptography.X509Certificates;
     using Callback = System.Object;
 
     public interface ICoreApis {
@@ -49,26 +51,28 @@ namespace Microsoft.OneGet.Core.Api {
         /// <returns>returns TRUE if the operation has been cancelled.</returns>
         bool IsCancelled();
 
+        object GetPackageManagementService(Callback c);
+
         #endregion
     }
 
     public interface IHostApis {
         #region declare host-apis
 
-        object GetPackageManagementService();
-
-
-        
 
         /// <summary>
         ///     Used by a provider to request what metadata keys were passed from the user
         /// </summary>
         /// <returns></returns>
-        IEnumerable<string> GetOptionKeys(string category);
+        IEnumerable<string> GetOptionKeys(int category);
 
-        IEnumerable<string> GetOptionValues(string category, string key);
+        IEnumerable<string> GetOptionValues(int category, string key);
 
         IEnumerable<string> GetSpecifiedPackageSources();
+
+        string GetCredentialUsername();
+
+        SecureString GetCredentialPassword();
 
         bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
@@ -87,6 +91,9 @@ namespace Microsoft.OneGet.Core.Api {
         bool AskPermission(string permission);
 
         bool WhatIf();
+
+        bool PackageInstalled(string packageName, string version, string source, string destination);
+        bool BeforePackageUninstall(string packageName, string version, string source, string destination);
 
         #endregion
     }

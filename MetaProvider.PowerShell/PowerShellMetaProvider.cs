@@ -16,12 +16,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
     using System.Net.Configuration;
     using System.Reflection;
+    using System.Threading.Tasks;
     using Core;
     using Core.Extensions;
     using Callback = System.Object;
@@ -58,12 +60,18 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
         }
 
+        internal static string PowerShellProviderFunctions {
+            get {
+                 var thisFolder = Path.GetDirectoryName(Path.GetFullPath(Assembly.GetExecutingAssembly().Location));
+                 return Path.Combine(thisFolder, "etc", "PackageProviderFunctions.psm1");
+            }
+        }
+
         private IEnumerable<PSModuleInfo> ModulesFromResult(DynamicPowershellResult result) {
             if (result.Success && result.Value != null) {
                 foreach (var r in result) {
                     var module = r as PSModuleInfo;
                     if (module != null) {
-                        
                         yield return module;
                     }
                 }
@@ -71,7 +79,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         private IEnumerable<string> GetOneGetModules(PSModuleInfo module) {
-            Debug.WriteLine("Examining Module {0}".format(module.Name));
             var privateData = module.PrivateData as Hashtable;
             if (privateData != null) {
                 return ScanPrivateDataForProviders(Path.GetDirectoryName(module.Path), privateData);
@@ -79,7 +86,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             return Enumerable.Empty<string>();
         }
 
-        internal IEnumerable<string> ScanForModules() {
+        internal IEnumerable<string> ScanForModules(Request request) {
             
             // two places we search for modules 
             // 1. in this assembly's folder, look for all psd1 and psm1 files. 
@@ -88,19 +95,49 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             //
             // Import each one of those, and check to see if they have a OneGet.Providers section in their private data
 
-            IEnumerable<string> results = Enumerable.Empty<string>();
             using (dynamic ps = new DynamicPowershell()) {
 
                 var thisFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 if (thisFolder != null) {
                     var files = Directory.EnumerateFiles(thisFolder, "*.psm1").Concat(Directory.EnumerateFiles(thisFolder, "*.psd1"));
-          
+
+                    // request.Debug("PSF: {0}", PowerShellProviderFunctions);
+
+                    var psf = ps.ImportModule(Name: PowerShellProviderFunctions, PassThru: true);
+                    
+
                     foreach (var each in files) {
+                        
                         DynamicPowershellResult items =ps.ImportModule(Name: each, PassThru: true);
+                        items.Wait();
+                        var errors = items.Errors.ToArray();
+
+                        if (errors.Any()) {
+                            request.Debug("\r\n\r\n==================================================================================\r\n===In Module '{0}'",each);
+
+                            foreach (var error in errors) {
+                                try {
+                                    switch (error.CategoryInfo.Category) {
+                                        case ErrorCategory.ResourceUnavailable:
+                                            // file not found
+                                            continue;
+
+                                        default:
+                                            request.Debug("  PowerShell {0} {1} ", error.CategoryInfo.Category, error.Exception.Message);
+                                            break;
+                                    }
+
+                                } catch (Exception e) {
+                                    e.Dump();
+                                }
+                            }
+                            continue;
+                        }
+
+                        
                         foreach (var i in items) {
                             var module = i as PSModuleInfo;
                             if (module != null) {
-                                Debug.WriteLine("Found Module {0}".format(module.Name));
                                 foreach (var o in GetOneGetModules(module)) {
                                     yield return o;
                                 }
@@ -110,9 +147,11 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     // results = files.SelectMany(each => ModulesFromResult((DynamicPowershellResult)ps.ImportModule(Name: each, PassThru: true))).SelectMany(GetOneGetModules).ToArray();
                 }
 
-#if !DEBUG
+#if !xDEBUG
 
-                return results.Concat(ModulesFromResult((DynamicPowershellResult)ps.GetModule(ListAvailable: true)).SelectMany(GetOneGetModules)).ToArray();
+                foreach (var m in ModulesFromResult((DynamicPowershellResult)ps.GetModule(ListAvailable: true)).SelectMany(GetOneGetModules)) {
+                    yield return m;
+                };
 #endif
 
             }
@@ -132,7 +171,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             get {
                 return _providerModules.Keys;
             }
-        }
+        } 
 
         internal void ReleaseProvider() {
             
@@ -166,6 +205,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         private PowerShellPackageProvider Create(string psModule) {
             dynamic ps = new DynamicPowershell();
             try {
+
+                var psf = ps.ImportModule(Name: PowerShellProviderFunctions, PassThru: true);
+
                 DynamicPowershellResult result = ps.ImportModule(Name: psModule, PassThru: true);
                 var providerModule = result.Value as PSModuleInfo;
                 if (result.Success && providerModule != null) {
@@ -200,17 +242,24 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 throw new ArgumentNullException("c");
             }
 
+            var req = c.As<Request>();
+
             // to do : get modules to load (from configuration ?)
-            var modules = ScanForModules().ToArray();
+            var modules = ScanForModules(req).ToArray();
 
             // try to create each module at least once.
-            foreach (var modulePath in modules) {
+            Parallel.ForEach(modules, modulePath => {
+
+                // foreach (var modulePath in modules) {
+                Debug.WriteLine(string.Format("Looking at {0}", modulePath));
                 var provider = Create(modulePath);
                 if (provider != null) {
                     // looks good to me, let's add this to the list of moduels this meta provider can create.
                     _providerModules.AddOrSet(provider.GetPackageProviderName(), modulePath);
                 }
-            }
+            });
+
+            Debug.WriteLine(string.Format("Done Looking at PowerShell Modules"));
 
             // check to see if dynamic powershell is working:
             /*
