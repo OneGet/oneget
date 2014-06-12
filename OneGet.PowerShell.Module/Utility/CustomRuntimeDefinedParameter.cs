@@ -12,11 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PowerShell.OneGet.Core {
+namespace Microsoft.PowerShell.OneGet.Utility {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Globalization;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Core.Extensions;
@@ -24,10 +23,11 @@ namespace Microsoft.PowerShell.OneGet.Core {
     using Microsoft.OneGet.Core.Providers.Package;
 
     internal class CustomRuntimeDefinedParameter : RuntimeDefinedParameter {
-
         internal HashSet<DynamicOption> Options = new HashSet<DynamicOption>();
-        
-        public CustomRuntimeDefinedParameter(DynamicOption option) : base( option.Name, ParameterType(option.Type), new Collection<Attribute>{ new ParameterAttribute() } ) {
+
+        public CustomRuntimeDefinedParameter(DynamicOption option) : base(option.Name, ParameterType(option.Type), new Collection<Attribute> {
+            new ParameterAttribute()
+        }) {
             Options.Add(option);
             var values = option.PossibleValues.ToArray();
             if (!values.IsNullOrEmpty()) {
@@ -35,39 +35,40 @@ namespace Microsoft.PowerShell.OneGet.Core {
             }
         }
 
-        private static Type ParameterType(OptionType optionType ) {
-            switch (optionType) {
-                case OptionType.Switch:
-                    return typeof(SwitchParameter);
-                case OptionType.Uri:
-                    return  typeof(Uri);
-                case OptionType.StringArray:
-                    return typeof(string[]);
-                case OptionType.Int:
-                    return typeof(int);
-                case OptionType.Path:
-                    return  typeof(string);
-                default:
-                    return typeof(string);
-            }
-        }
-
         internal IEnumerable<string> Values {
             get {
-                if (IsSet && Value != null ) {
+                if (IsSet && Value != null) {
                     switch (Options.FirstOrDefault().Type) {
                         case OptionType.Switch:
-                            return new string [] {"true" };
+                            return new string[] {
+                                "true"
+                            };
                         case OptionType.StringArray:
-                            return (string[]) Value;
+                            return (string[])Value;
                     }
-                    return new [] { Value.ToString() };
+                    return new[] {
+                        Value.ToString()
+                    };
                 }
                 return new string[0];
             }
         }
-    }
 
-    
-    
+        private static Type ParameterType(OptionType optionType) {
+            switch (optionType) {
+                case OptionType.Switch:
+                    return typeof (SwitchParameter);
+                case OptionType.Uri:
+                    return typeof (Uri);
+                case OptionType.StringArray:
+                    return typeof (string[]);
+                case OptionType.Int:
+                    return typeof (int);
+                case OptionType.Path:
+                    return typeof (string);
+                default:
+                    return typeof (string);
+            }
+        }
+    }
 }

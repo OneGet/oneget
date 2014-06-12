@@ -27,13 +27,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         [Parameter()]
-        public PSCredential Credential { get; set; }
+        public PSCredential Credential {get; set;}
 
         [Parameter(ParameterSetName = ProviderByNameSet)]
-        public string[] Source { get; set; }
+        public string[] Source {get; set;}
 
         [Parameter(ParameterSetName = SourceByObjectSet, ValueFromPipeline = true)]
-        public PackageSource[] PackageSource { get; set; }
+        public PackageSource[] PackageSource {get; set;}
 
         protected override PackageProvider[] SelectedProviders {
             get {
@@ -48,14 +48,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 // filter on provider names  - if they specify a provider name, narrow to only those provider names.
                 var providers = SelectProviders(Provider);
 
-
                 // filter out providers that don't have the sources that have been specified
-
 
                 // filter on: dynamic options - if they specify any dynamic options, limit the provider set to providers with those options.
                 return FilterProvidersUsingDynamicParameters(providers).ToArray();
             }
         }
+
         /*
         public override bool Validate() {
             if (PackageSource != null) {
@@ -66,7 +65,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
          * *
          */
-  
+
         internal bool FindViaUri(PackageProvider packageProvider, string packageuri, Action<SoftwareIdentity> onPackageFound) {
             var found = false;
             if (Uri.IsWellFormedUriString(packageuri, UriKind.Absolute)) {
@@ -114,8 +113,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             }
                         }
                     }
-                }
-                catch {
+                } catch {
                     // didn't actually map to a filename ...  keep movin'
                 }
                 // it doesn't look like we found any files.

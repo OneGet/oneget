@@ -16,14 +16,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
     using System.Linq;
     using System.Management.Automation;
-    using Core;
     using Microsoft.OneGet.Core.Extensions;
     using Microsoft.OneGet.Core.Packaging;
     using Microsoft.OneGet.Core.Providers.Package;
 
     [Cmdlet(VerbsLifecycle.Register, PackageSourceNoun, SupportsShouldProcess = true)]
     public class RegisterPackageSource : CmdletBase {
-
         [Parameter(Position = 0)]
         public string Name {get; set;}
 
@@ -31,16 +29,16 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public string Location {get; set;}
 
         [Parameter(Position = 2, Mandatory = true, ParameterSetName = ProviderByObjectSet, ValueFromPipeline = true)]
-        public PackageProvider PackageProvider { get; set; }
+        public PackageProvider PackageProvider {get; set;}
 
         [Parameter(Position = 2, Mandatory = true, ParameterSetName = ProviderByNameSet)]
-        public string Provider { get; set; }
+        public string Provider {get; set;}
 
         [Parameter(Position = 2, Mandatory = true, ParameterSetName = OverwriteExistingSourceSet)]
-        public PackageSource OriginalSource { get; set; }
+        public PackageSource OriginalSource {get; set;}
 
         [Parameter(Position = 3)]
-        public PSCredential Credential { get; set; }
+        public PSCredential Credential {get; set;}
 
         [Parameter]
         public SwitchParameter Trusted {get; set;}
@@ -58,9 +56,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public RegisterPackageSource() {
         }
-        
-        public override bool ProcessRecordAsync() {
 
+        public override bool ProcessRecordAsync() {
             if (IsOverwriteExistingSource) {
                 Provider = OriginalSource.ProviderName;
                 Name = Name.Is() ? Name : OriginalSource.Name;
@@ -71,7 +68,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (!IsProviderByObject) {
-                PackageProvider = PackageManagementService.SelectProviders(Provider).FirstOrDefault();    
+                PackageProvider = PackageManagementService.SelectProviders(Provider).FirstOrDefault();
             }
 
             if (PackageProvider == null) {

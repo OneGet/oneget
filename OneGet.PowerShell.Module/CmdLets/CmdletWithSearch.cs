@@ -23,11 +23,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         [Parameter(Position = 0, ValueFromPipeline = true, ParameterSetName = ProviderByNameSet)]
         [Parameter(Position = 0, ValueFromPipeline = true, ParameterSetName = ProviderByObjectSet)]
-        public string[] Name { get; set; }
+        public string[] Name {get; set;}
 
         [Parameter(ParameterSetName = ProviderByNameSet)]
         [Parameter(ParameterSetName = ProviderByObjectSet)]
-        public string RequiredVersion { get; set; }
+        public string RequiredVersion {get; set;}
 
         [Parameter(ParameterSetName = ProviderByNameSet)]
         [Parameter(ParameterSetName = ProviderByObjectSet)]
@@ -35,6 +35,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         [Parameter(ParameterSetName = ProviderByNameSet)]
         [Parameter(ParameterSetName = ProviderByObjectSet)]
-        public string MaximumVersion { get; set; }
+        public string MaximumVersion {get; set;}
     }
 }

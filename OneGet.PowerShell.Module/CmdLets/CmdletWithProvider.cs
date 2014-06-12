@@ -16,9 +16,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Core;
     using Microsoft.OneGet.Core.Extensions;
     using Microsoft.OneGet.Core.Providers.Package;
+    using Utility;
 
     public abstract class CmdletWithProvider : CmdletBase {
         private readonly OptionCategory[] _optionCategories;

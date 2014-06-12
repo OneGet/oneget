@@ -38,18 +38,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\WindowsPowerShell\3.0\System.Management.Automation.dll</HintPath>
     </Reference>
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CmdLets\CmdletWithProvider.cs" />
     <Compile Include="CmdLets\CmdletWithSearch.cs" />
     <Compile Include="CmdLets\CmdletWithSource.cs" />
     <Compile Include="CmdLets\RegisterPackageSource.cs" />
-    <Compile Include="Core\DynamicParametersExtensions.cs" />
+    <Compile Include="Utility\CustomRuntimeDefinedParameter.cs" />
     <Compile Include="CmdLets\CmdletWithSearchAndSource.cs" />
     <Compile Include="CmdLets\FindPackage.cs" />
     <Compile Include="CmdLets\GetPackage.cs" />

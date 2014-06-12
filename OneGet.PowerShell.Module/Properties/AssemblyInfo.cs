@@ -31,6 +31,7 @@ using System.Runtime.InteropServices;
 
 // Normally, we wouldn't actaully permit access to the internals of the OneGet module
 // but we're sharing code with the other our tightly-coupled Chocolatey PowerShell module
+
 [assembly: InternalsVisibleTo("Microsoft.OneGet.Test")]
 
 // Setting ComVisible to false makes the types in this assembly not visible

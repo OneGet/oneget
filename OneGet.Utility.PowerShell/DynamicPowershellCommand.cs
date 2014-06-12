@@ -19,7 +19,7 @@ namespace Microsoft.OneGet {
     using System.Management.Automation.Runspaces;
     using System.Threading;
 
-    public class DynamicPowershellCommand : IDisposable {
+    internal class DynamicPowershellCommand : IDisposable {
         private readonly Command _command;
         private Pipeline _commandPipeline;
         private DynamicPowershellResult _result = new DynamicPowershellResult();

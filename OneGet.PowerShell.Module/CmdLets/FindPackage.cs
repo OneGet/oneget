@@ -28,9 +28,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 OptionCategory.Provider, OptionCategory.Source, OptionCategory.Package
             }) {
         }
-        
-      //   public override bool ProcessRecordAsync() {
-            
+
+        //   public override bool ProcessRecordAsync() {
+
         // }
 
         public override bool EndProcessingAsync() {

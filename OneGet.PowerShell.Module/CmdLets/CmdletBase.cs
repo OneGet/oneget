@@ -12,19 +12,17 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PowerShell.OneGet.Core {
+namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
     using System.Collections;
-    using System.Diagnostics;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
     using Microsoft.OneGet;
-    using Microsoft.OneGet.Core.Api;
     using Microsoft.OneGet.Core.Extensions;
     using Microsoft.OneGet.Core.Providers.Package;
-    using Callback = System.Object;
-    using System.Collections.Generic;
+    using Utility;
 
     public abstract class CmdletBase : AsyncCmdlet {
         public const string PackageNoun = "Package";
@@ -37,7 +35,6 @@ namespace Microsoft.PowerShell.OneGet.Core {
         public const string ProviderByObjectSet = "ProviderByObject";
         public const string ProviderByNameSet = "ProviderByName";
         public const string OverwriteExistingSourceSet = "OverwriteExistingSource";
-        
 
         private static readonly object _lockObject = new object();
         private readonly Hashtable _dynamicOptions;
@@ -47,27 +44,30 @@ namespace Microsoft.PowerShell.OneGet.Core {
             _dynamicOptions = new Hashtable();
         }
 
-
         protected bool IsPackageBySearch {
             get {
                 return ParameterSetName == PackageBySearchSet;
             }
         }
+
         protected bool IsPackageByObject {
             get {
                 return ParameterSetName == PackageByObjectSet;
             }
         }
+
         protected bool IsSourceByObject {
             get {
                 return ParameterSetName == SourceByObjectSet;
             }
         }
+
         protected bool IsProviderByObject {
             get {
                 return ParameterSetName == ProviderByObjectSet;
             }
         }
+
         protected bool IsOverwriteExistingSource {
             get {
                 return ParameterSetName == OverwriteExistingSourceSet;
@@ -92,6 +92,14 @@ namespace Microsoft.PowerShell.OneGet.Core {
         public Hashtable DynamicOptions {
             get {
                 return _dynamicOptions;
+            }
+        }
+
+        public virtual IEnumerable<string> SpecifiedPackageSources {
+            get {
+                return null;
+            }
+            set {
             }
         }
 
@@ -164,20 +172,12 @@ namespace Microsoft.PowerShell.OneGet.Core {
             return true;
         }
 
-
         public IEnumerable<string> GetOptionKeys(int category) {
             return DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category)).Select(each => each.Name).ByRef();
         }
 
         public IEnumerable<string> GetOptionValues(int category, string key) {
             return DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category) && each.Name == key).SelectMany(each => each.Values).ByRef();
-        }
-
-        public virtual IEnumerable<string> SpecifiedPackageSources {
-            get {
-                return null;    
-            }
-            set { }
         }
 
         public virtual string GetCredentialUsername() {

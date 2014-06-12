@@ -27,7 +27,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         private readonly HashSet<string> _sourcesTrusted = new HashSet<string>();
 
         public InstallPackage()
-            : base(new[] { OptionCategory.Provider, OptionCategory.Source, OptionCategory.Package, OptionCategory.Install }) {
+            : base(new[] {
+                OptionCategory.Provider, OptionCategory.Source, OptionCategory.Package, OptionCategory.Install
+            }) {
         }
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = PackageByObjectSet)]
@@ -40,10 +42,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return true;
         }
 
-        
         public override bool ProcessRecordAsync() {
-            if( IsPackageByObject)        {
-                return InstallPackages(Package); 
+            if (IsPackageByObject) {
+                return InstallPackages(Package);
             }
             return true;
         }
@@ -56,7 +57,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             // if (!Validate()) {
-               // return false;
+            // return false;
             //}
 
             // first, determine the package list that we're interested in installing
@@ -153,7 +154,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             foreach (var pkg in packagesToInstall) {
                 // if (!WhatIf) {
-                   //  WriteMasterProgress("Installing", 1, "Installing package '{0}' ({1} of {2})", pkg.Name, n++, packagesToInstall.Length);
+                //  WriteMasterProgress("Installing", 1, "Installing package '{0}' ({1} of {2})", pkg.Name, n++, packagesToInstall.Length);
                 // }
                 var provider = PackageManagementService.SelectProviders(pkg.ProviderName).FirstOrDefault();
 

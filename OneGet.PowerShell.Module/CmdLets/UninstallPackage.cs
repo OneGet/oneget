@@ -18,20 +18,18 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Core;
     using Microsoft.OneGet.Core.Extensions;
     using Microsoft.OneGet.Core.Packaging;
-    using Microsoft.OneGet.Core.Providers.Package;
 
     [Cmdlet(VerbsLifecycle.Uninstall, PackageNoun, SupportsShouldProcess = true)]
     public class UninstallPackage : GetPackage {
+        private Dictionary<string, List<SoftwareIdentity>> _resultsPerName;
+
         [Parameter]
         public SwitchParameter Force {get; set;}
 
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = PackageByObjectSet)]
         public SoftwareIdentity[] Package {get; set;}
-
-        private Dictionary<string, List<SoftwareIdentity>> _resultsPerName;
 
         public override bool ProcessRecordAsync() {
             if (IsPackageByObject) {
@@ -55,7 +53,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 }
             });
-
 
             return true;
         }

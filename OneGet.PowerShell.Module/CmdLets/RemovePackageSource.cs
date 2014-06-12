@@ -86,7 +86,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length > 1) {
-
                 var sources = prov.SelectMany(each => each.GetPackageSources(this).ToArray()).ToArray();
 
                 if (sources.Length == 0) {
@@ -100,7 +99,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return Unregister(sources[0]);
             }
 
-            
             return true;
         }
 

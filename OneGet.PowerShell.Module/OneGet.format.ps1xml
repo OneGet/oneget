@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
+
 <Configuration>
   <!-- 
   *
@@ -37,7 +38,7 @@
             <Width>14</Width>
           </TableColumnHeader>
           <TableColumnHeader>
-            
+
           </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
@@ -63,6 +64,48 @@
         </TableRowEntries>
       </TableControl>
     </View>
+
+    <View>
+      <Name>PackageSource</Name>
+      <ViewSelectedBy>
+        <TypeName>Microsoft.OneGet.Core.Packaging.PackageSource</TypeName>
+        <TypeName>Deserialized.Microsoft.OneGet.Core.Packaging.PackageSource</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Width>32</Width>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Width>16</Width>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Width>10</Width>
+          </TableColumnHeader>
+          <TableColumnHeader>
+
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Name</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ProviderName</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>IsTrusted</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Location</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
   </ViewDefinitions>
 </Configuration>
-
