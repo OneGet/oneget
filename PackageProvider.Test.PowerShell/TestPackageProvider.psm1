@@ -176,7 +176,8 @@ function Get-PackageSource {
     param()
     
     
-    $request.Debug("Calling 'GetPackageSources'" , "" );
+	write-debug "In TestPackageProvider - Find-GetPackageSources"
+    
 	$srcs = $request.GetSpecifiedPackageSources();
 
 	if( $srcs -eq $null -or $srcs.Length -eq 0 ) {

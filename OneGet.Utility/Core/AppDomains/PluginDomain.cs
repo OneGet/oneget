@@ -42,7 +42,7 @@ namespace Microsoft.OneGet.Core.AppDomains {
             return AppDomain.CurrentDomain.GetAssemblies().Where( each => each.FullName == name ).Select( each => each.Location).FirstOrDefault();
         }
 
-        internal void AddDynamicClassAssembly(string fullName, string fullPath) {
+        internal void RegisterDynamicAssembly(string fullName, string fullPath) {
             DynamicAssemblyPaths.Add(fullName, fullPath);
         }
 
@@ -69,7 +69,6 @@ namespace Microsoft.OneGet.Core.AppDomains {
             _resolver.SetAlternatePathResolver(ResolveFromThisDomain);
             AppDomain.CurrentDomain.AssemblyResolve += _resolver.Resolve;
             
-
             _proxyResolver = new Proxy<PluginAssemblyResolver>(this);
             
             ((PluginAssemblyResolver)_proxyResolver).AddPath(appDomainSetup.ApplicationBase);
@@ -92,13 +91,8 @@ namespace Microsoft.OneGet.Core.AppDomains {
             // if that can't find an assembly, ask this domain.
             Invoke(resolver => { resolver.SetAlternatePathResolver(ResolveFromThisDomain); }, ((PluginAssemblyResolver)_proxyResolver));
             
-            // Put a dynamic interface object into the target appdomain
-            Invoke((o) => { AppDomain.CurrentDomain.SetData("DynamicInterface", new DynamicInterface()); }, "");
-
-            // Put a dynamic interface object into the target appdomain
-            //Invoke((t) => {
-                _appDomain.SetData("RegisterDynamicAssembly", new Action<string, string>((n, l) => this.AddDynamicClassAssembly(n, l)));
-            //}, this);
+            // Give the plugin domain a way of telling us what Dynamic Assemblies they are creating.
+            _appDomain.SetData("RegisterDynamicAssembly", new Action<string, string>(RegisterDynamicAssembly));
         }
 
         public void Dispose() {

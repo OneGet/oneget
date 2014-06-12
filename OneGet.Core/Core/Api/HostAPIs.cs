@@ -22,9 +22,45 @@ namespace Microsoft.OneGet.Core.Api {
     public interface ICoreApis {
 
         #region declare core-apis
+        /// <summary>
+        ///     The provider can query to see if the operation has been cancelled.
+        ///     This provides for a gentle way for the caller to notify the callee that
+        ///     they don't want any more results.
+        /// </summary>
+        /// <returns>returns TRUE if the operation has been cancelled.</returns>
+        bool IsCancelled();
+
+        /// <summary>
+        /// Returns a reference to the PackageManagementService API
+        /// 
+        /// The consumer of this function should either use this as a dynamic object
+        /// Or DuckType it to an interface that resembles IPacakgeManagementService
+        /// </summary>
+        /// <param name="c"></param>
+        /// <returns></returns>
+        object GetPackageManagementService(Callback c);
+
+        /// <summary>
+        /// Returns the type for a Request/Callback that the OneGet Core is expecting
+        /// 
+        /// This is (currently) neccessary to provide an appropriately-typed version
+        /// of the Request to the core when a Plugin is calling back into the core
+        /// and has to pass a Callback.
+        /// </summary>
+        /// <returns></returns>
+        Type GetIRequestInterface();
+
+        bool PackageInstalled(string packageName, string version, string source, string destination);
+        bool BeforePackageUninstall(string packageName, string version, string source, string destination);
+
+        #endregion
+    }
+
+    public interface IHostApis {
+        #region declare host-apis
 
         string GetMessageString(string message);
-        
+
         bool Warning(string message);
 
         bool Error(string message);
@@ -42,23 +78,6 @@ namespace Microsoft.OneGet.Core.Api {
         bool Progress(int activityId, int progress, string message);
 
         bool CompleteProgress(int activityId, bool isSuccessful);
-
-        /// <summary>
-        ///     The provider can query to see if the operation has been cancelled.
-        ///     This provides for a gentle way for the caller to notify the callee that
-        ///     they don't want any more results.
-        /// </summary>
-        /// <returns>returns TRUE if the operation has been cancelled.</returns>
-        bool IsCancelled();
-
-        object GetPackageManagementService(Callback c);
-
-        #endregion
-    }
-
-    public interface IHostApis {
-        #region declare host-apis
-
 
         /// <summary>
         ///     Used by a provider to request what metadata keys were passed from the user
@@ -89,12 +108,6 @@ namespace Microsoft.OneGet.Core.Api {
         bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation);
 
         bool AskPermission(string permission);
-
-        bool WhatIf();
-
-        bool PackageInstalled(string packageName, string version, string source, string destination);
-        bool BeforePackageUninstall(string packageName, string version, string source, string destination);
-
         #endregion
     }
 }

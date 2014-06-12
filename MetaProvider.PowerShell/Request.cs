@@ -17,6 +17,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
+    using System.Runtime.Remoting.Proxies;
     using System.Security;
     using Core;
     using Callback = System.Object;
@@ -73,6 +74,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract bool IsCancelled();
 
         public abstract object GetPackageManagementService(Callback c);
+
+        public abstract Type GetIRequestInterface();
         #endregion
 
         #region copy host-apis
@@ -230,6 +233,20 @@ public bool Warning(string message, params object[] args) {
         public void Dispose() {
         }
 
+        public static implicit operator MarshalByRefObject(Request req) {
+            return req.RemoteThis;
+        }
+
+        internal MarshalByRefObject RemoteThis {
+            get {
+                return Extend();
+            }
+        }
+
+        internal MarshalByRefObject Extend(params object[] objects) {
+            return DynamicExtensions.Extend(this, GetIRequestInterface(), objects);
+        }
+
         #endregion
 
         public object CallPowerShell(params object[] args ) {
@@ -355,27 +372,52 @@ public bool Warning(string message, params object[] args) {
 
     #region copy dynamicextension-implementation
 public static class DynamicExtensions {
+        private static dynamic _remoteDynamicInterface;
+        private static dynamic _localDynamicInterface;
 
-        private static dynamic _dynamicInterface;
-
-        public static dynamic DynamicInterface {
+        /// <summary>
+        ///  This is the Instance for DynamicInterface that we use when we're giving another AppDomain a remotable object.
+        /// </summary>
+        public static dynamic LocalDynamicInterface {
             get {
-                return _dynamicInterface;
+                return _localDynamicInterface ?? (_localDynamicInterface = Activator.CreateInstance(RemoteDynamicInterface.GetType()));
+            }
+        }
+
+        /// <summary>
+        /// The is the instance of the DynamicInteface service from the calling AppDomain
+        /// </summary>
+        public static dynamic RemoteDynamicInterface {
+            get {
+                return _remoteDynamicInterface;
             }
             set {
-                // Write Once Property
-                if (_dynamicInterface == null) {
-                    _dynamicInterface = value;
-                    // _dynamicInterface = AppDomain.CurrentDomain.GetData("DynamicInterface");
+                if (_remoteDynamicInterface == null) {
+                    _remoteDynamicInterface = value;
                 }
             }
         }
 
+        /// <summary>
+        /// This is called to adapt an object from a foreign app domain to a known interface
+        /// In this appDomain
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="instance"></param>
+        /// <returns></returns>
         public static T As<T>(this object instance) {
-            return DynamicInterface.Create<T>(instance);
+            return RemoteDynamicInterface.Create<T>(instance);
         }
-        public static T Extend<T>(this object obj, params object[] objects) {
-            return DynamicInterface.Create<T>(objects, obj);
+
+        /// <summary>
+        ///  This is called to adapt and extend an object that we wish to pass to a foreign app domain
+        /// </summary>
+        /// <param name="obj">The base object that we are passing</param>
+        /// <param name="tInterface">the target interface (from the foreign appdomain)</param>
+        /// <param name="objects">the overriding objects (may be anonymous objects with Delegates, or an object with methods)</param>
+        /// <returns></returns>
+        public static MarshalByRefObject Extend(this object obj, Type tInterface, params object[] objects) {
+            return LocalDynamicInterface.Create(tInterface, objects, obj);
         }
     }
 

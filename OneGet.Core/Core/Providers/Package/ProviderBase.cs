@@ -44,10 +44,10 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                     PackageManagementService._instance.ServicesProvider,
                     new {
                         GetPackageManagementService = new Func<object>(() => PackageManagementService._instance),
-                        GetMessageString = new Func<string, string>((s) => s)
+                        GetMessageString = new Func<string, string>((s) => s),
+                        GetIRequestInterface = new Func<Type>(() => typeof(IRequest)),
 #if DEBUG
-                        ,
-                        Debug = new Action<string>(NativeMethods.OutputDebugString)
+                        Debug = new Action<string>(NativeMethods.OutputDebugString),
 #endif
                     }
                 });
@@ -116,6 +116,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                             Name = name,
                             Type = (OptionType)type,
                             IsRequired = isRequired,
+                            ProviderName = Name,
                         };
                         return !(isCancelled() || result.IsCancelled);
                     }),

@@ -14,31 +14,27 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
-    using Core;
-    using Microsoft.OneGet;
-    using Microsoft.OneGet.Core.Api;
     using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Tasks;
+    using Microsoft.OneGet.Core.Providers.Package;
 
     [Cmdlet(VerbsCommon.Get, PackageSourceNoun)]
-    public class GetPackageSource : OneGetCmdlet {
+    public class GetPackageSource : CmdletWithProvider {
         [Parameter(Position = 0)]
         public string Name {get; set;}
 
         [Parameter]
         public string Location {get; set;}
 
-        [Parameter]
-        public string Provider {get; set;}
+        public GetPackageSource()
+            : base(new[] { OptionCategory.Provider, OptionCategory.Source }) {
+        }
 
         public override bool ProcessRecordAsync() {
-            var providers = _packageManagementService.SelectProviders(Provider);
-            if (providers == null) {
-                Error("Unknown Provider", new string[] { Provider});
-                return false;
-            }
+            foreach( var provider in SelectedProviders){
+                if (Stopping) {
+                    return false;
+                }
 
-            foreach( var provider in providers){
                 bool found = false;
                 using(var sources = CancelWhenStopped(provider.GetPackageSources(this) ) ){
                     foreach (var source in sources) {
@@ -58,21 +54,22 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         found = true;
                     }
                 }
+
                 if (!found) {
                     if (!string.IsNullOrEmpty(Name)) {
                         if (!string.IsNullOrEmpty(Location)) {
-                            Error("Provider '{0}' returned no package sources (Name = '{1}' Location='{2}')", new [] { provider.Name, Name, Location });
+                            Warning("Provider '{0}' returned no package sources (Name = '{1}' Location='{2}')", provider.Name, Name, Location );
                             continue;
                         }
-                        Error("Provider '{0}' returned no package sources (Name = '{1}')", new[] { provider.Name, Name });
+                        Warning("Provider '{0}' returned no package sources (Name = '{1}')", provider.Name, Name);
                         continue;
                     }
 
                     if (!string.IsNullOrEmpty(Location)) {
-                        Error("Provider '{0}' returned no package sources (Location = '{1}')", new[] { provider.Name, Location });
+                        Warning("Provider '{0}' returned no package sources (Location = '{1}')", provider.Name, Location);
                         continue;
                     }
-                    Error("Provider '{0}' returned no package sources".format(provider.Name ));
+                    Warning("Provider '{0}' returned no package sources".format(provider.Name));
                 }
 
             }

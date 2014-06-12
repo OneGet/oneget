@@ -32,7 +32,7 @@ namespace Microsoft.OneGet.ServicesProvider.Test {
             return default(string);
         }
         public void InitializeProvider(object dynamicInterface, Callback c) {
-            DynamicExtensions.DynamicInterface = dynamicInterface;
+            DynamicExtensions.RemoteDynamicInterface = dynamicInterface;
 
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:

@@ -14,51 +14,87 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
-    using System.Diagnostics.Eventing.Reader;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Microsoft.OneGet;
-    using Microsoft.OneGet.Core.Api;
     using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Tasks;
+    using Microsoft.OneGet.Core.Packaging;
+    using Microsoft.OneGet.Core.Providers.Package;
 
     [Cmdlet(VerbsCommon.Get, PackageNoun)]
-    public class GetPackage : PackagingCmdlet {
+    public class GetPackage : CmdletWithSearch {
+        private readonly Dictionary<string,bool>  _namesProcessed = new Dictionary<string, bool>();
+        private readonly Dictionary<string, bool> _providersProcessed = new Dictionary<string, bool>();
+        
+        public GetPackage()
+            : base(new[] { OptionCategory.Provider, OptionCategory.Install, }) {
+        }
+
         public override bool ProcessRecordAsync() {
-            var pr = _providers.Value.ToArray();
-            
-            Parallel.ForEach(_providers.Value, provider => {
+            Parallel.ForEach(SelectedProviders, provider => {
+                _providersProcessed.GetOrAdd(provider.Name, () => false);
+
                 try {
                     if (Name.IsNullOrEmpty()) {
-                        var found = false;
-                        using (var packages = CancelWhenStopped(provider.GetInstalledPackages("", this))) {
-                            foreach (var p in packages) {
-                                found = true;
-                                WriteObject(p);
+                        foreach (var pkg in ProcessProvider(provider)) {
+                            WriteObject(pkg);
+                        }
+                    } else {
+                        foreach (var n in Name) {
+                            foreach (var pkg in ProcessNames(provider,n)) {
+                                WriteObject(pkg);
                             }
-                        }
-                        if (!found) {
-                            Error("No installed packages found.");
-                        }
-                        return;
-                    }
-                    foreach (var name in Name) {
-                        var found = false;
-                        using (var packages = CancelWhenStopped(provider.GetInstalledPackages(name, this))) {
-                            foreach (var p in packages) {
-                                found = true;
-                                WriteObject(p);
-                            }
-                        }
-                        if (!found) {
-                            Error("No installed packages found for Name '{0}'.".format(name));
                         }
                     }
                 } catch (Exception e) {
                     e.Dump();
                 }
             });
+            return true;
+        }
+
+        protected IEnumerable<SoftwareIdentity> ProcessProvider(PackageProvider provider) {
+            using (var packages = CancelWhenStopped(provider.GetInstalledPackages("", this))) {
+                foreach (var p in packages) {
+                    _providersProcessed.AddOrSet(provider.Name, true);
+                    yield return p;
+                }
+            }
+        }
+
+        protected IEnumerable<SoftwareIdentity>  ProcessNames(PackageProvider provider,string name) {
+            _namesProcessed.GetOrAdd(name, () => false);
+            using (var packages = CancelWhenStopped(provider.GetInstalledPackages(name, this))) {
+                foreach (var p in packages) {
+                    _namesProcessed.AddOrSet(name, true);
+                    _providersProcessed.AddOrSet(provider.Name, true);
+                    yield return p;
+                }
+            }
+            
+        }
+
+        protected IEnumerable<string> UnprocessedNames {
+            get {
+                return _namesProcessed.Keys.Where(each => !_namesProcessed[each]);
+            }
+        }
+        protected IEnumerable<string> UnprocessedProviders {
+            get {
+                return _providersProcessed.Keys.Where(each => !_providersProcessed[each]);
+            }
+        }
+
+        public override bool EndProcessingAsync() {
+            foreach (var name in UnprocessedNames) {
+                Error("GET_PACKAGE_NOT_FOUND", name);
+            }
+            if (!Stopping) {
+                foreach (var provider in UnprocessedProviders) {
+                    Warning("NO_PACKAGES_FOUND_FOR_PROVIDER", provider);
+                }    
+            }
             return true;
         }
     }

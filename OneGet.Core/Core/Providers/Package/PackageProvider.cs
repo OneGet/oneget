@@ -278,7 +278,7 @@ namespace Microsoft.OneGet.Core.Providers.Package {
                         result.Add(new PackageSource {
                             Name = name,
                             Location = location,
-                            Provider = Name,
+                            Provider = this,
                             IsTrusted = isTrusted
                         });
                         return !(isCancelled() || result.IsCancelled);

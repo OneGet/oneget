@@ -13,72 +13,103 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
-    using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Core;
-    using Microsoft.OneGet;
-    using Microsoft.OneGet.Core.Api;
     using Microsoft.OneGet.Core.Extensions;
+    using Microsoft.OneGet.Core.Packaging;
     using Microsoft.OneGet.Core.Providers.Package;
-    using Microsoft.OneGet.Core.Tasks;
 
-    [Cmdlet(VerbsCommon.Remove, PackageSourceNoun, SupportsShouldProcess = true)]
-    public class RemovePackageSource : OneGetCmdlet {
-        [Parameter(Mandatory = true, Position = 0)]
-        public string Name {get; set;}
+    [Cmdlet(VerbsLifecycle.Unregister, PackageSourceNoun, SupportsShouldProcess = true)]
+    public class UnregisterPackageSource : CmdletWithSource {
+        private string[] _specifiedPackageSources;
 
-        [Parameter(Position = 1)]
-        public string Provider {get; set;}
+        public UnregisterPackageSource()
+            : base(new[] {
+                OptionCategory.Provider, OptionCategory.Source
+            }) {
+        }
 
-#if AFTER_CTP
-        [Parameter]
-        public SwitchParameter Machine {get; set;}
-
-        [Parameter]
-        public SwitchParameter User {get; set;}
+        [Parameter(ParameterSetName = ProviderByObjectSet, Position = 0, Mandatory = true)]
+        [Parameter(ParameterSetName = ProviderByNameSet, Position = 0, Mandatory = true)]
+        public string Source {get; set;}
 
         [Parameter]
         public SwitchParameter Force {get; set;}
-#endif
+
+        public override IEnumerable<string> SpecifiedPackageSources {
+            get {
+                if (_specifiedPackageSources == null) {
+                    if (Source.IsEmptyOrNull()) {
+                        return new string[0];
+                    }
+                    return new string[] {
+                        Source
+                    };
+                }
+                return _specifiedPackageSources;
+            }
+            set {
+                _specifiedPackageSources = value.ToArray();
+            }
+        }
 
         public override bool ProcessRecordAsync() {
-            PackageProvider packageProvider = null;
-
-            if (string.IsNullOrEmpty(Provider)) {
-                var providers = _packageManagementService.SelectProviders(Provider, new[] {
-                    Name
-                }).ToArray();
-
-                if (providers.Length == 1) {
-                    packageProvider = providers[0];
-                    Provider = packageProvider.Name;
-                } else {
-                    Error("Conflict/Multiple providers have source '{0}'; must specify -Provider ".format(Name));
-                    return false;
+            if (IsSourceByObject) {
+                if (PackageSource.IsNullOrEmpty()) {
+                    return Error("NULL_OR_EMPTY_PACKAGE_SOURCE");
                 }
-            } else {
-                packageProvider = _packageManagementService.SelectProviders(Provider).FirstOrDefault();
-                if (packageProvider == null) {
-                    Error("Unknown Provider : {0}", new string[] {Provider});
-                    return false;
-                }
-            }
 
-            using (var sources = CancelWhenStopped(packageProvider.GetPackageSources(this))) {
-                var src = sources.FirstOrDefault(each => each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase));
-                if (src != null) {
-                    if (ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}'".format(src.Name, src.Location, src.Provider)).Result) {
-                        packageProvider.RemovePackageSource(Name, this);
-                        return true;
+                foreach (var source in PackageSource) {
+                    if (Stopping) {
+                        return false;
                     }
-                    return false;
-                } else {
-                    Error("Unknown Source : {0}", new string[] {Name});
+
+                    var provider = PackageManagementService.SelectProviders(source.ProviderName).FirstOrDefault();
+                    if (provider == null) {
+                        return Error("UNABLE_TO_RESOLVE_PACKAGE_PROVIDER");
+                    }
+                    Unregister(source);
                 }
+                return true;
             }
 
+            // otherwise, we're just deleting a source by name
+            var prov = SelectedProviders;
+
+            if (Stopping) {
+                return false;
+            }
+
+            if (prov.Length == 0) {
+                return Error("PROVIDER_NOT_FOUND");
+            }
+
+            if (prov.Length > 1) {
+
+                var sources = prov.SelectMany(each => each.GetPackageSources(this).ToArray()).ToArray();
+
+                if (sources.Length == 0) {
+                    return Error("SOURCE_NOT_FOUND", Source);
+                }
+
+                if (sources.Length > 1) {
+                    return Error("DISAMBIGUATE_SOURCE_VS_PROVIDER", prov.Select(each => each.Name).JoinWithComma(), Source);
+                }
+
+                return Unregister(sources[0]);
+            }
+
+            
             return true;
+        }
+
+        public bool Unregister(PackageSource source) {
+            if (ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}'".format(source.Name, source.Location, source.ProviderName)).Result) {
+                source.Provider.RemovePackageSource(source.Name, this);
+                return true;
+            }
+            return false;
         }
     }
 }

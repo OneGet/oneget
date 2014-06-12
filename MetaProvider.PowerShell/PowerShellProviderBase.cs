@@ -119,10 +119,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         internal object CallPowerShell(Request request, params object[] args) {
             _powershell["request"] = request;
 
+            DynamicPowershellResult result = null;
+
             try {
                 request.Debug("INVOKING PowerShell Fn {0}", request.CommandInfo.Name);
                 // make sure we don't pass the callback to the function.
-                var result = _powershell.NewTryInvokeMemberEx(request.CommandInfo.Name, new string[0], args);
+                result = _powershell.NewTryInvokeMemberEx(request.CommandInfo.Name, new string[0], args);
 
                
 
@@ -163,6 +165,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             } catch (Exception e) {
                 e.Dump();
             } finally {
+                _powershell.WaitForAvailable();
                 _powershell["request"] = null;
             }
             return null;

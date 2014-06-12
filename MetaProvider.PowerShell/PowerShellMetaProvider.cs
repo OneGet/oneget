@@ -109,7 +109,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     foreach (var each in files) {
                         
                         DynamicPowershellResult items =ps.ImportModule(Name: each, PassThru: true);
-                        items.Wait();
+                        items.WaitForCompletion();
                         var errors = items.Errors.ToArray();
 
                         if (errors.Any()) {
@@ -236,7 +236,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         public void InitializeProvider(object dynamicInterface, Callback c) {
-            DynamicExtensions.DynamicInterface = dynamicInterface;
+            DynamicExtensions.RemoteDynamicInterface = dynamicInterface;
 
             if (c == null) {
                 throw new ArgumentNullException("c");

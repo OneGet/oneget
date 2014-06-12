@@ -43,6 +43,7 @@ namespace Microsoft.OneGet.Core.Packaging {
             return null;
         }
 
+        public string ProviderName {get; set;}
 
         private IEnumerable<string> _values;
         public OptionCategory Category { get; internal set; }

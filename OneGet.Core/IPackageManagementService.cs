@@ -13,7 +13,6 @@
 //  
 
 namespace Microsoft.OneGet {
-    using System;
     using System.Collections.Generic;
     using Core.Providers.Package;
     using Callback = System.Object;
@@ -30,8 +29,6 @@ namespace Microsoft.OneGet {
     /// </summary>
     public interface IPackageManagementService {
         IEnumerable<PackageProvider> SelectProviders(string provider);
-
-        IEnumerable<PackageProvider> SelectProviders(string providerName, IEnumerable<string> sourceNames);
 
         bool Initialize(Callback c, bool userInteractionPermitted);
 

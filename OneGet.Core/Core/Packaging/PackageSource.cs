@@ -14,10 +14,10 @@
 
 namespace Microsoft.OneGet.Core.Packaging {
     using System;
+    using Providers.Package;
 
     /// <summary>
     ///     Represents a package source (repository)
-    ///     todo: Should this be serializable instead?
     /// </summary>
     public class PackageSource : MarshalByRefObject {
         public override object InitializeLifetimeService() {
@@ -27,7 +27,13 @@ namespace Microsoft.OneGet.Core.Packaging {
         public string Name {get; internal set;}
         public string Location {get; internal set;}
 
-        public string Provider {get; internal set;}
+        public string ProviderName {
+            get {
+                return Provider.Name;
+            }
+        }
+
+        public PackageProvider Provider {get; internal set;}
 
         public bool IsTrusted {get; internal set;}
     }

@@ -26,7 +26,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'AddPackageSource'" );
+                request.Debug("Calling 'AddPackageSource'" );
             }
 
         }
@@ -36,7 +36,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'FindPackage'" );
+                request.Debug("Calling 'FindPackage'" );
             }
 
             return  default(bool);
@@ -47,7 +47,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'FindPackageByFile'" );
+                request.Debug("Calling 'FindPackageByFile'" );
             }
 
             return  default(bool);
@@ -58,7 +58,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'FindPackageByUri'" );
+                request.Debug("Calling 'FindPackageByUri'" );
             }
 
             return  default(bool);
@@ -69,7 +69,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'GetInstalledPackages'" );
+                request.Debug("Calling 'GetInstalledPackages'" );
             }
 
             return  default(bool);
@@ -80,7 +80,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'GetDynamicOptions'" );
+                request.Debug("Calling 'GetDynamicOptions'" );
             }
 
         }
@@ -102,17 +102,17 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'GetPackageSources'" );
+                request.Debug("Calling 'GetPackageSources'" );
             }
 
             return  default(bool);
         }
         public void InitializeProvider(object dynamicInterface, Callback c) {
-            DynamicExtensions.DynamicInterface = dynamicInterface;
+            DynamicExtensions.RemoteDynamicInterface = dynamicInterface;
 
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information", "Calling 'InitializeProvider'");
+                request.Debug( "Calling 'InitializeProvider'");
             }
         }
         public bool InstallPackage(string fastPath, Callback c) {
@@ -121,7 +121,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'InstallPackage'" );
+                request.Debug("Calling 'InstallPackage'" );
             }
 
             return  default(bool);
@@ -134,7 +134,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'InstallPackageByFile'" );
+                request.Debug("Calling 'InstallPackageByFile'" );
             }
 
             return  default(bool);
@@ -145,7 +145,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'InstallPackageByUri'" );
+                request.Debug("Calling 'InstallPackageByUri'" );
             }
 
             return  default(bool);
@@ -156,7 +156,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'IsTrustedPackageSource'" );
+                request.Debug("Calling 'IsTrustedPackageSource'" );
             }
 
             return  default(bool);
@@ -167,7 +167,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'IsValidPackageSource'" );
+                request.Debug("Calling 'IsValidPackageSource'" );
             }
 
             return  default(bool);
@@ -178,7 +178,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'RemovePackageSource'" );
+                request.Debug("Calling 'RemovePackageSource'" );
             }
 
         }
@@ -188,7 +188,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'UninstallPackage'" );
+                request.Debug("Calling 'UninstallPackage'" );
             }
 
             return  default(bool);
@@ -199,7 +199,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'GetFeatures'" );
+                request.Debug("Calling 'GetFeatures'" );
             }
 
         }
@@ -211,7 +211,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'DownloadPackage'" );
+                request.Debug("Calling 'DownloadPackage'" );
             }
 
             return  default(bool);
@@ -222,7 +222,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'GetPackageDependencies'" );
+                request.Debug("Calling 'GetPackageDependencies'" );
             }
 
             return  default(bool);
@@ -233,7 +233,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'GetPackageDetails'" );
+                request.Debug("Calling 'GetPackageDetails'" );
             }
 
             return  default(bool);
@@ -244,7 +244,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'StartFind'" );
+                request.Debug("Calling 'StartFind'" );
             }
 
             return  default(int);
@@ -255,7 +255,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Information","Calling 'CompleteFind'" );
+                request.Debug("Calling 'CompleteFind'" );
             }
 
             return  default(bool);
@@ -292,8 +292,9 @@ public enum OptionCategory {
     }
 
     public enum EnvironmentContext {
-        User = 0,
-        System = 1
+        All = 0,
+        User = 1,
+        System = 2
     }
 
     #endregion

@@ -17,18 +17,27 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Microsoft.OneGet;
-    using Microsoft.OneGet.Core.Api;
     using Microsoft.OneGet.Core.Extensions;
     using Microsoft.OneGet.Core.Packaging;
-    using Microsoft.OneGet.Core.Tasks;
+    using Microsoft.OneGet.Core.Providers.Package;
 
     [Cmdlet(VerbsCommon.Find, PackageNoun), OutputType(typeof (SoftwareIdentity))]
-    public class FindPackage : FindInstallCmdlet {
-        public override bool ProcessRecordAsync() {
-            var noMatchNames = new HashSet<string>(Name ?? new string[]{});
+    public class FindPackage : CmdletWithSearchAndSource {
+        public FindPackage()
+            : base(new[] {
+                OptionCategory.Provider, OptionCategory.Source, OptionCategory.Package
+            }) {
+        }
+        
+      //   public override bool ProcessRecordAsync() {
+            
+        // }
 
-            Parallel.ForEach(_providers.Value, provider => {
+        public override bool EndProcessingAsync() {
+            var noMatchNames = new HashSet<string>(Name ?? new string[] {
+            });
+
+            Parallel.ForEach(SelectedProviders, provider => {
                 try {
                     if (!Name.IsNullOrEmpty()) {
                         foreach (var name in Name) {
@@ -63,7 +72,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             // whine about things not matched.
             foreach (var name in noMatchNames) {
-                Warning("No Package Found", new string[] {name});
+                Warning("No Package Found", new string[] {
+                    name
+                });
             }
 
             return true;

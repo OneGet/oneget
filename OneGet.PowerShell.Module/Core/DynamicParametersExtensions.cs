@@ -22,45 +22,52 @@ namespace Microsoft.PowerShell.OneGet.Core {
     using Microsoft.OneGet.Core.Extensions;
     using Microsoft.OneGet.Core.Packaging;
     using Microsoft.OneGet.Core.Providers.Package;
-    
-    internal static class DynamicParametersExtensions {
-        public static RuntimeDefinedParameter CreateRuntimeDynamicParameter(this DynamicOption definition ) {
-            var values = definition.PossibleValues.ToArray();
 
-            Type parameterType;
-            switch (definition.Type ) {
-                case OptionType.String:
-                    parameterType = typeof(SwitchParameter);
-                    break;
+    internal class CustomRuntimeDefinedParameter : RuntimeDefinedParameter {
+
+        internal HashSet<DynamicOption> Options = new HashSet<DynamicOption>();
+        
+        public CustomRuntimeDefinedParameter(DynamicOption option) : base( option.Name, ParameterType(option.Type), new Collection<Attribute>{ new ParameterAttribute() } ) {
+            Options.Add(option);
+            var values = option.PossibleValues.ToArray();
+            if (!values.IsNullOrEmpty()) {
+                Attributes.Add(new ValidateSetAttribute(values));
+            }
+        }
+
+        private static Type ParameterType(OptionType optionType ) {
+            switch (optionType) {
+                case OptionType.Switch:
+                    return typeof(SwitchParameter);
                 case OptionType.Uri:
-                    parameterType = typeof(Uri);
-                    break;
+                    return  typeof(Uri);
                 case OptionType.StringArray:
-                    parameterType = typeof(string[]);
-                    break;
+                    return typeof(string[]);
                 case OptionType.Int:
-                    parameterType = typeof(int);
-                    break;
+                    return typeof(int);
                 case OptionType.Path:
-                    parameterType = typeof(string);
-                    break;
-                
+                    return  typeof(string);
                 default:
-                    parameterType = typeof(string);
-                    break;
+                    return typeof(string);
             }
-            
+        }
 
-            if (values.IsNullOrEmpty()) {
-                return new RuntimeDefinedParameter(definition.Name, parameterType, new Collection<Attribute> {
-                    new ParameterAttribute()
-                });
+        internal IEnumerable<string> Values {
+            get {
+                if (IsSet && Value != null ) {
+                    switch (Options.FirstOrDefault().Type) {
+                        case OptionType.Switch:
+                            return new string [] {"true" };
+                        case OptionType.StringArray:
+                            return (string[]) Value;
+                    }
+                    return new [] { Value.ToString() };
+                }
+                return new string[0];
             }
-
-            return new RuntimeDefinedParameter(definition.Name, parameterType, new Collection<Attribute> {
-                new ParameterAttribute(),
-                new ValidateSetAttribute(values)
-            });
         }
     }
+
+    
+    
 }

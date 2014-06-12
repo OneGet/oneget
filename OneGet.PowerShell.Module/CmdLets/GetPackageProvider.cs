@@ -15,11 +15,23 @@
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
     using Core;
+    using Microsoft.OneGet.Core.Providers.Package;
 
     [Cmdlet(VerbsCommon.Get, PackageProviderNoun)]
-    public class GetPackageProvider : OneGetCmdlet {
+    public class GetPackageProvider : CmdletBase {
+        public GetPackageProvider() {
+        }
+
         [Parameter]
         public string[] Name {get; set;}
+
+        public override bool EndProcessingAsync() {
+            foreach (var p in PackageManagementService.SelectProviders(null)) {
+                WriteObject(p);
+            }
+
+            return true;
+        }
     }
 
 }

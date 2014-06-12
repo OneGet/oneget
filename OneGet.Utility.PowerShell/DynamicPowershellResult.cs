@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Core {
+namespace Microsoft.OneGet {
     using System;
     using System.Collections;
     using System.Collections.Concurrent;
@@ -22,20 +22,25 @@ namespace Microsoft.OneGet.Core {
     using System.Threading;
 
     public class DynamicPowershellResult : IDisposable, IEnumerable<object> {
-        internal ManualResetEvent CompletedEvent = new ManualResetEvent(false);
-        public BlockingCollection<ErrorRecord> Errors = new BlockingCollection<ErrorRecord>();
-        internal BlockingCollection<object> Output = new BlockingCollection<object>();
+        private ManualResetEvent _completedEvent = new ManualResetEvent(false);
+        private ManualResetEvent _startedEvent = new ManualResetEvent(false);
+        private BlockingCollection<object> _output = new BlockingCollection<object>();
 
-        internal ManualResetEvent StartedEvent = new ManualResetEvent(false);
+        public BlockingCollection<ErrorRecord> Errors = new BlockingCollection<ErrorRecord>();
+        
         internal bool LastIsTerminatingError {get; set;}
         public bool IsFailing {get; internal set;}
-        public void Wait() {
-            CompletedEvent.WaitOne();
+        public void WaitForCompletion() {
+            _completedEvent.WaitOne();
+        }
+
+        public void WaitForStart() {
+            _startedEvent.WaitOne();
         }
 
         public object Value {
             get {
-                StartedEvent.WaitOne();
+                WaitForStart();
 
                 var result = this.FirstOrDefault();
 
@@ -56,13 +61,13 @@ namespace Microsoft.OneGet.Core {
                 if (LastIsTerminatingError) {
                     throw new Exception("Cmdlet reported error");
                 }
-                return Output.GetConsumingEnumerable();
+                return _output.GetConsumingEnumerable();
             }
         }
 
         public bool Success {
             get {
-                CompletedEvent.WaitOne();
+                _completedEvent.WaitOne();
 
                 if (LastIsTerminatingError) {
                     return false;
@@ -71,10 +76,32 @@ namespace Microsoft.OneGet.Core {
             }
         }
 
+        public void Started() {
+            _startedEvent.Set();
+        }
+
+        public void Completed() {
+            Errors.CompleteAdding();
+            _output.CompleteAdding();
+
+            _startedEvent.Set();
+            _completedEvent.Set();
+        }
+
+        public bool IsCompleted {
+            get {
+                return _output.IsCompleted;
+            }
+        }
+
+        public void Add(object obj) {
+            _output.Add( obj);
+        }
+
         public void Dispose() {
-            if (Output != null) {
-                Output.Dispose();
-                Output = null;
+            if (_output != null) {
+                _output.Dispose();
+                _output = null;
             }
 
             if (Errors != null) {
@@ -82,19 +109,21 @@ namespace Microsoft.OneGet.Core {
                 Errors = null;
             }
 
-            if (StartedEvent != null) {
-                StartedEvent.Dispose();
-                StartedEvent = null;
+            if (_startedEvent != null) {
+                _startedEvent.Set();
+                _startedEvent.Dispose();
+                _startedEvent = null;
             }
 
-            if (CompletedEvent != null) {
-                CompletedEvent.Dispose();
-                CompletedEvent = null;
+            if (_completedEvent != null) {
+                _completedEvent.Set();
+                _completedEvent.Dispose();
+                _completedEvent = null;
             }
         }
 
         public IEnumerator<object> GetEnumerator() {
-            return Output.GetConsumingEnumerable().GetEnumerator();
+            return _output.GetConsumingEnumerable().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() {

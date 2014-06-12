@@ -14,7 +14,6 @@
 
 namespace Microsoft.OneGet {
     using System;
-    using System.Collections;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
@@ -29,10 +28,10 @@ namespace Microsoft.OneGet {
     public delegate bool OnMainThread(Func<bool> onMainThreadDelegate);
 
     public abstract class AsyncCmdlet : PSCmdlet, IDynamicParameters, IDisposable {
+        private readonly HashSet<string> _errors = new HashSet<string>();
         private List<ICancellable> _cancelWhenStopped = new List<ICancellable>();
         private bool _consumed;
         private RuntimeDefinedParameterDictionary _dynamicParameters;
-        private HashSet<string> _errors = new HashSet<string>();
         protected bool _failing = false;
 
         private LocalEventSource _localEventSource;
@@ -40,9 +39,6 @@ namespace Microsoft.OneGet {
         private BlockingCollection<TaskCompletionSource<bool>> _messages;
 
         private int? _parentProgressId;
-
-        public AsyncCmdlet() {
-        }
 
         protected bool Confirm {
             get {
@@ -58,7 +54,6 @@ namespace Microsoft.OneGet {
 
         protected static bool IsInitialized {get; set;}
 
-        [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "Still in development.")]
         public virtual RuntimeDefinedParameterDictionary DynamicParameters {
             get {
                 return _dynamicParameters ?? (_dynamicParameters = new RuntimeDefinedParameterDictionary());
@@ -153,7 +148,8 @@ namespace Microsoft.OneGet {
         }
 
         public bool Warning(string message) {
-            return Warning(message, new object[] {});
+            return Warning(message, new object[] {
+            });
         }
 
         public bool Warning(string message, params object[] args) {
@@ -166,7 +162,8 @@ namespace Microsoft.OneGet {
         }
 
         public bool Error(string message) {
-            return Error(message, new object[]{});
+            return Error(message, new object[] {
+            });
         }
 
         public bool Error(string message, params object[] args) {
@@ -192,10 +189,11 @@ namespace Microsoft.OneGet {
             return IsCancelled();
         }
 
-
         public bool Message(string message) {
-            return Message( message, new object[]{});
+            return Message(message, new object[] {
+            });
         }
+
         public bool Message(string message, params object[] args) {
             // queue the message to run on the main thread.
             if (IsInvocation) {
@@ -210,8 +208,10 @@ namespace Microsoft.OneGet {
         }
 
         public bool Verbose(string message) {
-            return Verbose(message, new object[] { });
+            return Verbose(message, new object[] {
+            });
         }
+
         public bool Verbose(string message, params object[] args) {
             if (IsInvocation) {
                 // Message is going to go to the verbose channel
@@ -224,7 +224,8 @@ namespace Microsoft.OneGet {
         }
 
         public bool Debug(string message) {
-            return Debug(message, new object[] { });
+            return Debug(message, new object[] {
+            });
         }
 
         public bool Debug(string message, params object[] args) {
@@ -249,16 +250,17 @@ namespace Microsoft.OneGet {
         }
 
         public int StartProgress(int parentActivityId, string message) {
-            return StartProgress(parentActivityId, message, new object[]{});
+            return StartProgress(parentActivityId, message, new object[] {
+            });
         }
 
         public int StartProgress(int parentActivityId, string message, params object[] args) {
             return 0;
         }
 
-
         public bool Progress(int activityId, int progress, string message) {
-            return Progress(activityId,progress,message, new object[]{});
+            return Progress(activityId, progress, message, new object[] {
+            });
         }
 
         public bool Progress(int activityId, int progress, string message, params object[] args) {
@@ -310,7 +312,6 @@ namespace Microsoft.OneGet {
             return Stopping || _failing;
         }
 
-
         public string GetMessageString(string message) {
             // TODO: lookup message as a message code first.
             // TODO: ie: message = LookupMessage(message).formatWithIEnumerable(objects);
@@ -319,26 +320,25 @@ namespace Microsoft.OneGet {
         }
 
         private void AsyncRun(Func<bool> asyncAction) {
-            _messages = new BlockingCollection<TaskCompletionSource<bool>>();
+            using (_messages = new BlockingCollection<TaskCompletionSource<bool>>()) {
+                // spawn the activity off in another thread.
+                var task = IsInitialized ?
+                    Task.Factory.StartNew(asyncAction, TaskCreationOptions.LongRunning) :
+                    Task.Factory.StartNew(Init, TaskCreationOptions.LongRunning).ContinueWith(anteceedent => asyncAction());
 
-            // spawn the activity off in another thread.
-            var task = IsInitialized ?
-                Task.Factory.StartNew(asyncAction, TaskCreationOptions.LongRunning) :
-                Task.Factory.StartNew(Init, TaskCreationOptions.LongRunning).ContinueWith(anteceedent => asyncAction());
+                // when the task is done, mark the msg queue as complete
+                task.ContinueWith(anteceedent => {
+                    if (_messages != null) {
+                        _messages.CompleteAdding();
+                    }
+                });
 
-            // when the task is done, mark the msg queue as complete
-            task.ContinueWith(anteceedent => {
-                if (_messages != null) {
-                    _messages.CompleteAdding();
+                // process the queue of messages back in the main thread so that they
+                // can properly access the non-thread-safe-things in cmdlet
+                foreach (var message in _messages.GetConsumingEnumerable()) {
+                    InvokeMessage(message);
                 }
-            });
-
-            // process the queue of messages back in the main thread so that they
-            // can properly access the non-thread-safe-things in cmdlet
-            foreach (var message in _messages.GetConsumingEnumerable()) {
-                InvokeMessage(message);
             }
-            _messages.Dispose();
             _messages = null;
         }
 
@@ -489,12 +489,7 @@ namespace Microsoft.OneGet {
             if (!IsInvocation) {
                 return false.AsResultTask();
             }
-            return QueueMessage(() => {
-#if DEBUG_BUILD
-                NativeMethods.OutputDebugString(text);
-#endif
-                base.WriteVerbose(text);
-            });
+            return QueueMessage(() => base.WriteVerbose(text));
         }
 
         public new Task<bool> ShouldContinue(string query, string caption) {
@@ -560,14 +555,6 @@ namespace Microsoft.OneGet {
             return true;
         }
 
-        public virtual Hashtable GetRequestOptions() {
-            return null;
-        }
-
-        public virtual Hashtable GetRequestMetadata() {
-            return null;
-        }
-
         protected virtual void Dispose(bool disposing) {
             if (disposing) {
                 _cancelWhenStopped.Clear();
@@ -586,6 +573,5 @@ namespace Microsoft.OneGet {
                 }
             }
         }
-
     }
 }

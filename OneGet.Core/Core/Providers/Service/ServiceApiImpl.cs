@@ -435,6 +435,7 @@ namespace Microsoft.OneGet.Core.Providers.Service {
         public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Callback c){
          // TODO: Fill in implementation
         }
+
         #endregion
 
         internal Callback Invoke {

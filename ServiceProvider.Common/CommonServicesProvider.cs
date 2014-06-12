@@ -38,7 +38,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         /// <param name="dynamicInterface">A reference to the DynamicInterface class -- used to implement late-binding</param>
         /// <param name="c">Callback Delegate Reference</param>
         public void InitializeProvider(object dynamicInterface, Callback c) {
-            DynamicExtensions.DynamicInterface = dynamicInterface;
+            DynamicExtensions.RemoteDynamicInterface = dynamicInterface;
         }
 
 

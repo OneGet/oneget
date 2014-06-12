@@ -77,29 +77,13 @@ namespace Microsoft.OneGet {
         private bool _initialized;
 
         public bool Initialize(Callback callback, bool userInteractionPermitted) {
-            var request = callback.As<ICoreApis>();
+            var request = callback.As<IRequest>();
 
             request.Debug("starting Initialize");
             // var request = _dynamicInterface.Create<IHostAndCoreAPIs>(callback);
 
             lock (_lockObject) {
                 if (!_initialized) {
-#if _MOVE_TO_BOOTSTRAP_PROVIDER
-                    try {
-                        if (Instance.Service.GetNuGetDllPath(callback).IsEmptyOrNull()) {
-                            // we are unable to bootstrap NuGet correctly.
-                            // We can't really declare that the providers are ready, and we should just 
-                            // return as if we never really succeded (as it may have been that this got called as 
-                            // the result of a tab-completion and we can't fully bootstrap if that was the case.
-                            request.Error(Messages.Miscellaneous.NuGetRequired);
-
-                            return false;
-
-                        }
-                    } catch {
-                        return false;
-                    }
-#endif
                     LoadProviders(callback);
 
                     _initialized = true;
@@ -123,7 +107,7 @@ namespace Microsoft.OneGet {
         /// </summary>
         /// <param name="callback"></param>
         private void LoadProviders(Callback callback) {
-            var request = callback.As<ICoreApis>();
+            var request = callback.As<IRequest>();
 
             request.Debug("Staring LoadProviders");
 
@@ -163,10 +147,15 @@ namespace Microsoft.OneGet {
         }
 
         public IEnumerable<PackageProvider> SelectProviders(string providerName) {
-            return SelectProviders(providerName, null);
+            if (providerName.Is()) {
+                // strict name match for now.
+                return PackageProviders.Where(each => each.Name.Equals(providerName, StringComparison.CurrentCultureIgnoreCase)).ByRef();
+            }
+
+            return PackageProviders.ByRef();
         }
 
-        public IEnumerable<PackageProvider> SelectProviders(string providerName, IEnumerable<string> sourceNames) {
+        public IEnumerable<PackageProvider> xSelectProviders(string providerName, IEnumerable<string> sourceNames, Callback c) {
             var providers = PackageProviders;
 
             if (providerName.Is()) {
@@ -243,29 +232,9 @@ namespace Microsoft.OneGet {
                 // so that we can drop them when necessary.
                 var name = Path.GetFileNameWithoutExtension(primaryAssemblyPath) ?? primaryAssemblyPath;
                 var pd = new PluginDomain(string.Format( "PluginDomain [{0}]",name.Substring(name.LastIndexOf('.')+1)));
-                /*
-                // add event listeners to the new appdomain.
-                pd.Invoke(c => {CurrentTask.Events += new Verbose(c.Invoke);}, typeof (Verbose).CreateWrappedProxy(new Verbose((f, o) => Event<Verbose>.Raise(f, o.ByRef()))) as WrappedFunc<string, IEnumerable<object>, bool>);
-                pd.Invoke(c => {CurrentTask.Events += new Warning(c.Invoke);}, typeof (Warning).CreateWrappedProxy(new Warning((f, o) => Event<Warning>.Raise(f, o.ByRef()))) as WrappedFunc<string, IEnumerable<object>, bool>);
-                pd.Invoke(c => {CurrentTask.Events += new Message(c.Invoke);}, typeof (Message).CreateWrappedProxy(new Message((f, o) => Event<Message>.Raise(f, o.ByRef()))) as WrappedFunc<string, IEnumerable<object>, bool>);
-                pd.Invoke(c => {CurrentTask.Events += new Error(c.Invoke);}, typeof (Error).CreateWrappedProxy(new Error((f, o) => Event<Error>.Raise(f, o.ByRef()))) as WrappedFunc<string, IEnumerable<object>, bool>);
-                pd.Invoke(c => {CurrentTask.Events += new Debug(c.Invoke);}, typeof (Debug).CreateWrappedProxy(new Debug((f, o) => Event<Debug>.Raise(f, o.ByRef()))) as WrappedFunc<string, IEnumerable<object>, bool>);
 
-                pd.Invoke(c => {CurrentTask.Events += new StartProgress(c.Invoke);},
-                    typeof (StartProgress).CreateWrappedProxy(new StartProgress((pid, f, o) => Event<StartProgress>.Raise(pid, f, o.ByRef()))) as WrappedFunc<int, string, IEnumerable<object>, int>);
-
-                pd.Invoke(c => {CurrentTask.Events += new Progress(c.Invoke);},
-                    typeof (Progress).CreateWrappedProxy(new Progress((id, i, f, o) => Event<Progress>.Raise(id, i, f, o.ByRef()))) as WrappedFunc<int, int, string, IEnumerable<object>, bool>);
-
-                pd.Invoke(c => {CurrentTask.Events += new CompleteProgress(c.Invoke);},
-                    typeof (CompleteProgress).CreateWrappedProxy(new CompleteProgress((id, c) => Event<CompleteProgress>.Raise(id, c))) as WrappedFunc<int, bool, bool>);
-
-                pd.Invoke(c => {CurrentTask.Events += new ExceptionThrown(c.Invoke);},
-                    typeof (ExceptionThrown).CreateWrappedProxy(new ExceptionThrown((e, m, s) => Event<ExceptionThrown>.Raise(e, m, s))) as WrappedFunc<string, string, string, bool>);
-                */
-
+                // inject this assembly into the target appdomain.
                 pd.LoadFileWithReferences(Assembly.GetExecutingAssembly().Location);
-                ((AppDomain)pd).SetData("IRequest", typeof(IRequest));
 
                 return pd;
             } catch (Exception e) {

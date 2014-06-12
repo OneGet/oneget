@@ -39,7 +39,7 @@
         'Add-PackageSource',
         'Find-Package',
         'Get-Package',
-        #'Get-PackageProvider', #Not Implemented Yet.
+        'Get-PackageProvider', 
         'Get-PackageSource',
         'Install-Package',
         'Remove-PackageSource',
