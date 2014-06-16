@@ -23,6 +23,43 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
 
         #region copy core-apis
 
+        /// <summary>
+        ///     The provider can query to see if the operation has been cancelled.
+        ///     This provides for a gentle way for the caller to notify the callee that
+        ///     they don't want any more results.
+        /// </summary>
+        /// <returns>returns TRUE if the operation has been cancelled.</returns>
+        public abstract bool IsCancelled();
+
+        /// <summary>
+        ///     Returns a reference to the PackageManagementService API
+        ///     The consumer of this function should either use this as a dynamic object
+        ///     Or DuckType it to an interface that resembles IPacakgeManagementService
+        /// </summary>
+        /// <param name="c"></param>
+        /// <returns></returns>
+        public abstract object GetPackageManagementService(Object c);
+
+        /// <summary>
+        ///     Returns the type for a Request/Callback that the OneGet Core is expecting
+        ///     This is (currently) neccessary to provide an appropriately-typed version
+        ///     of the Request to the core when a Plugin is calling back into the core
+        ///     and has to pass a Callback.
+        /// </summary>
+        /// <returns></returns>
+        public abstract Type GetIRequestInterface();
+
+        public abstract bool NotifyBeforePackageInstall(string packageName, string version, string source, string destination);
+
+        public abstract bool NotifyPackageInstalled(string packageName, string version, string source, string destination);
+
+        public abstract bool NotifyBeforePackageUninstall(string packageName, string version, string source, string destination);
+
+        public abstract bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
+        #endregion
+
+        #region copy host-apis
+
         public abstract string GetMessageString(string message);
 
         public abstract bool Warning(string message);
@@ -42,21 +79,6 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         public abstract bool Progress(int activityId, int progress, string message);
 
         public abstract bool CompleteProgress(int activityId, bool isSuccessful);
-
-        /// <summary>
-        ///     The provider can query to see if the operation has been cancelled.
-        ///     This provides for a gentle way for the caller to notify the callee that
-        ///     they don't want any more results.
-        /// </summary>
-        /// <returns>returns TRUE if the operation has been cancelled.</returns>
-        public abstract bool IsCancelled();
-
-        public abstract object GetPackageManagementService(Callback c);
-
-        public abstract Type GetIRequestInterface();
-        #endregion
-
-        #region copy host-apis
 
         /// <summary>
         ///     Used by a provider to request what metadata keys were passed from the user
@@ -87,48 +109,42 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         public abstract bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation);
 
         public abstract bool AskPermission(string permission);
-
-        public abstract bool WhatIf();
-
-        public abstract bool PackageInstalled(string packageName, string version, string source, string destination);
-
-        public abstract bool BeforePackageUninstall(string packageName, string version, string source, string destination);
         #endregion
 
         #region copy service-apis
 
-        public abstract void DownloadFile(Uri remoteLocation, string localFilename, Callback c);
+        public abstract void DownloadFile(Uri remoteLocation, string localFilename, Object c);
 
-        public abstract bool IsSupportedArchive(string localFilename, Callback c);
+        public abstract bool IsSupportedArchive(string localFilename, Object c);
 
-        public abstract IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Callback c);
+        public abstract IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object c);
 
-        public abstract void AddPinnedItemToTaskbar(string item, Callback c);
+        public abstract void AddPinnedItemToTaskbar(string item, Object c);
 
-        public abstract void RemovePinnedItemFromTaskbar(string item, Callback c);
+        public abstract void RemovePinnedItemFromTaskbar(string item, Object c);
 
-        public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c);
+        public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Object c);
 
-        public abstract void SetEnvironmentVariable(string variable, string value, int context, Callback c);
+        public abstract void SetEnvironmentVariable(string variable, string value, int context, Object c);
 
-        public abstract void RemoveEnvironmentVariable(string variable, int context, Callback c);
+        public abstract void RemoveEnvironmentVariable(string variable, int context, Object c);
 
-        public abstract void CopyFile(string sourcePath, string destinationPath, Callback c);
+        public abstract void CopyFile(string sourcePath, string destinationPath, Object c);
 
-        public abstract void Delete(string path, Callback c);
+        public abstract void Delete(string path, Object c);
 
-        public abstract void DeleteFolder(string folder, Callback c);
+        public abstract void DeleteFolder(string folder, Object c);
 
-        public abstract void CreateFolder(string folder, Callback c);
+        public abstract void CreateFolder(string folder, Object c);
 
-        public abstract void DeleteFile(string filename, Callback c);
+        public abstract void DeleteFile(string filename, Object c);
 
-        public abstract string GetKnownFolder(string knownFolder, Callback c);
+        public abstract string GetKnownFolder(string knownFolder, Object c);
 
-        public abstract bool IsElevated(Callback c);
+        public abstract bool IsElevated(Object c);
         #endregion
 
-        #region copy request-apis
+        #region copy response-apis
 
         /// <summary>
         ///     The provider can query to see if the operation has been cancelled.
@@ -148,8 +164,10 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         /// <param name="summary"></param>
         /// <param name="source"></param>
         /// <param name="searchKey"></param>
+        /// <param name="fullPath"></param>
+        /// <param name="packageFileName"></param>
         /// <returns></returns>
-        public abstract bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey);
+        public abstract bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
 
         public abstract bool YieldPackageDetails(object serializablePackageDetailsObject);
 
@@ -160,8 +178,10 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         /// </summary>
         /// <param name="name"></param>
         /// <param name="location"></param>
+        /// <param name="isTrusted"></param>
+        /// <param name="isRegistered"></param>
         /// <returns></returns>
-        public abstract bool YieldPackageSource(string name, string location, bool isTrusted);
+        public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
@@ -181,31 +201,51 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
 
         #region copy Request-implementation
 public bool Warning(string message, params object[] args) {
-            return Warning(string.Format(GetMessageString(message) ?? message, args));
+            return Warning(FormatMessageString(message,args));
         }
 
         public bool Error(string message, params object[] args) {
-            return Error(string.Format(GetMessageString(message) ?? message, args));
+            return Error(FormatMessageString(message,args));
         }
 
         public bool Message(string message, params object[] args) {
-            return Message(string.Format(GetMessageString(message) ?? message, args));
+            return Message(FormatMessageString(message,args));
         }
 
         public bool Verbose(string message, params object[] args) {
-            return Verbose(string.Format(GetMessageString(message) ?? message, args));
-        }
+            return Verbose(FormatMessageString(message,args));
+        } 
 
         public bool Debug(string message, params object[] args) {
-            return Debug(string.Format(GetMessageString(message) ?? message, args));
+            return Debug(FormatMessageString(message,args));
         }
 
         public int StartProgress(int parentActivityId, string message, params object[] args) {
-            return StartProgress(parentActivityId, string.Format(GetMessageString(message) ?? message, args));
+            return StartProgress(parentActivityId, FormatMessageString(message,args));
         }
 
         public bool Progress(int activityId, int progress, string message, params object[] args) {
-            return Progress(activityId, progress, string.Format(GetMessageString(message) ?? message, args));
+            return Progress(activityId, progress, FormatMessageString(message,args));
+        }
+
+        private static string FixMeFormat(string formatString, object[] args) {
+            if (args == null || args.Length == 0 ) {
+                // not really any args, and not really expectng any
+                return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
+            }
+            return System.Linq.Enumerable.Aggregate(args, "FIXME/Format:" + formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(" \u00ab{0}\u00bb", arg));
+        }
+
+        internal string FormatMessageString(string message, object[] args) {
+            message = GetMessageString(message) ?? message;
+
+            // if it doesn't look like we have the correct number of parameters
+            // let's return a fixmeformat string.
+            var c = System.Linq.Enumerable.Count( System.Linq.Enumerable.Where(message.ToCharArray(), each => each == '{'));
+            if (c < args.Length) {
+                return FixMeFormat(message, args);
+            }
+            return string.Format(message, args);
         }
 
         public void Dispose() {

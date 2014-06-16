@@ -56,12 +56,11 @@
     <Compile Include="CmdLets\CmdletBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="etc\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="OneGet.format.ps1xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
     <None Include="OneGet.psd1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

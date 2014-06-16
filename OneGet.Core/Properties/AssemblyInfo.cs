@@ -20,11 +20,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("Microsoft.OneGet.Core")]
+[assembly: AssemblyTitle("Microsoft.OneGet")]
 [assembly: AssemblyDescription("OneGet Core")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("OneGet.Core")]
+[assembly: AssemblyProduct("OneGet")]
 [assembly: AssemblyCopyright("Copyright Microsoft © 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

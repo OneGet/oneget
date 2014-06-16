@@ -82,10 +82,11 @@ function New-PackageSource {
 		[string] $name,
 		[string] $location,
 		[bool] $trusted,
+		[bool] $registered,
 		[System.Collections.Hashtable] $details = $null
 	)
 	
-	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.PackageSource -ArgumentList $name,$location,$trusted,$details
+	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.PackageSource -ArgumentList $name,$location,$trusted,$registered,$details
 }
 
 <#
@@ -100,9 +101,11 @@ function New-SoftwareIdentity {
 		[string] $source, 
 		[string] $summary, 
 		[string] $searchKey = $null, 
+		[string] $fullPath = $null, 
+		[string] $filename = $null, 
 		[System.Collections.Hashtable] $details = $null
 	)
-	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey , $details 
+	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details 
 }
 
 <#

@@ -19,14 +19,14 @@ namespace Microsoft.OneGet {
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
-    using Core.Api;
-    using Core.AppDomains;
-    using Core.Dynamic;
-    using Core.Extensions;
-    using Core.Packaging;
-    using Core.Providers.Package;
-    using Core.Providers.Service;
-    using Core.Tasks;
+    using Api;
+    using Collections;
+    using Extensions;
+    using Packaging;
+    using Plugin;
+    using Providers;
+    using Providers.Package;
+    using Providers.Service;
     using Callback = System.Object;
 
     /// <summary>
@@ -44,6 +44,7 @@ namespace Microsoft.OneGet {
         private readonly object _lockObject = new object();
 
         private AggregateServicesProvider _servicesProvider;
+
         internal AggregateServicesProvider ServicesProvider {
             get {
                 if (_servicesProvider == null) {
@@ -68,9 +69,9 @@ namespace Microsoft.OneGet {
             return message;
         }
 
-        public IEnumerable<PackageProvider> PackageProviders {
+        public IEnumerator<PackageProvider> PackageProviders {
             get {
-                return _packageProviders.Values;
+                return _packageProviders.Values.ByRefEnumerator();
             }
         }
 
@@ -99,11 +100,9 @@ namespace Microsoft.OneGet {
             return null;
         }
 
-
         /// <summary>
         ///     This initializes the provider registry with the list of package providers.
-        /// 
-        /// (currently a hardcoded list, soon, registry driven)
+        ///     (currently a hardcoded list, soon, registry driven)
         /// </summary>
         /// <param name="callback"></param>
         private void LoadProviders(Callback callback) {
@@ -113,7 +112,7 @@ namespace Microsoft.OneGet {
 
             // todo: load provider assembly list from the registry.
             IEnumerable<string> providerAssemblies = new string[] {
-                 "Microsoft.OneGet.MetaProvider.PowerShell.dll",
+                "Microsoft.OneGet.MetaProvider.PowerShell.dll",
                 "Microsoft.OneGet.ServicesProvider.Common.dll",
                 "OneGet.PackageProvider.Bootstrap.dll",
                 "OneGet.PackageProvider.Chocolatey.dll",
@@ -122,54 +121,54 @@ namespace Microsoft.OneGet {
 
             // there is no trouble with loading providers concurrently.
             Parallel.ForEach(providerAssemblies, providerAssemblyName => {
-            // foreach( var providerAssemblyName in providerAssemblies ) {
+                // foreach( var providerAssemblyName in providerAssemblies ) {
                 try {
                     if (TryToLoadProviderAssembly(callback, providerAssemblyName)) {
-                        request.Debug("Loading Provider Assembly {0}".format( providerAssemblyName) );
+                        request.Debug("Loading Provider Assembly {0}".format(providerAssemblyName));
                     } else {
-                        request.Debug("Failed to load any providers {0}".format( providerAssemblyName) );
+                        request.Debug("Failed to load any providers {0}".format(providerAssemblyName));
                     }
                 } catch (Exception e) {
                     request.ExceptionThrown(e.GetType().Name, e.Message, e.StackTrace);
                 }
+            });
+
+            foreach (var provider in _packageProviders.Values) {
+                provider.Initialize(callback);
             }
-            );
+            foreach (var provider in _servicesProviders.Values) {
+                provider.Initialize(callback);
+            }
         }
 
-        public IEnumerable<PackageSource> GetAllSourceNames(Callback callback) {
-            return _packageProviders.Values.SelectMany(each => each.GetPackageSources(callback));
+        public IEnumerator<PackageSource> GetAllSourceNames(Callback callback) {
+            return _packageProviders.Values.SelectMany(each => each.GetPackageSources(callback).ToIEnumerable()).ByRefEnumerator();
         }
 
-        public IEnumerable<string> ProviderNames {
+        public IEnumerator<string> ProviderNames {
             get {
-                return _packageProviders.Keys;
+                return _packageProviders.Keys.ByRefEnumerator();
             }
         }
 
-        public IEnumerable<PackageProvider> SelectProviders(string providerName) {
+        public IEnumerator<PackageProvider> SelectProvidersWithFeature(string featureName) {
+            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName)).ByRefEnumerator();
+        }
+
+        public IEnumerator<PackageProvider> SelectProvidersWithFeature(string featureName, string value) {
+            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName) && each.Features[featureName].Contains(value)).ByRefEnumerator();
+        }
+
+
+        public IEnumerator<PackageProvider> SelectProviders(string providerName) {
             if (providerName.Is()) {
                 // strict name match for now.
-                return PackageProviders.Where(each => each.Name.Equals(providerName, StringComparison.CurrentCultureIgnoreCase)).ByRef();
+                return PackageProviders.ToIEnumerable().Where(each => each.Name.Equals(providerName, StringComparison.CurrentCultureIgnoreCase)).ByRefEnumerator();
             }
 
-            return PackageProviders.ByRef();
+            return PackageProviders;
         }
 
-        public IEnumerable<PackageProvider> xSelectProviders(string providerName, IEnumerable<string> sourceNames, Callback c) {
-            var providers = PackageProviders;
-
-            if (providerName.Is()) {
-                // strict name match for now.
-                providers = providers.Where(each => each.Name.Equals(providerName, StringComparison.CurrentCultureIgnoreCase));
-            }
-            /*
-            if (!sourceNames.IsNullOrEmpty()) {
-                // let the providers select which ones are good.
-                providers = providers.Where(each => each.IsValidPackageSource.IsSupported() && sourceNames.Any(sourceName => each.IsValidPackageSource(sourceName)));
-            }
-            */
-            return providers;
-        }
 
         private void AddPackageProvider(string name, IPackageProvider provider) {
             // wrap this in a caller-friendly wrapper 
@@ -188,7 +187,7 @@ namespace Microsoft.OneGet {
         /// <returns></returns>
         private bool TryToLoadProviderAssembly(Callback callback, string providerAssemblyName) {
             // find all the matches for the assembly specified, order by version (descending)
-            
+
             var assemblyPath = FindAssembly(providerAssemblyName);
 
             if (assemblyPath == null) {
@@ -197,7 +196,7 @@ namespace Microsoft.OneGet {
 
             var pluginDomain = CreatePluginDomain(assemblyPath);
 
-            return pluginDomain.InvokeFunc(ProviderLoader.AcquireProviders, assemblyPath, callback.As<ICoreApis>(),
+            return pluginDomain.InvokeFunc(Loader.AcquireProviders, assemblyPath, callback.As<ICoreApi>(),
                 (Action<string, IPackageProvider>)(AddPackageProvider),
                 (Action<string, IServicesProvider>)(AddServicesProvider)
                 );
@@ -226,12 +225,12 @@ namespace Microsoft.OneGet {
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        private PluginDomain CreatePluginDomain(string primaryAssemblyPath ) {
+        private PluginDomain CreatePluginDomain(string primaryAssemblyPath) {
             try {
                 // this needs to load the assembly in it's own domain
                 // so that we can drop them when necessary.
                 var name = Path.GetFileNameWithoutExtension(primaryAssemblyPath) ?? primaryAssemblyPath;
-                var pd = new PluginDomain(string.Format( "PluginDomain [{0}]",name.Substring(name.LastIndexOf('.')+1)));
+                var pd = new PluginDomain(string.Format("PluginDomain [{0}]", name.Substring(name.LastIndexOf('.') + 1)));
 
                 // inject this assembly into the target appdomain.
                 pd.LoadFileWithReferences(Assembly.GetExecutingAssembly().Location);

@@ -54,7 +54,7 @@
 	## to installing, detecting and loading providers.
 	##
    	PrivateData = @{
-		"OneGet.Providers" = @( ".\ZipProvider.psm1", ".\TestPackageProvider.psm1" )
+		"OneGet.Providers" = @( ".\ZipProvider.psm1", ".\TestPackageProvider.psm1",".\TestChainingPackageProvider.psm1"  )
 
     }
 }

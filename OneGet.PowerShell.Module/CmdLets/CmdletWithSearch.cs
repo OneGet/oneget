@@ -14,7 +14,7 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
-    using Microsoft.OneGet.Core.Providers.Package;
+    using Microsoft.OneGet.Providers.Package;
 
     public abstract class CmdletWithSearch : CmdletWithProvider {
         protected CmdletWithSearch(OptionCategory[] categories)

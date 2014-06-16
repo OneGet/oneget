@@ -20,9 +20,8 @@ namespace Microsoft.OneGet {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Core.Collections;
-    using Core.Extensions;
-    using Core.Tasks;
+    using Collections;
+    using Extensions;
     using Callback = System.Object;
 
     public delegate bool OnMainThread(Func<bool> onMainThreadDelegate);
@@ -33,8 +32,6 @@ namespace Microsoft.OneGet {
         private bool _consumed;
         private RuntimeDefinedParameterDictionary _dynamicParameters;
         protected bool _failing = false;
-
-        private LocalEventSource _localEventSource;
 
         private BlockingCollection<TaskCompletionSource<bool>> _messages;
 
@@ -74,20 +71,10 @@ namespace Microsoft.OneGet {
         public object GetDynamicParameters() {
             // CompletionCompleters.
             // CommandCompletion.
-            if (IsOverridden("GenerateDynamicParameters")) {
-                AsyncRun(GenerateDynamicParameters);
-            }
-
-            // if the cmdlet is not actually running a command, just getting the dynamic parameters
-            // for tab-completion, the cmdlet doesn't actually call Dispose(), so if we've
-            // allocated the _localEventSource, we need to clean it up before we bail.
-            // (even if PS did reuse this same instance later, it wouldn't actually hurt, it'd just
-            // incurr the startup cost again..)
-            if (!IsInvocation) {
-                if (_localEventSource != null) {
-                    ((IDisposable)_localEventSource).Dispose();
+            if (DynamicParameters.IsNullOrEmpty()) {
+                if (IsOverridden("GenerateDynamicParameters")) {
+                    AsyncRun(GenerateDynamicParameters);
                 }
-                _localEventSource = null;
             }
 
             return DynamicParameters;
@@ -154,7 +141,7 @@ namespace Microsoft.OneGet {
 
         public bool Warning(string message, params object[] args) {
             if (IsInvocation) {
-                WriteWarning(GetMessageString(message).format(args));
+                WriteWarning(FormatMessageString(message,args));
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
@@ -167,7 +154,7 @@ namespace Microsoft.OneGet {
         }
 
         public bool Error(string message, params object[] args) {
-            message = GetMessageString(message).format(args);
+            message = FormatMessageString(message,args);
 
             _failing = true;
             // queue the message to run on the main thread.
@@ -200,7 +187,7 @@ namespace Microsoft.OneGet {
                 //  QueueMessage(() => Host.UI.WriteLine("{0}::{1}".format(code, message.formatWithIEnumerable(objects))));
                 // Message is going to go to the verbose channel
                 // and Verbose will only be output if VeryVerbose is true.
-                WriteVerbose(GetMessageString(message).format());
+                WriteVerbose(GetMessageString(message).format(args));
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
@@ -216,7 +203,7 @@ namespace Microsoft.OneGet {
             if (IsInvocation) {
                 // Message is going to go to the verbose channel
                 // and Verbose will only be output if VeryVerbose is true.
-                WriteVerbose(GetMessageString(message).format(args));
+                WriteVerbose(FormatMessageString(message,args));
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
@@ -230,7 +217,7 @@ namespace Microsoft.OneGet {
 
         public bool Debug(string message, params object[] args) {
             if (IsInvocation) {
-                WriteVerbose(GetMessageString(message).format(args));
+                WriteVerbose(FormatMessageString(message,args));
             }
 
             // rather than wait on the result of the async WriteVerbose,
@@ -266,11 +253,11 @@ namespace Microsoft.OneGet {
         public bool Progress(int activityId, int progress, string message, params object[] args) {
             if (IsInvocation) {
                 if (_parentProgressId == null) {
-                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", GetMessageString(message).format(args)) {
+                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", FormatMessageString(message,args)) {
                         PercentComplete = progress
                     });
                 } else {
-                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup;", GetMessageString(message).format(args)) {
+                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup;", FormatMessageString(message,args)) {
                         ParentActivityId = (int)_parentProgressId,
                         PercentComplete = progress
                     });
@@ -317,6 +304,10 @@ namespace Microsoft.OneGet {
             // TODO: ie: message = LookupMessage(message).formatWithIEnumerable(objects);
 
             return message;
+        }
+
+        public string FormatMessageString(string message, object[] args) {
+            return GetMessageString(message).format(args);
         }
 
         private void AsyncRun(Func<bool> asyncAction) {
@@ -562,10 +553,6 @@ namespace Microsoft.OneGet {
 
                 // According to http://msdn.microsoft.com/en-us/library/windows/desktop/ms714463(v=vs.85).aspx
                 // Powershell will dispose the cmdlet if it implements IDisposable.
-                if (_localEventSource != null) {
-                    _localEventSource.Dispose();
-                }
-                _localEventSource = null;
 
                 if (_messages != null) {
                     _messages.Dispose();

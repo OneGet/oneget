@@ -43,78 +43,79 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\AppDomains\WrappedAction.cs">
+    <Compile Include="Collections\CachingEnumerable.cs" />
+    <Compile Include="Collections\HashSet.cs" />
+    <Compile Include="Plugin\WrappedAction.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>WrappedAction.tt</DependentUpon>
     </Compile>
-    <Compile Include="Core\AppDomains\WrappedFunc.cs">
+    <Compile Include="Plugin\WrappedFunc.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>WrappedFunc.tt</DependentUpon>
     </Compile>
-    <Compile Include="Core\Collections\ByRefCollection.cs" />
-    <Compile Include="Core\Collections\ByRefEnumerable.cs" />
-    <Compile Include="Core\AppDomains\WrappedDelegate.cs" />
-    <Compile Include="Core\AppDomains\Proxy.cs" />
-    <Compile Include="Core\Collections\AbstractDictionary.cs" />
-    <Compile Include="Core\Collections\ByRefEnumerator.cs" />
-    <Compile Include="Core\Collections\CancellableBlockingCollection.cs" />
-    <Compile Include="Core\Collections\CancellableEnumerable.cs" />
-    <Compile Include="Core\Collections\CancellableEnumerator.cs" />
-    <Compile Include="Core\Collections\DelegateDictionary.cs" />
-    <Compile Include="Core\Collections\ICancellable.cs" />
-    <Compile Include="Core\Collections\ICancellableEnumerable.cs" />
-    <Compile Include="Core\Collections\OrderedDictionary.cs" />
-    <Compile Include="Core\Collections\ReadOnlyDelegateDictionary.cs" />
-    <Compile Include="Core\Collections\VirtualEnumerator.cs" />
-    <Compile Include="Core\Dynamic\DynamicInterface.cs" />
-    <Compile Include="Core\Dynamic\DynamicInterfaceExtensions.cs" />
-    <Compile Include="Core\Dynamic\DynamicTypeExtensions.cs" />
-    <Compile Include="Core\Dynamic\FluentIlExtensions.cs" />
-    <Compile Include="Core\Dynamic\PrivateProxy.cs" />
-    <Compile Include="Core\Dynamic\ProxyClass.cs" />
-    <Compile Include="Core\Dynamic\RemotableDynamicObject.cs" />
-    <Compile Include="Core\Extensions\CancellationTokenSourceExtensions.cs" />
-    <Compile Include="Core\Extensions\DelegateExtensions.cs" />
-    <Compile Include="Core\Extensions\DisposableExtensions.cs" />
-    <Compile Include="Core\AppDomains\PluginAssemblyResolver.cs" />
-    <Compile Include="Core\AppDomains\PluginDomain.cs" />
-    <Compile Include="Core\Extensions\CollectionExtensions.cs" />
-    <Compile Include="Core\Extensions\DictionaryExtensions.cs" />
-    <Compile Include="Core\Extensions\ExceptionExtensions.cs" />
-    <Compile Include="Core\Extensions\FilesystemExtensions.cs" />
-    <Compile Include="Core\Extensions\HashtableExtensions.cs" />
-    <Compile Include="Core\Platform\AdminPrivilege.cs" />
-    <Compile Include="Core\Platform\CLSID.cs" />
-    <Compile Include="Core\Platform\EnvironmentUtility.cs" />
-    <Compile Include="Core\Platform\IID.cs" />
-    <Compile Include="Core\Platform\IShellLink.cs" />
-    <Compile Include="Core\Platform\KnownFolder.cs" />
-    <Compile Include="Core\Platform\MoveFileFlags.cs" />
-    <Compile Include="Core\Platform\NativeMethods.cs" />
-    <Compile Include="Core\Extensions\StringExtensions.cs" />
-    <Compile Include="Core\Extensions\TypeExtensions.cs" />
-    <Compile Include="Core\Platform\AsyncProcess.cs" />
-    <Compile Include="Core\Platform\KnownFolders.cs" />
-    <Compile Include="Core\Platform\ShellLink.cs" />
-    <Compile Include="Core\Platform\SLGP.cs" />
-    <Compile Include="Core\Platform\STGM.cs" />
-    <Compile Include="Core\Platform\ShellApplication.cs" />
-    <Compile Include="Core\Platform\Win32FindData.cs" />
-    <Compile Include="Core\Tasks\CurrentTask.cs" />
-    <Compile Include="Core\Tasks\Event.cs" />
-    <Compile Include="Core\Tasks\XTask.cs" />
-    <Compile Include="Core\Versions\FourPartVersion.cs" />
-    <Compile Include="CoreAPIs.cs" />
+    <Compile Include="Collections\ByRefCollection.cs" />
+    <Compile Include="Collections\ByRefEnumerable.cs" />
+    <Compile Include="Plugin\WrappedDelegate.cs" />
+    <Compile Include="Plugin\Proxy.cs" />
+    <Compile Include="Collections\AbstractDictionary.cs" />
+    <Compile Include="Collections\ByRefEnumerator.cs" />
+    <Compile Include="Collections\CancellableBlockingCollection.cs" />
+    <Compile Include="Collections\CancellableEnumerable.cs" />
+    <Compile Include="Collections\CancellableEnumerator.cs" />
+    <Compile Include="Collections\DelegateDictionary.cs" />
+    <Compile Include="Collections\ICancellable.cs" />
+    <Compile Include="Collections\ICancellableEnumerable.cs" />
+    <Compile Include="Collections\List.cs" />
+    <Compile Include="Collections\OrderedDictionary.cs" />
+    <Compile Include="Collections\ReadOnlyDelegateDictionary.cs" />
+    <Compile Include="Collections\VirtualEnumerator.cs" />
+    <Compile Include="Plugin\AssignableTypeComparer.cs" />
+    <Compile Include="Plugin\DynamicInterface.cs" />
+    <Compile Include="Plugin\DynamicInterfaceExtensions.cs" />
+    <Compile Include="Plugin\DynamicTypeExtensions.cs" />
+    <Compile Include="Plugin\FluentIlExtensions.cs" />
+    <Compile Include="Plugin\PrivateProxy.cs" />
+    <Compile Include="Plugin\ProxyClass.cs" />
+    <Compile Include="Plugin\RemotableDynamicObject.cs" />
+    <Compile Include="Plugin\RequiredAttribute.cs" />
+    <Compile Include="Extensions\CancellationTokenSourceExtensions.cs" />
+    <Compile Include="Extensions\DelegateExtensions.cs" />
+    <Compile Include="Extensions\DisposableExtensions.cs" />
+    <Compile Include="Plugin\PluginAssemblyResolver.cs" />
+    <Compile Include="Plugin\PluginDomain.cs" />
+    <Compile Include="Extensions\CollectionExtensions.cs" />
+    <Compile Include="Extensions\DictionaryExtensions.cs" />
+    <Compile Include="Extensions\ExceptionExtensions.cs" />
+    <Compile Include="Extensions\FilesystemExtensions.cs" />
+    <Compile Include="Extensions\HashtableExtensions.cs" />
+    <Compile Include="Platform\AdminPrivilege.cs" />
+    <Compile Include="Platform\CLSID.cs" />
+    <Compile Include="Platform\EnvironmentUtility.cs" />
+    <Compile Include="Platform\IID.cs" />
+    <Compile Include="Platform\IShellLink.cs" />
+    <Compile Include="Platform\KnownFolder.cs" />
+    <Compile Include="Platform\MoveFileFlags.cs" />
+    <Compile Include="Platform\NativeMethods.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="Platform\AsyncProcess.cs" />
+    <Compile Include="Platform\KnownFolders.cs" />
+    <Compile Include="Platform\ShellLink.cs" />
+    <Compile Include="Platform\SLGP.cs" />
+    <Compile Include="Platform\STGM.cs" />
+    <Compile Include="Platform\ShellApplication.cs" />
+    <Compile Include="Platform\Win32FindData.cs" />
+    <Compile Include="Versions\FourPartVersion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Core\AppDomains\WrappedAction.tt">
+    <None Include="Plugin\WrappedAction.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>WrappedAction.cs</LastGenOutput>
     </None>
-    <None Include="Core\AppDomains\WrappedFunc.tt">
+    <None Include="Plugin\WrappedFunc.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>WrappedFunc.cs</LastGenOutput>
     </None>
@@ -122,9 +123,7 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Core\Process\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

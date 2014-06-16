@@ -15,11 +15,12 @@
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Packaging;
-    using Microsoft.OneGet.Core.Providers.Package;
+    using Microsoft.OneGet.Extensions;
+    using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Providers.Package;
 
     [Cmdlet(VerbsCommon.Find, PackageNoun), OutputType(typeof (SoftwareIdentity))]
     public class FindPackage : CmdletWithSearchAndSource {
@@ -33,6 +34,60 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         // }
 
+        [Parameter()]
+        public string SavePackageTo {get; set;}
+
+        [Parameter()]
+        public SwitchParameter ListDependencies { get; set; }
+
+        private string SaveFileName(string packageName) {
+            if (string.IsNullOrEmpty(SavePackageTo)) {
+                return null;
+            }
+
+            var path = Path.GetFullPath(SavePackageTo);
+
+            if (Directory.Exists(path)) {
+                // it appears to be a directory name
+                return Path.Combine(path, packageName);
+            }
+
+            var parentPath = Path.GetDirectoryName(path);
+            if (Directory.Exists(parentPath)) {
+                // it appears to be a full path including filename
+                return path;
+            }
+
+            // it's not an existing directory, 
+            // and the parent directory of that path doesn't exist
+            // so I guess we're returning null, because I dunno what
+            // to do.
+
+            Warning("SAVE_TO_PATH_NOT_VALID", SavePackageTo, packageName);
+            return null;
+        }
+
+        private void ProcessPackage(PackageProvider provider, SoftwareIdentity package) {
+            var savePath = SaveFileName(package.PackageFilename);
+
+            // if we have a valid path, make a local copy of the file.
+            if (!string.IsNullOrEmpty(savePath)) {
+                provider.DownloadPackage(package, SaveFileName(savePath), this);
+                if (File.Exists(savePath)) {
+                    package.FullPath = savePath;
+                }
+            }
+
+            // return the object to the caller.
+            WriteObject(package);
+
+            if (ListDependencies) {
+                foreach (var dep in provider.GetPackageDependencies(package, this).ToIEnumerable()) {
+                    ProcessPackage(provider,dep);
+                }
+            }
+        }
+
         public override bool EndProcessingAsync() {
             var noMatchNames = new HashSet<string>(Name ?? new string[] {
             });
@@ -41,17 +96,17 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 try {
                     if (!Name.IsNullOrEmpty()) {
                         foreach (var name in Name) {
-                            if (FindViaUri(provider, name, (p) => WriteObject(p))) {
+                            if (FindViaUri(provider, name, (p) => ProcessPackage(provider,p))) {
                                 noMatchNames.IfPresentRemoveLocked(name);
                                 continue;
                             }
 
-                            if (FindViaFile(provider, name, (p) => WriteObject(p))) {
+                            if (FindViaFile(provider, name, (p) => ProcessPackage(provider, p))) {
                                 noMatchNames.IfPresentRemoveLocked(name);
                                 continue;
                             }
 
-                            if (FindViaName(provider, name, (p) => WriteObject(p))) {
+                            if (FindViaName(provider, name, (p) => ProcessPackage(provider, p))) {
                                 noMatchNames.IfPresentRemoveLocked(name);
                                 continue;
                             }
@@ -60,7 +115,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         }
                     } else {
                         // no package name passed in.
-                        if (!FindViaName(provider, string.Empty, (p) => WriteObject(p))) {
+                        if (!FindViaName(provider, string.Empty, (p) => ProcessPackage(provider,p))) {
                             // nothing found?
                             Warning("No Packages Found (no package names/criteria listed)");
                         }
@@ -72,9 +127,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             // whine about things not matched.
             foreach (var name in noMatchNames) {
-                Warning("No Package Found", new string[] {
-                    name
-                });
+                Warning("No Package Found", name );
             }
 
             return true;

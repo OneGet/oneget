@@ -18,8 +18,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Packaging;
+    using Microsoft.OneGet.Extensions;
+    using Microsoft.OneGet.Packaging;
 
     [Cmdlet(VerbsLifecycle.Uninstall, PackageNoun, SupportsShouldProcess = true)]
     public class UninstallPackage : GetPackage {
@@ -89,10 +89,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         private bool UninstallPackages(IEnumerable<SoftwareIdentity> packagesToUnInstall) {
             foreach (var pkg in packagesToUnInstall) {
-                var provider = PackageManagementService.SelectProviders(pkg.ProviderName).FirstOrDefault();
+                var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
+
+                if (provider == null) {
+                    Error("UNKNOWN_PROVIDER", pkg.ProviderName);
+                    return false;
+                }
 
                 try {
-                    foreach (var installedPkg in CancelWhenStopped(provider.UninstallPackage(pkg, this))) {
+                    foreach (var installedPkg in CancelWhenStopped(provider.UninstallPackage(pkg, this)).ToIEnumerable()) {
                         if (IsCancelled()) {
                             return false;
                         }
@@ -100,9 +105,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 } catch (Exception e) {
                     e.Dump();
-                    Error("Uninstallation Failure {0}", new[] {
-                        pkg.Name
-                    });
+                    Error("Uninstallation Failure {0}", pkg.Name );
                     return false;
                 }
             }

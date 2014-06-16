@@ -16,8 +16,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Providers.Package;
+    using Microsoft.OneGet.Collections;
+    using Microsoft.OneGet.Extensions;
+    using Microsoft.OneGet.Providers.Package;
     using Utility;
 
     public abstract class CmdletWithProvider : CmdletBase {
@@ -59,16 +60,30 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         protected IEnumerable<PackageProvider> FilterProvidersUsingDynamicParameters(IEnumerable<PackageProvider> providers) {
+            var excluded = new HashSet<string, string>();
+
             var setparameters = DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).ToArray();
 
-            if (setparameters.Any()) {
-                foreach (var p in providers.Where(p => setparameters.All(each => each.Options.Any(opt => opt.ProviderName == p.Name)))) {
-                    yield return p;
+            var matchedProviders = setparameters.Any() ? providers.Where(p => setparameters.All(each => each.Options.Any(opt => opt.ProviderName == p.Name))) : providers;
+
+                foreach (var p in matchedProviders) {
+                    // if a 'required' parameter is not filled in, the provider should not be returned.
+                    // we'll collect these for warnings at the end of the filter.
+                    var missingRequiredParameters = DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => !each.IsSet && each.IsRequiredForProvider(p.Name)).ToArray();
+                    if (missingRequiredParameters.Length == 0) {
+                        yield return p;
+                    } else {
+                        // remember these so we can warn later.
+                        foreach (var mp in missingRequiredParameters) {
+                            excluded.Add(p.Name, mp.Name);
+                        }
+                    }
                 }
-                yield break;
-            }
-            foreach (var p in providers) {
-                yield return p;
+
+            // these warnings only show for providers that would have otherwise be selected.
+            // if not for the missing requrired parameter.
+            foreach (var mp in excluded.OrderBy( each => each.Key )) {
+                Warning("EXCLUDED_PROVIDER_MISSING_REQUIRED_PARAMETER", mp.Key, mp.Value );
             }
         }
 

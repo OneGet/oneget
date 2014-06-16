@@ -20,14 +20,15 @@ namespace Microsoft.OneGet.Test {
     using System.Linq;
     using System.Net;
     using System.Reflection;
-    using Core.Dynamic;
     // using MetaProvider.PowerShell;
-    using Core.Extensions;
-    using Core.Packaging;
-    using Core.Providers.Package;
+    using Api;
+    using Extensions;
+    using Packaging;
+    using Plugin;
     using PowerShell.OneGet.CmdLets;
+    using Providers.Package;
     using Xunit;
-    using PackageSource = Core.Packaging.PackageSource;
+    using PackageSource = Packaging.PackageSource;
 
     public class PackageManagementServiceTest : MarshalByRefObject {
 
@@ -144,7 +145,7 @@ namespace Microsoft.OneGet.Test {
             //System.Diagnostics.Debug.Listeners.Add(new DefaultTraceListener());
 
             var providers = Service.SelectProviders(null);
-            Console.WriteLine("Provider Count {0}",providers.Count());
+            Console.WriteLine("Provider Count {0}",providers.ToIEnumerable().Count());
         }
 
         [Fact]
@@ -172,7 +173,7 @@ namespace Microsoft.OneGet.Test {
         }
 
         private static IPackageManagementService _service;
-        private static Core.Providers.Package.PackageProvider _testPsProvider;
+        private static PackageProvider _testPsProvider;
 
         public static IPackageManagementService Service {
             get {
@@ -188,7 +189,7 @@ namespace Microsoft.OneGet.Test {
             Assert.NotNull(Service);
         }
 
-        public static Core.Providers.Package.PackageProvider TestPSProvider {
+        public static PackageProvider TestPSProvider {
             get {
                 if (_testPsProvider == null) {
                     _testPsProvider = Service.SelectProviders("TestPSProvider").FirstOrDefault();

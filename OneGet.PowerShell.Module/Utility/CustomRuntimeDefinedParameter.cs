@@ -18,12 +18,16 @@ namespace Microsoft.PowerShell.OneGet.Utility {
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Packaging;
-    using Microsoft.OneGet.Core.Providers.Package;
+    using Microsoft.OneGet.Extensions;
+    using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Providers.Package;
 
     internal class CustomRuntimeDefinedParameter : RuntimeDefinedParameter {
         internal HashSet<DynamicOption> Options = new HashSet<DynamicOption>();
+
+        internal bool IsRequiredForProvider(string name) {
+            return Options.Any(each => each.ProviderName.EqualsIgnoreCase(name) && each.IsRequired);
+        }
 
         public CustomRuntimeDefinedParameter(DynamicOption option) : base(option.Name, ParameterType(option.Type), new Collection<Attribute> {
             new ParameterAttribute()

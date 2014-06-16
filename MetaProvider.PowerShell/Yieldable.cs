@@ -15,7 +15,7 @@
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Collections;
     using System.Linq;
-    using Core.Extensions;
+    using Extensions;
 
     public abstract class Yieldable {
         protected Hashtable _details;

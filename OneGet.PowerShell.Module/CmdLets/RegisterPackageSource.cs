@@ -16,9 +16,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Packaging;
-    using Microsoft.OneGet.Core.Providers.Package;
+    using Microsoft.OneGet.Extensions;
+    using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Providers.Package;
+    using Utility;
 
     [Cmdlet(VerbsLifecycle.Register, PackageSourceNoun, SupportsShouldProcess = true)]
     public class RegisterPackageSource : CmdletBase {
@@ -57,6 +58,21 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public RegisterPackageSource() {
         }
 
+        public override bool GenerateDynamicParameters() {
+            // if the provider (or source) is selected, we can get package metadata keys from the provider
+            // hmm. let's just grab *all* of them.
+            foreach (var md in PackageProvider.GetDynamicOptions(OptionCategory.Source, this)) {
+                if (DynamicParameters.ContainsKey(md.Name)) {
+                    // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
+                    (DynamicParameters[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
+                }
+                else {
+                    DynamicParameters.Add(md.Name, new CustomRuntimeDefinedParameter(md));
+                }
+            }
+            return true;
+        }
+
         public override bool ProcessRecordAsync() {
             if (IsOverwriteExistingSource) {
                 Provider = OriginalSource.ProviderName;
@@ -68,7 +84,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (!IsProviderByObject) {
-                PackageProvider = PackageManagementService.SelectProviders(Provider).FirstOrDefault();
+                PackageProvider = SelectProviders(Provider).FirstOrDefault();
             }
 
             if (PackageProvider == null) {
@@ -80,7 +96,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             using (var sources = CancelWhenStopped(PackageProvider.GetPackageSources(this))) {
-                if (sources.Any(each => each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase))) {
+                if (sources.ToIEnumerable().Any(each => each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase))) {
                     if (Force || ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}' (Replace existing)".format(Name, Location, Provider)).Result) {
                         PackageProvider.AddPackageSource(Name, Location, Trusted, this);
                         return true;

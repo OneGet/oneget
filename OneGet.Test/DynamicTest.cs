@@ -22,9 +22,8 @@ namespace Microsoft.OneGet.Test {
     using System.Runtime.Hosting;
     using System.Runtime.InteropServices;
     using System.Security.Cryptography.X509Certificates;
-    using Core.AppDomains;
-    using Core.Dynamic;
-    using Core.Extensions;
+    using Extensions;
+    using Plugin;
     using PowerShell.OneGet.CmdLets;
     using Xunit;
 

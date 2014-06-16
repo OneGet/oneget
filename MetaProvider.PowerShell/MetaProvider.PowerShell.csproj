@@ -53,6 +53,10 @@
     <Compile Include="Yieldable.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OneGet.Core\OneGet.Core.csproj">
+      <Project>{7044B856-6D51-498F-90F9-01F219909F79}</Project>
+      <Name>OneGet.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\OneGet.Utility.PowerShell\OneGet.Utility.PowerShell.csproj">
       <Project>{3f9d75f9-a4ad-46c1-8937-b55604e8d5d9}</Project>
       <Name>OneGet.Utility.PowerShell</Name>

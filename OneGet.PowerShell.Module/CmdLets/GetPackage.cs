@@ -18,9 +18,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Packaging;
-    using Microsoft.OneGet.Core.Providers.Package;
+    using Microsoft.OneGet.Extensions;
+    using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Providers.Package;
 
     [Cmdlet(VerbsCommon.Get, PackageNoun)]
     public class GetPackage : CmdletWithSearch {
@@ -70,7 +70,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected IEnumerable<SoftwareIdentity> ProcessProvider(PackageProvider provider) {
             using (var packages = CancelWhenStopped(provider.GetInstalledPackages("", this))) {
-                foreach (var p in packages) {
+                foreach (var p in packages.ToIEnumerable()) {
                     _providersProcessed.AddOrSet(provider.Name, true);
                     yield return p;
                 }
@@ -80,7 +80,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         protected IEnumerable<SoftwareIdentity> ProcessNames(PackageProvider provider, string name) {
             _namesProcessed.GetOrAdd(name, () => false);
             using (var packages = CancelWhenStopped(provider.GetInstalledPackages(name, this))) {
-                foreach (var p in packages) {
+                foreach (var p in packages.ToIEnumerable()) {
                     _namesProcessed.AddOrSet(name, true);
                     _providersProcessed.AddOrSet(provider.Name, true);
                     yield return p;

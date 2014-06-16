@@ -16,22 +16,24 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Collections;
 
     public class PackageSource : Yieldable {
-        public PackageSource(string name, string location, bool isTrusted) {
+        public PackageSource(string name, string location, bool isTrusted, bool isRegistered) {
             Name = name;
             Location = location;
             IsTrusted = isTrusted;
+            IsRegistered = isRegistered;
         }
 
-        public PackageSource(string name, string location, bool isTrusted, Hashtable details) : this(name, location, isTrusted) {
+        public PackageSource(string name, string location, bool isTrusted, bool isRegistered, Hashtable details) : this(name, location, isTrusted, isRegistered) {
             _details = details;
         }
 
         public string Name {get; set;}
         public string Location {get; set;}
         public bool IsTrusted {get; set;}
+        public bool IsRegistered { get; set; }
 
         public override bool YieldResult(Request r) {
-            return r.YieldPackageSource(Name, Location, IsTrusted) && YieldDetails(r);
+            return r.YieldPackageSource(Name, Location, IsTrusted, IsRegistered) && YieldDetails(r);
         }
     }
 }

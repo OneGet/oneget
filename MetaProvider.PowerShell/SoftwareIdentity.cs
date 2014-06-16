@@ -19,7 +19,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public SoftwareIdentity() {
         }
 
-        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey) {
+        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, string fullPath, string filename ) {
             FastPackageReference = fastPackageReference;
             Name = name;
             Version = version;
@@ -27,10 +27,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             Source = source;
             Summary = summary;
             SearchKey = searchKey;
+            FullPath = fullPath;
+            Filename = filename;
         }
 
-        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, Hashtable details)
-            : this(fastPackageReference, name, version, versionScheme, source, summary, searchKey) {
+        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, string fullPath, string filename, Hashtable details)
+            : this(fastPackageReference, name, version, versionScheme, source, summary, searchKey,fullPath, filename) {
             _details = details;
         }
 
@@ -40,10 +42,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public string VersionScheme {get; set;}
         public string Source {get; set;}
         public string Summary {get; set;}
+
+        public string FullPath { get; set; }
+        public string Filename { get; set; }
+
         public string SearchKey {get; set;}
 
         public override bool YieldResult(Request r) {
-            return r.YieldPackage(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey) && YieldDetails(r);
+            return r.YieldPackage(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey,FullPath, Filename) && YieldDetails(r);
         }
     }
 }

@@ -14,24 +14,29 @@
 
 namespace Microsoft.OneGet {
     using System.Collections.Generic;
-    using Core.Providers.Package;
+    using Providers.Package;
     using Callback = System.Object;
 
     /// <summary>
-    /// The current Package Management Service Interface 
-    /// 
-    /// Binding directly to this is discouraged, as the interface is expected to be incrementally
-    /// expanded over time.
-    /// 
-    /// In order to access the interface, the Host (client) is encouraged to copy this interface
-    /// into their own project and use the <code>PackageManagementService.GetInstance<![CDATA[<>]]></code>
-    /// method to dynamically generate a matching implementation at load time.
+    ///     The current Package Management Service Interface
+    ///     Binding directly to this is discouraged, as the interface is expected to be incrementally
+    ///     expanded over time.
+    ///     In order to access the interface, the Host (client) is encouraged to copy this interface
+    ///     into their own project and use the <code>PackageManagementService.GetInstance<![CDATA[<>]]></code>
+    ///     method to dynamically generate a matching implementation at load time.
     /// </summary>
     public interface IPackageManagementService {
-        IEnumerable<PackageProvider> SelectProviders(string provider);
+        IEnumerator<string> ProviderNames {get;}
+
+        IEnumerator<PackageProvider> PackageProviders { get; }
+
+        IEnumerator<PackageProvider> SelectProviders(string providerName);
+
+        IEnumerator<PackageProvider> SelectProvidersWithFeature(string featureName);
+
+        IEnumerator<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
+
 
         bool Initialize(Callback c, bool userInteractionPermitted);
-
-        IEnumerable<string> ProviderNames {get;}
     }
 }

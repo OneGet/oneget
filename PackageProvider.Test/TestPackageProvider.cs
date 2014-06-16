@@ -20,7 +20,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
     public class TestPackageProvider {
         #region implement PackageProvider-interface
 
-        public void AddPackageSource(string name, string location, bool trusted, Callback c){
+        public void AddPackageSource(string name, string location, bool trusted, Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -30,7 +30,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
             }
 
         }
-        public bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c){
+        public bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -41,7 +41,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public bool FindPackageByFile(string file, int id, Callback c){
+        public bool FindPackageByFile(string file, int id, Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -52,7 +52,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public bool FindPackageByUri(Uri uri, int id, Callback c){
+        public bool FindPackageByUri(Uri uri, int id, Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -63,7 +63,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public bool GetInstalledPackages(string name, Callback c){
+        public bool GetInstalledPackages(string name, Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -96,7 +96,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return "TestPackageProvider";
         }
-        public bool GetPackageSources(Callback c){
+        public bool GetPackageSources(Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -115,7 +115,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
                 request.Debug( "Calling 'InitializeProvider'");
             }
         }
-        public bool InstallPackage(string fastPath, Callback c) {
+        public bool InstallPackage(string fastPath, Object c) {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -172,7 +172,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public void RemovePackageSource(string name, Callback c){
+        public void RemovePackageSource(string name, Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -182,7 +182,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
             }
 
         }
-        public bool UninstallPackage(string fastPath, Callback c){
+        public bool UninstallPackage(string fastPath, Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -205,7 +205,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
         }
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        public bool DownloadPackage(string fastPath, string location, Callback c){
+        public bool DownloadPackage(string fastPath, string location, Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -216,7 +216,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public bool GetPackageDependencies(string fastPath, Callback c){
+        public bool GetPackageDependencies(string fastPath, Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -227,7 +227,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public bool GetPackageDetails(string fastPath, Callback c){
+        public bool GetPackageDetails(string fastPath, Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -238,7 +238,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public int StartFind(Callback c){
+        public int StartFind(Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
@@ -249,7 +249,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(int);
         }
-        public bool CompleteFind(int id, Callback c){
+        public bool CompleteFind(int id, Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.

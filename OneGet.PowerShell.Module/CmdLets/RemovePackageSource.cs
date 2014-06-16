@@ -16,9 +16,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Packaging;
-    using Microsoft.OneGet.Core.Providers.Package;
+    using Microsoft.OneGet.Extensions;
+    using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Providers.Package;
 
     [Cmdlet(VerbsLifecycle.Unregister, PackageSourceNoun, SupportsShouldProcess = true)]
     public class UnregisterPackageSource : CmdletWithSource {
@@ -65,7 +65,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         return false;
                     }
 
-                    var provider = PackageManagementService.SelectProviders(source.ProviderName).FirstOrDefault();
+                    var provider = SelectProviders(source.ProviderName).FirstOrDefault();
                     if (provider == null) {
                         return Error("UNABLE_TO_RESOLVE_PACKAGE_PROVIDER");
                     }

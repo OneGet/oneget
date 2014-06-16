@@ -13,20 +13,16 @@
 //  
 
 namespace Microsoft.OneGet {
-    using Core.Dynamic;
+    using Plugin;
 
     /// <summary>
-    /// The public interface to accessing the fetaures of the Package Management Service
-    /// 
-    /// This offers two possible methods to get the instance of the PackageManagementService.
-    /// 
-    /// If the Host is consuming the PackageManagementService by linking to this assembly, then
-    /// the simplest access is just to use the <code>Instance</code> method.
-    /// 
-    /// If the Host has dynamically loaded this assembly, then it can request a dynamically-generated
-    /// instance of the PackageManagementService that implements an interface of their own choosing.
-    /// 
-    /// <example><![CDATA[
+    ///     The public interface to accessing the fetaures of the Package Management Service
+    ///     This offers two possible methods to get the instance of the PackageManagementService.
+    ///     If the Host is consuming the PackageManagementService by linking to this assembly, then
+    ///     the simplest access is just to use the <code>Instance</code> method.
+    ///     If the Host has dynamically loaded this assembly, then it can request a dynamically-generated
+    ///     instance of the PackageManagementService that implements an interface of their own choosing.
+    ///     <example><![CDATA[
     ///    // Manually load the assembly 
     ///    var asm = Assembly.Load("Microsoft.OneGet.Core.dll" )
     /// 
@@ -36,14 +32,14 @@ namespace Microsoft.OneGet {
     ///    // ask this object to genetrate a dynamic implementation of my own interface.
     ///    pms.GetInstance<IMyPackageManagementService>();
     /// ]]>
-    /// </example>
+    ///     </example>
     /// </summary>
     public class PackageManagementService {
         internal static PackageManagementServiceImplementation _instance;
-        private static object _lockObject = new object();
-        
+        private static readonly object _lockObject = new object();
+
         /// <summary>
-        /// Provides access to the PackageManagenmentService instance
+        ///     Provides access to the PackageManagenmentService instance
         /// </summary>
         public IPackageManagementService Instance {
             get {
@@ -57,13 +53,12 @@ namespace Microsoft.OneGet {
         }
 
         /// <summary>
-        /// Provides Access to the PackageManagementService instance
+        ///     Provides Access to the PackageManagementService instance
         /// </summary>
         /// <typeparam name="T">An caller-supplied interface type to dynamically generate a an implementation for.</typeparam>
         /// <returns>The PackageManagementService as an instance of the supplied interface type.</returns>
         public T GetInstance<T>() {
             return new DynamicInterface().Create<T>(Instance);
         }
-
     }
 }

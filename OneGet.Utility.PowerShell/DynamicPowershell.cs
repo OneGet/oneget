@@ -21,7 +21,7 @@ namespace Microsoft.OneGet {
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
     using System.Threading;
-    using Core.Extensions;
+    using Extensions;
 
     public class DynamicPowershell : DynamicObject, IDisposable {
         private readonly ManualResetEvent _availableEvent;

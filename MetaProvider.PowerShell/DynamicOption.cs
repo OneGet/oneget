@@ -15,7 +15,7 @@
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Collections.Generic;
     using System.Linq;
-    using Core.Extensions;
+    using Extensions;
 
     public class Feature : Yieldable {
         private KeyValuePair<string, string[]> _pair;
@@ -39,8 +39,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     }
 
     public class DynamicOption : Yieldable {
-        
-
         public DynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired, IEnumerable<object> permittedValues) {
             Name = name;
             Category = category;

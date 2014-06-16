@@ -17,8 +17,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Core;
-    using Core.Extensions;
+    using Extensions;
 
     public class PowerShellProviderBase : IDisposable {
         private readonly Dictionary<string, CommandInfo> _allCommands = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
@@ -122,7 +121,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             DynamicPowershellResult result = null;
 
             try {
-                request.Debug("INVOKING PowerShell Fn {0}", request.CommandInfo.Name);
+                request.Debug("INVOKING PowerShell Fn {0} in {1}", request.CommandInfo.Name, _module.Name);
                 // make sure we don't pass the callback to the function.
                 result = _powershell.NewTryInvokeMemberEx(request.CommandInfo.Name, new string[0], args);
 

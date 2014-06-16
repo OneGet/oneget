@@ -36,6 +36,9 @@
     <None Include="TestPackageProvider.psm1">
       <Publish>True</Publish>
     </None>
+    <None Include="TestChainingPackageProvider.psm1">
+      <Publish>True</Publish>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="Build" BeforeTargets="Copy" />

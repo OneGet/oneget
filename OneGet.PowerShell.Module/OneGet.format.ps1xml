@@ -16,74 +16,76 @@
   * limitations under the License.
   *
   -->
-  <ViewDefinitions>
-    <View>
-      <Name>package</Name>
-      <ViewSelectedBy>
-        <TypeName>Microsoft.OneGet.Core.Packaging.SoftwareIdentity</TypeName>
-        <TypeName>Deserialized.Microsoft.OneGet.Core.Packaging.SoftwareIdentity</TypeName>
-      </ViewSelectedBy>
-      <TableControl>
-        <TableHeaders>
-          <TableColumnHeader>
-            <Width>32</Width>
-          </TableColumnHeader>
-          <TableColumnHeader>
-            <Width>16</Width>
-          </TableColumnHeader>
-          <TableColumnHeader>
-            <Width>16</Width>
-          </TableColumnHeader>
-          <TableColumnHeader>
-            <Width>14</Width>
-          </TableColumnHeader>
-          <TableColumnHeader>
+<ViewDefinitions>
+  <View>
+    <Name>package</Name>
+    <ViewSelectedBy>
+      <TypeName>Microsoft.OneGet.Packaging.SoftwareIdentity</TypeName>
+      <TypeName>Deserialized.Microsoft.OneGet.Packaging.SoftwareIdentity</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+      <TableHeaders>
+        <TableColumnHeader>
+          <Width>32</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>14</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
 
-          </TableColumnHeader>
-        </TableHeaders>
-        <TableRowEntries>
-          <TableRowEntry>
-            <TableColumnItems>
-              <TableColumnItem>
-                <PropertyName>Name</PropertyName>
-              </TableColumnItem>
-              <TableColumnItem>
-                <PropertyName>Version</PropertyName>
-              </TableColumnItem>
-              <TableColumnItem>
-                <PropertyName>Status</PropertyName>
-              </TableColumnItem>
-              <TableColumnItem>
-                <PropertyName>Source</PropertyName>
-              </TableColumnItem>
-              <TableColumnItem>
-                <PropertyName>Summary</PropertyName>
-              </TableColumnItem>
-            </TableColumnItems>
-          </TableRowEntry>
-        </TableRowEntries>
-      </TableControl>
-    </View>
+        </TableColumnHeader>
+      </TableHeaders>
+      <TableRowEntries>
+        <TableRowEntry>
+          <TableColumnItems>
+            <TableColumnItem>
+              <PropertyName>Name</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Version</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Status</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Source</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Summary</PropertyName>
+            </TableColumnItem>
+          </TableColumnItems>
+        </TableRowEntry>
+      </TableRowEntries>
+    </TableControl>
+  </View>
 
-    <View>
-      <Name>PackageSource</Name>
-      <ViewSelectedBy>
-        <TypeName>Microsoft.OneGet.Core.Packaging.PackageSource</TypeName>
-        <TypeName>Deserialized.Microsoft.OneGet.Core.Packaging.PackageSource</TypeName>
-      </ViewSelectedBy>
-      <TableControl>
-        <TableHeaders>
-          <TableColumnHeader>
-            <Width>32</Width>
-          </TableColumnHeader>
-          <TableColumnHeader>
-            <Width>16</Width>
-          </TableColumnHeader>
-          <TableColumnHeader>
-            <Width>10</Width>
-          </TableColumnHeader>
-          <TableColumnHeader>
-
+  <View>
+    <Name>PackageSource</Name>
+    <ViewSelectedBy>
+      <TypeName>Microsoft.OneGet.Packaging.PackageSource</TypeName>
+      <TypeName>Deserialized.Microsoft.OneGet.Packaging.PackageSource</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+      <TableHeaders>
+        <TableColumnHeader>
+          <Width>32</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>10</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>12</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
           </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
@@ -97,6 +99,9 @@
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>IsTrusted</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>IsRegistered</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Location</PropertyName>

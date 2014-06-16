@@ -462,7 +462,7 @@ namespace CustomCodeGenerator {
     {1} // Please don't throw an not implemented exception, it's not optimal.
     {1}using (var request = c.As<Request>()) {{
     {1}    // use the request object to interact with the OneGet core:
-    {1}    request.Debug(""Information"",""Calling '${delegateName}'"" );
+    {1}    request.Debug(""Calling '::${delegateName}'"" );
     {1}}}
 
     {1}${returnKeyword} ${generatedResult}
@@ -520,9 +520,7 @@ function ${psDelegateName} {{
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
-    
-    # use the request object to interact with the OneGet core:
-    $request.Debug(""Information"",""Calling '${delegateName}'"" );
+    write-debug ""Calling '${delegateName}'"" 
    
     # expected return type : ${returnType}
     # ${returnKeyword} $null;
@@ -560,6 +558,23 @@ function ${psDelegateName} {{
     )
 }}".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);});
 
+
+                    // copy *-types =============================================================================================
+                    text = ReplaceRegion("copy", "types", text, (name, content, whitespace) => { return types.Where(each => each.Name == name).Select(t => t.Content).SafeAggregate((current, each) => current + "\r\n" + each); });
+
+                    text = ReplaceRegion("copy", "implementation", text, (name, content, whitespace) => { return implementation.Where(each => each.Name == name).Select(t => t.Content).SafeAggregate((current, each) => current + "\r\n" + each); });
+
+
+                    text = ReplaceRegion("generate-delegates", "apis", text, (name, content, whitespace) => {
+                        {
+                            return apiDeclarations.Where(each => each.category == name).Select(api => @"
+{1}public delegate ${returnType} ${delegateName}(${parameterText});
+".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);
+                        }
+                    });
+
+
+/*
                     // abstract *-interface =============================================================================================
                     text = ReplaceRegion("abstract", "interface", text, (name, content, whitespace) => {return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"
 {1}${preamble}
@@ -581,6 +596,7 @@ function ${psDelegateName} {{
                         (name, content, whitespace) => {return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"{1}internal readonly Interface.${delegateName} ${delegateName};".format(fn, whitespace)).Combined();});
 
                     text = ReplaceRegion("generate-enum", "interface", text, (name, content, whitespace) => {return interfaceDeclarations.Where(each => each.category == name).Select(fn => @"{1}${delegateName},".format(fn, whitespace)).Combined();});
+*/
 
                     /*
                     text = ReplaceRegion("generate-issupported", "interface", text, (name, content, whitespace) => {
@@ -595,11 +611,8 @@ function ${psDelegateName} {{
                     });
                     */
 
-                    // copy *-types =============================================================================================
-                    text = ReplaceRegion("copy", "types", text, (name, content, whitespace) => {return types.Where(each => each.Name == name).Select(t => t.Content).SafeAggregate((current, each) => current + "\r\n" + each);});
 
-                    text = ReplaceRegion("copy", "implementation", text, (name, content, whitespace) => { return implementation.Where(each => each.Name == name).Select(t => t.Content).SafeAggregate((current, each) => current + "\r\n" + each); });
-
+                    
                     //-------------------------------------------------------------------------------------------------------------------------
                     //-------------------------------------------------------------------------------------------------------------------------
                     // if we have any changes, let's make sure we clean it up =================================================================

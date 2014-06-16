@@ -13,12 +13,15 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
+    using System.Collections.Generic;
     using System.Management.Automation;
-    using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Providers.Package;
+    using Microsoft.OneGet.Extensions;
+    using Microsoft.OneGet.Providers.Package;
 
     [Cmdlet(VerbsCommon.Get, PackageSourceNoun)]
     public class GetPackageSource : CmdletWithProvider {
+        private readonly List<string> _warnings = new List<string>();
+
         public GetPackageSource()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source
@@ -39,7 +42,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
                 var found = false;
                 using (var sources = CancelWhenStopped(provider.GetPackageSources(this))) {
-                    foreach (var source in sources) {
+                    foreach (var source in sources.ToIEnumerable()) {
                         if (!string.IsNullOrEmpty(Name)) {
                             if (!Name.EqualsIgnoreCase(source.Name)) {
                                 continue;
@@ -60,21 +63,29 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (!found) {
                     if (!string.IsNullOrEmpty(Name)) {
                         if (!string.IsNullOrEmpty(Location)) {
-                            Warning("Provider '{0}' returned no package sources (Name = '{1}' Location='{2}')", provider.Name, Name, Location);
+                            _warnings.Add(string.Format("Provider '{0}' returned no package sources (Name = '{1}' Location='{2}')", provider.Name, Name, Location));
                             continue;
                         }
-                        Warning("Provider '{0}' returned no package sources (Name = '{1}')", provider.Name, Name);
+                        _warnings.Add(string.Format("Provider '{0}' returned no package sources (Name = '{1}')", provider.Name, Name));
                         continue;
                     }
 
                     if (!string.IsNullOrEmpty(Location)) {
-                        Warning("Provider '{0}' returned no package sources (Location = '{1}')", provider.Name, Location);
+                        _warnings.Add(string.Format("Provider '{0}' returned no package sources (Location = '{1}')", provider.Name, Location));
                         continue;
                     }
-                    Warning("Provider '{0}' returned no package sources".format(provider.Name));
+                    _warnings.Add(string.Format("Provider '{0}' returned no package sources".format(provider.Name)));
                 }
             }
 
+            return true;
+        }
+
+        public override bool EndProcessingAsync() {
+            // we're collecting our warnings for the end.
+            foreach (var warning in _warnings) {
+                Warning(warning);
+            }
             return true;
         }
     }

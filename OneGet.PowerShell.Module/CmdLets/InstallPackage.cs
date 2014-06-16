@@ -18,9 +18,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Packaging;
-    using Microsoft.OneGet.Core.Providers.Package;
+    using Microsoft.OneGet.Extensions;
+    using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Providers.Package;
 
     [Cmdlet(VerbsLifecycle.Install, PackageNoun, SupportsShouldProcess = true)]
     public class InstallPackage : CmdletWithSearchAndSource {
@@ -55,10 +55,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 // buh-bye
                 return true;
             }
-
-            // if (!Validate()) {
-            // return false;
-            //}
 
             // first, determine the package list that we're interested in installing
             var noMatchNames = new HashSet<string>(Name);
@@ -119,9 +115,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (noMatchNames.Any()) {
                 // whine about things not matched.
                 foreach (var name in noMatchNames) {
-                    Error("No Package Found {0}", new[] {
-                        name
-                    });
+                    Error("No Package Found {0}", name );
                 }
 
                 // not going to install.
@@ -133,9 +127,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 failing = true;
                 // bad, matched too many packages
                 foreach (var name in noMatchNames) {
-                    Error(" '{0}' matches multiple packages '{1}'", new[] {
-                        name
-                    });
+                    Error(" '{0}' matches multiple packages '{1}'",name);
                 }
             }
 
@@ -156,10 +148,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 // if (!WhatIf) {
                 //  WriteMasterProgress("Installing", 1, "Installing package '{0}' ({1} of {2})", pkg.Name, n++, packagesToInstall.Length);
                 // }
-                var provider = PackageManagementService.SelectProviders(pkg.ProviderName).FirstOrDefault();
-
+                var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
+                if (provider == null) {
+                    Error("UNKNOWN_PROVIDER", pkg.ProviderName);
+                    return false;
+                }
                 try {
-                    foreach (var installedPkg in CancelWhenStopped(provider.InstallPackage(pkg, this))) {
+                    foreach (var installedPkg in CancelWhenStopped(provider.InstallPackage(pkg, this)).ToIEnumerable()) {
                         if (IsCancelled()) {
                             // if we're stopping, just get out asap.
                             return false;
@@ -168,9 +163,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 } catch (Exception e) {
                     e.Dump();
-                    Error("Installation Failure {0}", new[] {
-                        pkg.Name
-                    });
+                    Error("Installation Failure {0}", pkg.Name );
                     return false;
                 }
             }

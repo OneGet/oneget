@@ -20,8 +20,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
     using System.Security;
     using Microsoft.OneGet;
-    using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Providers.Package;
+    using Microsoft.OneGet.Extensions;
+    using Microsoft.OneGet.Providers.Package;
     using Utility;
 
     public abstract class CmdletBase : AsyncCmdlet {
@@ -112,13 +112,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
             if (names.IsNullOrEmpty()) {
-                return PackageManagementService.SelectProviders(null);
+                return PackageManagementService.SelectProviders(null).ToIEnumerable().Where(each => !each.Features.ContainsKey("automation-only"));
             }
-            return names.SelectMany(each => PackageManagementService.SelectProviders(each));
+            return names.SelectMany(each => PackageManagementService.SelectProviders(each).ToIEnumerable()).Where(each => !each.Features.ContainsKey("automation-only"));
         }
 
         protected IEnumerable<PackageProvider> SelectProviders(string name) {
-            var result = PackageManagementService.SelectProviders(name).ToArray();
+            var result = PackageManagementService.SelectProviders(name).ToIEnumerable().Where( each => !each.Features.ContainsKey("automation-only")).ToArray();
             if (result.Length == 0) {
                 Warning("UNKNOWN_PROVIDER", name);
             }

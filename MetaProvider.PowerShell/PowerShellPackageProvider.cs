@@ -18,9 +18,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Diagnostics;
     using System.Linq;
     using System.Management.Automation;
-    using Core;
-    using Core.Collections;
-    using Core.Extensions;
+    using Collections;
+    using Extensions;
+    using Providers.Package;
     using Callback = System.Object;
 
     public class PowerShellPackageProvider : PowerShellProviderBase {
@@ -65,10 +65,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         #region implement PackageProvider-interface
 
-        public void AddPackageSource(string name, string location, bool trusted, Callback c) {
+        public void AddPackageSource(string name, string location, bool trusted, Object c) {
             Call("AddPackageSource", c, name, location, trusted);
         }
-        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c) {
+        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Object c) {
             // special case.
             // if FindPackage is implemented taking an array of strings
             // and the id > 0 then we need to hold onto the collection until 
@@ -91,7 +91,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             // otherwise, it has to take them one at a time and yield them anyway.
             Call("FindPackage",c, name, requiredVersion, minimumVersion, maximumVersion);
         }
-        public void FindPackageByFile(string file, int id, Callback c) {
+        public void FindPackageByFile(string file, int id, Object c) {
             // special case.
             // if FindPackageByFile is implemented taking an array of strings
             // and the id > 0 then we need to hold onto the collection until 
@@ -113,7 +113,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             Call("FindPackageByFile", c, file);
             return;
         }
-        public void FindPackageByUri(Uri uri, int id, Callback c) {
+        public void FindPackageByUri(Uri uri, int id, Object c) {
             // special case.
             // if FindPackageByUri is implemented taking an array of strings
             // and the id > 0 then we need to hold onto the collection until 
@@ -134,7 +134,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             Call("FindPackageByUri",c, uri);
         }
-        public void GetInstalledPackages(string name, Callback c) {
+        public void GetInstalledPackages(string name, Object c) {
             Call("GetInstalledPackages",c, name);
         }
         public void GetDynamicOptions(int category, Callback c) {
@@ -149,20 +149,20 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public string GetPackageProviderName() {
             return (string)CallPowerShellWithoutRequest("GetPackageProviderName");
         }
-        public void GetPackageSources(Callback c) {
+        public void GetPackageSources(Object c) {
             Call("GetPackageSources", c);
         }
 
         public void InitializeProvider(object dynamicInterface, Callback c) {
             Call("InitializeProvider", c);
         }
-        public void InstallPackage(string fastPath, Callback c) {
+        public void InstallPackage(string fastPath, Object c) {
             Call("InstallPackage", c, fastPath);
         }
-        public void RemovePackageSource(string name, Callback c) {
+        public void RemovePackageSource(string name, Object c) {
             Call("RemovePackageSource", c, name);
         }
-        public void UninstallPackage(string fastPath, Callback c) {
+        public void UninstallPackage(string fastPath, Object c) {
             Call("UninstallPackage", c, fastPath);
         }
         public void GetFeatures(Callback c) {
@@ -179,21 +179,21 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        public void DownloadPackage(string fastPath, string location, Callback c) {
+        public void DownloadPackage(string fastPath, string location, Object c) {
             Call("DownloadPackage", c, fastPath, location);
         }
-        public void GetPackageDependencies(string fastPath, Callback c) {
+        public void GetPackageDependencies(string fastPath, Object c) {
             Call("GetPackageDependencies", c, fastPath);
         }
-        public void GetPackageDetails(string fastPath, Callback c) {
+        public void GetPackageDetails(string fastPath, Object c) {
             Call("GetPackageDetails", c, fastPath);
         }
-        public int StartFind(Callback c) {
+        public int StartFind(Object c) {
             lock (this) {
                 return ++_findId;
             }
         }
-        public void CompleteFind(int id, Callback c) {
+        public void CompleteFind(int id, Object c) {
             if (id < 1) {
                 return;
             }

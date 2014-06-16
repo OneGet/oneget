@@ -18,8 +18,8 @@ namespace Microsoft.OneGet.Test {
     using System.Reflection;
     using System.Security.Cryptography.X509Certificates;
     using System.Security.Policy;
-    using Core.Dynamic;
     using CSharp.RuntimeBinder;
+    using Plugin;
     using Xunit;
 
     public class RequiredAttribute : Attribute {

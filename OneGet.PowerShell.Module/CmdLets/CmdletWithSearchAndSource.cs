@@ -17,9 +17,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Core.Extensions;
-    using Microsoft.OneGet.Core.Packaging;
-    using Microsoft.OneGet.Core.Providers.Package;
+    using Microsoft.OneGet.Collections;
+    using Microsoft.OneGet.Extensions;
+    using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Providers.Package;
 
     public abstract class CmdletWithSearchAndSource : CmdletWithSearch {
         protected CmdletWithSearchAndSource(OptionCategory[] categories)
@@ -55,22 +56,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
-        /*
-        public override bool Validate() {
-            if (PackageSource != null) {
-                Provider = PackageSource.Provider;
-                Source = new [] {PackageSource.Name};
-            }
-            return base.Validate();
-        }
-         * *
-         */
-
         internal bool FindViaUri(PackageProvider packageProvider, string packageuri, Action<SoftwareIdentity> onPackageFound) {
             var found = false;
             if (Uri.IsWellFormedUriString(packageuri, UriKind.Absolute)) {
                 using (var packages = CancelWhenStopped(packageProvider.FindPackageByUri(new Uri(packageuri), 0, this))) {
-                    foreach (var p in packages) {
+                    foreach (var p in packages.ToIEnumerable()) {
                         found = true;
                         onPackageFound(p);
                     }
@@ -89,7 +79,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 // first, try to resolve the filenames
                 try {
                     ProviderInfo providerInfo = null;
-                    var files = GetResolvedProviderPathFromPSPath(filePath, out providerInfo).Where(File.Exists);
+                    var files = GetResolvedProviderPathFromPSPath(filePath, out providerInfo).Where(File.Exists).ToCacheEnumerable();
 
                     if (files.Any()) {
                         // found at least some files
@@ -97,7 +87,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         foreach (var file in files) {
                             var foundThisFile = false;
                             using (var packages = CancelWhenStopped(packageProvider.FindPackageByFile(file, 0, this))) {
-                                foreach (var p in packages) {
+                                foreach (var p in packages.ToIEnumerable()) {
                                     foundThisFile = true;
                                     found = true;
                                     onPackageFound(p);
@@ -107,9 +97,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             if (foundThisFile == false) {
                                 // one of the files we found on disk, isn't actually a recognized package 
                                 // let's whine about this.
-                                Warning("Package File Not Recognized {0}", new[] {
-                                    file
-                                });
+                                Warning("Package File Not Recognized {0}", file );
                             }
                         }
                     }
@@ -128,7 +116,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             var found = false;
 
             using (var packages = CancelWhenStopped(packageProvider.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, 0, this))) {
-                foreach (var p in packages) {
+                foreach (var p in packages.ToIEnumerable()) {
                     found = true;
                     onPackageFound(p);
                 }
@@ -137,111 +125,4 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return found;
         }
     }
-
-    /*
-    public abstract class FindInstallCmdlet : OneGetCmdlet {
-        protected FindInstallCmdlet(OptionCategory[] categories) : base(categories) {
-            
-        }
-
-        [Parameter(Position = 0, ValueFromPipeline = true, ParameterSetName = "PackageBySearch")]
-        public string[] Name {get; set;}
-
-        [Parameter(ParameterSetName = "PackageBySearch")]
-        public override string Provider {get; set;}
-
-        [Parameter(ParameterSetName = "PackageBySearch")]
-        public string[] Source {get; set;}
-
-        [Parameter(ParameterSetName = "PackageBySearch")]
-        public string RequiredVersion {get; set;}
-
-        [Parameter(ParameterSetName = "PackageBySearch")]
-        public string MinimumVersion {get; set;}
-
-        [Parameter(ParameterSetName = "PackageBySearch")]
-        public string MaximumVersion {get; set;}
-
-
-        [Parameter(ParameterSetName = "SourceByObject", ValueFromPipeline = true)]
-        public PackageSource PackageSource { get; set; }
-
-
-        [Parameter(ParameterSetName = "ProviderByObject", ValueFromPipeline = true)]
-        public PackageProvider PackageProivder { get; set; }
-
-
-
-        internal bool FindViaUri(PackageProvider packageProvider, string packageuri, Action<SoftwareIdentity> onPackageFound) {
-            var found = false;
-            if (Uri.IsWellFormedUriString(packageuri, UriKind.Absolute)) {
-                using (var packages = CancelWhenStopped(packageProvider.FindPackageByUri(new Uri(packageuri), 0, this))) {
-                    foreach (var p in packages) {
-                        found = true;
-                        onPackageFound(p);
-                    }
-                }
-            }
-            return found;
-        }
-
-        internal bool FindViaFile(PackageProvider packageProvider, string filePath, Action<SoftwareIdentity> onPackageFound) {
-            var found = false;
-            if (filePath.LooksLikeAFilename()) {
-                // if it does have that it *might* be a file.
-                // if we don't get back anything from this query
-                // then fall thru to the next type
-
-                // first, try to resolve the filenames
-                try {
-                    ProviderInfo providerInfo = null;
-                    var files = GetResolvedProviderPathFromPSPath(filePath, out providerInfo).Where(File.Exists);
-
-                    if (files.Any()) {
-                        // found at least some files
-                        // this is probably the right path.
-                        foreach (var file in files) {
-                            var foundThisFile = false;
-                            using (var packages = CancelWhenStopped(packageProvider.FindPackageByFile(file, 0, this))) {
-                                foreach (var p in packages) {
-                                    foundThisFile = true;
-                                    found = true;
-                                    onPackageFound(p);
-                                }
-                            }
-
-                            if (foundThisFile == false) {
-                                // one of the files we found on disk, isn't actually a recognized package 
-                                // let's whine about this.
-                                Warning("Package File Not Recognized {0}", new[] {
-                                    file
-                                });
-                            }
-                        }
-                    }
-                } catch {
-                    // didn't actually map to a filename ...  keep movin'
-                }
-                // it doesn't look like we found any files.
-                // either because we didn't find any file paths that match
-                // or the provider couldn't make sense of the files.
-            }
-
-            return found;
-        }
-
-        internal bool FindViaName(PackageProvider packageProvider, string name, Action<SoftwareIdentity> onPackageFound) {
-            var found = false;
-
-            using (var packages = CancelWhenStopped(packageProvider.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, 0, this))) {
-                foreach (var p in packages) {
-                    found = true;
-                    onPackageFound(p);
-                }
-            }
-
-            return found;
-        }
-    }
-     */
 }
