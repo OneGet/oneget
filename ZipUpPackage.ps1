@@ -20,7 +20,8 @@ erase "$OD\*.zip"
 # $n = [int] (([System.DateTime]::Now - [System.DateTime]::Parse("03/19/2014") ).Ticks / 80000000)
 # $n = "$OD\OneGet[#$n].zip" 
 
-$n = "$OD\OneGet[$COMMITID].zip" 
+$f = "OneGet[$COMMITID].zip"
+$n = "$OD\$n" 
 
 zip "$n" `
 "$OD\Microsoft.OneGet.dll" `
@@ -49,3 +50,9 @@ echo ""
 echo "Binary build:"
 echo "    $n"
 
+if ($env:COMPUTERNAME -eq "gs-pc" ) {
+    ipmo coapp
+    copy-itemex $n coapp:\files
+    echo "build can be downloaded from "
+    echo "    http://downloads.coapp.org/files/$f"
+}
