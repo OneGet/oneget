@@ -222,7 +222,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         public void InitializeProvider(object dynamicInterface, Callback c) {
-            DynamicExtensions.RemoteDynamicInterface = dynamicInterface;
+            RequestExtensions.RemoteDynamicInterface = dynamicInterface;
 
             if (c == null) {
                 throw new ArgumentNullException("c");

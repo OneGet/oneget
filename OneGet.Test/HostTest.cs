@@ -157,7 +157,7 @@ namespace Microsoft.OneGet.Test {
             }
 
             var expectedProviders = new string[] {
-                "Chocolatey"
+                "NuGet"
             };
 
             var missing = expectedProviders.Where(each => !providerNames.Contains(each)).ToArray();
@@ -215,28 +215,28 @@ namespace Microsoft.OneGet.Test {
         [Fact]
         public void Provider_AddRemovePackageSource() {
             lock (_lock) {
-                var sources = TestPSProvider.GetPackageSources(Request).ToArray();
+                var sources = TestPSProvider.ResolvePackageSources(Request).ToArray();
                 Assert.Equal(3, sources.Count());
 
                 TestPSProvider.AddPackageSource("sampleName", "http://foo/bar/test", false, Request );
 
-                sources = TestPSProvider.GetPackageSources(Request).ToArray();
+                sources = TestPSProvider.ResolvePackageSources(Request).ToArray();
 
                 Assert.Equal(4,sources.Count());
 
                 TestPSProvider.RemovePackageSource("sampleName", Request);
 
-                sources = TestPSProvider.GetPackageSources(Request).ToArray();
+                sources = TestPSProvider.ResolvePackageSources(Request).ToArray();
                 Assert.Equal(3, sources.Count());
 
 
                 TestPSProvider.AddPackageSource("sampleName", "http://foo/bar/test", false, Request);
 
-                sources = TestPSProvider.GetPackageSources(Request).ToArray();
+                sources = TestPSProvider.ResolvePackageSources(Request).ToArray();
                 Assert.Equal(4, sources.Count());
 
                 TestPSProvider.RemovePackageSource("http://foo/bar/test", Request);
-                sources = TestPSProvider.GetPackageSources(Request).ToArray();
+                sources = TestPSProvider.ResolvePackageSources(Request).ToArray();
                 Assert.Equal(3, sources.Count());
             }
         }
@@ -364,15 +364,15 @@ namespace Microsoft.OneGet.Test {
         }
 
         [Fact]
-        public void Provider_GetPackageSources() {
+        public void Provider_ResolvePackageSources() {
             lock (_lock) {
-                var sources = TestPSProvider.GetPackageSources(new Req()).ToArray();
+                var sources = TestPSProvider.ResolvePackageSources(new Req()).ToArray();
                 DumpSources(sources);
 
                 Assert.Equal(3, sources.Length);
 
-                sources = TestPSProvider.GetPackageSources(DynamicInterfaceExtensions.Extend<IRequest>(new Req(), new {
-                    GetSpecifiedPackageSources = new Func<IEnumerable<string>>(() => {
+                sources = TestPSProvider.ResolvePackageSources(DynamicInterfaceExtensions.Extend<IRequest>(new Req(), new {
+                    GetSources = new Func<IEnumerable<string>>(() => {
                         return new string[] {
                             "source1"
                         };
@@ -383,8 +383,8 @@ namespace Microsoft.OneGet.Test {
 
                 DumpSources(sources);
 
-                sources = TestPSProvider.GetPackageSources(DynamicInterfaceExtensions.Extend<IRequest>(new Req(), new {
-                    GetSpecifiedPackageSources = new Func<IEnumerable<string>>(() => {
+                sources = TestPSProvider.ResolvePackageSources(DynamicInterfaceExtensions.Extend<IRequest>(new Req(), new {
+                    GetSources = new Func<IEnumerable<string>>(() => {
                         return new string[] {
                             "http://foo/bar", "http://test/test"
                         };

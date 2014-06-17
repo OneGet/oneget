@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     [Cmdlet(VerbsLifecycle.Unregister, PackageSourceNoun, SupportsShouldProcess = true)]
     public class UnregisterPackageSource : CmdletWithSource {
-        private string[] _specifiedPackageSources;
+        private string[] _sources;
 
         public UnregisterPackageSource()
             : base(new[] {
@@ -37,20 +37,21 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter]
         public SwitchParameter Force {get; set;}
 
-        public override IEnumerable<string> SpecifiedPackageSources {
+        public override IEnumerable<string> Sources {
             get {
-                if (_specifiedPackageSources == null) {
+                if (_sources == null) {
                     if (Source.IsEmptyOrNull()) {
-                        return new string[0];
+                        _sources = new string[0];
+                    } else {
+                        _sources = new string[] {
+                            Source
+                        };
                     }
-                    return new string[] {
-                        Source
-                    };
                 }
-                return _specifiedPackageSources;
+                return _sources;
             }
             set {
-                _specifiedPackageSources = value.ToArray();
+                _sources = value.ToArray();
             }
         }
 
@@ -85,8 +86,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return Error("PROVIDER_NOT_FOUND");
             }
 
-            if (prov.Length > 1) {
-                var sources = prov.SelectMany(each => each.GetPackageSources(this).ToArray()).ToArray();
+            if (prov.Length > 0) {
+                var sources = prov.SelectMany(each => each.ResolvePackageSources(this).ToArray()).ToArray();
 
                 if (sources.Length == 0) {
                     return Error("SOURCE_NOT_FOUND", Source);

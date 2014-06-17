@@ -39,8 +39,10 @@
       <HintPath>..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\WindowsPowerShell\3.0\System.Management.Automation.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RequestExtensions.cs" />
     <Compile Include="DynamicOption.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="PackageSource.cs" />

@@ -72,9 +72,9 @@ namespace Microsoft.OneGet.Plugin {
             // generate the constructor for the class.
             DefineConstructor();
 
-            if (typeof (MarshalByRefObject).IsAssignableFrom(_dynamicType)) {
+            //if (typeof (MarshalByRefObject).IsAssignableFrom(_dynamicType)) {
                 _dynamicType.OverrideInitializeLifetimeService();
-            }
+            //}
         }
 
         internal Type Type {

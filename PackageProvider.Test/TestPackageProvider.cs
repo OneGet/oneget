@@ -96,19 +96,19 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return "TestPackageProvider";
         }
-        public bool GetPackageSources(Object c){
+        public bool ResolvePackageSources(Object c){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
-                request.Debug("Calling 'GetPackageSources'" );
+                request.Debug("Calling 'ResolvePackageSources'" );
             }
 
             return  default(bool);
         }
         public void InitializeProvider(object dynamicInterface, Callback c) {
-            DynamicExtensions.RemoteDynamicInterface = dynamicInterface;
+            RequestExtensions.RemoteDynamicInterface = dynamicInterface;
 
             using (var request = c.As<Request>()) {
                 // use the request object to interact with the OneGet core:
@@ -287,8 +287,10 @@ public enum OptionCategory {
         StringArray = 1,
         Int = 2,
         Switch = 3,
-        Path = 4,
-        Uri = 5
+        Folder = 4,
+        File = 5,
+        Path = 6,
+        Uri = 7
     }
 
     public enum EnvironmentContext {

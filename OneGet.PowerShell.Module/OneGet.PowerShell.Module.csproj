@@ -51,7 +51,7 @@
     <Compile Include="CmdLets\GetPackageProvider.cs" />
     <Compile Include="CmdLets\GetPackageSource.cs" />
     <Compile Include="CmdLets\InstallPackage.cs" />
-    <Compile Include="CmdLets\RemovePackageSource.cs" />
+    <Compile Include="CmdLets\UnregisterPackageSource.cs" />
     <Compile Include="CmdLets\UninstallPackage.cs" />
     <Compile Include="CmdLets\CmdletBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

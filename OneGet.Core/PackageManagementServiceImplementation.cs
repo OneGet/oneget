@@ -114,8 +114,8 @@ namespace Microsoft.OneGet {
             IEnumerable<string> providerAssemblies = new string[] {
                 "Microsoft.OneGet.MetaProvider.PowerShell.dll",
                 "Microsoft.OneGet.ServicesProvider.Common.dll",
-                "OneGet.PackageProvider.Bootstrap.dll",
-                "OneGet.PackageProvider.Chocolatey.dll",
+                // "OneGet.PackageProvider.Bootstrap.dll",  // M2
+                // "OneGet.PackageProvider.Chocolatey.dll",  // M1
                 "OneGet.PackageProvider.NuGet.dll",
             };
 
@@ -142,7 +142,7 @@ namespace Microsoft.OneGet {
         }
 
         public IEnumerator<PackageSource> GetAllSourceNames(Callback callback) {
-            return _packageProviders.Values.SelectMany(each => each.GetPackageSources(callback).ToIEnumerable()).ByRefEnumerator();
+            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(callback).ToIEnumerable()).ByRefEnumerator();
         }
 
         public IEnumerator<string> ProviderNames {

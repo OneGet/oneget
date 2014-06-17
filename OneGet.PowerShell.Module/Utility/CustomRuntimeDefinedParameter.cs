@@ -18,9 +18,11 @@ namespace Microsoft.PowerShell.OneGet.Utility {
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
+    using Microsoft.OneGet;
     using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
+    using System.IO;
 
     internal class CustomRuntimeDefinedParameter : RuntimeDefinedParameter {
         internal HashSet<DynamicOption> Options = new HashSet<DynamicOption>();
@@ -39,23 +41,30 @@ namespace Microsoft.PowerShell.OneGet.Utility {
             }
         }
 
-        internal IEnumerable<string> Values {
-            get {
-                if (IsSet && Value != null) {
-                    switch (Options.FirstOrDefault().Type) {
-                        case OptionType.Switch:
-                            return new string[] {
-                                "true"
-                            };
-                        case OptionType.StringArray:
-                            return (string[])Value;
-                    }
-                    return new[] {
-                        Value.ToString()
-                    };
+        internal IEnumerable<string> GetValues(AsyncCmdlet cmdlet) {
+            if (IsSet && Value != null) {
+                switch (Options.FirstOrDefault().Type) {
+                    case OptionType.Switch:
+                        return new string[] {
+                            "true"
+                        };
+                    case OptionType.StringArray:
+                        return (string[])Value;
+
+                    case OptionType.File:
+                        return new[] {cmdlet.ResolveExistingFilePath(Value.ToString()) };
+                        
+                    case OptionType.Folder:
+                        return new[] { cmdlet.ResolveExistingFolderPath(Value.ToString()) };
+
+                    case OptionType.Path:
+                        return new[] { cmdlet.ResolvePath(Value.ToString()) };
                 }
-                return new string[0];
+                return new[] {
+                    Value.ToString()
+                };
             }
+            return new string[0];
         }
 
         private static Type ParameterType(OptionType optionType) {
@@ -69,7 +78,11 @@ namespace Microsoft.PowerShell.OneGet.Utility {
                 case OptionType.Int:
                     return typeof (int);
                 case OptionType.Path:
-                    return typeof (string);
+                    return typeof(string);
+                case OptionType.File:
+                    return typeof(string);
+                case OptionType.Folder:
+                    return typeof(string);
                 default:
                     return typeof (string);
             }

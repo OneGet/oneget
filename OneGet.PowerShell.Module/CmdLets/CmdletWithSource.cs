@@ -15,6 +15,7 @@
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
     using System.Security;
+    using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
 
@@ -36,9 +37,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return null;
         }
 
-        public override SecureString GetCredentialPassword() {
+        public override string GetCredentialPassword() {
             if (Credential != null) {
-                return Credential.Password;
+                return Credential.Password.ToProtectedString("salt");
             }
             return null;
         }

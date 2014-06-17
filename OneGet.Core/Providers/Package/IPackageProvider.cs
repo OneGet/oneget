@@ -66,7 +66,7 @@ namespace Microsoft.OneGet.Providers.Package {
         // --- Manages package sources ---------------------------------------------------------------------------------------------------
         void AddPackageSource(string name, string location, bool trusted, Object c);
 
-        void GetPackageSources(Object c);
+        void ResolvePackageSources(Object c);
 
         void RemovePackageSource(string name, Object c);
 
@@ -77,7 +77,7 @@ namespace Microsoft.OneGet.Providers.Package {
         // --- Finds packages ---------------------------------------------------------------------------------------------------
         /// <summary>
         ///     Notes:
-        ///     - If a call to GetPackageSources on this object returns no sources, the cmdlet won't call FindPackage on this
+        ///     - If a call to ResolvePackageSources on this object returns no sources, the cmdlet won't call FindPackage on this
         ///     source
         ///     - (ie, the expectation is that you have to provide a source in order to use find package)
         /// </summary>

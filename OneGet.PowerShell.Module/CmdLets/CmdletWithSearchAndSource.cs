@@ -14,6 +14,7 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
@@ -30,11 +31,42 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter()]
         public PSCredential Credential {get; set;}
 
+        public override string GetCredentialUsername() {
+            if (Credential != null) {
+                return Credential.UserName;
+            }
+            return null;
+        }
+
+        public override string GetCredentialPassword() {
+            if (Credential != null) {
+                return Credential.Password.ToProtectedString("salt");
+            }
+            return null;
+        }
+
         [Parameter(ParameterSetName = ProviderByNameSet)]
         public string[] Source {get; set;}
 
         [Parameter(ParameterSetName = SourceByObjectSet, ValueFromPipeline = true)]
         public PackageSource[] PackageSource {get; set;}
+
+        private string[] _sources;
+        public override IEnumerable<string> Sources {
+            get {
+                if (_sources == null) {
+                    if (Source.IsNullOrEmpty()) {
+                        _sources = new string[0];
+                    } else {
+                        _sources = Source;
+                    }
+                }
+                return _sources;
+            }
+            set {
+                _sources = value.ToArray();
+            }
+        }
 
         protected override PackageProvider[] SelectedProviders {
             get {
@@ -116,9 +148,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             var found = false;
 
             using (var packages = CancelWhenStopped(packageProvider.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, 0, this))) {
-                foreach (var p in packages.ToIEnumerable()) {
+                while (packages.MoveNext()) {
                     found = true;
-                    onPackageFound(p);
+                    onPackageFound(packages.Current);
                 }
             }
 

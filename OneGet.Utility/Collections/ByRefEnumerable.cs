@@ -17,26 +17,6 @@ namespace Microsoft.OneGet.Collections {
     using System.Collections;
     using System.Collections.Generic;
 
-    /* LATER.
-     * 
-      var rq = c.As<Request>();
-            var pvds = rq.PackageManagementService.SelectProvidersWithFeatureSet("supports-powershell-get");
-            
-            
-            List<PackageProvider> pp = new List<PackageProvider>();
-            for (PackageProvider x; (x = pvds.Next()) != null;) {
-                pp.Add(x);
-            }
-           
-
-
-    
-    [Serializable]
-    public class SerializableEnumerable<T> where T : MarshalByRefObject {
-        
-    }
-    */
-
     public class RemoteReference<T> : MarshalByRefObject {
         // we don't want these objects being gc's out because they remain unused...
         public override object InitializeLifetimeService() {

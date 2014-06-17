@@ -95,7 +95,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
-        public virtual IEnumerable<string> SpecifiedPackageSources {
+        public IEnumerable<string> GetSources() {
+            Debug("asking for sources");
+            return Sources;
+        }
+
+        public virtual IEnumerable<string> Sources {
             get {
                 return null;
             }
@@ -177,14 +182,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public IEnumerable<string> GetOptionValues(int category, string key) {
-            return DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category) && each.Name == key).SelectMany(each => each.Values).ByRef();
+            return DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category) && each.Name == key).SelectMany(each => each.GetValues(this)).ByRef();
         }
 
         public virtual string GetCredentialUsername() {
             return null;
         }
 
-        public virtual SecureString GetCredentialPassword() {
+        public virtual string GetCredentialPassword() {
             return null;
         }
 

@@ -307,20 +307,20 @@ namespace Microsoft.OneGet.Providers.Package {
         }
 
         public bool IsValidPackageSource(string packageSource, Object c) {
+
             return false;
-            // return Provider.IsValidPackageSource(packageSource, new InvokableDispatcher(c, Instance.Service.Invoke));
         }
 
         public bool IsTrustedPackageSource(string packageSource, Object c) {
             return false;
         }
 
-        public ICancellableEnumerator<PackageSource> GetPackageSources(Object c) {
+        public ICancellableEnumerator<PackageSource> ResolvePackageSources(Object c) {
             var isCancelled = c.As<IsCancelled>();
             PackageSource lastItem = null;
 
             return CallAndCollect<PackageSource>(result =>
-                Provider.GetPackageSources(c.Extend<IRequest>(Context, new {
+                Provider.ResolvePackageSources(c.Extend<IRequest>(Context, new {
 
                     YieldKeyValuePair = new YieldKeyValuePair((key, value) => {
                         if (lastItem != null) {
@@ -370,8 +370,10 @@ namespace Microsoft.OneGet.Providers.Package {
         StringArray = 1,
         Int = 2,
         Switch = 3,
-        Path = 4,
-        Uri = 5
+        Folder = 4,
+        File = 5,
+        Path = 6,
+        Uri = 7
     }
 
     public enum EnvironmentContext {

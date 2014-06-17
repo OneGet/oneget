@@ -41,7 +41,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
 
                 var found = false;
-                using (var sources = CancelWhenStopped(provider.GetPackageSources(this))) {
+                using (var sources = CancelWhenStopped(provider.ResolvePackageSources(this))) {
                     foreach (var source in sources.ToIEnumerable()) {
                         if (!string.IsNullOrEmpty(Name)) {
                             if (!Name.EqualsIgnoreCase(source.Name)) {

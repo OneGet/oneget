@@ -87,31 +87,23 @@ function Find-Package {
         [string] $minimumVersion,
         [string] $maximumVersion
     )
+	write-debug "In TestChainingPackageProvider - Find-Package"
 
-	$providers = $request.SelectProvidersWithFeature("supports-powershell-get") 
+	$providers = $request.SelectProvidersWithFeature("supports-powershellget-modules") 
 
 	foreach( $pm in $providers) {
 		$name = $pm.Name
 		write-Debug "working with $name"
 		
-		$myReq  =  $request.RemoteThis;
+		$mySrcLocation = "https://nuget.org/api/v2"
 
-		if($myReq -eq $null ) {
-			write-Debug "IT IS NULL===================="
+		foreach( $pkg in $pm.FindPackages( $names, $requiredVersion, $minimumVersion, $maximumVersion, (new-request -options @{ } -sources @( $mySrcLocation ) -Credential $c) ) ) {
+			$fastPackageReference = $pkg.Name+$mySrcLocation
+			Write-Output (new-SoftwareIdentity $fastPackageReference  $pkg.Name $pkg.Version  $pkg.VersionScheme $mySrcLocation $pkg.Summary $name $pkg.FullPath $pkg.PackagePath )
 		}
-
-		foreach( $pkg in $pm.FindPackages( $names, $requiredVersion, $minimumVersion, $maximumVersion, $myReq ) ) {
-			Dump-object $pkg
-
-			#Write-Output (new-SoftwareIdentity "pkgid:2"  $pkg. "1.0"  "semver"  "local"  "this is package 2" $name )
-		}
-
-
 	}
 
-
-
-	write-debug "In TestChainingPackageProvider - Find-Package"
+	
 }
 
 function Find-PackageByFile { 
@@ -136,9 +128,9 @@ function Get-InstalledPackage {
     write-debug "In TestChainingPackageProvider - Get-InstalledPackage {0} {1}" $InstalledPackages.Count $name
 }
 
-function Get-PackageSource { 
+function Resolve-PackageSource { 
     param()
-	write-debug "In TestChainingPackageProvider - Find-GetPackageSources"
+	write-debug "In TestChainingPackageProvider - Resolve-PackageSource"
 }
 
 function Initialize-Provider { 

@@ -14,6 +14,7 @@
 
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
@@ -34,7 +35,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public string[] PackageSources {
             get {
-                var ps = GetSpecifiedPackageSources();
+                var ps = GetSources();
                 if (ps == null) {
                     return new string[] {
                     };
@@ -78,7 +79,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract bool NotifyBeforePackageUninstall(string packageName, string version, string source, string destination);
 
         public abstract bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
-
         #endregion
 
         #region copy host-apis
@@ -111,11 +111,11 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract IEnumerable<string> GetOptionValues(int category, string key);
 
-        public abstract IEnumerable<string> GetSpecifiedPackageSources();
+        public abstract IEnumerable<string> GetSources();
 
         public abstract string GetCredentialUsername();
 
-        public abstract SecureString GetCredentialPassword();
+        public abstract string GetCredentialPassword();
 
         public abstract bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
@@ -132,7 +132,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation);
 
         public abstract bool AskPermission(string permission);
-
         #endregion
 
         #region copy service-apis
@@ -166,7 +165,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract string GetKnownFolder(string knownFolder, Object c);
 
         public abstract bool IsElevated(Object c);
-
         #endregion
 
         #region copy response-apis
@@ -206,7 +204,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// <param name="isTrusted"></param>
         /// <param name="isRegistered"></param>
         /// <returns></returns>
-        public abstract bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered);
+        public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
@@ -222,41 +220,39 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract bool YieldKeyValuePair(string key, string value);
 
         public abstract bool YieldValue(string value);
-
         #endregion
 
         #region copy Request-implementation
-
-        public bool Warning(string message, params object[] args) {
-            return Warning(FormatMessageString(message, args));
+public bool Warning(string message, params object[] args) {
+            return Warning(FormatMessageString(message,args));
         }
 
         public bool Error(string message, params object[] args) {
-            return Error(FormatMessageString(message, args));
+            return Error(FormatMessageString(message,args));
         }
 
         public bool Message(string message, params object[] args) {
-            return Message(FormatMessageString(message, args));
+            return Message(FormatMessageString(message,args));
         }
 
         public bool Verbose(string message, params object[] args) {
-            return Verbose(FormatMessageString(message, args));
-        }
+            return Verbose(FormatMessageString(message,args));
+        } 
 
         public bool Debug(string message, params object[] args) {
-            return Debug(FormatMessageString(message, args));
+            return Debug(FormatMessageString(message,args));
         }
 
         public int StartProgress(int parentActivityId, string message, params object[] args) {
-            return StartProgress(parentActivityId, FormatMessageString(message, args));
+            return StartProgress(parentActivityId, FormatMessageString(message,args));
         }
 
         public bool Progress(int activityId, int progress, string message, params object[] args) {
-            return Progress(activityId, progress, FormatMessageString(message, args));
+            return Progress(activityId, progress, FormatMessageString(message,args));
         }
 
         private static string FixMeFormat(string formatString, object[] args) {
-            if (args == null || args.Length == 0) {
+            if (args == null || args.Length == 0 ) {
                 // not really any args, and not really expectng any
                 return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
             }
@@ -268,11 +264,27 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             // if it doesn't look like we have the correct number of parameters
             // let's return a fixmeformat string.
-            var c = System.Linq.Enumerable.Count(System.Linq.Enumerable.Where(message.ToCharArray(), each => each == '{'));
+            var c = System.Linq.Enumerable.Count( System.Linq.Enumerable.Where(message.ToCharArray(), each => each == '{'));
             if (c < args.Length) {
                 return FixMeFormat(message, args);
             }
             return string.Format(message, args);
+        }
+
+        public SecureString Password {
+            get {
+                var p = GetCredentialPassword();
+                if (p == null) {
+                    return null;
+                }
+                return p.FromProtectedString("salt");
+            }
+        }
+
+        public string Username {
+            get {
+                return  GetCredentialUsername();
+            }
         }
 
         public void Dispose() {
@@ -282,17 +294,106 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             return req.RemoteThis;
         }
 
-        public MarshalByRefObject RemoteThis {
+        internal MarshalByRefObject RemoteThis {
             get {
                 return Extend();
             }
         }
 
         internal MarshalByRefObject Extend(params object[] objects) {
-            return DynamicExtensions.Extend(this, GetIRequestInterface(), objects);
+            return RequestExtensions.Extend(this, GetIRequestInterface(), objects);
         }
 
         #endregion
+
+        public PSCredential Credential {
+            get {
+                var u = GetCredentialUsername();
+                var p = GetCredentialPassword();
+                if( string.IsNullOrEmpty(u) && string.IsNullOrEmpty(p) ) {
+                    return null;
+                }
+                return new PSCredential(u, p.FromProtectedString("salt"));
+            }
+        }
+
+        private Hashtable _options;
+        public Hashtable Options {
+            get {
+                if (_options == null) {
+                    _options = new Hashtable();
+                    //quick and dirty, grab all four sets and merge them.
+                    for (int i = 0; i < 4; i++) {
+                        var keys = GetOptionKeys(i).ToArray();
+                        foreach (var k in keys) {
+                            var values = GetOptionValues(i, k).ToArray();
+                            if (values.Length == 1) {
+                                if (values[0].IsTrue()) {
+                                    _options.Add(k, true);
+                                } else {
+                                    _options.Add(k, values[0]);
+                                }
+                            } else {
+                                _options.Add(k, values);
+                            }
+                        }
+                    }
+                }
+                return _options;
+            }
+        }
+
+        public MarshalByRefObject CloneRequest(Hashtable options = null, ArrayList sources = null, PSCredential credential = null) {
+            var srcs = (sources ?? new ArrayList()).ToArray().Select(each => each.ToString()).ToArray();
+            var name = credential == null ? null : credential.UserName;
+            var pass = credential == null ? null : credential.Password.ToProtectedString("salt");
+            options = options ?? new Hashtable();
+
+            var lst = new Dictionary<string, string[]>();
+            foreach (var k in options.Keys) {
+                if (k != null) {
+                    var obj = options[k];
+
+                    string[] val = null;
+
+                    if (obj is string) {
+                        val = new [] {obj as string};
+                    }
+
+                    // otherwise, try to cast it to a collection of string-like-things
+                    var collection = obj as IEnumerable;
+                    if (collection != null) {
+                        val = collection.Cast<object>().Select(each => each.ToString()).ToArray();
+                    }
+
+                    // meh. ToString, and goodnight.
+                    val = new[] { obj.ToString() };
+
+                    lst.Add(k.ToString(),val );    
+                }
+            }
+
+            return Extend(new {
+                GetOptionKeys = new Func<int, IEnumerable<string>>(category => {
+                    return lst.Keys.ToArray();
+                }),
+
+                GetOptionValues = new Func<int, string, IEnumerable<string>>((category, key) => {
+                    if (lst.ContainsKey(key)) {
+                        return lst[key];    
+                    }
+                    return new string[0];
+                }),
+
+                GetSources = new Func<IEnumerable<string>>(() => {
+                    return srcs;
+                }),
+
+                GetCredentialUsername = new Func<string>(() => {return name;}),
+
+                GetCredentialPassword = new Func<string>(() => {return pass;}),
+            });
+        }
 
         public object CallPowerShell(params object[] args) {
             if (IsMethodImplemented) {
@@ -343,161 +444,4 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             return PackageManagementService.SelectProvidersWithFeature(featureName,value);
         }
     }
-
-#if NOPE
-    public class oldRequest : IDisposable {
-        private Callback _callback;
-
-        //public static implicit operator Callback(Request request) {
-        // return request._callback;
-        //}
-
-        internal oldRequest(Callback c) {
-            _callback = c;
-        }
-
-        internal bool IsDisposed {
-            get {
-                return _callback == null;
-            }
-        }
-
-        public void Dispose() {
-            // Clearing all of these ensures that the transient APIs 
-            // can't be called outside of the appropriate scope.
-
-            _callback = null;
-        }
-
-        public Request Override(IEnumerable<string> sources, Hashtable options) {
-#if NOT_RIGHT
-    // create a new instance of this request,
-    // but substitute the sources and options
-    // for the ones that it's providing.
-
-            var packageSources = new PackageSources(() => {
-                return sources;
-            });
-
-            var getOptionKeys = new GetOptionKeys((category) => {
-                return options.Keys.ToEnumerable<string>();
-            });
-
-            var getOptionValues = new GetOptionValues((category, key) => {
-                foreach (var k in options.Keys) {
-                    if (string.Equals(k.ToString(), key, StringComparison.OrdinalIgnoreCase)) {
-                        // todo: must return collection of items.
-                        return null; // options[k];
-                    }
-                }
-                return null;
-            });
-
-            return null;
-            /*
-            return new Request( new Callback((fn, args) => {
-                if (string.IsNullOrEmpty(fn)) {
-                    var results = _callback(null, null) as IEnumerable<string>;
-                    if (results == null) {
-                        return null;
-                    }
-                    return results.Union(new[] {
-                        "PackageSources",
-                        "GetOptionKeys",
-                        "GetOptionValues"
-                    });
-
-                }
-
-                if (args == null) {
-                    switch (fn.ToLowerInvariant()) {
-                        case "packagesources":
-                            return packageSources;
-                        case "getoptionkeys":
-                            return getOptionKeys;
-                        case "getoptionvalues":
-                            return getOptionValues;
-                    }
-                    return _callback(fn,null);
-                }
-
-                switch (fn.ToLowerInvariant()) {
-                    case "packagesources":
-                        return packageSources();
-                    case "getoptionkeys":
-                        var a = args.ToArray();
-                        return getOptionKeys((string)a[0]);
-                    case "getoptionvalues":
-                        var b = args.ToArray();
-                        return getOptionValues((string)b[0], (string)b[1]);
-                }
-
-                return _callback(fn, args);
-            }));
-             * */
-#endif
-            return null;
-        }
-
-        private void CheckDisposed() {
-            if (IsDisposed) {
-                throw new Exception("Invalid State--past call lifespan");
-            }
-        }
-    }
-#endif
-
-    #region copy dynamicextension-implementation
-public static class DynamicExtensions {
-        private static dynamic _remoteDynamicInterface;
-        private static dynamic _localDynamicInterface;
-
-        /// <summary>
-        ///  This is the Instance for DynamicInterface that we use when we're giving another AppDomain a remotable object.
-        /// </summary>
-        public static dynamic LocalDynamicInterface {
-            get {
-                return _localDynamicInterface ?? (_localDynamicInterface = Activator.CreateInstance(RemoteDynamicInterface.GetType()));
-            }
-        }
-
-        /// <summary>
-        /// The is the instance of the DynamicInteface service from the calling AppDomain
-        /// </summary>
-        public static dynamic RemoteDynamicInterface {
-            get {
-                return _remoteDynamicInterface;
-            }
-            set {
-                if (_remoteDynamicInterface == null) {
-                    _remoteDynamicInterface = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// This is called to adapt an object from a foreign app domain to a known interface
-        /// In this appDomain
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="instance"></param>
-        /// <returns></returns>
-        public static T As<T>(this object instance) {
-            return RemoteDynamicInterface.Create<T>(instance);
-        }
-
-        /// <summary>
-        ///  This is called to adapt and extend an object that we wish to pass to a foreign app domain
-        /// </summary>
-        /// <param name="obj">The base object that we are passing</param>
-        /// <param name="tInterface">the target interface (from the foreign appdomain)</param>
-        /// <param name="objects">the overriding objects (may be anonymous objects with Delegates, or an object with methods)</param>
-        /// <returns></returns>
-        public static MarshalByRefObject Extend(this object obj, Type tInterface, params object[] objects) {
-            return LocalDynamicInterface.Create(tInterface, objects, obj);
-        }
-    }
-
-    #endregion
-
 }

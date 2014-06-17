@@ -140,3 +140,16 @@ function New-Feature {
 	}
 	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Feature -ArgumentList $name, $values.ToArray()
 }
+
+<# 
+	Duplicates the $request object and overrides the client-supplied data with the specified values.
+#>
+function New-Request {
+	param(
+		[System.Collections.Hashtable] $options = $null,
+		[System.Collections.ArrayList] $sources = $null,
+		[PSCredential] $credential = $null
+	)
+
+	return $request.CloneRequest( $options, $sources, $credential )
+}

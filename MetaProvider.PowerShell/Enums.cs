@@ -26,8 +26,10 @@ public enum OptionCategory {
         StringArray = 1,
         Int = 2,
         Switch = 3,
-        Path = 4,
-        Uri = 5
+        Folder = 4,
+        File = 5,
+        Path = 6,
+        Uri = 7
     }
 
     public enum EnvironmentContext {

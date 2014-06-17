@@ -17,6 +17,7 @@ namespace Microsoft.OneGet {
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.IO;
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
@@ -94,6 +95,56 @@ namespace Microsoft.OneGet {
 
         public virtual bool ProcessRecordAsync() {
             return false;
+        }
+
+        public string ResolveExistingFilePath(string filePath) {
+            ProviderInfo providerInfo = null;
+            var files = GetResolvedProviderPathFromPSPath(filePath, out providerInfo).ToArray();
+            switch (files.Length) {
+                case 0:
+                    // none found 
+                    Error("FILE_NOT_FOUND", filePath);
+                    break;
+                    
+                case 1:
+                    if (File.Exists(files[0])) {
+                        return files[0];
+                    }
+                    Error("FILE_NOT_FOUND", filePath);
+                    break;
+                    
+                default:
+                    Error("MORE_THAN_ONE_FILE_MATCHED", filePath, files.JoinWithComma());
+                    break;
+            }
+            return null;
+        }
+
+        public string ResolveExistingFolderPath(string folderPath) {
+            ProviderInfo providerInfo = null;
+            var files = GetResolvedProviderPathFromPSPath(folderPath, out providerInfo).ToArray();
+            switch (files.Length) {
+                case 0:
+                    // none found 
+                    Error("FOLDER_NOT_FOUND", folderPath);
+                    break;
+
+                case 1:
+                    if (Directory.Exists(files[0])) {
+                        return files[0];
+                    }
+                    Error("FOLDER_NOT_FOUND", folderPath);
+                    break;
+
+                default:
+                    Error("MORE_THAN_ONE_FOLDER_MATCHED", folderPath, files.JoinWithComma());
+                    break;
+            }
+            return null;
+        }
+
+        public string ResolvePath(string path) {
+            return GetUnresolvedProviderPathFromPSPath(path);
         }
 
         private void InvokeMessage(TaskCompletionSource<bool> message) {

@@ -172,13 +172,13 @@ function Get-PackageProviderName {
 <# 
 
 #>
-function Get-PackageSource { 
+function Resolve-PackageSource { 
     param()
     
     
-	write-debug "In TestPackageProvider - Find-GetPackageSources"
+	write-debug "In TestPackageProvider - Resolve-PackageSources"
     
-	$srcs = $request.GetSpecifiedPackageSources();
+	$srcs = $request.GetSources();
 
 	if( $srcs -eq $null -or $srcs.Length -eq 0 ) {
 		# if there is nothing passed in, 
@@ -345,9 +345,6 @@ function Get-DynamicOptions {
 			write-Output (New-DynamicOption $category "hint" String $false )
 			write-Output (New-DynamicOption $category  "color" String $false @("red","green","blue"))
 			write-Output (New-DynamicOption $category  "flavor" String $false @("chocolate","vanilla","peach"))
-
-			
-
 		}
 
 		Source {

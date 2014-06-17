@@ -47,11 +47,11 @@ namespace Microsoft.OneGet.Api {
 
         IEnumerable<string> GetOptionValues(int category, string key);
 
-        IEnumerable<string> GetSpecifiedPackageSources();
+        IEnumerable<string> GetSources();
 
         string GetCredentialUsername();
 
-        SecureString GetCredentialPassword();
+        string GetCredentialPassword();
 
         bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 

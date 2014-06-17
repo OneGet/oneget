@@ -149,7 +149,7 @@ function Get-PackageProviderName {
 <# 
 
 #>
-function Get-PackageSource { 
+function Resolve-PackageSource { 
     param(
         [Object] $c
     )
@@ -157,7 +157,7 @@ function Get-PackageSource {
     # Delete this method if you do not need to implement it
 
     # use the request object to interact with the OneGet core:
-    $request.Debug("Calling 'GetPackageSources'" , "" );
+    $request.Debug("Calling 'Resolve PackageSources'" , "" );
 
     # expected return type : bool
     # return  $null;

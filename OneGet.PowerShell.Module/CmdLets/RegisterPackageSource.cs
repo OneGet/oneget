@@ -95,7 +95,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return false;
             }
 
-            using (var sources = CancelWhenStopped(PackageProvider.GetPackageSources(this))) {
+            using (var sources = CancelWhenStopped(PackageProvider.ResolvePackageSources(this))) {
                 if (sources.ToIEnumerable().Any(each => each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase))) {
                     if (Force || ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}' (Replace existing)".format(Name, Location, Provider)).Result) {
                         PackageProvider.AddPackageSource(Name, Location, Trusted, this);

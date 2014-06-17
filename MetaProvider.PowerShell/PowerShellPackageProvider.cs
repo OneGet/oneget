@@ -149,8 +149,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public string GetPackageProviderName() {
             return (string)CallPowerShellWithoutRequest("GetPackageProviderName");
         }
-        public void GetPackageSources(Object c) {
-            Call("GetPackageSources", c);
+        public void ResolvePackageSources(Object c) {
+            Call("ResolvePackageSources", c);
         }
 
         public void InitializeProvider(object dynamicInterface, Callback c) {

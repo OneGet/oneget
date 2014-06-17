@@ -31,30 +31,29 @@
 	## If it wasn't shipped with OneGet, it would have been it's own module, and this
 	## wouldn't be neccessary.
 	##
-    NestedModules = @('chocolatey.psd1')
+    # NestedModules = @('chocolatey.psd1')
 
     # TypesToProcess = ""
     # FormatsToProcess = ""
     CmdletsToExport = @(
-        'Add-PackageSource',
+        'Register-PackageSource',
         'Find-Package',
         'Get-Package',
         'Get-PackageProvider', 
         'Get-PackageSource',
         'Install-Package',
-        'Remove-PackageSource',
+        'Unregister-PackageSource',
         'Uninstall-Package'
 	)
 
 	FormatsToProcess  = @('OneGet.format.ps1xml')
 
 	##
-	## For now, the package provider assemblies are listed here.
-	## After the CTP, there should be a less-hardcoded means
-	## to installing, detecting and loading providers.
-	##
+	## PowerShell-based Providers included in build
+	## 
    	PrivateData = @{
-		"OneGet.Providers" = @( ".\ZipProvider.psm1", ".\TestPackageProvider.psm1",".\TestChainingPackageProvider.psm1"  )
-
+		# "OneGet.Providers" = @( ".\TestPackageProvider.psm1",".\TestChainingPackageProvider.psm1"  )
+		# ".\ZipProvider.psm1", 
+		# 
     }
 }
