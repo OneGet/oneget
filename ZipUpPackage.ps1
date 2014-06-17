@@ -1,6 +1,17 @@
 
 $COMMITID = (git rev-list --full-history --all --abbrev-commit | head -1)
 
+$STATUS = (git status) 
+
+if ( $STATUS -like "*Your branch is ahead*"  -or $STATUS -like "Changes not staged for commit" -or $STATUS -like "Untracked files" ) { 
+    Echo "*********************************************************************"
+    Echo "You must push your changes first"
+    Echo "*********************************************************************"
+    echo ""
+    git status
+    return
+}
+
 # package script
 $OD = ( resolve-path .\output\v451\AnyCPU\Debug\bin\ ).Path
 
