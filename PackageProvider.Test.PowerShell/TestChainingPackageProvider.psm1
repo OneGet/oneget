@@ -89,9 +89,14 @@ function Find-Package {
     )
 	write-debug "In TestChainingPackageProvider - Find-Package"
 
+	dump-object $Request
+	
 	$providers = $request.SelectProvidersWithFeature("supports-powershellget-modules") 
 
 	foreach( $pm in $providers) {
+	    
+		dump-object $pm 
+
 		$name = $pm.Name
 		write-Debug "working with $name"
 		
@@ -102,8 +107,6 @@ function Find-Package {
 			Write-Output (new-SoftwareIdentity $fastPackageReference  $pkg.Name $pkg.Version  $pkg.VersionScheme $mySrcLocation $pkg.Summary $name $pkg.FullPath $pkg.PackagePath )
 		}
 	}
-
-	
 }
 
 function Find-PackageByFile { 
@@ -111,6 +114,10 @@ function Find-PackageByFile {
         [string[]] $files
     )
     write-debug "In TestChainingPackageProvider - Find-PackageByFile"
+
+	# return values with
+	# write-output  (new-SoftwareIdentity "fastPackageReference"  "package-name" "package-version" "multipartnumeric" "source_name_or_location" "summary" "searchkey" "filename-of-the-package" "full-path-of-the-package-or-installed-location" )
+
 }
 
 function Find-PackageByUri { 
@@ -118,6 +125,9 @@ function Find-PackageByUri {
         [Uri[]] $uris
     )
 	write-debug "In TestChainingPackageProvider - Find-PackageByUri"
+
+	# return values with
+	# write-output  (new-SoftwareIdentity "fastPackageReference"  "package-name" "package-version" "multipartnumeric" "source_name_or_location" "summary" "searchkey" "filename-of-the-package" "full-path-of-the-package-or-installed-location" )
 }
 
 
@@ -126,11 +136,20 @@ function Get-InstalledPackage {
         [string] $name
     )
     write-debug "In TestChainingPackageProvider - Get-InstalledPackage {0} {1}" $InstalledPackages.Count $name
+
+	# return values with
+	# write-output  (new-SoftwareIdentity "fastPackageReference"  "package-name" "package-version" "multipartnumeric" "source_name_or_location" "summary" "searchkey" "filename-of-the-package" "full-path-of-the-package-or-installed-location" )
+
 }
 
 function Resolve-PackageSource { 
     param()
 	write-debug "In TestChainingPackageProvider - Resolve-PackageSource"
+
+	# get requested set from $request.Sources
+
+	# return values with
+	# write-output  (New-PackageSource "sourcename" "location" <istrusted> <isregistered> @{ <hashtable-of-details> })
 }
 
 function Initialize-Provider { 
@@ -143,30 +162,21 @@ function Install-Package {
         [string] $fastPackageReference
     )
 	write-debug "In TestChainingPackageProvider - Install-Package"
+
+		# return values with
+	# write-output  (new-SoftwareIdentity "fastPackageReference"  "package-name" "package-version" "multipartnumeric" "source_name_or_location" "summary" "searchkey" "filename-of-the-package" "full-path-of-the-package-or-installed-location" )
+
 }
 
-function Is-TrustedPackageSource { 
-    param(
-        [string] $packageSource
-    )
-    write-debug "In TestChainingPackageProvider - Is-TrustedPackageSource"
-
-	return false;
-}
-
-function Is-ValidPackageSource { 
-    param(
-        [string] $packageSource
-    )
-	write-debug "In TestChainingPackageProvider - Is-ValidPackageSource"
-	return false;
-}
 
 function Uninstall-Package { 
     param(
         [string] $fastPackageReference
     )
     write-debug "In TestChainingPackageProvider - Uninstall-Package"
+	# return values with
+	# write-output  (new-SoftwareIdentity "fastPackageReference"  "package-name" "package-version" "multipartnumeric" "source_name_or_location" "summary" "searchkey" "filename-of-the-package" "full-path-of-the-package-or-installed-location" )
+
 }
 
 
@@ -176,6 +186,7 @@ function Download-Package {
         [string] $location
     )
     write-debug "In TestChainingPackageProvider - Download-Package"
+
 }
 
 function Get-PackageDependencies { 
@@ -183,6 +194,10 @@ function Get-PackageDependencies {
         [string] $fastPackageReference
     )
     write-debug "In TestChainingPackageProvider - Get-PackageDependencies"
+
+	# return values with
+	# write-output  (new-SoftwareIdentity "fastPackageReference"  "package-name" "package-version" "multipartnumeric" "source_name_or_location" "summary" "searchkey" "filename-of-the-package" "full-path-of-the-package-or-installed-location" )
+
 }
 
 function Get-PackageDetail { 

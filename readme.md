@@ -30,8 +30,13 @@ check out the source code
 
 # get the submodules for this branch
 > git submodule update --init
+
+# BUILD FROM VISUAL STUDIO FOR NOW.
     
 ```
+
+### SEE THE CURRENT RELEASE NOTES for this branch: 
+### https://github.com/OneGet/oneget/blob/wip/release-notes.md 
 
 
 ## Understanding the OneGet code repository
