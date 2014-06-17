@@ -21,7 +21,7 @@ erase "$OD\*.zip"
 # $n = "$OD\OneGet[#$n].zip" 
 
 $f = "OneGet[$COMMITID].zip"
-$n = "$OD\$n" 
+$n = "$OD\$f" 
 
 zip "$n" `
 "$OD\Microsoft.OneGet.dll" `
