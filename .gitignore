@@ -95,3 +95,4 @@ Scratch/test2.props
 .syncignore
 *.bak
 /AbstractDesign
+build-ps.cmd
