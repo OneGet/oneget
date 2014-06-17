@@ -44,6 +44,8 @@ zip "$n" `
 "$OD\nuget.exe" `
 "$OD\etc\*" 
 
-
-echo $n
+echo ""
+echo ""
+echo "Binary build:"
+echo "    $n"
 
