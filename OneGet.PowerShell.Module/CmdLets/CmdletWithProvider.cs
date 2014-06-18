@@ -90,7 +90,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public override bool GenerateDynamicParameters() {
             // if the provider (or source) is selected, we can get package metadata keys from the provider
             // hmm. let's just grab *all* of them.
-            foreach (var md in _optionCategories.SelectMany(c => SelectedProviders.SelectMany(provider => provider.GetDynamicOptions(c, this)))) {
+            foreach (var md in _optionCategories.SelectMany(c => SelectedProviders.SelectMany(provider => provider.GetDynamicOptions(c, this).ToIEnumerable()))) {
                 if (DynamicParameters.ContainsKey(md.Name)) {
                     // todo: if the dynamic parameters from two providers aren't compatible, then what? 
 
