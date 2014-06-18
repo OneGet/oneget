@@ -59,6 +59,21 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool GenerateDynamicParameters() {
+            Console.WriteLine("HLOO");
+
+            if (IsOverwriteExistingSource) {
+                Provider = OriginalSource.ProviderName;
+                Name = Name.Is() ? Name : OriginalSource.Name;
+                Location = Location.Is() ? Name : OriginalSource.Name;
+                if (!Trusted.IsPresent && OriginalSource.IsTrusted) {
+                    Trusted = SwitchParameter.Present;
+                }
+            }
+
+            if (!IsProviderByObject) {
+                PackageProvider = SelectProviders(Provider).FirstOrDefault();
+            }
+
             // if the provider (or source) is selected, we can get package metadata keys from the provider
             // hmm. let's just grab *all* of them.
             foreach (var md in PackageProvider.GetDynamicOptions(OptionCategory.Source, this).ToIEnumerable()) {
