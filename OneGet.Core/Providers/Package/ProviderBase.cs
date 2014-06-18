@@ -107,8 +107,44 @@ namespace Microsoft.OneGet.Providers.Package {
             return result;
         }
 
+
+        private DynamicOption[] _dynamicOption;
+        public DynamicOption[] DynamicOptions {
+            get {
+
+                if (_dynamicOption == null) {
+                    var result = new List<DynamicOption>();
+                    var n = GetDynamicOptions(OptionCategory.Install, null);
+                    while (n.MoveNext()) {
+                        result.Add(n.Current);
+                    }
+
+                    n = GetDynamicOptions(OptionCategory.Package, null);
+                    while (n.MoveNext()) {
+                        result.Add(n.Current);
+                    }
+
+                    n = GetDynamicOptions(OptionCategory.Provider, null);
+                    while (n.MoveNext()) {
+                        result.Add(n.Current);
+                    }
+
+                    n = GetDynamicOptions(OptionCategory.Source, null);
+                    while (n.MoveNext()) {
+                        result.Add(n.Current);
+                    }
+                    _dynamicOption = result.ToArray();
+                }
+                return _dynamicOption;
+            }
+        }
+
         public ICancellableEnumerator<DynamicOption> GetDynamicOptions(OptionCategory operation, Object c) {
-            var isCancelled = c == null ? ()=> false : c.As<IsCancelled>();
+            c = c ?? new {
+                IsCancelled = new IsCancelled(() => false)
+            };
+
+            var isCancelled = c.As<IsCancelled>();
 
             DynamicOption lastItem = null;
             var list = new List<string>();
