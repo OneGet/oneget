@@ -34,6 +34,10 @@ namespace Microsoft.OneGet {
 
         public DynamicPowershell() {
             _runspace = RunspaceFactory.CreateRunspace();
+
+            _availableEvent = new ManualResetEvent(Runspace.RunspaceAvailability == RunspaceAvailability.Available);
+            _opened = new ManualResetEvent(Runspace.RunspaceStateInfo.State != RunspaceState.Opening);
+
             _runspace.StateChanged += CheckIfRunspaceIsOpening;
             _runspace.AvailabilityChanged += CheckIfRunspaceIsAvailable;
 
@@ -42,8 +46,6 @@ namespace Microsoft.OneGet {
             }
             _runspaceIsOwned = true;
 
-            _availableEvent = new ManualResetEvent(Runspace.RunspaceAvailability == RunspaceAvailability.Available);
-            _opened = new ManualResetEvent(Runspace.RunspaceStateInfo.State != RunspaceState.Opening);
         }
 
         public object this[string variableName] {

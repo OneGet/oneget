@@ -107,8 +107,8 @@ namespace Microsoft.OneGet.Providers.Package {
             return result;
         }
 
-        public CancellableEnumerable<DynamicOption> GetDynamicOptions(OptionCategory operation, Object c) {
-            var isCancelled = c.As<IsCancelled>();
+        public ICancellableEnumerator<DynamicOption> GetDynamicOptions(OptionCategory operation, Object c) {
+            var isCancelled = c == null ? ()=> false : c.As<IsCancelled>();
 
             DynamicOption lastItem = null;
             var list = new List<string>();
@@ -142,7 +142,7 @@ namespace Microsoft.OneGet.Providers.Package {
                         lastItem.PossibleValues = list.ToArray();
                         collection.Add(lastItem);
                     }
-                });
+                }).GetCancellableEnumerator();
         }
     }
 }

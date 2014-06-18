@@ -139,7 +139,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
                     if (result.IsFailing) {
                         foreach (var error in result.Errors) {
-                            request.Debug("POWERSHELL ERROR in '{0}' in module '{1}' :\r\n{2} {3}", request.CommandInfo.Name , _module.Name, error.CategoryInfo.Category, error.Exception.Message );
+                            request.Error("POWERSHELL ERROR in '{0}' in module '{1}' :\r\n{2} {3}", request.CommandInfo.Name , _module.Name, error.CategoryInfo.Category, error.Exception.Message );
                             return null;
                         }
                     }
@@ -155,7 +155,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
                 if (result.IsFailing) {
                     foreach (var error in result.Errors) {
-                        request.Debug("POWERSHELL ERROR in '{0}' in module '{1}' :\r\n{2} {3}", request.CommandInfo.Name, _module.Name, error.CategoryInfo.Category, error.Exception.Message);
+                        request.Error("POWERSHELL ERROR in '{0}' in module '{1}' :\r\n{2} {3}", request.CommandInfo.Name, _module.Name, error.CategoryInfo.Category, error.Exception.Message);
                         return null;
                     }
                 }
