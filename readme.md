@@ -93,7 +93,7 @@ With OneGet, you can
 
 ### Get Started!
 
-Download  [here](http://www.microsoft.com/en-us/download/details.aspx?id=42316) -- currently it's in the WMF 5.0 CTP (WMF is where you get PowerShell!)  -- once the source is up, we'll post a build of just the OneGet bits.
+Download  [here](http://www.microsoft.com/en-us/download/details.aspx?id=42936) -- currently it's in the WMF 5.0 CTP (WMF is where you get PowerShell!)  -- once the source is up, we'll post a build of just the OneGet bits.
 
 * Learn how to [use the powershell cmdlets](https://github.com/OneGet/oneget/wiki/cmdlets) 
 * Read our [General Q and A](https://github.com/OneGet/oneget/wiki/Q-and-A)
