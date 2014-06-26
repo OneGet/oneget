@@ -59,8 +59,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool GenerateDynamicParameters() {
-            Console.WriteLine("HLOO");
-
             if (IsOverwriteExistingSource) {
                 Provider = OriginalSource.ProviderName;
                 Name = Name.Is() ? Name : OriginalSource.Name;

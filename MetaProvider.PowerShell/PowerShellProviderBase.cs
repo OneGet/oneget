@@ -33,10 +33,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             // combine all the cmdinfos we care about
             // but normalize the keys as we go (remove any '-' '_' chars)
             foreach (var k in _module.ExportedAliases.Keys) {
-                _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedFunctions[k]);
+                _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedAliases[k]);
             }
             foreach (var k in _module.ExportedCmdlets.Keys) {
-                _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedFunctions[k]);
+                _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedCmdlets[k]);
             }
             foreach (var k in _module.ExportedFunctions.Keys) {
                 _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedFunctions[k]);
