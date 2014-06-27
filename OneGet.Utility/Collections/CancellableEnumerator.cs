@@ -16,7 +16,7 @@ namespace Microsoft.OneGet.Collections {
     using System.Collections.Generic;
     using System.Threading;
 
-    public class CancellableEnumerator<T> : ByRefEnumerator<T>, ICancellableEnumerator<T> {
+    public class CancellableEnumerator<T> : ByRefEnumerator<T>, ICancellableEnumerator<T>  {
         private readonly CancellationTokenSource _cancellationTokenSource;
 
         public CancellableEnumerator(CancellationTokenSource cts, IEnumerator<T> enumerator) : base(enumerator) {

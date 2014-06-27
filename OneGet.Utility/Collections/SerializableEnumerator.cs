@@ -16,22 +16,25 @@ namespace Microsoft.OneGet.Collections {
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using Extensions;
 
-    public class ByRefEnumerator<T> : MarshalByRefObject, IEnumerator<T> {
-        // we don't want these objects being gc's out because they remain unused...
+    [Serializable]
+    public class SerializableEnumerator<T> : IEnumerator<T> {
+        private IEnumerator _enumerator;
 
-        private IEnumerator<T> _enumerator;
-
-        public ByRefEnumerator(IEnumerator<T> enumerator) {
-            _enumerator = enumerator;
+        public SerializableEnumerator(IEnumerator<T> original) {
+            // get a byref enumerator 
+            _enumerator = original as ByRefEnumerator<T> ?? original.ByRef();
         }
 
         public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            if (_enumerator is IDisposable) {
+                (_enumerator as IDisposable).Dispose();
+            }
+            _enumerator = null;
         }
 
-        public virtual bool MoveNext() {
+        public bool MoveNext() {
             return _enumerator.MoveNext();
         }
 
@@ -41,27 +44,13 @@ namespace Microsoft.OneGet.Collections {
 
         public T Current {
             get {
-                return (T)((IEnumerator)_enumerator).Current;
+                return (T)_enumerator.Current;
             }
         }
 
         object IEnumerator.Current {
             get {
-                // return Current;
                 return _enumerator.Current;
-            }
-        }
-
-        public override object InitializeLifetimeService() {
-            return null;
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (disposing) {
-                if (_enumerator != null) {
-                    _enumerator.Dispose();
-                }
-                _enumerator = null;
             }
         }
     }

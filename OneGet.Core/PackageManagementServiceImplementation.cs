@@ -163,12 +163,21 @@ namespace Microsoft.OneGet {
         public IEnumerator<PackageProvider> SelectProviders(string providerName) {
             if (providerName.Is()) {
                 // strict name match for now.
-                return PackageProviders.ToIEnumerable().Where(each => each.Name.Equals(providerName, StringComparison.CurrentCultureIgnoreCase)).ByRefEnumerator();
+                return new SerializableEnumerator<PackageProvider>(PackageProviders.ToIEnumerable().Where(each => each.Name.Equals(providerName, StringComparison.CurrentCultureIgnoreCase)).ByRefEnumerator());
+                ;
             }
 
             return PackageProviders;
         }
 
+        public IEnumerator<object> SelectProvidersTest(string providerName) {
+            if (providerName.Is()) {
+                // strict name match for now.
+                return PackageProviders.ToIEnumerable().Where(each => each.Name.Equals(providerName, StringComparison.CurrentCultureIgnoreCase)).Cast<object>().ByRefEnumerator();
+            }
+
+            return null;
+        }
 
         private void AddPackageProvider(string name, IPackageProvider provider) {
             // wrap this in a caller-friendly wrapper 

@@ -9,7 +9,7 @@ if ( $STATUS -like "*Your branch is ahead*"  -or $STATUS -like "Changes not stag
     Echo "*********************************************************************"
     echo ""
     git status
-    return
+#    return
 }
 
 # package script
@@ -23,6 +23,7 @@ erase "$OD\*.zip"
 $f = "OneGet-build-$COMMITID.zip"
 $n = "$OD\$f" 
 
+copy ".\streams.exe" $OD
 copy ".\release-notes.md" $OD
 copy ".\readme.md"  $OD
 
@@ -47,6 +48,7 @@ zip "$n" `
 "TestChainingPackageProvider.psm1" `
 "TestPackageProvider.psm1" `
 "nuget.exe" `
+"streams.exe" `
 "etc\*" `
 ".\release-notes.md" `
 ".\readme.md" 

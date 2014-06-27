@@ -108,34 +108,30 @@ namespace Microsoft.OneGet.Providers.Package {
         }
 
 
-        private DynamicOption[] _dynamicOption;
+        
         public DynamicOption[] DynamicOptions {
             get {
-
-                if (_dynamicOption == null) {
-                    var result = new List<DynamicOption>();
-                    var n = GetDynamicOptions(OptionCategory.Install, null);
-                    while (n.MoveNext()) {
-                        result.Add(n.Current);
-                    }
-
-                    n = GetDynamicOptions(OptionCategory.Package, null);
-                    while (n.MoveNext()) {
-                        result.Add(n.Current);
-                    }
-
-                    n = GetDynamicOptions(OptionCategory.Provider, null);
-                    while (n.MoveNext()) {
-                        result.Add(n.Current);
-                    }
-
-                    n = GetDynamicOptions(OptionCategory.Source, null);
-                    while (n.MoveNext()) {
-                        result.Add(n.Current);
-                    }
-                    _dynamicOption = result.ToArray();
+                var result = new List<DynamicOption>();
+                var n = GetDynamicOptions(OptionCategory.Install, null);
+                while (n.MoveNext()) {
+                    result.Add(n.Current);
                 }
-                return _dynamicOption;
+
+                n = GetDynamicOptions(OptionCategory.Package, null);
+                while (n.MoveNext()) {
+                    result.Add(n.Current);
+                }
+
+                n = GetDynamicOptions(OptionCategory.Provider, null);
+                while (n.MoveNext()) {
+                    result.Add(n.Current);
+                }
+
+                n = GetDynamicOptions(OptionCategory.Source, null);
+                while (n.MoveNext()) {
+                    result.Add(n.Current);
+                }
+                return result.ToArray();
             }
         }
 

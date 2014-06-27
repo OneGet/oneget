@@ -32,6 +32,7 @@ namespace Microsoft.OneGet {
 
         IEnumerator<PackageProvider> SelectProviders(string providerName);
 
+
         IEnumerator<PackageProvider> SelectProvidersWithFeature(string featureName);
 
         IEnumerator<PackageProvider> SelectProvidersWithFeature(string featureName, string value);

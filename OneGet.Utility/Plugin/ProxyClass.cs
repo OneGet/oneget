@@ -70,7 +70,7 @@ namespace Microsoft.OneGet.Plugin {
             _dynamicType.GenerateIsMethodImplemented();
 
             // generate the constructor for the class.
-            DefineConstructor();
+            DefineConstructor(interfaceType.IsInterface ? typeof (MarshalByRefObject) : interfaceType);
 
             //if (typeof (MarshalByRefObject).IsAssignableFrom(_dynamicType)) {
                 _dynamicType.OverrideInitializeLifetimeService();
@@ -136,7 +136,7 @@ namespace Microsoft.OneGet.Plugin {
             }
         }
 
-        internal void DefineConstructor() {
+        internal void DefineConstructor(Type parentClassType) {
             // add constructor that takes the specific type of object that we're going to bind
 
             var types = _storageFields.Select(each => each.FieldType).ToArray();
@@ -144,6 +144,15 @@ namespace Microsoft.OneGet.Plugin {
             var constructor = _dynamicType.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, types);
 
             var il = constructor.GetILGenerator();
+
+            if (parentClassType != null) {
+                var basector = parentClassType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, new Type[0], null);
+                if (basector != null) {
+                    il.LoadArgument(0);
+                    il.Call(basector);
+                }
+            }
+
             var index = 1;
             foreach (var backingField in _storageFields) {
                 // store actualInstance in backingField
@@ -155,4 +164,4 @@ namespace Microsoft.OneGet.Plugin {
             il.Return();
         }
     }
-}
+} 

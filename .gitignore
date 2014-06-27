@@ -96,3 +96,4 @@ Scratch/test2.props
 *.bak
 /AbstractDesign
 build-ps.cmd
+streams.exe

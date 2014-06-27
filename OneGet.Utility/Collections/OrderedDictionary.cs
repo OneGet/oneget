@@ -21,7 +21,7 @@ namespace Microsoft.OneGet.Collections {
 
     public class OrderedDictionary<TKey, TValue> : OrderedDictionary, IDictionary<TKey, TValue> {
         public new IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
-            return new KVPEnumerator(base.GetEnumerator());
+            return new KvpEnumerator(base.GetEnumerator());
         }
 
         public void Add(KeyValuePair<TKey, TValue> item) {
@@ -92,10 +92,10 @@ namespace Microsoft.OneGet.Collections {
             }
         }
 
-        internal class KVPEnumerator : IEnumerator<KeyValuePair<TKey, TValue>> {
+        internal class KvpEnumerator : IEnumerator<KeyValuePair<TKey, TValue>> {
             private readonly IDictionaryEnumerator _enumerator;
 
-            internal KVPEnumerator(IDictionaryEnumerator e) {
+            internal KvpEnumerator(IDictionaryEnumerator e) {
                 _enumerator = e;
             }
 

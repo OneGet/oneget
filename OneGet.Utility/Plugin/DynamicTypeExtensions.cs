@@ -25,7 +25,7 @@ namespace Microsoft.OneGet.Plugin {
 
         internal static void OverrideInitializeLifetimeService(this TypeBuilder dynamicType) {
             // add override of InitLifetimeService so this object doesn't fall prey to timeouts
-            var il = dynamicType.DefineMethod("InitializeLifetimeService", MethodAttributes.Public, CallingConventions.HasThis, typeof (object), _emptyTypes).GetILGenerator();
+            var il = dynamicType.DefineMethod("InitializeLifetimeService", MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual, CallingConventions.HasThis, typeof (object), _emptyTypes).GetILGenerator();
 
             il.LoadNull();
             il.Return();

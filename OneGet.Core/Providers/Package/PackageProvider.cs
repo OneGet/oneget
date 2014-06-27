@@ -373,7 +373,8 @@ namespace Microsoft.OneGet.Providers.Package {
         Folder = 4,
         File = 5,
         Path = 6,
-        Uri = 7
+        Uri = 7,
+        SecureString = 8
     }
 
     public enum EnvironmentContext {

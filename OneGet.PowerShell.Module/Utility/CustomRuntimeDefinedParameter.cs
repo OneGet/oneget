@@ -18,6 +18,7 @@ namespace Microsoft.PowerShell.OneGet.Utility {
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
+    using System.Security;
     using Microsoft.OneGet;
     using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
@@ -59,6 +60,9 @@ namespace Microsoft.PowerShell.OneGet.Utility {
 
                     case OptionType.Path:
                         return new[] { cmdlet.ResolvePath(Value.ToString()) };
+                    
+                    case OptionType.SecureString:
+                        return new[] { "SECURESTRING:"+((SecureString)Value).ToProtectedString("salt") };
                 }
                 return new[] {
                     Value.ToString()

@@ -46,7 +46,7 @@ function Get-DynamicOptions {
 		}
 		Install {
 			#options for installation/uninstallation 
-            write-Output (New-DynamicOption $category "Destinination" File $true )
+            write-Output (New-DynamicOption $category "Destination" File $true )
 		}
 	}
 }
@@ -80,6 +80,16 @@ function Dump-object {
 	write-debug "{0}" $x
 }
 
+function new-packagereference {
+	param( 
+		[string] $providerName,
+		[string] $packageName,
+		[string] $version,
+		[string] $source
+	)
+	return "$providerName|$packageName|$version|$source"
+}
+
 function Find-Package { 
     param(
         [string[]] $names,
@@ -95,16 +105,15 @@ function Find-Package {
 
 	foreach( $pm in $providers) {
 	    
-		dump-object $pm 
+		$providerName= $pm.Name
 
-		$name = $pm.Name
-		write-Debug "working with $name"
+		write-Debug "working with provider $name"
 		
 		$mySrcLocation = "https://nuget.org/api/v2"
 
 		foreach( $pkg in $pm.FindPackages( $names, $requiredVersion, $minimumVersion, $maximumVersion, (new-request -options @{ } -sources @( $mySrcLocation ) -Credential $c) ) ) {
-			$fastPackageReference = $pkg.Name+$mySrcLocation
-			Write-Output (new-SoftwareIdentity $fastPackageReference  $pkg.Name $pkg.Version  $pkg.VersionScheme $mySrcLocation $pkg.Summary $name $pkg.FullPath $pkg.PackagePath )
+			$fastPackageReference = (new-packagereference $providerName $pkg.Name $pkg.Version $pkg.Source )
+			Write-Output (new-SoftwareIdentity $fastPackageReference  $pkg.Name $pkg.Version  $pkg.VersionScheme $mySrcLocation $pkg.Summary $providerName $pkg.FullPath $pkg.PackagePath )
 		}
 	}
 }
@@ -157,13 +166,72 @@ function Initialize-Provider {
     write-debug "In TestChainingPackageProvider - Initialize-Provider"
 }
 
+function  To-Array {
+	param( $ienumerator ) 
+	foreach( $i in $ienumerator ) {
+		$i
+	}
+}
+
+function Get-First {
+	param( $ienumerator ) 
+	foreach( $i in $ienumerator ) {
+		return $i
+	}
+	return null
+}
+
 function Install-Package { 
     param(
         [string] $fastPackageReference
     )
 	write-debug "In TestChainingPackageProvider - Install-Package"
 
-		# return values with
+	# take the fastPackageReference and get the package object again.
+	$parts = $fastPackageReference.Split('|' )
+
+	if( $parts.Length -eq 4 ) {
+		$providerName = $parts[0]
+		$packageName = $parts[1]
+		$version = $parts[2]
+		$source= $parts[3]
+
+		write-debug "In TestChainingPackageProvider - Find the chained package provider"
+		
+		$pm = $request.SelectProvider($providerName)
+
+
+		$pm = Get-First( $request.SelectProviders($providerName))
+		
+		write-debug "In TestChainingPackageProvider - recreate the software identity object from the name/version/source" 
+
+		$pkgs = $pm.FindPackages( $packageName, $version, $null, $null, (new-request -sources @( $source ) ) ) 
+
+		#pkgs returns an IEnumerator<SoftwareIdentity>, so let's get the first element
+
+		$p = (To-Array $pkgs)
+
+		write-debug "In TestChainingPackageProvider - 3"
+
+		foreach( $pkg in $p ) {
+			$installed = $pm.InstallPackage( $pkg , (new-request -options @{ "Destination" = "c:\tmp" } -sources @( $source ) -Credential $c) )
+
+			write-debug "In TestChainingPackageProvider - 4"
+
+			foreach( $pkg in $installed ) {
+				write-debug "In TestChainingPackageProvider - 5"
+				Write-Output (new-SoftwareIdentity $fastPackageReference $pkg.Name $pkg.Version  $pkg.VersionScheme $source $pkg.Summary $providerName $pkg.FullPath $pkg.PackagePath )
+			}
+		}
+
+		write-debug "In TestChainingPackageProvider - 6"
+
+	} else {
+		$x = $parts.Length
+		Write-Error "BAD PACKAGE REFERENCE $fastPackageReference`n===== $parts=====`n $x"
+	}
+
+	write-debug "In TestChainingPackageProvider - 7"
 	# write-output  (new-SoftwareIdentity "fastPackageReference"  "package-name" "package-version" "multipartnumeric" "source_name_or_location" "summary" "searchkey" "filename-of-the-package" "full-path-of-the-package-or-installed-location" )
 
 }

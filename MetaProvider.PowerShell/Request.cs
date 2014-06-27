@@ -330,7 +330,11 @@ public bool Warning(string message, params object[] args) {
                             if (values.Length == 1) {
                                 if (values[0].IsTrue()) {
                                     _options.Add(k, true);
-                                } else {
+                                }
+                                else if (values[0].StartsWith("SECURESTRING:")) {
+                                    _options.Add(k, values[0].Substring(13).FromProtectedString("salt") );
+                                }
+                                else {
                                     _options.Add(k, values[0]);
                                 }
                             } else {
@@ -431,6 +435,16 @@ public bool Warning(string message, params object[] args) {
             get {
                 return PackageManagementService.PackageProviders;
             }
+        }
+
+        public object SelectProvider(string providerName) {
+            var p = PackageManagementService.SelectProviders(providerName);
+            if (p.MoveNext()) {
+                // var x = ((IEnumerator)p).Current;
+                // return x;
+                return p.Current;
+            }
+            return null;
         }
 
         public IEnumerator<object> SelectProviders(string providerName) {

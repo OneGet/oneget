@@ -19,7 +19,7 @@ namespace Microsoft.OneGet.Plugin {
 
     internal static class FluentIlExtensions {
         private static readonly OpCode[] _loadArgumentInstruction = {
-            OpCodes.Ldarg_0, OpCodes.Ldarg_1, OpCodes.Ldarg_2, OpCodes.Ldarg_3, OpCodes.Ldarg
+            OpCodes.Ldarg_0, OpCodes.Ldarg_1, OpCodes.Ldarg_2, OpCodes.Ldarg_3, OpCodes.Ldarg_S
         };
 
         private static readonly OpCode[] _storeLocationInstruction = {
