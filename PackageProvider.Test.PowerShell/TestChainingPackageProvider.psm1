@@ -231,9 +231,6 @@ function Install-Package {
 		
 		$pm = $request.SelectProvider($providerName)
 
-
-		# $pm = Get-First( $request.SelectProviders($providerName))
-		
 		write-debug "In TestChainingPackageProvider - recreate the software identity object from the name/version/source" 
 
 		$pkgs = $pm.FindPackages( $packageName, $version, $null, $null, (new-request -sources @( $source ) ) ) 
@@ -263,7 +260,6 @@ function Install-Package {
 	}
 
 	write-debug "In TestChainingPackageProvider - 7"
-	# write-output  (new-SoftwareIdentity "fastPackageReference"  "package-name" "package-version" "multipartnumeric" "source_name_or_location" "summary" "searchkey" "filename-of-the-package" "full-path-of-the-package-or-installed-location" )
 
 }
 
