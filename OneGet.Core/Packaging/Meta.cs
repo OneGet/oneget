@@ -13,6 +13,15 @@
 //  
 
 namespace Microsoft.OneGet.Packaging {
-    public class Meta {
+    using System;
+
+    public class SoftwareMetadata : MarshalByRefObject  {
+        public override object InitializeLifetimeService() {
+            return null;
+        }
+
+        internal string FieldPath {get; set;}
+
+        
     }
 }

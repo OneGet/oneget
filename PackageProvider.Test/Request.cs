@@ -172,9 +172,18 @@ namespace Microsoft.OneGet.PackageProvider.Test {
         /// <returns></returns>
         public abstract bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
 
-        public abstract bool YieldPackageDetails(object serializablePackageDetailsObject);
+        public abstract bool YieldSoftwareMetadata(string parentFastPath, string name, string value, string fieldPath);
 
-        public abstract bool YieldPackageSwidtag(string fastPath, string xmlOrJsonDoc);
+        public abstract bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint, string fieldPath);
+
+        public abstract bool YieldLink(string parentFastPath, string artifact, string referenceUrl, string appliesToMedia, string ownership, string relativeTo, string mediaType, string use,string fieldPath);
+
+        #if M2
+        public abstract bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
+
+        public abstract bool YieldMetadata(string fieldId, string @namespace, string name, string value);
+
+        #endif 
 
         /// <summary>
         ///     Used by a provider to return fields for a package source (repository)
@@ -183,6 +192,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
         /// <param name="location"></param>
         /// <param name="isTrusted"></param>
         /// <param name="isRegistered"></param>
+        /// <param name="isValidated"></param>
         /// <returns></returns>
         public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
 

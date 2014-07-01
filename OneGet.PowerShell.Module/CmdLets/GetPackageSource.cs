@@ -60,6 +60,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 var found = false;
                 using (var sources = CancelWhenStopped(provider.ResolvePackageSources(this))) {
                     foreach (var source in sources) {
+                        if (string.IsNullOrEmpty(Name) && string.IsNullOrEmpty(Location)) {
+                            WriteObject(source);
+                            found = true;
+                            continue;
+                        }
+
                         if (!string.IsNullOrEmpty(Name)) {
                             if (Name.EqualsIgnoreCase(source.Name) || Name.EqualsIgnoreCase(source.Location)) {
                                 WriteObject(source);

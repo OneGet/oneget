@@ -39,10 +39,18 @@ namespace Microsoft.OneGet.Api {
         /// <returns></returns>
         bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
 
-        bool YieldPackageDetails(object serializablePackageDetailsObject);
+        bool YieldSoftwareMetadata(string parentFastPath, string name, string value, string fieldPath);
 
-        bool YieldPackageSwidtag(string fastPath, string xmlOrJsonDoc);
+        bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint, string fieldPath);
 
+        bool YieldLink(string parentFastPath, string artifact, string referenceUrl, string appliesToMedia, string ownership, string relativeTo, string mediaType, string use,string fieldPath);
+
+#if M2
+        bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
+
+        bool YieldMetadata(string fieldId, string @namespace, string name, string value);
+#endif 
+        
         /// <summary>
         ///     Used by a provider to return fields for a package source (repository)
         /// </summary>
@@ -50,6 +58,7 @@ namespace Microsoft.OneGet.Api {
         /// <param name="location"></param>
         /// <param name="isTrusted"></param>
         /// <param name="isRegistered"></param>
+        /// <param name="isValidated"></param>
         /// <returns></returns>
         bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated); 
 
@@ -67,6 +76,8 @@ namespace Microsoft.OneGet.Api {
         bool YieldKeyValuePair(string key, string value);
 
         bool YieldValue(string value);
+
+
 
         #endregion
     }

@@ -27,6 +27,17 @@ function Write-Debug {
 	 $args= @()
 	)
 
+	if( $request -eq $null ) {
+		if( $args -eq $null ) {
+			Microsoft.PowerShell.Utility\write-verbose $text 
+			return
+		} 
+
+		$msg = [system.string]::format($text, $args)
+		Microsoft.PowerShell.Utility\write-verbose $msg 
+		return 
+	}
+
 	if( $args -eq $null ) {
 		$request.Debug($text);
 		return 
@@ -47,6 +58,17 @@ function Write-Verbose{
 	 $args= @()
 	)
 
+	if( $request -eq $null ) {
+		if( $args -eq $null ) {
+			Microsoft.PowerShell.Utility\write-verbose $text 
+			return
+		} 
+
+		$msg = [system.string]::format($text, $args)
+		Microsoft.PowerShell.Utility\write-verbose $msg 
+		return 
+	}
+
 	if( $args -eq $null ) {
 		$request.Verbose($text);
 		return 
@@ -66,6 +88,17 @@ function Write-Warning{
 	[object[]]
 	 $args= @()
 	)
+
+	if( $request -eq $null ) {
+		if( $args -eq $null ) {
+			Microsoft.PowerShell.Utility\write-warning $text 
+			return
+		} 
+
+		$msg = [system.string]::format($text, $args)
+		Microsoft.PowerShell.Utility\write-warning $msg 
+		return 
+	}
 
 	if( $args -eq $null ) {
 		$request.Warning($text);

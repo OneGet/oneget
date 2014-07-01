@@ -30,9 +30,15 @@ namespace Microsoft.OneGet.Providers.Package {
 
     public delegate bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
 
-    public delegate bool YieldPackageDetails(object serializablePackageDetailsObject);
+    public delegate bool YieldSoftwareMetadata(string parentFastPath, string name, string value, string fieldPath);
 
-    public delegate bool YieldPackageSwidtag(string fastPath, string xmlOrJsonDoc);
+    public delegate bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint, string fieldPath);
+
+    public delegate bool YieldLink(string parentFastPath, string artifact, string referenceUrl, string appliesToMedia, string ownership, string relativeTo, string mediaType, string use,string fieldPath);
+
+    public delegate bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
+
+    public delegate bool YieldMetadata(string fieldId, string @namespace, string name, string value);
 
     public delegate bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
 
@@ -67,7 +73,6 @@ namespace Microsoft.OneGet.Providers.Package {
 
             var result = new CancellableBlockingCollection<PackageSource>();
 
-
             Provider.AddPackageSource(name, location, trusted, c.Extend<IRequest>(Context, new {
 
                 YieldKeyValuePair = new YieldKeyValuePair((key, value) => {
@@ -96,6 +101,7 @@ namespace Microsoft.OneGet.Providers.Package {
             if (lastItem != null) {
                 result.Add(lastItem);
             }
+            result.CompleteAdding();
             return (CancellableEnumerable<PackageSource>)result;
         }
 
@@ -105,7 +111,6 @@ namespace Microsoft.OneGet.Providers.Package {
             PackageSource lastItem = null;
 
             var result = new CancellableBlockingCollection<PackageSource>();
-
 
             Provider.RemovePackageSource(name, c.Extend<IRequest>(Context, new {
 
@@ -135,6 +140,8 @@ namespace Microsoft.OneGet.Providers.Package {
             if (lastItem != null) {
                 result.Add(lastItem);
             }
+            result.CompleteAdding();
+
             return (CancellableEnumerable<PackageSource>)result;   
         }
 

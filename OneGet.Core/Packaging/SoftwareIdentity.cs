@@ -14,6 +14,9 @@
 
 namespace Microsoft.OneGet.Packaging {
     using System;
+    using System.Collections.Generic;
+    using System.Xml;
+    using System.Xml.Linq;
 
     /// <summary>
     ///     This class represents a package (retrieved from Find-SoftwareIdentity or Get-SoftwareIdentity)
@@ -25,12 +28,8 @@ namespace Microsoft.OneGet.Packaging {
             return null;
         }
 
+        #region OneGet specific data
         internal string FastPackageReference {get; set;}
-
-        public string Name {get; internal set;}
-        public string Version {get; internal set;}
-        public string VersionScheme {get; internal set;}
-        public string Summary {get; internal set;}
 
         public string ProviderName {get; internal set;}
         public string Source {get; internal set;}
@@ -42,38 +41,68 @@ namespace Microsoft.OneGet.Packaging {
         public string FullPath {get; internal set;}
         public string PackageFilename {get; internal set;}
 
+        // OneGet shortcut property -- Summary *should* be stored in SoftwareMetadata
+        public string Summary { get; internal set; }
 
-#if AFTER_CTP
-        public string Description { get; internal set; }
+        #endregion
+
+        #region ISO-19770-2-2014 metadata
+
+        public string Name { get; internal set; }
+        public string Version { get; internal set; }
+        public string VersionScheme { get; internal set; }
+        public string TagVersion { get; internal set; }
+
+#if M2
+        public string TagId { get; internal set; }
+
+        public bool? IsPatch { get; internal set; }
+
+        public bool? IsSupplemental { get; internal set; }
+
+        public string AppliesToMedia { get; internal set; }
+#endif
 
 
-        public IEnumerable<Entity> Entities {get; internal set;}
-        public IEnumerable<Link> Links {get; internal set;}
-        internal IEnumerable<Meta> Meta { get; set; }
+        internal IEnumerable<SoftwareMetadata> Meta {
+            get {
+                return null;
+            }
+        }
+
+        public IEnumerable<Entity> Entities {
+            get {
+                return null;
+            }
+        }
+
+        public IEnumerable<Link> Links {
+            get {
+                return null;
+            }
+        }
 
 
-
-        
-        public bool IsDelta {get; internal set;}
-
-        public bool IsSupplemental {get; internal set;}
-
-        public string AppliesToMedia {get; internal set;}
-
-        public string TagVersion {get; internal set;}
-
-        public string UniqueId {get; internal set;}
-
+#if M2
         public Evidence Evidence {get; internal set;}
 
         public Payload Payload {get; internal set;}
- 
-
-        public string SwidTag {get; internal set;}
-        public InstallationOptions InstallationOptions {get; internal set;}
-
-
-
 #endif
+
+        private XDocument _swidTag;
+        public XDocument SwidTag {
+            get {
+                var x = new XDocument();
+                return null;
+
+            }
+            internal set {
+                
+            }
+        }
+
+
+        #endregion
+
     }
 }

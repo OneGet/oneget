@@ -128,8 +128,6 @@ function Find-Package {
 		write-Debug "SS == $s"
 	}
 
-	
-
 	# dump-object $Request
 	
 	$providers = $request.SelectProvidersWithFeature("supports-powershellget-modules") 
