@@ -112,13 +112,14 @@ namespace Microsoft.OneGet {
         internal Pipeline CreatePipeline() {
             WaitForAvailable();
 
-            if (_runspaceWasLikeThatWhenIGotHere) {
-                return Runspace.CreateNestedPipeline();
-            }
+            //if (_runspaceWasLikeThatWhenIGotHere) {
+              //  return Runspace.CreateNestedPipeline();
+            // }
             try {
                 TestIfInNestedPipeline();
                 return Runspace.CreatePipeline();
-            } catch (Exception) {
+            } catch (Exception e) {
+                e.Dump();
                 _runspaceWasLikeThatWhenIGotHere = true;
                 return Runspace.CreateNestedPipeline();
             }

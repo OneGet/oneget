@@ -14,9 +14,56 @@
 
 namespace Microsoft.OneGet.Collections {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Threading;
 
+    [Serializable]
+    public class CancellableEnumerable<T> : SerializableEnumerable<T>, ICancellableEnumerable<T> {
+        protected ByRefCancellationTokenSource _cancellationTokenSource;
+
+        public CancellableEnumerable(CancellationTokenSource cts, IEnumerable enumerable)
+            : base(enumerable) {
+            _cancellationTokenSource = new ByRefCancellationTokenSource(cts);
+        }
+
+        public bool IsCancelled {
+            get {
+                return _cancellationTokenSource.Token.IsCancellationRequested;
+            }
+        }
+
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public void Cancel() {
+            if (_cancellationTokenSource != null) {
+                _cancellationTokenSource.Cancel();
+            }
+        }
+
+        public override IEnumerator<T> GetEnumerator() {
+            return new CancellableEnumerator<T>(_cancellationTokenSource, _enumerable.GetEnumerator());
+        }
+
+        protected virtual void Dispose(bool disposing) {
+            Cancel();
+            if (disposing) {
+                if (_cancellationTokenSource != null) {
+                    _cancellationTokenSource.Dispose();
+                }
+                _cancellationTokenSource = null;
+            }
+        }
+
+        public ICancellableEnumerator<T> GetCancellableEnumerator() {
+            return new CancellableEnumerator<T>(_cancellationTokenSource, _enumerable.GetEnumerator());
+        }
+    }
+
+#if MBR_CE
     public class CancellableEnumerable<T> : ByRefEnumerable<T>, ICancellableEnumerable<T> {
         protected CancellationTokenSource _cancellationTokenSource;
 
@@ -53,11 +100,12 @@ namespace Microsoft.OneGet.Collections {
         }
 
         public override IEnumerator<T> GetEnumerator() {
-            return new CancellableEnumerator<T>(_cancellationTokenSource, _enumerable.GetEnumerator());
+            return new SerializableEnumerator<T>( new CancellableEnumerator<T>(_cancellationTokenSource, _enumerable.GetEnumerator()));
         }
 
         public ICancellableEnumerator<T> GetCancellableEnumerator() {
             return new CancellableEnumerator<T>(_cancellationTokenSource, _enumerable.GetEnumerator());
         }
     }
+#endif
 }

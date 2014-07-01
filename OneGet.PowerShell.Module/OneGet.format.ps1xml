@@ -86,6 +86,9 @@
           <Width>12</Width>
         </TableColumnHeader>
         <TableColumnHeader>
+          <Width>12</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
           </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
@@ -102,6 +105,9 @@
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>IsRegistered</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>IsValidated</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Location</PropertyName>

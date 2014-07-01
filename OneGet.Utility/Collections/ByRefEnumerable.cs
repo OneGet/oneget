@@ -17,20 +17,20 @@ namespace Microsoft.OneGet.Collections {
     using System.Collections;
     using System.Collections.Generic;
 
-    public class ByRefEnumerable<T> : MarshalByRefObject,  IEnumerable<T> {
+    public class ByRefEnumerable : MarshalByRefObject,  IEnumerable {
         // we don't want these objects being gc's out because they remain unused...
         public override object InitializeLifetimeService() {
             return null;
         }
 
-        protected readonly IEnumerable<T> _enumerable;
+        protected readonly IEnumerable  _enumerable;
 
-        public ByRefEnumerable(IEnumerable<T> originalEnumerable) {
+        public ByRefEnumerable(IEnumerable  originalEnumerable) {
             _enumerable = originalEnumerable;
         }
 
-        public virtual IEnumerator<T> GetEnumerator() {
-            return new ByRefEnumerator<T>(_enumerable.GetEnumerator());
+        public virtual IEnumerator GetEnumerator() {
+            return new ByRefEnumerator(_enumerable.GetEnumerator());
         }
 
         IEnumerator IEnumerable.GetEnumerator() {

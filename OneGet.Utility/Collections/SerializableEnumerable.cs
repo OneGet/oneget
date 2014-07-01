@@ -13,19 +13,21 @@
 //  
 
 namespace Microsoft.OneGet.Collections {
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using Extensions;
 
+    [Serializable]
     public class SerializableEnumerable<T> : IEnumerable<T> {
         
-        private readonly IEnumerable<T> _enumerable;
+        protected readonly IEnumerable _enumerable;
 
-        public SerializableEnumerable(IEnumerable<T> originalEnumerable) {
-            _enumerable = originalEnumerable as ByRefEnumerable<T> ?? new ByRefEnumerable<T>(originalEnumerable);
+        public SerializableEnumerable(IEnumerable originalEnumerable) {
+            _enumerable = originalEnumerable as ByRefEnumerable ?? new ByRefEnumerable(originalEnumerable);
         }
 
-        public IEnumerator<T> GetEnumerator() {
+        public virtual IEnumerator<T> GetEnumerator() {
             return new SerializableEnumerator<T>(_enumerable.GetEnumerator());
         }
 

@@ -87,6 +87,9 @@ namespace Microsoft.PowerShell.OneGet.Utility {
                     return typeof(string);
                 case OptionType.Folder:
                     return typeof(string);
+                case OptionType.SecureString:
+                    return typeof (SecureString);
+
                 default:
                     return typeof (string);
             }

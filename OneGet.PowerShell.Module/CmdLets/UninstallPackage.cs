@@ -97,7 +97,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
 
                 try {
-                    foreach (var installedPkg in CancelWhenStopped(provider.UninstallPackage(pkg, this)).ToIEnumerable()) {
+                    foreach (var installedPkg in CancelWhenStopped(provider.UninstallPackage(pkg, this))) {
                         if (IsCancelled()) {
                             return false;
                         }

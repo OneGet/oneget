@@ -145,7 +145,7 @@ namespace Microsoft.OneGet.Test {
             //System.Diagnostics.Debug.Listeners.Add(new DefaultTraceListener());
 
             var providers = Service.SelectProviders(null);
-            Console.WriteLine("Provider Count {0}",providers.ToIEnumerable().Count());
+            Console.WriteLine("Provider Count {0}",providers.Count());
         }
 
         [Fact]

@@ -38,6 +38,9 @@ namespace Microsoft.OneGet.Packaging {
 
         public bool IsRegistered { get; internal set; }
 
+        public bool IsValidated {get; internal set;}
+
+
         public override object InitializeLifetimeService() {
             return null;
         }

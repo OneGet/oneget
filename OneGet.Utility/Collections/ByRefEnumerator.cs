@@ -17,12 +17,12 @@ namespace Microsoft.OneGet.Collections {
     using System.Collections;
     using System.Collections.Generic;
 
-    public class ByRefEnumerator<T> : MarshalByRefObject, IEnumerator<T> {
+    public class ByRefEnumerator : MarshalByRefObject, IEnumerator {
         // we don't want these objects being gc's out because they remain unused...
 
-        private IEnumerator<T> _enumerator;
+        private IEnumerator _enumerator;
 
-        public ByRefEnumerator(IEnumerator<T> enumerator) {
+        public ByRefEnumerator(IEnumerator enumerator) {
             _enumerator = enumerator;
         }
 
@@ -39,11 +39,6 @@ namespace Microsoft.OneGet.Collections {
             _enumerator.Reset();
         }
 
-        public T Current {
-            get {
-                return (T)((IEnumerator)_enumerator).Current;
-            }
-        }
 
         object IEnumerator.Current {
             get {
@@ -58,8 +53,11 @@ namespace Microsoft.OneGet.Collections {
 
         protected virtual void Dispose(bool disposing) {
             if (disposing) {
-                if (_enumerator != null) {
-                    _enumerator.Dispose();
+                var e = _enumerator as IDisposable;
+                _enumerator = null;
+
+                if (e != null) {
+                    e.Dispose();
                 }
                 _enumerator = null;
             }

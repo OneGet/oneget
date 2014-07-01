@@ -13,23 +13,20 @@
 //  
 
 namespace Microsoft.OneGet.Collections {
-    using System.Collections;
+    using System;
+    using System.Threading;
 
-    public class CancellableEnumerator<T> : SerializableEnumerator<T>, ICancellableEnumerator<T> {
-        private readonly ByRefCancellationTokenSource _cancellationTokenSource;
+    public class ByRefCancellationToken : MarshalByRefObject {
+        protected CancellationToken _token;
 
-        public CancellableEnumerator(ByRefCancellationTokenSource cts, IEnumerator enumerator)
-            : base(enumerator) {
-            _cancellationTokenSource = cts;
+        public ByRefCancellationToken(CancellationToken token) {
+            _token = token;
         }
 
-        public override bool MoveNext() {
-            // if the collection has been cancelled, then don't advance anymore.
-            return !_cancellationTokenSource.IsCancellationRequested && base.MoveNext();
-        }
-
-        public void Cancel() {
-            _cancellationTokenSource.Cancel();
+        public bool IsCancellationRequested {
+            get {
+                return _token.IsCancellationRequested;
+            }
         }
     }
 }

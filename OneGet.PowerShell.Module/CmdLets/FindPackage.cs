@@ -82,7 +82,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             WriteObject(package);
 
             if (ListDependencies) {
-                foreach (var dep in provider.GetPackageDependencies(package, this).ToIEnumerable()) {
+                foreach (var dep in provider.GetPackageDependencies(package, this)) {
                     ProcessPackage(provider,dep);
                 }
             }

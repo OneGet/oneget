@@ -51,7 +51,7 @@ namespace Microsoft.OneGet.Api {
         /// <param name="isTrusted"></param>
         /// <param name="isRegistered"></param>
         /// <returns></returns>
-        bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered); 
+        bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated); 
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition

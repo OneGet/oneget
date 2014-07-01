@@ -92,7 +92,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             var found = false;
             if (Uri.IsWellFormedUriString(packageuri, UriKind.Absolute)) {
                 using (var packages = CancelWhenStopped(packageProvider.FindPackageByUri(new Uri(packageuri), 0, this))) {
-                    foreach (var p in packages.ToIEnumerable()) {
+                    foreach (var p in packages) {
                         found = true;
                         onPackageFound(p);
                     }
@@ -119,7 +119,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         foreach (var file in files) {
                             var foundThisFile = false;
                             using (var packages = CancelWhenStopped(packageProvider.FindPackageByFile(file, 0, this))) {
-                                foreach (var p in packages.ToIEnumerable()) {
+                                foreach (var p in packages) {
                                     foundThisFile = true;
                                     found = true;
                                     onPackageFound(p);
@@ -148,9 +148,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             var found = false;
 
             using (var packages = CancelWhenStopped(packageProvider.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, 0, this))) {
-                while (packages.MoveNext()) {
+                foreach ( var p in packages) {
                     found = true;
-                    onPackageFound(packages.Current);
+                    onPackageFound(p);
                 }
             }
 

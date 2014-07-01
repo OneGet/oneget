@@ -57,17 +57,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         private object Call(string function, Callback c, params object[] args) {
-
             using (var request = Request.New(c, this, function)) {
-
-                if (function == "InstallPackage") {
-                    var pm = request.SelectProvider("NuGet");
-                }
-
                 return request.CallPowerShell(args);
             }
-
-
         }
 
         #region implement PackageProvider-interface

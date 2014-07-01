@@ -22,9 +22,9 @@ namespace Microsoft.OneGet.Collections {
     public class SerializableEnumerator<T> : IEnumerator<T> {
         private IEnumerator _enumerator;
 
-        public SerializableEnumerator(IEnumerator<T> original) {
+        public SerializableEnumerator(IEnumerator original) {
             // get a byref enumerator 
-            _enumerator = original as ByRefEnumerator<T> ?? original.ByRef();
+            _enumerator = original as ByRefEnumerator ?? new ByRefEnumerator(original);
         }
 
         public void Dispose() {
@@ -34,7 +34,7 @@ namespace Microsoft.OneGet.Collections {
             _enumerator = null;
         }
 
-        public bool MoveNext() {
+        public virtual bool MoveNext() {
             return _enumerator.MoveNext();
         }
 

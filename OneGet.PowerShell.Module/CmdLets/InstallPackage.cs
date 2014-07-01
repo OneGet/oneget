@@ -154,7 +154,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     return false;
                 }
                 try {
-                    foreach (var installedPkg in CancelWhenStopped(provider.InstallPackage(pkg, this)).ToIEnumerable()) {
+                    foreach (var installedPkg in CancelWhenStopped(provider.InstallPackage(pkg, this))) {
                         if (IsCancelled()) {
                             // if we're stopping, just get out asap.
                             return false;

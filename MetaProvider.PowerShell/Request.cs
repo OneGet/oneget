@@ -204,7 +204,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// <param name="isTrusted"></param>
         /// <param name="isRegistered"></param>
         /// <returns></returns>
-        public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered);
+        public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
@@ -425,36 +425,30 @@ public bool Warning(string message, params object[] args) {
             }
         }
 
-        public IEnumerator<string> ProviderNames {
+        public IEnumerable<string> ProviderNames {
             get {
                 return PackageManagementService.ProviderNames;
             }
         }
 
-        public IEnumerator<object> PackageProviders {
+        public IEnumerable<object> PackageProviders {
             get {
                 return PackageManagementService.PackageProviders;
             }
         }
 
         public object SelectProvider(string providerName) {
-            var p = PackageManagementService.SelectProviders(providerName);
-            if (p.MoveNext()) {
-                // var x = ((IEnumerator)p).Current;
-                // return x;
-                return p.Current;
-            }
-            return null;
+            return PackageManagementService.SelectProviders(providerName).FirstOrDefault();
         }
 
-        public IEnumerator<object> SelectProviders(string providerName) {
+        public IEnumerable<object> SelectProviders(string providerName) {
             return PackageManagementService.SelectProviders(providerName);
         }
-        public IEnumerator<object> SelectProvidersWithFeature(string featureName) {
+        public IEnumerable<object> SelectProvidersWithFeature(string featureName) {
             return PackageManagementService.SelectProvidersWithFeature(featureName);
         }
 
-        public IEnumerator<object> SelectProvidersWithFeature(string featureName, string value) {
+        public IEnumerable<object> SelectProvidersWithFeature(string featureName, string value) {
             return PackageManagementService.SelectProvidersWithFeature(featureName,value);
         }
     }

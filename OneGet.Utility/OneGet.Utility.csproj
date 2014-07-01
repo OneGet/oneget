@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collections\ByRefCancellationToken.cs" />
+    <Compile Include="Collections\ByRefCancellationTokenSource.cs" />
     <Compile Include="Collections\CachingEnumerable.cs" />
     <Compile Include="Collections\HashSet.cs" />
     <Compile Include="Collections\SerializableEnumerable.cs" />
@@ -57,7 +59,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>WrappedFunc.tt</DependentUpon>
     </Compile>
-    <Compile Include="Collections\ByRefCollection.cs" />
     <Compile Include="Collections\ByRefEnumerable.cs" />
     <Compile Include="Plugin\WrappedDelegate.cs" />
     <Compile Include="Plugin\Proxy.cs" />

@@ -77,8 +77,8 @@ namespace Microsoft.OneGet.Providers.Package {
             _features = GetFeatures(c);
         }
 
-        internal CancellableEnumerable<T> CallAndCollect<T>(Action<CancellableBlockingCollection<T>> call, Action<CancellableBlockingCollection<T>> atFinally = null) {
-            var collection = new CancellableBlockingCollection<T>();
+        internal CancellableEnumerable<TItem> CallAndCollect<TItem>(Action<CancellableBlockingCollection<TItem>> call, Action<CancellableBlockingCollection<TItem>> atFinally = null) {
+            var collection = new CancellableBlockingCollection<TItem>();
             Task.Factory.StartNew(() => {
                 try {
                     call(collection);
@@ -112,30 +112,15 @@ namespace Microsoft.OneGet.Providers.Package {
         public DynamicOption[] DynamicOptions {
             get {
                 var result = new List<DynamicOption>();
-                var n = GetDynamicOptions(OptionCategory.Install, null);
-                while (n.MoveNext()) {
-                    result.Add(n.Current);
-                }
-
-                n = GetDynamicOptions(OptionCategory.Package, null);
-                while (n.MoveNext()) {
-                    result.Add(n.Current);
-                }
-
-                n = GetDynamicOptions(OptionCategory.Provider, null);
-                while (n.MoveNext()) {
-                    result.Add(n.Current);
-                }
-
-                n = GetDynamicOptions(OptionCategory.Source, null);
-                while (n.MoveNext()) {
-                    result.Add(n.Current);
-                }
+                result.AddRange(GetDynamicOptions(OptionCategory.Install, null));
+                result.AddRange(GetDynamicOptions(OptionCategory.Package, null));
+                result.AddRange(GetDynamicOptions(OptionCategory.Provider, null));
+                result.AddRange(GetDynamicOptions(OptionCategory.Source, null));
                 return result.ToArray();
             }
         }
 
-        public ICancellableEnumerator<DynamicOption> GetDynamicOptions(OptionCategory operation, Object c) {
+        public ICancellableEnumerable<DynamicOption> GetDynamicOptions(OptionCategory operation, Object c) {
             c = c ?? new {
                 IsCancelled = new IsCancelled(() => false)
             };
@@ -174,7 +159,7 @@ namespace Microsoft.OneGet.Providers.Package {
                         lastItem.PossibleValues = list.ToArray();
                         collection.Add(lastItem);
                     }
-                }).GetCancellableEnumerator();
+                });
         }
     }
 }

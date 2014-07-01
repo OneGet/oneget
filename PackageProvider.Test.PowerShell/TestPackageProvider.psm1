@@ -22,9 +22,9 @@ $InstalledPackages.Add( ( new-SoftwareIdentity  "pkgid:Y"  "DefaultInstalledY" "
 $InstalledPackages.Add( ( new-SoftwareIdentity  "pkgid:Z"  "DefaultInstalledZ" "1.0"  "semver"  "local"  "this is package Z" $null ) )
 
 $RegisteredPackageSources = (new-Object System.Collections.ArrayList)
-$RegisteredPackageSources.Add( 	(New-PackageSource "source1" "http://nowhere.com/test" $true $true @{ "color" = "green" }) )
-$RegisteredPackageSources.Add( 	(New-PackageSource "source2" "http://nowhere.com/test/untrusted" $false $true ))
-$RegisteredPackageSources.Add( 	(New-PackageSource "source3" "http://nowhere.com/test2" $true $true))
+$RegisteredPackageSources.Add( 	(New-PackageSource "source1" "http://nowhere.com/test" $true $true $false @{ "color" = "green" }) )
+$RegisteredPackageSources.Add( 	(New-PackageSource "source2" "http://nowhere.com/test/untrusted" $false $true $false))
+$RegisteredPackageSources.Add( 	(New-PackageSource "source3" "http://nowhere.com/test2" $true $true $false))
 
 <# 
 
@@ -46,7 +46,7 @@ function Add-PackageSource {
 	}
 
 	# create a new one
-	$src = (new-PackageSource $name $location $trusted $true)
+	$src = (new-PackageSource $name $location $trusted $true $false)
 
 	#add it to our stored list.
 	$RegisteredPackageSources.Add( $src )
@@ -208,7 +208,7 @@ function Resolve-PackageSource {
 
 			# or, is that string a valid source, return it as an 'untrusted' source
 			if( $each.ToLower().StartsWith("http://") -and $each.IndexOf("test") -gt -1 ) {
-				Write-Output (New-PackageSource $each $each $false $false)
+				Write-Output (New-PackageSource $each $each $false $false $false)
 				continue;
 			}
 

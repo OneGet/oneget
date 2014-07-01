@@ -24,7 +24,6 @@ namespace Microsoft.OneGet.Collections {
             return null;
         }
 
-
         private readonly ICollection<T> _collection;
 
         public ByRefCollection(ICollection<T> collection) {

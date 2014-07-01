@@ -20,7 +20,6 @@ namespace Microsoft.OneGet {
     using System.Reflection;
     using System.Threading.Tasks;
     using Api;
-    using Collections;
     using Extensions;
     using Packaging;
     using Plugin;
@@ -69,9 +68,9 @@ namespace Microsoft.OneGet {
             return message;
         }
 
-        public IEnumerator<PackageProvider> PackageProviders {
+        public IEnumerable<PackageProvider> PackageProviders {
             get {
-                return _packageProviders.Values.ByRefEnumerator();
+                return _packageProviders.Values.ByRef();
             }
         }
 
@@ -141,42 +140,32 @@ namespace Microsoft.OneGet {
             }
         }
 
-        public IEnumerator<PackageSource> GetAllSourceNames(Callback callback) {
-            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(callback).ToIEnumerable()).ByRefEnumerator();
+        public IEnumerable<PackageSource> GetAllSourceNames(Callback callback) {
+            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(callback)).ByRef();
         }
 
-        public IEnumerator<string> ProviderNames {
+        public IEnumerable<string> ProviderNames {
             get {
-                return _packageProviders.Keys.ByRefEnumerator();
+                return _packageProviders.Keys.ByRef();
             }
         }
 
-        public IEnumerator<PackageProvider> SelectProvidersWithFeature(string featureName) {
-            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName)).ByRefEnumerator();
+        public IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName) {
+            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName)).ByRef();
         }
 
-        public IEnumerator<PackageProvider> SelectProvidersWithFeature(string featureName, string value) {
-            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName) && each.Features[featureName].Contains(value)).ByRefEnumerator();
+        public IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value) {
+            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName) && each.Features[featureName].Contains(value)).ByRef();
         }
 
-
-        public IEnumerator<PackageProvider> SelectProviders(string providerName) {
+        public IEnumerable<PackageProvider> SelectProviders(string providerName) {
             if (providerName.Is()) {
                 // strict name match for now.
-                return new SerializableEnumerator<PackageProvider>(PackageProviders.ToIEnumerable().Where(each => each.Name.Equals(providerName, StringComparison.CurrentCultureIgnoreCase)).ByRefEnumerator());
+                return PackageProviders.Where(each => each.Name.Equals(providerName, StringComparison.CurrentCultureIgnoreCase)).ByRef();
                 ;
             }
 
-            return PackageProviders;
-        }
-
-        public IEnumerator<object> SelectProvidersTest(string providerName) {
-            if (providerName.Is()) {
-                // strict name match for now.
-                return PackageProviders.ToIEnumerable().Where(each => each.Name.Equals(providerName, StringComparison.CurrentCultureIgnoreCase)).Cast<object>().ByRefEnumerator();
-            }
-
-            return null;
+            return PackageProviders.ByRef();
         }
 
         private void AddPackageProvider(string name, IPackageProvider provider) {

@@ -36,9 +36,23 @@ function Get-DynamicOptions {
     )
     write-debug "In TestChainingPackageProvider - Get-DynamicOption for category $category"
 
+	# Example: Get all the parameters for another provider
+	$pm = $request.SelectProvider("NuGet")
+	$NuGetOptions = $pm.DynamicOptions
+	foreach( $do in $NuGetOptions ) {
+		$name = $do.Name
+		$cat = $do.Category
+		$type = $do.Type
+		$req = $do.Required
+
+		#just write them out:
+		write-debug "NuGetOption: $name $cat $type $req"
+	}
+
 	switch( $category ) {
 	    Package {
 			# options when the user is trying to specify a package 
+			write-Output (New-DynamicOption $category "SS" SecureString $false )
 		}
 
 		Source {
@@ -46,7 +60,8 @@ function Get-DynamicOptions {
 		}
 		Install {
 			#options for installation/uninstallation 
-            write-Output (New-DynamicOption $category "Destination" File $true )
+            write-Output (New-DynamicOption $category "Destination" Path $true )
+			
 		}
 	}
 }
@@ -99,7 +114,23 @@ function Find-Package {
     )
 	write-debug "In TestChainingPackageProvider - Find-Package"
 
-	dump-object $Request
+	# SS was asked for as a SecureString.
+	$ss = $request.Options["SS"]
+
+	# check to see if we got a value first.
+	if( $ss -eq $null ) {
+		write-Debug "SS == null"
+	} else {
+		# unsecure - transforms a securestring into a string.
+		$s = [System.Runtime.InteropServices.marshal]::PtrToStringAuto([System.Runtime.InteropServices.marshal]::SecureStringToBSTR($ss))
+		
+		#see! it works!
+		write-Debug "SS == $s"
+	}
+
+	
+
+	# dump-object $Request
 	
 	$providers = $request.SelectProvidersWithFeature("supports-powershellget-modules") 
 
@@ -201,7 +232,7 @@ function Install-Package {
 		$pm = $request.SelectProvider($providerName)
 
 
-		$pm = Get-First( $request.SelectProviders($providerName))
+		# $pm = Get-First( $request.SelectProviders($providerName))
 		
 		write-debug "In TestChainingPackageProvider - recreate the software identity object from the name/version/source" 
 
@@ -214,7 +245,7 @@ function Install-Package {
 		write-debug "In TestChainingPackageProvider - 3"
 
 		foreach( $pkg in $p ) {
-			$installed = $pm.InstallPackage( $pkg , (new-request -options @{ "Destination" = "c:\tmp" } -sources @( $source ) -Credential $c) )
+			$installed = $pm.InstallPackage( $pkg , (new-request -options @{ "Destination" = $request.Options["Destination"] } -sources @( $source ) -Credential $c) )
 
 			write-debug "In TestChainingPackageProvider - 4"
 

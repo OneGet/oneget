@@ -184,7 +184,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         /// <param name="isTrusted"></param>
         /// <param name="isRegistered"></param>
         /// <returns></returns>
-        public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered);
+        public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition

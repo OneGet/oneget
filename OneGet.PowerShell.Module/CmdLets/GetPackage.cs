@@ -70,7 +70,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected IEnumerable<SoftwareIdentity> ProcessProvider(PackageProvider provider) {
             using (var packages = CancelWhenStopped(provider.GetInstalledPackages("", this))) {
-                foreach (var p in packages.ToIEnumerable()) {
+                foreach (var p in packages) {
                     _providersProcessed.AddOrSet(provider.Name, true);
                     yield return p;
                 }
@@ -80,7 +80,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         protected IEnumerable<SoftwareIdentity> ProcessNames(PackageProvider provider, string name) {
             _namesProcessed.GetOrAdd(name, () => false);
             using (var packages = CancelWhenStopped(provider.GetInstalledPackages(name, this))) {
-                foreach (var p in packages.ToIEnumerable()) {
+                foreach (var p in packages) {
                     _namesProcessed.AddOrSet(name, true);
                     _providersProcessed.AddOrSet(provider.Name, true);
                     yield return p;

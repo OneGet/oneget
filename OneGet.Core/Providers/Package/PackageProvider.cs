@@ -34,7 +34,7 @@ namespace Microsoft.OneGet.Providers.Package {
 
     public delegate bool YieldPackageSwidtag(string fastPath, string xmlOrJsonDoc);
 
-    public delegate bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered);
+    public delegate bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
 
     public delegate bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired);
 
@@ -60,15 +60,85 @@ namespace Microsoft.OneGet.Providers.Package {
 
         // Friendly APIs
 
-        public void AddPackageSource(string name, string location, bool trusted, Object c) {
-            Provider.AddPackageSource(name, location, trusted, DynamicInterface.Instance.Create<IRequest>(c, Context));
+        public ICancellableEnumerable<PackageSource> AddPackageSource(string name, string location, bool trusted, Object c) {
+            // Provider.AddPackageSource(name, location, trusted, DynamicInterface.Instance.Create<IRequest>(c, Context));
+            var isCancelled = c.As<IsCancelled>();
+            PackageSource lastItem = null;
+
+            var result = new CancellableBlockingCollection<PackageSource>();
+
+
+            Provider.AddPackageSource(name, location, trusted, c.Extend<IRequest>(Context, new {
+
+                YieldKeyValuePair = new YieldKeyValuePair((key, value) => {
+                    if (lastItem != null) {
+                        lastItem.DetailsCollection.AddOrSet(key, value);
+                    }
+                    return !(isCancelled() || result.IsCancelled);
+                }),
+
+                YieldPackageSource = new YieldPackageSource((n, l, isTrusted, isRegistered, isValidated) => {
+                    if (lastItem != null) {
+                        result.Add(lastItem);
+                    }
+
+                    lastItem = new PackageSource {
+                        Name = n,
+                        Location = l,
+                        Provider = this,
+                        IsTrusted = isTrusted,
+                        IsRegistered = isRegistered,
+                        IsValidated = isValidated,
+                    };
+                    return !(isCancelled() || result.IsCancelled);
+                })
+            }));
+            if (lastItem != null) {
+                result.Add(lastItem);
+            }
+            return (CancellableEnumerable<PackageSource>)result;
         }
 
-        public void RemovePackageSource(string name, Object c) {
-            Provider.RemovePackageSource(name, DynamicInterface.Instance.Create<IRequest>(c, Context));
+        public ICancellableEnumerable<PackageSource> RemovePackageSource(string name, Object c) {
+            // Provider.RemovePackageSource(name, DynamicInterface.Instance.Create<IRequest>(c, Context));
+            var isCancelled = c.As<IsCancelled>();
+            PackageSource lastItem = null;
+
+            var result = new CancellableBlockingCollection<PackageSource>();
+
+
+            Provider.RemovePackageSource(name, c.Extend<IRequest>(Context, new {
+
+                YieldKeyValuePair = new YieldKeyValuePair((key, value) => {
+                    if (lastItem != null) {
+                        lastItem.DetailsCollection.AddOrSet(key, value);
+                    }
+                    return !(isCancelled() || result.IsCancelled);
+                }),
+
+                YieldPackageSource = new YieldPackageSource((n, l, isTrusted, isRegistered, isValidated) => {
+                    if (lastItem != null) {
+                        result.Add(lastItem);
+                    }
+
+                    lastItem = new PackageSource {
+                        Name = n,
+                        Location = l,
+                        Provider = this,
+                        IsTrusted = isTrusted,
+                        IsRegistered = isRegistered,
+                        IsValidated = isValidated,
+                    };
+                    return !(isCancelled() || result.IsCancelled);
+                })
+            }));
+            if (lastItem != null) {
+                result.Add(lastItem);
+            }
+            return (CancellableEnumerable<PackageSource>)result;   
         }
 
-        public ICancellableEnumerator<SoftwareIdentity> FindPackageByUri(Uri uri, int id, Object c) {
+        public ICancellableEnumerable<SoftwareIdentity> FindPackageByUri(Uri uri, int id, Object c) {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(collection =>
@@ -89,10 +159,10 @@ namespace Microsoft.OneGet.Providers.Package {
                         });
                         return !(isCancelled() || collection.IsCancelled);
                     })
-                }))).GetCancellableEnumerator();
+                })));
         }
 
-        public ICancellableEnumerator<SoftwareIdentity> GetPackageDependencies(SoftwareIdentity package, Object c) {
+        public ICancellableEnumerable<SoftwareIdentity> GetPackageDependencies(SoftwareIdentity package, Object c) {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(collection =>
@@ -113,10 +183,10 @@ namespace Microsoft.OneGet.Providers.Package {
                         });
                         return !(isCancelled() || collection.IsCancelled);
                     })
-                }))).GetCancellableEnumerator();
+                })));
         }
 
-        public ICancellableEnumerator<SoftwareIdentity> FindPackageByFile(string filename, int id, Object c) {
+        public ICancellableEnumerable<SoftwareIdentity> FindPackageByFile(string filename, int id, Object c) {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(result =>
@@ -137,14 +207,14 @@ namespace Microsoft.OneGet.Providers.Package {
                         });
                         return !(isCancelled() || result.IsCancelled);
                     })
-                }))).GetCancellableEnumerator();
+                })));
         }
 
         public int StartFind(Object c) {
             return Provider.StartFind(c.As<IRequest>());
         }
 
-        public ICancellableEnumerator<SoftwareIdentity> CompleteFind(int i, Object c) {
+        public ICancellableEnumerable<SoftwareIdentity> CompleteFind(int i, Object c) {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(result =>
@@ -166,28 +236,28 @@ namespace Microsoft.OneGet.Providers.Package {
                         });
                         return !(isCancelled() || result.IsCancelled);
                     })
-                }))).GetCancellableEnumerator();
+                })));
         }
 
-        public ICancellableEnumerator<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, Object c) {
+        public ICancellableEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, Object c) {
             c = c.Extend<IRequest>(Context);
             var id = StartFind(c);
-            return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), names.SelectMany(each => FindPackage(each, requiredVersion, minimumVersion, maximumVersion, id, c).ToIEnumerable()).ToArray().Concat(CompleteFind(id, c).ToIEnumerable()).ToArray()).GetCancellableEnumerator();
+            return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), names.SelectMany(each => FindPackage(each, requiredVersion, minimumVersion, maximumVersion, id, c)).ToArray().Concat(CompleteFind(id, c)).ToArray());
         }
 
-        public ICancellableEnumerator<SoftwareIdentity> FindPackagesByUris(Uri[] uris, Object c) {
+        public ICancellableEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, Object c) {
             c = c.Extend<IRequest>(Context);
             var id = StartFind(c);
-            return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), uris.SelectMany(each => FindPackageByUri(each, id, c).ToIEnumerable()).ToArray().Concat(CompleteFind(id, c).ToIEnumerable())).GetCancellableEnumerator();
+            return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), uris.SelectMany(each => FindPackageByUri(each, id, c)).ToArray().Concat(CompleteFind(id, c)));
         }
 
-        public ICancellableEnumerator<SoftwareIdentity> FindPackagesByFiles(string[] filenames, Object c) {
+        public ICancellableEnumerable<SoftwareIdentity> FindPackagesByFiles(string[] filenames, Object c) {
             c = c.Extend<IRequest>(Context);
             var id = StartFind(c);
-            return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), filenames.SelectMany(each => FindPackageByFile(each, id, c).ToIEnumerable()).ToArray().Concat(CompleteFind(id, c).ToIEnumerable())).GetCancellableEnumerator();
+            return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), filenames.SelectMany(each => FindPackageByFile(each, id, c)).ToArray().Concat(CompleteFind(id, c)));
         }
 
-        public ICancellableEnumerator<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Object c) {
+        public ICancellableEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Object c) {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(result =>
@@ -209,10 +279,10 @@ namespace Microsoft.OneGet.Providers.Package {
                         });
                         return !(isCancelled() || result.IsCancelled);
                     })
-                }))).GetCancellableEnumerator();
+                })));
         }
 
-        public ICancellableEnumerator<SoftwareIdentity> GetInstalledPackages(string name, Object c) {
+        public ICancellableEnumerable<SoftwareIdentity> GetInstalledPackages(string name, Object c) {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(result =>
@@ -234,10 +304,10 @@ namespace Microsoft.OneGet.Providers.Package {
                         });
                         return !(isCancelled() || result.IsCancelled);
                     })
-                }))).GetCancellableEnumerator();
+                })));
         }
 
-        public ICancellableEnumerator<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, Object c) {
+        public ICancellableEnumerable<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, Object c) {
             var isCancelled = c.As<IsCancelled>();
 
             var request = c.Extend<IRequest>(Context);
@@ -250,7 +320,18 @@ namespace Microsoft.OneGet.Providers.Package {
                 throw new ArgumentNullException("c");
             }
 
-            if (!IsTrustedPackageSource(softwareIdentity.Source, c)) {
+            // check if this source is trusted first.
+            var src = ResolvePackageSources(c.Extend<IRequest>(new {
+                GetSources = new Func<IEnumerable<string>>(() => {
+                    return new string[] {
+                        softwareIdentity.Source
+                    };
+                })
+            }, Context)).FirstOrDefault();
+
+            var trusted = (src != null && src.IsTrusted);
+
+            if (!trusted) {
                 try {
                     if (!request.ShouldContinueWithUntrustedPackageSource(softwareIdentity.Name, softwareIdentity.Source)) {
                         request.Error("User declined to trust package source ");
@@ -279,10 +360,10 @@ namespace Microsoft.OneGet.Providers.Package {
                     });
                     return !(isCancelled() || result.IsCancelled);
                 })
-            }))).GetCancellableEnumerator();
+            })));
         }
 
-        public ICancellableEnumerator<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, Object c) {
+        public ICancellableEnumerable<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, Object c) {
             var isCancelled = c.As<IsCancelled>();
 
             return CallAndCollect<SoftwareIdentity>(result =>
@@ -303,19 +384,10 @@ namespace Microsoft.OneGet.Providers.Package {
                         });
                         return !(isCancelled() || result.IsCancelled);
                     })
-                }))).GetCancellableEnumerator();
+                })));
         }
 
-        public bool IsValidPackageSource(string packageSource, Object c) {
-
-            return false;
-        }
-
-        public bool IsTrustedPackageSource(string packageSource, Object c) {
-            return false;
-        }
-
-        public ICancellableEnumerator<PackageSource> ResolvePackageSources(Object c) {
+        public ICancellableEnumerable<PackageSource> ResolvePackageSources(Object c) {
             var isCancelled = c.As<IsCancelled>();
             PackageSource lastItem = null;
 
@@ -329,7 +401,7 @@ namespace Microsoft.OneGet.Providers.Package {
                         return !(isCancelled() || result.IsCancelled);
                     }),
 
-                    YieldPackageSource = new YieldPackageSource((name, location, isTrusted, isRegistered) => {
+                    YieldPackageSource = new YieldPackageSource((name, location, isTrusted, isRegistered, isValidated) => {
                         if (lastItem != null) {
                             result.Add(lastItem);
                         }
@@ -339,7 +411,8 @@ namespace Microsoft.OneGet.Providers.Package {
                             Location = location,
                             Provider = this,
                             IsTrusted = isTrusted,
-                            IsRegistered = isRegistered
+                            IsRegistered = isRegistered,
+                            IsValidated = isValidated,
                         };
                         return !(isCancelled() || result.IsCancelled);
                     })
@@ -348,7 +421,7 @@ namespace Microsoft.OneGet.Providers.Package {
                         collection.Add(lastItem);
                     }
                     ;
-                }).GetCancellableEnumerator();
+                });
         }
 
         public void DownloadPackage(SoftwareIdentity softwareIdentity, string destinationFilename, Object c) {

@@ -46,7 +46,8 @@ namespace Microsoft.OneGet.Extensions {
                 return null;
             }
 
-            return enumerable as ByRefEnumerable<T> ?? new ByRefEnumerable<T>(enumerable);
+            return enumerable as SerializableEnumerable<T> ?? new SerializableEnumerable<T>(enumerable);
+            // enumerable as ByRefEnumerable<T> ?? new ByRefEnumerable<T>(enumerable);
         }
 
         public static IEnumerable<T> ByRefEnumerable<T>(this IEnumerable<T> enumerable) {
@@ -54,46 +55,17 @@ namespace Microsoft.OneGet.Extensions {
                 return null;
             }
 
-            return enumerable as ByRefEnumerable<T> ?? new ByRefEnumerable<T>(enumerable);
+            // return enumerable as ByRefEnumerable<T> ?? new ByRefEnumerable<T>(enumerable);
+            return enumerable as SerializableEnumerable<T> ?? new SerializableEnumerable<T>(enumerable);
         }
-
-        public static IEnumerator<T> ByRefEnumerator<T>(this IEnumerable<T> enumerable) {
-            if (enumerable == null) {
-                return null;
-            }
-
-            return (enumerable as ByRefEnumerable<T> ?? new ByRefEnumerable<T>(enumerable)).GetEnumerator();
-        }
-        public static IEnumerable<T> ByRefWorkAround<T>(this IEnumerable<T> enumerable) {
-            if (enumerable == null) {
-                return null;
-            }
-            
-            return enumerable.ToArray();
-        }
-
 
         public static IEnumerator<T> ByRef<T>(this IEnumerator<T> enumerator) {
             if (enumerator == null) {
                 return null;
             }
 
-            return enumerator as ByRefEnumerator<T> ?? new ByRefEnumerator<T>(enumerator);
-        }
-
-        public static ICollection<T> ByRef<T>(this ICollection<T> collection) {
-            if (collection == null) {
-                return null;
-            }
-            return collection as ByRefCollection<T> ?? new ByRefCollection<T>(collection);
-        }
-
-        public static ICollection<T> ByRefCollection<T>(this IEnumerable<T> enumerable) {
-            if (enumerable == null) {
-                return null;
-            }
-
-            return enumerable as ByRefCollection<T> ?? enumerable.ToList().ByRef();
+            // return enumerator as ByRefEnumerator<T> ?? new ByRefEnumerator<T>(enumerator);
+            return enumerator as SerializableEnumerator<T> ?? new SerializableEnumerator<T>(enumerator);
         }
 
         /// <summary>
@@ -150,10 +122,10 @@ namespace Microsoft.OneGet.Extensions {
         }
 
         public static T MyMax<T, TCompare>(this IEnumerable<T> collection, Func<T, TCompare> func) where TCompare : IComparable<TCompare> {
-            T maxItem = default(T);
-            TCompare maxValue = default(TCompare);
+            var maxItem = default(T);
+            var maxValue = default(TCompare);
             foreach (var item in collection) {
-                TCompare temp = func(item);
+                var temp = func(item);
                 if (maxItem == null || temp.CompareTo(maxValue) > 0) {
                     maxValue = temp;
                     maxItem = item;
@@ -174,20 +146,21 @@ namespace Microsoft.OneGet.Extensions {
             return ToIEnumerable<T>(enumerator).ToArray();
         }
 
-        public static IEnumerable<T> Concat<T> (this IEnumerator<T> set1, IEnumerator<T> set2) {
-            IEnumerable<T> s1 = set1 == null ? Enumerable.Empty<T>() : set1.ToIEnumerable();
+        public static IEnumerable<T> Concat<T>(this IEnumerator<T> set1, IEnumerator<T> set2) {
+            var s1 = set1 == null ? Enumerable.Empty<T>() : set1.ToIEnumerable();
             IEnumerable<T> s2 = set2 == null ? Enumerable.Empty<T>() : set2.ToIEnumerable();
             return s1.Concat(s2);
         }
 
         public static IEnumerable<T> Concat<T>(this IEnumerable<T> set1, IEnumerator<T> set2) {
-            IEnumerable<T> s1 = set1 ?? Enumerable.Empty<T>();
+            var s1 = set1 ?? Enumerable.Empty<T>();
             IEnumerable<T> s2 = set2 == null ? Enumerable.Empty<T>() : set2.ToIEnumerable();
             return s1.Concat(s2);
         }
+
         public static IEnumerable<T> Concat<T>(this IEnumerator<T> set1, IEnumerable<T> set2) {
-            IEnumerable<T> s1 = set1 == null ? Enumerable.Empty<T>() : set1.ToIEnumerable();
-            IEnumerable<T> s2 = set2 ?? Enumerable.Empty<T>();
+            var s1 = set1 == null ? Enumerable.Empty<T>() : set1.ToIEnumerable();
+            var s2 = set2 ?? Enumerable.Empty<T>();
             return s1.Concat(s2);
         }
 

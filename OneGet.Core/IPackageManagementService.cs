@@ -26,16 +26,16 @@ namespace Microsoft.OneGet {
     ///     method to dynamically generate a matching implementation at load time.
     /// </summary>
     public interface IPackageManagementService {
-        IEnumerator<string> ProviderNames {get;}
+        IEnumerable<string> ProviderNames {get;}
 
-        IEnumerator<PackageProvider> PackageProviders { get; }
+        IEnumerable<PackageProvider> PackageProviders { get; }
 
-        IEnumerator<PackageProvider> SelectProviders(string providerName);
+        IEnumerable<PackageProvider> SelectProviders(string providerName);
 
 
-        IEnumerator<PackageProvider> SelectProvidersWithFeature(string featureName);
+        IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName);
 
-        IEnumerator<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
+        IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
 
 
         bool Initialize(Callback c, bool userInteractionPermitted);

@@ -117,13 +117,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
             if (names.IsNullOrEmpty()) {
-                return PackageManagementService.SelectProviders(null).ToIEnumerable().Where(each => !each.Features.ContainsKey("automation-only"));
+                return PackageManagementService.SelectProviders(null).Where(each => !each.Features.ContainsKey("automation-only"));
             }
-            return names.SelectMany(each => PackageManagementService.SelectProviders(each).ToIEnumerable()).Where(each => !each.Features.ContainsKey("automation-only"));
+            return names.SelectMany(each => PackageManagementService.SelectProviders(each)).Where(each => !each.Features.ContainsKey("automation-only"));
         }
 
         protected IEnumerable<PackageProvider> SelectProviders(string name) {
-            var result = PackageManagementService.SelectProviders(name).ToIEnumerable().Where( each => !each.Features.ContainsKey("automation-only")).ToArray();
+            var result = PackageManagementService.SelectProviders(name).Where( each => !each.Features.ContainsKey("automation-only")).ToArray();
             if (result.Length == 0) {
                 Warning("UNKNOWN_PROVIDER", name);
             }

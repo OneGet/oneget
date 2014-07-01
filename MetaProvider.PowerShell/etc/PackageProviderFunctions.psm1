@@ -83,10 +83,11 @@ function New-PackageSource {
 		[string] $location,
 		[bool] $trusted,
 		[bool] $registered,
+		[bool] $valid = $false,
 		[System.Collections.Hashtable] $details = $null
 	)
 	
-	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.PackageSource -ArgumentList $name,$location,$trusted,$registered,$details
+	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.PackageSource -ArgumentList $name,$location,$trusted,$registered,$valid,$details
 }
 
 <#

@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Management.Automation;
     using Extensions;
@@ -115,59 +116,63 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             return result.Last();
         }
 
+        private static object _lock = new object();
+
         internal object CallPowerShell(Request request, params object[] args) {
+            lock (_lock) {
             _powershell["request"] = request;
 
-            DynamicPowershellResult result = null;
+            
+                DynamicPowershellResult result = null;
 
-            try {
-                request.Debug("INVOKING PowerShell Fn {0} in {1}", request.CommandInfo.Name, _module.Name);
-                // make sure we don't pass the callback to the function.
-                result = _powershell.NewTryInvokeMemberEx(request.CommandInfo.Name, new string[0], args);
+                try {
+                    Debug.WriteLine(string.Format("INVOKING PowerShell Fn {0} in {1}", request.CommandInfo.Name, _module.Name));
+                    request.Debug("INVOKING PowerShell Fn {0} in {1}", request.CommandInfo.Name, _module.Name);
+                    // make sure we don't pass the callback to the function.
+                    result = _powershell.NewTryInvokeMemberEx(request.CommandInfo.Name, new string[0], args);
 
-               
+                    // instead, loop thru results and get 
+                    if (result == null) {
+                        // failure! 
+                        throw new Exception("Powershell script/function failed.");
+                    }
 
-                // instead, loop thru results and get 
-                if (result == null) {
-                    // failure! 
-                    throw new Exception("Powershell script/function failed.");
-                }
+                    object finalValue = null;
 
-                object finalValue = null;
+                    foreach (var value in result) {
 
-                foreach (var value in result) {
+                        if (result.IsFailing) {
+                            foreach (var error in result.Errors) {
+                                request.Error("POWERSHELL ERROR in '{0}' in module '{1}' :\r\n{2} {3}", request.CommandInfo.Name, _module.Name, error.CategoryInfo.Category, error.Exception.Message);
+                                return null;
+                            }
+                        }
+
+                        var y = value as Yieldable;
+                        if (y != null) {
+                            y.YieldResult(request);
+                        } else {
+                            finalValue = value;
+                        }
+                    }
+
 
                     if (result.IsFailing) {
                         foreach (var error in result.Errors) {
-                            request.Error("POWERSHELL ERROR in '{0}' in module '{1}' :\r\n{2} {3}", request.CommandInfo.Name , _module.Name, error.CategoryInfo.Category, error.Exception.Message );
+                            request.Error("POWERSHELL ERROR in '{0}' in module '{1}' :\r\n{2} {3}", request.CommandInfo.Name, _module.Name, error.CategoryInfo.Category, error.Exception.Message);
                             return null;
                         }
                     }
 
-                    var y = value as Yieldable;
-                    if (y != null) {
-                        y.YieldResult(request);
-                    } else {
-                        finalValue = value;
-                    }
+                    return finalValue;
+                } catch (Exception e) {
+                    e.Dump();
+                } finally {
+                    _powershell.WaitForAvailable();
+                    _powershell["request"] = null;
                 }
-
-
-                if (result.IsFailing) {
-                    foreach (var error in result.Errors) {
-                        request.Error("POWERSHELL ERROR in '{0}' in module '{1}' :\r\n{2} {3}", request.CommandInfo.Name, _module.Name, error.CategoryInfo.Category, error.Exception.Message);
-                        return null;
-                    }
-                }
-
-                return finalValue;
-            } catch (Exception e) {
-                e.Dump();
-            } finally {
-                _powershell.WaitForAvailable();
-                _powershell["request"] = null;
+                return null;
             }
-            return null;
         }
     }
 }

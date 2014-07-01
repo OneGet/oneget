@@ -34,6 +34,23 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter]
         public string Location {get; set;}
 
+        private IEnumerable<string> _sources {
+            get {
+                if (!string.IsNullOrEmpty(Name)) {
+                    yield return Name;
+                }
+
+                if (!string.IsNullOrEmpty(Location)) {
+                    yield return Location;
+                }
+            }
+        }
+        public override IEnumerable<string> Sources {
+            get {
+                return _sources.ByRef();
+            }
+        }
+
         public override bool ProcessRecordAsync() {
             foreach (var provider in SelectedProviders) {
                 if (Stopping) {
@@ -42,21 +59,22 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
                 var found = false;
                 using (var sources = CancelWhenStopped(provider.ResolvePackageSources(this))) {
-                    foreach (var source in sources.ToIEnumerable()) {
+                    foreach (var source in sources) {
                         if (!string.IsNullOrEmpty(Name)) {
-                            if (!Name.EqualsIgnoreCase(source.Name)) {
+                            if (Name.EqualsIgnoreCase(source.Name) || Name.EqualsIgnoreCase(source.Location)) {
+                                WriteObject(source);
+                                found = true;
                                 continue;
                             }
                         }
 
                         if (!string.IsNullOrEmpty(Location)) {
-                            if (!Location.EqualsIgnoreCase(source.Location)) {
-                                continue;
+                            if (Location.EqualsIgnoreCase(source.Location)) {
+                                WriteObject(source);
+                                found = true;
                             }
                         }
 
-                        WriteObject(source);
-                        found = true;
                     }
                 }
 

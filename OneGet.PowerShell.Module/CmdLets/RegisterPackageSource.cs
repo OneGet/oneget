@@ -74,7 +74,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             // if the provider (or source) is selected, we can get package metadata keys from the provider
             // hmm. let's just grab *all* of them.
-            foreach (var md in PackageProvider.GetDynamicOptions(OptionCategory.Source, this).ToIEnumerable()) {
+            foreach (var md in PackageProvider.GetDynamicOptions(OptionCategory.Source, this)) {
                 if (DynamicParameters.ContainsKey(md.Name)) {
                     // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
                     (DynamicParameters[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
@@ -108,10 +108,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return false;
             }
 
+
             using (var sources = CancelWhenStopped(PackageProvider.ResolvePackageSources(this))) {
-                if (sources.ToIEnumerable().Any(each => each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase))) {
+                if (sources.Any(each => each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase))) {
                     if (Force || ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}' (Replace existing)".format(Name, Location, Provider)).Result) {
-                        PackageProvider.AddPackageSource(Name, Location, Trusted, this);
+                        using (var added =  CancelWhenStopped(PackageProvider.AddPackageSource(Name, Location, Trusted, this))) {
+                            foreach (var addedSource in added) {
+                                WriteObject(addedSource);
+                            }
+                        }
                         return true;
                     }
                     return false;
@@ -119,7 +124,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}'".format(Name, Location, Provider)).Result) {
-                PackageProvider.AddPackageSource(Name, Location, Trusted, this);
+                using (var added = CancelWhenStopped(PackageProvider.AddPackageSource(Name, Location, Trusted, this))) {
+                    foreach (var addedSource in added) {
+                        WriteObject(addedSource);
+                    }
+                }
                 return true;
             }
 
