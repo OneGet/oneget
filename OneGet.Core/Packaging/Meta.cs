@@ -14,14 +14,72 @@
 
 namespace Microsoft.OneGet.Packaging {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Xml.Linq;
+    using Collections;
 
-    public class SoftwareMetadata : MarshalByRefObject  {
+    public class Meta : MarshalByRefObject, IReadOnlyDictionary<string, string> {
         public override object InitializeLifetimeService() {
             return null;
         }
 
+        private XElement _element;
+        internal protected Meta(XElement element) {
+            _element = element;
+        }
+
+
+        public IEnumerator<KeyValuePair<string, string>> GetEnumerator() {
+            return new SerializableEnumerator<KeyValuePair<string, string>>(_element.Attributes().Select(each => new KeyValuePair<string, string>(each.Name.LocalName, each.Value)).GetEnumerator());
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
+
+        public int Count {
+            get {
+                return _element.Attributes().Count();
+            }
+        }
+
+        public bool ContainsKey(string key) {
+            return _element.Attribute(Iso19770_2.Namespace + key) != null;
+        }
+
+        public bool TryGetValue(string key, out string value) {
+            value = _element.Get(Iso19770_2.Namespace + key);
+            return value != null;
+        }
+
+        public string this[string key] {
+            get {
+                return _element.Get(Iso19770_2.Namespace + key);
+            }
+        }
+
+        public IEnumerable<string> Keys {
+            get {
+                return new SerializableEnumerable<string>(_element.Attributes().Select(each => each.Name.LocalName));
+            }
+        }
+
+        public IEnumerable<string> Values {
+            get {
+                return new SerializableEnumerable<string>(_element.Attributes().Select(each => each.Value));
+            }
+        }
+    }
+
+    public class SoftwareMetadata : Meta {
+       
+        internal SoftwareMetadata(XElement element) : base(element) {
+        }
+
         internal string FieldPath {get; set;}
 
-        
+       
     }
 }

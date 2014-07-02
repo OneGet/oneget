@@ -13,6 +13,50 @@
 //  
 
 namespace Microsoft.OneGet.Packaging {
-    public class Link {
+    using System.Xml.Linq;
+
+    public class Link : Meta {
+        internal Link(XElement element)
+            : base(element) {
+        }
+
+        public string Artifact {
+            get {
+                return this["artifact"];
+            }
+        }
+
+        public string HRef {
+            get {
+                return this["href"];
+            }
+        }
+
+        public string Media {
+            get {
+                return this["media"];
+            }
+        }
+
+        public string Ownership {
+            get {
+                return this["ownership"];
+            }
+        }
+        public string Relationship {
+            get {
+                return this["rel"];
+            }
+        }
+        public string MediaType {
+            get {
+                return this["type"];
+            }
+        }
+        public string Use {
+            get {
+                return this["use"];
+            }
+        }
     }
 }

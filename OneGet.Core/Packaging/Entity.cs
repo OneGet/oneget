@@ -13,6 +13,34 @@
 //  
 
 namespace Microsoft.OneGet.Packaging {
-    public class Entity {
+    using System.Xml.Linq;
+
+    public class Entity : Meta {
+        internal Entity(XElement element) : base(element) {
+        }
+
+        public string Name {
+            get {
+                return this["name"];
+            }
+        }
+
+        public string Role {
+            get {
+                return this["role"];
+            }
+        }
+
+        public string Thumbprint {
+            get {
+                return this["thumbprint"];
+            }
+        }
+
+        public string RegId {
+            get {
+                return this["regId"];
+            }
+        }
     }
 }
