@@ -37,13 +37,13 @@ namespace Microsoft.OneGet.Api {
         /// <param name="fullPath"></param>
         /// <param name="packageFileName"></param>
         /// <returns></returns>
-        bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
+        bool YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
 
-        bool YieldSoftwareMetadata(string parentFastPath, string name, string value, string fieldPath);
+        bool YieldSoftwareMetadata(string parentFastPath, string name, string value);
 
-        bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint, string fieldPath);
+        bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint);
 
-        bool YieldLink(string parentFastPath, string artifact, string referenceUrl, string appliesToMedia, string ownership, string relativeTo, string mediaType, string use,string fieldPath);
+        bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
 
 #if M2
         bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);

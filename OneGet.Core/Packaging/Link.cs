@@ -22,40 +22,40 @@ namespace Microsoft.OneGet.Packaging {
 
         public string Artifact {
             get {
-                return this["artifact"];
+                return this[Iso19770_2.ArtifactAttribute.LocalName];
             }
         }
 
         public string HRef {
             get {
-                return this["href"];
+                return this[Iso19770_2.HRefAttribute.LocalName];
             }
         }
 
         public string Media {
             get {
-                return this["media"];
+                return this[Iso19770_2.MediaAttribute.LocalName];
             }
         }
 
         public string Ownership {
             get {
-                return this["ownership"];
+                return this[Iso19770_2.OwnershipAttribute.LocalName];
             }
         }
         public string Relationship {
             get {
-                return this["rel"];
+                return this[Iso19770_2.RelationshipAttribute.LocalName];
             }
         }
         public string MediaType {
             get {
-                return this["type"];
+                return this[Iso19770_2.MediaTypeAttribute.LocalName];
             }
         }
         public string Use {
             get {
-                return this["use"];
+                return this[Iso19770_2.UseAttribute.LocalName];
             }
         }
     }

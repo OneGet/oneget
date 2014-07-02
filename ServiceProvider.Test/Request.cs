@@ -171,13 +171,13 @@ namespace Microsoft.OneGet.ServiceProvider.Test {
         /// <param name="fullPath"></param>
         /// <param name="packageFileName"></param>
         /// <returns></returns>
-        public abstract bool YieldPackage(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
+        public abstract bool YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
 
-        public abstract bool YieldSoftwareMetadata(string parentFastPath, string name, string value, string fieldPath);
+        public abstract bool YieldSoftwareMetadata(string parentFastPath, string name, string value);
 
-        public abstract bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint, string fieldPath);
+        public abstract bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint);
 
-        public abstract bool YieldLink(string parentFastPath, string artifact, string referenceUrl, string appliesToMedia, string ownership, string relativeTo, string mediaType, string use,string fieldPath);
+        public abstract bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
 
         #if M2
         public abstract bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);

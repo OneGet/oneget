@@ -14,7 +14,9 @@
 
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Collections;
-
+    using System.Linq;
+    using Extensions;
+    
     public class SoftwareIdentity : Yieldable {
         public SoftwareIdentity() {
         }
@@ -31,9 +33,11 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             Filename = filename;
         }
 
-        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, string fullPath, string filename, Hashtable details)
+        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, string fullPath, string filename, Hashtable details, ArrayList entities, ArrayList links)
             : this(fastPackageReference, name, version, versionScheme, source, summary, searchKey,fullPath, filename) {
             _details = details;
+            _entities = entities;
+            _links = links;
         }
 
         public string FastPackageReference {get; set;}
@@ -49,7 +53,32 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public string SearchKey {get; set;}
 
         public override bool YieldResult(Request r) {
-            return r.YieldPackage(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey,FullPath, Filename) && YieldDetails(r);
+            return r.YieldSoftwareIdentity(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey,FullPath, Filename) && YieldDetails(r) && YieldEntities(r) && YieldLinks(r);
+        }
+
+        private ArrayList _links;
+        private ArrayList _entities;
+
+        protected override bool YieldDetails(Request r) {
+            if (_details != null && _details.Count > 0) {
+                // we need to send this back as a set of key/path & value  pairs.
+                return _details.Flatten().All(kvp => r.YieldSoftwareMetadata(FastPackageReference,kvp.Key, kvp.Value));
+            }
+            return true;
+        }
+
+        protected virtual bool YieldLinks(Request r) {
+            if( _links != null ) {
+                return _links.OfType<Link>().All(link => r.YieldLink(FastPackageReference, link.HRef, link.Relationship, link.MediaType, link.Ownership, link.Use, link.AppliesToMedia, link.Artifact));
+            }
+            return true;
+        }
+
+        protected virtual bool YieldEntities(Request r) {
+            if (_links != null) {
+                return _entities.OfType<Entity>().All(entity => r.YieldEntity(FastPackageReference, entity.Name, entity.RegId, entity.Role, entity.Thumbprint));
+            }
+            return true;
         }
     }
 }

@@ -15,9 +15,9 @@
 namespace Microsoft.OneGet.Packaging {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel.Design.Serialization;
     using System.Diagnostics;
     using System.Linq;
+    using System.Text;
     using System.Xml;
     using System.Xml.Linq;
     using Extensions;
@@ -48,13 +48,12 @@ namespace Microsoft.OneGet.Packaging {
         // OneGet shortcut property -- Summary *should* be stored in SoftwareMetadata
         public string Summary {
             get {
-                return Swid.Root().Elements(Iso19770_2.Meta).Select( each => each.Get(Iso19770_2.SummaryAttribute)).FirstOrDefault();
+                return Swid.Root().Elements(Iso19770_2.Meta).Select( each => each.Get(Iso19770_2.SummaryAttribute)).WhereNotNull().FirstOrDefault();
             }
             internal set {
-                Swid.Root().Set(Iso19770_2.SummaryAttribute, value);
+                Set(Iso19770_2.SummaryAttribute.LocalName, value);
             }
         }
-
         #endregion
 
         #region ISO-19770-2-2014 metadata
@@ -129,36 +128,85 @@ namespace Microsoft.OneGet.Packaging {
             }
         }
 
+        // shortcut for Meta values 
         public IEnumerable<string> this[string index] {
             get {
-                return Meta.Where(each => each.ContainsKey(index)).Select(each => each[index]);
+                return Meta.Where(each => each.ContainsKey(index)).Select(each => each[index]).ByRef();
             }
         }
 
-        internal IEnumerable<SoftwareMetadata> Meta {
+        internal void Set(string metaKey, string value) {
+            var v = this[metaKey].ToArray();
+
+            if (v.Length > 0) {
+                // if the summary is already set, we don't want to re set it.
+                Debug.WriteLine(string.Format("REPLACING {0} in Meta element in swidtag {1} -> {2} ", metaKey, v[0], value));
+                throw new Exception("INVALID_SWIDTAG_ATTRIBUTE_VALUE_CHANGE");
+            }
+
+            // looks good, let's set it in the first meta element.
+            FirstMeta.Set(metaKey, value);
+        }
+
+        public IEnumerable<SoftwareMetadata> Meta {
             get {
-                return Swid.Elements(Iso19770_2.Meta).Select(each => new SoftwareMetadata(each));
+                return Swid.Root().Elements(Iso19770_2.Meta).Select(each => new SoftwareMetadata(each)).ByRef();
             }
         }
 
         public IEnumerable<Entity> Entities {
             get {
-                return Swid.Elements(Iso19770_2.Entity).Select(each => new Entity(each));
+                return Swid.Root().Elements(Iso19770_2.Entity).Select(each => new Entity(each)).ByRef();
             }
         }
+
+        internal Entity AddEntity(string name, string regid, string role, string thumbprint = null) {
+            XElement e;
+            Swid.Root().Add( e= new XElement(Iso19770_2.Entity)
+                .Set(Iso19770_2.NameAttribute, name )
+                .Set(Iso19770_2.RegIdAttribute, regid)
+                .Set(Iso19770_2.RoleAttribute, role)
+                .Set(Iso19770_2.ThumbprintAttribute,thumbprint)
+               );
+            return new Entity(e);
+        } 
 
         public IEnumerable<Link> Links {
             get {
-                return Swid.Elements(Iso19770_2.Link).Select(each => new Link(each));
+                return Swid.Root().Elements(Iso19770_2.Link).Select(each => new Link(each)).ByRef();
             }
         }
 
+        internal Link AddLink(string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact) {
+            XElement e;
+            Swid.Root().Add(e = new XElement(Iso19770_2.Link)
+                .Set(Iso19770_2.HRefAttribute, referenceUri)
+                .Set(Iso19770_2.RelationshipAttribute, relationship)
+                .Set(Iso19770_2.MediaTypeAttribute, mediaType)
+                .Set(Iso19770_2.OwnershipAttribute, ownership)
+                .Set(Iso19770_2.UseAttribute, use)
+                .Set(Iso19770_2.MediaAttribute, appliesToMedia)
+                .Set(Iso19770_2.ArtifactAttribute, artifact)
+               );
+            return new Link(e);
+        } 
 
 #if M2
         public Evidence Evidence {get; internal set;}
 
         public Payload Payload {get; internal set;}
 #endif
+
+        private XElement FirstMeta {
+            get {
+                var meta = Swid.Root().Elements(Iso19770_2.Meta).FirstOrDefault();
+                if (meta == null) {
+                    // there isn't one 
+                    Swid.Root().Add(meta = new XElement(Iso19770_2.Meta));
+                }
+                return meta;
+            }
+        }
 
         private XDocument _swidTag;
         public XDocument Swid {
@@ -173,71 +221,23 @@ namespace Microsoft.OneGet.Packaging {
             }
         }
 
+        public string SwidTagText {
+            get {
+                var stringBuilder = new StringBuilder();
+
+                var settings = new XmlWriterSettings();
+                settings.OmitXmlDeclaration = false;
+                settings.Indent = true;
+                settings.NewLineOnAttributes = true;
+                settings.NamespaceHandling = NamespaceHandling.OmitDuplicates;
+                
+                using (var xmlWriter = XmlWriter.Create(stringBuilder, settings)) {
+                    Swid.Save(xmlWriter);
+                }
+
+                return stringBuilder.ToString();
+            }
+        }
         #endregion
-
-    }
-
-    internal static class Iso19770_2 {
-        internal static XNamespace Namespace = XNamespace.Get("http://standards.iso.org/iso/19770/-2/2014/schema.xsd");
-
-        internal static XAttribute DefaultNamespace {
-            get {
-                return new XAttribute(XNamespace.Xmlns + "swidtag", Namespace);
-            }
-        }
-
-        internal static XDocument NewDocument {
-            get {
-                return new XDocument(new XElement(SoftwareIdentity));
-            }
-        }
-
-        internal static XName SoftwareIdentity = Namespace + "SoftwareIdentity";
-        internal static XName NameAttribute = Namespace + "name";
-        internal static XName PatchAttribute = Namespace + "patch";
-        internal static XName MediaAttribute = Namespace + "media";
-        internal static XName SupplementalAttribute = Namespace + "supplemental";
-        internal static XName TagVersionAttribute = Namespace + "tagVersion";
-        internal static XName TagIdAttribute = Namespace + "tagId";
-        internal static XName VersionAttribute = Namespace + "version";
-        internal static XName VersionSchemeAttribute = Namespace + "versionScheme";
-
-        internal static XName SummaryAttribute = Namespace + "summary";
-        internal static XName DescriptionAttribute = Namespace + "description";
-
-        internal static XName Entity = Namespace + "Entity";
-        internal static XName Link = Namespace + "Link";
-        internal static XName Meta = Namespace + "Meta";
-
-
-        internal static XElement Root(this XDocument xmlDocument) {
-            return xmlDocument.Elements(SoftwareIdentity).FirstOrDefault();
-        }
-
-        internal static string Get(this XElement element, XName attribute) {
-            if (element == null) {
-                return null;
-            }
-            var a = element.Attribute(attribute);
-            return a == null ? null : a.Value;
-        }
-
-        internal static XElement Set(this XElement element, XName attribute, string value) {
-            if (element == null) {
-                return null;
-            }
-
-            var current = element.Get(attribute);
-
-
-            if (current != null && value != current ) {
-                Debug.WriteLine( string.Format("REPLACING value in swidtag attribute {0}: {1} for {2}", attribute.LocalName, current, value));
-                throw new Exception("INVALID_SWIDTAG_ATTRIBUTE_VALUE_CHANGE");
-            }
-
-            element.SetAttributeValue(attribute, value);
-
-            return element;
-        }
     }
 }

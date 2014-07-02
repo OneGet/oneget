@@ -178,10 +178,29 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public IEnumerable<string> GetOptionKeys(int category) {
-            return DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category)).Select(each => each.Name).ByRef();
+            return DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category)).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys).ByRef();
         }
 
         public IEnumerable<string> GetOptionValues(int category, string key) {
+            if (MyInvocation.BoundParameters.ContainsKey(key)) {
+                var value = MyInvocation.BoundParameters[key];
+                if (value is string ||  value is int ) {
+                    return new[] {
+                        MyInvocation.BoundParameters[key].ToString()
+                    }.ByRef();
+                }
+                if (value is SwitchParameter) {
+                    return new[] {
+                        ((SwitchParameter)MyInvocation.BoundParameters[key]).IsPresent.ToString()
+                    }.ByRef();
+                }
+                if (value is string[]) {
+                    return ((string[])value).ByRef();
+                }
+                return new[] {
+                    MyInvocation.BoundParameters[key].ToString()
+                }.ByRef();
+            }
             return DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category) && each.Name == key).SelectMany(each => each.GetValues(this)).ByRef();
         }
 

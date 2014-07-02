@@ -25,7 +25,7 @@ namespace Microsoft.OneGet.Providers {
     using Service;
 
     internal static class Loader {
-        internal static bool AcquireProviders(string assemblyPath, Object callback, Action<string, IPackageProvider> yieldPackageProvider, Action<string, IServicesProvider> yieldServicesProvider) {
+        internal static bool AcquireProviders(string assemblyPath, Object callback, Action<string, IPackageProvider> YieldSoftwareIdentityProvider, Action<string, IServicesProvider> yieldServicesProvider) {
             var dynInterface = new DynamicInterface();
             var result = false;
 
@@ -48,7 +48,7 @@ namespace Microsoft.OneGet.Providers {
                                 try {
                                     var packageProvider = dynInterface.Create<IPackageProvider>(instance);
                                     packageProvider.InitializeProvider(DynamicInterface.Instance, callback);
-                                    yieldPackageProvider(packageProvider.GetPackageProviderName(), packageProvider);
+                                    YieldSoftwareIdentityProvider(packageProvider.GetPackageProviderName(), packageProvider);
                                     result = true;
                                 } catch (Exception e) {
                                     e.Dump();
@@ -77,7 +77,7 @@ namespace Microsoft.OneGet.Providers {
             foreach (var provider in dynInterface.FilterTypesCompatibleTo<IPackageProvider>(asm).Select(each => dynInterface.Create<IPackageProvider>(each))) {
                 try {
                     provider.InitializeProvider(DynamicInterface.Instance, callback);
-                    yieldPackageProvider(provider.GetPackageProviderName(), provider);
+                    YieldSoftwareIdentityProvider(provider.GetPackageProviderName(), provider);
                     result = true;
                 } catch (Exception e) {
                     e.Dump();

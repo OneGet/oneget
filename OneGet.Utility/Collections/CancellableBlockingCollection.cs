@@ -20,6 +20,8 @@ namespace Microsoft.OneGet.Collections {
     public class CancellableBlockingCollection<T> : MarshalByRefObject, IDisposable {
         private readonly BlockingCollection<T> _collection = new BlockingCollection<T>();
         protected CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private ManualResetEvent _completedEvent = new ManualResetEvent(false);
+
         private bool _disposed;
         public CancellableBlockingCollection() {
         }
@@ -74,10 +76,12 @@ namespace Microsoft.OneGet.Collections {
         }
 
         public void CompleteAdding() {
+            _completedEvent.Set();
             _collection.CompleteAdding();
         }
 
         public void Cancel() {
+            _completedEvent.Set();
             if (!_disposed && _cancellationTokenSource != null) {
                 _cancellationTokenSource.Cancel();
             }
@@ -90,6 +94,10 @@ namespace Microsoft.OneGet.Collections {
 
         public static implicit operator CancellableEnumerable<T>(CancellableBlockingCollection<T> collection) {
             return new CancellableEnumerable<T>(collection._cancellationTokenSource, collection._collection.GetConsumingEnumerable());
+        }
+
+        public bool WaitForCompletion(int timeout = -1) {
+            return _completedEvent.WaitOne(timeout);
         }
     }
 }

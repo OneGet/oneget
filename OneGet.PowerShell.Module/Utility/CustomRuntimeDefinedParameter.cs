@@ -47,7 +47,7 @@ namespace Microsoft.PowerShell.OneGet.Utility {
                 switch (Options.FirstOrDefault().Type) {
                     case OptionType.Switch:
                         return new string[] {
-                            "true"
+                            ((SwitchParameter)Value).IsPresent.ToString()
                         };
                     case OptionType.StringArray:
                         return (string[])Value;

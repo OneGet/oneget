@@ -46,17 +46,17 @@ namespace Microsoft.OneGet.Packaging {
         }
 
         public bool ContainsKey(string key) {
-            return _element.Attribute(Iso19770_2.Namespace + key) != null;
+            return _element.Attribute( key) != null;
         }
 
         public bool TryGetValue(string key, out string value) {
-            value = _element.Get(Iso19770_2.Namespace + key);
+            value = _element.Get(key);
             return value != null;
         }
 
         public string this[string key] {
             get {
-                return _element.Get(Iso19770_2.Namespace + key);
+                return _element.Get( key);
             }
         }
 
@@ -71,15 +71,5 @@ namespace Microsoft.OneGet.Packaging {
                 return new SerializableEnumerable<string>(_element.Attributes().Select(each => each.Value));
             }
         }
-    }
-
-    public class SoftwareMetadata : Meta {
-       
-        internal SoftwareMetadata(XElement element) : base(element) {
-        }
-
-        internal string FieldPath {get; set;}
-
-       
     }
 }

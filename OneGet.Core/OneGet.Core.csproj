@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\ICoreApi.cs" />
+    <Compile Include="Packaging\Iso19770_2.cs" />
+    <Compile Include="Packaging\SoftwareMetadata.cs" />
     <Compile Include="Providers\Package\IPackageProvider.cs" />
     <Compile Include="Api\IRequest.cs" />
     <Compile Include="Providers\Package\ProviderBase.cs" />

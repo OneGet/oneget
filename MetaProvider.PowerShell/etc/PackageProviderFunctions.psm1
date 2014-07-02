@@ -137,9 +137,11 @@ function New-SoftwareIdentity {
 		[string] $searchKey = $null, 
 		[string] $fullPath = $null, 
 		[string] $filename = $null, 
-		[System.Collections.Hashtable] $details = $null
+		[System.Collections.Hashtable] $details = $null,
+		[System.Collections.ArrayList] $entities = $null,
+		[System.Collections.ArrayList] $links = $null
 	)
-	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details 
+	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links
 }
 
 <#
@@ -186,4 +188,44 @@ function New-Request {
 	)
 
 	return $request.CloneRequest( $options, $sources, $credential )
+}
+
+function New-Entity {
+	param(
+		[string] $name,
+		[string] $role,
+        [string] $regId = $null,
+        [string] $thumbprint= $null
+	)
+
+	$o = New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Entity
+	$o.Name = $name 
+	$o.Role = $role 
+	$o.regId = $regId 
+	$o.thumbprint = $thumbprint 
+	return $o
+}
+
+function New-Link { 
+	param( 
+		[string] $HRef,
+		[string] $relationship,
+		[string] $mediaType = $null,
+		[string] $ownership = $null,
+		[string] $use= $null,
+		[string] $appliesToMedia= $null,
+		[string] $artifact = $null
+	)
+
+	$o = New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Link
+	
+	$o.HRef = $HRef
+	$o.Relationship =$relationship
+	$o.MediaType =$mediaType 
+	$o.Ownership =$ownership 
+	$o.Use = $use
+	$o.AppliesToMedia = $appliesToMedia
+	$o.Artifact = $artifact 
+
+	return $o
 }

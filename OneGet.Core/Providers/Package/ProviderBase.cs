@@ -43,7 +43,7 @@ namespace Microsoft.OneGet.Providers.Package {
             }
         }
 
-        protected object Context {
+        internal object Context {
             get {
                 return _context ?? (_context = new object[] {
                     PackageManagementService._instance.ServicesProvider,
@@ -93,6 +93,22 @@ namespace Microsoft.OneGet.Providers.Package {
             });
 
             return collection;
+        }
+
+        internal CancellableEnumerable<TItem> CallAndCollect<TItem>(object c, Response<TItem> response, Action<object> call) {
+            Task.Factory.StartNew(() => {
+                try {
+                    call( c.Extend<IRequest>(Context, response));
+                }
+                catch (Exception e) {
+                    e.Dump();
+                }
+                finally {
+                    response.Complete();
+                }
+            });
+
+            return response.Result;
         }
 
         public Dictionary<string, List<string>> GetFeatures(Object c) {

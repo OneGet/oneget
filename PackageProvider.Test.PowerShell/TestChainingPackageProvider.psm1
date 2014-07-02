@@ -95,6 +95,23 @@ function Dump-object {
 	write-debug "{0}" $x
 }
 
+function ToArray
+{
+  begin
+  {
+    $output = @(); 
+  }
+  process
+  {
+    $output += $_; 
+  }
+  end
+  {
+    return ,$output; 
+  }
+}
+
+
 function new-packagereference {
 	param( 
 		[string] $providerName,
@@ -113,6 +130,11 @@ function Find-Package {
         [string] $maximumVersion
     )
 	write-debug "In TestChainingPackageProvider - Find-Package"
+	
+	foreach( $o in $request.Options.Keys ) {
+		write-debug "OPTION: {0} => {1}" $o $request.Options[$o] 
+	}
+
 
 	# SS was asked for as a SecureString.
 	$ss = $request.Options["SS"]
@@ -142,7 +164,47 @@ function Find-Package {
 
 		foreach( $pkg in $pm.FindPackages( $names, $requiredVersion, $minimumVersion, $maximumVersion, (new-request -options @{ } -sources @( $mySrcLocation ) -Credential $c) ) ) {
 			$fastPackageReference = (new-packagereference $providerName $pkg.Name $pkg.Version $pkg.Source )
-			Write-Output (new-SoftwareIdentity $fastPackageReference  $pkg.Name $pkg.Version  $pkg.VersionScheme $mySrcLocation $pkg.Summary $providerName $pkg.FullPath $pkg.PackagePath )
+
+			$links = (new-Object -TypeName  System.Collections.ArrayList)
+			foreach( $lnk in $pkg.Links ) {
+				# only copy link types that you know what they are:
+				if( $lnk.Relationship -eq "icon" -or $lnk.Relationship -eq "license" -or $lnk.Relationship -eq "project" ) {
+					$links.Add( (new-Link $lnk.HRef $lnk.Relationship )  )
+				}
+			}
+
+			$entities = (new-Object -TypeName  System.Collections.ArrayList)
+			foreach( $entity in $pkg.Entities ) {
+				# only copy entity types that you know what they are:
+				if( $entity.Role -eq "author" -or $entity.Role -eq "owner" ) {
+					$entities.Add( (new-Entity $entity.Name $entity.Role $entity.RegId $entity.Thumbprint)  )
+				}
+			}
+
+			$details =  (new-Object -TypeName  System.Collections.Hashtable)
+
+			# you can examine all the Metadata individually:
+			foreach( $m in $pkg.Meta ) {
+				foreach( $k in $m.Keys ) {
+					Write-Debug "{0} -> {1}" $k $m[$k]
+				}
+			}
+
+			# or grab all the values for a specific one directly:
+			# (warning: it returns a collection of values, since SwidTags can have multiple values for the same field)
+			$descriptions = $pkg["description"]
+
+			$description = (Get-First $descriptions)
+			Write-Debug "description is -> {0}"  $description
+			
+			# let's just get each value that we care about:
+			$details.Add( "description" , (get-first $pkg["description"]) )
+			$details.Add( "copyright" , (get-first $pkg["copyright"]) )
+			$details.Add( "tags" , (get-first $pkg["tags"]) )
+			$details.Add( "releaseNotes" , (get-first $pkg["releaseNotes"]) )
+
+			
+			Write-Output (new-SoftwareIdentity $fastPackageReference  $pkg.Name $pkg.Version  $pkg.VersionScheme $mySrcLocation $pkg.Summary $providerName $pkg.FullPath $pkg.PackagePath $details $entities $links ) 
 		}
 	}
 }
@@ -246,7 +308,7 @@ function Install-Package {
 
 			foreach( $pkg in $installed ) {
 				write-debug "In TestChainingPackageProvider - 5"
-				Write-Output (new-SoftwareIdentity $fastPackageReference $pkg.Name $pkg.Version  $pkg.VersionScheme $source $pkg.Summary $providerName $pkg.FullPath $pkg.PackagePath )
+				Write-Output (new-SoftwareIdentity $fastPackageReference $pkg.Name $pkg.Version  $pkg.VersionScheme $source $pkg.Summary $providerName $pkg.FullPath $pkg.PackagePath @{ "Description" = "This is the description" } @( (new-entity "Garrett Serack" "Author" )) @( (new-Link "http://foo.com/icon.png" "Icon" )) )
 			}
 		}
 

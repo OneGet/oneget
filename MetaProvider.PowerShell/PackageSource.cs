@@ -35,8 +35,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             _details = details;
         }
 
-        
-
         public string Name {get; set;}
         public string Location {get; set;}
         public bool IsTrusted {get; set;}

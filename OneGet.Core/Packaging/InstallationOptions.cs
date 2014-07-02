@@ -59,19 +59,4 @@ namespace Microsoft.OneGet.Packaging {
             return null;
         }
     }
-
-#if UNSURE_IF_NEEDED
-    public class InstallationOptions : MarshalByRefObject {
-        public InstallationContext Context;
-        public Hashtable Options;
-        public string Path;
-        // public requiredFlags ? how to specify that an option is a requirement?
-
-        // ? think if this is the best method?
-        // bool[] pass_unmodified_to_deps_if_you_dont_recognize_this;
-
-        public InstallationMode mode;
-        public InstallationReason reason;
-    }
-#endif
 }

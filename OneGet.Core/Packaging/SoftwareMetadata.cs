@@ -1,4 +1,4 @@
-// 
+﻿// 
 //  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,32 +15,10 @@
 namespace Microsoft.OneGet.Packaging {
     using System.Xml.Linq;
 
-    public class Entity : Meta {
-        internal Entity(XElement element) : base(element) {
+    public class SoftwareMetadata : Meta {
+        internal SoftwareMetadata(XElement element) : base(element) {
         }
 
-        public string Name {
-            get {
-                return this[Iso19770_2.NameAttribute.LocalName];
-            }
-        }
-
-        public string Role {
-            get {
-                return this[Iso19770_2.RoleAttribute.LocalName];
-            }
-        }
-
-        public string Thumbprint {
-            get {
-                return this[Iso19770_2.ThumbprintAttribute.LocalName];
-            }
-        }
-
-        public string RegId {
-            get {
-                return this[Iso19770_2.RegIdAttribute.LocalName];
-            }
-        }
+        internal string FieldPath {get; set;}
     }
 }
