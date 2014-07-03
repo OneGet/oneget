@@ -26,7 +26,7 @@ namespace Microsoft.OneGet.Providers.Package {
     using Packaging;
     using Plugin;
 
-    public class Response<T> : IResponseApi {
+    public class Response<T> : MarshalByRefObject,IResponseApi {
 
         private readonly CancellableBlockingCollection<T> _result = new CancellableBlockingCollection<T>();
         private readonly string _packageStatus;
@@ -42,6 +42,9 @@ namespace Microsoft.OneGet.Providers.Package {
             _isCancelled = _context.As<IsCancelled>();
         }
 
+        public override object InitializeLifetimeService() {
+            return null;
+        }
 
         public Response(object c, PackageProvider provider, string packageStatus, Action<object> call) : this(c,provider) {
             _packageStatus = packageStatus;
