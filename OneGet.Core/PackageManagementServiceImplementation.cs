@@ -264,6 +264,19 @@ namespace Microsoft.OneGet {
                     if (File.Exists(fullPath + ".dll")) {
                         return fullPath;
                     }
+
+                    // lets see if the assembly name is in the same directory as the current assembly...
+                    try {
+                        fullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), assemblyName);
+                        if (File.Exists(fullPath)) {
+                            return fullPath;
+                        }
+                        if (File.Exists(fullPath + ".dll")) {
+                            return fullPath;
+                        }
+                    } catch {
+                    }
+
                 }
                 // must be just just a plain name.
 

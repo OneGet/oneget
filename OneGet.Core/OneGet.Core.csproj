@@ -47,6 +47,7 @@
     <Compile Include="Providers\Package\IPackageProvider.cs" />
     <Compile Include="Api\IRequest.cs" />
     <Compile Include="Providers\Package\ProviderBase.cs" />
+    <Compile Include="Providers\Package\Response.cs" />
     <Compile Include="Providers\Service\AggregateServicesProvider.cs" />
     <Compile Include="Providers\Service\Instance.cs" />
     <Compile Include="Api\IResponseApi.cs" />

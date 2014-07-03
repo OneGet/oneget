@@ -15,213 +15,12 @@
 namespace Microsoft.OneGet.Providers.Package {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
-    using System.Runtime.InteropServices;
     using System.Threading;
-    using System.Threading.Tasks;
     using Api;
     using Collections;
-    using Extensions;
     using Packaging;
     using Plugin;
-
-    public class Response<T> : MarshalByRefObject,IResponseApi {
-
-        private readonly CancellableBlockingCollection<T> _result = new CancellableBlockingCollection<T>();
-        private readonly string _packageStatus;
-        private readonly IsCancelled _isCancelled;
-        private readonly object _context;
-        private PackageSource _currentPackageSource = null;
-        private SoftwareIdentity _currentSoftwareIdentity = null;
-        private PackageProvider _provider;
-
-        internal Response(object c, PackageProvider provider) {
-            _provider = provider;
-            _context = c;
-            _isCancelled = _context.As<IsCancelled>();
-        }
-
-        public override object InitializeLifetimeService() {
-            return null;
-        }
-
-        public Response(object c, PackageProvider provider, string packageStatus, Action<object> call) : this(c,provider) {
-            _packageStatus = packageStatus;
-            Task.Factory.StartNew(() => {
-                try {
-                    call(_context.Extend<IRequest>(provider.Context, this));
-                }
-                catch (Exception e) {
-                    e.Dump();
-                }
-                finally {
-                    Complete();
-                }
-            });
-        }
-
-        public Response(object c, PackageProvider provider, Action<object> call)
-            : this(c, provider) {
-            Task.Factory.StartNew(() => {
-                try {
-                    call(_context.Extend<IRequest>(provider.Context, this));
-                }
-                catch (Exception e) {
-                    e.Dump();
-                }
-                finally {
-                    Complete();
-                }
-            });
-        }
-
-        public bool OkToContinue() {
-            return !_isCancelled();
-        }
-
-        public bool YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName) {
-            CommitSoftwareIdentity();
-
-            _currentSoftwareIdentity = new SoftwareIdentity {
-                FastPackageReference = fastPath,
-                Name = name,
-                Version = version,
-                VersionScheme = versionScheme,
-                Summary = summary,
-                ProviderName = name,
-                Source = source,
-                Status = _packageStatus,
-                SearchKey = searchKey,
-                FullPath = fullPath,
-                PackageFilename = packageFileName 
-            };
-
-            return Continue;
-                    
-        }
-
-        public bool YieldSoftwareMetadata(string parentFastPath, string name, string value) {
-            if (_currentSoftwareIdentity == null || parentFastPath != _currentSoftwareIdentity.FastPackageReference) {
-                Console.WriteLine("TEMPORARY: SHOULD NOT GET HERE [YieldSoftwareMetadata] ================================================");
-            }
-            if (_currentSoftwareIdentity != null) {
-                _currentSoftwareIdentity.Set(name, value);    
-            }
-
-            return Continue;
-        }
-
-        public bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint) {
-            if (_currentSoftwareIdentity == null || parentFastPath != _currentSoftwareIdentity.FastPackageReference) {
-                Console.WriteLine("TEMPORARY: SHOULD NOT GET HERE [YieldSoftwareMetadata] ================================================");
-            }
-            if (_currentSoftwareIdentity != null) {
-                _currentSoftwareIdentity.AddEntity(name,regid, role, thumbprint);
-            }
-
-            return Continue;
-        }
-
-        public bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact) {
-            if (_currentSoftwareIdentity == null || parentFastPath != _currentSoftwareIdentity.FastPackageReference) {
-                Console.WriteLine("TEMPORARY: SHOULD NOT GET HERE [YieldSoftwareMetadata] ================================================");
-            }
-
-            if (_currentSoftwareIdentity != null) {
-                _currentSoftwareIdentity.AddLink(referenceUri, relationship,mediaType,ownership,use,appliesToMedia,artifact);
-            }
-
-            return Continue;
-        }
-
-        internal bool Continue {
-            get {
-                return !(_isCancelled() || _result.IsCancelled);
-            }
-        }
-
-        public bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated) {
-            CommitPackageSource();
-
-            _currentPackageSource = new PackageSource {
-                Name = name,
-                Location = location,
-                Provider = _provider,
-                IsTrusted = isTrusted,
-                IsRegistered = isRegistered,
-                IsValidated = isValidated,
-            };
-            return Continue;
-        }
-
-        public bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired) {
-            Console.WriteLine("TEMPORARY: SHOULD NOT GET HERE [YieldDynamicOption] ================================================");
-            return false;
-        }
-
-        public bool YieldKeyValuePair(string key, string value) {
-            if (_currentPackageSource != null) {
-                _currentPackageSource.DetailsCollection.AddOrSet(key, value);
-            }
-            return Continue;
-        }
-
-        public bool YieldValue(string value) {
-            Console.WriteLine("TEMPORARY: SHOULD NOT GET HERE [YieldValue] ================================================");
-            return false;
-        }
-
-        private void CommitPackageSource() {
-            if (_currentPackageSource != null && typeof(T) == typeof(PackageSource)) {
-                _result.Add((T)(object)_currentPackageSource);
-            }
-            _currentPackageSource = null;
-        }
-        private void CommitSoftwareIdentity() {
-            if (_currentSoftwareIdentity!= null && typeof(T) == typeof(SoftwareIdentity)) {
-                _result.Add((T)(object)_currentSoftwareIdentity);
-            }
-            _currentSoftwareIdentity = null;
-        }
-
-        public void Complete() {
-            // add the last package source if it's still waiting...
-            CommitPackageSource();
-            CommitSoftwareIdentity();
-
-            _result.CompleteAdding();
-        }
-
-        public CancellableEnumerable<T> Result {
-            get {
-                return _result;
-            }
-        }
-
-        public CancellableEnumerable<T> CompleteResult {
-            get {
-                _result.WaitForCompletion();
-                return _result;
-            }
-        }
-        /*
-        internal CancellableEnumerable<T> CallAndCollect(object context, Action<object> call) {
-            Task.Factory.StartNew(() => {
-                try {
-                    call(_context.Extend<IRequest>(context, this));
-                }
-                catch (Exception e) {
-                    e.Dump();
-                }
-                finally {
-                    Complete();
-                }
-            });
-
-            return Result;
-        }*/
-    }
 
     #region generate-delegates response-apis
 
@@ -239,7 +38,7 @@ namespace Microsoft.OneGet.Providers.Package {
 
     public delegate bool YieldMetadata(string fieldId, string @namespace, string name, string value);
 
-    public delegate bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
+    public delegate bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
 
     public delegate bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired);
 
@@ -281,11 +80,10 @@ namespace Microsoft.OneGet.Providers.Package {
             // return CallAndCollect(c,new Response<SoftwareIdentity>(c,"Available"), response => Provider.FindPackageByUri(uri, id, response));
 
             // return new Response<SoftwareIdentity>(c, "Available").CallAndCollect(Context, response => Provider.FindPackageByUri(uri, id, response));
-            
         }
 
         public ICancellableEnumerable<SoftwareIdentity> GetPackageDependencies(SoftwareIdentity package, Object c) {
-            return new Response<SoftwareIdentity>(c, this, "Dependency", response => Provider.GetPackageDependencies(package.FastPackageReference, response) ).Result;
+            return new Response<SoftwareIdentity>(c, this, "Dependency", response => Provider.GetPackageDependencies(package.FastPackageReference, response)).Result;
         }
 
         public ICancellableEnumerable<SoftwareIdentity> FindPackageByFile(string filename, int id, Object c) {
@@ -374,7 +172,7 @@ namespace Microsoft.OneGet.Providers.Package {
         }
 
         public void DownloadPackage(SoftwareIdentity softwareIdentity, string destinationFilename, Object c) {
-            Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename,c.Extend<IRequest>(Context) );
+            Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, c.Extend<IRequest>(Context));
         }
     }
 
