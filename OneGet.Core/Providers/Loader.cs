@@ -15,6 +15,8 @@
 namespace Microsoft.OneGet.Providers {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
@@ -25,6 +27,8 @@ namespace Microsoft.OneGet.Providers {
     using Service;
 
     internal static class Loader {
+        
+        [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFile", Justification = "This is a plugin loader. It *needs* to do that.")]
         internal static bool AcquireProviders(string assemblyPath, Object callback, Action<string, IPackageProvider> YieldSoftwareIdentityProvider, Action<string, IServicesProvider> yieldServicesProvider) {
             var dynInterface = new DynamicInterface();
             var result = false;
@@ -35,7 +39,7 @@ namespace Microsoft.OneGet.Providers {
             }
 
             foreach (var provider in dynInterface.FilterTypesCompatibleTo<IMetaProvider>(asm).Select(each => dynInterface.Create<IMetaProvider>(each))) {
-                Debug.WriteLine(string.Format("START MetaProvider {0}", provider.GetMetaProviderName()));
+                Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "START MetaProvider {0}", provider.GetMetaProviderName()));
                 try {
                     provider.InitializeProvider(DynamicInterface.Instance, callback);
                     var metaProvider = provider;
@@ -71,7 +75,7 @@ namespace Microsoft.OneGet.Providers {
                 } catch (Exception e) {
                     e.Dump();
                 }
-                Debug.WriteLine(string.Format("FINISH MetaProvider {0}", provider.GetMetaProviderName()));
+                Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "FINISH MetaProvider {0}", provider.GetMetaProviderName()));
             }
 
             foreach (var provider in dynInterface.FilterTypesCompatibleTo<IPackageProvider>(asm).Select(each => dynInterface.Create<IPackageProvider>(each))) {

@@ -52,6 +52,12 @@ namespace Microsoft.OneGet.Providers.Service {
         public void DownloadFile(Uri remoteLocation, string localFilename, Object c) {
             // check the Uri type, see if we have anyone who can handle that 
             // if so, call that provider's download file
+            if (remoteLocation == null) {
+                throw new ArgumentNullException("remoteLocation");
+            }
+            if (c == null) {
+                throw new ArgumentNullException("c");
+            }
 
             c.As<IRequest>().Error("Protocol Scheme '{0}' not supported".format(remoteLocation.Scheme));
         }
@@ -59,6 +65,9 @@ namespace Microsoft.OneGet.Providers.Service {
         public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object c) {
             // check who supports the archive type
             // and call that provider.
+            if (c == null) {
+                throw new ArgumentNullException("c");
+            }
 
             c.As<IRequest>().Error("Unsupported archive type for file '{0}' not supported".format(localFilename));
             return Enumerable.Empty<string>();

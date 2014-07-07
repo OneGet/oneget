@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Providers.Package {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
     using Api;
     using Collections;
@@ -37,6 +38,8 @@ namespace Microsoft.OneGet.Providers.Package {
         public abstract string Name {get;}
 
         private Dictionary<string, List<string>> _features;
+
+        [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
         public IReadOnlyDictionary<string, List<string>> Features {
             get {
                 return _features;
@@ -112,6 +115,10 @@ namespace Microsoft.OneGet.Providers.Package {
         }
 
         public Dictionary<string, List<string>> GetFeatures(Object c) {
+            if (c == null) {
+                throw new ArgumentNullException("c");
+            }
+
             var isCancelled = c.As<IsCancelled>();
             var result = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             Provider.GetFeatures(c.Extend<IRequest>(Context, new {
@@ -123,16 +130,15 @@ namespace Microsoft.OneGet.Providers.Package {
             return result;
         }
 
-
-        
-        public DynamicOption[] DynamicOptions {
+        [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
+        public List<DynamicOption> DynamicOptions {
             get {
                 var result = new List<DynamicOption>();
                 result.AddRange(GetDynamicOptions(OptionCategory.Install, null));
                 result.AddRange(GetDynamicOptions(OptionCategory.Package, null));
                 result.AddRange(GetDynamicOptions(OptionCategory.Provider, null));
                 result.AddRange(GetDynamicOptions(OptionCategory.Source, null));
-                return result.ToArray();
+                return result;
             }
         }
 

@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -228,7 +229,7 @@ namespace Microsoft.OneGet {
                 // this needs to load the assembly in it's own domain
                 // so that we can drop them when necessary.
                 var name = Path.GetFileNameWithoutExtension(primaryAssemblyPath) ?? primaryAssemblyPath;
-                var pd = new PluginDomain(string.Format("PluginDomain [{0}]", name.Substring(name.LastIndexOf('.') + 1)));
+                var pd = new PluginDomain(string.Format(CultureInfo.CurrentCulture, "PluginDomain [{0}]", name.Substring(name.LastIndexOf('.') + 1)));
 
                 // inject this assembly into the target appdomain.
                 pd.LoadFileWithReferences(Assembly.GetExecutingAssembly().Location);

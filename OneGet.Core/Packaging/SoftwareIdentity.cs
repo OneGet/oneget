@@ -16,6 +16,7 @@ namespace Microsoft.OneGet.Packaging {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Xml;
@@ -140,7 +141,7 @@ namespace Microsoft.OneGet.Packaging {
 
             if (v.Length > 0) {
                 // if the summary is already set, we don't want to re set it.
-                Debug.WriteLine(string.Format("REPLACING {0} in Meta element in swidtag {1} -> {2} ", metaKey, v[0], value));
+                Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "REPLACING {0} in Meta element in swidtag {1} -> {2} ", metaKey, v[0], value));
                 throw new Exception("INVALID_SWIDTAG_ATTRIBUTE_VALUE_CHANGE");
             }
 

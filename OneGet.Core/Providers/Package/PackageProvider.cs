@@ -91,6 +91,9 @@ namespace Microsoft.OneGet.Providers.Package {
         }
 
         public int StartFind(Object c) {
+            if (c == null) {
+                throw new ArgumentNullException("c");
+            }
             return Provider.StartFind(c.As<IRequest>());
         }
 
@@ -99,18 +102,45 @@ namespace Microsoft.OneGet.Providers.Package {
         }
 
         public ICancellableEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, Object c) {
+            if (c == null) {
+                throw new ArgumentNullException("c");
+            }
+
+            if (names == null) {
+                throw new ArgumentNullException("names");
+            }
+
+
             c = c.Extend<IRequest>(Context);
             var id = StartFind(c);
             return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), names.SelectMany(each => FindPackage(each, requiredVersion, minimumVersion, maximumVersion, id, c)).ToArray().Concat(CompleteFind(id, c)).ToArray());
         }
 
         public ICancellableEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, Object c) {
+            if (c == null) {
+                throw new ArgumentNullException("c");
+            }
+
+            if (uris == null) {
+                throw new ArgumentNullException("uris");
+            }
+
+
             c = c.Extend<IRequest>(Context);
             var id = StartFind(c);
             return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), uris.SelectMany(each => FindPackageByUri(each, id, c)).ToArray().Concat(CompleteFind(id, c)));
         }
 
         public ICancellableEnumerable<SoftwareIdentity> FindPackagesByFiles(string[] filenames, Object c) {
+            if (c == null) {
+                throw new ArgumentNullException("c");
+            }
+
+            if (filenames == null) {
+                throw new ArgumentNullException("filenames");
+            }
+
+
             c = c.Extend<IRequest>(Context);
             var id = StartFind(c);
             return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), filenames.SelectMany(each => FindPackageByFile(each, id, c)).ToArray().Concat(CompleteFind(id, c)));
@@ -125,6 +155,10 @@ namespace Microsoft.OneGet.Providers.Package {
         }
 
         public ICancellableEnumerable<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, Object c) {
+            if (c == null) {
+                throw new ArgumentNullException("c");
+            }
+
             var isCancelled = c.As<IsCancelled>();
 
             var request = c.Extend<IRequest>(Context);
@@ -172,6 +206,14 @@ namespace Microsoft.OneGet.Providers.Package {
         }
 
         public void DownloadPackage(SoftwareIdentity softwareIdentity, string destinationFilename, Object c) {
+            if (c == null) {
+                throw new ArgumentNullException("c");
+            }
+
+            if (softwareIdentity== null) {
+                throw new ArgumentNullException("softwareIdentity");
+            }
+
             Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, c.Extend<IRequest>(Context));
         }
     }

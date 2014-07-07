@@ -57,7 +57,7 @@ namespace Microsoft.OneGet {
         /// </summary>
         /// <typeparam name="T">An caller-supplied interface type to dynamically generate a an implementation for.</typeparam>
         /// <returns>The PackageManagementService as an instance of the supplied interface type.</returns>
-        public T GetInstance<T>() {
+        public T GetTypedInstance<T>() {
             return new DynamicInterface().Create<T>(Instance);
         }
     }

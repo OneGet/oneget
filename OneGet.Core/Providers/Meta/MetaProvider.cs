@@ -18,8 +18,6 @@ namespace Microsoft.OneGet.Providers.Meta {
     using Plugin;
 
     public interface IMetaProvider : IProvider {
-        bool IsMethodImplemented(string method);
-
         #region declare MetaProvider-interface
 
         /// <summary>
