@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
+    using System;
     using System.Collections;
 
     public class PackageSource : Yieldable {
@@ -42,6 +43,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public bool IsValidated {get; set;}
         public override bool YieldResult(Request r) {
+            if (r == null) {
+                throw new ArgumentNullException("r");
+            }
+
             return r.YieldPackageSource(Name, Location, IsTrusted, IsRegistered,IsValidated) && YieldDetails(r);
         }
     }

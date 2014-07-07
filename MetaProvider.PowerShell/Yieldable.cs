@@ -24,7 +24,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             get {
                 return _details ?? (_details = new Hashtable());
             }
-            set {
+            internal set {
                 _details = value;
             }
         }

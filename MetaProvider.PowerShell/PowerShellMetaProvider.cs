@@ -17,6 +17,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
@@ -233,16 +234,16 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             // try to create each module at least once.
             Parallel.ForEach(modules, modulePath => {
                 // foreach (var modulePath in modules) {
-                Debug.WriteLine(string.Format("Looking at {0}", modulePath));
+                Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Looking at {0}", modulePath));
                 var provider = Create(modulePath);
                 if (provider != null) {
                     // looks good to me, let's add this to the list of moduels this meta provider can create.
-                    Debug.WriteLine(string.Format("Yes, {0} is a Provider", modulePath));
+                    Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Yes, {0} is a Provider", modulePath));
                     _providerModules.AddOrSet(provider.GetPackageProviderName(), modulePath);
                 }
             });
 
-            Debug.WriteLine(string.Format("Done Looking at PowerShell Modules"));
+            Debug.WriteLine(string.Format(CultureInfo.CurrentCulture,"Done Looking at PowerShell Modules"));
 
             // check to see if dynamic powershell is working:
             /*

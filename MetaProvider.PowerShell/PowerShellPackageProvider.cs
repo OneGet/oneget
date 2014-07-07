@@ -42,6 +42,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         public bool IsMethodImplemented(string methodName) {
+            if (methodName == null) {
+                throw new ArgumentNullException("methodName");
+            }
+
             if (methodName.EqualsIgnoreCase("startfind") || methodName.EqualsIgnoreCase("completeFind")) {
                 return true;
             }

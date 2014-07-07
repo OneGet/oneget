@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using Extensions;
@@ -31,6 +32,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         public override bool YieldResult(Request r) {
+            if (r == null) {
+                throw new ArgumentNullException("r");
+            }
             if (_pair.Value.Length == 0) {
                 return r.YieldKeyValuePair(_pair.Key, null);
             }
@@ -60,6 +64,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public IEnumerable<object> PermittedValues {get; set;}
 
         public override bool YieldResult(Request r) {
+            if (r == null) {
+                throw new ArgumentNullException("r");
+            }
+
             return r.YieldDynamicOption((int)Category, Name, (int)ExpectedType, IsRequired) &&
                    PermittedValues.WhereNotNull().Select(each => each.ToString()).ToArray().All(v => r.YieldKeyValuePair(Name, v));
         }

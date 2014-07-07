@@ -16,10 +16,11 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
-    using Extensions;
     using Callback = System.MarshalByRefObject;
 
     public abstract class Request : IDisposable {
@@ -33,7 +34,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
         }
 
-        public string[] PackageSources {
+        public IEnumerable<string> PackageSources {
             get {
                 var ps = GetSources();
                 if (ps == null) {
@@ -89,17 +90,17 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract bool Error(string message);
 
-        public abstract bool Message(string message);
+        public abstract bool Message(string messageText);
 
-        public abstract bool Verbose(string message);
+        public abstract bool Verbose(string messageText);
 
-        public abstract bool Debug(string message);
+        public abstract bool Debug(string messageText);
 
         public abstract bool ExceptionThrown(string exceptionType, string message, string stacktrace);
 
-        public abstract int StartProgress(int parentActivityId, string message);
+        public abstract int StartProgress(int parentActivityId, string messageText);
 
-        public abstract bool Progress(int activityId, int progress, string message);
+        public abstract bool Progress(int activityId, int progressPercentage, string messageText);
 
         public abstract bool CompleteProgress(int activityId, bool isSuccessful);
 
@@ -241,24 +242,24 @@ public bool Warning(string message, params object[] args) {
             return Error(FormatMessageString(message,args));
         }
 
-        public bool Message(string message, params object[] args) {
-            return Message(FormatMessageString(message,args));
+        public bool Message(string messageText, params object[] args) {
+            return Message(FormatMessageString(messageText,args));
         }
 
-        public bool Verbose(string message, params object[] args) {
-            return Verbose(FormatMessageString(message,args));
+        public bool Verbose(string messageText, params object[] args) {
+            return Verbose(FormatMessageString(messageText,args));
         } 
 
-        public bool Debug(string message, params object[] args) {
-            return Debug(FormatMessageString(message,args));
+        public bool Debug(string messageText, params object[] args) {
+            return Debug(FormatMessageString(messageText,args));
         }
 
-        public int StartProgress(int parentActivityId, string message, params object[] args) {
-            return StartProgress(parentActivityId, FormatMessageString(message,args));
+        public int StartProgress(int parentActivityId, string messageText, params object[] args) {
+            return StartProgress(parentActivityId, FormatMessageString(messageText,args));
         }
 
-        public bool Progress(int activityId, int progress, string message, params object[] args) {
-            return Progress(activityId, progress, FormatMessageString(message,args));
+        public bool Progress(int activityId, int progressPercentage, string messageText, params object[] args) {
+            return Progress(activityId, progressPercentage, FormatMessageString(messageText,args));
         }
 
         private static string FixMeFormat(string formatString, object[] args) {
@@ -266,7 +267,7 @@ public bool Warning(string message, params object[] args) {
                 // not really any args, and not really expectng any
                 return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
             }
-            return System.Linq.Enumerable.Aggregate(args, "FIXME/Format:" + formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(" \u00ab{0}\u00bb", arg));
+            return System.Linq.Enumerable.Aggregate(args, "FIXME/Format:" + formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
         }
 
         internal string FormatMessageString(string message, object[] args) {
@@ -278,7 +279,7 @@ public bool Warning(string message, params object[] args) {
             if (c < args.Length) {
                 return FixMeFormat(message, args);
             }
-            return string.Format(message, args);
+            return string.Format(CultureInfo.CurrentCulture, message, args);
         }
 
         public SecureString Password {
@@ -298,10 +299,20 @@ public bool Warning(string message, params object[] args) {
         }
 
         public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public virtual void Dispose(bool disposing) {
+            
         }
 
         public static implicit operator MarshalByRefObject(Request req) {
             return req.RemoteThis;
+        }
+
+        public static MarshalByRefObject ToMarshalByRefObject(Request request) {
+            return request.RemoteThis;
         }
 
         internal MarshalByRefObject RemoteThis {
@@ -344,7 +355,7 @@ public bool Warning(string message, params object[] args) {
                                 if (values[0].IsTrue()) {
                                     _options.Add(k, true);
                                 }
-                                else if (values[0].StartsWith("SECURESTRING:")) {
+                                else if (values[0].StartsWith("SECURESTRING:",StringComparison.OrdinalIgnoreCase)) {
                                     _options.Add(k, values[0].Substring(13).FromProtectedString("salt") );
                                 }
                                 else {
@@ -360,6 +371,8 @@ public bool Warning(string message, params object[] args) {
             }
         }
 
+
+        [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed", Justification = "This is required for the PowerShell Providers.")]
         public MarshalByRefObject CloneRequest(Hashtable options = null, ArrayList sources = null, PSCredential credential = null) {
             var srcs = (sources ?? new ArrayList()).ToArray().Select(each => each.ToString()).ToArray();
             var name = credential == null ? null : credential.UserName;
@@ -432,6 +445,7 @@ public bool Warning(string message, params object[] args) {
 
         private IPackageManagementService _packageManagementService;
 
+        [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
         public IPackageManagementService PackageManagementService {
             get {
                 return _packageManagementService ?? (_packageManagementService = GetPackageManagementService(RemoteThis) as IPackageManagementService);

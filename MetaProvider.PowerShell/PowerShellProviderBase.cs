@@ -16,6 +16,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Linq;
     using System.Management.Automation;
     using Extensions;
@@ -28,6 +29,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         private DynamicPowershellResult _result;
 
         public PowerShellProviderBase(DynamicPowershell ps, PSModuleInfo module) {
+            if (module == null) {
+                throw new ArgumentNullException("module");
+            }
+
             _powershell = ps;
             _module = module;
 
@@ -70,7 +75,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 }
 
                 // try simple plurals to single
-                if (methodName.EndsWith("s")) {
+                if (methodName.EndsWith("s",StringComparison.OrdinalIgnoreCase)) {
                     var meth = methodName.Substring(0, methodName.Length - 1);
                     if (_allCommands.ContainsKey(meth)) {
                         return _allCommands[meth];
@@ -78,7 +83,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 }
 
                 // try words like Dependencies to Dependency
-                if (methodName.EndsWith("cies")) {
+                if (methodName.EndsWith("cies", StringComparison.OrdinalIgnoreCase)) {
                     var meth = methodName.Substring(0, methodName.Length - 4) + "cy";
                     if (_allCommands.ContainsKey(meth)) {
                         return _allCommands[meth];
@@ -86,7 +91,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 }
 
                 // try IsFoo to Test-IsFoo 
-                if (methodName.StartsWith("Is")) {
+                if (methodName.StartsWith("Is", StringComparison.OrdinalIgnoreCase)) {
                     var meth = "test" + methodName;
                     if (_allCommands.ContainsKey(meth)) {
                         return _allCommands[meth];
@@ -126,7 +131,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 DynamicPowershellResult result = null;
 
                 try {
-                    Debug.WriteLine(string.Format("INVOKING PowerShell Fn {0} in {1}", request.CommandInfo.Name, _module.Name));
+                    Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "INVOKING PowerShell Fn {0} in {1}", request.CommandInfo.Name, _module.Name));
                     request.Debug("INVOKING PowerShell Fn {0} in {1}", request.CommandInfo.Name, _module.Name);
                     // make sure we don't pass the callback to the function.
                     result = _powershell.NewTryInvokeMemberEx(request.CommandInfo.Name, new string[0], args);

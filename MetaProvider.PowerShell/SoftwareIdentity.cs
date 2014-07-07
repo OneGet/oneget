@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
+    using System;
     using System.Collections;
     using System.Linq;
     using Extensions;
@@ -53,6 +54,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public string SearchKey {get; set;}
 
         public override bool YieldResult(Request r) {
+            if (r == null) {
+                throw new ArgumentNullException("r");
+            }
+
             return r.YieldSoftwareIdentity(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey,FullPath, Filename) && YieldDetails(r) && YieldEntities(r) && YieldLinks(r);
         }
 
