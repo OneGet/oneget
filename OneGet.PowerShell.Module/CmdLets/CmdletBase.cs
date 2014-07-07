@@ -95,11 +95,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
-        public IEnumerable<string> GetSources() {
-            Debug("asking for sources");
-            return Sources;
-        }
-
         public virtual IEnumerable<string> Sources {
             get {
                 return null;

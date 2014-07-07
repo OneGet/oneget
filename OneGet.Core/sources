@@ -59,5 +59,6 @@ SOURCES=\
 
 
 INTERNALS_VISIBLE_TO=\
-	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); 
+	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+	Microsoft.PowerShell.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); 
 

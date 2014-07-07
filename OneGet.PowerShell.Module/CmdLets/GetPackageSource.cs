@@ -14,6 +14,7 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Management.Automation;
     using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Providers.Package;
@@ -87,18 +88,18 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (!found) {
                     if (!string.IsNullOrEmpty(Name)) {
                         if (!string.IsNullOrEmpty(Location)) {
-                            _warnings.Add(string.Format("Provider '{0}' returned no package sources (Name = '{1}' Location='{2}')", provider.Name, Name, Location));
+                            _warnings.Add(string.Format(CultureInfo.CurrentCulture,"Provider '{0}' returned no package sources (Name = '{1}' Location='{2}')", provider.Name, Name, Location));
                             continue;
                         }
-                        _warnings.Add(string.Format("Provider '{0}' returned no package sources (Name = '{1}')", provider.Name, Name));
+                        _warnings.Add(string.Format(CultureInfo.CurrentCulture, "Provider '{0}' returned no package sources (Name = '{1}')", provider.Name, Name));
                         continue;
                     }
 
                     if (!string.IsNullOrEmpty(Location)) {
-                        _warnings.Add(string.Format("Provider '{0}' returned no package sources (Location = '{1}')", provider.Name, Location));
+                        _warnings.Add(string.Format(CultureInfo.CurrentCulture, "Provider '{0}' returned no package sources (Location = '{1}')", provider.Name, Location));
                         continue;
                     }
-                    _warnings.Add(string.Format("Provider '{0}' returned no package sources".format(provider.Name)));
+                    _warnings.Add(string.Format(CultureInfo.CurrentCulture, "Provider '{0}' returned no package sources".format(provider.Name)));
                 }
             }
 

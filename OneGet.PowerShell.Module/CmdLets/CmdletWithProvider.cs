@@ -14,6 +14,7 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Collections;
@@ -23,7 +24,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     public abstract class CmdletWithProvider : CmdletBase {
         private readonly OptionCategory[] _optionCategories;
-        private string[] _providerNames;
 
         protected CmdletWithProvider(OptionCategory[] categories) {
             _optionCategories = categories;
@@ -35,13 +35,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter(ParameterSetName = ProviderByNameSet)]
         public virtual string[] Provider {get; set;}
 
+#if PROBABLY_NOT_NEEDED
         protected string[] AllProviderNames {
             get {
                 return _providerNames ?? (_providerNames = PackageManagementService.ProviderNames.ToArray());
             }
         }
+#endif 
 
-        protected virtual PackageProvider[] SelectedProviders {
+        protected virtual IEnumerable<PackageProvider> SelectedProviders {
             get {
                 if (IsProviderByObject) {
                     if (PackageProvider.IsNullOrEmpty()) {

@@ -142,7 +142,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         private bool InstallPackages(params SoftwareIdentity[] packagesToInstall) {
-            var n = 1;
 
             foreach (var pkg in packagesToInstall) {
                 // if (!WhatIf) {

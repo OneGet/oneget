@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
@@ -51,7 +52,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return _sources;
             }
             set {
-                _sources = value.ToArray();
+                _sources = (value ?? new string[0]).ToArray();
             }
         }
 
@@ -76,7 +77,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             // otherwise, we're just deleting a source by name
-            var prov = SelectedProviders;
+            var prov = SelectedProviders.ToArray();
 
             if (Stopping) {
                 return false;
@@ -104,6 +105,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public bool Unregister(PackageSource source) {
+            if (source == null) {
+                throw new ArgumentNullException("source");
+            }
             if (ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}'".format(source.Name, source.Location, source.ProviderName)).Result) {
                 source.Provider.RemovePackageSource(source.Name, this);
                 return true;

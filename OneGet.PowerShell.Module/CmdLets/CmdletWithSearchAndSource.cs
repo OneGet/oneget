@@ -64,11 +64,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return _sources;
             }
             set {
-                _sources = value.ToArray();
+                _sources = (value ?? new string[0] ).ToArray();
             }
         }
 
-        protected override PackageProvider[] SelectedProviders {
+        protected override IEnumerable<PackageProvider> SelectedProviders {
             get {
                 if (IsProviderByObject) {
                     if (PackageProvider.IsNullOrEmpty()) {

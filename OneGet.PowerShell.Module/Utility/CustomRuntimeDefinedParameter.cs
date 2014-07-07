@@ -32,7 +32,7 @@ namespace Microsoft.PowerShell.OneGet.Utility {
             return Options.Any(each => each.ProviderName.EqualsIgnoreCase(name) && each.IsRequired);
         }
 
-        public CustomRuntimeDefinedParameter(DynamicOption option) : base(option.Name, ParameterType(option.Type), new Collection<Attribute> {
+        public CustomRuntimeDefinedParameter(DynamicOption option) : base(option.Name, ActualParameterType(option.Type), new Collection<Attribute> {
             new ParameterAttribute()
         }) {
             Options.Add(option);
@@ -71,7 +71,7 @@ namespace Microsoft.PowerShell.OneGet.Utility {
             return new string[0];
         }
 
-        private static Type ParameterType(OptionType optionType) {
+        private static Type ActualParameterType(OptionType optionType) {
             switch (optionType) {
                 case OptionType.Switch:
                     return typeof (SwitchParameter);
