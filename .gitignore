@@ -97,3 +97,5 @@ Scratch/test2.props
 /AbstractDesign
 build-ps.cmd
 streams.exe
+/attic/
+policheck*

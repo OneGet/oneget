@@ -20,11 +20,15 @@ namespace Microsoft.OneGet.Plugin {
         public static readonly AssignableTypeComparer Instance = new AssignableTypeComparer();
 
         public bool Equals(Type x, Type y) {
+            if (x == null) {
+                return y == null;
+            }
             return x == y || x.IsAssignableFrom(y);
         }
 
         public int GetHashCode(Type obj) {
-            throw new NotImplementedException();
+            // unused. 
+            return -1;
         }
     }
 }

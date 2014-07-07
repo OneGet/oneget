@@ -20,62 +20,78 @@ REFERENCES=\
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
 	$(CLR_REF_PATH)\System.Data.metadata_dll; \
 	$(CLR_REF_PATH)\System.Data.DataSetExtensions.metadata_dll; \
+    $(CLR_REF_PATH)\System.Security.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
-	$(CLR_REF_PATH)\System.IO.Compression.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll;
 
 #region sourcefiles
 SOURCES=\
-	Core\AppDomains\PluginAssemblyResolver.cs \
- 	Core\AppDomains\PluginDomain.cs \
- 	Core\AppDomains\Proxy.cs \
- 	Core\AppDomains\WrappedAction.cs \
- 	Core\AppDomains\WrappedDelegate.cs \
- 	Core\AppDomains\WrappedFunc.cs \
- 	Core\Collections\AbstractDictionary.cs \
- 	Core\Collections\ByRefCollection.cs \
- 	Core\Collections\ByRefEnumerable.cs \
- 	Core\Collections\ByRefEnumerator.cs \
- 	Core\Collections\CancellableBlockingCollection.cs \
- 	Core\Collections\CancellableEnumerable.cs \
- 	Core\Collections\CancellableEnumerator.cs \
- 	Core\Collections\DelegateDictionary.cs \
- 	Core\Collections\ICancellable.cs \
- 	Core\Collections\ReadOnlyDelegateDictionary.cs \
- 	Core\Collections\VirtualEnumerator.cs \
- 	Core\DuckTyping\DuckTypedClass.cs \
- 	Core\DuckTyping\DuckTypedExtensions.cs \
- 	Core\Extensions\CollectionExtensions.cs \
- 	Core\Extensions\DelegateExtensions.cs \
- 	Core\Extensions\DictionaryExtensions.cs \
- 	Core\Extensions\DisposableExtensions.cs \
- 	Core\Extensions\ExceptionExtensions.cs \
- 	Core\Extensions\FilesystemExtensions.cs \
- 	Core\Extensions\HashtableExtensions.cs \
- 	Core\Extensions\LazyReadOnlyDelgateDictionary.cs \
- 	Core\Extensions\StringExtensions.cs \
- 	Core\Extensions\TypeExtensions.cs \
- 	Core\Platform\AdminPrivilege.cs \
- 	Core\Platform\AsyncProcess.cs \
- 	Core\Platform\CLSID.cs \
- 	Core\Platform\EnvironmentUtility.cs \
- 	Core\Platform\IID.cs \
- 	Core\Platform\IShellLink.cs \
- 	Core\Platform\KnownFolder.cs \
- 	Core\Platform\KnownFolders.cs \
- 	Core\Platform\MoveFileFlags.cs \
- 	Core\Platform\NativeMethods.cs \
- 	Core\Platform\ShellLink.cs \
- 	Core\Platform\SLGP.cs \
- 	Core\Platform\STGM.cs \
- 	Core\Platform\Win32FindData.cs \
- 	Core\Tasks\CurrentTask.cs \
- 	Core\Tasks\Event.cs \
- 	Core\Tasks\XTask.cs \
- 	Core\Versions\FourPartVersion.cs \
-    Core\Platform\ShellApplication.cs
+	Collections\AbstractDictionary.cs \
+ 	Collections\ByRefCancellationToken.cs \
+ 	Collections\ByRefCancellationTokenSource.cs \
+ 	Collections\ByRefCollection.cs \
+ 	Collections\ByRefEnumerable.cs \
+ 	Collections\ByRefEnumerator.cs \
+ 	Collections\CachingEnumerable.cs \
+ 	Collections\CancellableBlockingCollection.cs \
+ 	Collections\CancellableEnumerable.cs \
+ 	Collections\CancellableEnumerator.cs \
+ 	Collections\DelegateDictionary.cs \
+ 	Collections\HashSet.cs \
+ 	Collections\ICancellable.cs \
+ 	Collections\ICancellableEnumerable.cs \
+ 	Collections\List.cs \
+ 	Collections\OrderedDictionary.cs \
+ 	Collections\ReadOnlyDelegateDictionary.cs \
+ 	Collections\SerializableEnumerable.cs \
+ 	Collections\SerializableEnumerator.cs \
+ 	Collections\VirtualEnumerator.cs \
+ 	Extensions\CancellationTokenSourceExtensions.cs \
+ 	Extensions\CollectionExtensions.cs \
+ 	Extensions\DelegateExtensions.cs \
+ 	Extensions\DictionaryExtensions.cs \
+ 	Extensions\ExceptionExtensions.cs \
+ 	Extensions\FilesystemExtensions.cs \
+ 	Extensions\HashtableExtensions.cs \
+ 	Extensions\StringExtensions.cs \
+ 	Extensions\TypeExtensions.cs \
+ 	Platform\AdminPrivilege.cs \
+ 	Platform\AsyncProcess.cs \
+ 	Platform\CLSID.cs \
+ 	Platform\EnvironmentUtility.cs \
+ 	Platform\IID.cs \
+ 	Platform\IShellLink.cs \
+ 	Platform\KnownFolder.cs \
+ 	Platform\KnownFolders.cs \
+ 	Platform\MoveFileFlags.cs \
+ 	Platform\NativeMethods.cs \
+ 	Platform\ShellApplication.cs \
+ 	Platform\ShellLink.cs \
+ 	Platform\SLGP.cs \
+ 	Platform\STGM.cs \
+ 	Platform\Win32FindData.cs \
+ 	Plugin\AssignableTypeComparer.cs \
+ 	Plugin\DynamicInterface.cs \
+ 	Plugin\DynamicInterfaceExtensions.cs \
+ 	Plugin\DynamicTypeExtensions.cs \
+ 	Plugin\FluentIlExtensions.cs \
+ 	Plugin\PluginAssemblyResolver.cs \
+ 	Plugin\PluginDomain.cs \
+ 	Plugin\PrivateProxy.cs \
+ 	Plugin\Proxy.cs \
+ 	Plugin\ProxyClass.cs \
+ 	Plugin\RequiredAttribute.cs \
+ 	Plugin\WrappedAction.cs \
+ 	Plugin\WrappedDelegate.cs \
+ 	Plugin\WrappedFunc.cs \
+ 	\
+ 	Versions\FourPartVersion.cs \
+ 
 
 #endregion
+
+
+
 
 
 

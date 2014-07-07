@@ -28,10 +28,17 @@ namespace Microsoft.OneGet.Collections {
         }
 
         public void Dispose() {
-            if (_enumerator is IDisposable) {
-                (_enumerator as IDisposable).Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing) {
+            if (disposing) {
+                if (_enumerator is IDisposable) {
+                    (_enumerator as IDisposable).Dispose();
+                }
+                _enumerator = null;
             }
-            _enumerator = null;
         }
 
         public virtual bool MoveNext() {

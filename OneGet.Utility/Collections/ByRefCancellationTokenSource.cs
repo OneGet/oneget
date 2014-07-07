@@ -39,14 +39,22 @@ namespace Microsoft.OneGet.Collections {
         }
 
         public void Dispose() {
-            var cts = _cancellationTokenSource;
-            _cancellationTokenSource = null;
-            if (cts != null) {
-                cts.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing) {
+            if (disposing) {
+                var cts = _cancellationTokenSource;
+                _cancellationTokenSource = null;
+                if (cts != null) {
+                    cts.Dispose();
+                }
             }
         }
 
-        public void Cancel() {
+        public
+             void Cancel() {
             if (_cancellationTokenSource != null) {
                 _cancellationTokenSource.Cancel();
             }

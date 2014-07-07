@@ -24,10 +24,6 @@ namespace Microsoft.OneGet.Collections {
             }
             return collection as CacheEnumerable<T> ?? new CacheEnumerable<T>(collection);
         }
-
-        public static IEnumerator<T>[] Clone<T>(this IEnumerator<T> enumerator, int copies = 2) {
-            return new CacheEnumerable<T>(enumerator).GetEnumerators(copies).ToArray();
-        }
     }
 
     /// <summary>

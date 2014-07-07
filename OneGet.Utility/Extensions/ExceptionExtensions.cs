@@ -14,12 +14,13 @@
 
 namespace Microsoft.OneGet.Extensions {
     using System;
+    using System.Globalization;
     using Platform;
 
     public static class ExceptionExtensions {
         public static void Dump(this Exception e) {
 #if DEBUG
-            var text = string.Format("{0}//{1}/{2}\r\n{3}", AppDomain.CurrentDomain.FriendlyName, e.GetType().Name, e.Message, e.StackTrace);
+            var text = string.Format(CultureInfo.CurrentCulture,"{0}//{1}/{2}\r\n{3}", AppDomain.CurrentDomain.FriendlyName, e.GetType().Name, e.Message, e.StackTrace);
              Console.WriteLine(text);
              NativeMethods.OutputDebugString(text);
 #endif

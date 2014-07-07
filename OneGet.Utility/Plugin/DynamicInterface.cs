@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Plugin {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using Collections;
@@ -31,6 +32,12 @@ namespace Microsoft.OneGet.Plugin {
         }
 
         public object Create(Type tInterface, params Type[] types) {
+            if (tInterface == null) {
+                throw new ArgumentNullException("tInterface");
+            }
+
+            types = types ?? new Type[0];
+
             if (!tInterface.GetVirtualMethods().Any()) {
                 throw new Exception("Interface Type '{0}' doesn not have any virtual or abstract methods".format(tInterface.FullNiceName()));
             }
@@ -56,6 +63,11 @@ namespace Microsoft.OneGet.Plugin {
         }
 
         public object Create(Type tInterface, params string[] typeNames) {
+            if (tInterface == null) {
+                throw new ArgumentNullException("tInterface");
+            }
+            typeNames = typeNames ?? new string[0];
+
             return Create(tInterface, (Type[])typeNames.Select(Type.GetType));
         }
 
@@ -89,6 +101,10 @@ namespace Microsoft.OneGet.Plugin {
         }
 
         public object Create(Type tInterface, params object[] instances) {
+            if (tInterface == null) {
+                throw new ArgumentNullException("tInterface");
+            }
+
             if (instances.Length == 0) {
                 throw new ArgumentException("No instances given", "instances");
             }
@@ -127,7 +143,6 @@ namespace Microsoft.OneGet.Plugin {
                 foreach (var s in types.Where(each => each.GetDefaultConstructor() == null).Select(each => string.Format("{0} has no default constructor", each.Name))) {
                     Debug.WriteLine(s);
                 }
-
 #endif
 
                 if (types.Any(actualType => actualType.GetDefaultConstructor() == null)) {
@@ -162,6 +177,7 @@ namespace Microsoft.OneGet.Plugin {
             return tInterface.GetRequiredMethods().Where(method => publicMethods.FindMethod(method) == null);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
         private IEnumerable<MethodInfo> GetMissingMethods<TInterface>(params Type[] types) {
             return GetMissingMethods(typeof (TInterface), types);
         }
@@ -171,6 +187,14 @@ namespace Microsoft.OneGet.Plugin {
         }
 
         public bool IsInstanceCompatible(Type tInterface, params object[] instances) {
+            if (tInterface == null) {
+                throw new ArgumentNullException("tInterface");
+            }
+
+            if (instances == null) {
+                throw new ArgumentNullException("instances");
+            }
+
             if (instances.Length == 0) {
                 throw new ArgumentException("No instances given", "instances");
             }
@@ -199,6 +223,7 @@ namespace Microsoft.OneGet.Plugin {
             return !instances.Aggregate((IEnumerable<MethodInfo>)tInterface.GetRequiredMethods(), GetMethodsMissingFromInstance).Any();
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
         private IEnumerable<MethodInfo> GetMethodsMissingFromInstances<TInterface>(params object[] instances) {
             return GetMethodsMissingFromInstances(typeof (TInterface), instances);
         }
@@ -226,6 +251,7 @@ namespace Microsoft.OneGet.Plugin {
                     ));
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
         private TInterface CreateProxy<TInterface>(params object[] instances) {
             return (TInterface)CreateProxy(typeof (TInterface), instances);
         }

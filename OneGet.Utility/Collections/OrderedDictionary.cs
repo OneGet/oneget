@@ -33,6 +33,9 @@ namespace Microsoft.OneGet.Collections {
         }
 
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) {
+            if (array == null) {
+                throw new ArgumentNullException("array");
+            }
             for (var e = GetEnumerator(); e.MoveNext();) {
                 array[arrayIndex++] = e.Current;
             }

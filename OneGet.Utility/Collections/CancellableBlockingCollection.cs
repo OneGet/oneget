@@ -96,7 +96,10 @@ namespace Microsoft.OneGet.Collections {
             return new CancellableEnumerable<T>(collection._cancellationTokenSource, collection._collection.GetConsumingEnumerable());
         }
 
-        public bool WaitForCompletion(int timeout = -1) {
+        public bool WaitForCompletion() {
+            return _completedEvent.WaitOne(-1);
+        }
+        public bool WaitForCompletion(int timeout) {
             return _completedEvent.WaitOne(timeout);
         }
     }

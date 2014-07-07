@@ -17,7 +17,7 @@ namespace Microsoft.OneGet.Collections {
     using System.Collections;
     using System.Collections.Generic;
 
-    public class ByRefEnumerator : MarshalByRefObject, IEnumerator {
+    public class ByRefEnumerator : MarshalByRefObject, IEnumerator, IDisposable {
         // we don't want these objects being gc's out because they remain unused...
 
         private IEnumerator _enumerator;

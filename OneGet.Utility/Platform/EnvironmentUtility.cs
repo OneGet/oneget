@@ -14,6 +14,8 @@
 
 namespace Microsoft.OneGet.Platform {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
@@ -52,11 +54,11 @@ namespace Microsoft.OneGet.Platform {
             Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.Process);
         }
 
-        public static string ToPathString(this string[] value) {
-            return value.Any() ? value.Aggregate((current, each) => current + ";" + each) : string.Empty;
+        public static string ToPathString(this IEnumerable<string> value) {
+            return value.SafeAggregate((current, each) => current + ";" + each) ?? string.Empty;
         }
 
-        public static string[] SystemPath {
+        public static IEnumerable<string> SystemPath {
             get {
                 var path = GetSystemEnvironmentVariable("PATH");
                 return string.IsNullOrEmpty(path) ? new string[]{} : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
@@ -69,7 +71,7 @@ namespace Microsoft.OneGet.Platform {
             }
         }
 
-        public static string[] UserPath {
+        public static IEnumerable<string> UserPath {
             get {
                 var path = GetUserEnvironmentVariable("PATH");
                 return string.IsNullOrEmpty(path) ? new string[] { } : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
@@ -82,7 +84,7 @@ namespace Microsoft.OneGet.Platform {
             }
         }
 
-        public static string[] Path {
+        public static IEnumerable<string> Path {
             get {
                 var path = GetEnvironmentVariable("PATH");
                 return string.IsNullOrEmpty(path) ? new string[] { } : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);

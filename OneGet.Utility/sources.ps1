@@ -6,4 +6,6 @@ $x = "#region sourcefiles`nSOURCES=\`n$x `n`n#endregion`n"
 
 $newSources = [System.Text.RegularExpressions.Regex]::Replace($sources, "#region\s*sourcefiles.*?#endregion", $x  ,[System.Text.RegularExpressions.RegexOptions]::SingleLine )
 
+$newSources = $newSources.Replace("Properties\AssemblyInfo.cs \","\")
+    
 [System.IO.File]::WriteAllText(".\sources", $newSources );
