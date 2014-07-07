@@ -52,7 +52,7 @@ namespace Microsoft.OneGet {
 
         protected static bool IsInitialized {get; set;}
 
-        public virtual RuntimeDefinedParameterDictionary DynamicParameters {
+        public virtual RuntimeDefinedParameterDictionary DynamicParameterDictionary {
             get {
                 return _dynamicParameters ?? (_dynamicParameters = new RuntimeDefinedParameterDictionary());
             }
@@ -72,13 +72,13 @@ namespace Microsoft.OneGet {
         public object GetDynamicParameters() {
             // CompletionCompleters.
             // CommandCompletion.
-            if (DynamicParameters.IsNullOrEmpty()) {
+            if (DynamicParameterDictionary.IsNullOrEmpty()) {
                 if (IsOverridden("GenerateDynamicParameters")) {
                     AsyncRun(GenerateDynamicParameters);
                 }
             }
 
-            return DynamicParameters;
+            return DynamicParameterDictionary;
         }
 
         public virtual bool BeginProcessingAsync() {
@@ -227,48 +227,47 @@ namespace Microsoft.OneGet {
             return IsCancelled();
         }
 
-        public bool Message(string message) {
-            return Message(message, new object[] {
-            });
+        public bool Message(string messageText) {
+            return Message(messageText, new object[] { });
         }
 
-        public bool Message(string message, params object[] args) {
+        public bool Message(string messageText, params object[] args) {
             // queue the message to run on the main thread.
             if (IsInvocation) {
                 //  QueueMessage(() => Host.UI.WriteLine("{0}::{1}".format(code, message.formatWithIEnumerable(objects))));
                 // Message is going to go to the verbose channel
                 // and Verbose will only be output if VeryVerbose is true.
-                WriteVerbose(GetMessageString(message).format(args));
+                WriteVerbose(GetMessageString(messageText).format(args));
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
             return IsCancelled();
         }
 
-        public bool Verbose(string message) {
-            return Verbose(message, new object[] {
+        public bool Verbose(string messageText) {
+            return Verbose(messageText, new object[] {
             });
         }
 
-        public bool Verbose(string message, params object[] args) {
+        public bool Verbose(string messageText, params object[] args) {
             if (IsInvocation) {
                 // Message is going to go to the verbose channel
                 // and Verbose will only be output if VeryVerbose is true.
-                WriteVerbose(FormatMessageString(message,args));
+                WriteVerbose(FormatMessageString(messageText,args));
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
             return IsCancelled();
         }
 
-        public bool Debug(string message) {
-            return Debug(message, new object[] {
+        public bool Debug(string messageText) {
+            return Debug(messageText, new object[] {
             });
         }
 
-        public bool Debug(string message, params object[] args) {
+        public bool Debug(string messageText, params object[] args) {
             if (IsInvocation) {
-                WriteVerbose(FormatMessageString(message,args));
+                WriteVerbose(FormatMessageString(messageText,args));
             }
 
             // rather than wait on the result of the async WriteVerbose,
@@ -296,21 +295,21 @@ namespace Microsoft.OneGet {
             return 0;
         }
 
-        public bool Progress(int activityId, int progress, string message) {
-            return Progress(activityId, progress, message, new object[] {
+        public bool Progress(int activityId, int progressPercentage, string message) {
+            return Progress(activityId, progressPercentage, message, new object[] {
             });
         }
 
-        public bool Progress(int activityId, int progress, string message, params object[] args) {
+        public bool Progress(int activityId, int progressPercentage, string message, params object[] args) {
             if (IsInvocation) {
                 if (_parentProgressId == null) {
                     WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", FormatMessageString(message,args)) {
-                        PercentComplete = progress
+                        PercentComplete = progressPercentage
                     });
                 } else {
                     WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup;", FormatMessageString(message,args)) {
                         ParentActivityId = (int)_parentProgressId,
-                        PercentComplete = progress
+                        PercentComplete = progressPercentage
                     });
                 }
             }

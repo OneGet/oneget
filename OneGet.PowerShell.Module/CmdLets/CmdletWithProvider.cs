@@ -62,14 +62,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         protected IEnumerable<PackageProvider> FilterProvidersUsingDynamicParameters(IEnumerable<PackageProvider> providers) {
             var excluded = new HashSet<string, string>();
 
-            var setparameters = DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).ToArray();
+            var setparameters = DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).ToArray();
 
             var matchedProviders = setparameters.Any() ? providers.Where(p => setparameters.All(each => each.Options.Any(opt => opt.ProviderName == p.Name))) : providers;
 
                 foreach (var p in matchedProviders) {
                     // if a 'required' parameter is not filled in, the provider should not be returned.
                     // we'll collect these for warnings at the end of the filter.
-                    var missingRequiredParameters = DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => !each.IsSet && each.IsRequiredForProvider(p.Name)).ToArray();
+                    var missingRequiredParameters = DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => !each.IsSet && each.IsRequiredForProvider(p.Name)).ToArray();
                     if (missingRequiredParameters.Length == 0) {
                         yield return p;
                     } else {
@@ -91,13 +91,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             // if the provider (or source) is selected, we can get package metadata keys from the provider
             // hmm. let's just grab *all* of them.
             foreach (var md in _optionCategories.SelectMany(c => SelectedProviders.SelectMany(provider => provider.GetDynamicOptions(c, this)))) {
-                if (DynamicParameters.ContainsKey(md.Name)) {
+                if (DynamicParameterDictionary.ContainsKey(md.Name)) {
                     // todo: if the dynamic parameters from two providers aren't compatible, then what? 
 
                     // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
-                    (DynamicParameters[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
+                    (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
                 } else {
-                    DynamicParameters.Add(md.Name, new CustomRuntimeDefinedParameter(md));
+                    DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md));
                 }
             }
             return true;

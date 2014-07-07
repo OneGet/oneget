@@ -132,7 +132,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ConsumeDynamicParameters() {
             // pull data from dynamic parameters and place them into the DynamicOptions collection.
-            foreach (var rdp in DynamicParameters.Keys.Select(d => DynamicParameters[d]).Where(rdp => rdp.IsSet)) {
+            foreach (var rdp in DynamicParameterDictionary.Keys.Select(d => DynamicParameterDictionary[d]).Where(rdp => rdp.IsSet)) {
                 if (rdp.ParameterType == typeof (SwitchParameter)) {
                     _dynamicOptions[rdp.Name] = true;
                 } else {
@@ -178,7 +178,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public IEnumerable<string> GetOptionKeys(int category) {
-            return DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category)).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys).ByRef();
+            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category)).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys).ByRef();
         }
 
         public IEnumerable<string> GetOptionValues(int category, string key) {
@@ -201,7 +201,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     MyInvocation.BoundParameters[key].ToString()
                 }.ByRef();
             }
-            return DynamicParameters.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category) && each.Name == key).SelectMany(each => each.GetValues(this)).ByRef();
+            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category) && each.Name == key).SelectMany(each => each.GetValues(this)).ByRef();
         }
 
         public virtual string GetCredentialUsername() {

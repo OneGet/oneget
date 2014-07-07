@@ -48,6 +48,10 @@ namespace Microsoft.OneGet {
                 if (_result != null) {
                     _result.Dispose();
                 }
+
+                if (_endOfPipelines != null) {
+                    _endOfPipelines.Dispose();
+                }
             }
         }
 

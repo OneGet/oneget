@@ -30,8 +30,9 @@ namespace Microsoft.OneGet {
         private IDictionary<string, PSObject> _commands;
         private DynamicPowershellCommand _currentCommand;
         private Runspace _runspace;
+#if DEPRECATING
         private bool _runspaceWasLikeThatWhenIGotHere;
-
+#endif
         public DynamicPowershell() {
             _runspace = RunspaceFactory.CreateRunspace();
 
@@ -68,24 +69,45 @@ namespace Microsoft.OneGet {
 
                     if (_runspace.RunspaceAvailability == RunspaceAvailability.AvailableForNestedCommand ||
                         _runspace.RunspaceAvailability == RunspaceAvailability.Busy) {
+#if DEPRECATING                        
                         _runspaceWasLikeThatWhenIGotHere = true;
+#endif
                     }
                 }
                 return _runspace;
             }
         }
 
-        public void Dispose() {
-            _runspace.AvailabilityChanged -= CheckIfRunspaceIsAvailable;
-            _runspace.StateChanged -= CheckIfRunspaceIsOpening;
-            WaitForAvailable();
+        public virtual void Dispose(bool disposing) {
+            if (disposing) {
+                _runspace.AvailabilityChanged -= CheckIfRunspaceIsAvailable;
+                _runspace.StateChanged -= CheckIfRunspaceIsOpening;
+                WaitForAvailable();
 
-            if (_runspaceIsOwned) {
-                if (_runspace != null) {
-                    ((IDisposable)_runspace).Dispose();
+                if (_currentCommand != null) {
+                    _currentCommand.Dispose();
+                    _currentCommand = null;
                 }
-                _runspace = null;
+
+                if (_runspaceIsOwned) {
+                    if (_runspace != null) {
+                        ((IDisposable)_runspace).Dispose();
+                    }
+                    _runspace = null;
+                }
+
+                if (_availableEvent != null) {
+                    _availableEvent.Dispose();
+                }
+                if (_opened != null) {
+                    _opened.Dispose();
+                }
             }
+        }
+
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         public void WaitForAvailable() {
@@ -120,7 +142,9 @@ namespace Microsoft.OneGet {
                 return Runspace.CreatePipeline();
             } catch (Exception e) {
                 e.Dump();
+#if DEPRECATING
                 _runspaceWasLikeThatWhenIGotHere = true;
+#endif 
                 return Runspace.CreateNestedPipeline();
             }
         }
@@ -150,6 +174,10 @@ namespace Microsoft.OneGet {
         }
 
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result) {
+            if (binder == null) {
+                throw new ArgumentNullException("binder");
+            }
+
             result = NewTryInvokeMemberEx(binder.Name, binder.CallInfo.ArgumentNames.ToArray(), args);
             return result != null;
         }

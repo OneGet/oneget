@@ -28,7 +28,7 @@ namespace Microsoft.OneGet {
 
         public BlockingCollection<ErrorRecord> Errors = new BlockingCollection<ErrorRecord>();
         
-        internal bool LastIsTerminatingError {get; set;}
+        public bool LastIsTerminatingError {get; internal set;}
         public bool IsFailing {get; internal set;}
         public void WaitForCompletion() {
             _completedEvent.WaitOne();
@@ -44,10 +44,6 @@ namespace Microsoft.OneGet {
 
                 var result = this.FirstOrDefault();
 
-                if (LastIsTerminatingError) {
-                    throw new Exception("Cmdlet reported error");
-                }
-
                 if (result == null) {
                     return true;
                 }
@@ -58,9 +54,6 @@ namespace Microsoft.OneGet {
 
         public IEnumerable<object> Values {
             get {
-                if (LastIsTerminatingError) {
-                    throw new Exception("Cmdlet reported error");
-                }
                 return _output.GetConsumingEnumerable();
             }
         }
@@ -98,28 +91,35 @@ namespace Microsoft.OneGet {
             _output.Add( obj);
         }
 
+        public virtual void Dispose(bool disposing) {
+            if (disposing) {
+                if (_output != null) {
+                    _output.Dispose();
+                    _output = null;
+                }
+
+                if (Errors != null) {
+                    Errors.Dispose();
+                    Errors = null;
+                }
+
+                if (_startedEvent != null) {
+                    _startedEvent.Set();
+                    _startedEvent.Dispose();
+                    _startedEvent = null;
+                }
+
+                if (_completedEvent != null) {
+                    _completedEvent.Set();
+                    _completedEvent.Dispose();
+                    _completedEvent = null;
+                }    
+            }
+        }
+
         public void Dispose() {
-            if (_output != null) {
-                _output.Dispose();
-                _output = null;
-            }
-
-            if (Errors != null) {
-                Errors.Dispose();
-                Errors = null;
-            }
-
-            if (_startedEvent != null) {
-                _startedEvent.Set();
-                _startedEvent.Dispose();
-                _startedEvent = null;
-            }
-
-            if (_completedEvent != null) {
-                _completedEvent.Set();
-                _completedEvent.Dispose();
-                _completedEvent = null;
-            }
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         public IEnumerator<object> GetEnumerator() {

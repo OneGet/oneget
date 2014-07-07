@@ -91,13 +91,7 @@ SOURCES=\
 #endregion
 
 
-
-
-
-
-
 INTERNALS_VISIBLE_TO=\
 	Microsoft.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
-	Microsoft.OneGet.Plugin.Chocolatey, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
-	Microsoft.OneGet.Plugin.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
-
+	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+	Microsoft.OneGet.Utility.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);

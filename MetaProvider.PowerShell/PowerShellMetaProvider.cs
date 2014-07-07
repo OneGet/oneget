@@ -85,11 +85,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         private IEnumerable<PSModuleInfo> ModulesFromResult(DynamicPowershellResult result) {
             if (result.Success && result.Value != null) {
-                foreach (var r in result) {
-                    var module = r as PSModuleInfo;
-                    if (module != null) {
-                        yield return module;
-                    }
+                foreach (var module in result.OfType<PSModuleInfo>()) {
+                    yield return module;
                 }
             }
         }
@@ -197,18 +194,18 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 var psf = ps.ImportModule(Name: PowerShellProviderFunctions, PassThru: true);
 
                 DynamicPowershellResult result = ps.ImportModule(Name: psModule, PassThru: true);
-                var providerModule = result.Value as PSModuleInfo;
-                if (result.Success && providerModule != null) {
-                    //result = ps.GetPackageProviderName();
-                    //if (result.Success) {
-                    try {
-                        var newInstance = new PowerShellPackageProvider(ps, providerModule);
-                        _providerInstances.Add(newInstance);
-                        return newInstance;
-                    } catch (Exception e) {
-                        e.Dump();
+                if (!result.LastIsTerminatingError) {
+                    var providerModule = result.Value as PSModuleInfo;
+                    if (result.Success && providerModule != null) {
+                        try {
+                            var newInstance = new PowerShellPackageProvider(ps, providerModule);
+                            _providerInstances.Add(newInstance);
+                            return newInstance;
+                        }
+                        catch (Exception e) {
+                            e.Dump();
+                        }
                     }
-                    //}
                 }
             } catch (Exception e) {
                 // something didn't go well.
