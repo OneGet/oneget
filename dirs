@@ -1,10 +1,12 @@
+## garretts - disabling all the dirs until the refactoring/moving is complete.
+
 DIRS=\
-    OneGet.Utility \
-    OneGet.Utility.PowerShell \
-    OneGet.Core \
-    MetaProvider.PowerShell \
-    OneGet.PowerShell.Module \   
-    PackageProvider.nuget
+#    OneGet.Utility \
+#    OneGet.Utility.PowerShell \
+#    OneGet.Core \
+#    MetaProvider.PowerShell \
+#    OneGet.PowerShell.Module \   
+#    PackageProvider.nuget
     
 # 	PackageProvider.Bootstrap    
     
