@@ -3,4 +3,5 @@ BUILD_PASS1_CONSUMES= \
 
 PUBLIC_PASS1_CONSUMES= \
     admin\monad\nttargets\assemblies\core\dll|PASS1 \
+    admin\monad\nttargets\assemblies\core\dll\latest|PASS1 \
 
