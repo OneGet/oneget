@@ -38,7 +38,7 @@ namespace Microsoft.OneGet.Providers.Package {
 
     public delegate bool YieldMetadata(string fieldId, string @namespace, string name, string value);
 
-    public delegate bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
+    public delegate bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
 
     public delegate bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired);
 
@@ -110,7 +110,6 @@ namespace Microsoft.OneGet.Providers.Package {
                 throw new ArgumentNullException("names");
             }
 
-
             c = c.Extend<IRequest>(Context);
             var id = StartFind(c);
             return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), names.SelectMany(each => FindPackage(each, requiredVersion, minimumVersion, maximumVersion, id, c)).ToArray().Concat(CompleteFind(id, c)).ToArray());
@@ -125,7 +124,6 @@ namespace Microsoft.OneGet.Providers.Package {
                 throw new ArgumentNullException("uris");
             }
 
-
             c = c.Extend<IRequest>(Context);
             var id = StartFind(c);
             return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), uris.SelectMany(each => FindPackageByUri(each, id, c)).ToArray().Concat(CompleteFind(id, c)));
@@ -139,7 +137,6 @@ namespace Microsoft.OneGet.Providers.Package {
             if (filenames == null) {
                 throw new ArgumentNullException("filenames");
             }
-
 
             c = c.Extend<IRequest>(Context);
             var id = StartFind(c);

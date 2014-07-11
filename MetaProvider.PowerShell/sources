@@ -3,14 +3,15 @@
 #CLSCompliant        = true
 
 TARGETNAME          = Microsoft.OneGet.MetaProvider.PowerShell
+
 TARGETTYPE          = DYNLINK
+TARGET_DESTINATION  = monad
+MANAGED_CODE        = 1
+URT_VER=4.5
 # this will make AssemblyVersion = 1.0.0.0
 ASSEMBLY_IDENTITY_VERSION_NAME=monadv1
 
 ASSEMBLY_IDENTITY_PUBLIC_KEY_NAME   = windows
-
-MANAGED_CODE        = 1
-URT_VER=4.5
 
 #PASS1_PUBLISH = {$(OBJ_PATH)\$(O)\$(TARGETNAME).metadata_dll=$(PROJECT_REF_PATH)\$(TARGETNAME).metadata_dll}
 

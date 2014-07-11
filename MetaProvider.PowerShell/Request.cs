@@ -90,17 +90,17 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract bool Error(string message);
 
-        public abstract bool Message(string messageText);
+        public abstract bool Message(string message);
 
-        public abstract bool Verbose(string messageText);
+        public abstract bool Verbose(string message);
 
-        public abstract bool Debug(string messageText);
+        public abstract bool Debug(string message);
 
         public abstract bool ExceptionThrown(string exceptionType, string message, string stacktrace);
 
-        public abstract int StartProgress(int parentActivityId, string messageText);
+        public abstract int StartProgress(int parentActivityId, string message);
 
-        public abstract bool Progress(int activityId, int progressPercentage, string messageText);
+        public abstract bool Progress(int activityId, int progress, string message);
 
         public abstract bool CompleteProgress(int activityId, bool isSuccessful);
 
@@ -234,12 +234,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         #endregion
 
         #region copy Request-implementation
-public bool Warning(string message, params object[] args) {
-            return Warning(FormatMessageString(message,args));
+public bool Warning(string messageText, params object[] args) {
+            return Warning(FormatMessageString(messageText,args));
         }
 
-        public bool Error(string message, params object[] args) {
-            return Error(FormatMessageString(message,args));
+        public bool Error(string messageText, params object[] args) {
+            return Error(FormatMessageString(messageText,args));
         }
 
         public bool Message(string messageText, params object[] args) {
@@ -267,7 +267,7 @@ public bool Warning(string message, params object[] args) {
                 // not really any args, and not really expectng any
                 return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
             }
-            return System.Linq.Enumerable.Aggregate(args, "FIXME/Format:" + formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
+            return System.Linq.Enumerable.Aggregate(args, "FIXME/Format:" + formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture," \u00ab{0}\u00bb", arg));
         }
 
         internal string FormatMessageString(string message, object[] args) {
@@ -304,7 +304,7 @@ public bool Warning(string message, params object[] args) {
         }
 
         public virtual void Dispose(bool disposing) {
-            
+
         }
 
         public static implicit operator MarshalByRefObject(Request req) {
@@ -370,7 +370,6 @@ public bool Warning(string message, params object[] args) {
                 return _options;
             }
         }
-
 
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed", Justification = "This is required for the PowerShell Providers.")]
         public MarshalByRefObject CloneRequest(Hashtable options = null, ArrayList sources = null, PSCredential credential = null) {

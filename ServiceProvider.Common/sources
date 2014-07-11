@@ -2,7 +2,7 @@
 
 #CLSCompliant        = true
 
-TARGETNAME          = Microsoft.OneGet.Utility.PowerShell
+TARGETNAME          = Microsoft.OneGet.ServiceProvider.Common
 
 TARGETTYPE          = DYNLINK
 TARGET_DESTINATION  = monad
@@ -17,18 +17,15 @@ ASSEMBLY_IDENTITY_PUBLIC_KEY_NAME   = windows
 
 REFERENCES=\
     $(OBJ_PATH)\..\OneGet.Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll; \
+	$(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
-    $(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll; 
-
+    $(CLR_REF_PATH)\System.Security.metadata_dll; 
 
 #region sourcefiles
 SOURCES=\
-	\
- 	AsyncCmdLet.cs \
- 	DynamicPowershell.cs \
- 	DynamicPowershellCommand.cs \
- 	DynamicPowershellResult.cs \
+ 	CommonServicesProvider.cs \
+ 	Request.cs \
  
 
 #endregion
@@ -36,6 +33,5 @@ SOURCES=\
 
 
 INTERNALS_VISIBLE_TO=\
-	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
-	Microsoft.OneGet.MetaProvider.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
-
+	Microsoft.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); 

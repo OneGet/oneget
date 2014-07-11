@@ -6,6 +6,7 @@ DIRS=\
     OneGet.Core \
     MetaProvider.PowerShell \
     OneGet.PowerShell.Module \   
+    ServiceProvider.Common \   
 #    PackageProvider.nuget
     
 # 	PackageProvider.Bootstrap    
