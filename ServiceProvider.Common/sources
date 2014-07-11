@@ -2,7 +2,7 @@
 
 #CLSCompliant        = true
 
-TARGETNAME          = Microsoft.OneGet.ServiceProvider.Common
+TARGETNAME          = Microsoft.OneGet.ServicesProvider.Common
 
 TARGETTYPE          = DYNLINK
 TARGET_DESTINATION  = monad
