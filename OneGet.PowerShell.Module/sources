@@ -45,3 +45,5 @@ PASS0_BINPLACE=\
 	OneGet.format.ps1xml \
 	OneGet.psd1
 
+# future:
+#   OneGetTabExpansion.psm1

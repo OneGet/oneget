@@ -45,6 +45,8 @@ SOURCES=\
 
 #endregion
 
+PASS0_BINPLACE=\
+	etc\PackageProviderFunctions.psm1
 
 
 
