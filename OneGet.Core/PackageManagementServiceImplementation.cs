@@ -19,6 +19,7 @@ namespace Microsoft.OneGet {
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Security.AccessControl;
     using System.Threading.Tasks;
     using Api;
     using Extensions;
@@ -27,6 +28,7 @@ namespace Microsoft.OneGet {
     using Providers;
     using Providers.Package;
     using Providers.Service;
+    using Win32;
     using Callback = System.Object;
 
     /// <summary>
@@ -116,8 +118,9 @@ namespace Microsoft.OneGet {
                 "Microsoft.OneGet.ServicesProvider.Common.dll",
                 // "OneGet.PackageProvider.Bootstrap.dll",  // M2
                 // "OneGet.PackageProvider.Chocolatey.dll",  // M1
-                "OneGet.PackageProvider.NuGet.dll",
-            };
+                // "NuGet-AnyCPU.exe",
+            }.Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET")).Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"));
+
 
             // there is no trouble with loading providers concurrently.
             Parallel.ForEach(providerAssemblies, providerAssemblyName => {
@@ -140,6 +143,24 @@ namespace Microsoft.OneGet {
                 provider.Initialize(callback);
             }
         }
+
+        private static IEnumerator<string> GetProvidersFromRegistry(RegistryKey registryKey, string p) {
+            RegistryKey key;
+            try {
+                key = registryKey.OpenSubKey(p, RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey);
+            } catch {
+                yield break;
+            }
+
+            if (key == null) {
+                yield break;
+            }
+
+            foreach (var name in key.GetValueNames()) {
+                yield return key.GetValue(name).ToString();
+            }
+        }
+
 
         public IEnumerable<PackageSource> GetAllSourceNames(Callback callback) {
             return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(callback)).ByRef();
@@ -257,7 +278,7 @@ namespace Microsoft.OneGet {
                 }
 
                 // is it a path?
-                if (assemblyName.Contains('\\') || assemblyName.Contains('/') || assemblyName.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase)) {
+                if (assemblyName.Contains('\\') || assemblyName.Contains('/') || assemblyName.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase) || assemblyName.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase)) {
                     fullPath = Path.GetFullPath(assemblyName);
                     if (File.Exists(fullPath)) {
                         return fullPath;
