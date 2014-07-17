@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Packaging;
 
     [Cmdlet(VerbsLifecycle.Uninstall, PackageNoun, SupportsShouldProcess = true)]
-    public class UninstallPackage : GetPackage {
+    public sealed class UninstallPackage : GetPackage {
         private Dictionary<string, List<SoftwareIdentity>> _resultsPerName;
 
         [Parameter]

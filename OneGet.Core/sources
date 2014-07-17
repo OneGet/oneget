@@ -46,7 +46,6 @@ SOURCES=\
  	Providers\Service\AggregateServicesProvider.cs \
  	Providers\Service\Instance.cs \
  	Providers\Service\IServicesProvider.cs \
- 	Providers\Service\ServiceApiImpl.cs \
  	Providers\Service\ServiceProvider.cs \
  	Providers\Loader.cs \
  	IPackageManagementService.cs \

@@ -34,11 +34,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             Filename = filename;
         }
 
-        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, string fullPath, string filename, Hashtable details, ArrayList entities, ArrayList links)
+        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, string fullPath, string filename, Hashtable details, ArrayList entities, ArrayList links, bool fromTrustedSource)
             : this(fastPackageReference, name, version, versionScheme, source, summary, searchKey,fullPath, filename) {
             _details = details;
             _entities = entities;
             _links = links;
+            FromTrustedSource = fromTrustedSource;
         }
 
         public string FastPackageReference {get; set;}
@@ -53,12 +54,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public string SearchKey {get; set;}
 
+        public bool FromTrustedSource {get; set;}
+
         public override bool YieldResult(Request r) {
             if (r == null) {
                 throw new ArgumentNullException("r");
             }
 
-            return r.YieldSoftwareIdentity(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey,FullPath, Filename) && YieldDetails(r) && YieldEntities(r) && YieldLinks(r);
+            return r.YieldSoftwareIdentity(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey,FullPath, Filename) && YieldDetails(r) && YieldEntities(r) && YieldLinks(r) && r.YieldSoftwareMetadata(FastPackageReference, "FromTrustedSource", FromTrustedSource.ToString());
         }
 
         private ArrayList _links;

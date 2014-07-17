@@ -64,15 +64,21 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         internal IEnumerable<string> ScanPrivateDataForProviders(string baseFolder, Hashtable privateData) {
-            var providers = privateData.GetStringCollection("OneGet.Providers").ToArray();
+            var providers = privateData.GetStringCollection("OneGetProviders").ToArray();
             if (providers.Length > 0) {
                 // found a module that is advertizing one or more OneGet Providers.
 
                 foreach (var provider in providers) {
                     Debug.WriteLine("Is {0} a oneget module?".format(provider));
                     var fullPath = provider;
-                    if (!Path.IsPathRooted(provider)) {
-                        fullPath = Path.GetFullPath(Path.Combine(baseFolder, provider));
+                    try {
+                        if (!Path.IsPathRooted(provider)) {
+                            fullPath = Path.GetFullPath(Path.Combine(baseFolder, provider));
+                        }
+                    } catch {
+                        // got an error from the path.
+                        Debug.WriteLine("Provider Path '{0}'\'{1}' does not appear to be valid", baseFolder, provider ); 
+                        continue;
                     }
                     if (Directory.Exists(fullPath) || File.Exists(fullPath)) {
                         // looks like we have something that could definitely be a 
@@ -220,11 +226,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         public void InitializeProvider(object dynamicInterface, Callback c) {
-            RequestExtensions.RemoteDynamicInterface = dynamicInterface;
-
+            if( dynamicInterface == null ) {
+                throw new ArgumentNullException("dynamicInterface");
+            }
             if (c == null) {
                 throw new ArgumentNullException("c");
             }
+            
+            RequestExtensions.RemoteDynamicInterface = dynamicInterface;
 
             var req = c.As<Request>();
 

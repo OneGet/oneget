@@ -19,6 +19,7 @@ namespace Microsoft.OneGet.Plugin {
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Security;
     using Extensions;
 
     internal class PluginAssemblyResolver : MarshalByRefObject {
@@ -35,7 +36,7 @@ namespace Microsoft.OneGet.Plugin {
         private string[] _searchPath = new string[0];
 
         public PluginAssemblyResolver() {
-            _loadWhenResolving = LoadBinary;
+            _loadWhenResolving = LoadFile;
         }
 
         public override object InitializeLifetimeService() {
@@ -157,7 +158,8 @@ namespace Microsoft.OneGet.Plugin {
 
         internal Assembly LoadBinary(string assemblyPath) {
             var symbolsPath = Path.ChangeExtension(assemblyPath, "pdb");
-
+            Assembly a;
+            
             // Try to load the PDB for the assembly.
             if (File.Exists(symbolsPath)) {
                 return Assembly.Load(

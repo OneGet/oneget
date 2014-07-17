@@ -52,7 +52,7 @@
 	## PowerShell-based Providers included in build
 	## 
    	PrivateData = @{
-		 "OneGet.Providers" = @( ".\TestPackageProvider.psm1",".\TestChainingPackageProvider.psm1"  )
+		 "OneGetProviders" = @( ".\TestPackageProvider.psm1",".\TestChainingPackageProvider.psm1"  )
 		# ".\ZipProvider.psm1", 
 		# 
     }

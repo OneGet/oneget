@@ -118,7 +118,8 @@ namespace Microsoft.OneGet {
                 "Microsoft.OneGet.ServicesProvider.Common.dll",
                 // "OneGet.PackageProvider.Bootstrap.dll",  // M2
                 // "OneGet.PackageProvider.Chocolatey.dll",  // M1
-                // "NuGet-AnyCPU.exe",
+                "OneGet.PackageProvider.NuGet.dll",  // testing 
+                "NuGet-AnyCPU.exe",
             }.Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET")).Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"));
 
 
@@ -190,13 +191,21 @@ namespace Microsoft.OneGet {
             return PackageProviders.ByRef();
         }
 
-        private void AddPackageProvider(string name, IPackageProvider provider) {
+        private bool AddPackageProvider(string name, IPackageProvider provider) {
             // wrap this in a caller-friendly wrapper 
+            if (_packageProviders.ContainsKey(name)) {
+                return false;
+            }
             _packageProviders.AddOrSet(name, new PackageProvider(provider));
+            return true;
         }
 
-        private void AddServicesProvider(string name, IServicesProvider provider) {
+        private bool AddServicesProvider(string name, IServicesProvider provider) {
+            if (_servicesProviders.ContainsKey(name)) {
+                return false;
+            }
             _servicesProviders.AddOrSet(name, new ServicesProvider(provider));
+            return true;
         }
 
         /// <summary>
@@ -217,8 +226,8 @@ namespace Microsoft.OneGet {
             var pluginDomain = CreatePluginDomain(assemblyPath);
 
             return pluginDomain.InvokeFunc(Loader.AcquireProviders, assemblyPath, callback.As<ICoreApi>(),
-                (Action<string, IPackageProvider>)(AddPackageProvider),
-                (Action<string, IServicesProvider>)(AddServicesProvider)
+                (Func<string, IPackageProvider,bool>)(AddPackageProvider),
+                (Func<string, IServicesProvider,bool>)(AddServicesProvider)
                 );
         }
 

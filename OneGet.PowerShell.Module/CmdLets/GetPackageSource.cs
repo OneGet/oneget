@@ -20,7 +20,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Providers.Package;
 
     [Cmdlet(VerbsCommon.Get, PackageSourceNoun)]
-    public class GetPackageSource : CmdletWithProvider {
+    public sealed class GetPackageSource : CmdletWithProvider {
         private readonly List<string> _warnings = new List<string>();
 
         public GetPackageSource()

@@ -21,14 +21,14 @@
 #>
 function Write-Debug {
 	param(
-	[string] $text,
-	[parameter(ValueFromRemainingArguments=$true,Mandatory=$false)]
+	[Parameter(Mandatory=$true)][string] $text,
+	[parameter(ValueFromRemainingArguments=$true)]
 	[object[]]
 	 $args= @()
 	)
 
-	if( $request -eq $null ) {
-		if( $args -eq $null ) {
+	if( -not $request  ) {
+		if( -not $args  ) {
 			Microsoft.PowerShell.Utility\write-verbose $text 
 			return
 		} 
@@ -38,7 +38,7 @@ function Write-Debug {
 		return 
 	}
 
-	if( $args -eq $null ) {
+	if( -not $args  ) {
 		$request.Debug($text);
 		return 
 	}
@@ -52,14 +52,14 @@ function Write-Debug {
 
 function Write-Verbose{
 	param(
-	[string] $text,
-	[parameter(ValueFromRemainingArguments=$true,Mandatory=$false)]
+	[Parameter(Mandatory=$true)][string] $text,
+	[parameter(ValueFromRemainingArguments=$true)]
 	[object[]]
 	 $args= @()
 	)
 
-	if( $request -eq $null ) {
-		if( $args -eq $null ) {
+	if( -not $request ) {
+		if( -not $args ) {
 			Microsoft.PowerShell.Utility\write-verbose $text 
 			return
 		} 
@@ -69,7 +69,7 @@ function Write-Verbose{
 		return 
 	}
 
-	if( $args -eq $null ) {
+	if( -not $args ) {
 		$request.Verbose($text);
 		return 
 	}
@@ -83,14 +83,14 @@ function Write-Verbose{
 
 function Write-Warning{
 	param(
-	[string] $text,
-	[parameter(ValueFromRemainingArguments=$true,Mandatory=$false)]
+	[Parameter(Mandatory=$true)][string] $text,
+	[parameter(ValueFromRemainingArguments=$true)]
 	[object[]]
 	 $args= @()
 	)
 
-	if( $request -eq $null ) {
-		if( $args -eq $null ) {
+	if( -not $request ) {
+		if( -not $args ) {
 			Microsoft.PowerShell.Utility\write-warning $text 
 			return
 		} 
@@ -100,7 +100,7 @@ function Write-Warning{
 		return 
 	}
 
-	if( $args -eq $null ) {
+	if( -not $args ) {
 		$request.Warning($text);
 		return 
 	}
@@ -112,10 +112,10 @@ function Write-Warning{
 #>
 function New-PackageSource { 
 	param(
-		[string] $name,
-		[string] $location,
-		[bool] $trusted,
-		[bool] $registered,
+		[Parameter(Mandatory=$true)][string] $name,
+		[Parameter(Mandatory=$true)][string] $location,
+		[Parameter(Mandatory=$true)][bool] $trusted,
+		[Parameter(Mandatory=$true)][bool] $registered,
 		[bool] $valid = $false,
 		[System.Collections.Hashtable] $details = $null
 	)
@@ -128,20 +128,21 @@ function New-PackageSource {
 #>
 function New-SoftwareIdentity { 
 	param(
-		[string] $fastPackageReference, 
-		[string] $name, 
-		[string] $version, 
-		[string] $versionScheme, 
-		[string] $source, 
-		[string] $summary, 
+		[Parameter(Mandatory=$true)][string] $fastPackageReference, 
+		[Parameter(Mandatory=$true)][string] $name, 
+		[Parameter(Mandatory=$true)][string] $version, 
+		[Parameter(Mandatory=$true)][string] $versionScheme, 
+		[Parameter(Mandatory=$true)][string] $source, 
+		[Parameter(Mandatory=$true)][string] $summary, 
 		[string] $searchKey = $null, 
 		[string] $fullPath = $null, 
 		[string] $filename = $null, 
 		[System.Collections.Hashtable] $details = $null,
 		[System.Collections.ArrayList] $entities = $null,
-		[System.Collections.ArrayList] $links = $null
+		[System.Collections.ArrayList] $links = $null,
+		[bool] $fromTrustedSource = $false
 	)
-	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links
+	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links, $fromTrustedSource
 }
 
 <#
@@ -149,14 +150,14 @@ function New-SoftwareIdentity {
 #>
 function New-DynamicOption { 
 	param(
-		[Microsoft.OneGet.MetaProvider.PowerShell.OptionCategory] $category, 
-		[string] $name, 
-		[Microsoft.OneGet.MetaProvider.PowerShell.OptionType] $expectedType, 
-		[bool] $isRequired, 
+		[Parameter(Mandatory=$true)][Microsoft.OneGet.MetaProvider.PowerShell.OptionCategory] $category, 
+		[Parameter(Mandatory=$true)][string] $name, 
+		[Parameter(Mandatory=$true)][Microsoft.OneGet.MetaProvider.PowerShell.OptionType] $expectedType, 
+		[Parameter(Mandatory=$true)][bool] $isRequired, 
 		[System.Collections.ArrayList] $permittedValues = $null
 	)
 
-	if( $permittedValues -eq $null ) {
+	if( -not $permittedValues ) {
 		return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.DynamicOption -ArgumentList $category,$name,  $expectedType, $isRequired
 	}
 	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.DynamicOption -ArgumentList $category,$name,  $expectedType, $isRequired, $permittedValues.ToArray()
@@ -167,11 +168,11 @@ function New-DynamicOption {
 #>
 function New-Feature { 
 	param(
-		[string] $name, 
+		[Parameter(Mandatory=$true)][string] $name, 
 		[System.Collections.ArrayList] $values = $null
 	)
 
-	if( $values -eq $null ) {
+	if( -not $values ) {
 		return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Feature -ArgumentList $name
 	}
 	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Feature -ArgumentList $name, $values.ToArray()
@@ -192,8 +193,8 @@ function New-Request {
 
 function New-Entity {
 	param(
-		[string] $name,
-		[string] $role,
+		[Parameter(Mandatory=$true)][string] $name,
+		[Parameter(Mandatory=$true)][string] $role,
         [string] $regId = $null,
         [string] $thumbprint= $null
 	)
@@ -208,8 +209,8 @@ function New-Entity {
 
 function New-Link { 
 	param( 
-		[string] $HRef,
-		[string] $relationship,
+		[Parameter(Mandatory=$true)][string] $HRef,
+		[Parameter(Mandatory=$true)][string] $relationship,
 		[string] $mediaType = $null,
 		[string] $ownership = $null,
 		[string] $use= $null,

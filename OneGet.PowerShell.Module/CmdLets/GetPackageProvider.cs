@@ -16,7 +16,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
 
     [Cmdlet(VerbsCommon.Get, PackageProviderNoun)]
-    public class GetPackageProvider : CmdletBase {
+    public sealed class GetPackageProvider : CmdletBase {
         [Parameter(Position = 0)]
         public string[] Name {get; set;}
 
