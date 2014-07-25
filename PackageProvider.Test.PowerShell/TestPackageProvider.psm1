@@ -174,8 +174,7 @@ function Get-PackageProviderName {
 #>
 function Resolve-PackageSource { 
     param()
-    
-    
+   
 	write-debug "In TestPackageProvider - Resolve-PackageSources"
     
 	$srcs = $request.GetSources();

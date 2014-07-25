@@ -139,9 +139,10 @@ function New-SoftwareIdentity {
 		[string] $filename = $null, 
 		[System.Collections.Hashtable] $details = $null,
 		[System.Collections.ArrayList] $entities = $null,
-		[System.Collections.ArrayList] $links = $null
+		[System.Collections.ArrayList] $links = $null,
+		[bool] $fromTrustedSource = $false
 	)
-	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links
+	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links, $fromTrustedSource
 }
 
 <#

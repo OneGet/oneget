@@ -48,7 +48,8 @@ namespace Microsoft.OneGet.Plugin {
             this(name,new AppDomainSetup {
                 ApplicationBase = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                 PrivateBinPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                LoaderOptimization = LoaderOptimization.MultiDomain
+                LoaderOptimization = LoaderOptimization.MultiDomain,
+                ShadowCopyFiles = "true",
             }) {
         }
 

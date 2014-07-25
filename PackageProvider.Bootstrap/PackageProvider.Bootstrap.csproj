@@ -37,6 +37,9 @@
     <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BootstrapProvider.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="RequestExtensions.cs" />
     <Compile Include="Request.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

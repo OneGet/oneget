@@ -19,6 +19,7 @@ namespace Microsoft.OneGet {
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Security.AccessControl;
     using System.Threading.Tasks;
     using Api;
     using Extensions;
@@ -27,6 +28,7 @@ namespace Microsoft.OneGet {
     using Providers;
     using Providers.Package;
     using Providers.Service;
+    using Win32;
     using Callback = System.Object;
 
     /// <summary>
@@ -115,8 +117,9 @@ namespace Microsoft.OneGet {
                 "Microsoft.OneGet.MetaProvider.PowerShell.dll",
                 "Microsoft.OneGet.ServicesProvider.Common.dll",
                 // "OneGet.PackageProvider.Bootstrap.dll",  // M2
-                "NuGet-AnyCPU.exe", // will pick up the NuGet provider in the same folder
-            };
+                "OneGet.PackageProvider.NuGet.dll",  // testing 
+                "NuGet-AnyCPU.exe",
+            }.Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET")).Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"));
 
             // there is no trouble with loading providers concurrently.
             Parallel.ForEach(providerAssemblies, providerAssemblyName => {
@@ -139,6 +142,24 @@ namespace Microsoft.OneGet {
                 provider.Initialize(callback);
             }
         }
+
+        private static IEnumerator<string> GetProvidersFromRegistry(RegistryKey registryKey, string p) {
+            RegistryKey key;
+            try {
+                key = registryKey.OpenSubKey(p, RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey);
+            } catch {
+                yield break;
+            }
+
+            if (key == null) {
+                yield break;
+            }
+
+            foreach (var name in key.GetValueNames()) {
+                yield return key.GetValue(name).ToString();
+            }
+        }
+
 
         public IEnumerable<PackageSource> GetAllSourceNames(Callback callback) {
             return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(callback)).ByRef();
@@ -168,13 +189,21 @@ namespace Microsoft.OneGet {
             return PackageProviders.ByRef();
         }
 
-        private void AddPackageProvider(string name, IPackageProvider provider) {
+        private bool AddPackageProvider(string name, IPackageProvider provider) {
             // wrap this in a caller-friendly wrapper 
+            if (_packageProviders.ContainsKey(name)) {
+                return false;
+            }
             _packageProviders.AddOrSet(name, new PackageProvider(provider));
+            return true;
         }
 
-        private void AddServicesProvider(string name, IServicesProvider provider) {
+        private bool AddServicesProvider(string name, IServicesProvider provider) {
+            if (_servicesProviders.ContainsKey(name)) {
+                return false;
+            }
             _servicesProviders.AddOrSet(name, new ServicesProvider(provider));
+            return true;
         }
 
         /// <summary>
@@ -195,8 +224,8 @@ namespace Microsoft.OneGet {
             var pluginDomain = CreatePluginDomain(assemblyPath);
 
             return pluginDomain.InvokeFunc(Loader.AcquireProviders, assemblyPath, callback.As<ICoreApi>(),
-                (Action<string, IPackageProvider>)(AddPackageProvider),
-                (Action<string, IServicesProvider>)(AddServicesProvider)
+                (Func<string, IPackageProvider,bool>)(AddPackageProvider),
+                (Func<string, IServicesProvider,bool>)(AddServicesProvider)
                 );
         }
 

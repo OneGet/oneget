@@ -110,6 +110,12 @@ namespace Microsoft.OneGet.Providers.Package {
                 Console.WriteLine("TEMPORARY: SHOULD NOT GET HERE [YieldSoftwareMetadata] ================================================");
             }
             if (_currentSoftwareIdentity != null) {
+                // special cases:
+                if (name.EqualsIgnoreCase("FromTrustedSource")) {
+                    _currentSoftwareIdentity.FromTrustedSource = value.IsTrue();
+                    return Continue;
+                }
+
                 _currentSoftwareIdentity.Set(name, value);
             }
 

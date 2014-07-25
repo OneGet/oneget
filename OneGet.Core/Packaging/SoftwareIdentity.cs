@@ -46,6 +46,8 @@ namespace Microsoft.OneGet.Packaging {
         public string FullPath {get; internal set;}
         public string PackageFilename {get; internal set;}
 
+        public bool FromTrustedSource {get; internal set;}
+
         // OneGet shortcut property -- Summary *should* be stored in SoftwareMetadata
         public string Summary {
             get {
@@ -140,7 +142,7 @@ namespace Microsoft.OneGet.Packaging {
             var v = this[metaKey].ToArray();
 
             if (v.Length > 0) {
-                // if the summary is already set, we don't want to re set it.
+                // if the value is already set, we don't want to re set it.
                 Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "REPLACING {0} in Meta element in swidtag {1} -> {2} ", metaKey, v[0], value));
                 throw new Exception("INVALID_SWIDTAG_ATTRIBUTE_VALUE_CHANGE");
             }

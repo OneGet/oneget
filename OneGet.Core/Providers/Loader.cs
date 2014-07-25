@@ -29,7 +29,7 @@ namespace Microsoft.OneGet.Providers {
     internal static class Loader {
         
         [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFile", Justification = "This is a plugin loader. It *needs* to do that.")]
-        internal static bool AcquireProviders(string assemblyPath, Object callback, Action<string, IPackageProvider> YieldSoftwareIdentityProvider, Action<string, IServicesProvider> yieldServicesProvider) {
+        internal static bool AcquireProviders(string assemblyPath, Object callback, Func<string, IPackageProvider, bool> yieldSoftwareIdentityProvider, Func<string, IServicesProvider,bool> yieldServicesProvider) {
             var dynInterface = new DynamicInterface();
             var result = false;
 
@@ -52,8 +52,10 @@ namespace Microsoft.OneGet.Providers {
                                 try {
                                     var packageProvider = dynInterface.Create<IPackageProvider>(instance);
                                     packageProvider.InitializeProvider(DynamicInterface.Instance, callback);
-                                    YieldSoftwareIdentityProvider(packageProvider.GetPackageProviderName(), packageProvider);
-                                    result = true;
+                                    if (yieldSoftwareIdentityProvider(packageProvider.GetPackageProviderName(), packageProvider)) {
+                                        //loaded something.
+                                        result = true;
+                                    } 
                                 } catch (Exception e) {
                                     e.Dump();
                                 }
@@ -64,8 +66,10 @@ namespace Microsoft.OneGet.Providers {
                                 try {
                                     var servicesProvider = dynInterface.Create<IServicesProvider>(instance);
                                     servicesProvider.InitializeProvider(DynamicInterface.Instance, callback);
-                                    yieldServicesProvider(servicesProvider.GetServicesProviderName(), servicesProvider);
-                                    result = true;
+                                    if (yieldServicesProvider(servicesProvider.GetServicesProviderName(), servicesProvider)) {
+                                        //loaded something.
+                                        result = true;
+                                    } 
                                 } catch (Exception e) {
                                     e.Dump();
                                 }
@@ -81,8 +85,10 @@ namespace Microsoft.OneGet.Providers {
             foreach (var provider in dynInterface.FilterTypesCompatibleTo<IPackageProvider>(asm).Select(each => dynInterface.Create<IPackageProvider>(each))) {
                 try {
                     provider.InitializeProvider(DynamicInterface.Instance, callback);
-                    YieldSoftwareIdentityProvider(provider.GetPackageProviderName(), provider);
-                    result = true;
+                    if (yieldSoftwareIdentityProvider(provider.GetPackageProviderName(), provider)) {
+                        //loaded something.
+                        result = true;
+                    } 
                 } catch (Exception e) {
                     e.Dump();
                 }
@@ -91,8 +97,10 @@ namespace Microsoft.OneGet.Providers {
             foreach (var provider in dynInterface.FilterTypesCompatibleTo<IServicesProvider>(asm).Select(each => dynInterface.Create<IServicesProvider>(each))) {
                 try {
                     provider.InitializeProvider(DynamicInterface.Instance, callback);
-                    yieldServicesProvider(provider.GetServicesProviderName(), provider);
-                    result = true;
+                    if (yieldServicesProvider(provider.GetServicesProviderName(), provider)) {
+                        //loaded something.
+                        result = true;
+                    } 
                 } catch (Exception e) {
                     e.Dump();
                 }

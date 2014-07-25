@@ -204,7 +204,7 @@ function Find-Package {
 			$details.Add( "releaseNotes" , (get-first $pkg["releaseNotes"]) )
 
 			
-			Write-Output (new-SoftwareIdentity $fastPackageReference  $pkg.Name $pkg.Version  $pkg.VersionScheme $mySrcLocation $pkg.Summary $providerName $pkg.FullPath $pkg.PackagePath $details $entities $links ) 
+			Write-Output (new-SoftwareIdentity $fastPackageReference  $pkg.Name $pkg.Version  $pkg.VersionScheme $mySrcLocation $pkg.Summary $providerName $pkg.FullPath $pkg.PackagePath $details $entities $links $true) 
 		}
 	}
 }
@@ -249,7 +249,18 @@ function Resolve-PackageSource {
 	# get requested set from $request.Sources
 
 	# return values with
-	# write-output  (New-PackageSource "sourcename" "location" <istrusted> <isregistered> @{ <hashtable-of-details> })
+	
+	New-PackageSource "source3" "http://nowhere.com/test2" $true $true $false
+	$srcs = $request.GetSources();
+	if( -not $srcs  ) {
+    } 
+	else  {
+		foreach ($each in $srcs) {
+			write-output  (New-PackageSource $each $each $true $false)
+		}
+    }
+
+	
 }
 
 function Initialize-Provider { 
@@ -308,7 +319,7 @@ function Install-Package {
 
 			foreach( $pkg in $installed ) {
 				write-debug "In TestChainingPackageProvider - 5"
-				Write-Output (new-SoftwareIdentity $fastPackageReference $pkg.Name $pkg.Version  $pkg.VersionScheme $source $pkg.Summary $providerName $pkg.FullPath $pkg.PackagePath @{ "Description" = "This is the description" } @( (new-entity "Garrett Serack" "Author" )) @( (new-Link "http://foo.com/icon.png" "Icon" )) )
+				Write-Output (new-SoftwareIdentity $fastPackageReference $pkg.Name $pkg.Version  $pkg.VersionScheme $source $pkg.Summary $providerName $pkg.FullPath $pkg.PackagePath @{ "Description" = "This is the description" } @( (new-entity "Garrett Serack" "Author" )) @( (new-Link "http://foo.com/icon.png" "Icon" )) $true )
 			}
 		}
 

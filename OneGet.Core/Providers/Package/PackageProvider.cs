@@ -156,30 +156,14 @@ namespace Microsoft.OneGet.Providers.Package {
                 throw new ArgumentNullException("c");
             }
 
-            var isCancelled = c.As<IsCancelled>();
-
-            var request = c.Extend<IRequest>(Context);
-
             if (softwareIdentity == null) {
                 throw new ArgumentNullException("softwareIdentity");
             }
 
-            if (c == null) {
-                throw new ArgumentNullException("c");
-            }
+            var request = c.Extend<IRequest>(Context);
 
-            // check if this source is trusted first.
-            var src = ResolvePackageSources(c.Extend<IRequest>(new {
-                GetSources = new Func<IEnumerable<string>>(() => {
-                    return new string[] {
-                        softwareIdentity.Source
-                    };
-                })
-            }, Context)).FirstOrDefault();
-
-            var trusted = (src != null && src.IsTrusted);
-
-            if (!trusted) {
+            // if the provider didn't say this was trusted, we should ask the user if it's ok.
+            if (!softwareIdentity.FromTrustedSource) {
                 try {
                     if (!request.ShouldContinueWithUntrustedPackageSource(softwareIdentity.Name, softwareIdentity.Source)) {
                         request.Error("User declined to trust package source ");
