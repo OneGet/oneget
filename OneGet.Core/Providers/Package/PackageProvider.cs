@@ -195,7 +195,7 @@ namespace Microsoft.OneGet.Providers.Package {
         }
 
         public ICancellableEnumerable<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, Object c) {
-            return new Response<SoftwareIdentity>(c, this, "Not Installed", response => Provider.UninstallPackage(softwareIdentity.FastPackageReference, response)).Result;
+            return new Response<SoftwareIdentity>(c, this, "Uninstalled", response => Provider.UninstallPackage(softwareIdentity.FastPackageReference, response)).Result;
         }
 
         public ICancellableEnumerable<PackageSource> ResolvePackageSources(Object c) {

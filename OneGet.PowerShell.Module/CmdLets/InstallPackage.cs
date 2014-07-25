@@ -23,7 +23,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Providers.Package;
 
     [Cmdlet(VerbsLifecycle.Install, PackageNoun, SupportsShouldProcess = true)]
-    public class InstallPackage : CmdletWithSearchAndSource {
+    public sealed class InstallPackage : CmdletWithSearchAndSource {
         private readonly HashSet<string> _sourcesTrusted = new HashSet<string>();
 
         public InstallPackage()
@@ -126,9 +126,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             foreach (var set in resultsPerName.Values.Where(set => set.Count > 1)) {
                 failing = true;
                 // bad, matched too many packages
-                foreach (var name in noMatchNames) {
-                    Error(" '{0}' matches multiple packages '{1}'",name);
+                string searchKey = null;
+                
+                foreach (var pkg in set) {
+                    Warning(" '{0}' matches multiple packages '{1}/{2}' ({3})",pkg.SearchKey, pkg.Name,pkg.Version,pkg.ProviderName);
+                    searchKey = pkg.SearchKey;
                 }
+                Error("DISAMBIGUATE_FOR_INSTALL", searchKey);
             }
 
             if (failing) {

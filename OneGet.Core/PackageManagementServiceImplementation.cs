@@ -115,8 +115,7 @@ namespace Microsoft.OneGet {
                 "Microsoft.OneGet.MetaProvider.PowerShell.dll",
                 "Microsoft.OneGet.ServicesProvider.Common.dll",
                 // "OneGet.PackageProvider.Bootstrap.dll",  // M2
-                // "OneGet.PackageProvider.Chocolatey.dll",  // M1
-                "OneGet.PackageProvider.NuGet.dll",
+                "NuGet-AnyCPU.exe", // will pick up the NuGet provider in the same folder
             };
 
             // there is no trouble with loading providers concurrently.
@@ -257,7 +256,7 @@ namespace Microsoft.OneGet {
                 }
 
                 // is it a path?
-                if (assemblyName.Contains('\\') || assemblyName.Contains('/') || assemblyName.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase)) {
+                if (assemblyName.Contains('\\') || assemblyName.Contains('/') || assemblyName.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase) || assemblyName.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase)) {
                     fullPath = Path.GetFullPath(assemblyName);
                     if (File.Exists(fullPath)) {
                         return fullPath;

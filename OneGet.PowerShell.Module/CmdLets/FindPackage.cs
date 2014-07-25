@@ -23,7 +23,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Providers.Package;
 
     [Cmdlet(VerbsCommon.Find, PackageNoun), OutputType(typeof (SoftwareIdentity))]
-    public class FindPackage : CmdletWithSearchAndSource {
+    public sealed class FindPackage : CmdletWithSearchAndSource {
         public FindPackage()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source, OptionCategory.Package

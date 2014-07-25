@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Utility;
 
     [Cmdlet(VerbsLifecycle.Register, PackageSourceNoun, SupportsShouldProcess = true)]
-    public class RegisterPackageSource : CmdletBase {
+    public sealed class RegisterPackageSource : CmdletBase {
         [Parameter(Position = 0)]
         public string Name {get; set;}
 

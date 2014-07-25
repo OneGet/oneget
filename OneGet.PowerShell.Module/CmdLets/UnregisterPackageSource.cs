@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Providers.Package;
 
     [Cmdlet(VerbsLifecycle.Unregister, PackageSourceNoun, SupportsShouldProcess = true)]
-    public class UnregisterPackageSource : CmdletWithSource {
+    public sealed class UnregisterPackageSource : CmdletWithSource {
         private string[] _sources;
 
         public UnregisterPackageSource()

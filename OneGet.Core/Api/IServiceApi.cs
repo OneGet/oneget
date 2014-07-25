@@ -52,14 +52,12 @@ namespace Microsoft.OneGet.Api {
         #endregion
 
 #if NOT_ADDED_YET
-
         
         void UnzipFileIncremental(string zipFile, string folder, Callback c);
 
         void UnzipFile(string zipFile, string folder, Callback c);
 
-
-          void AddFileAssociation();
+        void AddFileAssociation();
 
         void RemoveFileAssociation();
 
@@ -67,7 +65,7 @@ namespace Microsoft.OneGet.Api {
 
         void RemoveExplorerMenuItem();
 
-                void AddFolderToPath();
+        void AddFolderToPath();
 
         void RemoveFolderFromPath();
 
@@ -86,7 +84,8 @@ namespace Microsoft.OneGet.Api {
         void UninstallPowershellScript();
 
         void SearchForExecutable();
-                void CopyFolder();
+        
+        void CopyFolder();
 
         void BeginTransaction();
 
@@ -96,10 +95,9 @@ namespace Microsoft.OneGet.Api {
         
         void GenerateUninstallScript();
 
-             string GetNuGetExePath(Callback c);
+        string GetNuGetExePath(Callback c);
 
         string GetNuGetDllPath(Callback c);
-
 #endif
     }
 }

@@ -68,7 +68,6 @@
     <Compile Include="IPackageManagementService.cs" />
     <Compile Include="PackageManagementServiceImplementation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\Service\ServiceApiImpl.cs" />
     <Compile Include="PackageManagementService.cs" />
     <Compile Include="Providers\Loader.cs" />
   </ItemGroup>

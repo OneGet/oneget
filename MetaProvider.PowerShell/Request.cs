@@ -421,6 +421,11 @@ public bool Warning(string messageText, params object[] args) {
                 GetCredentialUsername = new Func<string>(() => {return name;}),
 
                 GetCredentialPassword = new Func<string>(() => {return pass;}),
+
+                ShouldContinueWithUntrustedPackageSource = new Func<string,string,bool>((pkgName, pkgSource) => {
+                    // chained providers provide locations, and don't rely on 'trusted' flags from the upstream provider.
+                    return true;
+                })
             });
         }
 
