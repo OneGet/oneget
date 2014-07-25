@@ -158,8 +158,6 @@ namespace Microsoft.OneGet.Plugin {
 
         internal Assembly LoadBinary(string assemblyPath) {
             var symbolsPath = Path.ChangeExtension(assemblyPath, "pdb");
-            Assembly a;
-            
             // Try to load the PDB for the assembly.
             if (File.Exists(symbolsPath)) {
                 return Assembly.Load(
