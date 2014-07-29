@@ -112,12 +112,13 @@ namespace Microsoft.OneGet.Providers.Package {
             }
             if (_currentSoftwareIdentity != null) {
                 // special cases:
-                if (name.EqualsIgnoreCase("FromTrustedSource")) {
-                    _currentSoftwareIdentity.FromTrustedSource = value.IsTrue();
-                    return Continue;
+                if (name != null) {
+                    if (name.EqualsIgnoreCase("FromTrustedSource")) {
+                        _currentSoftwareIdentity.FromTrustedSource = (value ?? string.Empty ).IsTrue();
+                        return Continue;
+                    }
+                    _currentSoftwareIdentity.Set(name, value);
                 }
-
-                _currentSoftwareIdentity.Set(name, value);
             }
 
             return Continue;

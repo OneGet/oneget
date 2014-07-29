@@ -102,10 +102,11 @@ namespace Microsoft.OneGet {
                 "Microsoft.OneGet.MetaProvider.PowerShell.dll",
                 "Microsoft.OneGet.ServicesProvider.Common.dll",
                 "Microsoft.OneGet.PackageProvider.Bootstrap.dll",  
+#if DEBUG                
                 "OneGet.PackageProvider.NuGet.dll",  // testing 
+#endif                
                 "NuGet-AnyCPU.exe",
             }.Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET")).Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"));
-
 
             // there is no trouble with loading providers concurrently.
             Parallel.ForEach(providerAssemblies, providerAssemblyName => {

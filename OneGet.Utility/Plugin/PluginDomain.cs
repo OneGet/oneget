@@ -24,6 +24,7 @@ namespace Microsoft.OneGet.Plugin {
     internal partial class PluginDomain : MarshalByRefObject, IDisposable {
         private AppDomain _appDomain;
         private string _identity;
+        private static int _count = 0;
 
         private Proxy<PluginAssemblyResolver> _proxyResolver;
         private PluginAssemblyResolver _resolver;
@@ -57,7 +58,7 @@ namespace Microsoft.OneGet.Plugin {
             if (appDomainSetup == null) {
                 throw new ArgumentNullException("appDomainSetup");
             }
-            _identity = name ?? Guid.NewGuid().ToString();
+            _identity = (name + _count++) ?? Guid.NewGuid().ToString();
             appDomainSetup.ApplicationName = appDomainSetup.ApplicationName ?? "PluginDomain" + _identity;
 
             _appDomain = AppDomain.CreateDomain(_identity, null, appDomainSetup);
