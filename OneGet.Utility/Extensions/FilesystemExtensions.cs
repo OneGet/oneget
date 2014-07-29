@@ -149,11 +149,11 @@ namespace Microsoft.OneGet.Extensions {
                     MoveFileOverwrite(File.Exists(tmpFilename) ? tmpFilename : location, null);
                 } catch {
                     // really. Hmmm. 
-                    // Logger.Error(e);
+                    
                 }
 
                 if (File.Exists(location)) {
-                    // Logger.Error("Unable to forcably remove file '{0}'. This can't be good.", location);
+                    // err("Unable to forcably remove file '{0}'. This can't be good.", location);
                 }
             }
             return;

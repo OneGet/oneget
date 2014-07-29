@@ -152,7 +152,7 @@ function Find-Package {
 
 	# dump-object $Request
 	
-	$providers = $request.SelectProvidersWithFeature("supports-powershellget-modules") 
+	$providers = $request.SelectProvidersWithFeature("supports-powershell-modules") 
 
 	foreach( $pm in $providers) {
 	    
@@ -163,7 +163,14 @@ function Find-Package {
 		$mySrcLocation = "https://nuget.org/api/v2"
 
 		foreach( $pkg in $pm.FindPackages( $names, $requiredVersion, $minimumVersion, $maximumVersion, (new-request -options @{ } -sources @( $mySrcLocation ) -Credential $c) ) ) {
+			## IMPORTANT: Don't keep returning values if it's cancelled!!!!!
+			if( $request.IsCancelled() )  {
+				return 
+			}
+
 			$fastPackageReference = (new-packagereference $providerName $pkg.Name $pkg.Version $pkg.Source )
+
+			write-debug " processing {0} -- {1} "$pkg.Name $pkg.Version
 
 			$links = (new-Object -TypeName  System.Collections.ArrayList)
 			foreach( $lnk in $pkg.Links ) {
@@ -203,6 +210,7 @@ function Find-Package {
 			$details.Add( "tags" , (get-first $pkg["tags"]) )
 			$details.Add( "releaseNotes" , (get-first $pkg["releaseNotes"]) )
 
+			Write-Debug "HO HUM"
 			
 			Write-Output (new-SoftwareIdentity $fastPackageReference  $pkg.Name $pkg.Version  $pkg.VersionScheme $mySrcLocation $pkg.Summary $providerName $pkg.FullPath $pkg.PackagePath $details $entities $links $true) 
 		}
@@ -280,7 +288,7 @@ function Get-First {
 	foreach( $i in $ienumerator ) {
 		return $i
 	}
-	return null
+	return $null
 }
 
 function Install-Package { 

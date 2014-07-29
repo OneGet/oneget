@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
 
-    [Cmdlet(VerbsCommon.Find, PackageNoun), OutputType(typeof (SoftwareIdentity))]
+    [Cmdlet(VerbsCommon.Find, Constants.PackageNoun), OutputType(typeof (SoftwareIdentity))]
     public sealed class FindPackage : CmdletWithSearchAndSource {
         public FindPackage()
             : base(new[] {
@@ -63,7 +63,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             // so I guess we're returning null, because I dunno what
             // to do.
 
-            Warning("SAVE_TO_PATH_NOT_VALID", SavePackageTo, packageName);
+            Warning(Constants.SaveToPathNotValid, SavePackageTo, packageName);
             return null;
         }
 
@@ -117,7 +117,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         // no package name passed in.
                         if (!FindViaName(provider, string.Empty, (p) => ProcessPackage(provider,p))) {
                             // nothing found?
-                            Warning("No Packages Found (no package names/criteria listed)");
+                            Warning(Constants.NoPackagesFoundNoPackageNamesCriteriaListed);
                         }
                     }
                 } catch (Exception e) {
@@ -127,7 +127,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             // whine about things not matched.
             foreach (var name in noMatchNames) {
-                Warning("No Package Found", name );
+                Warning(Constants.NoPackageFound, name );
             }
 
             return true;

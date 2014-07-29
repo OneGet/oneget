@@ -13,29 +13,28 @@
 //  
 
 namespace Microsoft.OneGet.Api {
+    using System;
     using System.Collections.Generic;
     using System.Security;
 
     public interface IHostApi {
         #region declare host-apis
+        /* Synced/Generated code =================================================== */
+        string GetMessageString(string messageText);
 
-        string GetMessageString(string message);
+        bool Warning(string messageText);
 
-        bool Warning(string message);
+        bool Error(string id, string category, string targetObjectValue, string messageText);
 
-        bool Error(string message);
+        bool Message(string messageText);
 
-        bool Message(string message);
+        bool Verbose(string messageText);
 
-        bool Verbose(string message);
+        bool Debug(string messageText);
 
-        bool Debug(string message);
+        int StartProgress(int parentActivityId, string messageText);
 
-        bool ExceptionThrown(string exceptionType, string message, string stacktrace);
-
-        int StartProgress(int parentActivityId, string message);
-
-        bool Progress(int activityId, int progress, string message);
+        bool Progress(int activityId, int progressPercentage, string messageText);
 
         bool CompleteProgress(int activityId, bool isSuccessful);
 

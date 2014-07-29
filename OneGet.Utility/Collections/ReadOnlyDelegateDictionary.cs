@@ -18,7 +18,7 @@ namespace Microsoft.OneGet.Collections {
 
     public class ReadOnlyDelegateDictionary<TKey, TVal> : DelegateDictionary<TKey, TVal> {
         public ReadOnlyDelegateDictionary(Func<ICollection<TKey>> keys, Func<TKey, TVal> get)
-            : base(keys, get, (k, v) => {throw new Exception("READ ONLY COLLECTION");}, key => {throw new Exception("READ ONLY COLLECTIOn");}) {
+            : base(keys, get, (k, v) => {throw new Exception("READ_ONLY_COLLECTION");}, key => {throw new Exception("READ_ONLY_COLLECTION");}) {
         }
 
         public override bool IsReadOnly {

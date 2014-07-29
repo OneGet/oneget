@@ -33,63 +33,63 @@ namespace Microsoft.OneGet.Providers.Service {
         }
 
         public void DownloadFile(Uri remoteLocation, string localFilename, Object c) {
-            Provider.DownloadFile(remoteLocation, localFilename, c.Extend<IRequest>(Context));
+            Provider.DownloadFile(remoteLocation, localFilename, ExtendCallback(c));
         }
 
         public bool IsSupportedArchive(string localFilename, Object c) {
-            return Provider.IsSupportedArchive(localFilename, c.Extend<IRequest>(Context));
+            return Provider.IsSupportedArchive(localFilename, ExtendCallback(c));
         }
 
         public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object c) {
-            return Provider.UnpackArchive(localFilename, destinationFolder, c.Extend<IRequest>(Context)).ByRefEnumerable();
+            return Provider.UnpackArchive(localFilename, destinationFolder, ExtendCallback(c)).ByRefEnumerable();
         }
 
         public void AddPinnedItemToTaskbar(string item, Object c) {
-            Provider.AddPinnedItemToTaskbar(item, c.Extend<IRequest>(Context));
+            Provider.AddPinnedItemToTaskbar(item, ExtendCallback(c));
         }
 
         public void RemovePinnedItemFromTaskbar(string item, Object c) {
-            Provider.RemovePinnedItemFromTaskbar(item, c.Extend<IRequest>(Context));
+            Provider.RemovePinnedItemFromTaskbar(item, ExtendCallback(c));
         }
 
         public void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Object c) {
-            Provider.CreateShortcutLink(linkPath, targetPath, description, workingDirectory, arguments, c.Extend<IRequest>(Context));
+            Provider.CreateShortcutLink(linkPath, targetPath, description, workingDirectory, arguments, ExtendCallback(c));
         }
 
         public void SetEnvironmentVariable(string variable, string value, int context, Object c) {
-            Provider.SetEnvironmentVariable(variable, value, context, c.Extend<IRequest>(Context));
+            Provider.SetEnvironmentVariable(variable, value, context, ExtendCallback(c));
         }
 
         public void RemoveEnvironmentVariable(string variable, int context, Object c) {
-            Provider.RemoveEnvironmentVariable(variable, context, c.Extend<IRequest>(Context));
+            Provider.RemoveEnvironmentVariable(variable, context, ExtendCallback(c));
         }
 
         public void CopyFile(string sourcePath, string destinationPath, Object c) {
-            Provider.CopyFile(sourcePath, destinationPath, c.Extend<IRequest>(Context));
+            Provider.CopyFile(sourcePath, destinationPath, ExtendCallback(c));
         }
 
         public void Delete(string path, Object c) {
-            Provider.Delete(path, c.Extend<IRequest>(Context));
+            Provider.Delete(path, ExtendCallback(c));
         }
 
         public void DeleteFolder(string folder, Object c) {
-            Provider.DeleteFolder(folder, c.Extend<IRequest>(Context));
+            Provider.DeleteFolder(folder, ExtendCallback(c));
         }
 
         public void CreateFolder(string folder, Object c) {
-            Provider.CreateFolder(folder, c.Extend<IRequest>(Context));
+            Provider.CreateFolder(folder, ExtendCallback(c));
         }
 
         public void DeleteFile(string filename, Object c) {
-            Provider.DeleteFile(filename, c.Extend<IRequest>(Context));
+            Provider.DeleteFile(filename, ExtendCallback(c));
         }
 
         public string GetKnownFolder(string knownFolder, Object c) {
-            return Provider.GetKnownFolder(knownFolder, c.Extend<IRequest>(Context));
+            return Provider.GetKnownFolder(knownFolder, ExtendCallback(c));
         }
 
         public bool IsElevated(Object c) {
-            return Provider.IsElevated(c.Extend<IRequest>(Context));
+            return Provider.IsElevated(ExtendCallback(c));
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Microsoft.OneGet.Api {
 
     public interface ICoreApi {
         #region declare core-apis
-
+        /* Synced/Generated code =================================================== */
         /// <summary>
         ///     The provider can query to see if the operation has been cancelled.
         ///     This provides for a gentle way for the caller to notify the callee that
@@ -48,6 +48,12 @@ namespace Microsoft.OneGet.Api {
         bool NotifyPackageInstalled(string packageName, string version, string source, string destination);
         bool NotifyBeforePackageUninstall(string packageName, string version, string source, string destination);
         bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
+
+        string GetCanonicalPackageId(string providerName, string packageName, string version);
+        string ParseProviderName(string canonicalPackageId);
+        string ParsePackageName(string canonicalPackageId);
+        string ParsePackageVersion(string canonicalPackageId);
+
         #endregion
     }
 }

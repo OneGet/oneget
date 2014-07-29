@@ -30,9 +30,7 @@ namespace Microsoft.OneGet {
         private IDictionary<string, PSObject> _commands;
         private DynamicPowershellCommand _currentCommand;
         private Runspace _runspace;
-#if DEPRECATING
-        private bool _runspaceWasLikeThatWhenIGotHere;
-#endif
+
         public DynamicPowershell() {
             _runspace = RunspaceFactory.CreateRunspace();
 
@@ -229,63 +227,9 @@ namespace Microsoft.OneGet {
             }
             var item = _commands.ContainsKey(name) ? _commands[name] : null;
             if (item == null) {
-                throw new Exception("Unable to find appropriate cmdlet.");
+                throw new Exception("MSG:UNABLE_TO_FIND_PS_COMMAND:{0}".format(commandName));
             }
             return item;
         }
-
-#if DEPRECATING
-        
-        public bool TryInvokeMemberEx(string name, out object result, string[] argumentNames, params object[] args) {
-            // make sure that we're clear to drop the last DPSC.
-            WaitForAvailable();
-
-            try {
-                // command
-                _currentCommand = new DynamicPowershellCommand(CreatePipeline(), new Command(GetPropertyValue(LookupCommand(name), "Name")));
-
-                // parameters
-                var unnamedCount = args.Length - argumentNames.Length;
-                var namedArguments = argumentNames.Select((each, index) => new KeyValuePair<string, object>(each, args[index + unnamedCount]));
-                _currentCommand.SetParameters(args.Take(unnamedCount), namedArguments);
-
-#if DETAILED_DEBUG
-                try {
-                    Console.WriteLine("[DynamicInvoke] {0} {1}", _currentCommand.Command.CommandText,
-                        _currentCommand.Command.Parameters != null && _currentCommand.Command.Parameters.Any()
-                            ? _currentCommand.Command.Parameters.Select(each => (each.Name.Is() ? "-"+each.Name : " ") + " " + each.Value.ToString()).Aggregate((each, current) => current + " " + each) : "");
-                } catch  {
-                    
-                }
-#endif
-                // invoke
-                result = _currentCommand.InvokeAsyncIfPossible();
-
-                return true;
-            } catch (Exception e) {
-                e.Dump();
-                result = null;
-                return false;
-            }
-        }
-
-// not used in this app. leftover from where Interface used this before.
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Still in development!")]
-        public DynamicPowershell(Runspace runspace) {
-            _runspace = runspace;
-            _runspace.StateChanged += CheckIfRunspaceIsOpening;
-            _runspace.AvailabilityChanged += CheckIfRunspaceIsAvailable;
-
-            if (_runspace.RunspaceAvailability == RunspaceAvailability.AvailableForNestedCommand ||
-                _runspace.RunspaceAvailability == RunspaceAvailability.Busy) {
-                _runspaceWasLikeThatWhenIGotHere = true;
-            }
-
-            _availableEvent = new ManualResetEvent(Runspace.RunspaceAvailability == RunspaceAvailability.Available);
-            _opened = new ManualResetEvent(Runspace.RunspaceStateInfo.State != RunspaceState.Opening);
-
-            _runspaceIsOwned = false;
-        }
-#endif
     }
 }

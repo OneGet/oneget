@@ -40,7 +40,8 @@ namespace Microsoft.OneGet.Providers.Package {
             _packageStatus = packageStatus;
             Task.Factory.StartNew(() => {
                 try {
-                    call(_context.Extend<IRequest>(provider.Context, this));
+                    call(provider.ExtendCallback(_context, this));
+
                 } catch (Exception e) {
                     e.Dump();
                 } finally {
@@ -53,7 +54,7 @@ namespace Microsoft.OneGet.Providers.Package {
             : this(c, provider) {
             Task.Factory.StartNew(() => {
                 try {
-                    call(_context.Extend<IRequest>(provider.Context, this));
+                    call(provider.ExtendCallback(_context, this));
                 } catch (Exception e) {
                     e.Dump();
                 } finally {

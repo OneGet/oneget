@@ -77,7 +77,7 @@ namespace Microsoft.OneGet {
 
             _commandPipeline.Output.DataReady += (sender, args) => {
                 if (_result.IsCompleted) {
-                    throw new Exception("Attempted to add to completed collection");
+                    throw new Exception("MSG:ATTEMPTED_TO_ADD_TO_COMPLETED_COLLECTION");
                 }
 
                 var items = _commandPipeline.Output.NonBlockingRead();
@@ -91,21 +91,22 @@ namespace Microsoft.OneGet {
 
             _commandPipeline.Error.DataReady += (sender, args) => {
                 if (_result.Errors.IsCompleted) {
-                    throw new Exception("Attempted to add to completed collection");
+                    throw new Exception("MSG:ATTEMPTED_TO_ADD_TO_COMPLETED_COLLECTION");
                 }
-                _result.IsFailing = true;
 
                 var items = _commandPipeline.Error.NonBlockingRead();
                 foreach (var item in items) {
                     if (item is PSObject) {
                         var record = (item as PSObject).ImmediateBaseObject;
                         if (record is ErrorRecord) {
+                            _result.IsFailing = true;
                             _result.Errors.Add(record as ErrorRecord);
                         }
                     }
                 }
 
                 if (_commandPipeline.PipelineStateInfo.State == PipelineState.Failed) {
+                    _result.IsFailing = true;
                     _result.Errors.Add(new ErrorRecord(_commandPipeline.PipelineStateInfo.Reason, "", ErrorCategory.InvalidArgument, null));
                 }
                 CheckForPipelineCompletion();

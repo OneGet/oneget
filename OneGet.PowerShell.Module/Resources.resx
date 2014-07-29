@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AskPermission" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:AskPermission</value>
+  </data>
+  <data name="ContinueInstallingAfterFailing" xml:space="preserve">
+    <value>Continue Installing after failing '{0}'</value>
+  </data>
+  <data name="ContinueUninstallingAfterFailing" xml:space="preserve">
+    <value>Continue uninstalling after failing '{0}'</value>
+  </data>
+  <data name="DestinationPathInvalid_path" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:DestinationPathInvalid_path</value>
+  </data>
+  <data name="DisambiguateForInstall" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:DisambiguateForInstall</value>
+  </data>
+  <data name="DisambiguateForUninstall" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:DisambiguateForUninstall</value>
+  </data>
+  <data name="DisambiguateSourceFoundInMultipleProivders" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:DisambiguateSourceFoundInMultipleProivders</value>
+  </data>
+  <data name="ExcludedProviderDueToMissingRequiredOption" xml:space="preserve">
+    <value>Excluded provider '{0}'-- missing option '{1}'</value>
+  </data>
+  <data name="GetPackageNotFound" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:GetPackageNotFound</value>
+  </data>
+  <data name="InstallationFailure" xml:space="preserve">
+    <value>Installation Failure {0}</value>
+  </data>
+  <data name="InstallingPackageFromUntrustedSource" xml:space="preserve">
+    <value>Installing Package '{0}' from untrusted source</value>
+  </data>
+  <data name="InstallPackage" xml:space="preserve">
+    <value>Install Package</value>
+  </data>
+  <data name="MatchesMultiplePackages" xml:space="preserve">
+    <value>'{0}' matches multiple packages '{1}/{2}' ({3})</value>
+  </data>
+  <data name="NameLocationProvider" xml:space="preserve">
+    <value>Name = '{0}' Location = '{1}' Provider = '{2}'</value>
+  </data>
+  <data name="NameLocationProviderReplaceExisting" xml:space="preserve">
+    <value>Name = '{0}' Location = '{1}' Provider = '{2}' (Replace existing)</value>
+  </data>
+  <data name="NoMatchForPackageName" xml:space="preserve">
+    <value>No match for package name '{0}'</value>
+  </data>
+  <data name="NoPackageFound" xml:space="preserve">
+    <value>No Package Found {0}</value>
+  </data>
+  <data name="NoPackagesFoundForProvider_providerName" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:NoPackagesFoundForProvider_providerName</value>
+  </data>
+  <data name="NoPackagesFoundNoPackageNamesCriteriaListed" xml:space="preserve">
+    <value>No Packages Found -- (no package names/criteria listed)</value>
+  </data>
+  <data name="NoProviderSelected" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:NoProviderSelected</value>
+  </data>
+  <data name="NullOrEmptyPackageSource" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:NullOrEmptyPackageSource</value>
+  </data>
+  <data name="PackageContainsInstallationScript" xml:space="preserve">
+    <value>Package Contains Installation Script</value>
+  </data>
+  <data name="PackageContainsUninstallationScript" xml:space="preserve">
+    <value>Package Contains uninstallation Script</value>
+  </data>
+  <data name="PackageFileNotRecognized" xml:space="preserve">
+    <value>Package File Not Recognized {0}</value>
+  </data>
+  <data name="PackageInstallFailure" xml:space="preserve">
+    <value>Package Install Failure</value>
+  </data>
+  <data name="PackageUninstallFailure" xml:space="preserve">
+    <value>Package uninstall Failure</value>
+  </data>
+  <data name="ProviderNotFound" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:ProviderNotFound</value>
+  </data>
+  <data name="ProviderReturnedNoPackageSources" xml:space="preserve">
+    <value>Provider '{0}' returned no package sources</value>
+  </data>
+  <data name="ProviderReturnedNoPackageSourcesLocation" xml:space="preserve">
+    <value>Provider '{0}' returned no package sources (Location = '{1}')</value>
+  </data>
+  <data name="ProviderReturnedNoPackageSourcesName" xml:space="preserve">
+    <value>Provider '{0}' returned no package sources (Name = '{1}')</value>
+  </data>
+  <data name="ProviderReturnedNoPackageSourcesNameLocation" xml:space="preserve">
+    <value>Provider '{0}' returned no package sources (Name = '{1}' Location='{2}')</value>
+  </data>
+  <data name="RequiredValuePackageName" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:RequiredValuePackageName</value>
+  </data>
+  <data name="ShouldContinueAfterPackageInstallFailure" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:ShouldContinueAfterPackageInstallFailure</value>
+  </data>
+  <data name="ShouldContinueAfterPackageUnInstallFailure" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:ShouldContinueAfterPackageUnInstallFailure</value>
+  </data>
+  <data name="ShouldContinueRunningInstallScript" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:ShouldContinueRunningInstallScript</value>
+  </data>
+  <data name="ShouldContinueRunningUninstallScript" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:ShouldContinueRunningUninstallScript</value>
+  </data>
+  <data name="ShouldContinueWithUntrustedPackageSource" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:ShouldContinueWithUntrustedPackageSource</value>
+  </data>
+  <data name="ShouldProcessPackageInstall" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:Should Process Package Install</value>
+  </data>
+  <data name="ShouldProcessPackageUnInstall" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:ShouldProcessPackageUnInstall</value>
+  </data>
+  <data name="ShouldThePackageScriptAtBeExecuted" xml:space="preserve">
+    <value>Should the package script at '{0}' be executed?</value>
+  </data>
+  <data name="ShouldThePackageUninstallScriptAtBeExecuted" xml:space="preserve">
+    <value>Should the package uninstall script at '{0}' be executed?</value>
+  </data>
+  <data name="SourceNotFound" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:SourceNotFound</value>
+  </data>
+  <data name="ThisPackageSourceIsNotMarkedAsSafe" xml:space="preserve">
+    <value>This package source is not marked as safe. Are you sure you want to install software from '{0}'</value>
+  </data>
+  <data name="UnableToResolvePackageProvider" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:UnableToResolvePackageProvider</value>
+  </data>
+  <data name="UninstallationFailure" xml:space="preserve">
+    <value>Uninstallation Failure {0}</value>
+  </data>
+  <data name="UninstallPackage" xml:space="preserve">
+    <value>Uninstall Package</value>
+  </data>
+  <data name="UnknownProvider" xml:space="preserve">
+    <value>FIX_THIS_RESOURCE:UnknownProvider</value>
+  </data>
+</root>

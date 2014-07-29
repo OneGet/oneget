@@ -21,20 +21,20 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             : base(categories) {
         }
 
-        [Parameter(Position = 0, ValueFromPipeline = true, ParameterSetName = ProviderByNameSet)]
-        [Parameter(Position = 0, ValueFromPipeline = true, ParameterSetName = ProviderByObjectSet)]
+        [Parameter(Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.ProviderByNameSet)]
+        [Parameter(Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.ProviderByObjectSet)]
         public string[] Name {get; set;}
 
-        [Parameter(ParameterSetName = ProviderByNameSet)]
-        [Parameter(ParameterSetName = ProviderByObjectSet)]
+        [Parameter(ParameterSetName = Constants.ProviderByNameSet)]
+        [Parameter(ParameterSetName = Constants.ProviderByObjectSet)]
         public string RequiredVersion {get; set;}
 
-        [Parameter(ParameterSetName = ProviderByNameSet)]
-        [Parameter(ParameterSetName = ProviderByObjectSet)]
+        [Parameter(ParameterSetName = Constants.ProviderByNameSet)]
+        [Parameter(ParameterSetName = Constants.ProviderByObjectSet)]
         public string MinimumVersion {get; set;}
 
-        [Parameter(ParameterSetName = ProviderByNameSet)]
-        [Parameter(ParameterSetName = ProviderByObjectSet)]
+        [Parameter(ParameterSetName = Constants.ProviderByNameSet)]
+        [Parameter(ParameterSetName = Constants.ProviderByObjectSet)]
         public string MaximumVersion {get; set;}
     }
 }

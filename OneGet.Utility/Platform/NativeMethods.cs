@@ -42,7 +42,7 @@ namespace Microsoft.OneGet.Platform {
 
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        internal static extern void OutputDebugString(string message);
+        internal static extern void OutputDebugString(string debugMessageText);
 
     }
 }

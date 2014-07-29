@@ -21,7 +21,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Providers.Package;
     using Utility;
 
-    [Cmdlet(VerbsLifecycle.Register, PackageSourceNoun, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsLifecycle.Register, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
     public sealed class RegisterPackageSource : CmdletBase {
         [Parameter(Position = 0)]
         public string Name {get; set;}
@@ -29,13 +29,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter(Position = 1)]
         public string Location {get; set;}
 
-        [Parameter(Position = 2, Mandatory = true, ParameterSetName = ProviderByObjectSet, ValueFromPipeline = true)]
+        [Parameter(Position = 2, Mandatory = true, ParameterSetName = Constants.ProviderByObjectSet, ValueFromPipeline = true)]
         public PackageProvider PackageProvider {get; set;}
 
-        [Parameter(Position = 2, Mandatory = true, ParameterSetName = ProviderByNameSet)]
+        [Parameter(Position = 2, Mandatory = true, ParameterSetName = Constants.ProviderByNameSet)]
         public string Provider {get; set;}
 
-        [Parameter(Position = 2, Mandatory = true, ParameterSetName = OverwriteExistingSourceSet)]
+        [Parameter(Position = 2, Mandatory = true, ParameterSetName = Constants.OverwriteExistingSourceSet)]
         public PackageSource OriginalSource {get; set;}
 
         [Parameter(Position = 3)]
@@ -101,7 +101,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (PackageProvider == null) {
-                return Error("NO_PROVIDER_SELECTED");
+                return Error(Messages.NoProviderSelected);
             }
 
             if (Stopping) {
@@ -111,7 +111,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             using (var sources = CancelWhenStopped(PackageProvider.ResolvePackageSources(this))) {
                 if (sources.Any(each => each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase))) {
-                    if (Force || ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}' (Replace existing)".format(Name, Location, Provider)).Result) {
+                    if (Force || ShouldProcess(FormatMessageString(Constants.NameLocationProviderReplaceExisting,Name, Location, Provider)).Result) {
                         using (var added =  CancelWhenStopped(PackageProvider.AddPackageSource(Name, Location, Trusted, this))) {
                             foreach (var addedSource in added) {
                                 WriteObject(addedSource);
@@ -123,7 +123,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
             }
 
-            if (ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}'".format(Name, Location, Provider)).Result) {
+            if (ShouldProcess(FormatMessageString(Constants.NameLocationProvider,Name, Location, Provider)).Result) {
                 using (var added = CancelWhenStopped(PackageProvider.AddPackageSource(Name, Location, Trusted, this))) {
                     foreach (var addedSource in added) {
                         WriteObject(addedSource);

@@ -134,7 +134,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                             foreach (var error in errors) {
                                 try {
                                     switch (error.CategoryInfo.Category) {
-                                        case ErrorCategory.ResourceUnavailable:
+                                        case System.Management.Automation.ErrorCategory.ResourceUnavailable:
                                             // file not found
                                             continue;
 

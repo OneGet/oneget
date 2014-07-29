@@ -235,7 +235,8 @@ namespace Microsoft.OneGet.Plugin {
                     }
                     return instanceDelegate.CreateProxiedDelegate<TInterface>();
                 }
-                throw new Exception("Delegate '{0}' not matched in object.".format(typeof (TInterface).NiceName()));
+                return (TInterface)(object) typeof(TInterface).CreateEmptyDelegate();
+                // throw new Exception("Delegate '{0}' not matched in object.".format(typeof (TInterface).NiceName()));
             }
             return DynamicInterface.Instance.Create<TInterface>(instance);
         }

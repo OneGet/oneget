@@ -147,6 +147,7 @@ function Get-InstalledPackage {
 	# all packages
 	if( $name -eq $null -or $name -eq "" ) {
 		foreach( $pkg in $InstalledPackages ) {
+			# Write-Debug "Returning installed package {0}" $pkg.Name
 			Write-output $pkg
 		}
 	}
@@ -183,6 +184,7 @@ function Resolve-PackageSource {
 		# if there is nothing passed in, 
 		# just return all the known package sources
 		foreach( $src in $RegisteredPackageSources )  {
+			write-debug "Writing out a package source {0}" $src.Name
 			Write-Output $src
 		}
 		return;

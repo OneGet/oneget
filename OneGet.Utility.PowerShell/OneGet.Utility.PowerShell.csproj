@@ -42,9 +42,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncCmdLet.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="DynamicPowershell.cs" />
     <Compile Include="DynamicPowershellCommand.cs" />
     <Compile Include="DynamicPowershellResult.cs" />
+    <Compile Include="ErrorMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

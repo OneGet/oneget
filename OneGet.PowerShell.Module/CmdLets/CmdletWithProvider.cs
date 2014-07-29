@@ -14,7 +14,6 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Collections;
@@ -29,25 +28,17 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             _optionCategories = categories;
         }
 
-        [Parameter(ParameterSetName = ProviderByObjectSet, Mandatory = true, ValueFromPipeline = true)]
+        [Parameter(ParameterSetName = Constants.ProviderByObjectSet, Mandatory = true, ValueFromPipeline = true)]
         public virtual PackageProvider[] PackageProvider {get; set;}
 
-        [Parameter(ParameterSetName = ProviderByNameSet)]
+        [Parameter(ParameterSetName = Constants.ProviderByNameSet)]
         public virtual string[] Provider {get; set;}
-
-#if PROBABLY_NOT_NEEDED
-        protected string[] AllProviderNames {
-            get {
-                return _providerNames ?? (_providerNames = PackageManagementService.ProviderNames.ToArray());
-            }
-        }
-#endif 
 
         protected virtual IEnumerable<PackageProvider> SelectedProviders {
             get {
                 if (IsProviderByObject) {
                     if (PackageProvider.IsNullOrEmpty()) {
-                        Error("NO_PROVIDER_SELECTED");
+                        Error(Messages.NoProviderSelected);
                         return null;
                     }
                     return FilterProvidersUsingDynamicParameters(PackageProvider).ToArray();
@@ -85,7 +76,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             // these warnings only show for providers that would have otherwise be selected.
             // if not for the missing requrired parameter.
             foreach (var mp in excluded.OrderBy( each => each.Key )) {
-                Warning("EXCLUDED_PROVIDER_MISSING_REQUIRED_PARAMETER", mp.Key, mp.Value );
+                Warning(Messages.ExcludedProviderDueToMissingRequiredOption, mp.Key, mp.Value );
             }
         }
 

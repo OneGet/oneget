@@ -21,7 +21,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
 
-    [Cmdlet(VerbsLifecycle.Unregister, PackageSourceNoun, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsLifecycle.Unregister, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
     public sealed class UnregisterPackageSource : CmdletWithSource {
         private string[] _sources;
 
@@ -31,8 +31,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }) {
         }
 
-        [Parameter(ParameterSetName = ProviderByObjectSet, Position = 0, Mandatory = true)]
-        [Parameter(ParameterSetName = ProviderByNameSet, Position = 0, Mandatory = true)]
+        [Parameter(ParameterSetName = Constants.ProviderByObjectSet, Position = 0, Mandatory = true)]
+        [Parameter(ParameterSetName = Constants.ProviderByNameSet, Position = 0, Mandatory = true)]
         public string Source {get; set;}
 
         [Parameter]
@@ -59,7 +59,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public override bool ProcessRecordAsync() {
             if (IsSourceByObject) {
                 if (PackageSource.IsNullOrEmpty()) {
-                    return Error("NULL_OR_EMPTY_PACKAGE_SOURCE");
+                    return Error(Messages.NullOrEmptyPackageSource);
                 }
 
                 foreach (var source in PackageSource) {
@@ -69,7 +69,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
                     var provider = SelectProviders(source.ProviderName).FirstOrDefault();
                     if (provider == null) {
-                        return Error("UNABLE_TO_RESOLVE_PACKAGE_PROVIDER");
+                        return Error(Messages.UnableToResolvePackageProvider);
                     }
                     Unregister(source);
                 }
@@ -84,18 +84,18 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length == 0) {
-                return Error("PROVIDER_NOT_FOUND");
+                return Error(Messages.UnableToResolvePackageProvider);
             }
 
             if (prov.Length > 0) {
                 var sources = prov.SelectMany(each => each.ResolvePackageSources(this).ToArray()).ToArray();
 
                 if (sources.Length == 0) {
-                    return Error("SOURCE_NOT_FOUND", Source);
+                    return Error(Messages.SourceNotFound, Source);
                 }
 
                 if (sources.Length > 1) {
-                    return Error("DISAMBIGUATE_SOURCE_VS_PROVIDER", prov.Select(each => each.Name).JoinWithComma(), Source);
+                    return Error(Messages.DisambiguateSourceVsProvider, prov.Select(each => each.Name).JoinWithComma(), Source);
                 }
 
                 return Unregister(sources[0]);
@@ -108,7 +108,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (source == null) {
                 throw new ArgumentNullException("source");
             }
-            if (ShouldProcess("Name = '{0}' Location = '{1}' Provider = '{2}'".format(source.Name, source.Location, source.ProviderName)).Result) {
+            if (ShouldProcess(Constants.NameLocationProvider.format(source.Name, source.Location, source.ProviderName)).Result) {
                 source.Provider.RemovePackageSource(source.Name, this);
                 return true;
             }

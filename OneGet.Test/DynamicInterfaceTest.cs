@@ -185,11 +185,13 @@ namespace Microsoft.OneGet.Test {
             };
 
 
-            // this can't work, as the function doesn't exist.
-            Assert.Throws<Exception>(() => {
-                var tz = z.As<Two>();
-                tz();
-            });
+            // this creates a dummy function now.
+            
+            var tz = z.As<Two>();
+            tz();
+
+
+
 
             Func<bool> fTwo = new Func<bool>(() => {
                 Console.WriteLine("In fTwo");

@@ -66,50 +66,43 @@ namespace Microsoft.OneGet.Test {
                 return true;
             }
 
-            public bool Warning(string message) {
-                Console.WriteLine("WARNING: {0}", message);
+            public bool Warning(string messageText) {
+                Console.WriteLine("WARNING: {0}", messageText);
                 return true;
             }
 
-            public bool Error(string message) {
-                Console.WriteLine("ERROR: {0}", message);
+            public bool Error(string messageText) {
+                Console.WriteLine("ERROR: {0}", messageText);
                 return true;
             }
 
-            public bool Message(string message) {
-                Console.WriteLine("MESSAGE: {0}", message);
+            public bool Message(string messageText) {
+                Console.WriteLine("MESSAGE: {0}", messageText);
                 return true;
             }
 
-            public bool Verbose(string message) {
-                Console.WriteLine("VERBOSE: {0}", message);
+            public bool Verbose(string messageText) {
+                Console.WriteLine("VERBOSE: {0}", messageText);
                 return true;
             }
 
-            public bool Debug(string message) {
-                Console.WriteLine("DEBUG: {0}", message);
+            public bool Debug(string messageText) {
+                Console.WriteLine("DEBUG: {0}", messageText);
                 return true;
             }
 
-            public string GetMessageString(string message) {
-                return message;
-            }
-
-            public bool ExceptionThrown(string exceptionType, string message, string stacktrace) {
-                Console.WriteLine("\r\n\r\n==================================================================================");
-                Console.WriteLine("{0}//{1}/{2}\r\n{3}", AppDomain.CurrentDomain.FriendlyName, exceptionType, message, stacktrace);
-                Console.WriteLine("==================================================================================\r\n\r\n");
-                return true;
+            public string GetMessageString(string messageText) {
+                return messageText;
             }
 
             private static int count;
-            public int StartProgress(int parentActivityId, string message) {
-                Console.WriteLine("STARTPROGRESS {0} // {1}", parentActivityId, string.Format(message));
+            public int StartProgress(int parentActivityId, string messageText) {
+                Console.WriteLine("STARTPROGRESS {0} // {1}", parentActivityId, string.Format(messageText));
                 return count++;
             }
 
-            public bool Progress(int activityId, int progress, string message) {
-                Console.WriteLine("PROGRESS {0} // {1}% // {2}", activityId, progress, string.Format(message));
+            public bool Progress(int activityId, int progressPercentage, string messageText) {
+                Console.WriteLine("PROGRESS {0} // {1}% // {2}", activityId, progressPercentage, string.Format(messageText));
                 return true;
             }
 

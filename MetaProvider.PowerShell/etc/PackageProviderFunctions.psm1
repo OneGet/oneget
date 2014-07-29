@@ -133,7 +133,7 @@ function New-SoftwareIdentity {
 		[Parameter(Mandatory=$true)][string] $version, 
 		[Parameter(Mandatory=$true)][string] $versionScheme, 
 		[Parameter(Mandatory=$true)][string] $source, 
-		[Parameter(Mandatory=$true)][string] $summary, 
+		[string] $summary, 
 		[string] $searchKey = $null, 
 		[string] $fullPath = $null, 
 		[string] $filename = $null, 

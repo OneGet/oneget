@@ -21,14 +21,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
 
-    [Cmdlet(VerbsLifecycle.Uninstall, PackageNoun, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsLifecycle.Uninstall, Constants.PackageNoun, SupportsShouldProcess = true)]
     public sealed class UninstallPackage : GetPackage {
         private Dictionary<string, List<SoftwareIdentity>> _resultsPerName;
 
         [Parameter]
         public SwitchParameter Force {get; set;}
 
-        [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = PackageByObjectSet)]
+        [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.PackageByObjectSet)]
         public SoftwareIdentity[] Package {get; set;}
 
         public override bool ProcessRecordAsync() {
@@ -38,7 +38,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             // otherwise, it's just packages by name 
             if (Name.IsNullOrEmpty()) {
-                Error("Required value : Package Name");
+                Error(Messages.RequiredValuePackageName);
                 return false;
             }
 
@@ -63,7 +63,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
             // Show errors before?
             foreach (var name in UnprocessedNames) {
-                Error("GET_PACKAGE_NOT_FOUND", name);
+                Error(Messages.GetPackageNotFound, name);
             }
 
             if (Stopping) {
@@ -73,7 +73,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             foreach (var n in _resultsPerName.Keys) {
                 // check if we have a 1 package per name 
                 if (_resultsPerName[n].Count > 1) {
-                    Error("DISAMBIGUATE_FOR_UNINSTALL", n, _resultsPerName[n]);
+                    Error(Messages.DisambiguateForUninstall, n, _resultsPerName[n]);
                 }
 
                 if (Stopping) {
@@ -92,7 +92,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
 
                 if (provider == null) {
-                    Error("UNKNOWN_PROVIDER", pkg.ProviderName);
+                    Error(Messages.UnknownProvider, pkg.ProviderName);
                     return false;
                 }
 
@@ -105,7 +105,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 } catch (Exception e) {
                     e.Dump();
-                    Error("Uninstallation Failure {0}", pkg.Name );
+                    Error(Messages.UninstallationFailure, pkg.Name );
                     return false;
                 }
             }
@@ -113,15 +113,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool ShouldProcessPackageUninstall(string packageName, string version) {
-            return Force || ShouldProcess(packageName, "Uninstall Package").Result;
+            return Force || ShouldProcess(packageName, Constants.UninstallPackage).Result;
         }
 
         public override bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source) {
-            return Force || ShouldContinue("Continue uninstalling after failing '{0}'".format(packageName), "Package uninstall Failure").Result;
+            return Force || ShouldContinue(Constants.ContinueUninstallingAfterFailing.format(packageName), Constants.PackageUninstallFailure).Result;
         }
 
         public override bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation) {
-            return Force || ShouldContinue("Should the package uninstall script at '{0}' be executed?".format(scriptLocation), "Package Contains uninstallation Script").Result;
+            return Force || ShouldContinue(Constants.ShouldThePackageUninstallScriptAtBeExecuted.format(scriptLocation), Constants.PackageContainsUninstallationScript).Result;
         }
     }
 }

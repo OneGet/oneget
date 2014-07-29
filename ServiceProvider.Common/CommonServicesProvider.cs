@@ -46,13 +46,13 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         /// Gets the features advertized from the provider
         /// </summary>
         /// <param name="c"></param>
-        public void GetFeatures(Callback c){
+        public void GetFeatures(Callback c) {
             if (c == null) {
                 throw new ArgumentNullException("c");
             }
 
             using (var request = c.As<Request>()) {
-                request.Debug("Calling 'NuGet::GetFeatures'");
+                request.Debug("Calling 'CommonServicesProvider::GetFeatures'");
                 foreach (var feature in _features) {
                     request.Yield(feature);
                 }
@@ -64,13 +64,13 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         /// </summary>
         /// <param name="category"></param>
         /// <param name="c"></param>
-        public void GetDynamicOptions(int category, Callback c){
+        public void GetDynamicOptions(int category, Callback c) {
             if (c == null) {
                 throw new ArgumentNullException("c");
             }
 
             using (var request = c.As<Request>()) {
-                request.Debug("Calling 'GetDynamicOptions'" );
+                request.Debug("Calling 'GetDynamicOptions'");
             }
         }
 
@@ -128,17 +128,17 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
                     if (args.Cancelled || args.Error != null) {
                         localFilename = null;
                     }
-                     
+
                     done.Set();
                 };
                 webClient.DownloadProgressChanged += (sender, args) => {
-                    var percent = (args.BytesReceived*100)/args.TotalBytesToReceive;
+                    var percent = (args.BytesReceived * 100) / args.TotalBytesToReceive;
                     // Progress(c, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
                 };
                 webClient.DownloadFileAsync(remoteLocation, localFilename);
                 done.WaitOne();
                 if (!File.Exists(localFilename)) {
-                    request.Error("Unable to download '{0}' to file '{1}'", remoteLocation.ToString(), localFilename);
+                    request.Error(ErrorCategory.InvalidResult, remoteLocation.ToString(), "Unable to download '{0}' to file '{1}'", remoteLocation.ToString(), localFilename);
                 }
             }
 
@@ -150,8 +150,8 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
 
             using (var request = c.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::xxx'");
-                request.Error("Unsupported Archive {0}", localFilename);
+                request.Debug("Calling 'CommonServiceProvider::UnpackArchive'");
+                request.Error(ErrorCategory.InvalidData, localFilename, Constants.UnsupportedArchive, localFilename);
             }
 
             return null;
@@ -163,7 +163,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
 
             using (var request = c.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::xxx'");
+                request.Debug("Calling 'CommonServiceProvider::AddPinnedItemToTaskbar'");
             }
         }
 
@@ -173,7 +173,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
 
             using (var request = c.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::xxx'");
+                request.Debug("Calling 'CommonServiceProvider::RemovePinnedItemFromTaskbar'");
             }
         }
 
@@ -183,13 +183,13 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
 
             using (var request = c.As<Request>()) {
-                request.Debug( "Calling 'CommonServiceProvider::CreateShortcutLink'");
+                request.Debug("Calling 'CommonServiceProvider::CreateShortcutLink'");
 
                 if (File.Exists(linkPath)) {
-                    request.Verbose( "Creating Shortcut '{0}' => '{1}'", linkPath, targetPath);
+                    request.Verbose("Creating Shortcut '{0}' => '{1}'", linkPath, targetPath);
                     ShellLink.CreateShortcut(linkPath, targetPath, description, workingDirectory, arguments);
                 }
-                request.Error( "Unable to create shortcut - target '{0}' does not exist", targetPath);
+                request.Error(ErrorCategory.ObjectNotFound,targetPath,Constants.UnableToCreateShortcutTargetDoesNotExist, targetPath);
             }
         }
 
@@ -207,14 +207,14 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
                 switch ((EnvironmentContext)context) {
                     case EnvironmentContext.System:
                         if (!IsElevated(c)) {
-                            request.Warning("SetEnvironmentVariable Failed", "Admin Elevation required to set variable '{0}' in machine context", variable);
+                            request.Warning("SetEnvironmentVariable Failed - Admin Elevation required to set variable '{0}' in machine context", variable);
                             return;
                         }
-                        request.Verbose("SetEnvironmentVariable (machine)", "'{0}' = '{1}'", variable, value);
+                        request.Verbose("SetEnvironmentVariable (machine) '{0}' = '{1}'", variable, value);
                         Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.Machine);
                         break;
                     default:
-                        request.Verbose( "SetEnvironmentVariable (user)", "'{0}' = '{1}'", variable, value);
+                        request.Verbose("SetEnvironmentVariable (user) '{0}' = '{1}'", variable, value);
                         Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User);
                         break;
                 }
@@ -229,25 +229,25 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
 
             using (var request = c.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::RemoveEnvironmentVariable'");
-                
+
                 if (string.IsNullOrEmpty(variable)) {
                     return;
                 }
                 switch ((EnvironmentContext)context) {
                     case EnvironmentContext.User:
-                        request.Verbose( "RemoveEnvironmentVariable (user)--'{0}'", variable);
+                        request.Verbose("RemoveEnvironmentVariable (user)--'{0}'", variable);
                         Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
                         break;
                     case EnvironmentContext.System:
                         if (!IsElevated(c)) {
-                            request.Warning( "RemoveEnvironmentVariable Failed--Admin Elevation required to remove variable '{0}' from machine context", variable);
+                            request.Warning(Constants.RemoveEnvironmentVariableRequiresElevation, variable);
                             return;
                         }
                         request.Verbose("RemoveEnvironmentVariable (machine)", "'{0}'", variable);
                         Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Machine);
                         break;
                     default:
-                        request.Verbose( "RemoveEnvironmentVariable (all)", "'{0}'", variable);
+                        request.Verbose("RemoveEnvironmentVariable (all) '{0}'", variable);
                         Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
                         Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Machine);
                         break;
@@ -272,12 +272,12 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
                 if (File.Exists(destinationPath)) {
                     destinationPath.TryHardToDelete();
                     if (File.Exists(destinationPath)) {
-                        request.Error("Unable to overwrite existing file '{0}'", destinationPath);
+                        request.Error(ErrorCategory.OpenError,destinationPath,Constants.UnableToOverwriteExistingFile, destinationPath);
                     }
                 }
                 File.Copy(sourcePath, destinationPath);
                 if (!File.Exists(destinationPath)) {
-                    request.Error("Unable to copy file to '{0}'", destinationPath);
+                    request.Error(ErrorCategory.InvalidResult, destinationPath, Constants.UnableToCopyFileTo, destinationPath);
                 }
             }
         }
@@ -324,11 +324,11 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
                 if (!Directory.Exists(folder)) {
                     try {
                         Directory.CreateDirectory(folder);
-                        request.Verbose( "CreateFolder Success {0}", folder);
+                        request.Verbose("CreateFolder Success {0}", folder);
                         return;
                     }
                     catch (Exception e) {
-                        request.Error( "CreateFolder Failed '{0}' -- {1}", folder, e.Message);
+                        request.Error(ErrorCategory.InvalidResult, folder, Constants.CreatefolderFailed, folder, e.Message);
                         return;
                     }
                 }
@@ -370,13 +370,13 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
                     }
                 }
 
-                request.Error("Unknown Folder '{0}'", knownFolder);
+                request.Error(ErrorCategory.InvalidArgument, knownFolder, Constants.UnknownFolderId, knownFolder);
             }
             return null;
         }
 
         public bool IsElevated(Callback c) {
-            return AdminPrivilege.IsElevated;           
+            return AdminPrivilege.IsElevated;
         }
     }
 

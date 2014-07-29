@@ -14,7 +14,9 @@
 
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     #region copy PackageProvider-types
-public enum OptionCategory {
+/* Synced/Generated code =================================================== */
+
+    public enum OptionCategory {
         Package = 0,
         Provider = 1,
         Source = 2,

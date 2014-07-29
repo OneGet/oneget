@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Api {
     public interface IResponseApi {
         #region declare response-apis
+        /* Synced/Generated code =================================================== */
 
         /// <summary>
         ///     The provider can query to see if the operation has been cancelled.

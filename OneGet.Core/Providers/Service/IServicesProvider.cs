@@ -19,6 +19,7 @@ namespace Microsoft.OneGet.Providers.Service {
 
     public interface IServicesProvider : IProvider, IServicesApi {
         #region declare ServicesProvider-interface
+        /* Synced/Generated code =================================================== */
 
         /// <summary>
         ///     Returns the name of the Provider. Doesn't need callback .

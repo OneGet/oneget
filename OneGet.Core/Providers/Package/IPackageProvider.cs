@@ -20,6 +20,7 @@ namespace Microsoft.OneGet.Providers.Package {
 
     public interface IProvider {
         #region declare Provider-interface
+        /* Synced/Generated code =================================================== */
 
         /// <summary>
         ///     Allows the Provider to do one-time initialization.
@@ -55,6 +56,7 @@ namespace Microsoft.OneGet.Providers.Package {
 
     public interface IPackageProvider : IProvider {
         #region declare PackageProvider-interface
+        /* Synced/Generated code =================================================== */
 
         /// <summary>
         ///     Returns the name of the Provider. Doesn't need a callback .

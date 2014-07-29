@@ -19,6 +19,7 @@ namespace Microsoft.OneGet.Providers.Meta {
 
     public interface IMetaProvider : IProvider {
         #region declare MetaProvider-interface
+        /* Synced/Generated code =================================================== */
 
         /// <summary>
         ///     Will instantiate an instance of a provider given it's name

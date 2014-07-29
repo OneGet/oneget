@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\ICoreApi.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Packaging\Iso19770_2.cs" />
     <Compile Include="Packaging\SoftwareMetadata.cs" />
     <Compile Include="Providers\Package\IPackageProvider.cs" />
@@ -70,6 +71,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PackageManagementService.cs" />
     <Compile Include="Providers\Loader.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -80,7 +86,12 @@
       <Name>OneGet.Utility</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

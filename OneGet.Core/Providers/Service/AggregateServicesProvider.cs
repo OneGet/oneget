@@ -59,7 +59,7 @@ namespace Microsoft.OneGet.Providers.Service {
                 throw new ArgumentNullException("c");
             }
 
-            c.As<IRequest>().Error("Protocol Scheme '{0}' not supported".format(remoteLocation.Scheme));
+            c.As<IRequest>().Error("PROTOCOL_NOT_SUPPORTED","NotImplemented", remoteLocation.Scheme,"PROTOCOL_NOT_SUPPORTED");
         }
 
         public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object c) {
@@ -69,7 +69,7 @@ namespace Microsoft.OneGet.Providers.Service {
                 throw new ArgumentNullException("c");
             }
 
-            c.As<IRequest>().Error("Unsupported archive type for file '{0}' not supported".format(localFilename));
+            c.As<IRequest>().Error("ARCHIVE_NOT_SUPPORTED", "NotImplemented", localFilename, "PROTOCOL_NOT_SUPPORTED");
             return Enumerable.Empty<string>();
         }
 

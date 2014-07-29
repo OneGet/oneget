@@ -23,14 +23,9 @@ namespace Microsoft.PowerShell.OneGet.Utility {
     using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
-    using System.IO;
 
     internal class CustomRuntimeDefinedParameter : RuntimeDefinedParameter {
         internal HashSet<DynamicOption> Options = new HashSet<DynamicOption>();
-
-        internal bool IsRequiredForProvider(string name) {
-            return Options.Any(each => each.ProviderName.EqualsIgnoreCase(name) && each.IsRequired);
-        }
 
         public CustomRuntimeDefinedParameter(DynamicOption option) : base(option.Name, ActualParameterType(option.Type), new Collection<Attribute> {
             new ParameterAttribute()
@@ -40,6 +35,10 @@ namespace Microsoft.PowerShell.OneGet.Utility {
             if (!values.IsNullOrEmpty()) {
                 Attributes.Add(new ValidateSetAttribute(values));
             }
+        }
+
+        internal bool IsRequiredForProvider(string name) {
+            return Options.Any(each => each.ProviderName.EqualsIgnoreCase(name) && each.IsRequired);
         }
 
         internal IEnumerable<string> GetValues(AsyncCmdlet cmdlet) {
@@ -53,16 +52,24 @@ namespace Microsoft.PowerShell.OneGet.Utility {
                         return (string[])Value;
 
                     case OptionType.File:
-                        return new[] {cmdlet.ResolveExistingFilePath(Value.ToString()) };
-                        
+                        return new[] {
+                            cmdlet.ResolveExistingFilePath(Value.ToString())
+                        };
+
                     case OptionType.Folder:
-                        return new[] { cmdlet.ResolveExistingFolderPath(Value.ToString()) };
+                        return new[] {
+                            cmdlet.ResolveExistingFolderPath(Value.ToString())
+                        };
 
                     case OptionType.Path:
-                        return new[] { cmdlet.ResolvePath(Value.ToString()) };
-                    
+                        return new[] {
+                            cmdlet.ResolvePath(Value.ToString())
+                        };
+
                     case OptionType.SecureString:
-                        return new[] { "SECURESTRING:"+((SecureString)Value).ToProtectedString("salt") };
+                        return new[] {
+                            "SECURESTRING:" + ((SecureString)Value).ToProtectedString("salt")
+                        };
                 }
                 return new[] {
                     Value.ToString()
@@ -82,11 +89,11 @@ namespace Microsoft.PowerShell.OneGet.Utility {
                 case OptionType.Int:
                     return typeof (int);
                 case OptionType.Path:
-                    return typeof(string);
+                    return typeof (string);
                 case OptionType.File:
-                    return typeof(string);
+                    return typeof (string);
                 case OptionType.Folder:
-                    return typeof(string);
+                    return typeof (string);
                 case OptionType.SecureString:
                     return typeof (SecureString);
 

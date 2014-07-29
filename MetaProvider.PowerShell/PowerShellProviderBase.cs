@@ -115,13 +115,19 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             var result = _powershell.NewTryInvokeMemberEx(cmdInfo.Name, new string[0], args);
             if (result == null) {
                 // failure! 
-                throw new Exception("Powershell script/function failed.");
+                throw new Exception(Constants.PowershellScriptFunctionFailed);
             }
 
             return result.Last();
         }
 
         private static object _lock = new object();
+
+        internal void ReportErrors(Request request, IEnumerable<ErrorRecord> errors) {
+            foreach (var error in errors) {
+                request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject == null ? null : error.TargetObject.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
+            }
+        }
 
         internal object CallPowerShell(Request request, params object[] args) {
             lock (_lock) {
@@ -139,7 +145,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     // instead, loop thru results and get 
                     if (result == null) {
                         // failure! 
-                        throw new Exception("Powershell script/function failed.");
+                        throw new Exception(Constants.PowershellScriptFunctionFailed);
                     }
 
                     object finalValue = null;
@@ -147,10 +153,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     foreach (var value in result) {
 
                         if (result.IsFailing) {
-                            foreach (var error in result.Errors) {
-                                request.Error("POWERSHELL ERROR in '{0}' in module '{1}' :\r\n{2} {3}", request.CommandInfo.Name, _module.Name, error.CategoryInfo.Category, error.Exception.Message);
-                                return null;
-                            }
+                            ReportErrors(request, result.Errors);
+                            return null;
                         }
 
                         var y = value as Yieldable;
@@ -163,10 +167,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
 
                     if (result.IsFailing) {
-                        foreach (var error in result.Errors) {
-                            request.Error("POWERSHELL ERROR in '{0}' in module '{1}' :\r\n{2} {3}", request.CommandInfo.Name, _module.Name, error.CategoryInfo.Category, error.Exception.Message);
-                            return null;
-                        }
+                        ReportErrors(request, result.Errors);
+                        return null;
                     }
 
                     return finalValue;

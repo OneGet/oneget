@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
 
-    [Cmdlet(VerbsCommon.Get, PackageNoun)]
+    [Cmdlet(VerbsCommon.Get, Constants.PackageNoun)]
     public class GetPackage : CmdletWithSearch {
         private readonly Dictionary<string, bool> _namesProcessed = new Dictionary<string, bool>();
         private readonly Dictionary<string, bool> _providersProcessed = new Dictionary<string, bool>();
@@ -90,11 +90,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool EndProcessingAsync() {
             foreach (var name in UnprocessedNames) {
-                Error("GET_PACKAGE_NOT_FOUND", name);
+                Error(Messages.GetPackageNotFound, name);
             }
             if (!Stopping) {
                 foreach (var provider in UnprocessedProviders) {
-                    Warning("NO_PACKAGES_FOUND_FOR_PROVIDER", provider);
+                    Warning(Constants.NoPackagesFoundForProvider, provider);
                 }
             }
             return true;

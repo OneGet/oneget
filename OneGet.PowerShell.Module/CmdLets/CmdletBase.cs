@@ -18,27 +18,22 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using System.Security;
+    using System.Management.Automation.Runspaces;
     using Microsoft.OneGet;
     using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Providers.Package;
     using Utility;
+    using Constants = OneGet.Constants;
+
+    public delegate string GetMessageString(string message);
 
     public abstract class CmdletBase : AsyncCmdlet {
-        public const string PackageNoun = "Package";
-        public const string PackageSourceNoun = "PackageSource";
-        public const string PackageProviderNoun = "PackageProvider";
-
-        public const string PackageBySearchSet = "PackageBySearch";
-        public const string PackageByObjectSet = "PackageByObject";
-        public const string SourceByObjectSet = "SourceByObject";
-        public const string ProviderByObjectSet = "ProviderByObject";
-        public const string ProviderByNameSet = "ProviderByName";
-        public const string OverwriteExistingSourceSet = "OverwriteExistingSource";
-
         private static readonly object _lockObject = new object();
         private readonly Hashtable _dynamicOptions;
         private readonly IPackageManagementService _packageManagementService = new PackageManagementService().Instance;
+
+        [Parameter(DontShow = true)]
+        public GetMessageString MessageResolver;
 
         protected CmdletBase() {
             _dynamicOptions = new Hashtable();
@@ -46,31 +41,31 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected bool IsPackageBySearch {
             get {
-                return ParameterSetName == PackageBySearchSet;
+                return ParameterSetName == Constants.PackageBySearchSet;
             }
         }
 
         protected bool IsPackageByObject {
             get {
-                return ParameterSetName == PackageByObjectSet;
+                return ParameterSetName == Constants.PackageByObjectSet;
             }
         }
 
         protected bool IsSourceByObject {
             get {
-                return ParameterSetName == SourceByObjectSet;
+                return ParameterSetName == Constants.SourceByObjectSet;
             }
         }
 
         protected bool IsProviderByObject {
             get {
-                return ParameterSetName == ProviderByObjectSet;
+                return ParameterSetName == Constants.ProviderByObjectSet;
             }
         }
 
         protected bool IsOverwriteExistingSource {
             get {
-                return ParameterSetName == OverwriteExistingSourceSet;
+                return ParameterSetName == Constants.OverwriteExistingSourceSet;
             }
         }
 
@@ -112,17 +107,30 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
             if (names.IsNullOrEmpty()) {
-                return PackageManagementService.SelectProviders(null).Where(each => !each.Features.ContainsKey("automation-only"));
+                return PackageManagementService.SelectProviders(null).Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature));
             }
-            return names.SelectMany(each => PackageManagementService.SelectProviders(each)).Where(each => !each.Features.ContainsKey("automation-only"));
+            return names.SelectMany(each => PackageManagementService.SelectProviders(each)).Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature));
         }
 
         protected IEnumerable<PackageProvider> SelectProviders(string name) {
-            var result = PackageManagementService.SelectProviders(name).Where( each => !each.Features.ContainsKey("automation-only")).ToArray();
+            var result = PackageManagementService.SelectProviders(name).Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature)).ToArray();
             if (result.Length == 0) {
-                Warning("UNKNOWN_PROVIDER", name);
+                Warning(Messages.UnknownProvider, name);
             }
             return result;
+        }
+
+        public override string GetMessageString(string messageText) {
+
+            if (MessageResolver != null) {
+                // if the consumer has specified a MessageResolver delegate, we need to call it on the main thread
+                // beacuse powershell won't let us use the default runspace from another thread.
+                ExecuteOnMainThread(() => {
+                    messageText = MessageResolver(messageText) ?? messageText;
+                    return true;
+                }).Wait();
+            }
+            return Resources.ResourceManager.GetString(messageText) ?? messageText;
         }
 
         public override bool ConsumeDynamicParameters() {
@@ -138,37 +146,37 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public virtual bool ShouldProcessPackageInstall(string packageName, string version, string source) {
-            Message("ShouldProcessPackageInstall", packageName);
+            Message(Constants.ShouldProcessPackageInstall, packageName);
             return false;
         }
 
         public virtual bool ShouldProcessPackageUninstall(string packageName, string version) {
-            Message("ShouldProcessPackageUnInstall", packageName);
+            Message(Constants.ShouldProcessPackageUninstall, packageName);
             return false;
         }
 
         public virtual bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source) {
-            Message("ShouldContinueAfterPackageInstallFailure", packageName);
+            Message(Constants.ShouldContinueAfterPackageInstallFailure, packageName);
             return false;
         }
 
         public virtual bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source) {
-            Message("ShouldContinueAfterPackageUnInstallFailure", packageName);
+            Message(Constants.ShouldContinueAfterPackageUnInstallFailure, packageName);
             return false;
         }
 
         public virtual bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
-            Message("ShouldContinueRunningInstallScript", packageName);
+            Message(Constants.ShouldContinueRunningInstallScript, packageName);
             return false;
         }
 
         public virtual bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation) {
-            Message("ShouldContinueRunningUninstallScript", packageName);
+            Message(Constants.ShouldContinueRunningUninstallScript, packageName);
             return true;
         }
 
         public virtual bool AskPermission(string permission) {
-            Message("ASK_PERMISSION", permission);
+            Message(Constants.AskPermission, permission);
             return true;
         }
 
@@ -179,7 +187,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public IEnumerable<string> GetOptionValues(int category, string key) {
             if (MyInvocation.BoundParameters.ContainsKey(key)) {
                 var value = MyInvocation.BoundParameters[key];
-                if (value is string ||  value is int ) {
+                if (value is string || value is int) {
                     return new[] {
                         MyInvocation.BoundParameters[key].ToString()
                     }.ByRef();
@@ -208,7 +216,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
-            Message("ShouldContinueWithUntrustedPackageSource", packageSource);
+            Message(Constants.ShouldContinueWithUntrustedPackageSource, packageSource);
             return true;
         }
     }

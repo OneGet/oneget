@@ -47,6 +47,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         #region copy core-apis
 
+        /* Synced/Generated code =================================================== */
         /// <summary>
         ///     The provider can query to see if the operation has been cancelled.
         ///     This provides for a gentle way for the caller to notify the callee that
@@ -80,27 +81,34 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract bool NotifyBeforePackageUninstall(string packageName, string version, string source, string destination);
 
         public abstract bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
+
+        public abstract string GetCanonicalPackageId(string providerName, string packageName, string version);
+
+        public abstract string ParseProviderName(string canonicalPackageId);
+
+        public abstract string ParsePackageName(string canonicalPackageId);
+
+        public abstract string ParsePackageVersion(string canonicalPackageId);
         #endregion
 
         #region copy host-apis
 
-        public abstract string GetMessageString(string message);
+        /* Synced/Generated code =================================================== */
+        public abstract string GetMessageString(string messageText);
 
-        public abstract bool Warning(string message);
+        public abstract bool Warning(string messageText);
 
-        public abstract bool Error(string message);
+        public abstract bool Error(string id, string category, string targetObjectValue, string messageText);
 
-        public abstract bool Message(string message);
+        public abstract bool Message(string messageText);
 
-        public abstract bool Verbose(string message);
+        public abstract bool Verbose(string messageText);
 
-        public abstract bool Debug(string message);
+        public abstract bool Debug(string messageText);
 
-        public abstract bool ExceptionThrown(string exceptionType, string message, string stacktrace);
+        public abstract int StartProgress(int parentActivityId, string messageText);
 
-        public abstract int StartProgress(int parentActivityId, string message);
-
-        public abstract bool Progress(int activityId, int progress, string message);
+        public abstract bool Progress(int activityId, int progressPercentage, string messageText);
 
         public abstract bool CompleteProgress(int activityId, bool isSuccessful);
 
@@ -137,6 +145,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         #region copy service-apis
 
+        /* Synced/Generated code =================================================== */
         public abstract void DownloadFile(Uri remoteLocation, string localFilename, Object c);
 
         public abstract bool IsSupportedArchive(string localFilename, Object c);
@@ -169,6 +178,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         #endregion
 
         #region copy response-apis
+
+        /* Synced/Generated code =================================================== */
 
         /// <summary>
         ///     The provider can query to see if the operation has been cancelled.
@@ -234,12 +245,19 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         #endregion
 
         #region copy Request-implementation
-public bool Warning(string messageText, params object[] args) {
+/* Synced/Generated code =================================================== */
+
+        public bool Warning(string messageText, params object[] args) {
             return Warning(FormatMessageString(messageText,args));
         }
 
-        public bool Error(string messageText, params object[] args) {
-            return Error(FormatMessageString(messageText,args));
+        internal bool Error( ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
+            return Error(messageText, category.ToString(), targetObjectValue, FormatMessageString(messageText, args));
+        }
+
+        internal bool ThrowError(ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
+            Error(messageText, category.ToString(), targetObjectValue, FormatMessageString(messageText, args));
+            throw new Exception("MSG:TerminatingError");
         }
 
         public bool Message(string messageText, params object[] args) {
@@ -270,16 +288,27 @@ public bool Warning(string messageText, params object[] args) {
             return System.Linq.Enumerable.Aggregate(args, "FIXME/Format:" + formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture," \u00ab{0}\u00bb", arg));
         }
 
-        internal string FormatMessageString(string message, object[] args) {
-            message = GetMessageString(message) ?? message;
+        internal string GetMessageStringInternal(string messageText) {
+            return Resources.ResourceManager.GetString(messageText);
+        }
+
+        internal string FormatMessageString(string messageText, object[] args) {
+            if (string.IsNullOrEmpty(messageText)) {
+                return string.Empty;
+            }
+
+            if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
+                // check with the caller first, then with the local resources, and fallback to using the messageText itself.
+                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ?? GetMessageStringInternal(messageText) ?? messageText;    
+            }
 
             // if it doesn't look like we have the correct number of parameters
             // let's return a fixmeformat string.
-            var c = System.Linq.Enumerable.Count( System.Linq.Enumerable.Where(message.ToCharArray(), each => each == '{'));
+            var c = System.Linq.Enumerable.Count( System.Linq.Enumerable.Where(messageText.ToCharArray(), each => each == '{'));
             if (c < args.Length) {
-                return FixMeFormat(message, args);
+                return FixMeFormat(messageText, args);
             }
-            return string.Format(CultureInfo.CurrentCulture, message, args);
+            return string.Format(CultureInfo.CurrentCulture, messageText, args);
         }
 
         public SecureString Password {

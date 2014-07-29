@@ -24,7 +24,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             : base(categories) {
         }
 
-        [Parameter(ParameterSetName = SourceByObjectSet, Mandatory = true, ValueFromPipeline = true)]
+        [Parameter(ParameterSetName = Constants.SourceByObjectSet, Mandatory = true, ValueFromPipeline = true)]
         public PackageSource[] PackageSource {get; set;}
 
         [Parameter()]

@@ -19,7 +19,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Providers.Package;
 
-    [Cmdlet(VerbsCommon.Get, PackageSourceNoun)]
+    [Cmdlet(VerbsCommon.Get, Constants.PackageSourceNoun)]
     public sealed class GetPackageSource : CmdletWithProvider {
         private readonly List<string> _warnings = new List<string>();
 
@@ -88,18 +88,18 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (!found) {
                     if (!string.IsNullOrEmpty(Name)) {
                         if (!string.IsNullOrEmpty(Location)) {
-                            _warnings.Add(string.Format(CultureInfo.CurrentCulture,"Provider '{0}' returned no package sources (Name = '{1}' Location='{2}')", provider.Name, Name, Location));
+                            _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSourcesNameLocation, provider.Name, Name, Location));
                             continue;
                         }
-                        _warnings.Add(string.Format(CultureInfo.CurrentCulture, "Provider '{0}' returned no package sources (Name = '{1}')", provider.Name, Name));
+                        _warnings.Add(FormatMessageString( Constants.ProviderReturnedNoPackageSourcesName, provider.Name, Name));
                         continue;
                     }
 
                     if (!string.IsNullOrEmpty(Location)) {
-                        _warnings.Add(string.Format(CultureInfo.CurrentCulture, "Provider '{0}' returned no package sources (Location = '{1}')", provider.Name, Location));
+                        _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSourcesLocation, provider.Name, Location));
                         continue;
                     }
-                    _warnings.Add(string.Format(CultureInfo.CurrentCulture, "Provider '{0}' returned no package sources".format(provider.Name)));
+                    _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSources.format(provider.Name)));
                 }
             }
 

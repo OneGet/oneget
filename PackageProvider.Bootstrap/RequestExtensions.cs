@@ -1,4 +1,4 @@
-﻿// 
+// 
 //  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ namespace OneGet.PackageProvider.Bootstrap {
     using System.Text;
 
     #region copy requestextension-implementation
+/* Synced/Generated code =================================================== */
+
     public static class RequestExtensions {
         private static dynamic _remoteDynamicInterface;
         private static dynamic _localDynamicInterface;
@@ -115,14 +117,14 @@ namespace OneGet.PackageProvider.Bootstrap {
             if (text == null) {
                 return null;
             }
-            return Convert.ToBase64String(ToByteArray(text));
+            return Convert.ToBase64String(text.ToByteArray());
         }
 
         public static string FromBase64(this string text) {
             if (text == null) {
                 return null;
             }
-            return ToUtf8String((IEnumerable<byte>)Convert.FromBase64String(text));
+            return Convert.FromBase64String(text).ToUtf8String();
         }
 
         public static bool Is(this string str) {
@@ -134,7 +136,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         }
 
         public static bool IsTrue(this string text) {
-            return Is(text) && text.Equals("true", StringComparison.CurrentCultureIgnoreCase);
+            return text.Is() && text.Equals("true", StringComparison.CurrentCultureIgnoreCase);
         }
 
         /// <summary>
@@ -147,7 +149,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         /// </remarks>
         public static IEnumerable<byte> ProtectBinaryForMachine(this IEnumerable<byte> binaryData, string salt) {
             var data = binaryData.ToArray();
-            var s = ToByteArray(salt);
+            var s = salt.ToByteArray();
             try {
                 return ProtectedData.Protect(data, s, DataProtectionScope.LocalMachine);
             }
@@ -167,7 +169,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         /// </remarks>
         public static IEnumerable<byte> ProtectBinaryForUser(this IEnumerable<byte> binaryData, string salt) {
             var data = binaryData.ToArray();
-            var s = ToByteArray(salt);
+            var s = salt.ToByteArray();
             try {
                 return ProtectedData.Protect(data, s, DataProtectionScope.CurrentUser);
             }
@@ -186,7 +188,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         /// <remarks>
         /// </remarks>
         public static IEnumerable<byte> ProtectForMachine(this string text, string salt) {
-            var data = ToByteArray((text ?? String.Empty));
+            var data = (text ?? String.Empty).ToByteArray();
             try {
                 return ProtectBinaryForMachine(data, salt);
             }
@@ -204,7 +206,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         /// <remarks>
         /// </remarks>
         public static IEnumerable<byte> ProtectForUser(this string text, string salt) {
-            var data = ToByteArray((text ?? String.Empty));
+            var data = (text ?? String.Empty).ToByteArray();
             try {
                 return ProtectBinaryForUser(data, salt);
             }
@@ -227,7 +229,7 @@ namespace OneGet.PackageProvider.Bootstrap {
             }
 
             try {
-                return ProtectedData.Unprotect(binaryData.ToArray(), ToByteArray(salt), DataProtectionScope.CurrentUser);
+                return ProtectedData.Unprotect(binaryData.ToArray(), salt.ToByteArray(), DataProtectionScope.CurrentUser);
             }
             catch {
                 /* suppress */
@@ -249,7 +251,7 @@ namespace OneGet.PackageProvider.Bootstrap {
             }
 
             try {
-                return ProtectedData.Unprotect(binaryData.ToArray(), ToByteArray(salt), DataProtectionScope.LocalMachine);
+                return ProtectedData.Unprotect(binaryData.ToArray(), salt.ToByteArray(), DataProtectionScope.LocalMachine);
             }
             catch {
                 /* suppress */
@@ -266,8 +268,8 @@ namespace OneGet.PackageProvider.Bootstrap {
         /// <remarks>
         /// </remarks>
         public static string UnprotectForUser(this IEnumerable<byte> binaryData, string salt) {
-            var data = UnprotectBinaryForUser(binaryData, salt).ToArray();
-            return data.Any() ? ToUtf8String((IEnumerable<byte>)data) : String.Empty;
+            var data = binaryData.UnprotectBinaryForUser(salt).ToArray();
+            return data.Any() ? data.ToUtf8String() : String.Empty;
         }
 
         /// <summary>
@@ -279,8 +281,8 @@ namespace OneGet.PackageProvider.Bootstrap {
         /// <remarks>
         /// </remarks>
         public static string UnprotectForMachine(this IEnumerable<byte> binaryData, string salt) {
-            var data = UnprotectBinaryForMachine(binaryData, salt).ToArray();
-            return data.Any() ? ToUtf8String((IEnumerable<byte>)data) : String.Empty;
+            var data = binaryData.UnprotectBinaryForMachine(salt).ToArray();
+            return data.Any() ? data.ToUtf8String() : String.Empty;
         }
 
         public static string ToUnsecureString(this SecureString securePassword) {
@@ -312,11 +314,11 @@ namespace OneGet.PackageProvider.Bootstrap {
         }
 
         public static string ToProtectedString(this SecureString secureString, string salt) {
-            return Convert.ToBase64String(ProtectBinaryForUser(ToBytes(secureString), salt).ToArray());
+            return Convert.ToBase64String(secureString.ToBytes().ProtectBinaryForUser(salt).ToArray());
         }
 
         public static SecureString FromProtectedString(this string str, string salt) {
-            return ToSecureString(ToUnicodeString(UnprotectBinaryForUser((IEnumerable<byte>)Convert.FromBase64String(str), salt)));
+            return Convert.FromBase64String(str).UnprotectBinaryForUser(salt).ToUnicodeString().ToSecureString();
         }
 
         public static IEnumerable<byte> ToBytes(this SecureString securePassword) {

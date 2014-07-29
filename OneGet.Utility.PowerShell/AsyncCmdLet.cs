@@ -17,6 +17,7 @@ namespace Microsoft.OneGet {
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
@@ -40,13 +41,13 @@ namespace Microsoft.OneGet {
 
         protected bool Confirm {
             get {
-                return MyInvocation.BoundParameters.ContainsKey("Confirm") && (SwitchParameter)MyInvocation.BoundParameters["Confirm"];
+                return MyInvocation.BoundParameters.ContainsKey(Constants.ConfirmParameter) && (SwitchParameter)MyInvocation.BoundParameters[Constants.ConfirmParameter];
             }
         }
 
         public bool WhatIf {
             get {
-                return MyInvocation.BoundParameters.ContainsKey("WhatIf") && (SwitchParameter)MyInvocation.BoundParameters["WhatIf"];
+                return MyInvocation.BoundParameters.ContainsKey(Constants.WhatIfParameter) && (SwitchParameter)MyInvocation.BoundParameters[Constants.WhatIfParameter];
             }
         }
 
@@ -73,7 +74,7 @@ namespace Microsoft.OneGet {
             // CompletionCompleters.
             // CommandCompletion.
             if (DynamicParameterDictionary.IsNullOrEmpty()) {
-                if (IsOverridden("GenerateDynamicParameters")) {
+                if (IsOverridden(Constants.GenerateDynamicParametersMethod)) {
                     AsyncRun(GenerateDynamicParameters);
                 }
             }
@@ -103,18 +104,18 @@ namespace Microsoft.OneGet {
             switch (files.Length) {
                 case 0:
                     // none found 
-                    Error("FILE_NOT_FOUND", filePath);
+                    Error(Messages.FileNotFound, filePath);
                     break;
-                    
+
                 case 1:
                     if (File.Exists(files[0])) {
                         return files[0];
                     }
-                    Error("FILE_NOT_FOUND", filePath);
+                    Error(Messages.FileNotFound, filePath);
                     break;
-                    
+
                 default:
-                    Error("MORE_THAN_ONE_FILE_MATCHED", filePath, files.JoinWithComma());
+                    Error(Messages.MoreThanOneFileMatched, filePath, files.JoinWithComma());
                     break;
             }
             return null;
@@ -126,18 +127,18 @@ namespace Microsoft.OneGet {
             switch (files.Length) {
                 case 0:
                     // none found 
-                    Error("FOLDER_NOT_FOUND", folderPath);
+                    Error(Messages.FolderNotFound, folderPath);
                     break;
 
                 case 1:
                     if (Directory.Exists(files[0])) {
                         return files[0];
                     }
-                    Error("FOLDER_NOT_FOUND", folderPath);
+                    Error(Messages.FolderNotFound, folderPath);
                     break;
 
                 default:
-                    Error("MORE_THAN_ONE_FOLDER_MATCHED", folderPath, files.JoinWithComma());
+                    Error(Messages.MoreThanOneFolderMatched, folderPath, files.JoinWithComma());
                     break;
             }
             return null;
@@ -174,53 +175,71 @@ namespace Microsoft.OneGet {
             return message.Task;
         }
 
-        private Task<bool> QueueMessage(Func<bool> message) {
-            return QueueMessage(new TaskCompletionSource<bool>(message));
+        private Task<bool> QueueMessage(Func<bool> action) {
+            return QueueMessage(new TaskCompletionSource<bool>(action));
         }
 
-        private Task<bool> QueueMessage(Action message) {
+        private Task<bool> QueueMessage(Action action) {
             return QueueMessage(() => {
-                message();
+                action();
                 return true;
             });
         }
 
-        public bool Warning(string message) {
-            return Warning(message, new object[] {
-            });
+        public bool Warning(string messageText) {
+            return Warning(messageText, Constants.NoParameters);
         }
 
-        public bool Warning(string message, params object[] args) {
+        public bool Warning(ErrorMessage message) {
+            return Warning(message.Resource, Constants.NoParameters);
+        }
+
+        public bool Warning(ErrorMessage message, params object[] args) {
+            return Warning(message.Resource, args);
+        }
+
+        public bool Warning(string messageText, params object[] args) {
             if (IsInvocation) {
-                WriteWarning(FormatMessageString(message,args));
+                WriteWarning(FormatMessageString(messageText, args));
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
             return IsCancelled();
         }
 
-        public bool Error(string message) {
-            return Error(message, new object[] {
-            });
+        protected bool Error(ErrorMessage error) {
+            return Error(error.Resource ,error.Category.ToString(), null, error.Resource);
         }
 
-        public bool Error(string message, params object[] args) {
-            message = FormatMessageString(message,args);
+        protected bool Error(ErrorMessage error, params object[] args) {
+            return Error(error.Resource, error.Category.ToString(), null, FormatMessageString(error.Resource, args));
+        }
 
+        public bool Error(string id, string category, string targetObjectValue, string messageText) {
+            return Error(id, category, targetObjectValue, messageText, Constants.NoParameters);
+        }
+
+        private string DropMsgPrefix(string messageText) {
+            return messageText.StartsWith("MSG:") ? messageText.Substring(4) : messageText;
+        }
+
+        public bool Error(string id,string category, string targetObjectValue, string messageText, params object[] args) {
             _failing = true;
-            // queue the message to run on the main thread.
+
             if (IsInvocation) {
-                var error = message;
+                var errorMessage = FormatMessageString(messageText, args);
 
-                if (!_errors.Contains(error)) {
+                if (!_errors.Contains(errorMessage)) {
                     if (!_errors.Any()) {
-                        // todo : this should really have better error types. this is terrible..
-                        WriteError(new ErrorRecord(new Exception(error), "errorid", ErrorCategory.OperationStopped, this));
-                    }
-                    _errors.Add(error);
-                }
+                        ErrorCategory errorCategory;
+                        if (!Enum.TryParse(category, true, out errorCategory)) {
+                            errorCategory = ErrorCategory.NotSpecified;
+                        }
 
-                //QueueMessage(() => Host.UI.WriteErrorLine("{0}:{1}".format(code, message.formatWithIEnumerable(objects))));
+                        WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrEmpty(targetObjectValue) ? (object)this : targetObjectValue));
+                    }
+                    _errors.Add(errorMessage);
+                }
             }
             // rather than wait on the result of the async'd message,
             // we'll just return the stopping state.
@@ -228,7 +247,7 @@ namespace Microsoft.OneGet {
         }
 
         public bool Message(string messageText) {
-            return Message(messageText, new object[] { });
+            return Message(messageText, Constants.NoParameters);
         }
 
         public bool Message(string messageText, params object[] args) {
@@ -237,7 +256,7 @@ namespace Microsoft.OneGet {
                 //  QueueMessage(() => Host.UI.WriteLine("{0}::{1}".format(code, message.formatWithIEnumerable(objects))));
                 // Message is going to go to the verbose channel
                 // and Verbose will only be output if VeryVerbose is true.
-                WriteVerbose(GetMessageString(messageText).format(args));
+                WriteVerbose(FormatMessageString(messageText, args));
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
@@ -245,15 +264,14 @@ namespace Microsoft.OneGet {
         }
 
         public bool Verbose(string messageText) {
-            return Verbose(messageText, new object[] {
-            });
+            return Verbose(messageText, Constants.NoParameters);
         }
 
         public bool Verbose(string messageText, params object[] args) {
             if (IsInvocation) {
                 // Message is going to go to the verbose channel
                 // and Verbose will only be output if VeryVerbose is true.
-                WriteVerbose(FormatMessageString(messageText,args));
+                WriteVerbose(FormatMessageString(messageText, args));
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
@@ -261,13 +279,12 @@ namespace Microsoft.OneGet {
         }
 
         public bool Debug(string messageText) {
-            return Debug(messageText, new object[] {
-            });
+            return Debug(messageText, Constants.NoParameters);
         }
 
         public bool Debug(string messageText, params object[] args) {
             if (IsInvocation) {
-                WriteVerbose(FormatMessageString(messageText,args));
+                WriteVerbose(FormatMessageString(messageText, args));
             }
 
             // rather than wait on the result of the async WriteVerbose,
@@ -275,39 +292,26 @@ namespace Microsoft.OneGet {
             return IsCancelled();
         }
 
-        public bool ExceptionThrown(string exceptionType, string message, string stacktrace) {
-            // queue the message to run on the main thread.
-            if (IsInvocation) {
-                // we should probably put this on the veryverbose channel
-                // QueueMessage(() => Host.UI.WriteErrorLine("{0}:{1}\r\n{2}".format(type, message, stacktrace)));
-            }
-            // rather than wait on the result of the async'd message,
-            // we'll just return the stopping state.
-            return IsCancelled();
-        }
-
         public int StartProgress(int parentActivityId, string message) {
-            return StartProgress(parentActivityId, message, new object[] {
-            });
+            return StartProgress(parentActivityId, message, Constants.NoParameters);
         }
 
         public int StartProgress(int parentActivityId, string message, params object[] args) {
             return 0;
         }
 
-        public bool Progress(int activityId, int progressPercentage, string message) {
-            return Progress(activityId, progressPercentage, message, new object[] {
-            });
+        public bool Progress(int activityId, int progressPercentage, string messageText) {
+            return Progress(activityId, progressPercentage, messageText, Constants.NoParameters);
         }
 
-        public bool Progress(int activityId, int progressPercentage, string message, params object[] args) {
+        public bool Progress(int activityId, int progressPercentage, string messageText, params object[] args) {
             if (IsInvocation) {
                 if (_parentProgressId == null) {
-                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", FormatMessageString(message,args)) {
+                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", FormatMessageString(messageText, args)) {
                         PercentComplete = progressPercentage
                     });
                 } else {
-                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup;", FormatMessageString(message,args)) {
+                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup;", FormatMessageString(messageText, args)) {
                         ParentActivityId = (int)_parentProgressId,
                         PercentComplete = progressPercentage
                     });
@@ -349,15 +353,20 @@ namespace Microsoft.OneGet {
             return Stopping || _failing;
         }
 
-        public string GetMessageString(string message) {
-            // TODO: lookup message as a message code first.
-            // TODO: ie: message = LookupMessage(message).formatWithIEnumerable(objects);
-
-            return message;
+        public virtual string GetMessageString(string messageText) {
+            return messageText;
         }
 
-        public string FormatMessageString(string message, object[] args) {
-            return GetMessageString(message).format(args);
+        public string FormatMessageString(string messageText, params object[] args) {
+            if (string.IsNullOrEmpty(messageText)) {
+                return string.Empty;
+            }
+
+            if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
+                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ??  messageText;
+            }
+
+            return args == null || args.Length == 0 ? messageText : messageText.format(args);
         }
 
         private void AsyncRun(Func<bool> asyncAction) {
@@ -390,7 +399,7 @@ namespace Microsoft.OneGet {
         protected override sealed void BeginProcessing() {
             // let's not even bother doing all this if they didn't even
             // override the method.
-            if (IsOverridden("BeginProcessingAsync")) {
+            if (IsOverridden(Constants.BeginProcessingAsyncMethod)) {
                 // just before we kick stuff off, let's make sure we consume the dynamicaparmeters
                 if (!_consumed) {
                     ConsumeDynamicParameters();
@@ -404,7 +413,7 @@ namespace Microsoft.OneGet {
         protected override sealed void EndProcessing() {
             // let's not even bother doing all this if they didn't even
             // override the method.
-            if (IsOverridden("EndProcessingAsync")) {
+            if (IsOverridden(Constants.EndProcessingAsyncMethod)) {
                 // just before we kick stuff off, let's make sure we consume the dynamicaparmeters
                 if (!_consumed) {
                     ConsumeDynamicParameters();
@@ -438,7 +447,7 @@ namespace Microsoft.OneGet {
             }
             // let's not even bother doing all this if they didn't even
             // override the method.
-            if (IsOverridden("StopProcessingAsync")) {
+            if (IsOverridden(Constants.StopProcessingAsyncMethod)) {
                 // just use our async/message pump to handle this activity
                 AsyncRun(StopProcessingAsync);
             }
@@ -450,7 +459,7 @@ namespace Microsoft.OneGet {
         protected override sealed void ProcessRecord() {
             // let's not even bother doing all this if they didn't even
             // override the method.
-            if (IsOverridden("ProcessRecordAsync")) {
+            if (IsOverridden(Constants.ProcessRecordAsyncMethod)) {
                 // just before we kick stuff off, let's make sure we consume the dynamicaparmeters
                 if (!_consumed) {
                     ConsumeDynamicParameters();

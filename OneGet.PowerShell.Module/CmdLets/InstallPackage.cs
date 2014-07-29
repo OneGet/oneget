@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
 
-    [Cmdlet(VerbsLifecycle.Install, PackageNoun, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsLifecycle.Install, Constants.PackageNoun, SupportsShouldProcess = true)]
     public sealed class InstallPackage : CmdletWithSearchAndSource {
         private readonly HashSet<string> _sourcesTrusted = new HashSet<string>();
 
@@ -32,7 +32,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }) {
         }
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = PackageByObjectSet)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = Constants.PackageByObjectSet)]
         public SoftwareIdentity[] Package {get; set;}
 
         [Parameter]
@@ -100,11 +100,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         // no package name passed in.
                         if (!FindViaName(provider, string.Empty, (p) => {
                             lock (resultsPerName) {
-                                resultsPerName.GetOrAdd("", () => new List<SoftwareIdentity>()).Add(p);
+                                resultsPerName.GetOrAdd(string.Empty, () => new List<SoftwareIdentity>()).Add(p);
                             }
                         })) {
                             // nothing found?
-                            Warning("No Packages Found -- (no package names/criteria listed)");
+                            Warning(Constants.NoPackagesFoundNoPackageNamesCriteriaListed);
                         }
                     }
                 } catch (Exception e) {
@@ -115,7 +115,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (noMatchNames.Any()) {
                 // whine about things not matched.
                 foreach (var name in noMatchNames) {
-                    Error("No Package Found {0}", name );
+                    Error(Messages.NoMatchForPackageName, name );
                 }
 
                 // not going to install.
@@ -129,10 +129,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 string searchKey = null;
                 
                 foreach (var pkg in set) {
-                    Warning(" '{0}' matches multiple packages '{1}/{2}' ({3})",pkg.SearchKey, pkg.Name,pkg.Version,pkg.ProviderName);
+                    Warning(Constants.MatchesMultiplePackages,pkg.SearchKey, pkg.Name,pkg.Version,pkg.ProviderName);
                     searchKey = pkg.SearchKey;
                 }
-                Error("DISAMBIGUATE_FOR_INSTALL", searchKey);
+                Error(Messages.DisambiguateForInstall, searchKey);
             }
 
             if (failing) {
@@ -153,7 +153,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 // }
                 var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
                 if (provider == null) {
-                    Error("UNKNOWN_PROVIDER", pkg.ProviderName);
+                    Error(Messages.UnknownProvider, pkg.ProviderName);
                     return false;
                 }
                 try {
@@ -166,7 +166,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 } catch (Exception e) {
                     e.Dump();
-                    Error("Installation Failure {0}", pkg.Name );
+                    Error(Messages.InstallationFailure, pkg.Name );
                     return false;
                 }
             }
@@ -176,7 +176,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ShouldProcessPackageInstall(string packageName, string version, string source) {
             try {
-                return Force || ShouldProcess(packageName, "Install Package").Result;
+                return Force || ShouldProcess(packageName, Constants.InstallPackage).Result;
             } catch {
             }
             return false;
@@ -187,7 +187,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (_sourcesTrusted.Contains(packageSource) || Force) {
                     return true;
                 }
-                if (ShouldContinue("WARNING: This package source is not marked as safe. Are you sure you want to install software from '{0}'".format(packageSource), "Installing Package '{0}' from untrusted source".format(package)).Result) {
+                if (ShouldContinue(Constants.ThisPackageSourceIsNotMarkedAsSafe.format(packageSource), Constants.InstallingPackageFromUntrustedSource.format(package)).Result) {
                     _sourcesTrusted.Add(packageSource);
                     return true;
                 }
@@ -198,7 +198,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source) {
             try {
-                return Force || ShouldContinue("Continue Installing after failing '{0}'".format(packageName), "Package Install Failure").Result;
+                return Force || ShouldContinue(Constants.ContinueInstallingAfterFailing.format(packageName), Constants.PackageInstallFailure).Result;
             } catch {
             }
             return false;
@@ -206,7 +206,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
             try {
-                return Force || ShouldContinue("Should the package script at '{0}' be executed?".format(scriptLocation), "Package Contains Installation Script").Result;
+                return Force || ShouldContinue(Constants.ShouldThePackageScriptAtBeExecuted.format(scriptLocation), Constants.PackageContainsInstallationScript).Result;
             } catch {
             }
             return false;

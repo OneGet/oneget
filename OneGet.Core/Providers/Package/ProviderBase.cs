@@ -16,6 +16,7 @@ namespace Microsoft.OneGet.Providers.Package {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using Api;
     using Collections;
@@ -46,13 +47,24 @@ namespace Microsoft.OneGet.Providers.Package {
             }
         }
 
-        internal object Context {
+        private static Regex _canonicalPackageRegex = new Regex("(.*?):(.*?)/(.*)");
+
+        internal IRequest ExtendCallback(Object c, params object[] objects) {
+            var baseGetMessageString = c.As<GetMessageString>();
+
+            return c.Extend<IRequest>( new {
+                // check the caller's resource manager first, then fall back to this resource manager
+                GetMessageString = new Func<string, string>((s) => baseGetMessageString(s) ?? Resources.ResourceManager.GetString(s)),
+            }, objects,Context);
+        }
+
+        private object Context {
             get {
                 return _context ?? (_context = new object[] {
                     PackageManagementService._instance.ServicesProvider,
                     new {
                         GetPackageManagementService = new Func<object,object>((c) => PackageManagementService._instance),
-                        GetMessageString = new Func<string, string>((s) => s),
+                        
                         GetIRequestInterface = new Func<Type>(() => typeof (IRequest)),
 #if DEBUG
                         Debug = new Action<string>(NativeMethods.OutputDebugString),
@@ -62,6 +74,13 @@ namespace Microsoft.OneGet.Providers.Package {
                         NotifyPackageInstalled= new Func<string , string , string , string , bool>( (pkgName, pkgVersion, source, destination) => true),
                         NotifyBeforePackageUninstall= new Func<string , string , string , string , bool>( (pkgName, pkgVersion, source, destination) => true),
                         NotifyPackageUninstalled= new Func<string , string , string , string , bool>( (pkgName, pkgVersion, source, destination) => true),
+
+                        GetCanonicalPackageId = new Func<string,string,string,string>( (providerName, packageName, version) => string.Format("{0}:{1}/{2}",providerName, packageName, version) ),
+
+                        ParseProviderName = new Func<string,string>((canonicalPackageId) =>_canonicalPackageRegex.Match(canonicalPackageId).Groups[1].Value),
+                        ParsePackageName = new Func<string,string>((canonicalPackageId) =>_canonicalPackageRegex.Match(canonicalPackageId).Groups[2].Value),
+                        ParsePackageVersion = new Func<string,string>((canonicalPackageId) =>_canonicalPackageRegex.Match(canonicalPackageId).Groups[3].Value),
+
                     }
                 });
             }
@@ -101,7 +120,7 @@ namespace Microsoft.OneGet.Providers.Package {
         internal CancellableEnumerable<TItem> CallAndCollect<TItem>(object c, Response<TItem> response, Action<object> call) {
             Task.Factory.StartNew(() => {
                 try {
-                    call( c.Extend<IRequest>(Context, response));
+                    call( ExtendCallback(c,response) );
                 }
                 catch (Exception e) {
                     e.Dump();
@@ -121,7 +140,7 @@ namespace Microsoft.OneGet.Providers.Package {
 
             var isCancelled = c.As<IsCancelled>();
             var result = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            Provider.GetFeatures(c.Extend<IRequest>(Context, new {
+            Provider.GetFeatures(ExtendCallback(c, new {
                 YieldKeyValuePair = new YieldKeyValuePair((key, value) => {
                     result.GetOrAdd(key, () => new List<string>()).Add(value);
                     return !(isCancelled());
@@ -153,7 +172,7 @@ namespace Microsoft.OneGet.Providers.Package {
             var list = new List<string>();
 
             return CallAndCollect<DynamicOption>(
-                result => Provider.GetDynamicOptions((int)operation, c.Extend<IRequest>(Context, new {
+                result => Provider.GetDynamicOptions((int)operation, ExtendCallback(c, new {
                     YieldDynamicOption = new YieldDynamicOption((category, name, type, isRequired) => {
                         if (lastItem != null) {
                             lastItem.PossibleValues = list.ToArray();

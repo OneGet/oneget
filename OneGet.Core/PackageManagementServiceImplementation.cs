@@ -40,6 +40,8 @@ namespace Microsoft.OneGet {
     ///     The Client API provides high-level consumer functions to support SDII functionality.
     /// </summary>
     internal class PackageManagementServiceImplementation : MarshalByRefObject, IPackageManagementService {
+        internal const string ProviderPluginLoadFailure = "PROVIDER_PLUGIN_LOAD_FAILURE";
+        internal const string Invalidoperation = "InvalidOperation";
         private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>();
         private readonly IDictionary<string, ServicesProvider> _servicesProviders = new Dictionary<string, ServicesProvider>();
 
@@ -62,15 +64,6 @@ namespace Microsoft.OneGet {
             }
         }
 
-        internal static string FormatMessage(string message, IEnumerable<object> parameters) {
-            // look up message code first (ie, MISC001).
-            // 
-            // 
-            // if we have a match, use that as the mesage to format with
-            // otherwise, just use the given message as the format string.
-            return message;
-        }
-
         public IEnumerable<PackageProvider> PackageProviders {
             get {
                 return _packageProviders.Values.ByRef();
@@ -80,15 +73,9 @@ namespace Microsoft.OneGet {
         private bool _initialized;
 
         public bool Initialize(Callback callback, bool userInteractionPermitted) {
-            var request = callback.As<IRequest>();
-
-            request.Debug("starting Initialize");
-            // var request = _dynamicInterface.Create<IHostAndCoreAPIs>(callback);
-
             lock (_lockObject) {
                 if (!_initialized) {
                     LoadProviders(callback);
-
                     _initialized = true;
                 }
             }
@@ -110,14 +97,11 @@ namespace Microsoft.OneGet {
         private void LoadProviders(Callback callback) {
             var request = callback.As<IRequest>();
 
-            request.Debug("Staring LoadProviders");
-
-            // todo: load provider assembly list from the registry.
+            // well known, built in provider assemblies.
             IEnumerable<string> providerAssemblies = new string[] {
                 "Microsoft.OneGet.MetaProvider.PowerShell.dll",
                 "Microsoft.OneGet.ServicesProvider.Common.dll",
-                // "OneGet.PackageProvider.Bootstrap.dll",  // M2
-                // "OneGet.PackageProvider.Chocolatey.dll",  // M1
+                "Microsoft.OneGet.PackageProvider.Bootstrap.dll",  
                 "OneGet.PackageProvider.NuGet.dll",  // testing 
                 "NuGet-AnyCPU.exe",
             }.Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET")).Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"));
@@ -128,12 +112,12 @@ namespace Microsoft.OneGet {
                 // foreach( var providerAssemblyName in providerAssemblies ) {
                 try {
                     if (TryToLoadProviderAssembly(callback, providerAssemblyName)) {
-                        request.Debug("Loading Provider Assembly {0}".format(providerAssemblyName));
+                        request.Debug("Loaded Provider Assembly {0}".format(providerAssemblyName));
                     } else {
                         request.Debug("Failed to load any providers {0}".format(providerAssemblyName));
                     }
                 } catch (Exception e) {
-                    request.ExceptionThrown(e.GetType().Name, e.Message, e.StackTrace);
+                    request.Error(ProviderPluginLoadFailure, Invalidoperation, ProviderPluginLoadFailure, providerAssemblyName);
                 }
             });
 
@@ -185,7 +169,6 @@ namespace Microsoft.OneGet {
             if (providerName.Is()) {
                 // strict name match for now.
                 return PackageProviders.Where(each => each.Name.Equals(providerName, StringComparison.CurrentCultureIgnoreCase)).ByRef();
-                ;
             }
 
             return PackageProviders.ByRef();

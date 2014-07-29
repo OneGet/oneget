@@ -18,6 +18,7 @@ namespace Microsoft.OneGet.Api {
 
     public interface IServicesApi {
         #region declare service-apis
+        /* Synced/Generated code =================================================== */
 
         void DownloadFile(Uri remoteLocation, string localFilename, Object c);
 

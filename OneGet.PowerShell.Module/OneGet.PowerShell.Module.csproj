@@ -44,6 +44,12 @@
     <Compile Include="CmdLets\CmdletWithSearch.cs" />
     <Compile Include="CmdLets\CmdletWithSource.cs" />
     <Compile Include="CmdLets\RegisterPackageSource.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Utility\CustomRuntimeDefinedParameter.cs" />
     <Compile Include="CmdLets\CmdletWithSearchAndSource.cs" />
     <Compile Include="CmdLets\FindPackage.cs" />
@@ -56,7 +62,13 @@
     <Compile Include="CmdLets\CmdletBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
   <ItemGroup>
     <None Include="OneGet.format.ps1xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

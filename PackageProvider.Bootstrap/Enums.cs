@@ -1,4 +1,4 @@
-﻿// 
+// 
 //  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 namespace OneGet.PackageProvider.Bootstrap {
 
     #region copy PackageProvider-types
+/* Synced/Generated code =================================================== */
+
     public enum OptionCategory {
         Package = 0,
         Provider = 1,
@@ -38,6 +40,46 @@ namespace OneGet.PackageProvider.Bootstrap {
         All = 0,
         User = 1,
         System = 2
+    }
+
+    #endregion
+
+    #region copy errorcategory-implementation
+/* generated code ====================================================== */
+
+    public enum ErrorCategory {
+        NotSpecified,
+        OpenError,
+        CloseError,
+        DeviceError,
+        DeadlockDetected,
+        InvalidArgument,
+        InvalidData,
+        InvalidOperation,
+        InvalidResult,
+        InvalidType,
+        MetadataError,
+        NotImplemented,
+        NotInstalled,
+        ObjectNotFound,
+        OperationStopped,
+        OperationTimeout,
+        SyntaxError,
+        ParserError,
+        PermissionDenied,
+        ResourceBusy,
+        ResourceExists,
+        ResourceUnavailable,
+        ReadError,
+        WriteError,
+        FromStdErr,
+        SecurityError,
+        ProtocolError,
+        ConnectionError,
+        AuthenticationError,
+        LimitsExceeded,
+        QuotaExceeded,
+        NotEnabled,
     }
 
     #endregion

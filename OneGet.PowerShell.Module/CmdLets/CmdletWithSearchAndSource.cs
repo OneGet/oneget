@@ -45,10 +45,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return null;
         }
 
-        [Parameter(ParameterSetName = ProviderByNameSet)]
+        [Parameter(ParameterSetName = Constants.ProviderByNameSet)]
         public string[] Source {get; set;}
 
-        [Parameter(ParameterSetName = SourceByObjectSet, ValueFromPipeline = true)]
+        [Parameter(ParameterSetName = Constants.SourceByObjectSet, ValueFromPipeline = true)]
         public PackageSource[] PackageSource {get; set;}
 
         private string[] _sources;
@@ -72,7 +72,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             get {
                 if (IsProviderByObject) {
                     if (PackageProvider.IsNullOrEmpty()) {
-                        Error("NO_PROVIDER_SELECTED");
+                        Error(Messages.NoProviderSelected);
                         return null;
                     }
                     return FilterProvidersUsingDynamicParameters(PackageProvider).ToArray();
@@ -129,7 +129,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             if (foundThisFile == false) {
                                 // one of the files we found on disk, isn't actually a recognized package 
                                 // let's whine about this.
-                                Warning("Package File Not Recognized {0}", file );
+                                Warning(Constants.PackageFileNotRecognized, file );
                             }
                         }
                     }

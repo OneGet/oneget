@@ -50,6 +50,8 @@ namespace Microsoft.OneGet.Providers.Package {
 
     public delegate bool IsCancelled();
 
+    public delegate string GetMessageString(string messageText);
+
     public class PackageProvider : ProviderBase<IPackageProvider> {
         private string _name;
 
@@ -65,21 +67,15 @@ namespace Microsoft.OneGet.Providers.Package {
         // Friendly APIs
 
         public ICancellableEnumerable<PackageSource> AddPackageSource(string name, string location, bool trusted, Object c) {
-            // Provider.AddPackageSource(name, location, trusted, DynamicInterface.Instance.Create<IRequest>(c, Context));
             return new Response<PackageSource>(c, this, response => Provider.AddPackageSource(name, location, trusted, response)).CompleteResult;
         }
 
         public ICancellableEnumerable<PackageSource> RemovePackageSource(string name, Object c) {
             return new Response<PackageSource>(c, this, response => Provider.RemovePackageSource(name, response)).CompleteResult;
-            // Provider.RemovePackageSource(name, DynamicInterface.Instance.Create<IRequest>(c, Context));
         }
 
         public ICancellableEnumerable<SoftwareIdentity> FindPackageByUri(Uri uri, int id, Object c) {
             return new Response<SoftwareIdentity>(c, this, "Available", response => Provider.FindPackageByUri(uri, id, response)).Result;
-
-            // return CallAndCollect(c,new Response<SoftwareIdentity>(c,"Available"), response => Provider.FindPackageByUri(uri, id, response));
-
-            // return new Response<SoftwareIdentity>(c, "Available").CallAndCollect(Context, response => Provider.FindPackageByUri(uri, id, response));
         }
 
         public ICancellableEnumerable<SoftwareIdentity> GetPackageDependencies(SoftwareIdentity package, Object c) {
@@ -110,9 +106,21 @@ namespace Microsoft.OneGet.Providers.Package {
                 throw new ArgumentNullException("names");
             }
 
-            c = c.Extend<IRequest>(Context);
+            c = ExtendCallback(c);
+            var cts = new CancellationTokenSource();
+            return new CancellableEnumerable<SoftwareIdentity>( cts, FindPackagesImpl(cts,names, requiredVersion,minimumVersion,maximumVersion,c));
+        }
+
+        private IEnumerable<SoftwareIdentity> FindPackagesImpl(CancellationTokenSource cancellationTokenSource, string[] names, string requiredVersion, string minimumVersion, string maximumVersion, Object c) {
             var id = StartFind(c);
-            return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), names.SelectMany(each => FindPackage(each, requiredVersion, minimumVersion, maximumVersion, id, c)).ToArray().Concat(CompleteFind(id, c)).ToArray());
+            foreach (var name in names) {
+                foreach (var pkg in FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, c).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                    yield return pkg;
+                }
+                foreach (var pkg in CompleteFind(id, c).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                    yield return pkg;
+                }
+            }
         }
 
         public ICancellableEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, Object c) {
@@ -124,9 +132,21 @@ namespace Microsoft.OneGet.Providers.Package {
                 throw new ArgumentNullException("uris");
             }
 
-            c = c.Extend<IRequest>(Context);
+            c = ExtendCallback(c);
+            var cts = new CancellationTokenSource();
+            return new CancellableEnumerable<SoftwareIdentity>(cts, FindPackagesByUrisImpl(cts, uris, c));
+        }
+
+        private IEnumerable<SoftwareIdentity> FindPackagesByUrisImpl(CancellationTokenSource cancellationTokenSource, Uri[] uris, Object c) {
             var id = StartFind(c);
-            return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), uris.SelectMany(each => FindPackageByUri(each, id, c)).ToArray().Concat(CompleteFind(id, c)));
+            foreach (var uri in uris) {
+                foreach (var pkg in FindPackageByUri(uri, id, c).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                    yield return pkg;
+                }
+                foreach (var pkg in CompleteFind(id, c).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                    yield return pkg;
+                }
+            }
         }
 
         public ICancellableEnumerable<SoftwareIdentity> FindPackagesByFiles(string[] filenames, Object c) {
@@ -138,9 +158,21 @@ namespace Microsoft.OneGet.Providers.Package {
                 throw new ArgumentNullException("filenames");
             }
 
-            c = c.Extend<IRequest>(Context);
+            c = ExtendCallback(c);
+            var cts = new CancellationTokenSource();
+            return new CancellableEnumerable<SoftwareIdentity>(cts, FindPackagesByFilesImpl(cts, filenames, c));
+        }
+
+        private IEnumerable<SoftwareIdentity> FindPackagesByFilesImpl(CancellationTokenSource cancellationTokenSource, string[] filenames, Object c) {
             var id = StartFind(c);
-            return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), filenames.SelectMany(each => FindPackageByFile(each, id, c)).ToArray().Concat(CompleteFind(id, c)));
+            foreach (var file in filenames) {
+                foreach (var pkg in FindPackageByFile(file, id, c).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                    yield return pkg;
+                }
+                foreach (var pkg in CompleteFind(id, c).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                    yield return pkg;
+                }
+            }
         }
 
         public ICancellableEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Object c) {
@@ -160,18 +192,16 @@ namespace Microsoft.OneGet.Providers.Package {
                 throw new ArgumentNullException("softwareIdentity");
             }
 
-            var request = c.Extend<IRequest>(Context);
+            var request = ExtendCallback(c);;
 
             // if the provider didn't say this was trusted, we should ask the user if it's ok.
             if (!softwareIdentity.FromTrustedSource) {
                 try {
                     if (!request.ShouldContinueWithUntrustedPackageSource(softwareIdentity.Name, softwareIdentity.Source)) {
-                        request.Error("User declined to trust package source ");
-                        throw new Exception("cancelled");
+                        request.Error("USER_DECLINED_UNTRUSTED_PACKAGE_INSTALL", "PermissionDenied", softwareIdentity.Name, "USER_DECLINED_UNTRUSTED_PACKAGE_INSTALL");
                     }
                 } catch {
-                    request.Error("User declined to trust package source ");
-                    throw new Exception("cancelled");
+                    throw new Exception("CANCELLED_INSTALL");
                 }
             }
 
@@ -195,11 +225,12 @@ namespace Microsoft.OneGet.Providers.Package {
                 throw new ArgumentNullException("softwareIdentity");
             }
 
-            Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, c.Extend<IRequest>(Context));
+            Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, ExtendCallback(c));
         }
     }
 
     #region declare PackageProvider-types
+    /* Synced/Generated code =================================================== */
 
     public enum OptionCategory {
         Package = 0,
