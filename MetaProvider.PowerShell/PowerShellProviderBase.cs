@@ -19,7 +19,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Globalization;
     using System.Linq;
     using System.Management.Automation;
-    using Extensions;
+    using Utility.Extensions;
+    using Utility.PowerShell;
 
     public class PowerShellProviderBase : IDisposable {
         private readonly Dictionary<string, CommandInfo> _allCommands = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);

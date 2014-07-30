@@ -16,8 +16,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
     using System.Collections;
     using System.Linq;
-    using Extensions;
-    
+    using Utility.Extensions;
+
     public class SoftwareIdentity : Yieldable {
         public SoftwareIdentity() {
         }

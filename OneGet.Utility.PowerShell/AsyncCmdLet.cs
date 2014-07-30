@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet {
+namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
@@ -22,9 +22,8 @@ namespace Microsoft.OneGet {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Collections;
-    using Extensions;
-    using Callback = System.Object;
+    using Utility.Collections;
+    using Utility.Extensions;
 
     public delegate bool OnMainThread(Func<bool> onMainThreadDelegate);
 
@@ -104,18 +103,18 @@ namespace Microsoft.OneGet {
             switch (files.Length) {
                 case 0:
                     // none found 
-                    Error(Messages.FileNotFound, filePath);
+                    Error(Errors.FileNotFound, filePath);
                     break;
 
                 case 1:
                     if (File.Exists(files[0])) {
                         return files[0];
                     }
-                    Error(Messages.FileNotFound, filePath);
+                    Error(Errors.FileNotFound, filePath);
                     break;
 
                 default:
-                    Error(Messages.MoreThanOneFileMatched, filePath, files.JoinWithComma());
+                    Error(Errors.MoreThanOneFileMatched, filePath, files.JoinWithComma());
                     break;
             }
             return null;
@@ -127,18 +126,18 @@ namespace Microsoft.OneGet {
             switch (files.Length) {
                 case 0:
                     // none found 
-                    Error(Messages.FolderNotFound, folderPath);
+                    Error(Errors.FolderNotFound, folderPath);
                     break;
 
                 case 1:
                     if (Directory.Exists(files[0])) {
                         return files[0];
                     }
-                    Error(Messages.FolderNotFound, folderPath);
+                    Error(Errors.FolderNotFound, folderPath);
                     break;
 
                 default:
-                    Error(Messages.MoreThanOneFolderMatched, folderPath, files.JoinWithComma());
+                    Error(Errors.MoreThanOneFolderMatched, folderPath, files.JoinWithComma());
                     break;
             }
             return null;
@@ -191,10 +190,17 @@ namespace Microsoft.OneGet {
         }
 
         public bool Warning(ErrorMessage message) {
+            if (message == null) {
+                throw new ArgumentNullException("message");
+            }
             return Warning(message.Resource, Constants.NoParameters);
         }
 
         public bool Warning(ErrorMessage message, params object[] args) {
+            if (message == null) {
+                throw new ArgumentNullException("message");
+            }
+
             return Warning(message.Resource, args);
         }
 
@@ -207,12 +213,12 @@ namespace Microsoft.OneGet {
             return IsCancelled();
         }
 
-        protected bool Error(ErrorMessage error) {
-            return Error(error.Resource ,error.Category.ToString(), null, error.Resource);
+        protected bool Error(ErrorMessage errorMessage) {
+            return Error(errorMessage.Resource, errorMessage.Category.ToString(), null, errorMessage.Resource);
         }
 
-        protected bool Error(ErrorMessage error, params object[] args) {
-            return Error(error.Resource, error.Category.ToString(), null, FormatMessageString(error.Resource, args));
+        protected bool Error(ErrorMessage errorMessage, params object[] args) {
+            return Error(errorMessage.Resource, errorMessage.Category.ToString(), null, FormatMessageString(errorMessage.Resource, args));
         }
 
         public bool Error(string id, string category, string targetObjectValue, string messageText) {
@@ -220,7 +226,7 @@ namespace Microsoft.OneGet {
         }
 
         private string DropMsgPrefix(string messageText) {
-            return messageText.StartsWith("MSG:") ? messageText.Substring(4) : messageText;
+            return messageText.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase) ? messageText.Substring(4) : messageText;
         }
 
         public bool Error(string id,string category, string targetObjectValue, string messageText, params object[] args) {

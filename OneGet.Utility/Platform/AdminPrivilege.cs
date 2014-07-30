@@ -1,4 +1,4 @@
-﻿namespace Microsoft.OneGet.Platform {
+﻿namespace Microsoft.OneGet.Utility.Platform {
     using System.Security.Principal;
 
     public class AdminPrivilege {

@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet {
+namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
     using System.Collections.Generic;
     using System.Dynamic;
@@ -21,7 +21,7 @@ namespace Microsoft.OneGet {
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
     using System.Threading;
-    using Extensions;
+    using Utility.Extensions;
 
     public class DynamicPowershell : DynamicObject, IDisposable {
         private readonly ManualResetEvent _availableEvent;

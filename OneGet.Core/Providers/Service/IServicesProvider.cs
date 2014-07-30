@@ -15,7 +15,7 @@
 namespace Microsoft.OneGet.Providers.Service {
     using Api;
     using Package;
-    using Plugin;
+    using Utility.Plugin;
 
     public interface IServicesProvider : IProvider, IServicesApi {
         #region declare ServicesProvider-interface

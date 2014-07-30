@@ -18,9 +18,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.IO;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Find, Constants.PackageNoun), OutputType(typeof (SoftwareIdentity))]
     public sealed class FindPackage : CmdletWithSearchAndSource {

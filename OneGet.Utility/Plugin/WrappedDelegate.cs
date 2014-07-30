@@ -12,14 +12,14 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Plugin {
+namespace Microsoft.OneGet.Utility.Plugin {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-    using Extensions;
+    using Utility.Extensions;
 
     internal delegate Delegate CreateDelegate(string memberName, string[] parameterNames, Type[] parameterTypes, Type returnType);
 

@@ -7,7 +7,7 @@
     <ProjectGuid>{3F9D75F9-A4AD-46C1-8937-B55604E8D5D9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.OneGet</RootNamespace>
+    <RootNamespace>Microsoft.OneGet.Utility.PowerShell</RootNamespace>
     <AssemblyName>Microsoft.OneGet.Utility.PowerShell</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>

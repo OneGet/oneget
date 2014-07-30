@@ -12,12 +12,12 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Plugin {
+namespace Microsoft.OneGet.Utility.Plugin {
     using System;
     using System.Collections.Generic;
     using System.Reflection;
     using System.Reflection.Emit;
-    using Extensions;
+    using Utility.Extensions;
 
     internal static class DynamicTypeExtensions {
         private static readonly Type[] _emptyTypes = {

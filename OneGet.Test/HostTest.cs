@@ -22,11 +22,11 @@ namespace Microsoft.OneGet.Test {
     using System.Reflection;
     // using MetaProvider.PowerShell;
     using Api;
-    using Extensions;
     using Packaging;
-    using Plugin;
     using PowerShell.OneGet.CmdLets;
     using Providers.Package;
+    using Utility.Extensions;
+    using Utility.Plugin;
     using Xunit;
     using PackageSource = Packaging.PackageSource;
 

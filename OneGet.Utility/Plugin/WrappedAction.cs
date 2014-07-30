@@ -14,7 +14,7 @@
 
 
 
-namespace Microsoft.OneGet.Plugin {
+namespace Microsoft.OneGet.Utility.Plugin {
     using System;
     using System.Globalization;
 

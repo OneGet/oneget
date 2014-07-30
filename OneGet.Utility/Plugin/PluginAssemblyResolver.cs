@@ -12,14 +12,13 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Plugin {
+namespace Microsoft.OneGet.Utility.Plugin {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Security;
     using Extensions;
 
     internal class PluginAssemblyResolver : MarshalByRefObject {

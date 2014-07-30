@@ -15,7 +15,7 @@
 namespace Microsoft.OneGet.Providers.Meta {
     using System.Collections.Generic;
     using Package;
-    using Plugin;
+    using Utility.Plugin;
 
     public interface IMetaProvider : IProvider {
         #region declare MetaProvider-interface

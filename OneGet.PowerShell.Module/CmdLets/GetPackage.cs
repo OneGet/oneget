@@ -18,9 +18,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Get, Constants.PackageNoun)]
     public class GetPackage : CmdletWithSearch {
@@ -90,7 +90,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool EndProcessingAsync() {
             foreach (var name in UnprocessedNames) {
-                Error(Messages.GetPackageNotFound, name);
+                Error(Errors.GetPackageNotFound, name);
             }
             if (!Stopping) {
                 foreach (var provider in UnprocessedProviders) {

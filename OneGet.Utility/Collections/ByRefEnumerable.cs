@@ -12,10 +12,9 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.OneGet.Collections {
+namespace Microsoft.OneGet.Utility.Collections {
     using System;
     using System.Collections;
-    using System.Collections.Generic;
 
     public class ByRefEnumerable : MarshalByRefObject,  IEnumerable {
         // we don't want these objects being gc's out because they remain unused...

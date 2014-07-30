@@ -21,6 +21,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
+    using Resources;
     using Callback = System.MarshalByRefObject;
 
     public abstract class Request : IDisposable {
@@ -289,7 +290,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         internal string GetMessageStringInternal(string messageText) {
-            return Resources.ResourceManager.GetString(messageText);
+            return Messages.ResourceManager.GetString(messageText);
         }
 
         internal string FormatMessageString(string messageText, object[] args) {

@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet {
+namespace Microsoft.OneGet.Utility.PowerShell {
     using System.Management.Automation;
 
     public class ErrorMessage {

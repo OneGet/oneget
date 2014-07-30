@@ -18,9 +18,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Diagnostics;
     using System.Linq;
     using System.Management.Automation;
-    using Collections;
-    using Extensions;
     using Providers.Package;
+    using Utility.Collections;
+    using Utility.Extensions;
+    using Utility.PowerShell;
     using Callback = System.Object;
 
     public class PowerShellPackageProvider : PowerShellProviderBase {

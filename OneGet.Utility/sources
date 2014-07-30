@@ -11,9 +11,30 @@ URT_VER=4.5
 # this will make AssemblyVersion = 1.0.0.0
 ASSEMBLY_IDENTITY_VERSION_NAME=monadv1
 
+## !include $(PROJECT_ROOT)\monad\nttargets\build\sources.inc
+OBJDIR=$(OBJ_PATH)\$(O)
+
 ASSEMBLY_IDENTITY_PUBLIC_KEY_NAME   = windows
+SOURCES_PATH = .\
 
 #PASS1_PUBLISH = {$(OBJ_PATH)\$(O)\$(TARGETNAME).metadata_dll=$(PROJECT_REF_PATH)\$(TARGETNAME).metadata_dll}
+
+RESOURCES_NAMESPACE=Microsoft.OneGet.Utility.Resources
+
+# Target for building resources
+NTTARGETFILE1=$(NTTARGETFILE1) resources
+
+MESSAGES_RESOURCES=$(OBJDIR)\$(RESOURCES_NAMESPACE).Messages.resources
+
+RESOURCES= \
+	$(MESSAGES_RESOURCES)
+
+RESOURCES_SOURCES= \
+	$(OBJDIR)\Messages.cs
+
+LANGUAGE_SPECIFIC_MANAGED_RESOURCES=$(RESOURCES)
+
+NTTARGETFILE0=$(NTTARGETFILE0) $(RESOURCES:;=)
 
 REFERENCES=\
 	$(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
@@ -30,7 +51,6 @@ SOURCES=\
 	Collections\AbstractDictionary.cs \
  	Collections\ByRefCancellationToken.cs \
  	Collections\ByRefCancellationTokenSource.cs \
- 	Collections\ByRefCollection.cs \
  	Collections\ByRefEnumerable.cs \
  	Collections\ByRefEnumerator.cs \
  	Collections\CachingEnumerable.cs \
@@ -85,12 +105,13 @@ SOURCES=\
  	Plugin\WrappedAction.cs \
  	Plugin\WrappedDelegate.cs \
  	Plugin\WrappedFunc.cs \
- 	\
+ 	$(RESOURCES_SOURCES) \
+ 	 \
  	Versions\FourPartVersion.cs \
- 
+ 	Constants.cs \
+
 
 #endregion
-
 
 INTERNALS_VISIBLE_TO=\
 	Microsoft.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \

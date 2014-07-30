@@ -15,6 +15,7 @@
 namespace Microsoft.PowerShell.OneGet {
     using System.Management.Automation;
     using Microsoft.OneGet;
+    using Microsoft.OneGet.Utility.PowerShell;
 
     internal static class Constants {
 
@@ -92,7 +93,7 @@ namespace Microsoft.PowerShell.OneGet {
         internal const string PackageFileNotRecognized = "MSG:PackageFileNotRecognized";
     }
 
-    internal static class Messages {
+    internal static class Errors {
         
         // ReSharper disable InconsistentNaming
         public static ErrorMessage NoProviderSelected = new ErrorMessage(Constants.NoProviderSelected, ErrorCategory.InvalidArgument);

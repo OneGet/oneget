@@ -12,11 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Collections {
+namespace Microsoft.OneGet.Utility.Collections {
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using Extensions;
 
     [Serializable]
     public class SerializableEnumerator<T> : IEnumerator<T> {

@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Platform {
+namespace Microsoft.OneGet.Utility.Platform {
     using System;
 
     /// <summary>IShellLinkW::GetPath flags.  SLGP_*</summary>

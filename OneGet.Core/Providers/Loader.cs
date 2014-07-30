@@ -20,11 +20,11 @@ namespace Microsoft.OneGet.Providers {
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
-    using Extensions;
     using Meta;
     using Package;
-    using Plugin;
     using Service;
+    using Utility.Extensions;
+    using Utility.Plugin;
 
     internal static class Loader {
         

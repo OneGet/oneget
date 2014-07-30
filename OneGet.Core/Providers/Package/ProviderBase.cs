@@ -19,11 +19,12 @@ namespace Microsoft.OneGet.Providers.Package {
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using Api;
-    using Collections;
-    using Extensions;
     using Packaging;
-    using Platform;
-    using Plugin;
+    using Resources;
+    using Utility.Collections;
+    using Utility.Extensions;
+    using Utility.Platform;
+    using Utility.Plugin;
 
     public abstract class ProviderBase<T> : MarshalByRefObject where T : IProvider {
         private object _context;
@@ -54,7 +55,7 @@ namespace Microsoft.OneGet.Providers.Package {
 
             return c.Extend<IRequest>( new {
                 // check the caller's resource manager first, then fall back to this resource manager
-                GetMessageString = new Func<string, string>((s) => baseGetMessageString(s) ?? Resources.ResourceManager.GetString(s)),
+                GetMessageString = new Func<string, string>((s) => baseGetMessageString(s) ?? Messages.ResourceManager.GetString(s)),
             }, objects,Context);
         }
 
@@ -75,7 +76,7 @@ namespace Microsoft.OneGet.Providers.Package {
                         NotifyBeforePackageUninstall= new Func<string , string , string , string , bool>( (pkgName, pkgVersion, source, destination) => true),
                         NotifyPackageUninstalled= new Func<string , string , string , string , bool>( (pkgName, pkgVersion, source, destination) => true),
 
-                        GetCanonicalPackageId = new Func<string,string,string,string>( (providerName, packageName, version) => string.Format("{0}:{1}/{2}",providerName, packageName, version) ),
+                        GetCanonicalPackageId = new Func<string,string,string,string>( (providerName, packageName, version) => "{0}:{1}/{2}".format(providerName, packageName, version) ),
 
                         ParseProviderName = new Func<string,string>((canonicalPackageId) =>_canonicalPackageRegex.Match(canonicalPackageId).Groups[1].Value),
                         ParsePackageName = new Func<string,string>((canonicalPackageId) =>_canonicalPackageRegex.Match(canonicalPackageId).Groups[2].Value),

@@ -21,7 +21,7 @@ namespace Microsoft.OneGet.Packaging {
     using System.Text;
     using System.Xml;
     using System.Xml.Linq;
-    using Extensions;
+    using Utility.Extensions;
 
     /// <summary>
     ///     This class represents a package (retrieved from Find-SoftwareIdentity or Get-SoftwareIdentity)

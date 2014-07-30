@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Collections {
+namespace Microsoft.OneGet.Utility.Collections {
     using System;
     using System.Collections;
     using System.Collections.Generic;

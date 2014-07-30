@@ -20,9 +20,9 @@ namespace Microsoft.OneGet.Test {
     using System.Security;
     using System.Text;
     using System.Threading;
-    using Collections;
-    using Extensions;
-    using Plugin;
+    using Utility.Collections;
+    using Utility.Extensions;
+    using Utility.Plugin;
     using Xunit;
 
     public class MiscTests : MarshalByRefObject {

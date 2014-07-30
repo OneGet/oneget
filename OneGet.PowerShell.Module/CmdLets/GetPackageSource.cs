@@ -16,8 +16,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Globalization;
     using System.Management.Automation;
-    using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Get, Constants.PackageSourceNoun)]
     public sealed class GetPackageSource : CmdletWithProvider {

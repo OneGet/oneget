@@ -12,14 +12,14 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Plugin {
+namespace Microsoft.OneGet.Utility.Plugin {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
-    using Collections;
-    using Extensions;
+    using Utility.Collections;
+    using Utility.Extensions;
 
     public class DynamicInterface {
         public static readonly DynamicInterface Instance = new DynamicInterface();

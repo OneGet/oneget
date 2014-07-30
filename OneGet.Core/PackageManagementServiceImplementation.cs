@@ -22,12 +22,12 @@ namespace Microsoft.OneGet {
     using System.Security.AccessControl;
     using System.Threading.Tasks;
     using Api;
-    using Extensions;
     using Packaging;
-    using Plugin;
     using Providers;
     using Providers.Package;
     using Providers.Service;
+    using Utility.Extensions;
+    using Utility.Plugin;
     using Win32;
     using Callback = System.Object;
 
@@ -117,7 +117,7 @@ namespace Microsoft.OneGet {
                     } else {
                         request.Debug("Failed to load any providers {0}".format(providerAssemblyName));
                     }
-                } catch (Exception e) {
+                } catch {
                     request.Error(ProviderPluginLoadFailure, Invalidoperation, ProviderPluginLoadFailure, providerAssemblyName);
                 }
             });
@@ -236,7 +236,7 @@ namespace Microsoft.OneGet {
         /// <summary>
         ///     PROTOTYPE - assembly/provider loader.
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="primaryAssemblyPath"></param>
         /// <returns></returns>
         private PluginDomain CreatePluginDomain(string primaryAssemblyPath) {
             try {

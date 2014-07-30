@@ -16,10 +16,10 @@ namespace Microsoft.OneGet.Providers.Package {
     using System;
     using System.Threading.Tasks;
     using Api;
-    using Collections;
-    using Extensions;
     using Packaging;
-    using Plugin;
+    using Utility.Collections;
+    using Utility.Extensions;
+    using Utility.Plugin;
 
     public class Response<T> : MarshalByRefObject, IResponseApi {
         private readonly object _context;

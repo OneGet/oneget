@@ -13,7 +13,7 @@
 //  
 
 namespace Microsoft.OneGet {
-    using Plugin;
+    using Utility.Plugin;
 
     /// <summary>
     ///     The public interface to accessing the fetaures of the Package Management Service

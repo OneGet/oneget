@@ -16,9 +16,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
     [Cmdlet(VerbsLifecycle.Register, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
@@ -101,7 +101,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (PackageProvider == null) {
-                return Error(Messages.NoProviderSelected);
+                return Error(Errors.NoProviderSelected);
             }
 
             if (Stopping) {

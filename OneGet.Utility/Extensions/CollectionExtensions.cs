@@ -12,12 +12,12 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Extensions {
+namespace Microsoft.OneGet.Utility.Extensions {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using Collections;
+    using Utility.Collections;
 
     public static class CollectionExtensions {
         /// <summary>

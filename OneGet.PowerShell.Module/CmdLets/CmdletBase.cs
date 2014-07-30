@@ -20,8 +20,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
     using Microsoft.OneGet;
-    using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.OneGet.Utility.PowerShell;
+    using Resources;
     using Utility;
     using Constants = OneGet.Constants;
 
@@ -115,7 +117,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         protected IEnumerable<PackageProvider> SelectProviders(string name) {
             var result = PackageManagementService.SelectProviders(name).Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature)).ToArray();
             if (result.Length == 0) {
-                Warning(Messages.UnknownProvider, name);
+                Warning(Errors.UnknownProvider, name);
             }
             return result;
         }
@@ -130,7 +132,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     return true;
                 }).Wait();
             }
-            return Resources.ResourceManager.GetString(messageText) ?? messageText;
+            return Messages.ResourceManager.GetString(messageText) ?? messageText;
         }
 
         public override bool ConsumeDynamicParameters() {

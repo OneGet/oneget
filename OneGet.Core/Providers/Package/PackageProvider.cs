@@ -18,9 +18,9 @@ namespace Microsoft.OneGet.Providers.Package {
     using System.Linq;
     using System.Threading;
     using Api;
-    using Collections;
     using Packaging;
-    using Plugin;
+    using Utility.Collections;
+    using Utility.Plugin;
 
     #region generate-delegates response-apis
 

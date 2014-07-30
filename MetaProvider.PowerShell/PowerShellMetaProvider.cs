@@ -23,7 +23,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Management.Automation;
     using System.Reflection;
     using System.Threading.Tasks;
-    using Extensions;
+    using Utility.Extensions;
+    using Utility.PowerShell;
     using Callback = System.Object;
 
     /// <summary>

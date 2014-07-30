@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet {
+namespace Microsoft.OneGet.Utility {
    internal static class Constants {
     }
 }

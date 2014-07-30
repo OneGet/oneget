@@ -12,9 +12,8 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Platform {
+namespace Microsoft.OneGet.Utility.Platform {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;

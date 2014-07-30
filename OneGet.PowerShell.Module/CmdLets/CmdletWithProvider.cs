@@ -16,9 +16,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Collections;
-    using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Utility.Collections;
+    using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
     public abstract class CmdletWithProvider : CmdletBase {
@@ -38,7 +38,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             get {
                 if (IsProviderByObject) {
                     if (PackageProvider.IsNullOrEmpty()) {
-                        Error(Messages.NoProviderSelected);
+                        Error(Errors.NoProviderSelected);
                         return null;
                     }
                     return FilterProvidersUsingDynamicParameters(PackageProvider).ToArray();
@@ -76,7 +76,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             // these warnings only show for providers that would have otherwise be selected.
             // if not for the missing requrired parameter.
             foreach (var mp in excluded.OrderBy( each => each.Key )) {
-                Warning(Messages.ExcludedProviderDueToMissingRequiredOption, mp.Key, mp.Value );
+                Warning(Errors.ExcludedProviderDueToMissingRequiredOption, mp.Key, mp.Value );
             }
         }
 

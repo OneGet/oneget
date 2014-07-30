@@ -16,9 +16,8 @@ namespace Microsoft.OneGet.Providers.Service {
     using System;
     using System.Collections.Generic;
     using Api;
-    using Extensions;
     using Package;
-    using Plugin;
+    using Utility.Extensions;
 
     internal class ServicesProvider : ProviderBase<IServicesProvider> {
         private string _name;

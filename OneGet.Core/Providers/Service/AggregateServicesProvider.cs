@@ -17,8 +17,8 @@ namespace Microsoft.OneGet.Providers.Service {
     using System.Collections.Generic;
     using System.Linq;
     using Api;
-    using Extensions;
-    using Plugin;
+    using Utility.Extensions;
+    using Utility.Plugin;
 
     /// <summary>
     ///     The The AggregateServicesProvider aggregates the functionality of all

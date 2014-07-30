@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Platform {
+namespace Microsoft.OneGet.Utility.Platform {
     public enum KnownFolder {
         Desktop = 0x0000, // <desktop>
         Internet = 0x0001, // Internet Explorer (icon on desktop)

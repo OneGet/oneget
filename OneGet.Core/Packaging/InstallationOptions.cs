@@ -16,8 +16,8 @@ namespace Microsoft.OneGet.Packaging {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Extensions;
     using Providers.Package;
+    using Utility.Extensions;
 
     public enum InstallationContext {
         System = 0,

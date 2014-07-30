@@ -16,7 +16,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Extensions;
+    using Utility.Extensions;
 
     public class Feature : Yieldable {
         private KeyValuePair<string, string[]> _pair;

@@ -18,9 +18,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsLifecycle.Install, Constants.PackageNoun, SupportsShouldProcess = true)]
     public sealed class InstallPackage : CmdletWithSearchAndSource {
@@ -115,7 +115,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (noMatchNames.Any()) {
                 // whine about things not matched.
                 foreach (var name in noMatchNames) {
-                    Error(Messages.NoMatchForPackageName, name );
+                    Error(Errors.NoMatchForPackageName, name );
                 }
 
                 // not going to install.
@@ -132,7 +132,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     Warning(Constants.MatchesMultiplePackages,pkg.SearchKey, pkg.Name,pkg.Version,pkg.ProviderName);
                     searchKey = pkg.SearchKey;
                 }
-                Error(Messages.DisambiguateForInstall, searchKey);
+                Error(Errors.DisambiguateForInstall, searchKey);
             }
 
             if (failing) {
@@ -153,7 +153,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 // }
                 var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
                 if (provider == null) {
-                    Error(Messages.UnknownProvider, pkg.ProviderName);
+                    Error(Errors.UnknownProvider, pkg.ProviderName);
                     return false;
                 }
                 try {
@@ -166,7 +166,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 } catch (Exception e) {
                     e.Dump();
-                    Error(Messages.InstallationFailure, pkg.Name );
+                    Error(Errors.InstallationFailure, pkg.Name );
                     return false;
                 }
             }

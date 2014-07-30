@@ -21,6 +21,7 @@ namespace OneGet.PackageProvider.Bootstrap {
     using System.Security;
     using System.Security.Cryptography;
     using System.Text;
+    using Resources;
     using Callback = System.Object;
 
     public abstract class Request : IDisposable {
@@ -269,7 +270,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         }
 
         internal string GetMessageStringInternal(string messageText) {
-            return Resources.ResourceManager.GetString(messageText);
+            return Messages.ResourceManager.GetString(messageText);
         }
 
         internal string FormatMessageString(string messageText, object[] args) {

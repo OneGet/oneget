@@ -14,7 +14,7 @@
 
 namespace Microsoft.OneGet.Providers.Package {
     using System;
-    using Plugin;
+    using Utility.Plugin;
 
     // using Callback = System.Object;
 
@@ -87,6 +87,7 @@ namespace Microsoft.OneGet.Providers.Package {
         /// <param name="requiredVersion"></param>
         /// <param name="minimumVersion"></param>
         /// <param name="maximumVersion"></param>
+        /// <param name="id"></param>
         /// <param name="c"></param>
         /// <returns></returns>
         void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Object c);

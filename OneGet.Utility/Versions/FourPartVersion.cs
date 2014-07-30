@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Versions {
+namespace Microsoft.OneGet.Utility.Versions {
     using System;
     using System.Diagnostics;
     using System.Globalization;

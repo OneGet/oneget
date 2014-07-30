@@ -18,10 +18,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Collections;
-    using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Utility.Collections;
+    using Microsoft.OneGet.Utility.Extensions;
 
     public abstract class CmdletWithSearchAndSource : CmdletWithSearch {
         protected CmdletWithSearchAndSource(OptionCategory[] categories)
@@ -72,7 +72,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             get {
                 if (IsProviderByObject) {
                     if (PackageProvider.IsNullOrEmpty()) {
-                        Error(Messages.NoProviderSelected);
+                        Error(Errors.NoProviderSelected);
                         return null;
                     }
                     return FilterProvidersUsingDynamicParameters(PackageProvider).ToArray();

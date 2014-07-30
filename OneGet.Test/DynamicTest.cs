@@ -22,9 +22,9 @@ namespace Microsoft.OneGet.Test {
     using System.Runtime.Hosting;
     using System.Runtime.InteropServices;
     using System.Security.Cryptography.X509Certificates;
-    using Extensions;
-    using Plugin;
     using PowerShell.OneGet.CmdLets;
+    using Utility.Extensions;
+    using Utility.Plugin;
     using Xunit;
 
     public class DynamicTest {

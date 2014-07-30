@@ -18,8 +18,8 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
     using System.IO;
     using System.Net;
     using System.Threading;
-    using Extensions;
-    using Platform;
+    using Utility.Extensions;
+    using Utility.Platform;
     using Callback = System.Object;
 
     public class CommonServicesProvider {

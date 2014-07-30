@@ -17,9 +17,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsLifecycle.Unregister, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
     public sealed class UnregisterPackageSource : CmdletWithSource {
@@ -59,7 +59,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public override bool ProcessRecordAsync() {
             if (IsSourceByObject) {
                 if (PackageSource.IsNullOrEmpty()) {
-                    return Error(Messages.NullOrEmptyPackageSource);
+                    return Error(Errors.NullOrEmptyPackageSource);
                 }
 
                 foreach (var source in PackageSource) {
@@ -69,7 +69,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
                     var provider = SelectProviders(source.ProviderName).FirstOrDefault();
                     if (provider == null) {
-                        return Error(Messages.UnableToResolvePackageProvider);
+                        return Error(Errors.UnableToResolvePackageProvider);
                     }
                     Unregister(source);
                 }
@@ -84,18 +84,18 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length == 0) {
-                return Error(Messages.UnableToResolvePackageProvider);
+                return Error(Errors.UnableToResolvePackageProvider);
             }
 
             if (prov.Length > 0) {
                 var sources = prov.SelectMany(each => each.ResolvePackageSources(this).ToArray()).ToArray();
 
                 if (sources.Length == 0) {
-                    return Error(Messages.SourceNotFound, Source);
+                    return Error(Errors.SourceNotFound, Source);
                 }
 
                 if (sources.Length > 1) {
-                    return Error(Messages.DisambiguateSourceVsProvider, prov.Select(each => each.Name).JoinWithComma(), Source);
+                    return Error(Errors.DisambiguateSourceVsProvider, prov.Select(each => each.Name).JoinWithComma(), Source);
                 }
 
                 return Unregister(sources[0]);

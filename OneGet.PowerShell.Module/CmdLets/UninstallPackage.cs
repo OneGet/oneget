@@ -18,8 +18,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
-    using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsLifecycle.Uninstall, Constants.PackageNoun, SupportsShouldProcess = true)]
     public sealed class UninstallPackage : GetPackage {
@@ -38,7 +38,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             // otherwise, it's just packages by name 
             if (Name.IsNullOrEmpty()) {
-                Error(Messages.RequiredValuePackageName);
+                Error(Errors.RequiredValuePackageName);
                 return false;
             }
 
@@ -63,7 +63,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
             // Show errors before?
             foreach (var name in UnprocessedNames) {
-                Error(Messages.GetPackageNotFound, name);
+                Error(Errors.GetPackageNotFound, name);
             }
 
             if (Stopping) {
@@ -73,7 +73,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             foreach (var n in _resultsPerName.Keys) {
                 // check if we have a 1 package per name 
                 if (_resultsPerName[n].Count > 1) {
-                    Error(Messages.DisambiguateForUninstall, n, _resultsPerName[n]);
+                    Error(Errors.DisambiguateForUninstall, n, _resultsPerName[n]);
                 }
 
                 if (Stopping) {
@@ -92,7 +92,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
 
                 if (provider == null) {
-                    Error(Messages.UnknownProvider, pkg.ProviderName);
+                    Error(Errors.UnknownProvider, pkg.ProviderName);
                     return false;
                 }
 
@@ -105,7 +105,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 } catch (Exception e) {
                     e.Dump();
-                    Error(Messages.UninstallationFailure, pkg.Name );
+                    Error(Errors.UninstallationFailure, pkg.Name );
                     return false;
                 }
             }

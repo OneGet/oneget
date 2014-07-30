@@ -12,10 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet {
+namespace Microsoft.OneGet.Utility.PowerShell {
     using System.Management.Automation;
 
-    internal static class Messages {
+    internal static class Errors {
         public static ErrorMessage FileNotFound = new ErrorMessage(Constants.FileNotFound, ErrorCategory.ObjectNotFound);
         public static ErrorMessage FolderNotFound = new ErrorMessage(Constants.FolderNotFound, ErrorCategory.ObjectNotFound);
         public static ErrorMessage MoreThanOneFolderMatched = new ErrorMessage(Constants.MoreThanOneFolderMatched, ErrorCategory.ObjectNotFound);

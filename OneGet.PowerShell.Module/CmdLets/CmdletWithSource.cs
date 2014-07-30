@@ -15,9 +15,9 @@
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
     using System.Security;
-    using Microsoft.OneGet.Extensions;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Utility.Extensions;
 
     public abstract class CmdletWithSource : CmdletWithProvider {
         protected CmdletWithSource(OptionCategory[] categories)

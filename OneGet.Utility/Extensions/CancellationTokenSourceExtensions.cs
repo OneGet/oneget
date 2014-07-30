@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Extensions {
+namespace Microsoft.OneGet.Utility.Extensions {
     using System;
     using System.Threading;
 
