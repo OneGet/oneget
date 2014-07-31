@@ -1,27 +1,27 @@
 ﻿###
 # ==++==
 #
-# Copyright (c) Microsoft Corporation. All rights reserved. 
+# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 ###
 
 <#
-	Overrides the default Write-Debug so that the output gets routed back thru the 
+	Overrides the default Write-Debug so that the output gets routed back thru the
 	$request.Debug() function
 #>
 function Write-Debug {
 	param(
-	[Parameter(Mandatory=$true)][string] $text,
+	[Parameter(Mandatory=$true)][string] $message,
 	[parameter(ValueFromRemainingArguments=$true)]
 	[object[]]
 	 $args= @()
@@ -29,30 +29,30 @@ function Write-Debug {
 
 	if( -not $request  ) {
 		if( -not $args  ) {
-			Microsoft.PowerShell.Utility\write-verbose $text 
+			Microsoft.PowerShell.Utility\write-verbose $message
 			return
-		} 
+		}
 
-		$msg = [system.string]::format($text, $args)
-		Microsoft.PowerShell.Utility\write-verbose $msg 
-		return 
+		$msg = [system.string]::format($message, $args)
+		Microsoft.PowerShell.Utility\write-verbose $msg
+		return
 	}
 
 	if( -not $args  ) {
-		$request.Debug($text);
-		return 
+		$request.Debug($message);
+		return
 	}
-	$request.Debug($text,$args);
+	$request.Debug($message,$args);
 }
 
 <#
-	Overrides the default Write-Verbose so that the output gets routed back thru the 
+	Overrides the default Write-Verbose so that the output gets routed back thru the
 	$request.Verbose() function
 #>
 
 function Write-Verbose{
 	param(
-	[Parameter(Mandatory=$true)][string] $text,
+	[Parameter(Mandatory=$true)][string] $message,
 	[parameter(ValueFromRemainingArguments=$true)]
 	[object[]]
 	 $args= @()
@@ -60,30 +60,30 @@ function Write-Verbose{
 
 	if( -not $request ) {
 		if( -not $args ) {
-			Microsoft.PowerShell.Utility\write-verbose $text 
+			Microsoft.PowerShell.Utility\write-verbose $message
 			return
-		} 
+		}
 
-		$msg = [system.string]::format($text, $args)
-		Microsoft.PowerShell.Utility\write-verbose $msg 
-		return 
+		$msg = [system.string]::format($message, $args)
+		Microsoft.PowerShell.Utility\write-verbose $msg
+		return
 	}
 
 	if( -not $args ) {
-		$request.Verbose($text);
-		return 
+		$request.Verbose($message);
+		return
 	}
-	$request.Verbose($text,$args);
+	$request.Verbose($message,$args);
 }
 
 <#
-	Overrides the default Write-Warning so that the output gets routed back thru the 
+	Overrides the default Write-Warning so that the output gets routed back thru the
 	$request.Warning() function
 #>
 
 function Write-Warning{
 	param(
-	[Parameter(Mandatory=$true)][string] $text,
+	[Parameter(Mandatory=$true)][string] $message,
 	[parameter(ValueFromRemainingArguments=$true)]
 	[object[]]
 	 $args= @()
@@ -91,26 +91,26 @@ function Write-Warning{
 
 	if( -not $request ) {
 		if( -not $args ) {
-			Microsoft.PowerShell.Utility\write-warning $text 
+			Microsoft.PowerShell.Utility\write-warning $message
 			return
-		} 
+		}
 
-		$msg = [system.string]::format($text, $args)
-		Microsoft.PowerShell.Utility\write-warning $msg 
-		return 
+		$msg = [system.string]::format($message, $args)
+		Microsoft.PowerShell.Utility\write-warning $msg
+		return
 	}
 
 	if( -not $args ) {
-		$request.Warning($text);
-		return 
+		$request.Warning($message);
+		return
 	}
-	$request.Warning($text,$args);
+	$request.Warning($message,$args);
 }
 
 <#
 	Creates a new instance of a PackageSource object
 #>
-function New-PackageSource { 
+function New-PackageSource {
 	param(
 		[Parameter(Mandatory=$true)][string] $name,
 		[Parameter(Mandatory=$true)][string] $location,
@@ -119,24 +119,24 @@ function New-PackageSource {
 		[bool] $valid = $false,
 		[System.Collections.Hashtable] $details = $null
 	)
-	
+
 	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.PackageSource -ArgumentList $name,$location,$trusted,$registered,$valid,$details
 }
 
 <#
 	Creates a new instance of a SoftwareIdentity object
 #>
-function New-SoftwareIdentity { 
+function New-SoftwareIdentity {
 	param(
-		[Parameter(Mandatory=$true)][string] $fastPackageReference, 
-		[Parameter(Mandatory=$true)][string] $name, 
-		[Parameter(Mandatory=$true)][string] $version, 
-		[Parameter(Mandatory=$true)][string] $versionScheme, 
-		[Parameter(Mandatory=$true)][string] $source, 
-		[string] $summary, 
-		[string] $searchKey = $null, 
-		[string] $fullPath = $null, 
-		[string] $filename = $null, 
+		[Parameter(Mandatory=$true)][string] $fastPackageReference,
+		[Parameter(Mandatory=$true)][string] $name,
+		[Parameter(Mandatory=$true)][string] $version,
+		[Parameter(Mandatory=$true)][string] $versionScheme,
+		[Parameter(Mandatory=$true)][string] $source,
+		[string] $summary,
+		[string] $searchKey = $null,
+		[string] $fullPath = $null,
+		[string] $filename = $null,
 		[System.Collections.Hashtable] $details = $null,
 		[System.Collections.ArrayList] $entities = $null,
 		[System.Collections.ArrayList] $links = $null,
@@ -148,12 +148,12 @@ function New-SoftwareIdentity {
 <#
 	Creates a new instance of a DyamicOption object
 #>
-function New-DynamicOption { 
+function New-DynamicOption {
 	param(
-		[Parameter(Mandatory=$true)][Microsoft.OneGet.MetaProvider.PowerShell.OptionCategory] $category, 
-		[Parameter(Mandatory=$true)][string] $name, 
-		[Parameter(Mandatory=$true)][Microsoft.OneGet.MetaProvider.PowerShell.OptionType] $expectedType, 
-		[Parameter(Mandatory=$true)][bool] $isRequired, 
+		[Parameter(Mandatory=$true)][Microsoft.OneGet.MetaProvider.PowerShell.OptionCategory] $category,
+		[Parameter(Mandatory=$true)][string] $name,
+		[Parameter(Mandatory=$true)][Microsoft.OneGet.MetaProvider.PowerShell.OptionType] $expectedType,
+		[Parameter(Mandatory=$true)][bool] $isRequired,
 		[System.Collections.ArrayList] $permittedValues = $null
 	)
 
@@ -166,9 +166,9 @@ function New-DynamicOption {
 <#
 	Creates a new instance of a Feature object
 #>
-function New-Feature { 
+function New-Feature {
 	param(
-		[Parameter(Mandatory=$true)][string] $name, 
+		[Parameter(Mandatory=$true)][string] $name,
 		[System.Collections.ArrayList] $values = $null
 	)
 
@@ -178,7 +178,7 @@ function New-Feature {
 	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Feature -ArgumentList $name, $values.ToArray()
 }
 
-<# 
+<#
 	Duplicates the $request object and overrides the client-supplied data with the specified values.
 #>
 function New-Request {
@@ -200,15 +200,15 @@ function New-Entity {
 	)
 
 	$o = New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Entity
-	$o.Name = $name 
-	$o.Role = $role 
-	$o.regId = $regId 
-	$o.thumbprint = $thumbprint 
+	$o.Name = $name
+	$o.Role = $role
+	$o.regId = $regId
+	$o.thumbprint = $thumbprint
 	return $o
 }
 
-function New-Link { 
-	param( 
+function New-Link {
+	param(
 		[Parameter(Mandatory=$true)][string] $HRef,
 		[Parameter(Mandatory=$true)][string] $relationship,
 		[string] $mediaType = $null,
@@ -219,14 +219,14 @@ function New-Link {
 	)
 
 	$o = New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Link
-	
+
 	$o.HRef = $HRef
 	$o.Relationship =$relationship
-	$o.MediaType =$mediaType 
-	$o.Ownership =$ownership 
+	$o.MediaType =$mediaType
+	$o.Ownership =$ownership
 	$o.Use = $use
 	$o.AppliesToMedia = $appliesToMedia
-	$o.Artifact = $artifact 
+	$o.Artifact = $artifact
 
 	return $o
 }

@@ -23,6 +23,7 @@ namespace Microsoft.OneGet.Test {
     using Utility.Collections;
     using Utility.Extensions;
     using Utility.Plugin;
+    using Utility.PowerShell;
     using Xunit;
 
     public class MiscTests : MarshalByRefObject {
@@ -65,6 +66,7 @@ namespace Microsoft.OneGet.Test {
 
         [Fact]
         public void TestIEnumerableByRef() {
+
 
             Console.WriteLine("STARTING");
 

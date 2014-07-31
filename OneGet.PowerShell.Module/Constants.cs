@@ -37,6 +37,17 @@ namespace Microsoft.PowerShell.OneGet {
         internal const string AutomationOnlyFeature = "automation-only";
 
         // messages 
+
+        // Implementation Note:
+        // Because OneGet allows the application layer closest to the user (host) to be in ultimate 
+        // control of spcifying messages to the end user, and falls back up the chain of responsibility
+        // when resolving Messages from resources, we have prefixed the constants with MSG: in order
+        // to *know* when we're trying to resolve a message. 
+        
+        // As an optimization step, if the MSG: isn't present, then the application layer need not bother 
+        // resolving the message (nor asking up the chain) since it's not a message id, but rather an
+        // already resolved string.
+
         internal const string ShouldProcessPackageInstall = "MSG:ShouldProcessPackageInstall";
         internal const string ShouldProcessPackageUninstall = "MSG:ShouldProcessPackageUnInstall";
         internal const string ShouldContinueAfterPackageInstallFailure = "MSG:ShouldContinueAfterPackageInstallFailure";
