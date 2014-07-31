@@ -1,16 +1,16 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
@@ -45,7 +45,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 _commandPipeline = null;
 
                 // we're not really interesting in disposing of this object since someone else
-                // might have it, and it's ok. 
+                // might have it, and it's ok.
                 _result = null;
                 if (_result != null) {
                     _result.Dispose();
@@ -110,8 +110,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 if (_commandPipeline.PipelineStateInfo.State == PipelineState.Failed) {
                     _result.IsFailing = true;
 
-                    var cie = _commandPipeline.PipelineStateInfo.Reason as CmdletInvocationException;
-                    if (cie != null) {
+                    var cie = _commandPipeline.PipelineStateInfo.Reason as RuntimeException;
+                    if (cie != null && cie.ErrorRecord != null ) {
                         _result.Errors.Add(cie.ErrorRecord);
                     } else {
                         _result.Errors.Add(new ErrorRecord(_commandPipeline.PipelineStateInfo.Reason, "Unknown Exception type [{0}]".format(_commandPipeline.PipelineStateInfo.Reason.GetType()), ErrorCategory.NotSpecified, null));

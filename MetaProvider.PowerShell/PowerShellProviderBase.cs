@@ -1,16 +1,16 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
@@ -91,7 +91,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     }
                 }
 
-                // try IsFoo to Test-IsFoo 
+                // try IsFoo to Test-IsFoo
                 if (methodName.StartsWith("Is", StringComparison.OrdinalIgnoreCase)) {
                     var meth = "test" + methodName;
                     if (_allCommands.ContainsKey(meth)) {
@@ -115,7 +115,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             var result = _powershell.NewTryInvokeMemberEx(cmdInfo.Name, new string[0], args);
             if (result == null) {
-                // failure! 
+                // failure!
                 throw new Exception(Constants.PowershellScriptFunctionFailed);
             }
 
@@ -127,7 +127,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         internal void ReportErrors(Request request, IEnumerable<ErrorRecord> errors) {
             foreach (var error in errors) {
                 request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject == null ? null : error.TargetObject.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
-                request.Debug(Constants.ScriptStackTrace, error.ScriptStackTrace);
+                if( !string.IsNullOrEmpty( error.ScriptStackTrace ) ) {
+                    // give a debug hint if we have a script stack trace. How nice of us.
+                    request.Debug(Constants.ScriptStackTrace, error.ScriptStackTrace);
+                }
             }
         }
 
@@ -143,9 +146,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     // make sure we don't pass the callback to the function.
                     result = _powershell.NewTryInvokeMemberEx(request.CommandInfo.Name, new string[0], args);
 
-                    // instead, loop thru results and get 
+                    // instead, loop thru results and get
                     if (result == null) {
-                        // failure! 
+                        // failure!
                         throw new Exception(Constants.PowershellScriptFunctionFailed);
                     }
 
