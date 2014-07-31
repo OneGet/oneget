@@ -37,7 +37,8 @@ namespace Microsoft.OneGet {
 
         IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
 
+        bool Initialize(bool userInteractionPermitted, Callback c);
 
-        bool Initialize(Callback c, bool userInteractionPermitted);
+        bool RequirePackageProvider(string packageProviderName, Callback c);
     }
 }

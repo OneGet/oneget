@@ -72,7 +72,7 @@ namespace Microsoft.OneGet {
 
         private bool _initialized;
 
-        public bool Initialize(Callback callback, bool userInteractionPermitted) {
+        public bool Initialize( bool userInteractionPermitted,Callback callback) {
             lock (_lockObject) {
                 if (!_initialized) {
                     LoadProviders(callback);
@@ -312,6 +312,29 @@ namespace Microsoft.OneGet {
                 e.Dump();
             }
             return null;
+        }
+
+        public bool RequirePackageProvider(string packageProviderName, Callback c) {
+            // check if the package provider is already installed
+            if (_packageProviders.ContainsKey(packageProviderName)) {
+                return true;
+            }
+
+            // no?
+            // ask the bootstrap provider if there is a package provider with that name available.
+            var bootstrap = _packageProviders["Bootstrap"];
+            if (bootstrap == null) {
+                return false;
+            }
+
+            var pkg = bootstrap.FindPackage(packageProviderName, null, null, null, 0, c).ToArray();
+            if (pkg.Length == 1) {
+                // Yeah? Install it.
+                bootstrap.InstallPackage(pkg[0], c);
+                return true;
+            }
+
+            return false;
         }
     }
 }

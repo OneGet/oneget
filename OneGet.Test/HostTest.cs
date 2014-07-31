@@ -172,7 +172,7 @@ namespace Microsoft.OneGet.Test {
             get {
                 if (_service == null) {
                     _service = new PackageManagementService().Instance;
-                    _service.Initialize(new Req(), false);
+                    _service.Initialize(false,new Req());
                 }
                 return _service;
             }

@@ -76,7 +76,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 lock (_lockObject) {
                     if (!IsCancelled() && !IsInitialized) {
                         try {
-                            IsInitialized = _packageManagementService.Initialize(this, !IsInvocation);
+                            IsInitialized = _packageManagementService.Initialize(!IsInvocation,this);
                         } catch (Exception e) {
                             e.Dump();
                         }

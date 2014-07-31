@@ -13,11 +13,19 @@
 //  
 
 namespace OneGet.PackageProvider.Bootstrap {
+    using System;
     using System.Collections.Generic;
+    using System.IO;
     using Callback = System.Object;
 
     public class BootstrapProvider {
         private static readonly string[] _empty = new string[0];
+
+        private static readonly string[] _urls = new[] {
+            "http://downloads.coapp.org/oneget/WellKnownProviders.swidtag",
+            "https://go.microsoft.com/fwlink/?LinkId=404337",
+            "https://go.microsoft.com/fwlink/?LinkId=404338",
+        };
 
         private static readonly Dictionary<string,string[]> _features = new Dictionary<string, string[]> {
             { "schemes", new [] {"http", "https", "file"} },
@@ -36,7 +44,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         /// <required />
         /// <returns>the name of the package provider</returns>
         public string GetPackageProviderName() {
-            return "NuGet";
+            return "Bootstrap";
         }
 
         public void InitializeProvider(object dynamicInterface, Callback c) {
@@ -60,23 +68,12 @@ namespace OneGet.PackageProvider.Bootstrap {
 
                     switch (cat) {
                         case OptionCategory.Package:
-                            request.YieldDynamicOption(cat, "Tag", OptionType.StringArray, false);
-                            request.YieldDynamicOption(cat, "Contains", OptionType.String, false);
-                            request.YieldDynamicOption(cat, "AllowPrereleaseVersions", OptionType.Switch, false);
-                            request.YieldDynamicOption(cat, "AllVersions", OptionType.Switch, false);
                             break;
 
                         case OptionCategory.Source:
-                            request.YieldDynamicOption(cat, "ConfigFile", OptionType.String, false);
-                            request.YieldDynamicOption(cat, "SkipValidate", OptionType.Switch, false);
                             break;
 
                         case OptionCategory.Install:
-                            request.YieldDynamicOption(cat, "Destination", OptionType.Path, true);
-                            request.YieldDynamicOption(cat, "SkipDependencies", OptionType.Switch, false);
-                            request.YieldDynamicOption(cat, "ContinueOnFailure", OptionType.Switch, false);
-                            request.YieldDynamicOption(cat, "ExcludeVersion", OptionType.Switch, false);
-                            request.YieldDynamicOption(cat, "PackageSaveMode", OptionType.String, false,new [] {"nuspec", "nupkg", "nuspec;nupkg"} );
                             break;
                     }
                 } catch {
@@ -86,25 +83,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         }
 
 
-        // --- Manages package sources ---------------------------------------------------------------------------------------------------
-        public void AddPackageSource(string name, string location, bool trusted, Callback c) {
-            using (var request = c.As<Request>()) {
-                request.Debug("Calling 'Bootstrap::AddPackageSource'");
-            }
-        }
-
-        public void ResolvePackageSources(Callback c) {
-            using (var request = c.As<Request>()) {
-                request.Debug("Calling 'Bootstrap::ResolvePackageSources'");
-            }
-        }
-
-        public void RemovePackageSource(string name, Callback c) {
-            using (var request = c.As<Request>()) {
-                request.Debug("Calling 'Bootstrap::RemovePackageSource'");
-            }
-        }
-
+        
         // --- Finds packages ---------------------------------------------------------------------------------------------------
         /// <summary>
         /// </summary>
@@ -118,16 +97,40 @@ namespace OneGet.PackageProvider.Bootstrap {
         public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Callback c) {
             using (var request = c.As<Request>()) {
                 request.Debug("Calling 'Bootstrap::FindPackage'");
+
+                   foreach (var location in _urls) {
+                    // download the discovery swidtag
+                       try {
+                           var tmpSwid = Path.Combine(Path.GetTempPath(), "WellKnownProviders.swidtag");
+                           if (File.Exists(tmpSwid)) {
+                               File.Delete(tmpSwid);
+                           }
+
+                           request.DownloadFile(new Uri(location), tmpSwid, request);
+
+                           if (File.Exists(tmpSwid)) {
+                               File.Delete(tmpSwid);
+                           }
+
+                       } catch {
+                           
+                       }
+
+                }
+
+                // return any matches in the name
             }
         }
 
+
+        /* NOT SUPPORTED -- AT THIS TIME 
+         * 
         public void FindPackageByFile(string filePath, int id, Callback c) {
             using (var request = c.As<Request>()) {
                 request.Debug("Calling 'Bootstrap::FindPackageByFile'");
             }
         }
 
-        /* NOT SUPPORTED -- AT THIS TIME 
         public void FindPackageByUri(Uri uri, int id, Callback c) {
             using (var request = c.As<Request>()) {
                 request.Debug("Calling 'Bootstrap::FindPackageByUri'");
@@ -139,6 +142,28 @@ namespace OneGet.PackageProvider.Bootstrap {
                 // that we support.
             }
         }
+         * 
+         * 
+        public void GetPackageDetails(string fastPath, Callback c) {
+            using (var request = c.As<Request>()) {
+                request.Debug("Calling 'Bootstrap::GetPackageDetails'");
+            }
+        }
+         * 
+         
+        public void GetPackageDependencies(string fastPath, Callback c) {
+            using (var request = c.As<Request>()) {
+                request.Debug("Calling 'Bootstrap::GetPackageDependencies'");
+
+            }
+        }
+
+         *  public void UninstallPackage(string fastPath, Callback c) {
+            using (var request = c.As<Request>()) {
+                request.Debug("Calling 'Bootstrap::UninstallPackage'");
+            }
+        }
+         * 
          */
 
         public void GetInstalledPackages(string name, Callback c) {
@@ -156,18 +181,6 @@ namespace OneGet.PackageProvider.Bootstrap {
             }
         }
 
-        public void GetPackageDependencies(string fastPath, Callback c) {
-            using (var request = c.As<Request>()) {
-                request.Debug("Calling 'Bootstrap::GetPackageDependencies'");
-
-            }
-        }
-
-        public void GetPackageDetails(string fastPath, Callback c) {
-            using (var request = c.As<Request>()) {
-                request.Debug("Calling 'Bootstrap::GetPackageDetails'");
-            }
-        }
 
         public void InstallPackage(string fastPath, Callback c) {
             // ensure that mandatory parameters are present.
@@ -179,10 +192,6 @@ namespace OneGet.PackageProvider.Bootstrap {
 
         // callback for each package installed when installing dependencies?
 
-        public void UninstallPackage(string fastPath, Callback c) {
-            using (var request = c.As<Request>()) {
-                request.Debug("Calling 'Bootstrap::UninstallPackage'");
-            }
-        }
+       
     }
 }

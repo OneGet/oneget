@@ -512,5 +512,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public IEnumerable<object> SelectProvidersWithFeature(string featureName, string value) {
             return PackageManagementService.SelectProvidersWithFeature(featureName,value);
         }
+
+        public bool RequirePackageProvider(string packageProviderName) {
+            return PackageManagementService.RequirePackageProvider(packageProviderName, this);
+        }
+
     }
 }
