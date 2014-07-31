@@ -123,6 +123,7 @@ function new-packagereference {
 }
 
 function Find-Package { 
+ [CmdletBinding()]
     param(
         [string[]] $names,
         [string] $requiredVersion,
@@ -135,6 +136,32 @@ function Find-Package {
 		write-debug "OPTION: {0} => {1}" $o $request.Options[$o] 
 	}
 
+<#
+	ThrowError -ExceptionName "System.ArgumentExcepion"
+	-ExceptionMessage
+-errorId 
+-CallerPSCmdlet
+-ErrorCategory InvalidArgument
+
+$ex = new-object $ExceptionName $Message
+$rec = new-object System.Management.Automation.ErrorRecord $ex, $errorId, $ErrorCategory, $exceptionObject
+$PSCmdlet.ThrowTerminatingError
+#>
+
+	if( -not $PSCmdlet ) {
+		write-verbose "it is null"
+	} else {
+		write-verbose "it is not null"
+	}	
+
+	$message = "File 'XXX' is empty."
+	$exception = New-Object InvalidOperationException $message
+	$errorID = 'FileIsEmpty'
+	$errorCategory = [Management.Automation.ErrorCategory]::InvalidOperation
+	$target = $Path
+	$errorRecord = New-Object Management.Automation.ErrorRecord $exception, $errorID, $errorCategory, $target
+	$PSCmdlet.ThrowTerminatingError($errorRecord)
+	return
 
 	# SS was asked for as a SecureString.
 	$ss = $request.Options["SS"]

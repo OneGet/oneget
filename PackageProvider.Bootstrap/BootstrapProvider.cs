@@ -190,6 +190,10 @@ namespace OneGet.PackageProvider.Bootstrap {
             }
         }
 
+        /* protected XDocument DownloadSwidtag(string[] locations) {
+            
+        }
+         */
         // callback for each package installed when installing dependencies?
 
        

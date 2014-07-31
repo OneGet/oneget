@@ -127,14 +127,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         internal void ReportErrors(Request request, IEnumerable<ErrorRecord> errors) {
             foreach (var error in errors) {
                 request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject == null ? null : error.TargetObject.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
+                request.Debug(Constants.ScriptStackTrace, error.ScriptStackTrace);
             }
         }
 
         internal object CallPowerShell(Request request, params object[] args) {
             lock (_lock) {
-            _powershell["request"] = request;
+                _powershell["request"] = request;
 
-            
                 DynamicPowershellResult result = null;
 
                 try {

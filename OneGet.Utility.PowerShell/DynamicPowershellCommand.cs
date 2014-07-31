@@ -15,9 +15,11 @@
 namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
     using System.Collections.Generic;
+    using System.Linq.Expressions;
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
     using System.Threading;
+    using Extensions;
 
     internal class DynamicPowershellCommand : IDisposable {
         private readonly Command _command;
@@ -107,7 +109,13 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
                 if (_commandPipeline.PipelineStateInfo.State == PipelineState.Failed) {
                     _result.IsFailing = true;
-                    _result.Errors.Add(new ErrorRecord(_commandPipeline.PipelineStateInfo.Reason, "", ErrorCategory.InvalidArgument, null));
+
+                    var cie = _commandPipeline.PipelineStateInfo.Reason as CmdletInvocationException;
+                    if (cie != null) {
+                        _result.Errors.Add(cie.ErrorRecord);
+                    } else {
+                        _result.Errors.Add(new ErrorRecord(_commandPipeline.PipelineStateInfo.Reason, "Unknown Exception type [{0}]".format(_commandPipeline.PipelineStateInfo.Reason.GetType()), ErrorCategory.NotSpecified, null));
+                    }
                 }
                 CheckForPipelineCompletion();
             };
