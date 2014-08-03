@@ -231,7 +231,7 @@ namespace CustomCodeGenerator {
                     }
                     return "{0} {1} {2}".format(t, n, i);
                 }).SafeAggregate((current, each) => current + "," + each) ?? "",
-                psParameterText = parameterRx.FindIn(match.GetValue("params")).Where(each => each.GetValue("type") != "Callback").Select(p => {
+                psParameterText = parameterRx.FindIn(match.GetValue("params")).Where(each => each.GetValue("type") != "RequestImpl").Select(p => {
                     var t = p.GetValue("type");
                     if (t.Equals("IEnumerable<string>")) {
                         t = "string[]";
@@ -251,7 +251,7 @@ namespace CustomCodeGenerator {
                     if (t == "IEnumerable<object>" && n == "args") {
                         return "params object[] args";
                     }
-                    if (t == "Callback") {
+                    if (t == "RequestImpl") {
                         return "Request request";
                     }
                     return "{0} {1} {2}".format(t, n, i);
@@ -312,12 +312,12 @@ namespace CustomCodeGenerator {
                     if (t == "IEnumerable<object>" && n == "args") {
                         return "params object[] args";
                     }
-                    if (t == "Callback") {
+                    if (t == "RequestImpl") {
                         return "Request request";
                     }
                     return "{0} {1} {2}".format(t, n, i);
                 }).SafeAggregate((current, each) => current + "," + each) ?? "",
-                psParameterText = parameterRx.FindIn(match.GetValue("params")).Where(each => each.GetValue("type") != "Callback").Select(p => {
+                psParameterText = parameterRx.FindIn(match.GetValue("params")).Where(each => each.GetValue("type") != "RequestImpl").Select(p => {
                     var t = p.GetValue("type");
                     var n = p.GetValue("name");
                     var i = p.GetValue("init");
@@ -363,39 +363,6 @@ namespace CustomCodeGenerator {
                 foreach (var targetFile in targetFiles) {
                     var originalText = File.ReadAllText(targetFile);
                     var text = originalText;
-
-#if NOT_USED
-    // generate-resolved *-apis =============================================================================================
-                    text = ReplaceRegion("generate-resolved", "apis", text, (name, content,whitespace)=> {
-                        return apiDeclarations.Where(each => each.category == name).Select(api => @"
-{1}${preamble}
-{1}[System.Diagnostics.CodeAnalysis.SuppressMessage(""Microsoft.Performance"", ""CA1811:AvoidUncalledPrivateCode"", Justification = ""Generated Code"")]
-{1}public static ${returnType} ${delegateName} (this Callback c ${comma} ${parameterText} ) {{
-{1}    ${returnKeyword}(c.Resolve<${delegateName}>() ?? ((${fixedParameterNames})=>${defaultResult} ) )(${parameterNames});
-{1}}}
-".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each) ;
-                    });
-
-
-                    // generate-dispatcher *-apis =============================================================================================
-                    text = ReplaceRegion("generate-dispatcher", "apis", text, (name, content, whitespace) => {
-                        return apiDeclarations.Where(each => each.category == name).Select(api => @"
-{1}private ${delegateName} _${delegateName};
-{1}${preamble}
-{1}[System.Diagnostics.CodeAnalysis.SuppressMessage(""Microsoft.Performance"", ""CA1811:AvoidUncalledPrivateCode"", Justification = ""Generated Code"")]
-{1}public ${returnType} ${delegateName}(${customParameterText} ) {{
-{1}    CheckDisposed();
-{1}    ${returnKeyword} (_${delegateName} ?? (_${delegateName} = (_callback.Resolve<${delegateName}>() ?? ((${fixedParameterNames})=> ${defaultResult} ) )))(${parameterNames});
-{1}}}
-".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);
-                    });
-
-                    // dispose-dispatcher *-apis =============================================================================================
-                    text = ReplaceRegion("dispose-dispatcher", "apis", text, (name, content, whitespace) => {
-                        return apiDeclarations.Where(each => each.category == name).Select(api => @"{1}_${delegateName} = null;".format(api, whitespace)).SafeAggregate((current, each) => current + "\r\n" + each);
-                    });
-
-#endif
 
                     // implement *-apis =============================================================================================
                     text = ReplaceRegion("implement", "apis", text, (name, content, whitespace) => {
@@ -454,13 +421,13 @@ namespace CustomCodeGenerator {
 {1}public ${returnType} ${fnName}(${parameterText}){2}".format(fn, whitespace, fn.code);
                                 }));
                             } else {
-                                if (api.parameterTypes.IndexOf("Callback") != -1) {
+                                if (api.parameterTypes.IndexOf("RequestImpl") != -1) {
                                     newContent += @"{1}${preamble}
 {1}public ${returnType} ${delegateName}(${parameterText}){{
     {1} // TODO: Fill in implementation
     {1} // Delete this method if you do not need to implement it
     {1} // Please don't throw an not implemented exception, it's not optimal.
-    {1}using (var request = c.As<Request>()) {{
+    {1}using (var request =requestImpl.As<Request>()) {{
     {1}    // use the request object to interact with the OneGet core:
     {1}    request.Debug(""Calling '::${delegateName}'"" );
     {1}}}
@@ -511,7 +478,7 @@ function ${fnName} {{
     ){1}".format(fn, fn.code); // use the positional parameter, since fn.code has braces in it.
                                 }));
                             } else {
-                                if (api.parameterTypes.IndexOf("Callback") != -1) {
+                                if (api.parameterTypes.IndexOf("RequestImpl") != -1) {
                                     newContent += @"<# 
 ${preamble}
 #>

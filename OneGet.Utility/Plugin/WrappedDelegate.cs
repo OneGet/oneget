@@ -216,36 +216,4 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
         }
     }
-
-#if OLD_EVENTING
-    public class WrappedCallback : Invokable {
-        private readonly Callback _func;
-
-        public WrappedCallback() {
-        }
-
-        public WrappedCallback(Callback func) {
-            _func = func;
-        }
-
-        public object Invoke(string s, IEnumerable<object> i) {
-            try {
-                return _func.Invoke(s, i);
-            } catch (Exception e) {
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
-            }
-            // return default(TRet);
-        }
-
-        public override object DynamicInvoke(object[] args) {
-            if (args == null) {
-                throw new ArgumentNullException("args");
-            }
-            if (args.Length < 2) {
-                throw new Exception("DynamicInvoke with too few args");
-            }
-            return Invoke((string)args[0], (IEnumerable<string>)args[1]);
-        }
-    }
-#endif
 }

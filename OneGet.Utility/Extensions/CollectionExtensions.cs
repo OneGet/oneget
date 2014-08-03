@@ -167,5 +167,11 @@ namespace Microsoft.OneGet.Utility.Extensions {
         public static T FirstOrDefault<T>(this IEnumerator<T> set) {
             return set.ToIEnumerable().FirstOrDefault();
         }
+
+        public static IEnumerable<T> SingleItemAsEnumerable<T>(this T item) {
+            return new T[] {
+                item
+            };
+        }
     }
 }

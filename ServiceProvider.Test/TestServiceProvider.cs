@@ -16,12 +16,12 @@ namespace Microsoft.OneGet.ServicesProvider.Test {
     using System;
     using System.Collections.Generic;
     using ServiceProvider.Test;
-    using Callback = System.Object;
+    using RequestImpl = System.Object;
 
     public class TestServicesProvider {
         #region implement ServicesProvider-interface
 /// <summary>
-        ///     Returns the name of the Provider. Doesn't need callback .
+        ///     Returns the name of the Provider. 
         /// </summary>
         /// <returns></returns>
         public string GetServicesProviderName() {
@@ -31,62 +31,62 @@ namespace Microsoft.OneGet.ServicesProvider.Test {
 
             return default(string);
         }
-        public void InitializeProvider(object dynamicInterface, Callback c) {
+        public void InitializeProvider(object dynamicInterface, RequestImpl requestImpl) {
             RequestExtensions.RemoteDynamicInterface = dynamicInterface;
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information", "Calling 'InitializeProvider'");
             }
         }
-        public IEnumerable<string> SupportedDownloadSchemes(Callback c){
+        public IEnumerable<string> SupportedDownloadSchemes(RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'SupportedDownloadSchemes'" );
             }
 
             return  default(IEnumerable<string>);
         }
-        public void DownloadFile(Uri remoteLocation, string localFilename, Callback c){
+        public void DownloadFile(Uri remoteLocation, string localFilename, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'DownloadFile'" );
             }
 
         }
-        public IEnumerable<string> SupportedArchiveExtensions(Callback c){
+        public IEnumerable<string> SupportedArchiveExtensions(RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'SupportedArchiveExtensions'" );
             }
 
             return  default(IEnumerable<string>);
         }
-        public bool IsSupportedArchive(string localFilename, Callback c){
+        public bool IsSupportedArchive(string localFilename, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'IsSupportedArchive'" );
             }
 
             return  default(bool);
         }
-        public void UnpackArchive(string localFilename, string destinationFolder, Callback c){
+        public void UnpackArchive(string localFilename, string destinationFolder, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Information","Calling 'UnpackArchive'" );
             }

@@ -15,48 +15,49 @@
 namespace Microsoft.OneGet.Api {
     using System;
     using System.Collections.Generic;
+    using RequestImpl = System.Object;
 
     public interface IServicesApi {
         #region declare service-apis
         /* Synced/Generated code =================================================== */
 
-        void DownloadFile(Uri remoteLocation, string localFilename, Object c);
+        void DownloadFile(Uri remoteLocation, string localFilename, RequestImpl requestImpl);
 
-        bool IsSupportedArchive(string localFilename, Object c);
+        bool IsSupportedArchive(string localFilename, RequestImpl requestImpl);
 
-        IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object c);
+        IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, RequestImpl requestImpl);
 
-        void AddPinnedItemToTaskbar(string item, Object c);
+        void AddPinnedItemToTaskbar(string item, RequestImpl requestImpl);
 
-        void RemovePinnedItemFromTaskbar(string item, Object c);
+        void RemovePinnedItemFromTaskbar(string item, RequestImpl requestImpl);
 
-        void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Object c);
+        void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, RequestImpl requestImpl);
 
-        void SetEnvironmentVariable(string variable, string value, int context, Object c);
+        void SetEnvironmentVariable(string variable, string value, int context, RequestImpl requestImpl);
 
-        void RemoveEnvironmentVariable(string variable, int context, Object c);
+        void RemoveEnvironmentVariable(string variable, int context, RequestImpl requestImpl);
 
-        void CopyFile(string sourcePath, string destinationPath, Object c);
+        void CopyFile(string sourcePath, string destinationPath, RequestImpl requestImpl);
 
-        void Delete(string path, Object c);
+        void Delete(string path, RequestImpl requestImpl);
 
-        void DeleteFolder(string folder, Object c);
+        void DeleteFolder(string folder, RequestImpl requestImpl);
 
-        void CreateFolder(string folder, Object c);
+        void CreateFolder(string folder, RequestImpl requestImpl);
 
-        void DeleteFile(string filename, Object c);
+        void DeleteFile(string filename, RequestImpl requestImpl);
 
-        string GetKnownFolder(string knownFolder, Object c);
+        string GetKnownFolder(string knownFolder, RequestImpl requestImpl);
 
-        bool IsElevated(Object c);
+        bool IsElevated(RequestImpl requestImpl);
 
         #endregion
 
 #if NOT_ADDED_YET
         
-        void UnzipFileIncremental(string zipFile, string folder, Callback c);
+        void UnzipFileIncremental(string zipFile, string folder, RequestImpl requestImpl);
 
-        void UnzipFile(string zipFile, string folder, Callback c);
+        void UnzipFile(string zipFile, string folder, RequestImpl requestImpl);
 
         void AddFileAssociation();
 
@@ -96,9 +97,9 @@ namespace Microsoft.OneGet.Api {
         
         void GenerateUninstallScript();
 
-        string GetNuGetExePath(Callback c);
+        string GetNuGetExePath(RequestImpl requestImpl);
 
-        string GetNuGetDllPath(Callback c);
+        string GetNuGetDllPath(RequestImpl requestImpl);
 #endif
     }
 }

@@ -25,9 +25,15 @@ namespace Microsoft.OneGet.Providers.Package {
     using Utility.Extensions;
     using Utility.Platform;
     using Utility.Plugin;
+    using Utility.Versions;
+    using RequestImpl = System.Object;
 
     public abstract class ProviderBase<T> : MarshalByRefObject where T : IProvider {
+        private static Regex _canonicalPackageRegex = new Regex("(.*?):(.*?)/(.*)");
         private object _context;
+        private Dictionary<string, List<string>> _features;
+        private bool _initialized;
+        private FourPartVersion _version;
 
         public ProviderBase(T provider) {
             Provider = provider;
@@ -39,8 +45,6 @@ namespace Microsoft.OneGet.Providers.Package {
 
         public abstract string Name {get;}
 
-        private Dictionary<string, List<string>> _features;
-
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
         public IReadOnlyDictionary<string, List<string>> Features {
             get {
@@ -48,43 +52,61 @@ namespace Microsoft.OneGet.Providers.Package {
             }
         }
 
-        private static Regex _canonicalPackageRegex = new Regex("(.*?):(.*?)/(.*)");
-
-        internal IRequest ExtendCallback(Object c, params object[] objects) {
-            var baseGetMessageString = c.As<GetMessageString>();
-
-            return c.Extend<IRequest>( new {
-                // check the caller's resource manager first, then fall back to this resource manager
-                GetMessageString = new Func<string, string>((s) => baseGetMessageString(s) ?? Messages.ResourceManager.GetString(s)),
-            }, objects,Context);
+        public FourPartVersion Version {
+            get {
+                return _version;
+            }
+            set {
+                if (_version == 0) {
+                    _version = value;
+                }
+            }
         }
 
-        private object Context {
+        private RequestImpl AdditionalImplementedFunctions {
             get {
                 return _context ?? (_context = new object[] {
                     PackageManagementService._instance.ServicesProvider,
                     new {
-                        GetPackageManagementService = new Func<object,object>((c) => PackageManagementService._instance),
-                        
+                        GetPackageManagementService = new Func<object, object>((requestImpl) => PackageManagementService._instance),
                         GetIRequestInterface = new Func<Type>(() => typeof (IRequest)),
 #if DEBUG
                         Debug = new Action<string>(NativeMethods.OutputDebugString),
 #endif
                         // ensure that someone says 'yeah, it's ok to continue' for each package install/uninstall notification 
-                        NotifyBeforePackageInstall = new Func<string , string , string , string , bool>( (pkgName, pkgVersion, source, destination) => true),
-                        NotifyPackageInstalled= new Func<string , string , string , string , bool>( (pkgName, pkgVersion, source, destination) => true),
-                        NotifyBeforePackageUninstall= new Func<string , string , string , string , bool>( (pkgName, pkgVersion, source, destination) => true),
-                        NotifyPackageUninstalled= new Func<string , string , string , string , bool>( (pkgName, pkgVersion, source, destination) => true),
-
-                        GetCanonicalPackageId = new Func<string,string,string,string>( (providerName, packageName, version) => "{0}:{1}/{2}".format(providerName, packageName, version) ),
-
-                        ParseProviderName = new Func<string,string>((canonicalPackageId) =>_canonicalPackageRegex.Match(canonicalPackageId).Groups[1].Value),
-                        ParsePackageName = new Func<string,string>((canonicalPackageId) =>_canonicalPackageRegex.Match(canonicalPackageId).Groups[2].Value),
-                        ParsePackageVersion = new Func<string,string>((canonicalPackageId) =>_canonicalPackageRegex.Match(canonicalPackageId).Groups[3].Value),
-
+                        NotifyBeforePackageInstall = new Func<string, string, string, string, bool>((pkgName, pkgVersion, source, destination) => true),
+                        NotifyPackageInstalled = new Func<string, string, string, string, bool>((pkgName, pkgVersion, source, destination) => true),
+                        NotifyBeforePackageUninstall = new Func<string, string, string, string, bool>((pkgName, pkgVersion, source, destination) => true),
+                        NotifyPackageUninstalled = new Func<string, string, string, string, bool>((pkgName, pkgVersion, source, destination) => true),
+                        GetCanonicalPackageId = new Func<string, string, string, string>((providerName, packageName, version) => "{0}:{1}/{2}".format(providerName, packageName, version)),
+                        ParseProviderName = new Func<string, string>((canonicalPackageId) => _canonicalPackageRegex.Match(canonicalPackageId).Groups[1].Value),
+                        ParsePackageName = new Func<string, string>((canonicalPackageId) => _canonicalPackageRegex.Match(canonicalPackageId).Groups[2].Value),
+                        ParsePackageVersion = new Func<string, string>((canonicalPackageId) => _canonicalPackageRegex.Match(canonicalPackageId).Groups[3].Value),
                     }
                 });
             }
+        }
+
+        [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
+        public List<DynamicOption> DynamicOptions {
+            get {
+                var result = new List<DynamicOption>();
+                result.AddRange(GetDynamicOptions(OptionCategory.Install, null));
+                result.AddRange(GetDynamicOptions(OptionCategory.Package, null));
+                result.AddRange(GetDynamicOptions(OptionCategory.Provider, null));
+                result.AddRange(GetDynamicOptions(OptionCategory.Source, null));
+                return result;
+            }
+        }
+
+        internal IRequest ExtendRequest(RequestImpl requestImpl, params object[] objects) {
+            var baseGetMessageString = requestImpl.As<GetMessageString>();
+            bool? okToTry = true;
+
+            return requestImpl.Extend<IRequest>(new {
+                // check the caller's resource manager first, then fall back to this resource manager
+                GetMessageString = new Func<string, string>((s) => baseGetMessageString(s) ?? Messages.ResourceManager.GetString(s)),
+            }, objects, AdditionalImplementedFunctions);
         }
 
         public override object InitializeLifetimeService() {
@@ -95,9 +117,11 @@ namespace Microsoft.OneGet.Providers.Package {
             return Provider.IsMethodImplemented(methodName);
         }
 
-        public void Initialize(Object c) {
+        internal void Initialize(IRequest request) {
             // Provider.InitializeProvider(dynamicInstance, c);
-            _features = GetFeatures(c);
+            if (!_initialized) {
+                _features = GetFeatures(request);
+            }
         }
 
         internal CancellableEnumerable<TItem> CallAndCollect<TItem>(Action<CancellableBlockingCollection<TItem>> call, Action<CancellableBlockingCollection<TItem>> atFinally = null) {
@@ -118,15 +142,13 @@ namespace Microsoft.OneGet.Providers.Package {
             return collection;
         }
 
-        internal CancellableEnumerable<TItem> CallAndCollect<TItem>(object c, Response<TItem> response, Action<object> call) {
+        internal CancellableEnumerable<TItem> CallAndCollect<TItem>(RequestImpl requestImpl, Response<TItem> response, Action<object> call) {
             Task.Factory.StartNew(() => {
                 try {
-                    call( ExtendCallback(c,response) );
-                }
-                catch (Exception e) {
+                    call(ExtendRequest(requestImpl, response));
+                } catch (Exception e) {
                     e.Dump();
-                }
-                finally {
+                } finally {
                     response.Complete();
                 }
             });
@@ -134,14 +156,14 @@ namespace Microsoft.OneGet.Providers.Package {
             return response.Result;
         }
 
-        public Dictionary<string, List<string>> GetFeatures(Object c) {
-            if (c == null) {
+        public Dictionary<string, List<string>> GetFeatures(RequestImpl requestImpl) {
+            if (requestImpl == null) {
                 throw new ArgumentNullException("c");
             }
 
-            var isCancelled = c.As<IsCancelled>();
+            var isCancelled = requestImpl.As<IsCancelled>();
             var result = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            Provider.GetFeatures(ExtendCallback(c, new {
+            Provider.GetFeatures(ExtendRequest(requestImpl, new {
                 YieldKeyValuePair = new YieldKeyValuePair((key, value) => {
                     result.GetOrAdd(key, () => new List<string>()).Add(value);
                     return !(isCancelled());
@@ -150,30 +172,18 @@ namespace Microsoft.OneGet.Providers.Package {
             return result;
         }
 
-        [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
-        public List<DynamicOption> DynamicOptions {
-            get {
-                var result = new List<DynamicOption>();
-                result.AddRange(GetDynamicOptions(OptionCategory.Install, null));
-                result.AddRange(GetDynamicOptions(OptionCategory.Package, null));
-                result.AddRange(GetDynamicOptions(OptionCategory.Provider, null));
-                result.AddRange(GetDynamicOptions(OptionCategory.Source, null));
-                return result;
-            }
-        }
-
-        public ICancellableEnumerable<DynamicOption> GetDynamicOptions(OptionCategory operation, Object c) {
-            c = c ?? new {
+        public ICancellableEnumerable<DynamicOption> GetDynamicOptions(OptionCategory operation, RequestImpl requestImpl) {
+            requestImpl = requestImpl ?? new {
                 IsCancelled = new IsCancelled(() => false)
             };
 
-            var isCancelled = c.As<IsCancelled>();
+            var isCancelled = requestImpl.As<IsCancelled>();
 
             DynamicOption lastItem = null;
             var list = new List<string>();
 
             return CallAndCollect<DynamicOption>(
-                result => Provider.GetDynamicOptions((int)operation, ExtendCallback(c, new {
+                result => Provider.GetDynamicOptions((int)operation, ExtendRequest(requestImpl, new {
                     YieldDynamicOption = new YieldDynamicOption((category, name, type, isRequired) => {
                         if (lastItem != null) {
                             lastItem.PossibleValues = list.ToArray();

@@ -1,11 +1,30 @@
-﻿namespace Microsoft.OneGet.Utility.Platform {
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//  http://www.apache.org/licenses/LICENSE-2.0
+//  
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//  
+
+namespace Microsoft.OneGet.Utility.Platform {
     using System.Security.Principal;
 
     public class AdminPrivilege {
         /// <summary>
-        ///     The function checks whether the current process is run as administrator. In other words, it dictates whether the primary access token of the process belongs to user account that is a member of the local Administrators group and it is elevated.
+        ///     The function checks whether the current process is run as administrator. In other words, it dictates whether the
+        ///     primary access token of the process belongs to user account that is a member of the local Administrators group and
+        ///     it is elevated.
         /// </summary>
-        /// <returns> Returns true if the primary access token of the process belongs to user account that is a member of the local Administrators group and it is elevated. Returns false if the token does not. </returns>
+        /// <returns>
+        ///     Returns true if the primary access token of the process belongs to user account that is a member of the local
+        ///     Administrators group and it is elevated. Returns false if the token does not.
+        /// </returns>
         public static bool IsElevated {
             get {
                 var id = WindowsIdentity.GetCurrent();
@@ -14,16 +33,15 @@
             }
         }
 
-
 #if unused
-        /// <summary>
-        ///     The function checks whether the primary access token of the process belongs to user account that is a member of the local Administrators group, even if it currently is not elevated.
-        /// </summary>
-        /// <returns> Returns true if the primary access token of the process belongs to user account that is a member of the local Administrators group. Returns false if the token does not. </returns>
-        /// <exception cref="System.ComponentModel.Win32Exception">
-        ///     When any native Windows API call fails, the function throws a Win32Exception
-        ///     with the last error code.
-        /// </exception>
+    /// <summary>
+    ///     The function checks whether the primary access token of the process belongs to user account that is a member of the local Administrators group, even if it currently is not elevated.
+    /// </summary>
+    /// <returns> Returns true if the primary access token of the process belongs to user account that is a member of the local Administrators group. Returns false if the token does not. </returns>
+    /// <exception cref="System.ComponentModel.Win32Exception">
+    ///     When any native Windows API call fails, the function throws a Win32Exception
+    ///     with the last error code.
+    /// </exception>
         public static bool IsUserInAdminGroup() {
             var fInAdminGroup = false;
             SafeTokenHandle hToken = null;
@@ -264,6 +282,6 @@
 
             return IL;
         }
-#endif 
+#endif
     }
 }

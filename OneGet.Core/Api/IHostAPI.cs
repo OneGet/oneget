@@ -13,12 +13,11 @@
 //  
 
 namespace Microsoft.OneGet.Api {
-    using System;
     using System.Collections.Generic;
-    using System.Security;
 
     public interface IHostApi {
         #region declare host-apis
+
         /* Synced/Generated code =================================================== */
         string GetMessageString(string messageText);
 
@@ -52,6 +51,8 @@ namespace Microsoft.OneGet.Api {
 
         string GetCredentialPassword();
 
+        bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination);
+
         bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
         bool ShouldProcessPackageInstall(string packageName, string version, string source);
@@ -67,6 +68,10 @@ namespace Microsoft.OneGet.Api {
         bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation);
 
         bool AskPermission(string permission);
+
+        bool IsInteractive();
+
+        int CallCount();
 
         #endregion
     }

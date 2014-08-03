@@ -20,6 +20,7 @@ namespace Microsoft.OneGet.Providers.Package {
     using Utility.Collections;
     using Utility.Extensions;
     using Utility.Plugin;
+    using RequestImpl = System.Object;
 
     public class Response<T> : MarshalByRefObject, IResponseApi {
         private readonly object _context;
@@ -30,17 +31,17 @@ namespace Microsoft.OneGet.Providers.Package {
         private SoftwareIdentity _currentSoftwareIdentity = null;
         private PackageProvider _provider;
 
-        internal Response(object c, PackageProvider provider) {
+        internal Response(RequestImpl requestImpl, PackageProvider provider) {
             _provider = provider;
-            _context = c;
+            _context = requestImpl;
             _isCancelled = _context.As<IsCancelled>();
         }
 
-        public Response(object c, PackageProvider provider, string packageStatus, Action<object> call) : this(c, provider) {
+        public Response(object requestImpl, PackageProvider provider, string packageStatus, Action<object> call) : this(requestImpl, provider) {
             _packageStatus = packageStatus;
             Task.Factory.StartNew(() => {
                 try {
-                    call(provider.ExtendCallback(_context, this));
+                    call(provider.ExtendRequest(_context, this));
 
                 } catch (Exception e) {
                     e.Dump();
@@ -50,11 +51,11 @@ namespace Microsoft.OneGet.Providers.Package {
             });
         }
 
-        public Response(object c, PackageProvider provider, Action<object> call)
-            : this(c, provider) {
+        public Response(object requestImpl, PackageProvider provider, Action<object> call)
+            : this(requestImpl, provider) {
             Task.Factory.StartNew(() => {
                 try {
-                    call(provider.ExtendCallback(_context, this));
+                    call(provider.ExtendRequest(_context, this));
                 } catch (Exception e) {
                     e.Dump();
                 } finally {

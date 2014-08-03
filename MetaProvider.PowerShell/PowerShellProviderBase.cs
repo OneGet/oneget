@@ -141,9 +141,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 DynamicPowershellResult result = null;
 
                 try {
-                    Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "INVOKING PowerShell Fn {0} in {1}", request.CommandInfo.Name, _module.Name));
                     request.Debug("INVOKING PowerShell Fn {0} in {1}", request.CommandInfo.Name, _module.Name);
-                    // make sure we don't pass the callback to the function.
+                    // make sure we don't pass the request to the function.
                     result = _powershell.NewTryInvokeMemberEx(request.CommandInfo.Name, new string[0], args);
 
                     // instead, loop thru results and get

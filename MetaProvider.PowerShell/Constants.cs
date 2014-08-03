@@ -30,6 +30,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         internal const string PowershellScriptFunctionFailed = "Powershell script/function failed.";
         internal const string ScriptStackTrace = "Script Stack Trace : {0}";
+
+        internal const string ProviderNameUnknown = "(unknown)";
     }
 
     #region copy errorcategory-implementation

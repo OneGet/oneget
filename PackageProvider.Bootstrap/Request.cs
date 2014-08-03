@@ -16,16 +16,20 @@ namespace OneGet.PackageProvider.Bootstrap {
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
-    using System.Runtime.InteropServices;
+    using System.Net;
     using System.Security;
-    using System.Security.Cryptography;
-    using System.Text;
+    using System.Threading;
+    using System.Xml;
+    using System.Xml.Linq;
+    using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.OneGet.Utility.Versions;
+    using Microsoft.OneGet.Utility.Xml;
     using Resources;
-    using Callback = System.Object;
+    using RequestImpl = System.Object;
 
     public abstract class Request : IDisposable {
-
         #region copy core-apis
 
         /* Synced/Generated code =================================================== */
@@ -44,13 +48,13 @@ namespace OneGet.PackageProvider.Bootstrap {
         /// </summary>
         /// <param name="c"></param>
         /// <returns></returns>
-        public abstract object GetPackageManagementService(Object c);
+        public abstract object GetPackageManagementService(RequestImpl requestImpl);
 
         /// <summary>
-        ///     Returns the type for a Request/Callback that the OneGet Core is expecting
+        ///     Returns the interface type for a Request that the OneGet Core is expecting
         ///     This is (currently) neccessary to provide an appropriately-typed version
         ///     of the Request to the core when a Plugin is calling back into the core
-        ///     and has to pass a Callback.
+        ///     and has to pass a request object.
         /// </summary>
         /// <returns></returns>
         public abstract Type GetIRequestInterface();
@@ -107,6 +111,8 @@ namespace OneGet.PackageProvider.Bootstrap {
 
         public abstract string GetCredentialPassword();
 
+        public abstract bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination );
+
         public abstract bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
         public abstract bool ShouldProcessPackageInstall(string packageName, string version, string source);
@@ -122,40 +128,44 @@ namespace OneGet.PackageProvider.Bootstrap {
         public abstract bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation);
 
         public abstract bool AskPermission(string permission);
+
+        public abstract bool IsInteractive();
+
+        public abstract int CallCount();
         #endregion
 
         #region copy service-apis
 
         /* Synced/Generated code =================================================== */
-        public abstract void DownloadFile(Uri remoteLocation, string localFilename, Object c);
+        public abstract void DownloadFile(Uri remoteLocation, string localFilename, RequestImpl requestImpl);
 
-        public abstract bool IsSupportedArchive(string localFilename, Object c);
+        public abstract bool IsSupportedArchive(string localFilename, RequestImpl requestImpl);
 
-        public abstract IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object c);
+        public abstract IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, RequestImpl requestImpl);
 
-        public abstract void AddPinnedItemToTaskbar(string item, Object c);
+        public abstract void AddPinnedItemToTaskbar(string item, RequestImpl requestImpl);
 
-        public abstract void RemovePinnedItemFromTaskbar(string item, Object c);
+        public abstract void RemovePinnedItemFromTaskbar(string item, RequestImpl requestImpl);
 
-        public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Object c);
+        public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, RequestImpl requestImpl);
 
-        public abstract void SetEnvironmentVariable(string variable, string value, int context, Object c);
+        public abstract void SetEnvironmentVariable(string variable, string value, int context, RequestImpl requestImpl);
 
-        public abstract void RemoveEnvironmentVariable(string variable, int context, Object c);
+        public abstract void RemoveEnvironmentVariable(string variable, int context, RequestImpl requestImpl);
 
-        public abstract void CopyFile(string sourcePath, string destinationPath, Object c);
+        public abstract void CopyFile(string sourcePath, string destinationPath, RequestImpl requestImpl);
 
-        public abstract void Delete(string path, Object c);
+        public abstract void Delete(string path, RequestImpl requestImpl);
 
-        public abstract void DeleteFolder(string folder, Object c);
+        public abstract void DeleteFolder(string folder, RequestImpl requestImpl);
 
-        public abstract void CreateFolder(string folder, Object c);
+        public abstract void CreateFolder(string folder, RequestImpl requestImpl);
 
-        public abstract void DeleteFile(string filename, Object c);
+        public abstract void DeleteFile(string filename, RequestImpl requestImpl);
 
-        public abstract string GetKnownFolder(string knownFolder, Object c);
+        public abstract string GetKnownFolder(string knownFolder, RequestImpl requestImpl);
 
-        public abstract bool IsElevated(Object c);
+        public abstract bool IsElevated(RequestImpl requestImpl);
         #endregion
 
         #region copy response-apis
@@ -361,5 +371,171 @@ namespace OneGet.PackageProvider.Bootstrap {
             // get the value from the request
             return (GetOptionValues((int)category, name) ?? Enumerable.Empty<string>());
         }
+
+        private static XmlNamespaceManager _namespaceManager;
+
+        internal static XmlNamespaceManager NamespaceManager {
+            get {
+                if (_namespaceManager == null) {
+                    XmlNameTable nameTable = new NameTable();
+                    _namespaceManager = new XmlNamespaceManager(nameTable);
+                    _namespaceManager.AddNamespace("swid", "http://standards.iso.org/iso/19770/-2/2014/schema.xsd");
+                    _namespaceManager.AddNamespace("oneget", "http://oneget.org/swidtag");
+                }
+                return _namespaceManager;
+            }
+        }
+
+        internal DynamicElement DownloadSwidtag(IEnumerable<string> locations) {
+            foreach (var location in locations) {
+                if (Uri.IsWellFormedUriString(location, UriKind.Absolute)) {
+                    var uri = new Uri(location);
+                    var content = DownloadContent(uri);
+                    XDocument document;
+                    if (!String.IsNullOrEmpty(content)) {
+                        try {
+                            document = XDocument.Parse(content);
+                            if (document.Root != null && document.Root.Name.LocalName == Constants.SoftwareIdentity) {
+                                // future todo: we could do more checks here.
+
+                                return new DynamicElement(document, NamespaceManager);
+                            }
+                        } catch {
+                            continue;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        private string DownloadContent(Uri location) {
+            var client = new WebClient();
+            string result = null;
+
+            // Apparently, places like Codeplex know to let this thru!
+            client.Headers.Add("user-agent", "chocolatey command line");
+
+            var done = new ManualResetEvent(false);
+
+            client.DownloadStringCompleted += (sender, args) => {
+                if (!args.Cancelled && args.Error == null) {
+                    result = args.Result;
+                }
+
+                done.Set();
+            };
+            client.DownloadProgressChanged += (sender, args) => {
+                // todo: insert progress indicator
+                // var percent = (args.BytesReceived * 100) / args.TotalBytesToReceive;
+                // Progress(c, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
+            };
+            client.DownloadStringAsync(location);
+            done.WaitOne();
+            return result;
+        }
+
+        internal DynamicElement GetProvider(DynamicElement document, string name) {
+            var links = document["/swid:SoftwareIdentity/swid:Link[@rel='component' and @artifact='{0}' and @oneget:type='provider']", name];
+            return DownloadSwidtag(links.GetAttributes("href"));
+        }
+
+        internal IEnumerable<DynamicElement> GetProviders(DynamicElement document) {
+            var artifacts = document["/swid:SoftwareIdentity/swid:Link[@rel='component' and @oneget:type='provider']"].GetAttributes("artifact").Distinct().ToArray();
+            return artifacts.Select(each => GetProvider(document, each)).Where(each => each != null);
+        }
+
+        public bool YieldFromSwidtag(DynamicElement provider, string requiredVersion, string minimumVersion, string maximumVersion, string searchKey) {
+            var name = provider.Attributes["name"];
+            FourPartVersion version = provider.Attributes["version"];
+            var versionScheme = provider.Attributes["versionScheme"];
+            var packageFilename = provider["/swid:SoftwareIdentity/swid:Meta[@targetFilename]"].GetAttribute("targetFilename");
+            var summary = provider["/swid:SoftwareIdentity/swid:Meta[@summary]"].GetAttribute("summary");
+
+            if (AnyNullOrEmpty(name, version, versionScheme, packageFilename)) {
+                Debug("Skipping yield on swid due to missing field \r\n", provider.ToString());
+                return true;
+            }
+
+            if (requiredVersion.Is() && version != requiredVersion) {
+                return true;
+            }
+
+            if (minimumVersion.Is() && version < minimumVersion) {
+                return true;
+            }
+
+            if (maximumVersion.Is() && version > maximumVersion) {
+                return true;
+            }
+
+            if (YieldSoftwareIdentity(name, name, version, versionScheme, summary, null, searchKey, null, packageFilename)) {
+                // note: temporary until we actaully support swidtags in the core.
+
+                // yield all the meta/attributes
+                if (provider["/swid:SoftwareIdentity/swid:Meta"].Any(
+                    meta => meta.Attributes.Any(attribute => !YieldSoftwareMetadata(name, attribute.Name.LocalName, attribute.Value)))) {
+                    return false;
+                }
+
+                if (provider["/swid:SoftwareIdentity/swid:Link"].Any(
+                    link => !YieldLink(name, link.Attributes["href"], link.Attributes["rel"], link.Attributes["type"], link.Attributes["ownership"], link.Attributes["use"], link.Attributes["media"], link.Attributes["artifact"]))) {
+                    return false;
+                }
+
+                if (provider["/swid:SoftwareIdentity/swid:Entity"].Any(
+                    entity => !YieldEntity(name, entity.Attributes["name"], entity.Attributes["regid"], entity.Attributes["role"], entity.Attributes["thumbprint"]))) {
+                    return false;
+                }
+
+                if (!YieldSoftwareMetadata(name, "FromTrustedSource", true.ToString())) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        internal string DestinationPath {
+            get {
+                return Path.GetFullPath(GetValue(OptionCategory.Install, "DestinationPath"));
+            }
+        }
+
+        private static bool AnyNullOrEmpty(params string[] args) {
+            return args.Any(string.IsNullOrEmpty);
+        }
+
+        public bool DownloadFileToLocation(Uri uri, string targetFile) {
+            var result = false;
+            var client = new WebClient();
+
+            // Apparently, places like Codeplex know to let this thru!
+            client.Headers.Add("user-agent", "chocolatey command line");
+
+            var done = new ManualResetEvent(false);
+
+            client.DownloadFileCompleted += (sender, args) => {
+                if (args.Cancelled || args.Error != null) {
+                    // failed
+                    targetFile.TryHardToDelete();
+                } else {
+                    result = true;
+                }
+
+                done.Set();
+            };
+            client.DownloadProgressChanged += (sender, args) => {
+                // todo: insert progress indicator
+                // var percent = (args.BytesReceived * 100) / args.TotalBytesToReceive;
+                // Progress(c, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
+            };
+            client.DownloadFileAsync(uri, targetFile);
+            done.WaitOne();
+            return result;
+        }
+    }
+
+    internal static class SwidExtensions {
     }
 }

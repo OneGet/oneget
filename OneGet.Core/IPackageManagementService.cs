@@ -15,7 +15,7 @@
 namespace Microsoft.OneGet {
     using System.Collections.Generic;
     using Providers.Package;
-    using Callback = System.Object;
+    using RequestImpl = System.Object;
 
     /// <summary>
     ///     The current Package Management Service Interface
@@ -30,15 +30,14 @@ namespace Microsoft.OneGet {
 
         IEnumerable<PackageProvider> PackageProviders { get; }
 
-        IEnumerable<PackageProvider> SelectProviders(string providerName);
-
+        IEnumerable<PackageProvider> SelectProviders(string providerName, RequestImpl requestImpl);
 
         IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName);
 
         IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
 
-        bool Initialize(bool userInteractionPermitted, Callback c);
+        bool Initialize(RequestImpl requestImpl);
 
-        bool RequirePackageProvider(string packageProviderName, Callback c);
+        bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, RequestImpl requestImpl);
     }
 }

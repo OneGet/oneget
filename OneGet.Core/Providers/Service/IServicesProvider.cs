@@ -22,7 +22,7 @@ namespace Microsoft.OneGet.Providers.Service {
         /* Synced/Generated code =================================================== */
 
         /// <summary>
-        ///     Returns the name of the Provider. Doesn't need callback .
+        ///     Returns the name of the Provider. 
         /// </summary>
         /// <returns></returns>
         [Required]

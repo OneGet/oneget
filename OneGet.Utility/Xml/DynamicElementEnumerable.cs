@@ -12,9 +12,24 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet {
-    internal static class Constants {
-        internal const string FailedProviderBootstrap = "MSG:FailedProviderBootstrap";
-        internal const string UnknownProvider = "MSG:UnknownProvider";
+namespace Microsoft.OneGet.Utility.Xml {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+
+    public class DynamicElementEnumerable : IEnumerable<DynamicElement> {
+        private readonly IEnumerable<DynamicElement> _elements;
+
+        public DynamicElementEnumerable(IEnumerable<DynamicElement> elements) {
+            _elements = elements;
+        }
+
+        public IEnumerator<DynamicElement> GetEnumerator() {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
     }
 }

@@ -1,16 +1,16 @@
-//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.OneGet {
     using System;
@@ -20,16 +20,20 @@ namespace Microsoft.OneGet {
     using System.Linq;
     using System.Reflection;
     using System.Security.AccessControl;
+    using System.Security.Principal;
+    using System.Threading;
     using System.Threading.Tasks;
     using Api;
     using Packaging;
     using Providers;
+    using Providers.Meta;
     using Providers.Package;
     using Providers.Service;
     using Utility.Extensions;
+    using Utility.Platform;
     using Utility.Plugin;
     using Win32;
-    using Callback = System.Object;
+    using RequestImpl = System.Object;
 
     /// <summary>
     ///     The Client API is designed for use by installation hosts:
@@ -42,8 +46,9 @@ namespace Microsoft.OneGet {
     internal class PackageManagementServiceImplementation : MarshalByRefObject, IPackageManagementService {
         internal const string ProviderPluginLoadFailure = "PROVIDER_PLUGIN_LOAD_FAILURE";
         internal const string Invalidoperation = "InvalidOperation";
-        private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>();
-        private readonly IDictionary<string, ServicesProvider> _servicesProviders = new Dictionary<string, ServicesProvider>();
+        private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>(StringComparer.OrdinalIgnoreCase);
+        private readonly IDictionary<string, ServicesProvider> _servicesProviders = new Dictionary<string, ServicesProvider>(StringComparer.OrdinalIgnoreCase);
+        private readonly IDictionary<string, IMetaProvider> _metaProviders = new Dictionary<string, IMetaProvider>(StringComparer.OrdinalIgnoreCase);
 
         private readonly object _lockObject = new object();
 
@@ -58,12 +63,6 @@ namespace Microsoft.OneGet {
             }
         }
 
-        public IEnumerable<string> PackageProviderNames {
-            get {
-                return _packageProviders.Keys;
-            }
-        }
-
         public IEnumerable<PackageProvider> PackageProviders {
             get {
                 return _packageProviders.Values.ByRef();
@@ -72,10 +71,10 @@ namespace Microsoft.OneGet {
 
         private bool _initialized;
 
-        public bool Initialize( bool userInteractionPermitted,Callback callback) {
+        public bool Initialize(RequestImpl request) {
             lock (_lockObject) {
                 if (!_initialized) {
-                    LoadProviders(callback);
+                    LoadProviders(request.As<IRequest>());
                     _initialized = true;
                 }
             }
@@ -89,45 +88,40 @@ namespace Microsoft.OneGet {
             return null;
         }
 
+        // well known, built in provider assemblies.
+        private readonly string[] _builtInProviders = {
+            "Microsoft.OneGet.MetaProvider.PowerShell.dll",
+            "Microsoft.OneGet.ServicesProvider.Common.dll",
+            "Microsoft.OneGet.PackageProvider.Bootstrap.dll",
+        };
+
         /// <summary>
         ///     This initializes the provider registry with the list of package providers.
         ///     (currently a hardcoded list, soon, registry driven)
         /// </summary>
-        /// <param name="callback"></param>
-        private void LoadProviders(Callback callback) {
-            var request = callback.As<IRequest>();
-
-            // well known, built in provider assemblies.
-            IEnumerable<string> providerAssemblies = new string[] {
-                "Microsoft.OneGet.MetaProvider.PowerShell.dll",
-                "Microsoft.OneGet.ServicesProvider.Common.dll",
-                "Microsoft.OneGet.PackageProvider.Bootstrap.dll",
-#if DEBUG
-                "OneGet.PackageProvider.NuGet.dll",  // testing
-#endif
-                "NuGet-AnyCPU.exe",
-            }.Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET")).Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"));
+        /// <param name="request"></param>
+        private void LoadProviders(IRequest request) {
+            var providerAssemblies = (_initialized ? Enumerable.Empty<string>() : _builtInProviders)
+                .Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET"))
+                .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"))
+                .Concat(AutoloadedAssemblyLocations.SelectMany(location => {
+                    if (Directory.Exists(location)) {
+                        return Directory.EnumerateFiles(location, "*.exe").Concat(Directory.EnumerateFiles(location, "*.dll"));
+                    }
+                    return Enumerable.Empty<string>();
+                }));
 
             // there is no trouble with loading providers concurrently.
             Parallel.ForEach(providerAssemblies, providerAssemblyName => {
-                // foreach( var providerAssemblyName in providerAssemblies ) {
                 try {
-                    if (TryToLoadProviderAssembly(callback, providerAssemblyName)) {
-                        request.Debug("Loaded Provider Assembly {0}".format(providerAssemblyName));
-                    } else {
-                        request.Debug("Failed to load any providers {0}".format(providerAssemblyName));
-                    }
+                    request.Verbose("ProviderAssembly: {0} THREAD:{1}".format(providerAssemblyName, Thread.CurrentThread.ManagedThreadId));
+                    TryToLoadProviderAssembly(providerAssemblyName, request);
+                    request.Verbose("DONE ProviderAssembly: {0} THREAD:{1}".format(providerAssemblyName, Thread.CurrentThread.ManagedThreadId));
+
                 } catch {
                     request.Error(ProviderPluginLoadFailure, Invalidoperation, ProviderPluginLoadFailure, providerAssemblyName);
                 }
             });
-
-            foreach (var provider in _packageProviders.Values) {
-                provider.Initialize(callback);
-            }
-            foreach (var provider in _servicesProviders.Values) {
-                provider.Initialize(callback);
-            }
         }
 
         private static IEnumerator<string> GetProvidersFromRegistry(RegistryKey registryKey, string p) {
@@ -147,9 +141,8 @@ namespace Microsoft.OneGet {
             }
         }
 
-
-        public IEnumerable<PackageSource> GetAllSourceNames(Callback callback) {
-            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(callback)).ByRef();
+        public IEnumerable<PackageSource> GetAllSourceNames(RequestImpl requestImpl) {
+            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(requestImpl)).ByRef();
         }
 
         public IEnumerable<string> ProviderNames {
@@ -166,53 +159,98 @@ namespace Microsoft.OneGet {
             return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName) && each.Features[featureName].Contains(value)).ByRef();
         }
 
-        public IEnumerable<PackageProvider> SelectProviders(string providerName) {
+        public IEnumerable<PackageProvider> SelectProviders(string providerName, RequestImpl requestImpl) {
             if (providerName.Is()) {
                 // strict name match for now.
-                return PackageProviders.Where(each => each.Name.Equals(providerName, StringComparison.CurrentCultureIgnoreCase)).ByRef();
+                if (_packageProviders.ContainsKey(providerName)) {
+                    return _packageProviders[providerName].SingleItemAsEnumerable().ByRef();
+                }
+
+                if (requestImpl != null) {
+                    // if the end user requested a provider that's not there. perhaps the bootstrap provider can find it.
+                    if (RequirePackageProvider(null, providerName, "0.0.0.1", requestImpl)) {
+                        // seems to think we found it.
+                        if (_packageProviders.ContainsKey(providerName)) {
+                            return _packageProviders[providerName].SingleItemAsEnumerable().ByRef();
+                        }
+                    }
+                    var hostApi = requestImpl.As<IHostApi>();
+
+                    // warn the user that that provider wasn't found.
+                    hostApi.Warning(hostApi.GetMessageString(Constants.UnknownProvider).format(providerName));
+                }
+                return Enumerable.Empty<PackageProvider>().ByRef();
             }
 
             return PackageProviders.ByRef();
         }
 
-        private bool AddPackageProvider(string name, IPackageProvider provider) {
+        private bool AddMetaProvider(string name, IMetaProvider provider, ulong version, IRequest request) {
             // wrap this in a caller-friendly wrapper
-            if (_packageProviders.ContainsKey(name)) {
+            if (_metaProviders.ContainsKey(name)) {
+                // Meta Providers can't be replaced at this point
                 return false;
             }
-            _packageProviders.AddOrSet(name, new PackageProvider(provider));
+            _metaProviders.AddOrSet(name, provider);
             return true;
         }
 
-        private bool AddServicesProvider(string name, IServicesProvider provider) {
-            if (_servicesProviders.ContainsKey(name)) {
-                return false;
+        private bool AddPackageProvider(string name, IPackageProvider provider, ulong version, IRequest request) {
+            // wrap this in a caller-friendly wrapper
+            if (_packageProviders.ContainsKey(name)) {
+                if (version > _packageProviders[name].Version) {
+                    // remove the old provider first.
+                    // todo: this won't remove the plugin domain and unload the code yet
+                    // we'll have to do that later.
+
+                    _packageProviders.Remove(name);
+                } else {
+                    return false;
+                }
             }
-            _servicesProviders.AddOrSet(name, new ServicesProvider(provider));
+            _packageProviders.AddOrSet(name, new PackageProvider(provider) {
+                Version = version
+            }).Initialize(request);
+
+            return true;
+        }
+
+        private bool AddServicesProvider(string name, IServicesProvider provider, ulong version, IRequest request) {
+            if (_servicesProviders.ContainsKey(name)) {
+                if (version > _servicesProviders[name].Version) {
+                    // remove the old provider first.
+                    // todo: this won't remove the plugin domain and unload the code yet
+                    // we'll have to do that later.
+
+                    _servicesProviders.Remove(name);
+                } else {
+                    return false;
+                }
+            }
+            _servicesProviders.AddOrSet(name, new ServicesProvider(provider) {
+                Version = version
+            }).Initialize(request);
             return true;
         }
 
         /// <summary>
         ///     Searches for the assembly, interrogates it for it's providers and then proceeds to load
         /// </summary>
-        /// <param name="callback"></param>
+        /// <param name="request"></param>
         /// <param name="providerAssemblyName"></param>
         /// <returns></returns>
-        private bool TryToLoadProviderAssembly(Callback callback, string providerAssemblyName) {
+        private void TryToLoadProviderAssembly(string providerAssemblyName, IRequest request) {
             // find all the matches for the assembly specified, order by version (descending)
 
             var assemblyPath = FindAssembly(providerAssemblyName);
 
             if (assemblyPath == null) {
-                return false;
+                return;
             }
 
             var pluginDomain = CreatePluginDomain(assemblyPath);
 
-            return pluginDomain.InvokeFunc(Loader.AcquireProviders, assemblyPath, callback.As<ICoreApi>(),
-                (Func<string, IPackageProvider,bool>)(AddPackageProvider),
-                (Func<string, IServicesProvider,bool>)(AddServicesProvider)
-                );
+            pluginDomain.InvokeFunc(Loader.AcquireProviders, assemblyPath, request, (YieldMetaProvider)AddMetaProvider, (YieldPackageProvider)AddPackageProvider, (YieldServicesProvider)AddServicesProvider);
         }
 
 #if AFTER_CTP
@@ -291,7 +329,6 @@ namespace Microsoft.OneGet {
                         }
                     } catch {
                     }
-
                 }
                 // must be just just a plain name.
 
@@ -314,24 +351,135 @@ namespace Microsoft.OneGet {
             return null;
         }
 
-        public bool RequirePackageProvider(string packageProviderName, Callback c) {
+        internal IEnumerable<string> AutoloadedAssemblyLocations {
+            get {
+                return new[] {
+                    SystemAssemblyLocation, UserAssemblyLocation
+                };
+            }
+        }
+
+        internal string UserAssemblyLocation {
+            get {
+                var basepath = KnownFolders.GetFolderPath(KnownFolder.LocalApplicationData);
+                if (string.IsNullOrEmpty(basepath)) {
+                    return null;
+                }
+                var path = Path.Combine(basepath, "OneGet", "ProviderAssemblies");
+                if (!Directory.Exists(path)) {
+                    Directory.CreateDirectory(path);
+                }
+                return path;
+            }
+        }
+
+        internal string SystemAssemblyLocation {
+            get {
+                var basepath = KnownFolders.GetFolderPath(KnownFolder.CommonApplicationData);
+                if (string.IsNullOrEmpty(basepath)) {
+                    return null;
+                }
+                var path = Path.Combine(basepath, "OneGet", "ProviderAssemblies");
+                if (AdminPrivilege.IsElevated && !Directory.Exists(path)) {
+                    var ds = new DirectorySecurity();
+
+                    var everyone = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+                    var admins = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+                    ds.AddAccessRule(new FileSystemAccessRule(everyone, FileSystemRights.ReadAndExecute, AccessControlType.Allow));
+                    ds.AddAccessRule(new FileSystemAccessRule(admins, FileSystemRights.Write, AccessControlType.Allow));
+
+                    Directory.CreateDirectory(path, ds);
+                }
+
+                return path;
+            }
+        }
+
+        private static int _lastCallCount = 0;
+        private static HashSet<string> _providersTriedThisCall;
+
+        public bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, RequestImpl requestImpl) {
             // check if the package provider is already installed
             if (_packageProviders.ContainsKey(packageProviderName)) {
-                return true;
+                var current = _packageProviders[packageProviderName].Version;
+                if (current >= minimumVersion) {
+                    return true;
+                }
+            }
+
+            var request = requestImpl.As<IRequest>();
+
+            var currentCallCount = request.CallCount();
+
+            if (_lastCallCount >= currentCallCount) {
+                // we've already been here this call.
+
+                // are they asking for the same provider again?
+                if (_providersTriedThisCall.Contains(packageProviderName)) {
+                    request.Debug("Already tried this call.");
+                    return false;
+                }
+                // remember this in case we come back again.
+                _providersTriedThisCall.Add(packageProviderName);
+            } else {
+                _lastCallCount = currentCallCount;
+                _providersTriedThisCall = new HashSet<string> {
+                    packageProviderName
+                };
+            }
+
+            if (!request.IsInteractive()) {
+                request.Debug("Skipping RequirePackageProvider due to not interactive");
+                // interactive indicates that the host can respond to queries -- this doesn't happen
+                // in powershell during tab-completion.
+                return false;
             }
 
             // no?
             // ask the bootstrap provider if there is a package provider with that name available.
             var bootstrap = _packageProviders["Bootstrap"];
             if (bootstrap == null) {
+                request.Debug("Skipping RequirePackageProvider due to missing bootstrap provider");
                 return false;
             }
 
-            var pkg = bootstrap.FindPackage(packageProviderName, null, null, null, 0, c).ToArray();
+            var pkg = bootstrap.FindPackage(packageProviderName, null, minimumVersion, null, 0, requestImpl).ToArray();
             if (pkg.Length == 1) {
                 // Yeah? Install it.
-                bootstrap.InstallPackage(pkg[0], c);
-                return true;
+                var package = pkg[0];
+                var metaWithProviderType = pkg[0].Meta.FirstOrDefault(each => each.ContainsKey("providerType"));
+                var providerType = metaWithProviderType == null ? "unknown" : metaWithProviderType["providerType"];
+                var destination = providerType == "assembly" ? (AdminPrivilege.IsElevated ? SystemAssemblyLocation : UserAssemblyLocation) : string.Empty;
+                var link = package.Links.FirstOrDefault(each => each.Relationship == "installationmedia");
+                var location = string.Empty;
+                if (link != null) {
+                    location = link.HRef;
+                }
+
+                // what can't find an installationmedia link? 
+                // todo: what should we say here?
+                if (request.ShouldBootstrapProvider(requestor, pkg[0].Name, pkg[0].Version, providerType, location, destination)) {
+                    var newRequest = requestImpl.Extend<IRequest>(new {
+                        GetOptionValues = new Func<int, string, IEnumerable<string>>((category, key) => {
+                            if (key == "DestinationPath") {
+                                return new string[] {
+                                    destination
+                                };
+                            }
+                            return new string[0];
+                        })
+                    });
+                    var packagesInstalled = bootstrap.InstallPackage(pkg[0], newRequest).LastOrDefault();
+                    if (packagesInstalled == null) {
+                        // that's sad.
+                        request.Error(Constants.FailedProviderBootstrap, Invalidoperation, package.Name, package.Name);
+                        return false;
+                    }
+                    // so it installed something
+                    // we must tell the plugin loader to reload the plugins again.
+                    LoadProviders(request);
+                    return true;
+                }
             }
 
             return false;

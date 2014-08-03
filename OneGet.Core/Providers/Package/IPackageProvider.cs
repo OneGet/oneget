@@ -16,7 +16,7 @@ namespace Microsoft.OneGet.Providers.Package {
     using System;
     using Utility.Plugin;
 
-    // using Callback = System.Object;
+    using RequestImpl = System.Object;
 
     public interface IProvider {
         #region declare Provider-interface
@@ -27,22 +27,22 @@ namespace Microsoft.OneGet.Providers.Package {
         ///     This is called after the Provider is instantiated .
         /// </summary>
         /// <param name="dynamicInterface">A reference to the DynamicInterface class -- used to implement late-binding</param>
-        /// <param name="c">Callback Delegate Reference</param>
+        /// <param name="requestImpl">Object implementing some or all IRequest methods</param>
         [Required]
-        void InitializeProvider(object dynamicInterface, Object c);
+        void InitializeProvider(object dynamicInterface, RequestImpl requestImpl);
 
         /// <summary>
         ///     Gets the features advertized from the provider
         /// </summary>
-        /// <param name="c"></param>
-        void GetFeatures(Object c);
+        /// <param name="requestImpl"></param>
+        void GetFeatures(RequestImpl requestImpl);
 
         /// <summary>
         ///     Gets dynamically defined options from the provider
         /// </summary>
         /// <param name="category"></param>
-        /// <param name="c"></param>
-        void GetDynamicOptions(int category, Object c);
+        /// <param name="requestImpl"></param>
+        void GetDynamicOptions(int category, RequestImpl requestImpl);
 
         /// <summary>
         ///     Allows runtime examination of the implementing class to check if a given method is implemented.
@@ -50,6 +50,15 @@ namespace Microsoft.OneGet.Providers.Package {
         /// <param name="methodName"></param>
         /// <returns></returns>
         bool IsMethodImplemented(string methodName);
+
+
+        /// <summary>
+        /// Returns the version of the provider.
+        /// 
+        /// This is expected to be in multipart numeric format. 
+        /// </summary>
+        /// <returns>The version of the provider</returns>
+        string GetProviderVersion();
 
         #endregion
     }
@@ -59,22 +68,22 @@ namespace Microsoft.OneGet.Providers.Package {
         /* Synced/Generated code =================================================== */
 
         /// <summary>
-        ///     Returns the name of the Provider. Doesn't need a callback .
+        ///     Returns the name of the Provider.
         /// </summary>
         /// <returns>the name of the package provider</returns>
         [Required]
         string GetPackageProviderName();
 
         // --- Manages package sources ---------------------------------------------------------------------------------------------------
-        void AddPackageSource(string name, string location, bool trusted, Object c);
+        void AddPackageSource(string name, string location, bool trusted, RequestImpl requestImpl);
 
-        void ResolvePackageSources(Object c);
+        void ResolvePackageSources(RequestImpl requestImpl);
 
-        void RemovePackageSource(string name, Object c);
+        void RemovePackageSource(string name, RequestImpl requestImpl);
 
-        int StartFind(Object c);
+        int StartFind(RequestImpl requestImpl);
 
-        void CompleteFind(int id, Object c);
+        void CompleteFind(int id, RequestImpl requestImpl);
 
         // --- Finds packages ---------------------------------------------------------------------------------------------------
         /// <summary>
@@ -88,28 +97,28 @@ namespace Microsoft.OneGet.Providers.Package {
         /// <param name="minimumVersion"></param>
         /// <param name="maximumVersion"></param>
         /// <param name="id"></param>
-        /// <param name="c"></param>
+        /// <param name="requestImpl"></param>
         /// <returns></returns>
-        void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Object c);
+        void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, RequestImpl requestImpl);
 
-        void FindPackageByFile(string file, int id, Object c);
-        void FindPackageByUri(Uri uri, int id, Object c);
+        void FindPackageByFile(string file, int id, RequestImpl requestImpl);
+        void FindPackageByUri(Uri uri, int id, RequestImpl requestImpl);
 
-        void GetInstalledPackages(string name, Object c);
+        void GetInstalledPackages(string name, RequestImpl requestImpl);
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        void DownloadPackage(string fastPath, string location, Object c);
-        void GetPackageDependencies(string fastPath, Object c);
-        void GetPackageDetails(string fastPath, Object c);
+        void DownloadPackage(string fastPath, string location, RequestImpl requestImpl);
+        void GetPackageDependencies(string fastPath, RequestImpl requestImpl);
+        void GetPackageDetails(string fastPath, RequestImpl requestImpl);
 
-        void InstallPackage(string fastPath, Object c);
+        void InstallPackage(string fastPath, RequestImpl requestImpl);
         // auto-install-dependencies
         // skip-dependency-check
         // continue-on-failure
         // location system/user/folder
-        // callback for each package installed when installing dependencies?
+        // fn call-back for each package installed when installing dependencies?
 
-        void UninstallPackage(string fastPath, Object c);
+        void UninstallPackage(string fastPath, RequestImpl requestImpl);
 
         #endregion
     }

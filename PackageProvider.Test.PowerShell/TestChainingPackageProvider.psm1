@@ -36,18 +36,26 @@ function Get-DynamicOptions {
     )
     write-debug "In TestChainingPackageProvider - Get-DynamicOption for category $category"
 
-	# Example: Get all the parameters for another provider
-	$pm = $request.SelectProvider("NuGet")
-	$NuGetOptions = $pm.DynamicOptions
-	foreach( $do in $NuGetOptions ) {
-		$name = $do.Name
-		$cat = $do.Category
-		$type = $do.Type
-		$req = $do.Required
 
-		#just write them out:
-		write-debug "NuGetOption: $name $cat $type $req"
-	}
+	if( $request.RequirePackageProvider( "nuget", "2.8.1.0") -eq $true ) {
+		write-debug "NO NUGET========================================================="
+
+		# Example: Get all the parameters for another provider
+		$pm = $request.SelectProvider("NuGet")
+		$NuGetOptions = $pm.DynamicOptions
+		foreach( $do in $NuGetOptions ) {
+			$name = $do.Name
+			$cat = $do.Category
+			$type = $do.Type
+			$req = $do.Required
+
+			#just write them out:
+			write-debug "NuGetOption: $name $cat $type $req"
+		}
+		
+    }
+
+
 
 	switch( $category ) {
 	    Package {
@@ -131,7 +139,13 @@ function Find-Package {
         [string] $maximumVersion
     )
 	write-debug "In TestChainingPackageProvider - Find-Package"
+
+	if( $request.RequirePackageProvider( "nuget", "2.8.1.0") -eq $false ) {
+		write-debug "NO NUGET========================================================="
+		return
+    }
 	
+
 	foreach( $o in $request.Options.Keys ) {
 		write-debug "OPTION: {0} => {1}" $o $request.Options[$o] 
 	}
@@ -154,6 +168,7 @@ $PSCmdlet.ThrowTerminatingError
 		write-verbose "it is not null"
 	}	
 
+<#
 	$message = "File 'XXX' is empty."
 	$exception = New-Object InvalidOperationException $message
 	$errorID = 'FileIsEmpty'
@@ -162,7 +177,7 @@ $PSCmdlet.ThrowTerminatingError
 	$errorRecord = New-Object Management.Automation.ErrorRecord $exception, $errorID, $errorCategory, $target
 	$PSCmdlet.ThrowTerminatingError($errorRecord)
 	return
-
+#>
 	# SS was asked for as a SecureString.
 	$ss = $request.Options["SS"]
 
@@ -236,8 +251,6 @@ $PSCmdlet.ThrowTerminatingError
 			$details.Add( "copyright" , (get-first $pkg["copyright"]) )
 			$details.Add( "tags" , (get-first $pkg["tags"]) )
 			$details.Add( "releaseNotes" , (get-first $pkg["releaseNotes"]) )
-
-			Write-Debug "HO HUM"
 			
 			Write-Output (new-SoftwareIdentity $fastPackageReference  $pkg.Name $pkg.Version  $pkg.VersionScheme $mySrcLocation $pkg.Summary $providerName $pkg.FullPath $pkg.PackagePath $details $entities $links $true) 
 		}

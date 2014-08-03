@@ -18,10 +18,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using System.Management.Automation.Runspaces;
+    using System.Threading.Tasks;
     using Microsoft.OneGet;
     using Microsoft.OneGet.Providers.Package;
     using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.OneGet.Utility.Platform;
     using Microsoft.OneGet.Utility.PowerShell;
     using Resources;
     using Utility;
@@ -30,14 +31,20 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     public delegate string GetMessageString(string message);
 
     public abstract class CmdletBase : AsyncCmdlet {
+        private static int _globalCallCount = 0;
         private static readonly object _lockObject = new object();
+        private readonly int _callCount;
         private readonly Hashtable _dynamicOptions;
-        private readonly IPackageManagementService _packageManagementService = new PackageManagementService().Instance;
+        private static readonly IPackageManagementService _packageManagementService = new PackageManagementService().Instance;
+
+        [Parameter]
+        public SwitchParameter ForceBootstrap;
 
         [Parameter(DontShow = true)]
         public GetMessageString MessageResolver;
 
         protected CmdletBase() {
+            _callCount = _globalCallCount++;
             _dynamicOptions = new Hashtable();
         }
 
@@ -71,18 +78,47 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
+        private static Task<IPackageManagementService> _startServiceTask;
+
+#if TRY_TO_LOAD_PROVIDERS_EARLY
+        static CmdletBase()  {
+                 _startServiceTask = Task<IPackageManagementService>.Factory.StartNew(() => {
+                     NativeMethods.OutputDebugString("STARTING IPMS");
+                     lock (_lockObject) {
+                         try {
+                             NativeMethods.OutputDebugString("IPMS THREAD START");
+                             IsInitialized = _packageManagementService.Initialize(new {
+                                 IsCancelled = new Func<bool>(()=>false),
+                                 GetMessageString = new GetMessageString((messageText) => Messages.ResourceManager.GetString(messageText) ?? messageText)
+                             });
+                             
+                         }
+                         catch (Exception e) {
+                             e.Dump();
+                         }
+                         NativeMethods.OutputDebugString("IPMS THREAD END");
+                         return _packageManagementService;
+                     }
+                 },TaskCreationOptions.LongRunning);
+             }
+#endif
+
         protected internal IPackageManagementService PackageManagementService {
             get {
                 lock (_lockObject) {
                     if (!IsCancelled() && !IsInitialized) {
                         try {
-                            IsInitialized = _packageManagementService.Initialize(!IsInvocation,this);
+                            IsInitialized = _packageManagementService.Initialize(this);
                         } catch (Exception e) {
                             e.Dump();
                         }
                     }
                 }
                 return _packageManagementService;
+                 
+#if TRY_TO_LOAD_PROVIDERS_EARLY               
+                return _startServiceTask.Result;
+#endif
             }
         }
 
@@ -109,13 +145,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
             if (names.IsNullOrEmpty()) {
-                return PackageManagementService.SelectProviders(null).Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature));
+                return PackageManagementService.SelectProviders(null, this).Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature));
             }
-            return names.SelectMany(each => PackageManagementService.SelectProviders(each)).Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature));
+            // you can manually ask for any provider by name, if it is for automation only.
+            return names.SelectMany(each => PackageManagementService.SelectProviders(each, this)); // .Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature));
         }
 
         protected IEnumerable<PackageProvider> SelectProviders(string name) {
-            var result = PackageManagementService.SelectProviders(name).Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature)).ToArray();
+            // you can manually ask for any provider by name, if it is for automation only.
+            var result = PackageManagementService.SelectProviders(name, this).ToArray(); //.Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature))
             if (result.Length == 0) {
                 Warning(Errors.UnknownProvider, name);
             }
@@ -123,6 +161,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override string GetMessageString(string messageText) {
+            messageText = DropMsgPrefix(messageText);
 
             if (MessageResolver != null) {
                 // if the consumer has specified a MessageResolver delegate, we need to call it on the main thread
@@ -220,6 +259,40 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
             Message(Constants.ShouldContinueWithUntrustedPackageSource, packageSource);
             return true;
+        }
+
+        public virtual bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination) {
+            try {
+                var forced = false;
+                if (MyInvocation.BoundParameters.ContainsKey("Force")) {
+                    if (MyInvocation.BoundParameters["Force"] is SwitchParameter) {
+                        forced = ((SwitchParameter)MyInvocation.BoundParameters["Force"]).IsPresent;
+                    }
+                }
+                if (ForceBootstrap || forced) {
+                    return true;
+                }
+
+                return ShouldContinue(FormatMessageString(Constants.BootstrapQuery, providerName),
+                    FormatMessageString(Constants.BootstrapProvider,
+                        requestor.Is() ?
+                            FormatMessageString(Constants.BootstrapProviderProviderRequested, requestor, providerName, providerVersion) :
+                            FormatMessageString(Constants.BootstrapProviderUserRequested, providerName, providerVersion),
+                        providerType.Is() && providerType.Equals(Constants.AssemblyProviderType) ?
+                            FormatMessageString(Constants.BootstrapManualAssembly, providerName, location, destination) :
+                            FormatMessageString(Constants.BootstrapManualInstall, providerName, location))).Result;
+            } catch (Exception e) {
+                e.Dump();
+            }
+            return false;
+        }
+
+        public virtual bool IsInteractive() {
+            return IsInvocation;
+        }
+
+        public virtual int CallCount() {
+            return _callCount;
         }
     }
 }

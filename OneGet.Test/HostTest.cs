@@ -30,91 +30,91 @@ namespace Microsoft.OneGet.Test {
     using Xunit;
     using PackageSource = Packaging.PackageSource;
 
-    public class PackageManagementServiceTest : MarshalByRefObject {
+    public class Req {
 
-        public class Req {
-
-            public bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
-                return true;
-            }
-
-            public bool ShouldProcessPackageInstall(string packageName, string version, string source) {
-                return true;
-            }
-
-            public bool ShouldProcessPackageUninstall(string packageName, string version) {
-                return true;
-            }
-
-            public bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source) {
-                return true;
-            }
-
-            public bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source) {
-                return true;
-            }
-
-            public bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
-                return true;
-            }
-
-            public bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation) {
-                return true;
-            }
-
-            public bool AskPermission(string permission) {
-                return true;
-            }
-
-            public bool Warning(string messageText) {
-                Console.WriteLine("WARNING: {0}", messageText);
-                return true;
-            }
-
-            public bool Error(string messageText) {
-                Console.WriteLine("ERROR: {0}", messageText);
-                return true;
-            }
-
-            public bool Message(string messageText) {
-                Console.WriteLine("MESSAGE: {0}", messageText);
-                return true;
-            }
-
-            public bool Verbose(string messageText) {
-                Console.WriteLine("VERBOSE: {0}", messageText);
-                return true;
-            }
-
-            public bool Debug(string messageText) {
-                Console.WriteLine("DEBUG: {0}", messageText);
-                return true;
-            }
-
-            public string GetMessageString(string messageText) {
-                return messageText;
-            }
-
-            private static int count;
-            public int StartProgress(int parentActivityId, string messageText) {
-                Console.WriteLine("STARTPROGRESS {0} // {1}", parentActivityId, string.Format(messageText));
-                return count++;
-            }
-
-            public bool Progress(int activityId, int progressPercentage, string messageText) {
-                Console.WriteLine("PROGRESS {0} // {1}% // {2}", activityId, progressPercentage, string.Format(messageText));
-                return true;
-            }
-
-            public bool CompleteProgress(int activityId, bool isSuccessful) {
-                Console.WriteLine("COMPLETEPROGRESS {0}", activityId);
-                return isSuccessful;
-            }
-
-            public bool IsCancelled() {
-                return false;
-            }
+        public bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
+            return true;
         }
+
+        public bool ShouldProcessPackageInstall(string packageName, string version, string source) {
+            return true;
+        }
+
+        public bool ShouldProcessPackageUninstall(string packageName, string version) {
+            return true;
+        }
+
+        public bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source) {
+            return true;
+        }
+
+        public bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source) {
+            return true;
+        }
+
+        public bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
+            return true;
+        }
+
+        public bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation) {
+            return true;
+        }
+
+        public bool AskPermission(string permission) {
+            return true;
+        }
+
+        public bool Warning(string messageText) {
+            Console.WriteLine("WARNING: {0}", messageText);
+            return true;
+        }
+
+        public bool Error(string messageText) {
+            Console.WriteLine("ERROR: {0}", messageText);
+            return true;
+        }
+
+        public bool Message(string messageText) {
+            Console.WriteLine("MESSAGE: {0}", messageText);
+            return true;
+        }
+
+        public bool Verbose(string messageText) {
+            Console.WriteLine("VERBOSE: {0}", messageText);
+            return true;
+        }
+
+        public bool Debug(string messageText) {
+            Console.WriteLine("DEBUG: {0}", messageText);
+            return true;
+        }
+
+        public string GetMessageString(string messageText) {
+            return messageText;
+        }
+
+        private static int count;
+        public int StartProgress(int parentActivityId, string messageText) {
+            Console.WriteLine("STARTPROGRESS {0} // {1}", parentActivityId, string.Format(messageText));
+            return count++;
+        }
+
+        public bool Progress(int activityId, int progressPercentage, string messageText) {
+            Console.WriteLine("PROGRESS {0} // {1}% // {2}", activityId, progressPercentage, string.Format(messageText));
+            return true;
+        }
+
+        public bool CompleteProgress(int activityId, bool isSuccessful) {
+            Console.WriteLine("COMPLETEPROGRESS {0}", activityId);
+            return isSuccessful;
+        }
+
+        public bool IsCancelled() {
+            return false;
+        }
+    }
+
+    public class PackageManagementServiceTest : MarshalByRefObject {
 
         public override object InitializeLifetimeService() {
             return null;
@@ -137,7 +137,7 @@ namespace Microsoft.OneGet.Test {
             System.Diagnostics.Debug.WriteLine("=================");
             //System.Diagnostics.Debug.Listeners.Add(new DefaultTraceListener());
 
-            var providers = Service.SelectProviders(null);
+            var providers = Service.SelectProviders(null, Request);
             Console.WriteLine("Provider Count {0}",providers.Count());
         }
 
@@ -172,7 +172,7 @@ namespace Microsoft.OneGet.Test {
             get {
                 if (_service == null) {
                     _service = new PackageManagementService().Instance;
-                    _service.Initialize(false,new Req());
+                    _service.Initialize(new Req());
                 }
                 return _service;
             }
@@ -185,7 +185,7 @@ namespace Microsoft.OneGet.Test {
         public static PackageProvider TestPSProvider {
             get {
                 if (_testPsProvider == null) {
-                    _testPsProvider = Service.SelectProviders("TestPSProvider").FirstOrDefault();
+                    _testPsProvider = Service.SelectProviders("TestPSProvider",Request).FirstOrDefault();
                     Assert.NotNull(_testPsProvider);
                 }
 
@@ -199,7 +199,7 @@ namespace Microsoft.OneGet.Test {
             
         }
 
-        private Req Request {
+        private static Req Request {
             get {
                 return new Req();
             }

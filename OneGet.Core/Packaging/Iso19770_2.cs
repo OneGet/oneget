@@ -106,7 +106,7 @@ namespace Microsoft.OneGet.Packaging {
 
 
             if (current != null && value != current ) {
-                Debug.WriteLine( string.Format(CultureInfo.CurrentCulture,"REPLACING value in swidtag attribute {0}: {1} for {2}", attribute.LocalName, current, value));
+                // Debug.WriteLine( string.Format(CultureInfo.CurrentCulture,"REPLACING value in swidtag attribute {0}: {1} for {2}", attribute.LocalName, current, value));
                 throw new Exception("INVALID_SWIDTAG_ATTRIBUTE_VALUE_CHANGE");
             }
 

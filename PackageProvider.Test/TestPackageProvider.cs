@@ -15,70 +15,70 @@
 namespace Microsoft.OneGet.PackageProvider.Test {
     using System;
     using System.Collections.Generic;
-    using Callback = System.Object;
+    using RequestImpl = System.Object;
 
     public class TestPackageProvider {
         #region implement PackageProvider-interface
 
-        public void AddPackageSource(string name, string location, bool trusted, Object c){
+        public void AddPackageSource(string name, string location, bool trusted, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'AddPackageSource'" );
             }
 
         }
-        public bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Object c){
+        public bool FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'FindPackage'" );
             }
 
             return  default(bool);
         }
-        public bool FindPackageByFile(string file, int id, Object c){
+        public bool FindPackageByFile(string file, int id, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'FindPackageByFile'" );
             }
 
             return  default(bool);
         }
-        public bool FindPackageByUri(Uri uri, int id, Object c){
+        public bool FindPackageByUri(Uri uri, int id, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'FindPackageByUri'" );
             }
 
             return  default(bool);
         }
-        public bool GetInstalledPackages(string name, Object c){
+        public bool GetInstalledPackages(string name, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'GetInstalledPackages'" );
             }
 
             return  default(bool);
         }
-        public void GetDynamicOptions(int category, Callback c){
+        public void GetDynamicOptions(int category, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'GetDynamicOptions'" );
             }
@@ -86,7 +86,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
         }
 
         /// <summary>
-            /// Returns the name of the Provider. Doesn't need callback .
+            /// Returns the name of the Provider. 
             /// </summary>
             /// <returns></returns>
         public string GetPackageProviderName(){
@@ -96,30 +96,30 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return "TestPackageProvider";
         }
-        public bool ResolvePackageSources(Object c){
+        public bool ResolvePackageSources(RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'ResolvePackageSources'" );
             }
 
             return  default(bool);
         }
-        public void InitializeProvider(object dynamicInterface, Callback c) {
+        public void InitializeProvider(object dynamicInterface, RequestImpl requestImpl) {
             RequestExtensions.RemoteDynamicInterface = dynamicInterface;
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug( "Calling 'InitializeProvider'");
             }
         }
-        public bool InstallPackage(string fastPath, Object c) {
+        public bool InstallPackage(string fastPath, RequestImpl requestImpl) {
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'InstallPackage'" );
             }
@@ -128,76 +128,76 @@ namespace Microsoft.OneGet.PackageProvider.Test {
         }
 
         // WhatIfInstallPackageBy* should be a good idea to fix -WhatIf
-        public bool InstallPackageByFile(string filePath, Callback c){
+        public bool InstallPackageByFile(string filePath, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'InstallPackageByFile'" );
             }
 
             return  default(bool);
         }
-        public bool InstallPackageByUri(string u, Callback c){
+        public bool InstallPackageByUri(string u, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'InstallPackageByUri'" );
             }
 
             return  default(bool);
         }
-        public bool IsTrustedPackageSource(string packageSource, Callback c){
+        public bool IsTrustedPackageSource(string packageSource, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'IsTrustedPackageSource'" );
             }
 
             return  default(bool);
         }
-        public bool IsValidPackageSource(string packageSource, Callback c){
+        public bool IsValidPackageSource(string packageSource, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'IsValidPackageSource'" );
             }
 
             return  default(bool);
         }
-        public void RemovePackageSource(string name, Object c){
+        public void RemovePackageSource(string name, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'RemovePackageSource'" );
             }
 
         }
-        public bool UninstallPackage(string fastPath, Object c){
+        public bool UninstallPackage(string fastPath, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'UninstallPackage'" );
             }
 
             return  default(bool);
         }
-        public void GetFeatures(Callback c){
+        public void GetFeatures(RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'GetFeatures'" );
             }
@@ -205,55 +205,55 @@ namespace Microsoft.OneGet.PackageProvider.Test {
         }
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        public bool DownloadPackage(string fastPath, string location, Object c){
+        public bool DownloadPackage(string fastPath, string location, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'DownloadPackage'" );
             }
 
             return  default(bool);
         }
-        public bool GetPackageDependencies(string fastPath, Object c){
+        public bool GetPackageDependencies(string fastPath, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'GetPackageDependencies'" );
             }
 
             return  default(bool);
         }
-        public bool GetPackageDetails(string fastPath, Object c){
+        public bool GetPackageDetails(string fastPath, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'GetPackageDetails'" );
             }
 
             return  default(bool);
         }
-        public int StartFind(Object c){
+        public int StartFind(RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'StartFind'" );
             }
 
             return  default(int);
         }
-        public bool CompleteFind(int id, Object c){
+        public bool CompleteFind(int id, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug("Calling 'CompleteFind'" );
             }

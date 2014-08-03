@@ -70,6 +70,61 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; may be manually downloaded from &apos;{1}&apos; and copied to &apos;{2}&apos;..
+        /// </summary>
+        internal static string BootstrapManualAssembly {
+            get {
+                return ResourceManager.GetString("BootstrapManualAssembly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} may be manually downloaded from {1} and installed..
+        /// </summary>
+        internal static string BootstrapManualInstall {
+            get {
+                return ResourceManager.GetString("BootstrapManualInstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}
+        ///{1}.
+        /// </summary>
+        internal static string BootstrapProvider {
+            get {
+                return ResourceManager.GetString("BootstrapProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The provider &apos;{0}&apos; requires provider &apos;{1} v{2}&apos; to continue..
+        /// </summary>
+        internal static string BootstrapProviderProviderRequested {
+            get {
+                return ResourceManager.GetString("BootstrapProviderProviderRequested", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The provider &apos;{0} v{1}&apos; is not installed..
+        /// </summary>
+        internal static string BootstrapProviderUserRequested {
+            get {
+                return ResourceManager.GetString("BootstrapProviderUserRequested", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Would you like OneGet to automatically download and install &apos;{0}&apos; now?.
+        /// </summary>
+        internal static string BootstrapQuery {
+            get {
+                return ResourceManager.GetString("BootstrapQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Continue Installing after failing &apos;{0}&apos;.
         /// </summary>
         internal static string ContinueInstallingAfterFailing {
@@ -475,7 +530,7 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:UnknownProvider.
+        ///   Looks up a localized string similar to Unknown Provider &apos;{0}&apos;..
         /// </summary>
         internal static string UnknownProvider {
             get {

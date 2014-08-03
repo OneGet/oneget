@@ -256,6 +256,32 @@
     <value>Uninstall Package</value>
   </data>
   <data name="UnknownProvider" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:UnknownProvider</value>
+    <value>Unknown Provider '{0}'.</value>
+  </data>
+  <data name="BootstrapManualAssembly" xml:space="preserve">
+    <value>'{0}' may be manually downloaded from '{1}' and copied to '{2}'.</value>
+    <comment>{0} -provider name, {1} url, {2} destination folder</comment>
+  </data>
+  <data name="BootstrapManualInstall" xml:space="preserve">
+    <value>{0} may be manually downloaded from {1} and installed.</value>
+    <comment>{0} -provider name, {1} url</comment>
+  </data>
+  <data name="BootstrapProvider" xml:space="preserve">
+    <value>{0}
+{1}</value>
+    <comment>{0} Request Message
+{1} Manual Instructions</comment>
+  </data>
+  <data name="BootstrapProviderProviderRequested" xml:space="preserve">
+    <value>The provider '{0}' requires provider '{1} v{2}' to continue.</value>
+    <comment>{0} requesting provider {1} provider name {2} provider version</comment>
+  </data>
+  <data name="BootstrapProviderUserRequested" xml:space="preserve">
+    <value>The provider '{0} v{1}' is not installed.</value>
+    <comment>{0} provider name {1} provider version</comment>
+  </data>
+  <data name="BootstrapQuery" xml:space="preserve">
+    <value>Would you like OneGet to automatically download and install '{0}' now?</value>
+    <comment>{0} -provider name</comment>
   </data>
 </root>

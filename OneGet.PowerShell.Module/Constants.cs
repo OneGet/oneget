@@ -33,6 +33,8 @@ namespace Microsoft.PowerShell.OneGet {
         internal  const string ProviderByNameSet = "ProviderByName";
         internal  const string OverwriteExistingSourceSet = "OverwriteExistingSource";
 
+        internal const string AssemblyProviderType = "assembly";
+
         // features we need to know about
         internal const string AutomationOnlyFeature = "automation-only";
 
@@ -102,6 +104,14 @@ namespace Microsoft.PowerShell.OneGet {
         internal const string NameLocationProviderReplaceExisting = "MSG:NameLocationProviderReplaceExisting";
         internal const string NameLocationProvider = "MSG:NameLocationProvider";
         internal const string PackageFileNotRecognized = "MSG:PackageFileNotRecognized";
+
+        internal const string BootstrapProvider = "MSG:BootstrapProvider";
+
+        internal const string BootstrapProviderUserRequested = "MSG:BootstrapProviderUserRequested";
+        internal const string BootstrapProviderProviderRequested = "MSG:BootstrapProviderProviderRequested";
+        internal const string BootstrapManualAssembly = "MSGBootstrapManualAssembly:";
+        internal const string BootstrapManualInstall = "MSG:BootstrapManualInstall";
+        internal const string BootstrapQuery = "MSG:BootstrapQuery";
     }
 
     internal static class Errors {

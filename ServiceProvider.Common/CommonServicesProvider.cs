@@ -20,7 +20,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
     using System.Threading;
     using Utility.Extensions;
     using Utility.Platform;
-    using Callback = System.Object;
+    using RequestImpl = System.Object;
 
     public class CommonServicesProvider {
         private static readonly string[] _empty = new string[0];
@@ -36,8 +36,8 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         /// 
         /// </summary>
         /// <param name="dynamicInterface">A reference to the DynamicInterface class -- used to implement late-binding</param>
-        /// <param name="c">Callback Delegate Reference</param>
-        public void InitializeProvider(object dynamicInterface, Callback c) {
+        /// <param name="requestImpl">Object implementing some or all IRequest methods</param>
+        public void InitializeProvider(object dynamicInterface, RequestImpl requestImpl) {
             RequestExtensions.RemoteDynamicInterface = dynamicInterface;
         }
 
@@ -45,13 +45,13 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         /// <summary>
         /// Gets the features advertized from the provider
         /// </summary>
-        /// <param name="c"></param>
-        public void GetFeatures(Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        /// <param name="requestImpl"></param>
+        public void GetFeatures(RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServicesProvider::GetFeatures'");
                 foreach (var feature in _features) {
                     request.Yield(feature);
@@ -63,19 +63,19 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         /// Gets dynamically defined options from the provider
         /// </summary>
         /// <param name="category"></param>
-        /// <param name="c"></param>
-        public void GetDynamicOptions(int category, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        /// <param name="requestImpl"></param>
+        public void GetDynamicOptions(int category, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'GetDynamicOptions'");
             }
         }
 
         /// <summary>
-        ///     Returns the name of the Provider. Doesn't need callback .
+        ///     Returns the name of the Provider. 
         /// </summary>
         /// <returns></returns>
         public string GetServicesProviderName() {
@@ -83,9 +83,9 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         }
 
 
-        public void DownloadFile(Uri remoteLocation, string localFilename, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public void DownloadFile(Uri remoteLocation, string localFilename, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
             if (remoteLocation == null) {
@@ -93,7 +93,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
 
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::DownloadFile'");
 
                 if (localFilename == null) {
@@ -123,7 +123,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
 
                 webClient.DownloadFileCompleted += (sender, args) => {
                     /* 
-                    CompleteProgress(c, 2, true);
+                    CompleteProgress(requestImpl, 2, true);
                      */
                     if (args.Cancelled || args.Error != null) {
                         localFilename = null;
@@ -133,7 +133,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
                 };
                 webClient.DownloadProgressChanged += (sender, args) => {
                     var percent = (args.BytesReceived * 100) / args.TotalBytesToReceive;
-                    // Progress(c, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
+                    // Progress(requestImpl, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
                 };
                 webClient.DownloadFileAsync(remoteLocation, localFilename);
                 done.WaitOne();
@@ -144,12 +144,12 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
 
         }
 
-        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::UnpackArchive'");
                 request.Error(ErrorCategory.InvalidData, localFilename, Constants.UnsupportedArchive, localFilename);
             }
@@ -157,32 +157,32 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             return null;
         }
 
-        public void AddPinnedItemToTaskbar(string item, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public void AddPinnedItemToTaskbar(string item, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::AddPinnedItemToTaskbar'");
             }
         }
 
-        public void RemovePinnedItemFromTaskbar(string item, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public void RemovePinnedItemFromTaskbar(string item, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::RemovePinnedItemFromTaskbar'");
             }
         }
 
-        public void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::CreateShortcutLink'");
 
                 if (File.Exists(linkPath)) {
@@ -193,20 +193,20 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
         }
 
-        public void SetEnvironmentVariable(string variable, string value, int context, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public void SetEnvironmentVariable(string variable, string value, int context, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::SetEnvironmentVariable'");
                 if (string.IsNullOrEmpty(value)) {
-                    RemoveEnvironmentVariable(variable, context, c);
+                    RemoveEnvironmentVariable(variable, context, requestImpl);
                 }
 
                 switch ((EnvironmentContext)context) {
                     case EnvironmentContext.System:
-                        if (!IsElevated(c)) {
+                        if (!IsElevated(requestImpl)) {
                             request.Warning("SetEnvironmentVariable Failed - Admin Elevation required to set variable '{0}' in machine context", variable);
                             return;
                         }
@@ -222,12 +222,12 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
         }
 
-        public void RemoveEnvironmentVariable(string variable, int context, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public void RemoveEnvironmentVariable(string variable, int context, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::RemoveEnvironmentVariable'");
 
                 if (string.IsNullOrEmpty(variable)) {
@@ -239,7 +239,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
                         Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
                         break;
                     case EnvironmentContext.System:
-                        if (!IsElevated(c)) {
+                        if (!IsElevated(requestImpl)) {
                             request.Warning(Constants.RemoveEnvironmentVariableRequiresElevation, variable);
                             return;
                         }
@@ -256,12 +256,12 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
         }
 
-        public void CopyFile(string sourcePath, string destinationPath, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public void CopyFile(string sourcePath, string destinationPath, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::CopyFile'");
                 if (sourcePath == null) {
                     throw new ArgumentNullException("sourcePath");
@@ -282,12 +282,12 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
         }
 
-        public void Delete(string path, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public void Delete(string path, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::Delete'");
                 if (string.IsNullOrEmpty(path)) {
                     return;
@@ -297,12 +297,12 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
         }
 
-        public void DeleteFolder(string folder, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public void DeleteFolder(string folder, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::DeleteFolder'");
                 if (string.IsNullOrEmpty(folder)) {
                     return;
@@ -313,12 +313,12 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
         }
 
-        public void CreateFolder(string folder, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public void CreateFolder(string folder, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::CreateFolder'");
 
                 if (!Directory.Exists(folder)) {
@@ -336,12 +336,12 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
         }
 
-        public void DeleteFile(string filename, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public void DeleteFile(string filename, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::DeleteFile'");
                 if (string.IsNullOrEmpty(filename)) {
                     return;
@@ -353,12 +353,12 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
         }
 
-        public string GetKnownFolder(string knownFolder, Callback c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public string GetKnownFolder(string knownFolder, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            using (var request = c.As<Request>()) {
+            using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::GetKnownFolder'");
                 if (!string.IsNullOrEmpty(knownFolder)) {
                     if (knownFolder.Equals("tmp", StringComparison.OrdinalIgnoreCase) || knownFolder.Equals("temp", StringComparison.OrdinalIgnoreCase)) {
@@ -375,7 +375,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             return null;
         }
 
-        public bool IsElevated(Callback c) {
+        public bool IsElevated(RequestImpl requestImpl) {
             return AdminPrivilege.IsElevated;
         }
     }

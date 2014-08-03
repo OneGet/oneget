@@ -14,6 +14,7 @@
 
 namespace Microsoft.OneGet.Api {
     using System;
+    using RequestImpl = System.Object;
 
     public interface ICoreApi {
         #region declare core-apis
@@ -33,13 +34,13 @@ namespace Microsoft.OneGet.Api {
         /// </summary>
         /// <param name="c"></param>
         /// <returns></returns>
-        object GetPackageManagementService(Object c);
+        object GetPackageManagementService(RequestImpl requestImpl);
 
         /// <summary>
-        ///     Returns the type for a Request/Callback that the OneGet Core is expecting
+        ///     Returns the interface type for a Request that the OneGet Core is expecting
         ///     This is (currently) neccessary to provide an appropriately-typed version
         ///     of the Request to the core when a Plugin is calling back into the core
-        ///     and has to pass a Callback.
+        ///     and has to pass a request object.
         /// </summary>
         /// <returns></returns>
         Type GetIRequestInterface();

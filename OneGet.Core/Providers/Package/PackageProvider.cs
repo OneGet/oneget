@@ -21,6 +21,7 @@ namespace Microsoft.OneGet.Providers.Package {
     using Packaging;
     using Utility.Collections;
     using Utility.Plugin;
+    using RequestImpl = System.Object;
 
     #region generate-delegates response-apis
 
@@ -66,133 +67,134 @@ namespace Microsoft.OneGet.Providers.Package {
 
         // Friendly APIs
 
-        public ICancellableEnumerable<PackageSource> AddPackageSource(string name, string location, bool trusted, Object c) {
-            return new Response<PackageSource>(c, this, response => Provider.AddPackageSource(name, location, trusted, response)).CompleteResult;
+        public ICancellableEnumerable<PackageSource> AddPackageSource(string name, string location, bool trusted, RequestImpl requestImpl) {
+            return new Response<PackageSource>(requestImpl, this, response => Provider.AddPackageSource(name, location, trusted, response)).CompleteResult;
         }
 
-        public ICancellableEnumerable<PackageSource> RemovePackageSource(string name, Object c) {
-            return new Response<PackageSource>(c, this, response => Provider.RemovePackageSource(name, response)).CompleteResult;
+        public ICancellableEnumerable<PackageSource> RemovePackageSource(string name, RequestImpl requestImpl) {
+            return new Response<PackageSource>(requestImpl, this, response => Provider.RemovePackageSource(name, response)).CompleteResult;
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> FindPackageByUri(Uri uri, int id, Object c) {
-            return new Response<SoftwareIdentity>(c, this, "Available", response => Provider.FindPackageByUri(uri, id, response)).Result;
+        public ICancellableEnumerable<SoftwareIdentity> FindPackageByUri(Uri uri, int id, RequestImpl requestImpl) {
+            return new Response<SoftwareIdentity>(requestImpl, this, "Available", response => Provider.FindPackageByUri(uri, id, response)).Result;
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> GetPackageDependencies(SoftwareIdentity package, Object c) {
-            return new Response<SoftwareIdentity>(c, this, "Dependency", response => Provider.GetPackageDependencies(package.FastPackageReference, response)).Result;
+        public ICancellableEnumerable<SoftwareIdentity> GetPackageDependencies(SoftwareIdentity package, RequestImpl requestImpl) {
+            return new Response<SoftwareIdentity>(requestImpl, this, "Dependency", response => Provider.GetPackageDependencies(package.FastPackageReference, response)).Result;
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> FindPackageByFile(string filename, int id, Object c) {
-            return new Response<SoftwareIdentity>(c, this, "Available", response => Provider.FindPackageByFile(filename, id, response)).Result;
+        public ICancellableEnumerable<SoftwareIdentity> FindPackageByFile(string filename, int id, RequestImpl requestImpl) {
+            return new Response<SoftwareIdentity>(requestImpl, this, "Available", response => Provider.FindPackageByFile(filename, id, response)).Result;
         }
 
-        public int StartFind(Object c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public int StartFind(RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
-            return Provider.StartFind(c.As<IRequest>());
+            return Provider.StartFind(requestImpl.As<IRequest>());
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> CompleteFind(int i, Object c) {
-            return new Response<SoftwareIdentity>(c, this, "Available", response => Provider.CompleteFind(i, response)).Result;
+        public ICancellableEnumerable<SoftwareIdentity> CompleteFind(int i, RequestImpl requestImpl) {
+            return new Response<SoftwareIdentity>(requestImpl, this, "Available", response => Provider.CompleteFind(i, response)).Result;
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, Object c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public ICancellableEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
             if (names == null) {
                 throw new ArgumentNullException("names");
             }
 
-            c = ExtendCallback(c);
+            requestImpl = ExtendRequest(requestImpl);
             var cts = new CancellationTokenSource();
-            return new CancellableEnumerable<SoftwareIdentity>( cts, FindPackagesImpl(cts,names, requiredVersion,minimumVersion,maximumVersion,c));
+            return new CancellableEnumerable<SoftwareIdentity>(cts, FindPackagesImpl(cts, names, requiredVersion, minimumVersion, maximumVersion, requestImpl));
         }
 
-        private IEnumerable<SoftwareIdentity> FindPackagesImpl(CancellationTokenSource cancellationTokenSource, string[] names, string requiredVersion, string minimumVersion, string maximumVersion, Object c) {
-            var id = StartFind(c);
+        private IEnumerable<SoftwareIdentity> FindPackagesImpl(CancellationTokenSource cancellationTokenSource, string[] names, string requiredVersion, string minimumVersion, string maximumVersion, RequestImpl requestImpl) {
+            var id = StartFind(requestImpl);
             foreach (var name in names) {
-                foreach (var pkg in FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, c).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                foreach (var pkg in FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, requestImpl).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
                     yield return pkg;
                 }
-                foreach (var pkg in CompleteFind(id, c).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                foreach (var pkg in CompleteFind(id, requestImpl).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
                     yield return pkg;
                 }
             }
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, Object c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public ICancellableEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
             if (uris == null) {
                 throw new ArgumentNullException("uris");
             }
 
-            c = ExtendCallback(c);
+            requestImpl = ExtendRequest(requestImpl);
             var cts = new CancellationTokenSource();
-            return new CancellableEnumerable<SoftwareIdentity>(cts, FindPackagesByUrisImpl(cts, uris, c));
+            return new CancellableEnumerable<SoftwareIdentity>(cts, FindPackagesByUrisImpl(cts, uris, requestImpl));
         }
 
-        private IEnumerable<SoftwareIdentity> FindPackagesByUrisImpl(CancellationTokenSource cancellationTokenSource, Uri[] uris, Object c) {
-            var id = StartFind(c);
+        private IEnumerable<SoftwareIdentity> FindPackagesByUrisImpl(CancellationTokenSource cancellationTokenSource, Uri[] uris, RequestImpl requestImpl) {
+            var id = StartFind(requestImpl);
             foreach (var uri in uris) {
-                foreach (var pkg in FindPackageByUri(uri, id, c).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                foreach (var pkg in FindPackageByUri(uri, id, requestImpl).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
                     yield return pkg;
                 }
-                foreach (var pkg in CompleteFind(id, c).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                foreach (var pkg in CompleteFind(id, requestImpl).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
                     yield return pkg;
                 }
             }
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> FindPackagesByFiles(string[] filenames, Object c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public ICancellableEnumerable<SoftwareIdentity> FindPackagesByFiles(string[] filenames, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
             if (filenames == null) {
                 throw new ArgumentNullException("filenames");
             }
 
-            c = ExtendCallback(c);
+            requestImpl = ExtendRequest(requestImpl);
             var cts = new CancellationTokenSource();
-            return new CancellableEnumerable<SoftwareIdentity>(cts, FindPackagesByFilesImpl(cts, filenames, c));
+            return new CancellableEnumerable<SoftwareIdentity>(cts, FindPackagesByFilesImpl(cts, filenames, requestImpl));
         }
 
-        private IEnumerable<SoftwareIdentity> FindPackagesByFilesImpl(CancellationTokenSource cancellationTokenSource, string[] filenames, Object c) {
-            var id = StartFind(c);
+        private IEnumerable<SoftwareIdentity> FindPackagesByFilesImpl(CancellationTokenSource cancellationTokenSource, string[] filenames, RequestImpl requestImpl) {
+            var id = StartFind(requestImpl);
             foreach (var file in filenames) {
-                foreach (var pkg in FindPackageByFile(file, id, c).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                foreach (var pkg in FindPackageByFile(file, id, requestImpl).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
                     yield return pkg;
                 }
-                foreach (var pkg in CompleteFind(id, c).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                foreach (var pkg in CompleteFind(id, requestImpl).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
                     yield return pkg;
                 }
             }
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Object c) {
-            return new Response<SoftwareIdentity>(c, this, "Available", response => Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, response)).Result;
+        public ICancellableEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, RequestImpl requestImpl) {
+            return new Response<SoftwareIdentity>(requestImpl, this, "Available", response => Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, response)).Result;
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> GetInstalledPackages(string name, Object c) {
-            return new Response<SoftwareIdentity>(c, this, "Installed", response => Provider.GetInstalledPackages(name, response)).Result;
+        public ICancellableEnumerable<SoftwareIdentity> GetInstalledPackages(string name, RequestImpl requestImpl) {
+            return new Response<SoftwareIdentity>(requestImpl, this, "Installed", response => Provider.GetInstalledPackages(name, response)).Result;
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, Object c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public ICancellableEnumerable<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
             if (softwareIdentity == null) {
                 throw new ArgumentNullException("softwareIdentity");
             }
 
-            var request = ExtendCallback(c);;
+            var request = ExtendRequest(requestImpl);
+            ;
 
             // if the provider didn't say this was trusted, we should ask the user if it's ok.
             if (!softwareIdentity.FromTrustedSource) {
@@ -205,27 +207,27 @@ namespace Microsoft.OneGet.Providers.Package {
                 }
             }
 
-            return new Response<SoftwareIdentity>(c, this, "Installed", response => Provider.InstallPackage(softwareIdentity.FastPackageReference, response)).Result;
+            return new Response<SoftwareIdentity>(requestImpl, this, "Installed", response => Provider.InstallPackage(softwareIdentity.FastPackageReference, response)).Result;
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, Object c) {
-            return new Response<SoftwareIdentity>(c, this, "Uninstalled", response => Provider.UninstallPackage(softwareIdentity.FastPackageReference, response)).Result;
+        public ICancellableEnumerable<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, RequestImpl requestImpl) {
+            return new Response<SoftwareIdentity>(requestImpl, this, "Uninstalled", response => Provider.UninstallPackage(softwareIdentity.FastPackageReference, response)).Result;
         }
 
-        public ICancellableEnumerable<PackageSource> ResolvePackageSources(Object c) {
-            return new Response<PackageSource>(c, this, response => Provider.ResolvePackageSources(response)).Result;
+        public ICancellableEnumerable<PackageSource> ResolvePackageSources(RequestImpl requestImpl) {
+            return new Response<PackageSource>(requestImpl, this, response => Provider.ResolvePackageSources(response)).Result;
         }
 
-        public void DownloadPackage(SoftwareIdentity softwareIdentity, string destinationFilename, Object c) {
-            if (c == null) {
-                throw new ArgumentNullException("c");
+        public void DownloadPackage(SoftwareIdentity softwareIdentity, string destinationFilename, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
             if (softwareIdentity== null) {
                 throw new ArgumentNullException("softwareIdentity");
             }
 
-            Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, ExtendCallback(c));
+            Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, ExtendRequest(requestImpl));
         }
     }
 

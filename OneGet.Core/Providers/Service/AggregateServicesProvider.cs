@@ -19,6 +19,7 @@ namespace Microsoft.OneGet.Providers.Service {
     using Api;
     using Utility.Extensions;
     using Utility.Plugin;
+    using RequestImpl = System.Object;
 
     /// <summary>
     ///     The The AggregateServicesProvider aggregates the functionality of all
@@ -26,7 +27,7 @@ namespace Microsoft.OneGet.Providers.Service {
     /// </summary>
     public class AggregateServicesProvider : MarshalByRefObject {
         private readonly ServicesProvider _nullProvider;
-        private readonly Dictionary<string, ServicesProvider> _preferredProviderForFunction = new Dictionary<string, ServicesProvider>();
+        private readonly Dictionary<string, ServicesProvider> _preferredProviderForFunction = new Dictionary<string, ServicesProvider>(StringComparer.OrdinalIgnoreCase);
         private readonly IDictionary<string, ServicesProvider> _providers;
 
         internal AggregateServicesProvider(IDictionary<string, ServicesProvider> providers) {
@@ -45,80 +46,80 @@ namespace Microsoft.OneGet.Providers.Service {
             return _preferredProviderForFunction.GetOrAdd(function, () => _providers.Values.FirstOrDefault(each => each.IsMethodImplemented(function)) ?? _nullProvider);
         }
 
-        public bool IsSupportedArchive(string localFilename, Object c) {
+        public bool IsSupportedArchive(string localFilename, RequestImpl requestImpl) {
             return false;
         }
 
-        public void DownloadFile(Uri remoteLocation, string localFilename, Object c) {
+        public void DownloadFile(Uri remoteLocation, string localFilename, RequestImpl requestImpl) {
             // check the Uri type, see if we have anyone who can handle that 
             // if so, call that provider's download file
             if (remoteLocation == null) {
                 throw new ArgumentNullException("remoteLocation");
             }
-            if (c == null) {
-                throw new ArgumentNullException("c");
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            c.As<IRequest>().Error("PROTOCOL_NOT_SUPPORTED","NotImplemented", remoteLocation.Scheme,"PROTOCOL_NOT_SUPPORTED");
+            requestImpl.As<IRequest>().Error("PROTOCOL_NOT_SUPPORTED", "NotImplemented", remoteLocation.Scheme, "PROTOCOL_NOT_SUPPORTED");
         }
 
-        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object c) {
+        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, RequestImpl requestImpl) {
             // check who supports the archive type
             // and call that provider.
-            if (c == null) {
-                throw new ArgumentNullException("c");
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
             }
 
-            c.As<IRequest>().Error("ARCHIVE_NOT_SUPPORTED", "NotImplemented", localFilename, "PROTOCOL_NOT_SUPPORTED");
+            requestImpl.As<IRequest>().Error("ARCHIVE_NOT_SUPPORTED", "NotImplemented", localFilename, "PROTOCOL_NOT_SUPPORTED");
             return Enumerable.Empty<string>();
         }
 
-        public void AddPinnedItemToTaskbar(string item, Object c) {
-            Preferred("AddPinnedItemToTaskbar").AddPinnedItemToTaskbar(item, c);
+        public void AddPinnedItemToTaskbar(string item, RequestImpl requestImpl) {
+            Preferred("AddPinnedItemToTaskbar").AddPinnedItemToTaskbar(item, requestImpl);
         }
 
-        public void RemovePinnedItemFromTaskbar(string item, Object c) {
-            Preferred("RemovePinnedItemFromTaskbar").RemovePinnedItemFromTaskbar(item, c);
+        public void RemovePinnedItemFromTaskbar(string item, RequestImpl requestImpl) {
+            Preferred("RemovePinnedItemFromTaskbar").RemovePinnedItemFromTaskbar(item, requestImpl);
         }
 
-        public void teShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Object c) {
-            Preferred("CreateShortcutLink").CreateShortcutLink(linkPath, targetPath, description, workingDirectory, arguments, c);
+        public void teShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, RequestImpl requestImpl) {
+            Preferred("CreateShortcutLink").CreateShortcutLink(linkPath, targetPath, description, workingDirectory, arguments, requestImpl);
         }
 
-        public void SetEnvironmentVariable(string variable, string value, int context, Object c) {
-            Preferred("SetEnvironmentVariable").SetEnvironmentVariable(variable, value, context, c);
+        public void SetEnvironmentVariable(string variable, string value, int context, RequestImpl requestImpl) {
+            Preferred("SetEnvironmentVariable").SetEnvironmentVariable(variable, value, context, requestImpl);
         }
 
-        public void RemoveEnvironmentVariable(string variable, int context, Object c) {
-            Preferred("RemoveEnvironmentVariable").RemoveEnvironmentVariable(variable, context, c);
+        public void RemoveEnvironmentVariable(string variable, int context, RequestImpl requestImpl) {
+            Preferred("RemoveEnvironmentVariable").RemoveEnvironmentVariable(variable, context, requestImpl);
         }
 
-        public void CopyFile(string sourcePath, string destinationPath, Object c) {
-            Preferred("CopyFile").CopyFile(sourcePath, destinationPath, c);
+        public void CopyFile(string sourcePath, string destinationPath, RequestImpl requestImpl) {
+            Preferred("CopyFile").CopyFile(sourcePath, destinationPath, requestImpl);
         }
 
-        public void Delete(string path, Object c) {
-            Preferred("Delete").Delete(path, c);
+        public void Delete(string path, RequestImpl requestImpl) {
+            Preferred("Delete").Delete(path, requestImpl);
         }
 
-        public void DeleteFolder(string folder, Object c) {
-            Preferred("DeleteFolder").DeleteFolder(folder, c);
+        public void DeleteFolder(string folder, RequestImpl requestImpl) {
+            Preferred("DeleteFolder").DeleteFolder(folder, requestImpl);
         }
 
-        public void CreateFolder(string folder, Object c) {
-            Preferred("CreateFolder").CreateFolder(folder, c);
+        public void CreateFolder(string folder, RequestImpl requestImpl) {
+            Preferred("CreateFolder").CreateFolder(folder, requestImpl);
         }
 
-        public void DeleteFile(string filename, Object c) {
-            Preferred("DeleteFile").DeleteFile(filename, c);
+        public void DeleteFile(string filename, RequestImpl requestImpl) {
+            Preferred("DeleteFile").DeleteFile(filename, requestImpl);
         }
 
-        public string GetKnownFolder(string knownFolder, Object c) {
-            return Preferred("GetKnownFolder").GetKnownFolder(knownFolder, c);
+        public string GetKnownFolder(string knownFolder, RequestImpl requestImpl) {
+            return Preferred("GetKnownFolder").GetKnownFolder(knownFolder, requestImpl);
         }
 
-        public bool IsElevated(Object c) {
-            return Preferred("IsElevated").IsElevated(c);
+        public bool IsElevated(RequestImpl requestImpl) {
+            return Preferred("IsElevated").IsElevated(requestImpl);
         }
     }
 }

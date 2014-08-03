@@ -15,9 +15,9 @@
 namespace Microsoft.OneGet.Providers.Service {
     using System;
     using System.Collections.Generic;
-    using Api;
     using Package;
     using Utility.Extensions;
+    using RequestImpl = System.Object;
 
     internal class ServicesProvider : ProviderBase<IServicesProvider> {
         private string _name;
@@ -31,64 +31,64 @@ namespace Microsoft.OneGet.Providers.Service {
             }
         }
 
-        public void DownloadFile(Uri remoteLocation, string localFilename, Object c) {
-            Provider.DownloadFile(remoteLocation, localFilename, ExtendCallback(c));
+        public void DownloadFile(Uri remoteLocation, string localFilename, RequestImpl requestImpl) {
+            Provider.DownloadFile(remoteLocation, localFilename, ExtendRequest(requestImpl));
         }
 
-        public bool IsSupportedArchive(string localFilename, Object c) {
-            return Provider.IsSupportedArchive(localFilename, ExtendCallback(c));
+        public bool IsSupportedArchive(string localFilename, RequestImpl requestImpl) {
+            return Provider.IsSupportedArchive(localFilename, ExtendRequest(requestImpl));
         }
 
-        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object c) {
-            return Provider.UnpackArchive(localFilename, destinationFolder, ExtendCallback(c)).ByRefEnumerable();
+        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, RequestImpl requestImpl) {
+            return Provider.UnpackArchive(localFilename, destinationFolder, ExtendRequest(requestImpl)).ByRefEnumerable();
         }
 
-        public void AddPinnedItemToTaskbar(string item, Object c) {
-            Provider.AddPinnedItemToTaskbar(item, ExtendCallback(c));
+        public void AddPinnedItemToTaskbar(string item, RequestImpl requestImpl) {
+            Provider.AddPinnedItemToTaskbar(item, ExtendRequest(requestImpl));
         }
 
-        public void RemovePinnedItemFromTaskbar(string item, Object c) {
-            Provider.RemovePinnedItemFromTaskbar(item, ExtendCallback(c));
+        public void RemovePinnedItemFromTaskbar(string item, RequestImpl requestImpl) {
+            Provider.RemovePinnedItemFromTaskbar(item, ExtendRequest(requestImpl));
         }
 
-        public void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Object c) {
-            Provider.CreateShortcutLink(linkPath, targetPath, description, workingDirectory, arguments, ExtendCallback(c));
+        public void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, RequestImpl requestImpl) {
+            Provider.CreateShortcutLink(linkPath, targetPath, description, workingDirectory, arguments, ExtendRequest(requestImpl));
         }
 
-        public void SetEnvironmentVariable(string variable, string value, int context, Object c) {
-            Provider.SetEnvironmentVariable(variable, value, context, ExtendCallback(c));
+        public void SetEnvironmentVariable(string variable, string value, int context, RequestImpl requestImpl) {
+            Provider.SetEnvironmentVariable(variable, value, context, ExtendRequest(requestImpl));
         }
 
-        public void RemoveEnvironmentVariable(string variable, int context, Object c) {
-            Provider.RemoveEnvironmentVariable(variable, context, ExtendCallback(c));
+        public void RemoveEnvironmentVariable(string variable, int context, RequestImpl requestImpl) {
+            Provider.RemoveEnvironmentVariable(variable, context, ExtendRequest(requestImpl));
         }
 
-        public void CopyFile(string sourcePath, string destinationPath, Object c) {
-            Provider.CopyFile(sourcePath, destinationPath, ExtendCallback(c));
+        public void CopyFile(string sourcePath, string destinationPath, RequestImpl requestImpl) {
+            Provider.CopyFile(sourcePath, destinationPath, ExtendRequest(requestImpl));
         }
 
-        public void Delete(string path, Object c) {
-            Provider.Delete(path, ExtendCallback(c));
+        public void Delete(string path, RequestImpl requestImpl) {
+            Provider.Delete(path, ExtendRequest(requestImpl));
         }
 
-        public void DeleteFolder(string folder, Object c) {
-            Provider.DeleteFolder(folder, ExtendCallback(c));
+        public void DeleteFolder(string folder, RequestImpl requestImpl) {
+            Provider.DeleteFolder(folder, ExtendRequest(requestImpl));
         }
 
-        public void CreateFolder(string folder, Object c) {
-            Provider.CreateFolder(folder, ExtendCallback(c));
+        public void CreateFolder(string folder, RequestImpl requestImpl) {
+            Provider.CreateFolder(folder, ExtendRequest(requestImpl));
         }
 
-        public void DeleteFile(string filename, Object c) {
-            Provider.DeleteFile(filename, ExtendCallback(c));
+        public void DeleteFile(string filename, RequestImpl requestImpl) {
+            Provider.DeleteFile(filename, ExtendRequest(requestImpl));
         }
 
-        public string GetKnownFolder(string knownFolder, Object c) {
-            return Provider.GetKnownFolder(knownFolder, ExtendCallback(c));
+        public string GetKnownFolder(string knownFolder, RequestImpl requestImpl) {
+            return Provider.GetKnownFolder(knownFolder, ExtendRequest(requestImpl));
         }
 
-        public bool IsElevated(Object c) {
-            return Provider.IsElevated(ExtendCallback(c));
+        public bool IsElevated(RequestImpl requestImpl) {
+            return Provider.IsElevated(ExtendRequest(requestImpl));
         }
     }
 }

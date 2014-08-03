@@ -39,7 +39,6 @@
     <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bootstrapper.cs" />
     <Compile Include="CommonServicesProvider.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -49,7 +48,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Messages.resx</DependentUpon>
     </Compile>
-    <Compile Include="ZipArchive.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneGet.Utility\OneGet.Utility.csproj">

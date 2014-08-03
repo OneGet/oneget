@@ -163,7 +163,7 @@ function Get-InstalledPackage {
 }
 
 <# 
-	Returns the name of the Provider. Doesn't need callback .
+	Returns the name of the Provider. 
 #>
 function Get-PackageProviderName { 
     param()

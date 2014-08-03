@@ -45,21 +45,22 @@ namespace Microsoft.OneGet.Utility.Extensions {
             }
 
             try {
+                bool replacedByName = false;
                 // first, try to replace 
                 formatString = new Regex(@"\$\{(?<macro>\w*?)\}").Replace(formatString, new MatchEvaluator((m) => {
                     var key = m.Groups["macro"].Value;
 
                     var p = args[0].GetType().GetProperty(key);
                     if (p != null) {
+                        replacedByName = true;
                         return p.GetValue(args[0]).ToString();
                     }
                     return "${{" + m.Groups["macro"].Value + "}}";
                 }));
 
-                // if it doesn't look like we have the correct number of parameters
+                // if it looks like it doesn't take parameters, (and yet we have args!)
                 // let's return a fixmeformat string.
-                var c = formatString.ToCharArray().Where(each => each == '{').Count();
-                if (c < args.Length) {
+                if (!replacedByName && formatString.IndexOf('{') < 0) {
                     return FixMeFormat(formatString, args);
                 }
 

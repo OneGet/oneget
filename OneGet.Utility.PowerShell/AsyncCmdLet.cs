@@ -21,6 +21,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
+    using System.Runtime.Remoting.Messaging;
     using System.Threading.Tasks;
     using Utility.Collections;
     using Utility.Extensions;
@@ -29,6 +30,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
     public abstract class AsyncCmdlet : PSCmdlet, IDynamicParameters, IDisposable {
         private readonly HashSet<string> _errors = new HashSet<string>();
+        private readonly HashSet<string> _warnings = new HashSet<string>();
         private List<ICancellable> _cancelWhenStopped = new List<ICancellable>();
         private bool _consumed;
         private RuntimeDefinedParameterDictionary _dynamicParameters;
@@ -225,12 +227,15 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             return Error(id, category, targetObjectValue, messageText, Constants.NoParameters);
         }
 
-        private string DropMsgPrefix(string messageText) {
+        public string DropMsgPrefix(string messageText) {
+            if (string.IsNullOrEmpty(messageText)) {
+                return messageText;
+            }
             return messageText.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase) ? messageText.Substring(4) : messageText;
         }
 
         public bool Error(string id,string category, string targetObjectValue, string messageText, params object[] args) {
-            _failing = true;
+            
 
             if (IsInvocation) {
                 var errorMessage = FormatMessageString(messageText, args);
@@ -242,11 +247,12 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                             errorCategory = ErrorCategory.NotSpecified;
                         }
 
-                        WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrEmpty(targetObjectValue) ? (object)this : targetObjectValue));
+                        WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrEmpty(targetObjectValue) ? (object)this : targetObjectValue)).Wait();
                     }
                     _errors.Add(errorMessage);
                 }
             }
+            _failing = true;
             // rather than wait on the result of the async'd message,
             // we'll just return the stopping state.
             return IsCancelled();
@@ -524,6 +530,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             if (!IsInvocation) {
                 return false.AsResultTask();
             }
+            // ensure the same warning doesn't get played repeatedly.
+            if (_warnings.Contains(text)) {
+                return true.AsResultTask();
+            }
+            _warnings.Add(text);
             return QueueMessage(() => base.WriteWarning(text));
         }
 

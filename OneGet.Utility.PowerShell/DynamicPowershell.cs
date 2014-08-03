@@ -211,9 +211,9 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         internal PSObject LookupCommand(string commandName) {
-            var name = commandName.DashedToCamelCase().ToLower(CultureInfo.CurrentCulture);
+            var name = commandName.DashedToCamelCase();
             if (_commands == null || !_commands.ContainsKey(name)) {
-                _commands = new Dictionary<string, PSObject>();
+                _commands = new Dictionary<string, PSObject>(StringComparer.OrdinalIgnoreCase);
 
                 using (var pipeline = CreatePipeline()) {
                     pipeline.Commands.Add("get-command");

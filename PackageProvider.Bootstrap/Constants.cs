@@ -14,6 +14,7 @@
 
 namespace OneGet.PackageProvider.Bootstrap {
     internal static class Constants {
+
         #region copy constants-implementation
 /* Synced/Generated code =================================================== */
 
@@ -27,6 +28,19 @@ namespace OneGet.PackageProvider.Bootstrap {
         internal const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependencyPackage";
 
         #endregion
+
+        internal const string SoftwareIdentity = "SoftwareIdentity";
+        internal const string ProviderSwitdagUnavailable = "Unable to get list of OneGet providers.";
+        internal const string UnableToResolvePackage = "Unable to resolve package reference.";
+        internal const string UnsupportedProviderType = "Unsupported provider type.";
+        internal const string DestinationPathNotSet = "DestinationPathNotSet";
+        internal const string InvalidFilename = "MSG:InvalidFilename";
+        internal const string UnableToRemoveFile = "MSG:UnableToRemoveFile";
+        internal const string FileFailedVerification = "MSG:FileFailedVerification";
+
+        internal const string AutomationOnlyFeature = "automation-only";
+
+        internal static readonly string[] Empty = new string[0];
 
     }
 }

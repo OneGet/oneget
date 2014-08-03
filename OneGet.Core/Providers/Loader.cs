@@ -14,98 +14,155 @@
 
 namespace Microsoft.OneGet.Providers {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
+    using Api;
     using Meta;
     using Package;
     using Service;
     using Utility.Extensions;
     using Utility.Plugin;
+    using Utility.Versions;
+
+    internal delegate bool YieldPackageProvider(string name, IPackageProvider instnace, ulong version, IRequest request);
+    internal delegate bool YieldMetaProvider(string name, IMetaProvider instnace, ulong version, IRequest request);
+    internal delegate bool YieldServicesProvider(string name, IServicesProvider instnace, ulong version, IRequest request);
 
     internal static class Loader {
-        
         [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFile", Justification = "This is a plugin loader. It *needs* to do that.")]
-        internal static bool AcquireProviders(string assemblyPath, Object callback, Func<string, IPackageProvider, bool> yieldSoftwareIdentityProvider, Func<string, IServicesProvider,bool> yieldServicesProvider) {
-            var dynInterface = new DynamicInterface();
-            var result = false;
+        internal static bool AcquireProviders(string assemblyPath, IRequest request, YieldMetaProvider yieldMetaProvider, YieldPackageProvider yieldPackageProvider, YieldServicesProvider yieldServicesProvider) {
+            try {
+                var assembly = Assembly.LoadFile(assemblyPath);
 
-            var asm = Assembly.LoadFile(assemblyPath);
-            if (asm == null) {
-                return false;
+                if (assembly == null) {
+                    return false;
+                }
+                
+                var asmVersion = GetAssemblyVersion(assembly);
+
+                // process Meta Providers
+                foreach (var metaProviderClass in DynamicInterface.Instance.FilterTypesCompatibleTo<IMetaProvider>(assembly)) {
+                    AcquireProvidersViaMetaProvider(DynamicInterface.Instance.Create<IMetaProvider>(metaProviderClass), yieldMetaProvider, yieldPackageProvider, yieldServicesProvider, asmVersion, request);
+                }
+
+                // process Package Providers
+                foreach (var packageProviderClass in DynamicInterface.Instance.FilterTypesCompatibleTo<IPackageProvider>(assembly)) {
+                    ProcessPackageProvider(DynamicInterface.Instance.Create<IPackageProvider>(packageProviderClass), yieldPackageProvider, asmVersion, request);
+                }
+
+                // Process Services Providers
+                foreach (var serviceProviderClass in DynamicInterface.Instance.FilterTypesCompatibleTo<IServicesProvider>(assembly)) {
+                    ProcessServicesProvider(DynamicInterface.Instance.Create<IServicesProvider>(serviceProviderClass), yieldServicesProvider, asmVersion, request);
+                }
+            } catch (Exception e) {
+                e.Dump();
+            }
+            return true;
+        }
+
+        private static FourPartVersion GetAssemblyVersion(Assembly asm) {
+            FourPartVersion result = 0;
+
+            var attribute = asm.GetCustomAttributes(typeof (AssemblyVersionAttribute), true).FirstOrDefault() as AssemblyVersionAttribute;
+            if (attribute != null) {
+                result = attribute.Version;
             }
 
-            foreach (var provider in dynInterface.FilterTypesCompatibleTo<IMetaProvider>(asm).Select(each => dynInterface.Create<IMetaProvider>(each))) {
-                Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "START MetaProvider {0}", provider.GetMetaProviderName()));
-                try {
-                    provider.InitializeProvider(DynamicInterface.Instance, callback);
-                    var metaProvider = provider;
-                    Parallel.ForEach(provider.GetProviderNames(), name => {
-                        // foreach (var name in provider.GetProviderNames()) {
-                        var instance = metaProvider.CreateProvider(name);
-                        if (instance != null) {
-                            // check if it's a Package Provider
-                            if (dynInterface.IsInstanceCompatible<IPackageProvider>(instance)) {
-                                try {
-                                    var packageProvider = dynInterface.Create<IPackageProvider>(instance);
-                                    packageProvider.InitializeProvider(DynamicInterface.Instance, callback);
-                                    if (yieldSoftwareIdentityProvider(packageProvider.GetPackageProviderName(), packageProvider)) {
-                                        //loaded something.
-                                        result = true;
-                                    } 
-                                } catch (Exception e) {
-                                    e.Dump();
-                                }
-                            }
-
-                            // check if it's a Services Provider
-                            if (dynInterface.IsInstanceCompatible<IServicesProvider>(instance)) {
-                                try {
-                                    var servicesProvider = dynInterface.Create<IServicesProvider>(instance);
-                                    servicesProvider.InitializeProvider(DynamicInterface.Instance, callback);
-                                    if (yieldServicesProvider(servicesProvider.GetServicesProviderName(), servicesProvider)) {
-                                        //loaded something.
-                                        result = true;
-                                    } 
-                                } catch (Exception e) {
-                                    e.Dump();
-                                }
-                            }
+            if (result == 0) {
+                // what? No assembly version?
+                // fallback to the file version of the assembly
+                var assemblyLocation = asm.Location;
+                if (assemblyLocation.Is() && File.Exists(assemblyLocation)) {
+                    result = FileVersionInfo.GetVersionInfo(assemblyLocation);
+                    if (result == 0) {
+                        // no file version either?
+                        // use the date I guess.
+                        try {
+                            result = new FileInfo(assemblyLocation).LastWriteTime;
+                        } catch {
                         }
-                    });
-                } catch (Exception e) {
-                    e.Dump();
+                    }
                 }
-                Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "FINISH MetaProvider {0}", provider.GetMetaProviderName()));
-            }
 
-            foreach (var provider in dynInterface.FilterTypesCompatibleTo<IPackageProvider>(asm).Select(each => dynInterface.Create<IPackageProvider>(each))) {
-                try {
-                    provider.InitializeProvider(DynamicInterface.Instance, callback);
-                    if (yieldSoftwareIdentityProvider(provider.GetPackageProviderName(), provider)) {
-                        //loaded something.
-                        result = true;
-                    } 
-                } catch (Exception e) {
-                    e.Dump();
-                }
-            }
-
-            foreach (var provider in dynInterface.FilterTypesCompatibleTo<IServicesProvider>(asm).Select(each => dynInterface.Create<IServicesProvider>(each))) {
-                try {
-                    provider.InitializeProvider(DynamicInterface.Instance, callback);
-                    if (yieldServicesProvider(provider.GetServicesProviderName(), provider)) {
-                        //loaded something.
-                        result = true;
-                    } 
-                } catch (Exception e) {
-                    e.Dump();
+                if (result == 0) {
+                    // still no version? 
+                    // I give up. call it 1.0
+                    result = "0.0.0.1";
                 }
             }
             return result;
+        }
+
+        private static void ProcessPackageProvider(IPackageProvider provider, YieldPackageProvider yieldPackageProvider, FourPartVersion asmVersion, IRequest request) {
+            try {
+                provider.InitializeProvider(DynamicInterface.Instance, request);
+                FourPartVersion ver = provider.GetProviderVersion();
+                var pname = provider.GetPackageProviderName();
+                if (yieldPackageProvider(pname, provider, ver == 0 ? asmVersion : ver,request)) {
+                    
+                    //success!
+                }
+            } catch (Exception e) {
+                e.Dump();
+            }
+        }
+
+        private static void ProcessServicesProvider(IServicesProvider provider, YieldServicesProvider yieldServicesProvider, FourPartVersion asmVersion, IRequest request) {
+            try {
+                provider.InitializeProvider(DynamicInterface.Instance, request);
+                FourPartVersion ver = provider.GetProviderVersion();
+                var pname = provider.GetServicesProviderName();
+
+                if (yieldServicesProvider(pname, provider, ver == 0 ? asmVersion : ver,request)) {
+                    // success!
+                    
+                }
+            } catch (Exception e) {
+                e.Dump();
+            }
+        }
+
+        internal static void AcquireProvidersViaMetaProvider(IMetaProvider provider, YieldMetaProvider yieldMetaProvider, YieldPackageProvider yieldPackageProvider, YieldServicesProvider yieldServicesProvider, FourPartVersion asmVersion, IRequest request) {
+            var metaProviderName = provider.GetMetaProviderName();
+            FourPartVersion metaProviderVersion = provider.GetProviderVersion();
+            bool reloading = yieldMetaProvider(metaProviderName, provider, (metaProviderVersion == 0 ? asmVersion : metaProviderVersion), request);
+
+            try {
+                provider.InitializeProvider(DynamicInterface.Instance, request);
+                var metaProvider = provider;
+                Parallel.ForEach(provider.GetProviderNames(), name => {
+                    // foreach (var name in provider.GetProviderNames()) {
+                    var instance = metaProvider.CreateProvider(name);
+                    if (instance != null) {
+                        // check if it's a Package Provider
+                        if (DynamicInterface.Instance.IsInstanceCompatible<IPackageProvider>(instance)) {
+                            try {
+                                ProcessPackageProvider(DynamicInterface.Instance.Create<IPackageProvider>(instance), yieldPackageProvider, asmVersion, request);
+                                
+                            } catch (Exception e) {
+                                e.Dump();
+                            }
+                        }
+
+                        // check if it's a Services Provider
+                        if (DynamicInterface.Instance.IsInstanceCompatible<IServicesProvider>(instance)) {
+                            try {
+                                ProcessServicesProvider(DynamicInterface.Instance.Create<IServicesProvider>(instance), yieldServicesProvider, asmVersion, request);
+                            } catch (Exception e) {
+                                e.Dump();
+                            }
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                e.Dump();
+            }
         }
     }
 }

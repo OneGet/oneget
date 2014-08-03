@@ -16,13 +16,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
     using System.Management.Automation;
-    using Providers.Package;
     using Utility.Collections;
     using Utility.Extensions;
     using Utility.PowerShell;
-    using Callback = System.Object;
+    using Utility.Versions;
+    using RequestImpl = System.Object;
 
     public class PowerShellPackageProvider : PowerShellProviderBase {
         private static int _findId = 1;
@@ -61,18 +62,18 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 #endif
         }
 
-        private object Call(string function, Callback c, params object[] args) {
-            using (var request = Request.New(c, this, function)) {
+        private object Call(string function, RequestImpl requestImpl, params object[] args) {
+            using (var request = Request.New(requestImpl, this, function)) {
                 return request.CallPowerShell(args);
             }
         }
 
         #region implement PackageProvider-interface
 
-        public void AddPackageSource(string name, string location, bool trusted, Object c) {
-            Call("AddPackageSource", c, name, location, trusted);
+        public void AddPackageSource(string name, string location, bool trusted, RequestImpl requestImpl) {
+            Call("AddPackageSource", requestImpl, name, location, trusted);
         }
-        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Object c) {
+        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, RequestImpl requestImpl) {
             // special case.
             // if FindPackage is implemented taking an array of strings
             // and the id > 0 then we need to hold onto the collection until 
@@ -86,16 +87,16 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 }
 
                 // not passed in as a set.
-                Call("FindPackage", c, new string[] {
+                Call("FindPackage", requestImpl, new string[] {
                     name
                 }, requiredVersion, minimumVersion, maximumVersion);
                 return;
             }
 
             // otherwise, it has to take them one at a time and yield them anyway.
-            Call("FindPackage",c, name, requiredVersion, minimumVersion, maximumVersion);
+            Call("FindPackage",requestImpl, name, requiredVersion, minimumVersion, maximumVersion);
         }
-        public void FindPackageByFile(string file, int id, Object c) {
+        public void FindPackageByFile(string file, int id, RequestImpl requestImpl) {
             // special case.
             // if FindPackageByFile is implemented taking an array of strings
             // and the id > 0 then we need to hold onto the collection until 
@@ -108,16 +109,16 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     return;
                 }
                 // not passed in as a set.
-                Call("FindPackageByFile",c, new string[] {
+                Call("FindPackageByFile",requestImpl, new string[] {
                     file
                 });
                 return;
             }
 
-            Call("FindPackageByFile", c, file);
+            Call("FindPackageByFile", requestImpl, file);
             return;
         }
-        public void FindPackageByUri(Uri uri, int id, Object c) {
+        public void FindPackageByUri(Uri uri, int id, RequestImpl requestImpl) {
             // special case.
             // if FindPackageByUri is implemented taking an array of strings
             // and the id > 0 then we need to hold onto the collection until 
@@ -130,47 +131,67 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     return;
                 }
                 // not passed in as a set.
-                Call("FindPackageByUri",c, new Uri[] {
+                Call("FindPackageByUri",requestImpl, new Uri[] {
                     uri
                 });
                 return;
             }
 
-            Call("FindPackageByUri",c, uri);
+            Call("FindPackageByUri",requestImpl, uri);
         }
-        public void GetInstalledPackages(string name, Object c) {
-            Call("GetInstalledPackages",c, name);
+        public void GetInstalledPackages(string name, RequestImpl requestImpl) {
+            Call("GetInstalledPackages",requestImpl, name);
         }
-        public void GetDynamicOptions(int category, Callback c) {
-            Call("GetDynamicOptions",c, (OptionCategory)category);
+        public void GetDynamicOptions(int category, RequestImpl requestImpl) {
+            Call("GetDynamicOptions",requestImpl, (OptionCategory)category);
         }
 
+        private string _providerName;
         /// <summary>
-        ///     Returns the name of the Provider. Doesn't need a callback .
+        ///     Returns the name of the Provider. 
         /// </summary>
         /// <required />
         /// <returns>the name of the package provider</returns>
         public string GetPackageProviderName() {
-            return (string)CallPowerShellWithoutRequest("GetPackageProviderName");
+            return _providerName ?? (_providerName = (string)CallPowerShellWithoutRequest("GetPackageProviderName"));
         }
-        public void ResolvePackageSources(Object c) {
-            Call("ResolvePackageSources", c);
+        public void ResolvePackageSources(RequestImpl requestImpl) {
+            Call("ResolvePackageSources", requestImpl);
         }
 
-        public void InitializeProvider(object dynamicInterface, Callback c) {
-            Call("InitializeProvider", c);
+        public void InitializeProvider(object dynamicInterface, RequestImpl requestImpl) {
+            Call("InitializeProvider", requestImpl);
         }
-        public void InstallPackage(string fastPath, Object c) {
-            Call("InstallPackage", c, fastPath);
+
+        public string GetProviderVersion() {
+            var result= (string)CallPowerShellWithoutRequest("GetProviderVersion");
+            if (string.IsNullOrEmpty(result)) {
+
+                if (_module.Version != new Version(0, 0, 0, 0)) {
+                    result = _module.Version.ToString();
+                } else {
+                    try {
+                        // use the latest date as a version number
+                        return (FourPartVersion) _module.FileList.Max(each => new FileInfo(each).LastWriteTime);
+                    } catch {
+                        // I give up. 
+                        return "0.0.0.1";
+                    }
+                }
+            }
+            return result;
         }
-        public void RemovePackageSource(string name, Object c) {
-            Call("RemovePackageSource", c, name);
+        public void InstallPackage(string fastPath, RequestImpl requestImpl) {
+            Call("InstallPackage", requestImpl, fastPath);
         }
-        public void UninstallPackage(string fastPath, Object c) {
-            Call("UninstallPackage", c, fastPath);
+        public void RemovePackageSource(string name, RequestImpl requestImpl) {
+            Call("RemovePackageSource", requestImpl, name);
         }
-        public void GetFeatures(Callback c) {
-            Call("GetFeatures", c);
+        public void UninstallPackage(string fastPath, RequestImpl requestImpl) {
+            Call("UninstallPackage", requestImpl, fastPath);
+        }
+        public void GetFeatures(RequestImpl requestImpl) {
+            Call("GetFeatures", requestImpl);
         }
 
         // --- Optimization features -----------------------------------------------------------------------------------------------------
@@ -183,21 +204,21 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        public void DownloadPackage(string fastPath, string location, Object c) {
-            Call("DownloadPackage", c, fastPath, location);
+        public void DownloadPackage(string fastPath, string location, RequestImpl requestImpl) {
+            Call("DownloadPackage", requestImpl, fastPath, location);
         }
-        public void GetPackageDependencies(string fastPath, Object c) {
-            Call("GetPackageDependencies", c, fastPath);
+        public void GetPackageDependencies(string fastPath, RequestImpl requestImpl) {
+            Call("GetPackageDependencies", requestImpl, fastPath);
         }
-        public void GetPackageDetails(string fastPath, Object c) {
-            Call("GetPackageDetails", c, fastPath);
+        public void GetPackageDetails(string fastPath, RequestImpl requestImpl) {
+            Call("GetPackageDetails", requestImpl, fastPath);
         }
-        public int StartFind(Object c) {
+        public int StartFind(RequestImpl requestImpl) {
             lock (this) {
                 return ++_findId;
             }
         }
-        public void CompleteFind(int id, Object c) {
+        public void CompleteFind(int id, RequestImpl requestImpl) {
             if (id < 1) {
                 return;
             }
@@ -211,10 +232,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                         var names = nameBatch.Select(each => each.Item1).ToArray();
                         var p1 = nameBatch[0];
 
-                        Call("FindPackage", c,names, p1.Item2, p1.Item3, p1.Item4);
+                        Call("FindPackage", requestImpl,names, p1.Item2, p1.Item3, p1.Item4);
                     } else {
                         foreach (var each in nameBatch) {
-                            Call("FindPackage",c, each.Item1, each.Item2, each.Item3, each.Item4);
+                            Call("FindPackage",requestImpl, each.Item1, each.Item2, each.Item3, each.Item4);
                         }
                     }
                 }
@@ -225,12 +246,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 if (fileBatch != null) {
                     if (IsFirstParameterType<string[]>("FindPackageByFile")) {
                         // it takes a batch at a time.
-                        Call("FindPackageByFile", c, new object[] {
+                        Call("FindPackageByFile", requestImpl, new object[] {
                             fileBatch.ToArray()
                         });
                     } else {
                         foreach (var each in fileBatch) {
-                            Call("FindPackageByFile",c, each);
+                            Call("FindPackageByFile",requestImpl, each);
                         }
                     }
                 }
@@ -241,10 +262,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 if (uriBatch != null) {
                     if (IsFirstParameterType<string[]>("FindPackageByUri")) {
                         // it takes a batch at a time.
-                        Call("FindPackageByUri",c, new object[] {uriBatch.ToArray()});
+                        Call("FindPackageByUri",requestImpl, new object[] {uriBatch.ToArray()});
                     } else {
                         foreach (var each in uriBatch) {
-                            Call("FindPackageByUri",c, each);
+                            Call("FindPackageByUri",requestImpl, each);
                         }
                     }
                 }
@@ -253,66 +274,5 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         #endregion
 
-#if DYNAMIC_DELEGATE_WAY
-        public Delegate CreateDelegate(string method, string[] pNames, Type[] pTypes, Type returnType) {
-            var fnName = MatchFnName(method);
-
-            if (string.IsNullOrEmpty(fnName)) {
-                // no match found, return null.
-                return null;
-            }
-
-            var targetDelegateType = WrappedDelegate.GetFuncOrActionType(pTypes, returnType);
-            var arbitraryDelelgateType = ArbitraryDelegate.GetFuncOrActionType(pTypes, returnType);
-
-            var cmd = Activator.CreateInstance(arbitraryDelelgateType, new Func<object[], object>((args) => {
-                // put the request object in
-                if (args.Length > 0) {
-                    var callback = args.Last() as Callback;
-                    if (callback != null) {
-                        // if the last argument is a Callback delegate
-                        // let's generate the Request object 
-                        // 
-                        using (var request = new Request(callback)) {
-                            _powershell["request"] = request;
-
-                            try {
-                                // make sure we don't pass the callback to the function.
-                                var result = _powershell.NewTryInvokeMemberEx(fnName, new string[0], args.Take(args.Length - 1));
-
-                                // instead, loop thru results and get 
-                                if (result == null) {
-                                    // failure! 
-                                    throw new Exception("Powershell script/function failed.");
-                                }
-
-                                object finalValue = null;
-
-                                foreach (var value in result) {
-                                    var y = value as IYieldable;
-                                    if (y != null) {
-                                        y.YieldResult(request);
-                                    } else {
-                                        finalValue = result;
-                                    }
-                                }
-                                return finalValue;
-
-                            } catch (Exception e) {
-                                e.Dump();
-                            } finally {
-                                _powershell["request"] = null;
-                            }
-                        }
-                    }
-                }
-
-                // otherwise, if there is no callback, or no args, just call it directly.
-                return _powershell.NewTryInvokeMemberEx(fnName, new string[0], args);
-            }));
-
-            return Delegate.CreateDelegate(targetDelegateType, cmd, "Invoke");
-        }
-#endif
     }
 }

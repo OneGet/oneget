@@ -105,6 +105,12 @@ namespace Microsoft.OneGet.Utility.Versions {
             };
         }
 
+        public static implicit operator FourPartVersion(DateTime dateAsVersion) {
+            return new FourPartVersion {
+                _version = (((UInt64)dateAsVersion.Year) << 48) + (((UInt64)dateAsVersion.Month) << 32) + (((UInt64)dateAsVersion.Day) << 16) + (UInt64)dateAsVersion.TimeOfDay.TotalSeconds
+            };
+        }
+
         private static string ULongToString(ulong version) {
             return String.Format(CultureInfo.CurrentCulture, "{0}.{1}.{2}.{3}", (version >> 48) & 0xFFFF, (version >> 32) & 0xFFFF, (version >> 16) & 0xFFFF, (version) & 0xFFFF);
         }
