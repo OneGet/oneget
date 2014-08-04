@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace OneGet.PackageProvider.Bootstrap {
+namespace Microsoft.OneGet.PackageProvider.Bootstrap {
     using System;
     using System.Collections.Generic;
     using System.Linq;

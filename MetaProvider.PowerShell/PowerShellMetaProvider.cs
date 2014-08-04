@@ -74,7 +74,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             "PcsvDevice",
             "PKI",
             "PrintManagement",
-            "PSDesiredStateConfiguration",
             "PSDiagnostics",
             "PSScheduledJob",
             "PSWorkflow",

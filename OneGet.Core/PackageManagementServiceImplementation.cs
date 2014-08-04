@@ -114,9 +114,8 @@ namespace Microsoft.OneGet {
             // there is no trouble with loading providers concurrently.
             Parallel.ForEach(providerAssemblies, providerAssemblyName => {
                 try {
-                    request.Verbose("ProviderAssembly: {0} THREAD:{1}".format(providerAssemblyName, Thread.CurrentThread.ManagedThreadId));
+                    request.Verbose("Trying provider assembly: {0}".format(providerAssemblyName));
                     TryToLoadProviderAssembly(providerAssemblyName, request);
-                    request.Verbose("DONE ProviderAssembly: {0} THREAD:{1}".format(providerAssemblyName, Thread.CurrentThread.ManagedThreadId));
 
                 } catch {
                     request.Error(ProviderPluginLoadFailure, Invalidoperation, ProviderPluginLoadFailure, providerAssemblyName);
@@ -416,7 +415,7 @@ namespace Microsoft.OneGet {
 
                 // are they asking for the same provider again?
                 if (_providersTriedThisCall.Contains(packageProviderName)) {
-                    request.Debug("Already tried this call.");
+                    request.Debug("Skipping RequirePackageProvider -- tried once this call previously.");
                     return false;
                 }
                 // remember this in case we come back again.

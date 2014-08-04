@@ -12,17 +12,15 @@
 //  limitations under the License.
 //  
 
-namespace OneGet.PackageProvider.Bootstrap {
+namespace Microsoft.OneGet.PackageProvider.Bootstrap {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using Microsoft.OneGet.Utility.Extensions;
-    using Microsoft.OneGet.Utility.Platform;
-    using RequestImpl = System.Object;
-
+    using Utility.Extensions;
+    using Utility.Platform;
+    using RequestImpl = System.Object; 
     public class BootstrapProvider {
-        
         private static readonly string[] _urls = new[] {
 #if DEBUG
             "http://localhost:81/OneGet-Bootstrap.swidtag",
@@ -33,10 +31,19 @@ namespace OneGet.PackageProvider.Bootstrap {
         };
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
-            { "schemes", new[] { "http", "https", "file" } }, 
-            { "extensions", new[] { "exe", "msi" } }, 
-            { "magic-signatures", Constants.Empty },
-            { Constants.AutomationOnlyFeature,Constants.Empty}
+            {
+                "schemes", new[] {
+                    "http", "https", "file"
+                }
+            }, {
+                "extensions", new[] {
+                    "exe", "msi"
+                }
+            }, {
+                "magic-signatures", Constants.Empty
+            }, {
+                Constants.AutomationOnlyFeature, Constants.Empty
+            }
         };
 
         internal static IEnumerable<string> SupportedSchemes {
@@ -46,7 +53,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         }
 
         /// <summary>
-        ///     Returns the name of the Provider. 
+        ///     Returns the name of the Provider.
         /// </summary>
         /// <required />
         /// <returns>the name of the package provider</returns>
@@ -59,7 +66,10 @@ namespace OneGet.PackageProvider.Bootstrap {
         }
 
         public void GetFeatures(RequestImpl requestImpl) {
-            using (var request =requestImpl.As<Request>()) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
+            }
+            using (var request = requestImpl.As<Request>()) {
                 request.Debug("Calling 'Bootstrap::GetFeatures'");
                 foreach (var feature in _features) {
                     request.Yield(feature);
@@ -68,7 +78,11 @@ namespace OneGet.PackageProvider.Bootstrap {
         }
 
         public void GetDynamicOptions(int category, RequestImpl requestImpl) {
-            using (var request =requestImpl.As<Request>()) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
+            }
+
+            using (var request = requestImpl.As<Request>()) {
                 try {
                     var cat = (OptionCategory)category;
                     request.Debug("Calling 'Bootstrap::GetDynamicOptions ({0})'", cat);
@@ -100,10 +114,14 @@ namespace OneGet.PackageProvider.Bootstrap {
         /// <param name="minimumVersion"></param>
         /// <param name="maximumVersion"></param>
         /// <param name="id"></param>
-        /// <param name="c"></param>
+        /// <param name="requestImpl"></param>
         /// <returns></returns>
         public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, RequestImpl requestImpl) {
-            using (var request =requestImpl.As<Request>()) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
+            }
+            using (var request = requestImpl.As<Request>()) {
+                
                 request.Debug("Calling 'Bootstrap::FindPackage'");
 
                 var master = request.DownloadSwidtag(_urls);
@@ -112,7 +130,7 @@ namespace OneGet.PackageProvider.Bootstrap {
                     return;
                 }
 
-                if (name.EqualsIgnoreCase("oneget")) {
+                if (name != null && name.EqualsIgnoreCase("oneget")) {
                     // they are looking for OneGet itself.
                     // future todo: let oneget update itself.
                     return;
@@ -181,7 +199,11 @@ namespace OneGet.PackageProvider.Bootstrap {
          */
 
         public void GetInstalledPackages(string name, RequestImpl requestImpl) {
-            using (var request =requestImpl.As<Request>()) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
+            }
+
+            using (var request = requestImpl.As<Request>()) {
                 request.Debug("Calling 'Bootstrap::GetInstalledPackages'");
                 // return all the package providers as packages
             }
@@ -189,14 +211,20 @@ namespace OneGet.PackageProvider.Bootstrap {
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
         public void DownloadPackage(string fastPath, string location, RequestImpl requestImpl) {
-            using (var request =requestImpl.As<Request>()) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
+            }
+            using (var request = requestImpl.As<Request>()) {
                 request.Debug("Calling 'Bootstrap::DownloadPackage'");
             }
         }
 
         public void InstallPackage(string fastPath, RequestImpl requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
+            }
             // ensure that mandatory parameters are present.
-            using (var request =requestImpl.As<Request>()) {
+            using (var request = requestImpl.As<Request>()) {
                 request.Debug("Calling 'Bootstrap::InstallPackage'");
 
                 // verify the package integrity (ie, check if it's digitally signed before installing)
@@ -211,7 +239,7 @@ namespace OneGet.PackageProvider.Bootstrap {
                 if (provider != null) {
                     // install the 'package'
 
-                    if (!provider["/swid:SoftwareIdentity/swid:Meta[@providerType = 'assembly']"].Any()) {
+                    if (!provider.XPath("/swid:SoftwareIdentity/swid:Meta[@providerType = 'assembly']").Any()) {
                         request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.UnsupportedProviderType);
                         return;
                     }
@@ -220,7 +248,7 @@ namespace OneGet.PackageProvider.Bootstrap {
                         return;
                     }
 
-                    var targetFilename = provider["/swid:SoftwareIdentity/swid:Meta[@targetFilename]"].GetAttribute("targetFilename");
+                    var targetFilename = provider.XPath("/swid:SoftwareIdentity/swid:Meta[@targetFilename]").GetAttribute("targetFilename");
                     if (string.IsNullOrEmpty(targetFilename)) {
                         request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.InvalidFilename);
                         return;
@@ -231,7 +259,7 @@ namespace OneGet.PackageProvider.Bootstrap {
                     string tmpFile = null;
                     var failedBecauseInvalid = false;
                     // download the file
-                    foreach (var link in provider["/swid:SoftwareIdentity/swid:Link[@rel = 'installationmedia']"]) {
+                    foreach (var link in provider.XPath("/swid:SoftwareIdentity/swid:Link[@rel = 'installationmedia']")) {
                         var href = link.Attributes["href"];
                         if (string.IsNullOrEmpty(href) || !Uri.IsWellFormedUriString(href, UriKind.Absolute)) {
                             request.Debug("Bad or missing uri: {0}", href);
@@ -279,7 +307,7 @@ namespace OneGet.PackageProvider.Bootstrap {
                             if (File.Exists(targetFile)) {
                                 // looks good to me.
                                 request.YieldFromSwidtag(provider, null, null, null, fastPath);
-                                break;
+                                return;
                             }
                         } catch (Exception e) {
                             e.Dump();
@@ -288,6 +316,9 @@ namespace OneGet.PackageProvider.Bootstrap {
                                 tmpFile.TryHardToDelete();
                             }
                         }
+                    }
+                    if (failedBecauseInvalid) {
+                        request.Error(ErrorCategory.InvalidData, fastPath, Constants.FileFailedVerification);
                     }
                 } else {
                     request.Error(ErrorCategory.InvalidData, fastPath, Constants.UnableToResolvePackage);

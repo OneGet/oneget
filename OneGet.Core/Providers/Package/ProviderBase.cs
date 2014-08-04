@@ -101,7 +101,6 @@ namespace Microsoft.OneGet.Providers.Package {
 
         internal IRequest ExtendRequest(RequestImpl requestImpl, params object[] objects) {
             var baseGetMessageString = requestImpl.As<GetMessageString>();
-            bool? okToTry = true;
 
             return requestImpl.Extend<IRequest>(new {
                 // check the caller's resource manager first, then fall back to this resource manager
@@ -121,6 +120,7 @@ namespace Microsoft.OneGet.Providers.Package {
             // Provider.InitializeProvider(dynamicInstance, c);
             if (!_initialized) {
                 _features = GetFeatures(request);
+                _initialized = true;
             }
         }
 
@@ -158,7 +158,7 @@ namespace Microsoft.OneGet.Providers.Package {
 
         public Dictionary<string, List<string>> GetFeatures(RequestImpl requestImpl) {
             if (requestImpl == null) {
-                throw new ArgumentNullException("c");
+                throw new ArgumentNullException("requestImpl");
             }
 
             var isCancelled = requestImpl.As<IsCancelled>();

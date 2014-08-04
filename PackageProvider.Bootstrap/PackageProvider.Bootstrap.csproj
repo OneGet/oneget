@@ -7,7 +7,7 @@
     <ProjectGuid>{275D3B21-40CC-4DAF-A363-E00D5A712617}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OneGet.PackageProvider.Bootstrap</RootNamespace>
+    <RootNamespace>Microsoft.OneGet.PackageProvider.Bootstrap</RootNamespace>
     <AssemblyName>Microsoft.OneGet.PackageProvider.Bootstrap</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>

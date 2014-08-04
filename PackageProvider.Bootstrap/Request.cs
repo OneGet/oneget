@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace OneGet.PackageProvider.Bootstrap {
+namespace Microsoft.OneGet.PackageProvider.Bootstrap {
     using System;
     using System.Collections.Generic;
     using System.Globalization;
@@ -23,16 +23,17 @@ namespace OneGet.PackageProvider.Bootstrap {
     using System.Threading;
     using System.Xml;
     using System.Xml.Linq;
-    using Microsoft.OneGet.Utility.Extensions;
-    using Microsoft.OneGet.Utility.Versions;
-    using Microsoft.OneGet.Utility.Xml;
     using Resources;
-    using RequestImpl = System.Object;
+    using Utility.Extensions;
+    using Utility.Versions;
+    using Utility.Xml;
+    using RequestImpl = System.Object; 
 
     public abstract class Request : IDisposable {
         #region copy core-apis
 
         /* Synced/Generated code =================================================== */
+
         /// <summary>
         ///     The provider can query to see if the operation has been cancelled.
         ///     This provides for a gentle way for the caller to notify the callee that
@@ -46,7 +47,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         ///     The consumer of this function should either use this as a dynamic object
         ///     Or DuckType it to an interface that resembles IPacakgeManagementService
         /// </summary>
-        /// <param name="c"></param>
+        /// <param name="requestImpl"></param>
         /// <returns></returns>
         public abstract object GetPackageManagementService(RequestImpl requestImpl);
 
@@ -74,6 +75,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         public abstract string ParsePackageName(string canonicalPackageId);
 
         public abstract string ParsePackageVersion(string canonicalPackageId);
+
         #endregion
 
         #region copy host-apis
@@ -111,7 +113,7 @@ namespace OneGet.PackageProvider.Bootstrap {
 
         public abstract string GetCredentialPassword();
 
-        public abstract bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination );
+        public abstract bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination);
 
         public abstract bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
@@ -132,6 +134,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         public abstract bool IsInteractive();
 
         public abstract int CallCount();
+
         #endregion
 
         #region copy service-apis
@@ -166,6 +169,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         public abstract string GetKnownFolder(string knownFolder, RequestImpl requestImpl);
 
         public abstract bool IsElevated(RequestImpl requestImpl);
+
         #endregion
 
         #region copy response-apis
@@ -201,12 +205,12 @@ namespace OneGet.PackageProvider.Bootstrap {
 
         public abstract bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
 
-        #if M2
+#if M2
         public abstract bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
 
         public abstract bool YieldMetadata(string fieldId, string @namespace, string name, string value);
 
-        #endif 
+        #endif
 
         /// <summary>
         ///     Used by a provider to return fields for a package source (repository)
@@ -217,7 +221,7 @@ namespace OneGet.PackageProvider.Bootstrap {
         /// <param name="isRegistered"></param>
         /// <param name="isValidated"></param>
         /// <returns></returns>
-        public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
+        public abstract bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
@@ -233,16 +237,18 @@ namespace OneGet.PackageProvider.Bootstrap {
         public abstract bool YieldKeyValuePair(string key, string value);
 
         public abstract bool YieldValue(string value);
+
         #endregion
 
         #region copy Request-implementation
-/* Synced/Generated code =================================================== */
+
+        /* Synced/Generated code =================================================== */
 
         public bool Warning(string messageText, params object[] args) {
-            return Warning(FormatMessageString(messageText,args));
+            return Warning(FormatMessageString(messageText, args));
         }
 
-        internal bool Error( ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
+        internal bool Error(ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
             return Error(messageText, category.ToString(), targetObjectValue, FormatMessageString(messageText, args));
         }
 
@@ -252,31 +258,31 @@ namespace OneGet.PackageProvider.Bootstrap {
         }
 
         public bool Message(string messageText, params object[] args) {
-            return Message(FormatMessageString(messageText,args));
+            return Message(FormatMessageString(messageText, args));
         }
 
         public bool Verbose(string messageText, params object[] args) {
-            return Verbose(FormatMessageString(messageText,args));
-        } 
+            return Verbose(FormatMessageString(messageText, args));
+        }
 
         public bool Debug(string messageText, params object[] args) {
-            return Debug(FormatMessageString(messageText,args));
+            return Debug(FormatMessageString(messageText, args));
         }
 
         public int StartProgress(int parentActivityId, string messageText, params object[] args) {
-            return StartProgress(parentActivityId, FormatMessageString(messageText,args));
+            return StartProgress(parentActivityId, FormatMessageString(messageText, args));
         }
 
         public bool Progress(int activityId, int progressPercentage, string messageText, params object[] args) {
-            return Progress(activityId, progressPercentage, FormatMessageString(messageText,args));
+            return Progress(activityId, progressPercentage, FormatMessageString(messageText, args));
         }
 
         private static string FixMeFormat(string formatString, object[] args) {
-            if (args == null || args.Length == 0 ) {
+            if (args == null || args.Length == 0) {
                 // not really any args, and not really expectng any
                 return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
             }
-            return System.Linq.Enumerable.Aggregate(args, "FIXME/Format:" + formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture," \u00ab{0}\u00bb", arg));
+            return Enumerable.Aggregate(args, "FIXME/Format:" + formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
         }
 
         internal string GetMessageStringInternal(string messageText) {
@@ -290,12 +296,12 @@ namespace OneGet.PackageProvider.Bootstrap {
 
             if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
                 // check with the caller first, then with the local resources, and fallback to using the messageText itself.
-                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ?? GetMessageStringInternal(messageText) ?? messageText;    
+                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ?? GetMessageStringInternal(messageText) ?? messageText;
             }
 
             // if it doesn't look like we have the correct number of parameters
             // let's return a fixmeformat string.
-            var c = System.Linq.Enumerable.Count( System.Linq.Enumerable.Where(messageText.ToCharArray(), each => each == '{'));
+            var c = Enumerable.Count(Enumerable.Where(messageText.ToCharArray(), each => each == '{'));
             if (c < args.Length) {
                 return FixMeFormat(messageText, args);
             }
@@ -314,7 +320,7 @@ namespace OneGet.PackageProvider.Bootstrap {
 
         public string Username {
             get {
-                return  GetCredentialUsername();
+                return GetCredentialUsername();
             }
         }
 
@@ -324,7 +330,6 @@ namespace OneGet.PackageProvider.Bootstrap {
         }
 
         public virtual void Dispose(bool disposing) {
-
         }
 
         public static implicit operator MarshalByRefObject(Request req) {
@@ -367,6 +372,7 @@ namespace OneGet.PackageProvider.Bootstrap {
             return (GetOptionValues((int)category, name) ?? Enumerable.Empty<string>()).LastOrDefault();
         }
 
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private IEnumerable<string> GetValues(OptionCategory category, string name) {
             // get the value from the request
             return (GetOptionValues((int)category, name) ?? Enumerable.Empty<string>());
@@ -436,36 +442,40 @@ namespace OneGet.PackageProvider.Bootstrap {
         }
 
         internal DynamicElement GetProvider(DynamicElement document, string name) {
-            var links = document["/swid:SoftwareIdentity/swid:Link[@rel='component' and @artifact='{0}' and @oneget:type='provider']", name];
+            var links = document.XPath("/swid:SoftwareIdentity/swid:Link[@rel='component' and @artifact='{0}' and @oneget:type='provider']", name);
             return DownloadSwidtag(links.GetAttributes("href"));
         }
 
         internal IEnumerable<DynamicElement> GetProviders(DynamicElement document) {
-            var artifacts = document["/swid:SoftwareIdentity/swid:Link[@rel='component' and @oneget:type='provider']"].GetAttributes("artifact").Distinct().ToArray();
+            var artifacts = document.XPath("/swid:SoftwareIdentity/swid:Link[@rel='component' and @oneget:type='provider']").GetAttributes("artifact").Distinct().ToArray();
             return artifacts.Select(each => GetProvider(document, each)).Where(each => each != null);
         }
 
         public bool YieldFromSwidtag(DynamicElement provider, string requiredVersion, string minimumVersion, string maximumVersion, string searchKey) {
+            if (provider == null) {
+                throw new ArgumentNullException("provider");
+            }
+
             var name = provider.Attributes["name"];
             FourPartVersion version = provider.Attributes["version"];
             var versionScheme = provider.Attributes["versionScheme"];
-            var packageFilename = provider["/swid:SoftwareIdentity/swid:Meta[@targetFilename]"].GetAttribute("targetFilename");
-            var summary = provider["/swid:SoftwareIdentity/swid:Meta[@summary]"].GetAttribute("summary");
+            var packageFilename = provider.XPath("/swid:SoftwareIdentity/swid:Meta[@targetFilename]").GetAttribute("targetFilename");
+            var summary = provider.XPath("/swid:SoftwareIdentity/swid:Meta[@summary]").GetAttribute("summary");
 
             if (AnyNullOrEmpty(name, version, versionScheme, packageFilename)) {
                 Debug("Skipping yield on swid due to missing field \r\n", provider.ToString());
                 return true;
             }
 
-            if (requiredVersion.Is() && version != requiredVersion) {
+            if (!string.IsNullOrEmpty(requiredVersion) && version != requiredVersion) {
                 return true;
             }
 
-            if (minimumVersion.Is() && version < minimumVersion) {
+            if (!string.IsNullOrEmpty(minimumVersion) && version < minimumVersion) {
                 return true;
             }
 
-            if (maximumVersion.Is() && version > maximumVersion) {
+            if (!string.IsNullOrEmpty(maximumVersion) && version > maximumVersion) {
                 return true;
             }
 
@@ -473,17 +483,17 @@ namespace OneGet.PackageProvider.Bootstrap {
                 // note: temporary until we actaully support swidtags in the core.
 
                 // yield all the meta/attributes
-                if (provider["/swid:SoftwareIdentity/swid:Meta"].Any(
+                if (provider.XPath("/swid:SoftwareIdentity/swid:Meta").Any(
                     meta => meta.Attributes.Any(attribute => !YieldSoftwareMetadata(name, attribute.Name.LocalName, attribute.Value)))) {
                     return false;
                 }
 
-                if (provider["/swid:SoftwareIdentity/swid:Link"].Any(
+                if (provider.XPath("/swid:SoftwareIdentity/swid:Link").Any(
                     link => !YieldLink(name, link.Attributes["href"], link.Attributes["rel"], link.Attributes["type"], link.Attributes["ownership"], link.Attributes["use"], link.Attributes["media"], link.Attributes["artifact"]))) {
                     return false;
                 }
 
-                if (provider["/swid:SoftwareIdentity/swid:Entity"].Any(
+                if (provider.XPath("/swid:SoftwareIdentity/swid:Entity").Any(
                     entity => !YieldEntity(name, entity.Attributes["name"], entity.Attributes["regid"], entity.Attributes["role"], entity.Attributes["thumbprint"]))) {
                     return false;
                 }

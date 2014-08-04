@@ -5,12 +5,10 @@ DIRS=\
     OneGet.Utility.PowerShell \
     OneGet.Core \
     MetaProvider.PowerShell \
-    OneGet.PowerShell.Module \   
-    ServiceProvider.Common \   
-#    PackageProvider.nuget
-    
-# 	PackageProvider.Bootstrap    
-    
+    OneGet.PowerShell.Module \
+    ServiceProvider.Common \
+    PackageProvider.Bootstrap
+
 # Unit test directories should be placed in the OPTIONAL_DIRS section
 OPTIONAL_DIRS=\
 

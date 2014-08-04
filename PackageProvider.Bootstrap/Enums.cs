@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace OneGet.PackageProvider.Bootstrap {
+namespace Microsoft.OneGet.PackageProvider.Bootstrap {
 
     #region copy PackageProvider-types
 /* Synced/Generated code =================================================== */

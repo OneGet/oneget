@@ -62,7 +62,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         ///     The consumer of this function should either use this as a dynamic object
         ///     Or DuckType it to an interface that resembles IPacakgeManagementService
         /// </summary>
-        /// <param name="c"></param>
+        /// <param name="requestImpl"></param>
         /// <returns></returns>
         public abstract object GetPackageManagementService(RequestImpl requestImpl);
 

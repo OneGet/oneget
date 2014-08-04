@@ -99,6 +99,7 @@ namespace Microsoft.OneGet.Utility.Xml {
         ///     Creates a DynamicXmlNode from an XElement
         /// </summary>
         /// <param name="element">An XElement node to use as the actual XML node for this DynamicXmlNode</param>
+        /// <param name="namespaceManager"></param>
         public DynamicElement(XElement element, XmlNamespaceManager namespaceManager) {
             if (element == null) {
                 throw new ArgumentNullException("element");
@@ -112,6 +113,7 @@ namespace Microsoft.OneGet.Utility.Xml {
         ///     Creates a DynamicXmlNode From an new XElement with the given name for the node
         /// </summary>
         /// <param name="elementName">The new XElement node name to use as the actual XML node for this DynamicXmlNode</param>
+        /// <param name="namespaceManager"></param>
         public DynamicElement(string elementName, XmlNamespaceManager namespaceManager) {
             if (string.IsNullOrEmpty(elementName)) {
                 throw new ArgumentNullException("elementName");
@@ -169,16 +171,13 @@ namespace Microsoft.OneGet.Utility.Xml {
             }
         }
 
-        public IEnumerable<DynamicElement> this[string query] {
-            get {
-                return _element.XPathSelectElements(query, _namespaceManager).Select(each => new DynamicElement(each, _namespaceManager));
-            }
+        public IEnumerable<DynamicElement> XPath(string query) {
+            return _element.XPathSelectElements(query, _namespaceManager).Select(each => new DynamicElement(each, _namespaceManager));
         }
 
-        public IEnumerable<DynamicElement> this[string query, params object[] args] {
-            get {
+
+        public IEnumerable<DynamicElement> XPath(string query, params object[] args) {
                 return _element.XPathSelectElements(string.Format(CultureInfo.CurrentCulture, query, args), _namespaceManager).Select(each => new DynamicElement(each, _namespaceManager));
-            }
         }
 
         public DynamicAttributes Attributes {
@@ -250,6 +249,10 @@ namespace Microsoft.OneGet.Utility.Xml {
         /// </param>
         /// <returns>True, if successful</returns>
         public override bool TrySetMember(SetMemberBinder binder, object value) {
+            if (binder == null) {
+                throw new ArgumentNullException("binder");
+            }
+
             var setNode = _element.Element(ActualXName(binder.Name));
 
             if (value == null) {
@@ -292,6 +295,9 @@ namespace Microsoft.OneGet.Utility.Xml {
         /// </param>
         /// <returns>True if successful</returns>
         public override bool TryGetMember(GetMemberBinder binder, out object result) {
+            if (binder == null) {
+                throw new ArgumentNullException("binder");
+            }
             var getNode = _element.Element(ActualXName(binder.Name));
 
             if (getNode == null) {
@@ -310,6 +316,9 @@ namespace Microsoft.OneGet.Utility.Xml {
         /// <param name="result">the result</param>
         /// <returns>True if succesful</returns>
         public override bool TryConvert(ConvertBinder binder, out object result) {
+            if (binder == null) {
+                throw new ArgumentNullException("binder");
+            }
             return TryXmlConvert(_element.Value, binder.ReturnType, out result);
         }
 
@@ -323,7 +332,7 @@ namespace Microsoft.OneGet.Utility.Xml {
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result) {
             var xmlType = typeof (XElement);
             try {
-                result = xmlType.InvokeMember(binder.Name, BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, _element, args);
+                result = xmlType.InvokeMember(binder.Name, BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, _element, args, CultureInfo.CurrentCulture);
                 return true;
             } catch {
                 result = null;
@@ -351,6 +360,9 @@ namespace Microsoft.OneGet.Utility.Xml {
         }
 
         public DynamicElement Add(DynamicElement dynamicElement) {
+            if (dynamicElement == null) {
+                throw new ArgumentNullException("dynamicElement");
+            }
             _element.Add(dynamicElement._element);
             return dynamicElement;
         }

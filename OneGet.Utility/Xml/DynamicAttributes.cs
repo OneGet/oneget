@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.OneGet.Utility.Xml {
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Dynamic;
@@ -73,6 +74,9 @@ namespace Microsoft.OneGet.Utility.Xml {
         /// <param name="result">the return value (attribute value)</param>
         /// <returns>true if successful</returns>
         public override bool TryGetMember(GetMemberBinder binder, out object result) {
+            if (binder == null) {
+                throw new ArgumentNullException("binder");
+            }
             var attr = _element.Attribute(binder.Name);
             if (attr != null) {
                 result = attr.Value;
@@ -90,6 +94,9 @@ namespace Microsoft.OneGet.Utility.Xml {
         /// <param name="value">Value to set</param>
         /// <returns>True</returns>
         public override bool TrySetMember(SetMemberBinder binder, object value) {
+            if (binder == null) {
+                throw new ArgumentNullException("binder");
+            }
             _element.SetAttributeValue(binder.Name, value);
             return true;
         }

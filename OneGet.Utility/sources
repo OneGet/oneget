@@ -76,6 +76,7 @@ SOURCES=\
  	Extensions\HashtableExtensions.cs \
  	Extensions\StringExtensions.cs \
  	Extensions\TypeExtensions.cs \
+ 	Extensions\XmlExtensions.cs \
  	Platform\AdminPrivilege.cs \
  	Platform\AsyncProcess.cs \
  	Platform\CLSID.cs \
@@ -106,14 +107,18 @@ SOURCES=\
  	Plugin\WrappedDelegate.cs \
  	Plugin\WrappedFunc.cs \
  	$(RESOURCES_SOURCES) \
- 	 \
  	Versions\FourPartVersion.cs \
+ 	Xml\DynamicAttributes.cs \
+ 	Xml\DynamicElement.cs \
+ 	Xml\DynamicElementEnumerable.cs \
  	Constants.cs \
-
+ 
 
 #endregion
+
 
 INTERNALS_VISIBLE_TO=\
 	Microsoft.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
 	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+        Microsoft.OneGet.PackageProvider.Bootstrap, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
 	Microsoft.OneGet.Utility.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);

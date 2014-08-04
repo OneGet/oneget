@@ -18,11 +18,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using System.Threading.Tasks;
     using Microsoft.OneGet;
     using Microsoft.OneGet.Providers.Package;
     using Microsoft.OneGet.Utility.Extensions;
-    using Microsoft.OneGet.Utility.Platform;
     using Microsoft.OneGet.Utility.PowerShell;
     using Resources;
     using Utility;
@@ -31,7 +29,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     public delegate string GetMessageString(string message);
 
     public abstract class CmdletBase : AsyncCmdlet {
-        private static int _globalCallCount = 0;
+        private static int _globalCallCount = 1;
         private static readonly object _lockObject = new object();
         private readonly int _callCount;
         private readonly Hashtable _dynamicOptions;
@@ -78,9 +76,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
+#if TRY_TO_LOAD_PROVIDERS_EARLY
         private static Task<IPackageManagementService> _startServiceTask;
 
-#if TRY_TO_LOAD_PROVIDERS_EARLY
         static CmdletBase()  {
                  _startServiceTask = Task<IPackageManagementService>.Factory.StartNew(() => {
                      NativeMethods.OutputDebugString("STARTING IPMS");
@@ -115,7 +113,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 }
                 return _packageManagementService;
-                 
+
 #if TRY_TO_LOAD_PROVIDERS_EARLY               
                 return _startServiceTask.Result;
 #endif
