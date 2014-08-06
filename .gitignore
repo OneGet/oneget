@@ -93,3 +93,12 @@ Scratch/test2.props
 /_unused_code.cs
 /mar25.txt
 .syncignore
+*.bak
+/AbstractDesign
+build-ps.cmd
+streams.exe
+/attic/
+policheck*
+*.orig
+OneGet.orig.sln
+

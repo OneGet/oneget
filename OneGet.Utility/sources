@@ -1,0 +1,124 @@
+# Copyright (C) 2014 Microsoft Corporation
+
+#CLSCompliant        = true
+
+TARGETNAME          = Microsoft.OneGet.Utility
+
+TARGETTYPE          = DYNLINK
+TARGET_DESTINATION  = monad
+MANAGED_CODE        = 1
+URT_VER=4.5
+# this will make AssemblyVersion = 1.0.0.0
+ASSEMBLY_IDENTITY_VERSION_NAME=monadv1
+
+## !include $(PROJECT_ROOT)\monad\nttargets\build\sources.inc
+OBJDIR=$(OBJ_PATH)\$(O)
+
+ASSEMBLY_IDENTITY_PUBLIC_KEY_NAME   = windows
+SOURCES_PATH = .\
+
+#PASS1_PUBLISH = {$(OBJ_PATH)\$(O)\$(TARGETNAME).metadata_dll=$(PROJECT_REF_PATH)\$(TARGETNAME).metadata_dll}
+
+RESOURCES_NAMESPACE=Microsoft.OneGet.Utility.Resources
+
+# Target for building resources
+NTTARGETFILE1=$(NTTARGETFILE1) resources
+
+MESSAGES_RESOURCES=$(OBJDIR)\$(RESOURCES_NAMESPACE).Messages.resources
+
+RESOURCES= \
+	$(MESSAGES_RESOURCES)
+
+RESOURCES_SOURCES= \
+	$(OBJDIR)\Messages.cs
+
+LANGUAGE_SPECIFIC_MANAGED_RESOURCES=$(RESOURCES)
+
+NTTARGETFILE0=$(NTTARGETFILE0) $(RESOURCES:;=)
+
+REFERENCES=\
+	$(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
+	$(CLR_REF_PATH)\System.metadata_dll; \
+	$(CLR_REF_PATH)\System.Core.metadata_dll; \
+	$(CLR_REF_PATH)\System.Data.metadata_dll; \
+	$(CLR_REF_PATH)\System.Data.DataSetExtensions.metadata_dll; \
+    $(CLR_REF_PATH)\System.Security.metadata_dll; \
+	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
+	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll;
+
+#region sourcefiles
+SOURCES=\
+	Collections\AbstractDictionary.cs \
+ 	Collections\ByRefCancellationToken.cs \
+ 	Collections\ByRefCancellationTokenSource.cs \
+ 	Collections\ByRefEnumerable.cs \
+ 	Collections\ByRefEnumerator.cs \
+ 	Collections\CachingEnumerable.cs \
+ 	Collections\CancellableBlockingCollection.cs \
+ 	Collections\CancellableEnumerable.cs \
+ 	Collections\CancellableEnumerator.cs \
+ 	Collections\DelegateDictionary.cs \
+ 	Collections\HashSet.cs \
+ 	Collections\ICancellable.cs \
+ 	Collections\ICancellableEnumerable.cs \
+ 	Collections\List.cs \
+ 	Collections\OrderedDictionary.cs \
+ 	Collections\ReadOnlyDelegateDictionary.cs \
+ 	Collections\SerializableEnumerable.cs \
+ 	Collections\SerializableEnumerator.cs \
+ 	Collections\VirtualEnumerator.cs \
+ 	Extensions\CancellationTokenSourceExtensions.cs \
+ 	Extensions\CollectionExtensions.cs \
+ 	Extensions\DelegateExtensions.cs \
+ 	Extensions\DictionaryExtensions.cs \
+ 	Extensions\ExceptionExtensions.cs \
+ 	Extensions\FilesystemExtensions.cs \
+ 	Extensions\HashtableExtensions.cs \
+ 	Extensions\StringExtensions.cs \
+ 	Extensions\TypeExtensions.cs \
+ 	Extensions\XmlExtensions.cs \
+ 	Platform\AdminPrivilege.cs \
+ 	Platform\AsyncProcess.cs \
+ 	Platform\CLSID.cs \
+ 	Platform\EnvironmentUtility.cs \
+ 	Platform\IID.cs \
+ 	Platform\IShellLink.cs \
+ 	Platform\KnownFolder.cs \
+ 	Platform\KnownFolders.cs \
+ 	Platform\MoveFileFlags.cs \
+ 	Platform\NativeMethods.cs \
+ 	Platform\ShellApplication.cs \
+ 	Platform\ShellLink.cs \
+ 	Platform\SLGP.cs \
+ 	Platform\STGM.cs \
+ 	Platform\Win32FindData.cs \
+ 	Plugin\AssignableTypeComparer.cs \
+ 	Plugin\DynamicInterface.cs \
+ 	Plugin\DynamicInterfaceExtensions.cs \
+ 	Plugin\DynamicTypeExtensions.cs \
+ 	Plugin\FluentIlExtensions.cs \
+ 	Plugin\PluginAssemblyResolver.cs \
+ 	Plugin\PluginDomain.cs \
+ 	Plugin\PrivateProxy.cs \
+ 	Plugin\Proxy.cs \
+ 	Plugin\ProxyClass.cs \
+ 	Plugin\RequiredAttribute.cs \
+ 	Plugin\WrappedAction.cs \
+ 	Plugin\WrappedDelegate.cs \
+ 	Plugin\WrappedFunc.cs \
+ 	$(RESOURCES_SOURCES) \
+ 	Versions\FourPartVersion.cs \
+ 	Xml\DynamicAttributes.cs \
+ 	Xml\DynamicElement.cs \
+ 	Xml\DynamicElementEnumerable.cs \
+ 	Constants.cs \
+ 
+
+#endregion
+
+
+INTERNALS_VISIBLE_TO=\
+	Microsoft.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+        Microsoft.OneGet.PackageProvider.Bootstrap, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+	Microsoft.OneGet.Utility.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);

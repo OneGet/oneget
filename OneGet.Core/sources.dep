@@ -1,0 +1,6 @@
+BUILD_PASS1_CONSUMES= \
+    admin\monad\src\oneget\oneget.utility|PASS1 \
+
+PUBLIC_PASS1_CONSUMES= \
+    admin\monad\nttargets\assemblies\core\dll|PASS1 \
+

@@ -1,0 +1,59 @@
+###
+# ==++==
+#
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+###
+@{
+    GUID = "4ae9fd46-338a-459c-8186-07f910774cb8"
+    Author = "Microsoft Corporation"
+    CompanyName = "Microsoft Corporation"
+    Copyright = "(C) Microsoft Corporation. All rights reserved."
+    HelpInfoUri = "http://go.microsoft.com/fwlink/?linkid=392040"
+    ModuleVersion = "1.0.0.0"
+    PowerShellVersion = "2.0"
+    ClrVersion = "4.0"
+    RootModule = "Microsoft.PowerShell.OneGet.dll"
+	
+	##
+	## Hard-coded dependency on Chocolatey Module
+	## This is required only so that the Chocolatey Module can expose it's own cmdlets.
+	## If it wasn't shipped with OneGet, it would have been it's own module, and this
+	## wouldn't be neccessary.
+	##
+    # NestedModules = @('chocolatey.psd1')
+
+    # TypesToProcess = ""
+    # FormatsToProcess = ""
+    CmdletsToExport = @(
+        'Register-PackageSource',
+        'Find-Package',
+        'Get-Package',
+        'Get-PackageProvider', 
+        'Get-PackageSource',
+        'Install-Package',
+        'Unregister-PackageSource',
+        'Uninstall-Package'
+	)
+
+	FormatsToProcess  = @('OneGet.format.ps1xml')
+
+	##
+	## PowerShell-based Providers included in build
+	## 
+   	PrivateData = @{
+		 "OneGetProviders" = @( ".\TestPackageProvider.psm1",".\TestChainingPackageProvider.psm1"  )
+		# ".\ZipProvider.psm1", 
+		# 
+    }
+}

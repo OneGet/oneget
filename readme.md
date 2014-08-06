@@ -1,12 +1,42 @@
 # OneGet
+<hr><hr>
 
-## Team Members
+### NOTE: You are looking at the Work-in-progress branch.
 
-| Branch | Purpose |
-| ------- | ---------------------------|
-|@fearthecowboy|  Architect, Lead Developer, and gunslinger coalesced into human form. I'm a code-first, consequences-be-damned, software developer who likes feedback, and hates to over-engineer anything. If it sounds like too much pie-in-the-sky design, I'm probably not paying much attention. |
-|@xumins|  Our new five-star Program Manager. Xumin is the sheriff, she keeps the law. If there are rules that we need to play by, Xumin make us follow them.   |
-|@bherila|  If Xumin is the sheriff, then Ben is the US Marshal -- he's hunted down and removed more blocking issues than I can even count. He's taken us from nothing to where we are today. If we want to connect with some group inside Microsoft, Ben knows who to talk to and who to have put down.  |
+### It is nearing stable. It should build and run (at least with the NuGet provider)
+
+## Building the code
+
+#### Required Tools
+- Visual Studio 2013
+- Powershell Tools for Visual Studio : http://visualstudiogallery.msdn.microsoft.com/c9eb3ba8-0c59-4944-9a62-6eee37294597
+- XUnit ( I currently use 0.99.3 ) : http://xunit.codeplex.com/releases
+
+#### Optional Tools
+- Resharper - http://www.jetbrains.com/resharper/
+- Resharper xUnit test runner - http://resharper-plugins.jetbrains.com/packages/xunitcontrib/1.6.2
+
+check out the source code 
+``` powershell 
+
+#clone this repository
+> git clone --recurse-submodules https://github.com/OneGet/oneget.git
+
+# go to the project folder
+> cd oneget
+
+# switch to the wip branch
+> git checkout wip
+
+# get the submodules for this branch
+> git submodule update --init
+
+# BUILD FROM VISUAL STUDIO FOR NOW.
+    
+```
+
+### SEE THE CURRENT RELEASE NOTES for this branch: 
+### https://github.com/OneGet/oneget/blob/wip/release-notes.md 
 
 
 ## Understanding the OneGet code repository
@@ -77,3 +107,13 @@ We'll also be publishing standalone builds, once the source code is published.
 And *yes*, we're going to work with the Chocolatey project to have one single chocolatey plugin that meets everyone's needs : [see Rob's post](https://groups.google.com/forum/#!topic/chocolatey/a8WdEoF-M58)
 
 [Follow us on Twitter](https://twitter.com/PSOneGet)
+
+<hr><hr>
+## Team Members
+
+| Branch | Purpose |
+| ------- | ---------------------------|
+|@fearthecowboy|  Architect, Lead Developer, and gunslinger coalesced into human form. I'm a code-first, consequences-be-damned, software developer who likes feedback, and hates to over-engineer anything. If it sounds like too much pie-in-the-sky design, I'm probably not paying much attention. |
+|@xumins|  Our new five-star Program Manager. Xumin is the sheriff, she keeps the law. If there are rules that we need to play by, Xumin make us follow them.   |
+|@bherila|  If Xumin is the sheriff, then Ben is the US Marshal -- he's hunted down and removed more blocking issues than I can even count. He's taken us from nothing to where we are today. If we want to connect with some group inside Microsoft, Ben knows who to talk to and who to have put down.  |
+
