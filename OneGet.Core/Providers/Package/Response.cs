@@ -96,7 +96,7 @@ namespace Microsoft.OneGet.Providers.Package {
                 Version = version,
                 VersionScheme = versionScheme,
                 Summary = summary,
-                ProviderName = _provider.Name,
+                ProviderName = _provider.ProviderName,
                 Source = source,
                 Status = _packageStatus,
                 SearchKey = searchKey,

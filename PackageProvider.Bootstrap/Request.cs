@@ -442,7 +442,7 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
         }
 
         internal DynamicElement GetProvider(DynamicElement document, string name) {
-            var links = document.XPath("/swid:SoftwareIdentity/swid:Link[@rel='component' and @artifact='{0}' and @oneget:type='provider']", name);
+            var links = document.XPath("/swid:SoftwareIdentity/swid:Link[@rel='component' and @artifact='{0}' and @oneget:type='provider']", name.ToLowerInvariant());
             return DownloadSwidtag(links.GetAttributes("href"));
         }
 

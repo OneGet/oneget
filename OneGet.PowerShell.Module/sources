@@ -58,6 +58,8 @@ SOURCES=\
  	CmdLets\GetPackageSource.cs \
  	CmdLets\InstallPackage.cs \
  	CmdLets\RegisterPackageSource.cs \
+ 	CmdLets\SavePackage.cs \
+ 	CmdLets\SetPackageSource.cs \
  	CmdLets\UninstallPackage.cs \
  	CmdLets\UnregisterPackageSource.cs \
  	Constants.cs \

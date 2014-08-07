@@ -47,7 +47,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ProcessRecordAsync() {
             Parallel.ForEach(SelectedProviders, provider => {
-                _providersProcessed.GetOrAdd(provider.Name, () => false);
+                _providersProcessed.GetOrAdd(provider.ProviderName, () => false);
 
                 try {
                     if (Name.IsNullOrEmpty()) {
@@ -71,7 +71,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         protected IEnumerable<SoftwareIdentity> ProcessProvider(PackageProvider provider) {
             using (var packages = CancelWhenStopped(provider.GetInstalledPackages("", this))) {
                 foreach (var p in packages) {
-                    _providersProcessed.AddOrSet(provider.Name, true);
+                    _providersProcessed.AddOrSet(provider.ProviderName, true);
                     yield return p;
                 }
             }
@@ -82,7 +82,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             using (var packages = CancelWhenStopped(provider.GetInstalledPackages(name, this))) {
                 foreach (var p in packages) {
                     _namesProcessed.AddOrSet(name, true);
-                    _providersProcessed.AddOrSet(provider.Name, true);
+                    _providersProcessed.AddOrSet(provider.ProviderName, true);
                     yield return p;
                 }
             }

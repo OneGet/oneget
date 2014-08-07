@@ -64,6 +64,10 @@ namespace Microsoft.OneGet.Test {
             }
         }
 
+        public override object InitializeLifetimeService() {
+            return null;
+        }
+
         [Fact]
         public void TestIEnumerableByRef() {
 

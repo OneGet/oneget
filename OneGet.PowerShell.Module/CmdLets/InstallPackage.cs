@@ -20,9 +20,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Threading.Tasks;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
+    using Utility;
 
-    [Cmdlet(VerbsLifecycle.Install, Constants.PackageNoun, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsLifecycle.Install, Constants.PackageNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.PackageBySearchSet)]
     public sealed class InstallPackage : CmdletWithSearchAndSource {
         private readonly HashSet<string> _sourcesTrusted = new HashSet<string>();
 
@@ -32,11 +34,24 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }) {
         }
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = Constants.PackageByObjectSet)]
-        public SoftwareIdentity[] Package {get; set;}
+        [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = Constants.PackageByInputObjectSet)]
+        public SoftwareIdentity[] InputObject {get; set;}
 
-        [Parameter]
-        public SwitchParameter Force {get; set;}
+        [Parameter(Position = 0, ParameterSetName = Constants.PackageBySearchSet)]
+        public override string[] Name {get; set;}
+
+        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        public override string RequiredVersion {get; set;}
+
+        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        public override string MinimumVersion {get; set;}
+
+        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        public override string MaximumVersion {get; set;}
+
+        [Alias("Provider")]
+        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
+        public override string[] ProviderName {get; set;}
 
         public override bool BeginProcessingAsync() {
             return true;
@@ -44,9 +59,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ProcessRecordAsync() {
             if (IsPackageByObject) {
-                return InstallPackages(Package);
+                return InstallPackages(InputObject);
             }
-            return true;
+            // otherwise, just do the search right now.
+            return base.ProcessRecordAsync();
         }
 
         public override bool EndProcessingAsync() {
@@ -56,117 +72,82 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return true;
             }
 
-            // first, determine the package list that we're interested in installing
-            var noMatchNames = new HashSet<string>(Name);
-            var resultsPerName = new Dictionary<string, List<SoftwareIdentity>>();
-
-            Parallel.ForEach(SelectedProviders, provider => {
-                try {
-                    if (!Name.IsNullOrEmpty()) {
-                        foreach (var each in Name) {
-                            var name = each;
-
-                            if (FindViaUri(provider, each, (p) => {
-                                lock (resultsPerName) {
-                                    resultsPerName.GetOrAdd(name, () => new List<SoftwareIdentity>()).Add(p);
-                                }
-                            })) {
-                                noMatchNames.IfPresentRemoveLocked(each);
-
-                                continue;
-                            }
-
-                            if (FindViaFile(provider, each, (p) => {
-                                lock (resultsPerName) {
-                                    resultsPerName.GetOrAdd(name, () => new List<SoftwareIdentity>()).Add(p);
-                                }
-                            })) {
-                                noMatchNames.IfPresentRemoveLocked(each);
-                                continue;
-                            }
-
-                            if (FindViaName(provider, each, (p) => {
-                                lock (resultsPerName) {
-                                    resultsPerName.GetOrAdd(name, () => new List<SoftwareIdentity>()).Add(p);
-                                }
-                            })) {
-                                noMatchNames.IfPresentRemoveLocked(each);
-                                continue;
-                            }
-
-                            // did not find anything on this provider that matches that name
-                        }
-                    } else {
-                        // no package name passed in.
-                        if (!FindViaName(provider, string.Empty, (p) => {
-                            lock (resultsPerName) {
-                                resultsPerName.GetOrAdd(string.Empty, () => new List<SoftwareIdentity>()).Add(p);
-                            }
-                        })) {
-                            // nothing found?
-                            Warning(Constants.NoPackagesFoundNoPackageNamesCriteriaListed);
-                        }
-                    }
-                } catch (Exception e) {
-                    e.Dump();
-                }
-            });
-
-            if (noMatchNames.Any()) {
-                // whine about things not matched.
-                foreach (var name in noMatchNames) {
-                    Error(Errors.NoMatchForPackageName, name );
-                }
-
+            if (!CheckUnmatchedPackages()) {
+                // there are unmatched packages
                 // not going to install.
                 return false;
             }
 
-            var failing = false;
-            foreach (var set in resultsPerName.Values.Where(set => set.Count > 1)) {
-                failing = true;
-                // bad, matched too many packages
-                string searchKey = null;
-                
-                foreach (var pkg in set) {
-                    Warning(Constants.MatchesMultiplePackages,pkg.SearchKey, pkg.Name,pkg.Version,pkg.ProviderName);
-                    searchKey = pkg.SearchKey;
-                }
-                Error(Errors.DisambiguateForInstall, searchKey);
-            }
-
-            if (failing) {
+            if (!CheckMatchedDuplicates()) {
+                // there are duplicate packages 
+                // not going to install.
                 return false;
             }
 
             // good list. Let's roll...
-            var packagesToInstall = resultsPerName.Values.SelectMany(each => each).ToArray();
+            return InstallPackages(_resultsPerName.Values.SelectMany(each => each).ToArray());
+        }
 
-            return InstallPackages(packagesToInstall);
+        protected override void ProcessPackage(PackageProvider provider, string searchKey, SoftwareIdentity package) {
+            if (WhatIf) {
+                // grab the dependencies and return them *first*
+                foreach (var dep in provider.GetPackageDependencies(package, this)) {
+                    ProcessPackage(provider, searchKey+dep.Name, dep);
+                }
+            }
+            base.ProcessPackage(provider,searchKey,package);
         }
 
         private bool InstallPackages(params SoftwareIdentity[] packagesToInstall) {
+            // first, check to see if we have all the required dynamic parameters
+            // for each package/provider
+            foreach (var package in packagesToInstall) {
+                var pkg = package;
+                foreach (var parameter in DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>()
+                    .Where(param => param.IsSet == false && param.Options.Any( option => option.ProviderName == pkg.ProviderName && option.Category == OptionCategory.Install && option.IsRequired) )) {
+                    // this is not good. there is a required parameter for the package 
+                    // and the user didn't specify it. We should return the error to the user
+                    // and they can try again.
+                    Error(Errors.PackageInstallRequiresOption, package.Name, package.ProviderName, parameter.Name);
+                    _failing = true;
+                }
+            }
+
+            if (IsCancelled()) {
+                return false;
+            }
 
             foreach (var pkg in packagesToInstall) {
                 // if (!WhatIf) {
                 //  WriteMasterProgress("Installing", 1, "Installing package '{0}' ({1} of {2})", pkg.Name, n++, packagesToInstall.Length);
                 // }
+
                 var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
                 if (provider == null) {
                     Error(Errors.UnknownProvider, pkg.ProviderName);
                     return false;
                 }
                 try {
-                    foreach (var installedPkg in CancelWhenStopped(provider.InstallPackage(pkg, this))) {
-                        if (IsCancelled()) {
-                            // if we're stopping, just get out asap.
-                            return false;
+
+                    // if (WhatIf) {
+                        // we should just tell it which packages will be installed.
+                        // todo: [M2] should we be checking the installed status before we show this
+                        // todo:      or should we rethink allowing the providers to willingly support -whatif?
+                        // ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source);
+                    //} else {
+                    if (ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source)) {
+                        foreach (var installedPkg in CancelWhenStopped(provider.InstallPackage(pkg, this))) {
+                            if (IsCancelled()) {
+                                // if we're stopping, just get out asap.
+                                return false;
+                            }
+                            WriteObject(installedPkg);
                         }
-                        WriteObject(installedPkg);
                     }
+                //}
                 } catch (Exception e) {
                     e.Dump();
-                    Error(Errors.InstallationFailure, pkg.Name );
+                    Error(Errors.InstallationFailure, pkg.Name);
                     return false;
                 }
             }
@@ -176,7 +157,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ShouldProcessPackageInstall(string packageName, string version, string source) {
             try {
-                return Force || ShouldProcess(packageName, Constants.InstallPackage).Result;
+                return Force || ShouldProcess(FormatMessageString(Constants.PackageTarget,packageName, version, source), FormatMessageString(Constants.InstallPackage)).Result;
             } catch {
             }
             return false;
@@ -184,10 +165,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
             try {
-                if (_sourcesTrusted.Contains(packageSource) || Force) {
+                if (_sourcesTrusted.Contains(packageSource) || Force || WhatIf) {
                     return true;
                 }
-                if (ShouldContinue(Constants.ThisPackageSourceIsNotMarkedAsSafe.format(packageSource), Constants.InstallingPackageFromUntrustedSource.format(package)).Result) {
+                if (ShouldContinue(FormatMessageString(Constants.ThisPackageSourceIsNotMarkedAsSafe, packageSource), FormatMessageString(Constants.InstallingPackageFromUntrustedSource, package)).Result) {
                     _sourcesTrusted.Add(packageSource);
                     return true;
                 }
@@ -198,7 +179,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source) {
             try {
-                return Force || ShouldContinue(Constants.ContinueInstallingAfterFailing.format(packageName), Constants.PackageInstallFailure).Result;
+                return Force || ShouldContinue(FormatMessageString(Constants.ContinueInstallingAfterFailing, packageName), FormatMessageString(Constants.PackageInstallFailure)).Result;
             } catch {
             }
             return false;
@@ -206,7 +187,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
             try {
-                return Force || ShouldContinue(Constants.ShouldThePackageScriptAtBeExecuted.format(scriptLocation), Constants.PackageContainsInstallationScript).Result;
+                return Force || ShouldContinue(FormatMessageString(Constants.ShouldThePackageScriptAtBeExecuted, scriptLocation), FormatMessageString(Constants.PackageContainsInstallationScript)).Result;
             } catch {
             }
             return false;

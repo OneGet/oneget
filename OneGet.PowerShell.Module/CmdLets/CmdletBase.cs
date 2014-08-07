@@ -38,6 +38,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter]
         public SwitchParameter ForceBootstrap;
 
+        [Parameter]
+        public SwitchParameter Force;
+
         [Parameter(DontShow = true)]
         public GetMessageString MessageResolver;
 
@@ -54,25 +57,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected bool IsPackageByObject {
             get {
-                return ParameterSetName == Constants.PackageByObjectSet;
+                return ParameterSetName == Constants.PackageByInputObjectSet;
             }
         }
 
         protected bool IsSourceByObject {
             get {
-                return ParameterSetName == Constants.SourceByObjectSet;
-            }
-        }
-
-        protected bool IsProviderByObject {
-            get {
-                return ParameterSetName == Constants.ProviderByObjectSet;
-            }
-        }
-
-        protected bool IsOverwriteExistingSource {
-            get {
-                return ParameterSetName == Constants.OverwriteExistingSourceSet;
+                return ParameterSetName == Constants.SourceByInputObjectSet;
             }
         }
 
@@ -261,13 +252,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public virtual bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination) {
             try {
-                var forced = false;
-                if (MyInvocation.BoundParameters.ContainsKey("Force")) {
-                    if (MyInvocation.BoundParameters["Force"] is SwitchParameter) {
-                        forced = ((SwitchParameter)MyInvocation.BoundParameters["Force"]).IsPresent;
-                    }
-                }
-                if (ForceBootstrap || forced) {
+                if (Force || ForceBootstrap) {
                     return true;
                 }
 

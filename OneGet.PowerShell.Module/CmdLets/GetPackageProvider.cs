@@ -17,11 +17,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     [Cmdlet(VerbsCommon.Get, Constants.PackageProviderNoun)]
     public sealed class GetPackageProvider : CmdletBase {
-        [Parameter(Position = 0)]
-        public string[] Name {get; set;}
+        [Alias("Name")]
+        [Parameter(Position = 0,ValueFromPipelineByPropertyName = true)]
+        public string[] ProviderName {get; set;}
 
-        public override bool EndProcessingAsync() {
-            foreach (var p in SelectProviders(Name)) {
+        public override bool ProcessRecordAsync() {
+            foreach (var p in SelectProviders(ProviderName)) {
                 WriteObject(p);
             }
 

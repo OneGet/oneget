@@ -341,6 +341,15 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; version &apos;{1}&apos; from &apos;{2}&apos;.
+        /// </summary>
+        internal static string PackageTarget {
+            get {
+                return ResourceManager.GetString("PackageTarget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package uninstall Failure.
         /// </summary>
         internal static string PackageUninstallFailure {

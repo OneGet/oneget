@@ -20,6 +20,7 @@ namespace Microsoft.OneGet.Providers.Package {
     using Api;
     using Packaging;
     using Utility.Collections;
+    using Utility.Extensions;
     using Utility.Plugin;
     using RequestImpl = System.Object;
 
@@ -59,7 +60,13 @@ namespace Microsoft.OneGet.Providers.Package {
         internal PackageProvider(IPackageProvider provider) : base(provider) {
         }
 
-        public override string Name {
+        public string Name {
+            get {
+                return ProviderName;
+            }
+        }
+
+        public override string ProviderName {
             get {
                 return _name ?? (_name = Provider.GetPackageProviderName());
             }
@@ -200,18 +207,19 @@ namespace Microsoft.OneGet.Providers.Package {
             if (!softwareIdentity.FromTrustedSource) {
                 try {
                     if (!request.ShouldContinueWithUntrustedPackageSource(softwareIdentity.Name, softwareIdentity.Source)) {
-                        request.Error("USER_DECLINED_UNTRUSTED_PACKAGE_INSTALL", "PermissionDenied", softwareIdentity.Name, "USER_DECLINED_UNTRUSTED_PACKAGE_INSTALL");
+                        request.Warning( request.FormatMessageString(Constants.UserDeclinedInstallOfUntrustedPackage,softwareIdentity.Name));
+                        return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), Enumerable.Empty<SoftwareIdentity>());
                     }
                 } catch {
-                    throw new Exception("CANCELLED_INSTALL");
+                    return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), Enumerable.Empty<SoftwareIdentity>());
                 }
             }
 
-            return new Response<SoftwareIdentity>(requestImpl, this, "Installed", response => Provider.InstallPackage(softwareIdentity.FastPackageReference, response)).Result;
+            return new Response<SoftwareIdentity>(requestImpl, this,Constants.Installed, response => Provider.InstallPackage(softwareIdentity.FastPackageReference, response)).Result;
         }
 
         public ICancellableEnumerable<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, RequestImpl requestImpl) {
-            return new Response<SoftwareIdentity>(requestImpl, this, "Uninstalled", response => Provider.UninstallPackage(softwareIdentity.FastPackageReference, response)).Result;
+            return new Response<SoftwareIdentity>(requestImpl, this, Constants.Uninstalled, response => Provider.UninstallPackage(softwareIdentity.FastPackageReference, response)).Result;
         }
 
         public ICancellableEnumerable<PackageSource> ResolvePackageSources(RequestImpl requestImpl) {

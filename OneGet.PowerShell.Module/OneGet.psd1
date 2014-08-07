@@ -36,24 +36,17 @@
     # TypesToProcess = ""
     # FormatsToProcess = ""
     CmdletsToExport = @(
-        'Register-PackageSource',
         'Find-Package',
         'Get-Package',
         'Get-PackageProvider', 
         'Get-PackageSource',
         'Install-Package',
-        'Unregister-PackageSource',
+        'Register-PackageSource',
+		'Set-PackageSource',
+		'Unregister-PackageSource',
         'Uninstall-Package'
+		'Save-Package'
 	)
 
 	FormatsToProcess  = @('OneGet.format.ps1xml')
-
-	##
-	## PowerShell-based Providers included in build
-	## 
-   	PrivateData = @{
-		 "OneGetProviders" = @( ".\TestPackageProvider.psm1",".\TestChainingPackageProvider.psm1"  )
-		# ".\ZipProvider.psm1", 
-		# 
-    }
 }
