@@ -25,10 +25,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     public sealed class UninstallPackage : GetPackage {
         private Dictionary<string, List<SoftwareIdentity>> _resultsPerName;
 
-        [Parameter]
-        public SwitchParameter Force {get; set;}
-
-        [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.PackageByObjectSet)]
+        [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.PackageByInputObjectSet)]
         public SoftwareIdentity[] Package {get; set;}
 
         public override bool ProcessRecordAsync() {
@@ -117,11 +114,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source) {
-            return Force || ShouldContinue(Constants.ContinueUninstallingAfterFailing.format(packageName), Constants.PackageUninstallFailure).Result;
+            return Force || ShouldContinue(FormatMessageString(Constants.ContinueUninstallingAfterFailing,packageName), FormatMessageString(Constants.PackageUninstallFailure)).Result;
         }
 
         public override bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation) {
-            return Force || ShouldContinue(Constants.ShouldThePackageUninstallScriptAtBeExecuted.format(scriptLocation), Constants.PackageContainsUninstallationScript).Result;
+            return Force || ShouldContinue(FormatMessageString(Constants.ShouldThePackageUninstallScriptAtBeExecuted,scriptLocation), FormatMessageString(Constants.PackageContainsUninstallationScript)).Result;
         }
     }
 }

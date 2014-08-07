@@ -284,4 +284,10 @@
     <value>Would you like OneGet to automatically download and install '{0}' now?</value>
     <comment>{0} -provider name</comment>
   </data>
+  <data name="PackageTarget" xml:space="preserve">
+    <value>Package '{0}' version '{1}' from '{2}'</value>
+    <comment>0- name
+1 - version
+2 - package source</comment>
+  </data>
 </root>

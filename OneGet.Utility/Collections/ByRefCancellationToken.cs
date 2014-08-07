@@ -19,6 +19,10 @@ namespace Microsoft.OneGet.Utility.Collections {
     public class ByRefCancellationToken : MarshalByRefObject {
         protected CancellationToken _token;
 
+        public override object InitializeLifetimeService() {
+            return null;
+        }
+
         public ByRefCancellationToken(CancellationToken token) {
             _token = token;
         }

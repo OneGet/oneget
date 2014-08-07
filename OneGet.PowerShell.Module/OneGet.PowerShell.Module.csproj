@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -44,6 +45,8 @@
     <Compile Include="CmdLets\CmdletWithSearch.cs" />
     <Compile Include="CmdLets\CmdletWithSource.cs" />
     <Compile Include="CmdLets\RegisterPackageSource.cs" />
+    <Compile Include="CmdLets\SavePackage.cs" />
+    <Compile Include="CmdLets\SetPackageSource.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Resources\Messages.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -106,7 +109,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="BeforeBuild">
-  <!--
+    <!--
     <MSBuild Projects="..\packageprovider.test.powershell\PackageProvider.test.PowerShell.pssproj" Properties="Configuration=$(Configuration)" Targets="Copy" />
     <MSBuild Projects="..\packageprovider.template.powershell\PackageProvider.Template.PowerShell.pssproj" Properties="Configuration=$(Configuration)" Targets="Copy" />
     <MSBuild Projects="..\PackageProvider.Zip\PackageProvider.Zip.pssproj" Properties="Configuration=$(Configuration)" Targets="Copy" />

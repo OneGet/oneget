@@ -114,7 +114,7 @@ namespace Microsoft.OneGet {
             // there is no trouble with loading providers concurrently.
             Parallel.ForEach(providerAssemblies, providerAssemblyName => {
                 try {
-                    request.Verbose("Trying provider assembly: {0}".format(providerAssemblyName));
+                    request.Verbose(request.FormatMessageString("Trying provider assembly: {0}",providerAssemblyName));
                     TryToLoadProviderAssembly(providerAssemblyName, request);
 
                 } catch {
@@ -176,7 +176,7 @@ namespace Microsoft.OneGet {
                     var hostApi = requestImpl.As<IHostApi>();
 
                     // warn the user that that provider wasn't found.
-                    hostApi.Warning(hostApi.GetMessageString(Constants.UnknownProvider).format(providerName));
+                    hostApi.Warning(hostApi.FormatMessageString(Constants.UnknownProvider,providerName));
                 }
                 return Enumerable.Empty<PackageProvider>().ByRef();
             }
@@ -482,6 +482,20 @@ namespace Microsoft.OneGet {
             }
 
             return false;
+        }
+    }
+
+    internal static class Extensions {
+        internal static string FormatMessageString(this IHostApi request, string messageText, params object[] args) {
+             if (string.IsNullOrEmpty(messageText)) {
+                return string.Empty;
+            }
+
+            if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
+                messageText = request.GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ??  messageText;
+            }
+
+            return args == null || args.Length == 0 ? messageText : messageText.format(args);
         }
     }
 }

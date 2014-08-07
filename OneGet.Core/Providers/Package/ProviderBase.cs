@@ -43,7 +43,7 @@ namespace Microsoft.OneGet.Providers.Package {
 
         // we don't want these objects being gc's out because they remain unused...
 
-        public abstract string Name {get;}
+        public abstract string ProviderName {get;}
 
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
         public IReadOnlyDictionary<string, List<string>> Features {
@@ -196,7 +196,7 @@ namespace Microsoft.OneGet.Providers.Package {
                             Name = name,
                             Type = (OptionType)type,
                             IsRequired = isRequired,
-                            ProviderName = Name,
+                            ProviderName = ProviderName,
                         };
                         return !(isCancelled() || result.IsCancelled);
                     }),

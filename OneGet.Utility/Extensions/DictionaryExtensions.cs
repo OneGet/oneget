@@ -34,6 +34,11 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 return dictionary.ContainsKey(key) ? dictionary[key] : dictionary.AddOrSet(key, valueFunction());
             }
         }
+        public static TValue GetOrSetIfDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TValue> valueFunction) {
+            lock (dictionary) {
+                return !dictionary.ContainsKey(key) || ((object)default(TValue) == (object)dictionary[key]) ? dictionary.AddOrSet(key, valueFunction()) : dictionary[key];
+            }
+        }
 
         public static TValue GetAndRemove<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key) {
             lock (dictionary) {

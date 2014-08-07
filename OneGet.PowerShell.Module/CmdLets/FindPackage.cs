@@ -30,107 +30,28 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }) {
         }
 
-        //   public override bool ProcessRecordAsync() {
-
-        // }
+        [Parameter()]
+        public SwitchParameter IncludeDependencies { get; set; }
 
         [Parameter()]
-        public string SavePackageTo {get; set;}
+        public override SwitchParameter AllVersions { get; set; }
 
-        [Parameter()]
-        public SwitchParameter ListDependencies { get; set; }
+    
+        protected override void ProcessPackage( PackageProvider provider,string searchKey ,SoftwareIdentity package) {
+            base.ProcessPackage(provider,searchKey,package );
 
-        private string SaveFileName(string packageName) {
-            if (string.IsNullOrEmpty(SavePackageTo)) {
-                return null;
-            }
-
-            var path = Path.GetFullPath(SavePackageTo);
-
-            if (Directory.Exists(path)) {
-                // it appears to be a directory name
-                return Path.Combine(path, packageName);
-            }
-
-            var parentPath = Path.GetDirectoryName(path);
-            if (Directory.Exists(parentPath)) {
-                // it appears to be a full path including filename
-                return path;
-            }
-
-            // it's not an existing directory, 
-            // and the parent directory of that path doesn't exist
-            // so I guess we're returning null, because I dunno what
-            // to do.
-
-            Warning(Constants.SaveToPathNotValid, SavePackageTo, packageName);
-            return null;
-        }
-
-        private void ProcessPackage(PackageProvider provider, SoftwareIdentity package) {
-            var savePath = SaveFileName(package.PackageFilename);
-
-            // if we have a valid path, make a local copy of the file.
-            if (!string.IsNullOrEmpty(savePath)) {
-                provider.DownloadPackage(package, SaveFileName(savePath), this);
-                if (File.Exists(savePath)) {
-                    package.FullPath = savePath;
-                }
-            }
-
-            // return the object to the caller.
+            // return the object to the caller now.
             WriteObject(package);
 
-            if (ListDependencies) {
+            if (IncludeDependencies) {
                 foreach (var dep in provider.GetPackageDependencies(package, this)) {
-                    ProcessPackage(provider,dep);
+                    ProcessPackage(provider,searchKey, dep);
                 }
             }
         }
 
         public override bool EndProcessingAsync() {
-            var noMatchNames = new HashSet<string>(Name ?? new string[] {
-            });
-
-            Parallel.ForEach(SelectedProviders, provider => {
-                try {
-                    if (!Name.IsNullOrEmpty()) {
-                        foreach (var name in Name) {
-                            if (FindViaUri(provider, name, (p) => ProcessPackage(provider,p))) {
-                                noMatchNames.IfPresentRemoveLocked(name);
-                                continue;
-                            }
-
-                            if (FindViaFile(provider, name, (p) => ProcessPackage(provider, p))) {
-                                noMatchNames.IfPresentRemoveLocked(name);
-                                continue;
-                            }
-
-                            if (FindViaName(provider, name, (p) => ProcessPackage(provider, p))) {
-                                noMatchNames.IfPresentRemoveLocked(name);
-                                continue;
-                            }
-
-                            // did not find anything on this provider that matches that name
-                        }
-                    } else {
-                        // no package name passed in.
-                        if (!FindViaName(provider, string.Empty, (p) => ProcessPackage(provider,p))) {
-                            // nothing found?
-                            Warning(Constants.NoPackagesFoundNoPackageNamesCriteriaListed);
-                        }
-                    }
-                } catch (Exception e) {
-                    e.Dump();
-                }
-            });
-
-            // whine about things not matched.
-            foreach (var name in noMatchNames) {
-                Warning(Constants.NoPackageFound, name );
-            }
-
-            return true;
+            return CheckUnmatchedPackages();
         }
     }
 }

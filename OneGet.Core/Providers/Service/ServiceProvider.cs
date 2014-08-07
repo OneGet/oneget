@@ -25,7 +25,7 @@ namespace Microsoft.OneGet.Providers.Service {
         internal ServicesProvider(IServicesProvider provider) : base(provider) {
         }
 
-        public override string Name {
+        public override string ProviderName {
             get {
                 return _name ?? (_name = Provider.GetServicesProviderName());
             }

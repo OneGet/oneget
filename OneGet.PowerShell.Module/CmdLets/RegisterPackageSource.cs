@@ -16,65 +16,44 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
-    using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
     [Cmdlet(VerbsLifecycle.Register, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
-    public sealed class RegisterPackageSource : CmdletBase {
-        [Parameter(Position = 0)]
-        public string Name {get; set;}
+    public sealed class RegisterPackageSource : CmdletWithProvider {
+        [Alias("ProviderName")]
+        [Parameter(Position = 0, ValueFromPipelineByPropertyName = true, Mandatory = true)]
+        public string Provider { get; set; }
+
+        // need this to suppress the many-provider-names parameter
+        public override string[] ProviderName { get; set; }
 
         [Parameter(Position = 1)]
+        public string Name {get; set;}
+
+        [Parameter(Position = 2)]
         public string Location {get; set;}
 
-        [Parameter(Position = 2, Mandatory = true, ParameterSetName = Constants.ProviderByObjectSet, ValueFromPipeline = true)]
-        public PackageProvider PackageProvider {get; set;}
-
-        [Parameter(Position = 2, Mandatory = true, ParameterSetName = Constants.ProviderByNameSet)]
-        public string Provider {get; set;}
-
-        [Parameter(Position = 2, Mandatory = true, ParameterSetName = Constants.OverwriteExistingSourceSet)]
-        public PackageSource OriginalSource {get; set;}
-
-        [Parameter(Position = 3)]
+        [Parameter]
         public PSCredential Credential {get; set;}
 
         [Parameter]
         public SwitchParameter Trusted {get; set;}
 
-        [Parameter]
-        public SwitchParameter Force {get; set;}
+        
 
-#if AFTER_CTP
-        [Parameter]
-        public SwitchParameter Machine {get; set;}
-
-        [Parameter]
-        public SwitchParameter User {get; set;}
-#endif
-
-        public RegisterPackageSource() {
+        public RegisterPackageSource()
+            : base(new[] { OptionCategory.Provider, OptionCategory.Source }) {
         }
 
         public override bool GenerateDynamicParameters() {
-            if (IsOverwriteExistingSource) {
-                Provider = OriginalSource.ProviderName;
-                Name = Name.Is() ? Name : OriginalSource.Name;
-                Location = Location.Is() ? Name : OriginalSource.Name;
-                if (!Trusted.IsPresent && OriginalSource.IsTrusted) {
-                    Trusted = SwitchParameter.Present;
-                }
+            var packageProvider = PackageManagementService.SelectProviders(Provider, this).FirstOrDefault();
+            if (packageProvider == null) {
+                return false;
             }
 
-            if (!IsProviderByObject) {
-                PackageProvider = SelectProviders(Provider).FirstOrDefault();
-            }
-
-            // if the provider (or source) is selected, we can get package metadata keys from the provider
-            // hmm. let's just grab *all* of them.
-            foreach (var md in PackageProvider.GetDynamicOptions(OptionCategory.Source, this)) {
+            // if the provider is selected, we can get package metadata keys from the provider
+            foreach (var md in packageProvider.GetDynamicOptions(OptionCategory.Source, this)) {
                 if (DynamicParameterDictionary.ContainsKey(md.Name)) {
                     // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
                     (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
@@ -87,44 +66,41 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool ProcessRecordAsync() {
-            if (IsOverwriteExistingSource) {
-                Provider = OriginalSource.ProviderName;
-                Name = Name.Is() ? Name : OriginalSource.Name;
-                Location = Location.Is() ? Name : OriginalSource.Name;
-                if (!Trusted.IsPresent && OriginalSource.IsTrusted) {
-                    Trusted = SwitchParameter.Present;
-                }
-            }
-
-            if (!IsProviderByObject) {
-                PackageProvider = SelectProviders(Provider).FirstOrDefault();
-            }
-
-            if (PackageProvider == null) {
-                return Error(Errors.NoProviderSelected);
-            }
-
             if (Stopping) {
                 return false;
             }
 
+            var packageProvider = PackageManagementService.SelectProviders(Provider, this).FirstOrDefault();
+            if (packageProvider == null) {
+                Error(Errors.NoProviderSelected);
+                return false;
+            }
 
-            using (var sources = CancelWhenStopped(PackageProvider.ResolvePackageSources(this))) {
-                if (sources.Any(each => each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase))) {
-                    if (Force || ShouldProcess(FormatMessageString(Constants.NameLocationProviderReplaceExisting,Name, Location, Provider)).Result) {
-                        using (var added =  CancelWhenStopped(PackageProvider.AddPackageSource(Name, Location, Trusted, this))) {
-                            foreach (var addedSource in added) {
-                                WriteObject(addedSource);
+            using (var sources = CancelWhenStopped(packageProvider.ResolvePackageSources(this))) {
+                // first, check if there is a source by this name already.
+                var existingSources = sources.Where(each => each.IsRegistered && each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+                if (existingSources.Any()) {
+                    // if there is, and the user has said -Force, then let's remove it.
+                    foreach (var existingSource in existingSources) {
+                        if (Force) {
+                            if (ShouldProcess(FormatMessageString(Constants.NameLocationProviderReplaceExisting, existingSource.Name, existingSource.Location, ProviderName), Constants.OverwritePackageSource).Result) {
+                                using (var removedSources = CancelWhenStopped(packageProvider.RemovePackageSource(existingSource.Name, this))) {
+                                    foreach (var removedSource in removedSources) {
+                                        Verbose(Constants.OverwritingPackageSource, removedSource.Name);
+                                    }
+                                }    
                             }
+                        } else {
+                            Error(Errors.PackageSourceExists, existingSource.Name);
+                            return false;
                         }
-                        return true;
                     }
-                    return false;
                 }
             }
 
-            if (ShouldProcess(FormatMessageString(Constants.NameLocationProvider,Name, Location, Provider)).Result) {
-                using (var added = CancelWhenStopped(PackageProvider.AddPackageSource(Name, Location, Trusted, this))) {
+            if (ShouldProcess(FormatMessageString(Constants.NameLocationProvider,Name, Location, ProviderName),Constants.RegisterPackageSource).Result) {
+                using (var added = CancelWhenStopped(packageProvider.AddPackageSource(Name, Location, Trusted, this))) {
                     foreach (var addedSource in added) {
                         WriteObject(addedSource);
                     }

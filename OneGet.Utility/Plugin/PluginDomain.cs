@@ -42,13 +42,26 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         internal void RegisterDynamicAssembly(string fullName, string fullPath) {
-            DynamicAssemblyPaths.Add(fullName, fullPath);
+            DynamicAssemblyPaths.AddOrSet(fullName, fullPath);
         }
 
+        private static string Basedir {
+            get {
+                try {
+                    var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir)) {
+                        return dir;
+                    }
+                } catch {
+                    
+                }
+                return Environment.CurrentDirectory;
+            }
+        }
         internal PluginDomain(string name) :
             this(name,new AppDomainSetup {
-                ApplicationBase = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                PrivateBinPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                ApplicationBase = Basedir,
+                PrivateBinPath = Basedir,
                 LoaderOptimization = LoaderOptimization.MultiDomain,
                 ShadowCopyFiles = "true",
             }) {

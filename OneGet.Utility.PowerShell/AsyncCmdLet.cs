@@ -246,8 +246,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                         if (!Enum.TryParse(category, true, out errorCategory)) {
                             errorCategory = ErrorCategory.NotSpecified;
                         }
-
+                        try {
                         WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrEmpty(targetObjectValue) ? (object)this : targetObjectValue)).Wait();
+                        } catch {
+                            // this will throw if the provider thread abends before we get back our result.
+                        }
                     }
                     _errors.Add(errorMessage);
                 }
@@ -386,10 +389,17 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 // spawn the activity off in another thread.
                 var task = IsInitialized ?
                     Task.Factory.StartNew(asyncAction, TaskCreationOptions.LongRunning) :
-                    Task.Factory.StartNew(Init, TaskCreationOptions.LongRunning).ContinueWith(anteceedent => asyncAction());
+                    Task.Factory.StartNew(Init, TaskCreationOptions.LongRunning).ContinueWith(antecedent => {
+                        try {
+                            asyncAction();
+                        } catch (Exception e) {
+                            e.Dump();
+                        }
+                    })
+                ;
 
                 // when the task is done, mark the msg queue as complete
-                task.ContinueWith(anteceedent => {
+                task.ContinueWith(antecedent => {
                     if (_messages != null) {
                         _messages.CompleteAdding();
                     }
@@ -624,9 +634,10 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         protected virtual void Dispose(bool disposing) {
             if (disposing) {
-                _cancelWhenStopped.Clear();
-                _cancelWhenStopped = null;
-
+                if (_cancelWhenStopped != null) {
+                    _cancelWhenStopped.Clear();
+                    _cancelWhenStopped = null;
+                }
                 // According to http://msdn.microsoft.com/en-us/library/windows/desktop/ms714463(v=vs.85).aspx
                 // Powershell will dispose the cmdlet if it implements IDisposable.
 

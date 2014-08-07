@@ -25,7 +25,7 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
 #if DEBUG
             "http://localhost:81/OneGet-Bootstrap.swidtag",
 #endif 
-            "http://downloads.coapp.org/oneget/WellKnownProviders.swidtag",
+            "https://oneget.org/oneget-bootstrap.swidtag",
             "https://go.microsoft.com/fwlink/?LinkId=404337",
             "https://go.microsoft.com/fwlink/?LinkId=404338",
         };

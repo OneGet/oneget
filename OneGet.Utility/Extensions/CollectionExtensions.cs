@@ -173,5 +173,22 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 item
             };
         }
+
+        public static void AddLocked<T>(this List<T> list, T item) {
+            if (list == null) {
+                throw new ArgumentNullException("list");
+            }
+            lock (list) {
+                list.Add(item);
+            }
+        }
+        public static void AddRangeLocked<T>(this List<T> list, IEnumerable<T> items) {
+            if (list == null) {
+                throw new ArgumentNullException("list");
+            }
+            lock (list) {
+                list.AddRange(items);
+            }
+        }
     }
 }

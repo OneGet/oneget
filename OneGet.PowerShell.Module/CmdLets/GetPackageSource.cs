@@ -14,8 +14,10 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
-    using System.Globalization;
+    using System.Diagnostics.Eventing;
+    using System.Linq;
     using System.Management.Automation;
+    using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
     using Microsoft.OneGet.Utility.Extensions;
 
@@ -52,54 +54,76 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
+        private bool _found = false;
+
+        private bool WriteSources(IEnumerable<PackageSource> sources) {
+            foreach (var source in sources) {
+                _found = true;
+                WriteObject(source);
+            }
+            return _found;
+        }
+
+        private List<PackageSource> _unregistered = new List<PackageSource>();
+        private HashSet<string>  _providersUsed = new HashSet<string>();
+        private bool _noName;
+        private bool _noLocation;
+        private bool _noCriteria;
+
         public override bool ProcessRecordAsync() {
+            _noName = _noName || string.IsNullOrEmpty(Name);
+            _noLocation = _noLocation ||  string.IsNullOrEmpty(Location);
+            _noCriteria = _noName && _noLocation;
+
             foreach (var provider in SelectedProviders) {
                 if (Stopping) {
                     return false;
                 }
 
-                var found = false;
                 using (var sources = CancelWhenStopped(provider.ResolvePackageSources(this))) {
-                    foreach (var source in sources) {
-                        if (string.IsNullOrEmpty(Name) && string.IsNullOrEmpty(Location)) {
-                            WriteObject(source);
-                            found = true;
-                            continue;
-                        }
 
-                        if (!string.IsNullOrEmpty(Name)) {
-                            if (Name.EqualsIgnoreCase(source.Name) || Name.EqualsIgnoreCase(source.Location)) {
-                                WriteObject(source);
-                                found = true;
-                                continue;
+                    if (_noCriteria) {
+                        // no criteria means just return whatever we found
+                        if (WriteSources(sources)) {
+                            return true;
+                        }
+                    } else {
+                        var all = sources.ToArray();
+                        var registered = all.Where(each => each.IsRegistered);
+                        
+
+                        if (_noName) {
+                            // just location was specified
+                            if (WriteSources(registered.Where(each => each.Location.EqualsIgnoreCase(Location)))) {
+                                return true;
+                            }
+                        } else {
+                            // source was specified (check both name and location fields for match)
+                            if (WriteSources(registered.Where(each => each.Name.EqualsIgnoreCase(Name) || each.Location.EqualsIgnoreCase(Name)))) {
+                                return true;
                             }
                         }
-
-                        if (!string.IsNullOrEmpty(Location)) {
-                            if (Location.EqualsIgnoreCase(source.Location)) {
-                                WriteObject(source);
-                                found = true;
-                            }
-                        }
-
+                        // we haven't returned anything to the user yet...
+                        // hold on to the unregistered ones. Might need these at the end.
+                        _unregistered.AddRangeLocked(all.Where(each => !each.IsRegistered));
                     }
-                }
 
-                if (!found) {
+
+
                     if (!string.IsNullOrEmpty(Name)) {
                         if (!string.IsNullOrEmpty(Location)) {
-                            _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSourcesNameLocation, provider.Name, Name, Location));
+                            _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSourcesNameLocation, provider.ProviderName, Name, Location));
                             continue;
                         }
-                        _warnings.Add(FormatMessageString( Constants.ProviderReturnedNoPackageSourcesName, provider.Name, Name));
+                        _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSourcesName, provider.ProviderName, Name));
                         continue;
                     }
 
                     if (!string.IsNullOrEmpty(Location)) {
-                        _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSourcesLocation, provider.Name, Location));
+                        _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSourcesLocation, provider.ProviderName, Location));
                         continue;
                     }
-                    _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSources.format(provider.Name)));
+                    _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSources, provider.ProviderName));
                 }
             }
 
@@ -107,9 +131,32 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool EndProcessingAsync() {
-            // we're collecting our warnings for the end.
-            foreach (var warning in _warnings) {
-                Warning(warning);
+            if (!_found) {
+                if (_noCriteria) {
+                    // no criteria means just return whatever we found
+                    if (WriteSources(_unregistered)) {
+                        return true;
+                    }
+                    Warning(Constants.NoSourcesFoundNoCriteria);
+                    return true;
+                }
+
+                if (_noName) {
+                    // just location was specified
+                    if (WriteSources(_unregistered.Where(each => each.Location.EqualsIgnoreCase(Location)))) {
+                        return true;
+                    }
+                    Warning(Constants.NoSourcesFoundMatchingLocation,Location);
+                    return true;
+                }
+
+                // source was specified (check both name and location fields for match)
+                if (WriteSources(_unregistered.Where(each => each.Name.EqualsIgnoreCase(Name) || each.Location.EqualsIgnoreCase(Name)))) {
+                    return true;
+                }
+                Warning(Constants.NoSourcesFoundMatchingName,Name);
+                return true;
+
             }
             return true;
         }

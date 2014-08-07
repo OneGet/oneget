@@ -14,7 +14,6 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
-    using System.Security;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Providers.Package;
     using Microsoft.OneGet.Utility.Extensions;
@@ -24,8 +23,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             : base(categories) {
         }
 
-        [Parameter(ParameterSetName = Constants.SourceByObjectSet, Mandatory = true, ValueFromPipeline = true)]
-        public PackageSource[] PackageSource {get; set;}
+        [Parameter(ParameterSetName = Constants.SourceByInputObjectSet, Mandatory = true, ValueFromPipeline = true)]
+        public PackageSource[] InputObject {get; set;}
 
         [Parameter()]
         public PSCredential Credential {get; set;}

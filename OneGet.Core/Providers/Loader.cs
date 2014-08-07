@@ -92,7 +92,7 @@ namespace Microsoft.OneGet.Providers {
 
                 if (result == 0) {
                     // still no version? 
-                    // I give up. call it 1.0
+                    // I give up. call it 0.0.0.1
                     result = "0.0.0.1";
                 }
             }
@@ -103,11 +103,7 @@ namespace Microsoft.OneGet.Providers {
             try {
                 provider.InitializeProvider(DynamicInterface.Instance, request);
                 FourPartVersion ver = provider.GetProviderVersion();
-                var pname = provider.GetPackageProviderName();
-                if (yieldPackageProvider(pname, provider, ver == 0 ? asmVersion : ver,request)) {
-                    
-                    //success!
-                }
+                yieldPackageProvider(provider.GetPackageProviderName(), provider, ver == 0 ? asmVersion : ver, request);
             } catch (Exception e) {
                 e.Dump();
             }
@@ -117,12 +113,8 @@ namespace Microsoft.OneGet.Providers {
             try {
                 provider.InitializeProvider(DynamicInterface.Instance, request);
                 FourPartVersion ver = provider.GetProviderVersion();
-                var pname = provider.GetServicesProviderName();
+                yieldServicesProvider(provider.GetServicesProviderName(), provider, ver == 0 ? asmVersion : ver, request);
 
-                if (yieldServicesProvider(pname, provider, ver == 0 ? asmVersion : ver,request)) {
-                    // success!
-                    
-                }
             } catch (Exception e) {
                 e.Dump();
             }

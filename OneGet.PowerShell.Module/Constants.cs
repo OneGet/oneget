@@ -27,11 +27,9 @@ namespace Microsoft.PowerShell.OneGet {
         internal  const string PackageProviderNoun = "PackageProvider";
         
         internal  const string PackageBySearchSet = "PackageBySearch";
-        internal  const string PackageByObjectSet = "PackageByObject";
-        internal  const string SourceByObjectSet = "SourceByObject";
-        internal  const string ProviderByObjectSet = "ProviderByObject";
-        internal  const string ProviderByNameSet = "ProviderByName";
-        internal  const string OverwriteExistingSourceSet = "OverwriteExistingSource";
+        internal const string PackageByInputObjectSet = "PackageByInputObject";
+        internal const string SourceByInputObjectSet = "SourceByInputObject";
+        internal const string SourceBySearchSet = "SourceBySearch";
 
         internal const string AssemblyProviderType = "assembly";
 
@@ -74,6 +72,7 @@ namespace Microsoft.PowerShell.OneGet {
         internal const string DisambiguateSourceVsProvider = "MSG:DisambiguateSourceFoundInMultipleProivders";
         internal const string ExcludedProviderDueToMissingRequiredOption = "MSG:ExcludedProviderDueToMissingRequiredOption";
         internal const string NoMatchForPackageName = "MSG:NoMatchForPackageName";
+        internal const string NoPackagesForProviderOrSource = "MSG:NoPackagesForProviderOrSource";
 
         internal const string ProviderReturnedNoPackageSourcesNameLocation = "MSG:ProviderReturnedNoPackageSourcesNameLocation";
         internal const string ProviderReturnedNoPackageSourcesName = "MSG:ProviderReturnedNoPackageSourcesName";
@@ -91,7 +90,8 @@ namespace Microsoft.PowerShell.OneGet {
         internal const string PackageInstallFailure = "MSG:PackageInstallFailure";
         internal const string ShouldThePackageScriptAtBeExecuted = "MSG:ShouldThePackageScriptAtBeExecuted";
         internal const string PackageContainsInstallationScript = "MSG:PackageContainsInstallationScript";
-
+        internal const string OverwritingPackageSource = "MSG:OverwritingPackageSource";
+        internal const string PackageSourceExists = "MSG:PackageSourceExists";
 
         internal const string UninstallationFailure = "MSG:UninstallationFailure";
         internal const string UninstallPackage = "MSG:UninstallPackage";
@@ -100,6 +100,7 @@ namespace Microsoft.PowerShell.OneGet {
         internal const string ShouldThePackageUninstallScriptAtBeExecuted = "MSG:ShouldThePackageUninstallScriptAtBeExecuted";
         internal const string PackageContainsUninstallationScript = "MSG:PackageContainsUninstallationScript";
 
+        internal const string PackageInstallRequiresOption = "MSG:PackageInstallRequiresOption";
 
         internal const string NameLocationProviderReplaceExisting = "MSG:NameLocationProviderReplaceExisting";
         internal const string NameLocationProvider = "MSG:NameLocationProvider";
@@ -107,11 +108,19 @@ namespace Microsoft.PowerShell.OneGet {
 
         internal const string BootstrapProvider = "MSG:BootstrapProvider";
 
+        internal const string NoSourcesFoundNoCriteria = "MSG:NoSourcesFoundNoCriteria";
+        internal const string NoSourcesFoundMatchingLocation = "MSG:NoSourcesFoundMatchingLocation";
+        internal const string NoSourcesFoundMatchingName = "MSG:NoSourcesFoundMatchingName";
+
         internal const string BootstrapProviderUserRequested = "MSG:BootstrapProviderUserRequested";
         internal const string BootstrapProviderProviderRequested = "MSG:BootstrapProviderProviderRequested";
         internal const string BootstrapManualAssembly = "MSGBootstrapManualAssembly:";
         internal const string BootstrapManualInstall = "MSG:BootstrapManualInstall";
         internal const string BootstrapQuery = "MSG:BootstrapQuery";
+        internal const string RegisterPackageSource = "MSG:RegisterPackageSource";
+        internal const string OverwritePackageSource = "MSG:OverwritePackageSource";
+
+        internal const string PackageTarget = "MSG:PackageTarget";
     }
 
     internal static class Errors {
@@ -137,6 +146,8 @@ namespace Microsoft.PowerShell.OneGet {
 
         public static ErrorMessage NoMatchForPackageName = new ErrorMessage(Constants.NoMatchForPackageName , ErrorCategory.ObjectNotFound);
 
+        public static ErrorMessage NoPackagesForProviderOrSource = new ErrorMessage(Constants.NoPackagesForProviderOrSource, ErrorCategory.ObjectNotFound);
+
         public static ErrorMessage DisambiguateForInstall = new ErrorMessage(Constants.DisambiguateForInstall , ErrorCategory.InvalidArgument);
 
         public static ErrorMessage InstallationFailure = new ErrorMessage(Constants.InstallationFailure, ErrorCategory.InvalidOperation);
@@ -144,6 +155,10 @@ namespace Microsoft.PowerShell.OneGet {
         public static ErrorMessage DisambiguateForUninstall = new ErrorMessage(Constants.DisambiguateForInstall, ErrorCategory.InvalidArgument);
 
         public static ErrorMessage UninstallationFailure = new ErrorMessage(Constants.UninstallationFailure, ErrorCategory.OperationStopped);
+
+        public static ErrorMessage PackageInstallRequiresOption = new ErrorMessage(Constants.PackageInstallRequiresOption, ErrorCategory.InvalidArgument);
+
+        public static ErrorMessage PackageSourceExists = new ErrorMessage(Constants.PackageSourceExists, ErrorCategory.ResourceExists);
 
         // ReSharper restore InconsistentNaming
     }

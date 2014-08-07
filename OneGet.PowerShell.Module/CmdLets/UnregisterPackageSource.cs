@@ -23,46 +23,57 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     [Cmdlet(VerbsLifecycle.Unregister, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
     public sealed class UnregisterPackageSource : CmdletWithSource {
-        private string[] _sources;
-
+        
         public UnregisterPackageSource()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source
             }) {
         }
 
-        [Parameter(ParameterSetName = Constants.ProviderByObjectSet, Position = 0, Mandatory = true)]
-        [Parameter(ParameterSetName = Constants.ProviderByNameSet, Position = 0, Mandatory = true)]
+        [Alias("ProviderName")]
+        [Parameter(ValueFromPipelineByPropertyName = true,ParameterSetName = Constants.SourceBySearchSet)]
+
+        public string Provider {get; set;}
+
+        public override string[] ProviderName {
+            get {
+                if (string.IsNullOrEmpty(Provider)) {
+                    return null;
+                }
+                return new[] {
+                    Provider
+                };
+            }
+            set {
+                // nothing
+            }
+        }
+
+        [Alias("Name")]
+        [Parameter(Mandatory = true,ParameterSetName = Constants.SourceBySearchSet)]
         public string Source {get; set;}
 
-        [Parameter]
-        public SwitchParameter Force {get; set;}
+        [Parameter(ParameterSetName = Constants.SourceBySearchSet)]
+        public string Location { get; set; }
 
         public override IEnumerable<string> Sources {
             get {
-                if (_sources == null) {
-                    if (Source.IsEmptyOrNull()) {
-                        _sources = new string[0];
-                    } else {
-                        _sources = new string[] {
-                            Source
-                        };
-                    }
+                if (Source.IsEmptyOrNull()) {
+                    return new string[0];
                 }
-                return _sources;
-            }
-            set {
-                _sources = (value ?? new string[0]).ToArray();
+                return new string[] {
+                    Source
+                };
             }
         }
 
         public override bool ProcessRecordAsync() {
             if (IsSourceByObject) {
-                if (PackageSource.IsNullOrEmpty()) {
+                if (InputObject.IsNullOrEmpty()) {
                     return Error(Errors.NullOrEmptyPackageSource);
                 }
 
-                foreach (var source in PackageSource) {
+                foreach (var source in InputObject) {
                     if (Stopping) {
                         return false;
                     }
@@ -88,14 +99,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length > 0) {
-                var sources = prov.SelectMany(each => each.ResolvePackageSources(this).ToArray()).ToArray();
+                var sources = prov.SelectMany(each => each.ResolvePackageSources(this).Where( source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source) )).ToArray()).ToArray();
 
                 if (sources.Length == 0) {
                     return Error(Errors.SourceNotFound, Source);
                 }
 
                 if (sources.Length > 1) {
-                    return Error(Errors.DisambiguateSourceVsProvider, prov.Select(each => each.Name).JoinWithComma(), Source);
+                    return Error(Errors.DisambiguateSourceVsProvider, prov.Select(each => each.ProviderName).JoinWithComma(), Source);
                 }
 
                 return Unregister(sources[0]);
@@ -108,7 +119,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (source == null) {
                 throw new ArgumentNullException("source");
             }
-            if (ShouldProcess(Constants.NameLocationProvider.format(source.Name, source.Location, source.ProviderName)).Result) {
+            if (ShouldProcess(FormatMessageString(Constants.NameLocationProvider,source.Name, source.Location, source.ProviderName)).Result) {
                 source.Provider.RemovePackageSource(source.Name, this);
                 return true;
             }

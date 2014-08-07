@@ -24,11 +24,17 @@ namespace Microsoft.OneGet.Packaging {
         public string Name {get; internal set;}
         public string Location {get; internal set;}
 
+        public string Source {
+            get {
+                return Name ?? Location;
+            }
+        }
+
         internal Dictionary<string,string> DetailsCollection = new Dictionary<string, string>();
 
         public string ProviderName {
             get {
-                return Provider.Name;
+                return Provider.ProviderName;
             }
         }
 

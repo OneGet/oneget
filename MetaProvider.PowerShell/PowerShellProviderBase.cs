@@ -19,6 +19,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Globalization;
     using System.Linq;
     using System.Management.Automation;
+    using System.Threading;
     using Utility.Extensions;
     using Utility.PowerShell;
 
@@ -122,7 +123,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             return result.Last();
         }
 
-        private static object _lock = new object();
+        private static ManualResetEvent _reentrancyLock = new ManualResetEvent(true);
+        private static object _lock  = new Object();
 
         internal void ReportErrors(Request request, IEnumerable<ErrorRecord> errors) {
             foreach (var error in errors) {
@@ -135,7 +137,21 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         internal object CallPowerShell(Request request, params object[] args) {
+            // the lock ensures that we're not re-entrant into the same powershell runspace 
             lock (_lock) {
+
+                if (!_reentrancyLock.WaitOne(0)) {
+                    // this lock is set to false, meaning we're still in a call **ON THIS THREAD**
+                    // this is bad karma -- powershell won't let us call into the runspace again
+                    // we're going to throw an error here because this indicates that the currently
+                    // running powershell call is calling back into OneGet, and it has called back 
+                    // into this provider. That's just bad bad bad.
+                    throw new Exception("Re-entrancy Violation in powershell module");
+                }
+
+                // otherwise, this is the first time we've been here during this call.
+                _reentrancyLock.Reset();
+
                 _powershell["request"] = request;
 
                 DynamicPowershellResult result = null;
@@ -180,6 +196,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 } finally {
                     _powershell.WaitForAvailable();
                     _powershell["request"] = null;
+
+                    // it's ok if someone else calls into this module now.
+                    _reentrancyLock.Set();
                 }
                 return null;
             }
