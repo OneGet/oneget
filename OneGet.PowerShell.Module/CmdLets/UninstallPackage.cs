@@ -28,24 +28,34 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.PackageByInputObjectSet)]
         public SoftwareIdentity[] Package {get; set;}
 
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = Constants.PackageBySearchSet)]
+        public override string[] Name { get; set; }
+        
+        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        public override string RequiredVersion { get; set; }
+
+        [Alias("Version")]
+        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        public override string MinimumVersion { get; set; }
+
+        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        public override string MaximumVersion { get; set; }
+
         public override bool ProcessRecordAsync() {
             if (IsPackageByObject) {
                 return UninstallPackages(Package);
             }
 
             // otherwise, it's just packages by name 
-            if (Name.IsNullOrEmpty()) {
-                Error(Errors.RequiredValuePackageName);
-                return false;
-            }
-
             _resultsPerName = new Dictionary<string, List<SoftwareIdentity>>();
             Parallel.ForEach(SelectedProviders, provider => {
                 foreach (var n in Name) {
                     var c = _resultsPerName.GetOrAdd(n, () => new List<SoftwareIdentity>());
                     foreach (var pkg in ProcessNames(provider, n)) {
                         lock (c) {
-                            c.Add(pkg);
+                            if (IsPackageInVersionRange(pkg)) {
+                                c.Add(pkg);
+                            }
                         }
                     }
                 }
@@ -60,7 +70,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
             // Show errors before?
             foreach (var name in UnprocessedNames) {
-                Error(Errors.GetPackageNotFound, name);
+                Error(Errors.NoMatchFound, name);
             }
 
             if (Stopping) {
@@ -110,15 +120,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool ShouldProcessPackageUninstall(string packageName, string version) {
-            return Force || ShouldProcess(packageName, Constants.UninstallPackage).Result;
+            return Force || ShouldProcess(FormatMessageString(Constants.TargetPackage,packageName), FormatMessageString(Constants.ActionUninstallPackage)).Result;
         }
 
         public override bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source) {
-            return Force || ShouldContinue(FormatMessageString(Constants.ContinueUninstallingAfterFailing,packageName), FormatMessageString(Constants.PackageUninstallFailure)).Result;
+            return Force || ShouldContinue(FormatMessageString(Constants.QueryContinueUninstallingAfterFailing), FormatMessageString(Constants.CaptionPackageUninstallFailure,packageName)).Result;
         }
 
         public override bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation) {
-            return Force || ShouldContinue(FormatMessageString(Constants.ShouldThePackageUninstallScriptAtBeExecuted,scriptLocation), FormatMessageString(Constants.PackageContainsUninstallationScript)).Result;
+            return Force || ShouldContinue(FormatMessageString(Constants.QueryShouldThePackageUninstallScriptAtBeProcessed,scriptLocation), FormatMessageString(Constants.CaptionPackageContainsUninstallationScript)).Result;
         }
     }
 }

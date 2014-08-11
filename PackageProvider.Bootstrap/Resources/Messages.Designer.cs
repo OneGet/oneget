@@ -59,5 +59,68 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap.Resources {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Destination Path not specified..
+        /// </summary>
+        internal static string DestinationPathNotSet {
+            get {
+                return ResourceManager.GetString("DestinationPathNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; failed signature validation..
+        /// </summary>
+        internal static string FileFailedVerification {
+            get {
+                return ResourceManager.GetString("FileFailedVerification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filename is invalid..
+        /// </summary>
+        internal static string InvalidFilename {
+            get {
+                return ResourceManager.GetString("InvalidFilename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to get list of OneGet providers..
+        /// </summary>
+        internal static string ProviderSwidtagUnavailable {
+            get {
+                return ResourceManager.GetString("ProviderSwidtagUnavailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to remove file &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnableToRemoveFile {
+            get {
+                return ResourceManager.GetString("UnableToRemoveFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find package &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnableToResolvePackage {
+            get {
+                return ResourceManager.GetString("UnableToResolvePackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsupported provider type for provider &apos;{0}&apos;.
+        /// </summary>
+        internal static string UnsupportedProviderType {
+            get {
+                return ResourceManager.GetString("UnsupportedProviderType", resourceCulture);
+            }
+        }
     }
 }

@@ -19,11 +19,12 @@ namespace Microsoft.OneGet.Utility.Extensions {
 
     public static class ExceptionExtensions {
         public static void Dump(this Exception e) {
+            var text = string.Format(CultureInfo.CurrentCulture, "{0}//{1}/{2}\r\n{3}", AppDomain.CurrentDomain.FriendlyName, e.GetType().Name, e.Message, e.StackTrace);
 #if DEBUG
-            var text = string.Format(CultureInfo.CurrentCulture,"{0}//{1}/{2}\r\n{3}", AppDomain.CurrentDomain.FriendlyName, e.GetType().Name, e.Message, e.StackTrace);
              Console.WriteLine(text);
-             NativeMethods.OutputDebugString(text);
 #endif
+            // for now, this is the only way we'll see exceptions in the wild.
+            NativeMethods.OutputDebugString(text);
         }
 #if DETAILED_DEBUG
         private static DateTime startTime = DateTime.Now;

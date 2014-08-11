@@ -117,146 +117,110 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AskPermission" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:AskPermission</value>
+  <data name="QueryContinueInstallingAfterFailing" xml:space="preserve">
+    <value>Do you wish to continue installing packages?</value>
+    <comment>query</comment>
   </data>
-  <data name="ContinueInstallingAfterFailing" xml:space="preserve">
-    <value>Continue Installing after failing '{0}'</value>
+  <data name="QueryContinueUninstallingAfterFailing" xml:space="preserve">
+    <value>Do you wish to continue uninstalling packages?</value>
+    <comment>query</comment>
   </data>
-  <data name="ContinueUninstallingAfterFailing" xml:space="preserve">
-    <value>Continue uninstalling after failing '{0}'</value>
-  </data>
-  <data name="DestinationPathInvalid_path" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:DestinationPathInvalid_path</value>
+  <data name="DestinationPathInvalid" xml:space="preserve">
+    <value>The desintation path  '{0}' for packaage '{1}' is invalid.</value>
+    <comment>{0} - path 
+{1} - package name</comment>
   </data>
   <data name="DisambiguateForInstall" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:DisambiguateForInstall</value>
+    <value>Unable to install, multiple packages matched '{0}'.</value>
+    <comment>{0} - search criteria</comment>
   </data>
   <data name="DisambiguateForUninstall" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:DisambiguateForUninstall</value>
+    <value>Unable to uninstall, multiple packages matched '{0}'.</value>
+    <comment>{0} - search criteria</comment>
   </data>
-  <data name="DisambiguateSourceFoundInMultipleProivders" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:DisambiguateSourceFoundInMultipleProivders</value>
+  <data name="SourceFoundInMultipleProviders" xml:space="preserve">
+    <value>The package source '{0}' was found in multiple providers ({1}).</value>
+    <comment>{0} package source name, {1} list of package providers</comment>
   </data>
-  <data name="ExcludedProviderDueToMissingRequiredOption" xml:space="preserve">
-    <value>Excluded provider '{0}'-- missing option '{1}'</value>
-  </data>
-  <data name="GetPackageNotFound" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:GetPackageNotFound</value>
+  <data name="SkippedProviderMissingRequiredOption" xml:space="preserve">
+    <value>Skipping package provider provider '{0}'-- missing required option '{1}'</value>
+    <comment>{0} - provider name, {1} - dynamic option name</comment>
   </data>
   <data name="InstallationFailure" xml:space="preserve">
-    <value>Installation Failure {0}</value>
+    <value>Package '{0}' failed to install.</value>
+    <comment>{0} -package name</comment>
   </data>
-  <data name="InstallingPackageFromUntrustedSource" xml:space="preserve">
-    <value>Installing Package '{0}' from untrusted source</value>
+  <data name="CaptionPackageNotTrusted" xml:space="preserve">
+    <value>The package '{0}' comes from a package source that is not marked as trusted.</value>
+    <comment>{0} package name</comment>
   </data>
-  <data name="InstallPackage" xml:space="preserve">
+  <data name="ActionInstallPackage" xml:space="preserve">
     <value>Install Package</value>
+    <comment>action 'install package'</comment>
   </data>
   <data name="MatchesMultiplePackages" xml:space="preserve">
-    <value>'{0}' matches multiple packages '{1}/{2}' ({3})</value>
+    <value>'{0}' matches multiple packages: '{3}:{1}/{2}'</value>
+    <comment>{0} search criteria {1} package name {2} package version {3} package provider</comment>
   </data>
-  <data name="NameLocationProvider" xml:space="preserve">
-    <value>Name = '{0}' Location = '{1}' Provider = '{2}'</value>
+  <data name="TargetPackageSource" xml:space="preserve">
+    <value>Package Source '{0}' ({1}) in provider '{2}'</value>
+    <comment>{0} package source name , {1} package source location, {2} provider name</comment>
   </data>
-  <data name="NameLocationProviderReplaceExisting" xml:space="preserve">
-    <value>Name = '{0}' Location = '{1}' Provider = '{2}' (Replace existing)</value>
+  <data name="NoMatchFound" xml:space="preserve">
+    <value>No package found for  '{0}'.</value>
+    <comment>{0} - search criteria</comment>
   </data>
-  <data name="NoMatchForPackageName" xml:space="preserve">
-    <value>No match for package name '{0}'</value>
+  <data name="NoPackagesFoundForProvider" xml:space="preserve">
+    <value>The package provider '{0}' did not return any packages.</value>
+    <comment>{0} - provider name</comment>
   </data>
-  <data name="NoPackageFound" xml:space="preserve">
-    <value>No Package Found {0}</value>
+  <data name="CaptionPackageContainsInstallationScript" xml:space="preserve">
+    <value>Package '{0}' contains an installation script</value>
+    <comment>{0} package name</comment>
   </data>
-  <data name="NoPackagesFoundForProvider_providerName" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:NoPackagesFoundForProvider_providerName</value>
+  <data name="CaptionPackageContainsUninstallationScript" xml:space="preserve">
+    <value>Package '{0}' contains an uninstallation script</value>
+    <comment>{0} package name</comment>
   </data>
-  <data name="NoPackagesFoundNoPackageNamesCriteriaListed" xml:space="preserve">
-    <value>No Packages Found -- (no package names/criteria listed)</value>
+  <data name="FileNotRecognized" xml:space="preserve">
+    <value>File '{0}' is not recognized as a valid package.</value>
+    <comment>{0} file name</comment>
   </data>
-  <data name="NoProviderSelected" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:NoProviderSelected</value>
+  <data name="CaptionPackageInstallFailure" xml:space="preserve">
+    <value>Package '{0}' failed to install.</value>
+    <comment>{0} package name</comment>
   </data>
-  <data name="NullOrEmptyPackageSource" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:NullOrEmptyPackageSource</value>
+  <data name="CaptionPackageUninstallFailure" xml:space="preserve">
+    <value>Package '{0}' failed to uninstall.</value>
+    <comment>{0} - package name</comment>
   </data>
-  <data name="PackageContainsInstallationScript" xml:space="preserve">
-    <value>Package Contains Installation Script</value>
+  <data name="QueryShouldThePackageScriptAtBeProcessed" xml:space="preserve">
+    <value>Should the package install script at '{0}' be processed?</value>
+    <comment>{0} - package script location</comment>
   </data>
-  <data name="PackageContainsUninstallationScript" xml:space="preserve">
-    <value>Package Contains uninstallation Script</value>
-  </data>
-  <data name="PackageFileNotRecognized" xml:space="preserve">
-    <value>Package File Not Recognized {0}</value>
-  </data>
-  <data name="PackageInstallFailure" xml:space="preserve">
-    <value>Package Install Failure</value>
-  </data>
-  <data name="PackageUninstallFailure" xml:space="preserve">
-    <value>Package uninstall Failure</value>
-  </data>
-  <data name="ProviderNotFound" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:ProviderNotFound</value>
-  </data>
-  <data name="ProviderReturnedNoPackageSources" xml:space="preserve">
-    <value>Provider '{0}' returned no package sources</value>
-  </data>
-  <data name="ProviderReturnedNoPackageSourcesLocation" xml:space="preserve">
-    <value>Provider '{0}' returned no package sources (Location = '{1}')</value>
-  </data>
-  <data name="ProviderReturnedNoPackageSourcesName" xml:space="preserve">
-    <value>Provider '{0}' returned no package sources (Name = '{1}')</value>
-  </data>
-  <data name="ProviderReturnedNoPackageSourcesNameLocation" xml:space="preserve">
-    <value>Provider '{0}' returned no package sources (Name = '{1}' Location='{2}')</value>
-  </data>
-  <data name="RequiredValuePackageName" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:RequiredValuePackageName</value>
-  </data>
-  <data name="ShouldContinueAfterPackageInstallFailure" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:ShouldContinueAfterPackageInstallFailure</value>
-  </data>
-  <data name="ShouldContinueAfterPackageUnInstallFailure" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:ShouldContinueAfterPackageUnInstallFailure</value>
-  </data>
-  <data name="ShouldContinueRunningInstallScript" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:ShouldContinueRunningInstallScript</value>
-  </data>
-  <data name="ShouldContinueRunningUninstallScript" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:ShouldContinueRunningUninstallScript</value>
-  </data>
-  <data name="ShouldContinueWithUntrustedPackageSource" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:ShouldContinueWithUntrustedPackageSource</value>
-  </data>
-  <data name="ShouldProcessPackageInstall" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:Should Process Package Install</value>
-  </data>
-  <data name="ShouldProcessPackageUnInstall" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:ShouldProcessPackageUnInstall</value>
-  </data>
-  <data name="ShouldThePackageScriptAtBeExecuted" xml:space="preserve">
-    <value>Should the package script at '{0}' be executed?</value>
-  </data>
-  <data name="ShouldThePackageUninstallScriptAtBeExecuted" xml:space="preserve">
-    <value>Should the package uninstall script at '{0}' be executed?</value>
+  <data name="QueryShouldThePackageUninstallScriptAtBeProcessed" xml:space="preserve">
+    <value>Should the package uninstall script at '{0}' be processed?</value>
+    <comment>{0} - package script location</comment>
   </data>
   <data name="SourceNotFound" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:SourceNotFound</value>
+    <value>Unable to find package source '{0}'.</value>
+    <comment>{0} package source name</comment>
   </data>
-  <data name="ThisPackageSourceIsNotMarkedAsSafe" xml:space="preserve">
-    <value>This package source is not marked as safe. Are you sure you want to install software from '{0}'</value>
-  </data>
-  <data name="UnableToResolvePackageProvider" xml:space="preserve">
-    <value>FIX_THIS_RESOURCE:UnableToResolvePackageProvider</value>
+  <data name="QueryInstallUntrustedPackage" xml:space="preserve">
+    <value>Are you sure you want to install software from '{1}'?</value>
+    <comment>{0} package name, {1} package source </comment>
   </data>
   <data name="UninstallationFailure" xml:space="preserve">
-    <value>Uninstallation Failure {0}</value>
+    <value>Package {0} failed to uninstall.</value>
+    <comment>{0} package name</comment>
   </data>
-  <data name="UninstallPackage" xml:space="preserve">
+  <data name="ActionUninstallPackage" xml:space="preserve">
     <value>Uninstall Package</value>
+    <comment>action 'uninstall package'</comment>
   </data>
   <data name="UnknownProvider" xml:space="preserve">
-    <value>Unknown Provider '{0}'.</value>
+    <value>Unable to find package provider '{0}'.</value>
+    <comment>{0} - package provider name</comment>
   </data>
   <data name="BootstrapManualAssembly" xml:space="preserve">
     <value>'{0}' may be manually downloaded from '{1}' and copied to '{2}'.</value>
@@ -280,14 +244,52 @@
     <value>The provider '{0} v{1}' is not installed.</value>
     <comment>{0} provider name {1} provider version</comment>
   </data>
-  <data name="BootstrapQuery" xml:space="preserve">
+  <data name="QueryBootstrap" xml:space="preserve">
     <value>Would you like OneGet to automatically download and install '{0}' now?</value>
     <comment>{0} -provider name</comment>
   </data>
-  <data name="PackageTarget" xml:space="preserve">
-    <value>Package '{0}' version '{1}' from '{2}'</value>
+  <data name="TargetPackage" xml:space="preserve">
+    <value>Package '{0}' v'{1}' from '{2}'</value>
     <comment>0- name
 1 - version
 2 - package source</comment>
+  </data>
+  <data name="ActionRegisterPackageSource" xml:space="preserve">
+    <value>Register Package Source</value>
+  </data>
+  <data name="ActionReplacePackageSource" xml:space="preserve">
+    <value>Replace Package Source</value>
+    <comment>action 'replace package source'</comment>
+  </data>
+  <data name="ActionUnregisterPackageSource" xml:space="preserve">
+    <value>Unregister Package Source</value>
+    <comment>action unregister package source</comment>
+  </data>
+  <data name="NotImplemmented" xml:space="preserve">
+    <value>Not Implemented.</value>
+    <comment>This should only show in DEBUG builds</comment>
+  </data>
+  <data name="OverwritingPackageSource" xml:space="preserve">
+    <value>Overwriting package source '{0}'.</value>
+    <comment>(verbose warning ) - {0} - package source name</comment>
+  </data>
+  <data name="PackageInstallRequiresOption" xml:space="preserve">
+    <value>Package '{0}' from package provider '{1}' requires the '{2}' parameter to install.</value>
+    <comment>{0} package name, {1} package provider name, {2} parameter name</comment>
+  </data>
+  <data name="PackageSourceExists" xml:space="preserve">
+    <value>Package Source '{0}' exists.</value>
+    <comment>{0} package source name</comment>
+  </data>
+  <data name="SourceNotFoundForLocation" xml:space="preserve">
+    <value>Unable to find package source for location '{0}'.</value>
+    <comment>{0} location</comment>
+  </data>
+  <data name="SourceNotFoundNoCriteria" xml:space="preserve">
+    <value>Unable to find package sources.</value>
+  </data>
+  <data name="UnableToFindProviderForSource" xml:space="preserve">
+    <value>Unable to find package provider for package source '{0}'.</value>
+    <comment>{0} - package source name</comment>
   </data>
 </root>

@@ -261,14 +261,18 @@ namespace Microsoft.OneGet.Packaging {
                 return 0;
             }
 
-            var xVersion = x.Version ?? string.Empty;
-            var yVersion = y.Version ?? string.Empty;
+            return CompareVersions(xVersionScheme, x.Version, y.Version);
+        }
 
-            switch ((xVersionScheme ?? "unknown").ToLowerInvariant()) {
+        public static int CompareVersions(string versionScheme, string xVersion, string yVersion) {
+            xVersion = xVersion ?? string.Empty;
+            yVersion = yVersion ?? string.Empty;
+
+            switch ((versionScheme ?? "unknown").ToLowerInvariant()) {
                 case "alphanumeric":
                     // string sort
                     return String.Compare(xVersion, yVersion, StringComparison.Ordinal);
-                    
+
                 case "decimal":
                     double xDouble;
                     double yDouble;
@@ -276,23 +280,21 @@ namespace Microsoft.OneGet.Packaging {
                         return xDouble.CompareTo(yDouble);
                     }
                     return 0;
-                    
 
-                    case "multipartnumeric":
+                case "multipartnumeric":
                     return CompareMultipartNumeric(xVersion, yVersion);
 
-                    
-                    case "multipartnumeric+suffix":
+                case "multipartnumeric+suffix":
                     return CompareMultipartNumericSuffix(xVersion, yVersion);
-                    
-                    case "semver":
-                        return CompareSemVer(xVersion, yVersion);
 
-                    case "unknown":
+                case "semver":
+                    return CompareSemVer(xVersion, yVersion);
+
+                case "unknown":
                     // can't sort what we don't know
-                        return 0;
-                    
-                default :
+                    return 0;
+
+                default:
                     // can't sort what we don't know
                     return 0;
             }

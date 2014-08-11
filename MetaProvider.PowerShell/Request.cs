@@ -22,6 +22,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Management.Automation;
     using System.Security;
     using Resources;
+    using Utility.Extensions;
     using RequestImpl = System.MarshalByRefObject;
 
     public abstract class Request : IDisposable {
@@ -292,14 +293,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 // not really any args, and not really expectng any
                 return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
             }
-            return System.Linq.Enumerable.Aggregate(args, "FIXME/Format:" + formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture," \u00ab{0}\u00bb", arg));
+            return System.Linq.Enumerable.Aggregate(args, formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture," \u00ab{0}\u00bb", arg));
         }
 
         internal string GetMessageStringInternal(string messageText) {
             return Messages.ResourceManager.GetString(messageText);
         }
 
-        internal string FormatMessageString(string messageText, object[] args) {
+        internal string FormatMessageString(string messageText, params object[] args) {
             if (string.IsNullOrEmpty(messageText)) {
                 return string.Empty;
             }
@@ -505,7 +506,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         public object SelectProvider(string providerName) {
-            return PackageManagementService.SelectProviders(providerName,RemoteThis).FirstOrDefault();
+            return PackageManagementService.SelectProviders(providerName,RemoteThis).FirstOrDefault(each => each.Name.EqualsIgnoreCase(providerName));
         }
 
         public IEnumerable<object> SelectProviders(string providerName) {

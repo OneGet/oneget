@@ -23,8 +23,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     [Cmdlet(VerbsCommon.Get, Constants.PackageSourceNoun)]
     public sealed class GetPackageSource : CmdletWithProvider {
-        private readonly List<string> _warnings = new List<string>();
-
         public GetPackageSource()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source
@@ -64,16 +62,18 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return _found;
         }
 
-        private List<PackageSource> _unregistered = new List<PackageSource>();
-        private HashSet<string>  _providersUsed = new HashSet<string>();
+        private readonly List<PackageSource> _unregistered = new List<PackageSource>();
         private bool _noName;
         private bool _noLocation;
-        private bool _noCriteria;
 
         public override bool ProcessRecordAsync() {
-            _noName = _noName || string.IsNullOrEmpty(Name);
-            _noLocation = _noLocation ||  string.IsNullOrEmpty(Location);
-            _noCriteria = _noName && _noLocation;
+            var noName = string.IsNullOrEmpty(Name);
+            var noLocation = string.IsNullOrEmpty(Location);
+            var noCriteria = noName && noLocation;
+
+            // store the information if we've ever had a name or location
+            _noName = _noName || noName;
+            _noLocation = _noLocation ||  noLocation;
 
             foreach (var provider in SelectedProviders) {
                 if (Stopping) {
@@ -82,7 +82,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
                 using (var sources = CancelWhenStopped(provider.ResolvePackageSources(this))) {
 
-                    if (_noCriteria) {
+                    if (noCriteria) {
                         // no criteria means just return whatever we found
                         if (WriteSources(sources)) {
                             return true;
@@ -92,7 +92,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         var registered = all.Where(each => each.IsRegistered);
                         
 
-                        if (_noName) {
+                        if (noName) {
                             // just location was specified
                             if (WriteSources(registered.Where(each => each.Location.EqualsIgnoreCase(Location)))) {
                                 return true;
@@ -107,23 +107,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         // hold on to the unregistered ones. Might need these at the end.
                         _unregistered.AddRangeLocked(all.Where(each => !each.IsRegistered));
                     }
-
-
-
-                    if (!string.IsNullOrEmpty(Name)) {
-                        if (!string.IsNullOrEmpty(Location)) {
-                            _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSourcesNameLocation, provider.ProviderName, Name, Location));
-                            continue;
-                        }
-                        _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSourcesName, provider.ProviderName, Name));
-                        continue;
-                    }
-
-                    if (!string.IsNullOrEmpty(Location)) {
-                        _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSourcesLocation, provider.ProviderName, Location));
-                        continue;
-                    }
-                    _warnings.Add(FormatMessageString(Constants.ProviderReturnedNoPackageSources, provider.ProviderName));
                 }
             }
 
@@ -132,12 +115,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool EndProcessingAsync() {
             if (!_found) {
-                if (_noCriteria) {
+                if (_noName && _noLocation) {
                     // no criteria means just return whatever we found
                     if (WriteSources(_unregistered)) {
                         return true;
                     }
-                    Warning(Constants.NoSourcesFoundNoCriteria);
+                    Warning(Constants.SourceNotFoundNoCriteria);
                     return true;
                 }
 
@@ -146,7 +129,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     if (WriteSources(_unregistered.Where(each => each.Location.EqualsIgnoreCase(Location)))) {
                         return true;
                     }
-                    Warning(Constants.NoSourcesFoundMatchingLocation,Location);
+                    Warning(Constants.SourceNotFoundForLocation,Location);
                     return true;
                 }
 
@@ -154,7 +137,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (WriteSources(_unregistered.Where(each => each.Name.EqualsIgnoreCase(Name) || each.Location.EqualsIgnoreCase(Name)))) {
                     return true;
                 }
-                Warning(Constants.NoSourcesFoundMatchingName,Name);
+                Warning(Constants.SourceNotFound, Name);
                 return true;
 
             }

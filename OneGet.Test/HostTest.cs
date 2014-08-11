@@ -90,7 +90,7 @@ namespace Microsoft.OneGet.Test {
         }
 
         public string GetMessageString(string messageText) {
-            return messageText;
+            return null;
         }
 
         private static int count;

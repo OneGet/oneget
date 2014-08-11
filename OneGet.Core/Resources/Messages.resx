@@ -117,8 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="FailedProviderBootstrap" xml:space="preserve">
+    <value>Failed to bootstrap provider '{0}'.</value>
+    <comment>0 - the provider name</comment>
+  </data>
+  <data name="ProviderPluginLoadFailure" xml:space="preserve">
+    <value>Provider '{0}' failed to load.</value>
+  </data>
   <data name="SourceLocationNotValid_Location" xml:space="preserve">
     <value>Source location '{0}' is not valid for this provider.</value>
     <comment>Indicates the user has passed in a location (url, path, etc) that the provider can not resolve.</comment>
+  </data>
+  <data name="UserDeclinedUntrustedPackageInstall" xml:space="preserve">
+    <value>User declined to install untrusted package '{0}'.</value>
+    <comment>0 -package name</comment>
   </data>
 </root>

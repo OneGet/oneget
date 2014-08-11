@@ -61,11 +61,47 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:AskPermission.
+        ///   Looks up a localized string similar to Install Package.
         /// </summary>
-        internal static string AskPermission {
+        internal static string ActionInstallPackage {
             get {
-                return ResourceManager.GetString("AskPermission", resourceCulture);
+                return ResourceManager.GetString("ActionInstallPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Register Package Source.
+        /// </summary>
+        internal static string ActionRegisterPackageSource {
+            get {
+                return ResourceManager.GetString("ActionRegisterPackageSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replace Package Source.
+        /// </summary>
+        internal static string ActionReplacePackageSource {
+            get {
+                return ResourceManager.GetString("ActionReplacePackageSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall Package.
+        /// </summary>
+        internal static string ActionUninstallPackage {
+            get {
+                return ResourceManager.GetString("ActionUninstallPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unregister Package Source.
+        /// </summary>
+        internal static string ActionUnregisterPackageSource {
+            get {
+                return ResourceManager.GetString("ActionUnregisterPackageSource", resourceCulture);
             }
         }
         
@@ -116,43 +152,61 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Would you like OneGet to automatically download and install &apos;{0}&apos; now?.
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; contains an installation script.
         /// </summary>
-        internal static string BootstrapQuery {
+        internal static string CaptionPackageContainsInstallationScript {
             get {
-                return ResourceManager.GetString("BootstrapQuery", resourceCulture);
+                return ResourceManager.GetString("CaptionPackageContainsInstallationScript", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Continue Installing after failing &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; contains an uninstallation script.
         /// </summary>
-        internal static string ContinueInstallingAfterFailing {
+        internal static string CaptionPackageContainsUninstallationScript {
             get {
-                return ResourceManager.GetString("ContinueInstallingAfterFailing", resourceCulture);
+                return ResourceManager.GetString("CaptionPackageContainsUninstallationScript", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Continue uninstalling after failing &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; failed to install..
         /// </summary>
-        internal static string ContinueUninstallingAfterFailing {
+        internal static string CaptionPackageInstallFailure {
             get {
-                return ResourceManager.GetString("ContinueUninstallingAfterFailing", resourceCulture);
+                return ResourceManager.GetString("CaptionPackageInstallFailure", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:DestinationPathInvalid_path.
+        ///   Looks up a localized string similar to The package &apos;{0}&apos; comes from a package source that is not marked as trusted..
         /// </summary>
-        internal static string DestinationPathInvalid_path {
+        internal static string CaptionPackageNotTrusted {
             get {
-                return ResourceManager.GetString("DestinationPathInvalid_path", resourceCulture);
+                return ResourceManager.GetString("CaptionPackageNotTrusted", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:DisambiguateForInstall.
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; failed to uninstall..
+        /// </summary>
+        internal static string CaptionPackageUninstallFailure {
+            get {
+                return ResourceManager.GetString("CaptionPackageUninstallFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The desintation path  &apos;{0}&apos; for packaage &apos;{1}&apos; is invalid..
+        /// </summary>
+        internal static string DestinationPathInvalid {
+            get {
+                return ResourceManager.GetString("DestinationPathInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to install, multiple packages matched &apos;{0}&apos;..
         /// </summary>
         internal static string DisambiguateForInstall {
             get {
@@ -161,7 +215,7 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:DisambiguateForUninstall.
+        ///   Looks up a localized string similar to Unable to uninstall, multiple packages matched &apos;{0}&apos;..
         /// </summary>
         internal static string DisambiguateForUninstall {
             get {
@@ -170,34 +224,16 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:DisambiguateSourceFoundInMultipleProivders.
+        ///   Looks up a localized string similar to File &apos;{0}&apos; is not recognized as a valid package..
         /// </summary>
-        internal static string DisambiguateSourceFoundInMultipleProivders {
+        internal static string FileNotRecognized {
             get {
-                return ResourceManager.GetString("DisambiguateSourceFoundInMultipleProivders", resourceCulture);
+                return ResourceManager.GetString("FileNotRecognized", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Excluded provider &apos;{0}&apos;-- missing option &apos;{1}&apos;.
-        /// </summary>
-        internal static string ExcludedProviderDueToMissingRequiredOption {
-            get {
-                return ResourceManager.GetString("ExcludedProviderDueToMissingRequiredOption", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:GetPackageNotFound.
-        /// </summary>
-        internal static string GetPackageNotFound {
-            get {
-                return ResourceManager.GetString("GetPackageNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Installation Failure {0}.
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; failed to install..
         /// </summary>
         internal static string InstallationFailure {
             get {
@@ -206,25 +242,7 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing Package &apos;{0}&apos; from untrusted source.
-        /// </summary>
-        internal static string InstallingPackageFromUntrustedSource {
-            get {
-                return ResourceManager.GetString("InstallingPackageFromUntrustedSource", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Install Package.
-        /// </summary>
-        internal static string InstallPackage {
-            get {
-                return ResourceManager.GetString("InstallPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; matches multiple packages &apos;{1}/{2}&apos; ({3}).
+        ///   Looks up a localized string similar to &apos;{0}&apos; matches multiple packages: &apos;{3}:{1}/{2}&apos;.
         /// </summary>
         internal static string MatchesMultiplePackages {
             get {
@@ -233,268 +251,133 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name = &apos;{0}&apos; Location = &apos;{1}&apos; Provider = &apos;{2}&apos;.
+        ///   Looks up a localized string similar to No package found for  &apos;{0}&apos;..
         /// </summary>
-        internal static string NameLocationProvider {
+        internal static string NoMatchFound {
             get {
-                return ResourceManager.GetString("NameLocationProvider", resourceCulture);
+                return ResourceManager.GetString("NoMatchFound", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name = &apos;{0}&apos; Location = &apos;{1}&apos; Provider = &apos;{2}&apos; (Replace existing).
+        ///   Looks up a localized string similar to The package provider &apos;{0}&apos; did not return any packages..
         /// </summary>
-        internal static string NameLocationProviderReplaceExisting {
+        internal static string NoPackagesFoundForProvider {
             get {
-                return ResourceManager.GetString("NameLocationProviderReplaceExisting", resourceCulture);
+                return ResourceManager.GetString("NoPackagesFoundForProvider", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No match for package name &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Not Implemented..
         /// </summary>
-        internal static string NoMatchForPackageName {
+        internal static string NotImplemmented {
             get {
-                return ResourceManager.GetString("NoMatchForPackageName", resourceCulture);
+                return ResourceManager.GetString("NotImplemmented", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No Package Found {0}.
+        ///   Looks up a localized string similar to Overwriting package source &apos;{0}&apos;..
         /// </summary>
-        internal static string NoPackageFound {
+        internal static string OverwritingPackageSource {
             get {
-                return ResourceManager.GetString("NoPackageFound", resourceCulture);
+                return ResourceManager.GetString("OverwritingPackageSource", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:NoPackagesFoundForProvider_providerName.
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; from package provider &apos;{1}&apos; requires the &apos;{2}&apos; parameter to install..
         /// </summary>
-        internal static string NoPackagesFoundForProvider_providerName {
+        internal static string PackageInstallRequiresOption {
             get {
-                return ResourceManager.GetString("NoPackagesFoundForProvider_providerName", resourceCulture);
+                return ResourceManager.GetString("PackageInstallRequiresOption", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No Packages Found -- (no package names/criteria listed).
+        ///   Looks up a localized string similar to Package Source &apos;{0}&apos; exists..
         /// </summary>
-        internal static string NoPackagesFoundNoPackageNamesCriteriaListed {
+        internal static string PackageSourceExists {
             get {
-                return ResourceManager.GetString("NoPackagesFoundNoPackageNamesCriteriaListed", resourceCulture);
+                return ResourceManager.GetString("PackageSourceExists", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:NoProviderSelected.
+        ///   Looks up a localized string similar to Would you like OneGet to automatically download and install &apos;{0}&apos; now?.
         /// </summary>
-        internal static string NoProviderSelected {
+        internal static string QueryBootstrap {
             get {
-                return ResourceManager.GetString("NoProviderSelected", resourceCulture);
+                return ResourceManager.GetString("QueryBootstrap", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:NullOrEmptyPackageSource.
+        ///   Looks up a localized string similar to Do you wish to continue installing packages?.
         /// </summary>
-        internal static string NullOrEmptyPackageSource {
+        internal static string QueryContinueInstallingAfterFailing {
             get {
-                return ResourceManager.GetString("NullOrEmptyPackageSource", resourceCulture);
+                return ResourceManager.GetString("QueryContinueInstallingAfterFailing", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package Contains Installation Script.
+        ///   Looks up a localized string similar to Do you wish to continue uninstalling packages?.
         /// </summary>
-        internal static string PackageContainsInstallationScript {
+        internal static string QueryContinueUninstallingAfterFailing {
             get {
-                return ResourceManager.GetString("PackageContainsInstallationScript", resourceCulture);
+                return ResourceManager.GetString("QueryContinueUninstallingAfterFailing", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package Contains uninstallation Script.
+        ///   Looks up a localized string similar to Are you sure you want to install software from &apos;{1}&apos;?.
         /// </summary>
-        internal static string PackageContainsUninstallationScript {
+        internal static string QueryInstallUntrustedPackage {
             get {
-                return ResourceManager.GetString("PackageContainsUninstallationScript", resourceCulture);
+                return ResourceManager.GetString("QueryInstallUntrustedPackage", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package File Not Recognized {0}.
+        ///   Looks up a localized string similar to Should the package install script at &apos;{0}&apos; be processed?.
         /// </summary>
-        internal static string PackageFileNotRecognized {
+        internal static string QueryShouldThePackageScriptAtBeProcessed {
             get {
-                return ResourceManager.GetString("PackageFileNotRecognized", resourceCulture);
+                return ResourceManager.GetString("QueryShouldThePackageScriptAtBeProcessed", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package Install Failure.
+        ///   Looks up a localized string similar to Should the package uninstall script at &apos;{0}&apos; be processed?.
         /// </summary>
-        internal static string PackageInstallFailure {
+        internal static string QueryShouldThePackageUninstallScriptAtBeProcessed {
             get {
-                return ResourceManager.GetString("PackageInstallFailure", resourceCulture);
+                return ResourceManager.GetString("QueryShouldThePackageUninstallScriptAtBeProcessed", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; version &apos;{1}&apos; from &apos;{2}&apos;.
+        ///   Looks up a localized string similar to Skipping package provider provider &apos;{0}&apos;-- missing required option &apos;{1}&apos;.
         /// </summary>
-        internal static string PackageTarget {
+        internal static string SkippedProviderMissingRequiredOption {
             get {
-                return ResourceManager.GetString("PackageTarget", resourceCulture);
+                return ResourceManager.GetString("SkippedProviderMissingRequiredOption", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package uninstall Failure.
+        ///   Looks up a localized string similar to The package source &apos;{0}&apos; was found in multiple providers ({1})..
         /// </summary>
-        internal static string PackageUninstallFailure {
+        internal static string SourceFoundInMultipleProviders {
             get {
-                return ResourceManager.GetString("PackageUninstallFailure", resourceCulture);
+                return ResourceManager.GetString("SourceFoundInMultipleProviders", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:ProviderNotFound.
-        /// </summary>
-        internal static string ProviderNotFound {
-            get {
-                return ResourceManager.GetString("ProviderNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Provider &apos;{0}&apos; returned no package sources.
-        /// </summary>
-        internal static string ProviderReturnedNoPackageSources {
-            get {
-                return ResourceManager.GetString("ProviderReturnedNoPackageSources", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Provider &apos;{0}&apos; returned no package sources (Location = &apos;{1}&apos;).
-        /// </summary>
-        internal static string ProviderReturnedNoPackageSourcesLocation {
-            get {
-                return ResourceManager.GetString("ProviderReturnedNoPackageSourcesLocation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Provider &apos;{0}&apos; returned no package sources (Name = &apos;{1}&apos;).
-        /// </summary>
-        internal static string ProviderReturnedNoPackageSourcesName {
-            get {
-                return ResourceManager.GetString("ProviderReturnedNoPackageSourcesName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Provider &apos;{0}&apos; returned no package sources (Name = &apos;{1}&apos; Location=&apos;{2}&apos;).
-        /// </summary>
-        internal static string ProviderReturnedNoPackageSourcesNameLocation {
-            get {
-                return ResourceManager.GetString("ProviderReturnedNoPackageSourcesNameLocation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:RequiredValuePackageName.
-        /// </summary>
-        internal static string RequiredValuePackageName {
-            get {
-                return ResourceManager.GetString("RequiredValuePackageName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:ShouldContinueAfterPackageInstallFailure.
-        /// </summary>
-        internal static string ShouldContinueAfterPackageInstallFailure {
-            get {
-                return ResourceManager.GetString("ShouldContinueAfterPackageInstallFailure", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:ShouldContinueAfterPackageUnInstallFailure.
-        /// </summary>
-        internal static string ShouldContinueAfterPackageUnInstallFailure {
-            get {
-                return ResourceManager.GetString("ShouldContinueAfterPackageUnInstallFailure", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:ShouldContinueRunningInstallScript.
-        /// </summary>
-        internal static string ShouldContinueRunningInstallScript {
-            get {
-                return ResourceManager.GetString("ShouldContinueRunningInstallScript", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:ShouldContinueRunningUninstallScript.
-        /// </summary>
-        internal static string ShouldContinueRunningUninstallScript {
-            get {
-                return ResourceManager.GetString("ShouldContinueRunningUninstallScript", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:ShouldContinueWithUntrustedPackageSource.
-        /// </summary>
-        internal static string ShouldContinueWithUntrustedPackageSource {
-            get {
-                return ResourceManager.GetString("ShouldContinueWithUntrustedPackageSource", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:Should Process Package Install.
-        /// </summary>
-        internal static string ShouldProcessPackageInstall {
-            get {
-                return ResourceManager.GetString("ShouldProcessPackageInstall", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:ShouldProcessPackageUnInstall.
-        /// </summary>
-        internal static string ShouldProcessPackageUnInstall {
-            get {
-                return ResourceManager.GetString("ShouldProcessPackageUnInstall", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Should the package script at &apos;{0}&apos; be executed?.
-        /// </summary>
-        internal static string ShouldThePackageScriptAtBeExecuted {
-            get {
-                return ResourceManager.GetString("ShouldThePackageScriptAtBeExecuted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Should the package uninstall script at &apos;{0}&apos; be executed?.
-        /// </summary>
-        internal static string ShouldThePackageUninstallScriptAtBeExecuted {
-            get {
-                return ResourceManager.GetString("ShouldThePackageUninstallScriptAtBeExecuted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:SourceNotFound.
+        ///   Looks up a localized string similar to Unable to find package source &apos;{0}&apos;..
         /// </summary>
         internal static string SourceNotFound {
             get {
@@ -503,25 +386,52 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This package source is not marked as safe. Are you sure you want to install software from &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Unable to find package source for location &apos;{0}&apos;..
         /// </summary>
-        internal static string ThisPackageSourceIsNotMarkedAsSafe {
+        internal static string SourceNotFoundForLocation {
             get {
-                return ResourceManager.GetString("ThisPackageSourceIsNotMarkedAsSafe", resourceCulture);
+                return ResourceManager.GetString("SourceNotFoundForLocation", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FIX_THIS_RESOURCE:UnableToResolvePackageProvider.
+        ///   Looks up a localized string similar to Unable to find package sources..
         /// </summary>
-        internal static string UnableToResolvePackageProvider {
+        internal static string SourceNotFoundNoCriteria {
             get {
-                return ResourceManager.GetString("UnableToResolvePackageProvider", resourceCulture);
+                return ResourceManager.GetString("SourceNotFoundNoCriteria", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Uninstallation Failure {0}.
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; v&apos;{1}&apos; from &apos;{2}&apos;.
+        /// </summary>
+        internal static string TargetPackage {
+            get {
+                return ResourceManager.GetString("TargetPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package Source &apos;{0}&apos; ({1}) in provider &apos;{2}&apos;.
+        /// </summary>
+        internal static string TargetPackageSource {
+            get {
+                return ResourceManager.GetString("TargetPackageSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find package provider for package source &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnableToFindProviderForSource {
+            get {
+                return ResourceManager.GetString("UnableToFindProviderForSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package {0} failed to uninstall..
         /// </summary>
         internal static string UninstallationFailure {
             get {
@@ -530,16 +440,7 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Uninstall Package.
-        /// </summary>
-        internal static string UninstallPackage {
-            get {
-                return ResourceManager.GetString("UninstallPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unknown Provider &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Unable to find package provider &apos;{0}&apos;..
         /// </summary>
         internal static string UnknownProvider {
             get {

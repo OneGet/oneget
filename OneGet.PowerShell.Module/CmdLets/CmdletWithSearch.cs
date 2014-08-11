@@ -27,6 +27,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter]
         public virtual string RequiredVersion { get; set; }
 
+        [Alias("Version")]
         [Parameter]
         public virtual string MinimumVersion { get; set; }
 

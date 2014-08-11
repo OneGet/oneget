@@ -45,6 +45,22 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
+        protected bool IsPackageInVersionRange(SoftwareIdentity pkg) {
+            if (RequiredVersion != null && SoftwareIdentityVersionComparer.CompareVersions(pkg.VersionScheme, pkg.Version, RequiredVersion) != 0) {
+                return false;
+            }
+
+            if (MinimumVersion != null && SoftwareIdentityVersionComparer.CompareVersions(pkg.VersionScheme, pkg.Version, MinimumVersion) < 0) {
+                return false;
+            }
+
+            if (MaximumVersion != null && SoftwareIdentityVersionComparer.CompareVersions(pkg.VersionScheme, pkg.Version, MaximumVersion) > 0) {
+                return false;
+            }
+
+            return true;
+        }
+
         public override bool ProcessRecordAsync() {
             Parallel.ForEach(SelectedProviders, provider => {
                 _providersProcessed.GetOrAdd(provider.ProviderName, () => false);
@@ -52,12 +68,16 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 try {
                     if (Name.IsNullOrEmpty()) {
                         foreach (var pkg in ProcessProvider(provider)) {
-                            WriteObject(pkg);
+                            if (IsPackageInVersionRange(pkg)) {
+                                WriteObject(pkg);
+                            }
                         }
                     } else {
                         foreach (var n in Name) {
                             foreach (var pkg in ProcessNames(provider, n)) {
-                                WriteObject(pkg);
+                                if (IsPackageInVersionRange(pkg)) {
+                                    WriteObject(pkg);
+                                }
                             }
                         }
                     }
@@ -90,7 +110,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool EndProcessingAsync() {
             foreach (var name in UnprocessedNames) {
-                Error(Errors.GetPackageNotFound, name);
+                Error(Errors.NoMatchFound, name);
             }
             if (!Stopping) {
                 foreach (var provider in UnprocessedProviders) {

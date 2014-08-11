@@ -369,7 +369,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public virtual string GetMessageString(string messageText) {
-            return messageText;
+            return null;
         }
 
         public string FormatMessageString(string messageText, params object[] args) {

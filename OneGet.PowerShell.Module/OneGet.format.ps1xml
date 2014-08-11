@@ -118,5 +118,46 @@
       </TableControl>
     </View>
 
-  </ViewDefinitions>
+  <View>
+    <Name>PackageProvider</Name>
+    <ViewSelectedBy>
+      <TypeName>Microsoft.OneGet.Providers.Package.PackageProvider</TypeName>
+      <TypeName>Deserialized.Microsoft.OneGet.Providers.Package.PackageProvider</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+      <TableHeaders>
+        <TableColumnHeader>
+          <Width>24</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>10</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+        </TableColumnHeader>
+        <TableColumnHeader>
+        </TableColumnHeader>
+      </TableHeaders>
+      <TableRowEntries>
+        <TableRowEntry>
+          <TableColumnItems>
+            <TableColumnItem>
+              <PropertyName>Name</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Version</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Features</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>DynamicOptions</PropertyName>
+            </TableColumnItem>
+          </TableColumnItems>
+        </TableRowEntry>
+      </TableRowEntries>
+    </TableControl>
+  </View>
+
+
+</ViewDefinitions>
 </Configuration>

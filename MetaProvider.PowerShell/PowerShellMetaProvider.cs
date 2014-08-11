@@ -33,7 +33,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     ///     interface expects.
     /// </summary>
     public class PowerShellMetaProvider : IDisposable {
-        private static readonly HashSet<string> _blackList = new HashSet<string> {
+        private static readonly HashSet<string> _exclusionList = new HashSet<string> {
             "AppBackgroundTask",
             "AppLocker",
             "Appx",
@@ -182,7 +182,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         private IEnumerable<string> GetOneGetModules(PSModuleInfo module) {
             // skip modules that we know don't contain any oneget modules
-            if (!_blackList.Contains(module.Name)) {
+            if (!_exclusionList.Contains(module.Name)) {
                 var privateData = module.PrivateData as Hashtable;
                 if (privateData != null) {
                     return ScanPrivateDataForProviders(Path.GetDirectoryName(module.Path), privateData);
