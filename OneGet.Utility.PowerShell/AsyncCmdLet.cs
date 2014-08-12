@@ -40,6 +40,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         private int? _parentProgressId;
 
+#if DEBUG
+        [Parameter()]
+        public SwitchParameter IsTesting;
+#endif
+
         protected bool Confirm {
             get {
                 return MyInvocation.BoundParameters.ContainsKey(Constants.ConfirmParameter) && (SwitchParameter)MyInvocation.BoundParameters[Constants.ConfirmParameter];
@@ -62,6 +67,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         protected bool IsInvocation {
             get {
+#if DEBUG
+                if (IsTesting) {
+                    return true;
+                }
+#endif 
                 return MyInvocation.Line.Is();
             }
         }
