@@ -1,7 +1,7 @@
 # OneGet
 <hr><hr>
 
-### NOTE: You are looking at the Work-in-progress branch.
+### NOTE: You are looking at the master branch.
 
 ### It is nearing stable. It should build and run (at least with the NuGet provider)
 
