@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("OneGet.Utility.PowerShell")]
+[assembly: AssemblyTitle("OneGet.PowerShell.Module.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("OneGet.Utility.PowerShell")]
+[assembly: AssemblyProduct("OneGet.PowerShell.Module.Test")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,10 +20,8 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("92b9803c-70a5-43ca-8563-cb04ade2f0e7")]
+[assembly: Guid("a6e0c96b-6914-4e65-8f0e-ffc8ffe71cda")]
 
-
-[assembly: InternalsVisibleTo("OneGet.PowerShell.Module.Test")]
 // Version information for an assembly consists of the following four values:
 //
 //      Major Version

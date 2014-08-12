@@ -36,6 +36,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("Microsoft.OneGet")]
 [assembly: InternalsVisibleTo("Microsoft.OneGet.Utility.PowerShell")]
 [assembly: InternalsVisibleTo("Microsoft.OneGet.Test")]
+[assembly: InternalsVisibleTo("OneGet.PowerShell.Module.Test")]
 [assembly: InternalsVisibleTo("Microsoft.OneGet.PackageProvider.Bootstrap")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
