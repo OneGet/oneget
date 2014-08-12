@@ -61,11 +61,38 @@ namespace Microsoft.OneGet.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to bootstrap provider &apos;{0}&apos;..
+        /// </summary>
+        internal static string FailedProviderBootstrap {
+            get {
+                return ResourceManager.GetString("FailedProviderBootstrap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provider &apos;{0}&apos; failed to load..
+        /// </summary>
+        internal static string ProviderPluginLoadFailure {
+            get {
+                return ResourceManager.GetString("ProviderPluginLoadFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Source location &apos;{0}&apos; is not valid for this provider..
         /// </summary>
         internal static string SourceLocationNotValid_Location {
             get {
                 return ResourceManager.GetString("SourceLocationNotValid_Location", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User declined to install untrusted package &apos;{0}&apos;..
+        /// </summary>
+        internal static string UserDeclinedUntrustedPackageInstall {
+            get {
+                return ResourceManager.GetString("UserDeclinedUntrustedPackageInstall", resourceCulture);
             }
         }
     }

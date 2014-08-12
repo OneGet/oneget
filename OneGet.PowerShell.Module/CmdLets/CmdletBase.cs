@@ -152,15 +152,17 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public override string GetMessageString(string messageText) {
             messageText = DropMsgPrefix(messageText);
 
+            string result = null;
             if (MessageResolver != null) {
                 // if the consumer has specified a MessageResolver delegate, we need to call it on the main thread
-                // beacuse powershell won't let us use the default runspace from another thread.
+                // because powershell won't let us use the default runspace from another thread.
                 ExecuteOnMainThread(() => {
-                    messageText = MessageResolver(messageText) ?? messageText;
+                    result = MessageResolver(messageText);
                     return true;
                 }).Wait();
             }
-            return Messages.ResourceManager.GetString(messageText) ?? messageText;
+            
+            return result ?? Messages.ResourceManager.GetString(messageText) ;
         }
 
         public override bool ConsumeDynamicParameters() {
@@ -176,45 +178,59 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public virtual bool ShouldProcessPackageInstall(string packageName, string version, string source) {
-            Message(Constants.ShouldProcessPackageInstall, packageName);
+#if DEBUG
+            Message(Constants.NotImplemented, packageName);
+#endif 
             return false;
         }
 
         public virtual bool ShouldProcessPackageUninstall(string packageName, string version) {
-            Message(Constants.ShouldProcessPackageUninstall, packageName);
+#if DEBUG
+            Message(Constants.NotImplemented, packageName);
+#endif 
             return false;
         }
 
         public virtual bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source) {
-            Message(Constants.ShouldContinueAfterPackageInstallFailure, packageName);
+#if DEBUG
+            Message(Constants.NotImplemented, packageName);
+#endif
             return false;
         }
 
         public virtual bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source) {
-            Message(Constants.ShouldContinueAfterPackageUnInstallFailure, packageName);
+#if DEBUG
+            Message(Constants.NotImplemented, packageName);
+#endif
             return false;
         }
 
         public virtual bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
-            Message(Constants.ShouldContinueRunningInstallScript, packageName);
+#if DEBUG
+            Message(Constants.NotImplemented, packageName);
+#endif
             return false;
         }
 
         public virtual bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation) {
-            Message(Constants.ShouldContinueRunningUninstallScript, packageName);
+#if DEBUG
+            Message(Constants.NotImplemented, packageName);
+#endif
             return true;
         }
 
         public virtual bool AskPermission(string permission) {
-            Message(Constants.AskPermission, permission);
+#if DEBUG
+            Message(Constants.NotImplemented, permission);
+#endif
             return true;
         }
 
-        public IEnumerable<string> GetOptionKeys(int category) {
+        public virtual IEnumerable<string> GetOptionKeys(int category) {
             return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category)).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys).ByRef();
         }
 
-        public IEnumerable<string> GetOptionValues(int category, string key) {
+        public virtual IEnumerable<string> GetOptionValues(int category, string key) {
             if (MyInvocation.BoundParameters.ContainsKey(key)) {
                 var value = MyInvocation.BoundParameters[key];
                 if (value is string || value is int) {
@@ -246,7 +262,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
-            Message(Constants.ShouldContinueWithUntrustedPackageSource, packageSource);
+#if DEBUG
+            Message(Constants.NotImplemented, packageSource);
+#endif
             return true;
         }
 
@@ -256,7 +274,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     return true;
                 }
 
-                return ShouldContinue(FormatMessageString(Constants.BootstrapQuery, providerName),
+                return ShouldContinue(FormatMessageString(Constants.QueryBootstrap, providerName),
                     FormatMessageString(Constants.BootstrapProvider,
                         requestor.Is() ?
                             FormatMessageString(Constants.BootstrapProviderProviderRequested, requestor, providerName, providerVersion) :

@@ -59,5 +59,23 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell.Resources {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerShell Script &apos;{0}&apos; Function &apos;{1}&apos; failed..
+        /// </summary>
+        internal static string PowershellScriptFunctionFailed {
+            get {
+                return ResourceManager.GetString("PowershellScriptFunctionFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Script failure at : {0}.
+        /// </summary>
+        internal static string ScriptStackTrace {
+            get {
+                return ResourceManager.GetString("ScriptStackTrace", resourceCulture);
+            }
+        }
     }
 }

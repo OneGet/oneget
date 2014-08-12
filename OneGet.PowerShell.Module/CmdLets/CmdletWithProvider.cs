@@ -68,7 +68,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             // these warnings only show for providers that would have otherwise be selected.
             // if not for the missing requrired parameter.
             foreach (var mp in excluded.OrderBy( each => each.Key )) {
-                Warning(Errors.ExcludedProviderDueToMissingRequiredOption, mp.Key, mp.Value );
+                Warning(Constants.SkippedProviderMissingRequiredOption, mp.Key, mp.Value );
             }
         }
         public static ManualResetEvent _reentrancyLock = new ManualResetEvent(false);

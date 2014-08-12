@@ -22,7 +22,7 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
     using RequestImpl = System.Object; 
     public class BootstrapProvider {
         private static readonly string[] _urls = new[] {
-#if DEBUG
+#if LOCAL_DEBUG
             "http://localhost:81/OneGet-Bootstrap.swidtag",
 #endif 
             "https://oneget.org/oneget-bootstrap.swidtag",
@@ -126,7 +126,7 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
 
                 var master = request.DownloadSwidtag(_urls);
                 if (master == null) {
-                    request.Warning(Constants.ProviderSwitdagUnavailable);
+                    request.Warning(Constants.ProviderSwidtagUnavailable);
                     return;
                 }
 
@@ -231,7 +231,7 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
 
                 var master = request.DownloadSwidtag(_urls);
                 if (master == null) {
-                    request.Warning(Constants.ProviderSwitdagUnavailable);
+                    request.Warning(Constants.ProviderSwidtagUnavailable);
                     return;
                 }
 
@@ -240,17 +240,17 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
                     // install the 'package'
 
                     if (!provider.XPath("/swid:SoftwareIdentity/swid:Meta[@providerType = 'assembly']").Any()) {
-                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.UnsupportedProviderType);
+                        request.Error(ErrorCategory.InvalidOperation, fastPath, request.FormatMessageString(Constants.UnsupportedProviderType,fastPath));
                         return;
                     }
                     if (!Directory.Exists(request.DestinationPath)) {
-                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.DestinationPathNotSet);
+                        request.Error(ErrorCategory.InvalidOperation, fastPath, request.FormatMessageString(Constants.DestinationPathNotSet));
                         return;
                     }
 
                     var targetFilename = provider.XPath("/swid:SoftwareIdentity/swid:Meta[@targetFilename]").GetAttribute("targetFilename");
                     if (string.IsNullOrEmpty(targetFilename)) {
-                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.InvalidFilename);
+                        request.Error(ErrorCategory.InvalidOperation, fastPath, request.FormatMessageString(Constants.InvalidFilename));
                         return;
                     }
                     targetFilename = Path.GetFileName(targetFilename);
@@ -318,10 +318,10 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
                         }
                     }
                     if (failedBecauseInvalid) {
-                        request.Error(ErrorCategory.InvalidData, fastPath, Constants.FileFailedVerification);
+                        request.Error(ErrorCategory.InvalidData, fastPath, Constants.FileFailedVerification, fastPath);
                     }
                 } else {
-                    request.Error(ErrorCategory.InvalidData, fastPath, Constants.UnableToResolvePackage);
+                    request.Error(ErrorCategory.InvalidData, fastPath, Constants.UnableToResolvePackage, fastPath);
                 }
             }
         }

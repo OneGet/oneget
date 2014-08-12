@@ -136,7 +136,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             if (foundThisFile == false) {
                                 // one of the files we found on disk, isn't actually a recognized package 
                                 // let's whine about this.
-                                Warning(Constants.PackageFileNotRecognized, file);
+                                Warning(Constants.FileNotRecognized, file);
                             }
                         }
                     }
@@ -214,22 +214,26 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected bool CheckUnmatchedPackages() {
             var unmatched = _resultsPerName.Keys.Where(each => _resultsPerName[each] == null).ToCacheEnumerable();
+            var result = true;
 
             if (unmatched.Any()) {
                 // whine about things not matched.
                 foreach (var name in unmatched) {
                     if (name == string.Empty) {
                         // no name 
-                        Error(Errors.NoPackagesForProviderOrSource, _providersNotFindingAnything.Select(each => each.ProviderName).JoinWithComma());
+                        result = false;
+                        Error(Errors.NoPackagesFoundForProvider, _providersNotFindingAnything.Select(each => each.ProviderName).JoinWithComma());
                     } else {
-                        Error(Errors.NoMatchForPackageName, name);
+                        if (WildcardPattern.ContainsWildcardCharacters(name)) {
+                            Verbose(Constants.NoMatchesForWildcard, name);
+                        } else {
+                            result = false;
+                            Error(Errors.NoMatchFound, name);
+                        }
                     }
                 }
-
-                // not going to install.
-                return false;
             }
-            return true;
+            return result;
         }
 
         protected bool CheckMatchedDuplicates() {

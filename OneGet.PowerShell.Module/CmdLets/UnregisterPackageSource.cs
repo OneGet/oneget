@@ -50,7 +50,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         [Alias("Name")]
-        [Parameter(Mandatory = true,ParameterSetName = Constants.SourceBySearchSet)]
+        [Parameter(Position = 0 ,Mandatory = true,ParameterSetName = Constants.SourceBySearchSet)]
         public string Source {get; set;}
 
         [Parameter(ParameterSetName = Constants.SourceBySearchSet)]
@@ -69,9 +69,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ProcessRecordAsync() {
             if (IsSourceByObject) {
-                if (InputObject.IsNullOrEmpty()) {
-                    return Error(Errors.NullOrEmptyPackageSource);
-                }
 
                 foreach (var source in InputObject) {
                     if (Stopping) {
@@ -80,7 +77,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
                     var provider = SelectProviders(source.ProviderName).FirstOrDefault();
                     if (provider == null) {
-                        return Error(Errors.UnableToResolvePackageProvider);
+                        if (string.IsNullOrEmpty(source.ProviderName)) {
+                            return Error(Errors.UnableToFindProviderForSource, source.Name );
+                        }
+                        return Error(Errors.UnknownProvider, source.ProviderName);
                     }
                     Unregister(source);
                 }
@@ -95,7 +95,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length == 0) {
-                return Error(Errors.UnableToResolvePackageProvider);
+                if (string.IsNullOrEmpty(Provider)) {
+                    return Error(Errors.UnableToFindProviderForSource, Source ?? Location);
+                }
+                return Error(Errors.UnknownProvider, Provider);
             }
 
             if (prov.Length > 0) {
@@ -106,7 +109,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
 
                 if (sources.Length > 1) {
-                    return Error(Errors.DisambiguateSourceVsProvider, prov.Select(each => each.ProviderName).JoinWithComma(), Source);
+                    return Error(Errors.SourceFoundInMultipleProviders,Source, prov.Select(each => each.ProviderName).JoinWithComma());
                 }
 
                 return Unregister(sources[0]);
@@ -119,7 +122,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (source == null) {
                 throw new ArgumentNullException("source");
             }
-            if (ShouldProcess(FormatMessageString(Constants.NameLocationProvider,source.Name, source.Location, source.ProviderName)).Result) {
+            if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource,source.Name, source.Location, source.ProviderName),FormatMessageString(Constants.ActionUnregisterPackageSource)).Result) {
                 source.Provider.RemovePackageSource(source.Name, this);
                 return true;
             }

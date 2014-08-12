@@ -21,17 +21,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     [Cmdlet(VerbsLifecycle.Register, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
     public sealed class RegisterPackageSource : CmdletWithProvider {
-        [Alias("ProviderName")]
-        [Parameter(Position = 0, ValueFromPipelineByPropertyName = true, Mandatory = true)]
-        public string Provider { get; set; }
+    
+        [Parameter( ValueFromPipelineByPropertyName = true, Mandatory = true)]
+        public new string ProviderName { get; set; }
 
-        // need this to suppress the many-provider-names parameter
-        public override string[] ProviderName { get; set; }
-
-        [Parameter(Position = 1)]
+        [Parameter(Position = 0)]
         public string Name {get; set;}
 
-        [Parameter(Position = 2)]
+        [Parameter(Position = 1)]
         public string Location {get; set;}
 
         [Parameter]
@@ -40,14 +37,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter]
         public SwitchParameter Trusted {get; set;}
 
-        
-
         public RegisterPackageSource()
             : base(new[] { OptionCategory.Provider, OptionCategory.Source }) {
         }
 
         public override bool GenerateDynamicParameters() {
-            var packageProvider = PackageManagementService.SelectProviders(Provider, this).FirstOrDefault();
+            var packageProvider = PackageManagementService.SelectProviders(ProviderName, this).FirstOrDefault();
             if (packageProvider == null) {
                 return false;
             }
@@ -70,9 +65,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return false;
             }
 
-            var packageProvider = PackageManagementService.SelectProviders(Provider, this).FirstOrDefault();
+            var packageProvider = PackageManagementService.SelectProviders(ProviderName, this).FirstOrDefault();
             if (packageProvider == null) {
-                Error(Errors.NoProviderSelected);
+                Error(Errors.UnknownProvider,ProviderName);
                 return false;
             }
 
@@ -84,7 +79,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     // if there is, and the user has said -Force, then let's remove it.
                     foreach (var existingSource in existingSources) {
                         if (Force) {
-                            if (ShouldProcess(FormatMessageString(Constants.NameLocationProviderReplaceExisting, existingSource.Name, existingSource.Location, ProviderName), Constants.OverwritePackageSource).Result) {
+                            if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource, existingSource.Name, existingSource.Location, existingSource.ProviderName), Constants.ActionReplacePackageSource).Result) {
                                 using (var removedSources = CancelWhenStopped(packageProvider.RemovePackageSource(existingSource.Name, this))) {
                                     foreach (var removedSource in removedSources) {
                                         Verbose(Constants.OverwritingPackageSource, removedSource.Name);
@@ -99,7 +94,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
             }
 
-            if (ShouldProcess(FormatMessageString(Constants.NameLocationProvider,Name, Location, ProviderName),Constants.RegisterPackageSource).Result) {
+            if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource,Name, Location, ProviderName),FormatMessageString(Constants.ActionRegisterPackageSource)).Result) {
                 using (var added = CancelWhenStopped(packageProvider.AddPackageSource(Name, Location, Trusted, this))) {
                     foreach (var addedSource in added) {
                         WriteObject(addedSource);

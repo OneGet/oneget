@@ -17,10 +17,14 @@ namespace Microsoft.OneGet {
         internal const string MSGPrefix = "MSG:";
         internal const string FailedProviderBootstrap = "MSG:FailedProviderBootstrap";
         internal const string UnknownProvider = "MSG:UnknownProvider";
-        internal const string UserDeclinedInstallOfUntrustedPackage = "MSG:USER_DECLINED_UNTRUSTED_PACKAGE_INSTALL";
+        internal const string UserDeclinedUntrustedPackageInstall = "MSG:UserDeclinedUntrustedPackageInstall";
 
         internal const string Installed = "Installed";
         internal const string Uninstalled = "Uninstalled";
 
+        internal const string ProviderPluginLoadFailure = "MSG:ProviderPluginLoadFailure";
+        internal const string Invalidoperation = "InvalidOperation";
+
+        internal const string MinVersion = "0.0.0.1";
     }
 }

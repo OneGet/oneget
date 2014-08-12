@@ -282,14 +282,14 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
                 // not really any args, and not really expectng any
                 return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
             }
-            return Enumerable.Aggregate(args, "FIXME/Format:" + formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
+            return Enumerable.Aggregate(args,  formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
         }
 
         internal string GetMessageStringInternal(string messageText) {
             return Messages.ResourceManager.GetString(messageText);
         }
 
-        internal string FormatMessageString(string messageText, object[] args) {
+        internal string FormatMessageString(string messageText, params object[] args) {
             if (string.IsNullOrEmpty(messageText)) {
                 return string.Empty;
             }
@@ -416,28 +416,33 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
         }
 
         private string DownloadContent(Uri location) {
-            var client = new WebClient();
             string result = null;
+            try {
+                var client = new WebClient();
 
-            // Apparently, places like Codeplex know to let this thru!
-            client.Headers.Add("user-agent", "chocolatey command line");
 
-            var done = new ManualResetEvent(false);
+                // Apparently, places like Codeplex know to let this thru!
+                client.Headers.Add("user-agent", "chocolatey command line");
 
-            client.DownloadStringCompleted += (sender, args) => {
-                if (!args.Cancelled && args.Error == null) {
-                    result = args.Result;
-                }
+                var done = new ManualResetEvent(false);
 
-                done.Set();
-            };
-            client.DownloadProgressChanged += (sender, args) => {
-                // todo: insert progress indicator
-                // var percent = (args.BytesReceived * 100) / args.TotalBytesToReceive;
-                // Progress(c, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
-            };
-            client.DownloadStringAsync(location);
-            done.WaitOne();
+                client.DownloadStringCompleted += (sender, args) => {
+                    if (!args.Cancelled && args.Error == null) {
+                        result = args.Result;
+                    }
+
+                    done.Set();
+                };
+                client.DownloadProgressChanged += (sender, args) => {
+                    // todo: insert progress indicator
+                    // var percent = (args.BytesReceived * 100) / args.TotalBytesToReceive;
+                    // Progress(c, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
+                };
+                client.DownloadStringAsync(location);
+                done.WaitOne();
+            } catch (Exception e){
+                e.Dump();
+            }
             return result;
         }
 

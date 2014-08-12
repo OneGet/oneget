@@ -87,7 +87,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             ((PluginAssemblyResolver)_proxyResolver).AddPath(appDomainSetup.ApplicationBase);
             ((PluginAssemblyResolver)_proxyResolver).AddPath(appDomainSetup.PrivateBinPath);
             foreach (var a in AppDomain.CurrentDomain.GetAssemblies()) {
-                if (!a.IsDynamic) {
+                if (!a.IsDynamic && File.Exists(a.Location)) {
                     var folder = Path.GetDirectoryName(a.Location);
                     if (folder != null && Directory.Exists(folder)) {
                         ((PluginAssemblyResolver)_proxyResolver).AddPath(folder);

@@ -44,8 +44,6 @@ namespace Microsoft.OneGet {
     ///     The Client API provides high-level consumer functions to support SDII functionality.
     /// </summary>
     internal class PackageManagementServiceImplementation : MarshalByRefObject, IPackageManagementService {
-        internal const string ProviderPluginLoadFailure = "PROVIDER_PLUGIN_LOAD_FAILURE";
-        internal const string Invalidoperation = "InvalidOperation";
         private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>(StringComparer.OrdinalIgnoreCase);
         private readonly IDictionary<string, ServicesProvider> _servicesProviders = new Dictionary<string, ServicesProvider>(StringComparer.OrdinalIgnoreCase);
         private readonly IDictionary<string, IMetaProvider> _metaProviders = new Dictionary<string, IMetaProvider>(StringComparer.OrdinalIgnoreCase);
@@ -106,7 +104,7 @@ namespace Microsoft.OneGet {
                 .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"))
                 .Concat(AutoloadedAssemblyLocations.SelectMany(location => {
                     if (Directory.Exists(location)) {
-                        return Directory.EnumerateFiles(location, "*.exe").Concat(Directory.EnumerateFiles(location, "*.dll"));
+                        return Directory.EnumerateFiles(location).Where(each => each.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase) || each.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase));
                     }
                     return Enumerable.Empty<string>();
                 }));
@@ -118,7 +116,7 @@ namespace Microsoft.OneGet {
                     TryToLoadProviderAssembly(providerAssemblyName, request);
 
                 } catch {
-                    request.Error(ProviderPluginLoadFailure, Invalidoperation, ProviderPluginLoadFailure, providerAssemblyName);
+                    request.Error(Constants.ProviderPluginLoadFailure, Constants.Invalidoperation, providerAssemblyName, request.FormatMessageString(Constants.ProviderPluginLoadFailure, providerAssemblyName));
                 }
             });
         }
@@ -167,7 +165,7 @@ namespace Microsoft.OneGet {
 
                 if (requestImpl != null) {
                     // if the end user requested a provider that's not there. perhaps the bootstrap provider can find it.
-                    if (RequirePackageProvider(null, providerName, "0.0.0.1", requestImpl)) {
+                    if (RequirePackageProvider(null, providerName, Constants.MinVersion, requestImpl)) {
                         // seems to think we found it.
                         if (_packageProviders.ContainsKey(providerName)) {
                             return _packageProviders[providerName].SingleItemAsEnumerable().ByRef();
@@ -471,7 +469,7 @@ namespace Microsoft.OneGet {
                     var packagesInstalled = bootstrap.InstallPackage(pkg[0], newRequest).LastOrDefault();
                     if (packagesInstalled == null) {
                         // that's sad.
-                        request.Error(Constants.FailedProviderBootstrap, Invalidoperation, package.Name, package.Name);
+                        request.Error(Constants.FailedProviderBootstrap, Constants.Invalidoperation, package.Name, request.FormatMessageString(Constants.FailedProviderBootstrap,package.Name));
                         return false;
                     }
                     // so it installed something

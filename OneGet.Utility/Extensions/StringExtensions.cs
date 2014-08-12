@@ -27,7 +27,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
     public static class StringExtensions {
 
         private static string FixMeFormat(string formatString, object[] args) {
-            return args.Aggregate("FIXME\\Format:" + formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture," \u00ab{0}\u00bb", arg));
+            return args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture," \u00ab{0}\u00bb", arg));
         }
 
         // ReSharper disable InconsistentNaming

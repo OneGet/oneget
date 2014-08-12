@@ -30,10 +30,10 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
         #endregion
 
         internal const string SoftwareIdentity = "SoftwareIdentity";
-        internal const string ProviderSwitdagUnavailable = "Unable to get list of OneGet providers.";
-        internal const string UnableToResolvePackage = "Unable to resolve package reference.";
-        internal const string UnsupportedProviderType = "Unsupported provider type.";
-        internal const string DestinationPathNotSet = "DestinationPathNotSet";
+        internal const string ProviderSwidtagUnavailable = "MSG:ProviderSwidtagUnavailable";
+        internal const string UnableToResolvePackage = "MSG:UnableToResolvePackage";
+        internal const string UnsupportedProviderType = "MSG:UnsupportedProviderType";
+        internal const string DestinationPathNotSet = "MSG:DestinationPathNotSet";
         internal const string InvalidFilename = "MSG:InvalidFilename";
         internal const string UnableToRemoveFile = "MSG:UnableToRemoveFile";
         internal const string FileFailedVerification = "MSG:FileFailedVerification";

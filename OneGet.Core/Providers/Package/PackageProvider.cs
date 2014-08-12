@@ -207,7 +207,7 @@ namespace Microsoft.OneGet.Providers.Package {
             if (!softwareIdentity.FromTrustedSource) {
                 try {
                     if (!request.ShouldContinueWithUntrustedPackageSource(softwareIdentity.Name, softwareIdentity.Source)) {
-                        request.Warning( request.FormatMessageString(Constants.UserDeclinedInstallOfUntrustedPackage,softwareIdentity.Name));
+                        request.Warning( request.FormatMessageString(Constants.UserDeclinedUntrustedPackageInstall,softwareIdentity.Name));
                         return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), Enumerable.Empty<SoftwareIdentity>());
                     }
                 } catch {

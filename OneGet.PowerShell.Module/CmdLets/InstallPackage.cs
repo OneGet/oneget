@@ -157,7 +157,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ShouldProcessPackageInstall(string packageName, string version, string source) {
             try {
-                return Force || ShouldProcess(FormatMessageString(Constants.PackageTarget,packageName, version, source), FormatMessageString(Constants.InstallPackage)).Result;
+                return Force || ShouldProcess(FormatMessageString(Constants.TargetPackage,packageName, version, source), FormatMessageString(Constants.ActionInstallPackage)).Result;
             } catch {
             }
             return false;
@@ -168,7 +168,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (_sourcesTrusted.Contains(packageSource) || Force || WhatIf) {
                     return true;
                 }
-                if (ShouldContinue(FormatMessageString(Constants.ThisPackageSourceIsNotMarkedAsSafe, packageSource), FormatMessageString(Constants.InstallingPackageFromUntrustedSource, package)).Result) {
+                if (ShouldContinue(FormatMessageString(Constants.QueryInstallUntrustedPackage, package, packageSource), FormatMessageString(Constants.CaptionPackageNotTrusted, package)).Result) {
                     _sourcesTrusted.Add(packageSource);
                     return true;
                 }
@@ -179,7 +179,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source) {
             try {
-                return Force || ShouldContinue(FormatMessageString(Constants.ContinueInstallingAfterFailing, packageName), FormatMessageString(Constants.PackageInstallFailure)).Result;
+                return Force || ShouldContinue(FormatMessageString(Constants.QueryContinueInstallingAfterFailing), FormatMessageString(Constants.CaptionPackageInstallFailure, packageName)).Result;
             } catch {
             }
             return false;
@@ -187,7 +187,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
             try {
-                return Force || ShouldContinue(FormatMessageString(Constants.ShouldThePackageScriptAtBeExecuted, scriptLocation), FormatMessageString(Constants.PackageContainsInstallationScript)).Result;
+                return Force || ShouldContinue(FormatMessageString(Constants.QueryShouldThePackageScriptAtBeProcessed, scriptLocation), FormatMessageString(Constants.CaptionPackageContainsInstallationScript,packageName)).Result;
             } catch {
             }
             return false;
