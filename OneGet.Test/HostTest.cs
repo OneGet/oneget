@@ -32,6 +32,12 @@ namespace Microsoft.OneGet.Test {
 
     public class Req {
 
+        private static int _total = 0;
+        private int _count = _total++;
+        public int CallCount() {
+            return _count;
+        }
+
         public bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
             return true;
         }

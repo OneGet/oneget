@@ -1,7 +1,0 @@
-# Copyright (C) 2014 Microsoft Corporation
-
-TARGETTYPE=NOTARGET
-TARGET_DESTINATION  = monad
-
-PASS0_BINPLACE=\
-	ZipProvider.psm1
