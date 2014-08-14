@@ -130,14 +130,14 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 try {
                     // move the file to the tmp file
                     // and tell the OS to remove it next reboot.
-                    var tmpFilename = location.GenerateTemporaryFilename(); // generates a unique filename but not a file!
+                    var tmpFilename = location.GenerateTemporaryFilename() + ".delete_me"; // generates a unique filename but not a file!
                     MoveFileOverwrite(location, tmpFilename);
 
                     if (File.Exists(location) || Directory.Exists(location)) {
                         // of course, if the tmpFile isn't on the same volume as the location, this doesn't work.
                         // then, last ditch effort, let's rename it in the current directory
                         // and then we can hide it and mark it for cleanup .
-                        tmpFilename = Path.Combine(Path.GetDirectoryName(location), "tmp." + CounterHex + "." + Path.GetFileName(location));
+                        tmpFilename = Path.Combine(Path.GetDirectoryName(location), "tmp." + CounterHex + "." + Path.GetFileName(location) + ".delete_me");
                         MoveFileOverwrite(location, tmpFilename);
                         if (File.Exists(tmpFilename) || Directory.Exists(location)) {
                             // hide the file for convenience.

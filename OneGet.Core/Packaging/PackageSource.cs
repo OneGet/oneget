@@ -30,6 +30,7 @@ namespace Microsoft.OneGet.Packaging {
             }
         }
 
+        // todo: make this dictionary read only! (.net 4.0 doesn't have that!)
         internal Dictionary<string,string> DetailsCollection = new Dictionary<string, string>();
 
         public string ProviderName {
@@ -51,7 +52,7 @@ namespace Microsoft.OneGet.Packaging {
             return null;
         }
 
-        public IReadOnlyDictionary<string, string> Details {
+        public IDictionary<string, string> Details {
             get {
                 return DetailsCollection;
             }
