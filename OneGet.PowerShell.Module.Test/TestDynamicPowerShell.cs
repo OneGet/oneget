@@ -14,9 +14,13 @@
 
 namespace OneGet.PowerShell.Module.Test {
     using System;
+    using System.CodeDom.Compiler;
+    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Management.Automation;
+    using System.Xml;
     using Microsoft.OneGet.Utility.Extensions;
     using Microsoft.OneGet.Utility.Platform;
     using Microsoft.OneGet.Utility.PowerShell;
@@ -47,6 +51,50 @@ namespace OneGet.PowerShell.Module.Test {
             }
         }
 
+        [Fact]
+        public void TestGetPackageProvider() {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult result = PS.GetPackageProvider(IsTesting:true);
+            var i = result.ToArray();
+            PrintItems(i);
+        }
+
+        [Fact]
+        public void TestFindPackage() {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult result = PS.FindPackage(IsTesting:true);
+            var i = result.ToArray();
+            PrintItems(i);
+        }
+
+        [Fact]
+        public void TestFindPackageValidName() {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult result = PS.FindPackage(Name: "Nuget", IsTesting: true);
+            var i = result.ToArray();
+            PrintItems(i);
+        }
+
+        [Fact]
+        public void TestFindPackageInvalidName() {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult result = PS.FindPackage(Name: "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER", IsTesting:true);
+            Assert.True(result.IsFailing);
+        }
+
+        [Fact]
+        public void TestFindPackageValidProvider() {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult result = PS.FindPackage(ProviderName: "Nuget", IsTesting: true); 
+            var i = result.ToArray();
+            PrintItems(i);
+        }
+
         private bool IsNuGetInstalled {
             get {
                 return NuGetPath != null;
@@ -63,20 +111,147 @@ namespace OneGet.PowerShell.Module.Test {
         }
 
         [Fact]
-        public void TestGetPackageProvider() {
-            
+        //TODO
+        //Has warning, not error, impossible to check at the moment. [BUG]
+        public void TestFindPackageInvalidProvider() {
             var PS = NewPowerShellSession;
-            
-            DynamicPowershellResult result = PS.GetPackageProvider();
-            var items = result.ToArray();
 
-            foreach (dynamic i in items) {
-                Console.WriteLine(i.Name);
-            }
+            DynamicPowershellResult result = PS.FindPackage(ProviderName: "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER", IsTesting: true);
+            Assert.True(result.Success); 
+           
         }
 
         [Fact]
-        public void TestGetPackageProviderByName() {
+        public void TestFindPackageMaxVersion() {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult maxResult = PS.FindPackage(Name: "Nuget", MaximumVersion: "1.5", IsTesting: true);
+            Assert.False(maxResult.IsFailing);
+        }
+
+        [Fact]
+        public void TestFindPackageNegMaxVersion() {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult maxResult = PS.FindPackage(Name: "Nuget", MaximumVersion: "-1.5", IsTesting: true);
+            Assert.True(maxResult.IsFailing);
+        }
+
+        [Fact]
+        public void TestFindPackageMinVersion() {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult minResult = PS.FindPackage(Name: "Nuget", Version: "1.5", IsTesting: true);
+            Assert.False(minResult.IsFailing);
+        }
+
+        [Fact]
+        public void TestFindPackageNegMinVersion()
+        {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult minResult = PS.FindPackage(Name: "Nuget", Version: "-1.5", IsTesting: true);
+            Assert.True(minResult.IsFailing);
+        }
+
+        [Fact]
+        public void TestFindPackageReqVersion() {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult reqResult = PS.FindPackage(Name: "Nuget", RequiredVersion: "1.5", IsTesting: true);
+            Assert.False(reqResult.IsFailing);
+        }
+
+        [Fact]
+        public void TestFindPackageNegReqVersion()
+        {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult reqResult = PS.FindPackage(Name: "Nuget", RequiredVersion: "-1.5", IsTesting: true);
+            Assert.True(reqResult.IsFailing);
+        }
+
+        [Fact]
+        public void TestFindPackageAllVersion() {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult allResult = PS.FindPackage(Name: "Nuget", AllVersions: true, IsTesting: true);
+            Assert.False(allResult.IsFailing);
+        }
+
+        [Fact]
+        public void TestFindPackageRequiredVersionFail() {
+            var PS = NewPowerShellSession;
+            
+            DynamicPowershellResult result = PS.FindPackage(Name: "Nuget", Version: "1.0", MaximumVersion: "1.5", RequiredVersion: "2.0", IsTesting: true);
+            Assert.True(result.IsFailing);
+        }
+
+        [Fact]
+        public void TestFindPackageAllVersionFail() {
+            var PS = NewPowerShellSession;
+            
+            DynamicPowershellResult result = PS.FindPackage(Name: "Nuget", Version: "1.0", MaximumVersion: "1.5", AllVersion: "2.0", IsTesting: true);
+            Assert.True(result.IsFailing);
+        }
+        [Fact]
+        public void TestFindPackageMismatchedVersions() {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult result = PS.FindPackage(Name: "Nuget", Version: "1.5", MaximumVersion: "1.0", IsTesting: true);
+            Assert.True(result.IsFailing);
+        }
+
+        [Fact]
+        public void TestSavePackage() {
+            var PS = NewPowerShellSession;
+            DeleteAdeptNuget();
+            DynamicPowershellResult result = PS.SavePackage(Name: "Adept.NugetRunner", Destination: "c:\\temp", IsTesting: true);
+            Assert.True(File.Exists("C:\\temp\\Adept.NuGetRunner.1.0.0.2.nupkg"));
+            DeleteAdeptNuget();
+        }
+
+        [Fact]
+        public void TestSavePackageMinVersion()
+        {
+            var PS = NewPowerShellSession;
+            DeleteAdeptNuget();
+            DynamicPowershellResult result = PS.SavePackage(Name: "Adept.NugetRunner", Destination: "c:\\temp", Version: "1.0", IsTesting: true);
+            Assert.True(File.Exists("C:\\temp\\Adept.NuGetRunner.1.0.0.2.nupkg"));
+            DeleteAdeptNuget();
+        }
+
+        [Fact]
+        public void TestSavePackageMaxVersion()
+        {
+            var PS = NewPowerShellSession;
+            DeleteAdeptNuget();
+            DynamicPowershellResult result = PS.SavePackage(Name: "Adept.NugetRunner", Destination: "c:\\temp", MaximumVersion: "1.0", IsTesting: true);
+            Assert.True(File.Exists("C:\\temp\\Adept.NuGetRunner.1.0.nupkg"));
+            DeleteAdeptNuget();
+        }
+
+        [Fact]
+        public void TestSavePackageReqVersion()
+        {
+            var PS = NewPowerShellSession;
+            DeleteAdeptNuget();
+            DynamicPowershellResult result = PS.SavePackage(Name: "Adept.NugetRunner", Destination: "c:\\temp", RequiredVersion: "1.0", IsTesting: true);
+            Assert.True(File.Exists("C:\\temp\\Adept.NuGetRunner.1.0.nupkg"));
+            DeleteAdeptNuget();
+        }
+
+        [Fact]
+        public void TestSavePackageMismatchedVersions()
+        {
+            var PS = NewPowerShellSession;
+            DeleteAdeptNuget();
+            DynamicPowershellResult result = PS.SavePackage(Name: "Adept.NugetRunner", Destination: "c:\\temp", MaximumVersion: "1.0", Version: "1.0.0.2", IsTesting: true);
+            Assert.True(result.IsFailing);
+        }
+
+        [Fact]
+        public void TestGetPackageProviderName() {
             var PS = NewPowerShellSession;
 
             DynamicPowershellResult result = PS.GetPackageProvider(Name: "NuGet", ForceBootstrap: true, IsTesting: true);
@@ -86,8 +261,25 @@ namespace OneGet.PowerShell.Module.Test {
             Assert.Equal(1, items.Length);
         }
 
+
+        private void DeleteAdeptNuget() {
+            const string folderPath = @"C:\\temp";
+            const string filesToDelete = "*NuGet*";
+            string[] fileList = Directory.GetFiles(folderPath, filesToDelete);
+            foreach (string file in fileList)
+            {
+                File.Delete(file);
+            }
+        }
         private bool IsDllOrExe(string path) {
             return path.ToLower().EndsWith(".exe") || path.ToLower().EndsWith(".dll");
+        }
+
+        private void PrintItems(dynamic items) {
+            foreach (var i in items)
+            {
+                Console.WriteLine(i.Name);
+            }
         }
 
         private IEnumerable<string> FilenameContains(IEnumerable<string> paths, string value) {
