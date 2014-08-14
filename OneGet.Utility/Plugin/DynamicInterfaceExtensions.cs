@@ -48,7 +48,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         public static Delegate FindDelegate(this PropertyInfo[] properties, object actualInstance, MethodInfo signature) {
             return (from property in properties
-                let value = property.GetValue(actualInstance) as Delegate
+                let value = property.GetValue(actualInstance,null) as Delegate
                 where DoNamesMatchAcceptably(signature.Name, property.Name) && property.PropertyType.IsDelegateAssignableFromMethod(signature) && value != null
                 select value).FirstOrDefault();
         }
@@ -62,7 +62,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         public static Delegate FindDelegate(this PropertyInfo[] properties, object actualInstance, Type delegateType) {
             return (from candidate in properties
-                    let value = candidate.GetValue(actualInstance) as Delegate
+                    let value = candidate.GetValue(actualInstance, null) as Delegate
                     where value != null && DoNamesMatchAcceptably(delegateType.Name, candidate.Name) && delegateType.IsDelegateAssignableFromDelegate(value.GetType()) 
                     select value).FirstOrDefault();
         }
@@ -153,7 +153,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         internal static MethodInfo[] GetRequiredMethods(this Type type) {
             return _requiredMethodsCache.GetOrAdd(type, () => {
-                var i = type.GetVirtualMethods().Where(each => each.CustomAttributes.Any(attr => attr.AttributeType.Name.Equals("RequiredAttribute", StringComparison.OrdinalIgnoreCase))).ToArray();
+                var i = type.GetVirtualMethods().Where(each => each.GetCustomAttributes(true).Any(attr => attr.GetType().Name.Equals("RequiredAttribute", StringComparison.OrdinalIgnoreCase))).ToArray();
                 return i;
             });
         }

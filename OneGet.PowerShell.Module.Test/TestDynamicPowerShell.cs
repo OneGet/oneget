@@ -14,7 +14,6 @@
 
 namespace OneGet.PowerShell.Module.Test {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -24,74 +23,10 @@ namespace OneGet.PowerShell.Module.Test {
     using Xunit;
 
     public class TestDynamicPowerShell {
-
-
-
-        [Fact]
-        public void TestDir() {
-            dynamic PS = new DynamicPowershell();
-
-            DynamicPowershellResult result = PS.Dir("c:\\temp");
-            Assert.False(result.IsFailing);
-
-            var items = result.ToArray();
-            foreach (var item in items) {
-                Console.WriteLine(item.ToString());
-            }
-
-
-            Assert.Equal(1, items.Length);
-        }
-
-        [Fact]
-        public void TestGetPackageProvider() {
-            var PS = NewPowerShellSession;
-
-            DynamicPowershellResult result = PS.GetPackageProvider();
-            var items = result.ToArray();
-
-            foreach (dynamic i in items) {
-                Console.WriteLine(i.Name);
-            }
-        }
-
-        [Fact]
-        public void TestGetPackageProviderByName() {
-            var PS = NewPowerShellSession;
-
-            DynamicPowershellResult result = PS.GetPackageProvider(Name: "NuGet", ForceBootstrap: true, IsTesting: true);
-            Assert.False(result.IsFailing);
-
-            var items = result.ToArray();
-            Assert.Equal(1, items.Length);
-        }
-
-
-        private bool IsDllOrExe(string path) {
-            return path.ToLower().EndsWith(".exe") || path.ToLower().EndsWith(".dll");
-        }
-
-        private IEnumerable<string> FilenameContains(IEnumerable<string> paths, string value) {
-            foreach (var item in paths) {
-                if (item.IndexOf(value, StringComparison.OrdinalIgnoreCase) > -1) {
-                    yield return item;
-                }
-            }
-        }
-
-        private IEnumerable<string> NugetsInPath(string folder) {
-            if (Directory.Exists(folder)) {
-                var files = Directory.EnumerateFiles(folder).ToArray();
-
-                return FilenameContains(files, "nuget").Where(IsDllOrExe);
-            }
-            return Enumerable.Empty<string>();
-        }
-
         private string NuGetPath {
             get {
                 var systemBase = KnownFolders.GetFolderPath(KnownFolder.CommonApplicationData);
-                Assert.False(string.IsNullOrEmpty(systemBase));
+                Assert.False(string.IsNullOrEmpty(systemBase), "Known Folder CommonApplicationData is null");
 
                 var nugets = NugetsInPath(Path.Combine(systemBase, "oneget", "ProviderAssemblies"));
                 var first = nugets.FirstOrDefault();
@@ -118,6 +53,60 @@ namespace OneGet.PowerShell.Module.Test {
             }
         }
 
+        private dynamic NewPowerShellSession {
+            get {
+                dynamic p = new DynamicPowershell();
+                DynamicPowershellResult result = p.ImportModule(".\\oneget.psd1");
+                Assert.False(result.IsFailing, "unable to import '.\\oneget.psd1  (PWD:'{0}')".format(Environment.CurrentDirectory));
+                return p;
+            }
+        }
+
+        [Fact]
+        public void TestGetPackageProvider() {
+            
+            var PS = NewPowerShellSession;
+            
+            DynamicPowershellResult result = PS.GetPackageProvider();
+            var items = result.ToArray();
+
+            foreach (dynamic i in items) {
+                Console.WriteLine(i.Name);
+            }
+        }
+
+        [Fact]
+        public void TestGetPackageProviderByName() {
+            var PS = NewPowerShellSession;
+
+            DynamicPowershellResult result = PS.GetPackageProvider(Name: "NuGet", ForceBootstrap: true, IsTesting: true);
+            Assert.False(result.IsFailing);
+
+            var items = result.ToArray();
+            Assert.Equal(1, items.Length);
+        }
+
+        private bool IsDllOrExe(string path) {
+            return path.ToLower().EndsWith(".exe") || path.ToLower().EndsWith(".dll");
+        }
+
+        private IEnumerable<string> FilenameContains(IEnumerable<string> paths, string value) {
+            foreach (var item in paths) {
+                if (item.IndexOf(value, StringComparison.OrdinalIgnoreCase) > -1) {
+                    yield return item;
+                }
+            }
+        }
+
+        private IEnumerable<string> NugetsInPath(string folder) {
+            if (Directory.Exists(folder)) {
+                var files = Directory.EnumerateFiles(folder).ToArray();
+
+                return FilenameContains(files, "nuget").Where(IsDllOrExe);
+            }
+            return Enumerable.Empty<string>();
+        }
+
         private void DeleteNuGet() {
             var systemBase = KnownFolders.GetFolderPath(KnownFolder.CommonApplicationData);
             Assert.False(string.IsNullOrEmpty(systemBase));
@@ -136,15 +125,6 @@ namespace OneGet.PowerShell.Module.Test {
             }
         }
 
-        private dynamic NewPowerShellSession {
-            get {
-                dynamic p = new DynamicPowershell();
-                DynamicPowershellResult result = p.ImportModule(".\\oneget.psd1");
-                Assert.False(result.IsFailing);
-                return p;
-            }
-        }
-
         [Fact]
         public void TestBootstrapNuGet() {
             // delete any copies of nuget if they are installed.
@@ -153,7 +133,7 @@ namespace OneGet.PowerShell.Module.Test {
             }
 
             // verify that nuget is not installed.
-            Assert.False(IsNuGetInstalled);
+            Assert.False(IsNuGetInstalled, "NuGet is still installed at :".format(NuGetPath));
 
             var PS = NewPowerShellSession;
 
@@ -168,8 +148,5 @@ namespace OneGet.PowerShell.Module.Test {
             // and is the nuget.exe where we expect it?
             Assert.True(IsNuGetInstalled);
         }
-
-
-
     }
 }
