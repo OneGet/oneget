@@ -27,7 +27,29 @@ namespace OneGet.PowerShell.Module.Test {
     using Xunit;
 
     public class TestDynamicPowerShell {
+        private string NuGetPath {
+            get {
+                var systemBase = KnownFolders.GetFolderPath(KnownFolder.CommonApplicationData);
+                Assert.False(string.IsNullOrEmpty(systemBase), "Known Folder CommonApplicationData is null");
 
+                var nugets = NugetsInPath(Path.Combine(systemBase, "oneget", "ProviderAssemblies"));
+                var first = nugets.FirstOrDefault();
+                if (first != null) {
+                    return first;
+                }
+
+                var userBase = KnownFolders.GetFolderPath(KnownFolder.LocalApplicationData);
+                Assert.False(string.IsNullOrEmpty(userBase));
+
+                nugets = NugetsInPath(Path.Combine(userBase, "oneget", "ProviderAssemblies"));
+                first = nugets.FirstOrDefault();
+                if (first != null) {
+                    return first;
+                }
+
+                return null;
+            }
+        }
 
         [Fact]
         public void TestGetPackageProvider() {
@@ -71,6 +93,21 @@ namespace OneGet.PowerShell.Module.Test {
             DynamicPowershellResult result = PS.FindPackage(ProviderName: "Nuget", IsTesting: true); 
             var i = result.ToArray();
             PrintItems(i);
+        }
+
+        private bool IsNuGetInstalled {
+            get {
+                return NuGetPath != null;
+            }
+        }
+
+        private dynamic NewPowerShellSession {
+            get {
+                dynamic p = new DynamicPowershell();
+                DynamicPowershellResult result = p.ImportModule(".\\oneget.psd1");
+                Assert.False(result.IsFailing, "unable to import '.\\oneget.psd1  (PWD:'{0}')".format(Environment.CurrentDirectory));
+                return p;
+            }
         }
 
         [Fact]
@@ -262,36 +299,6 @@ namespace OneGet.PowerShell.Module.Test {
             return Enumerable.Empty<string>();
         }
 
-        private string NuGetPath {
-            get {
-                var systemBase = KnownFolders.GetFolderPath(KnownFolder.CommonApplicationData);
-                Assert.False(string.IsNullOrEmpty(systemBase));
-
-                var nugets = NugetsInPath(Path.Combine(systemBase, "oneget", "ProviderAssemblies"));
-                var first = nugets.FirstOrDefault();
-                if (first != null) {
-                    return first;
-                }
-
-                var userBase = KnownFolders.GetFolderPath(KnownFolder.LocalApplicationData);
-                Assert.False(string.IsNullOrEmpty(userBase));
-
-                nugets = NugetsInPath(Path.Combine(userBase, "oneget", "ProviderAssemblies"));
-                first = nugets.FirstOrDefault();
-                if (first != null) {
-                    return first;
-                }
-
-                return null;
-            }
-        }
-
-        private bool IsNuGetInstalled {
-            get {
-                return NuGetPath != null;
-            }
-        }
-
         private void DeleteNuGet() {
             var systemBase = KnownFolders.GetFolderPath(KnownFolder.CommonApplicationData);
             Assert.False(string.IsNullOrEmpty(systemBase));
@@ -310,15 +317,6 @@ namespace OneGet.PowerShell.Module.Test {
             }
         }
 
-        private dynamic NewPowerShellSession {
-            get {
-                dynamic p = new DynamicPowershell();
-                DynamicPowershellResult result = p.ImportModule(".\\oneget.psd1");
-                Assert.False(result.IsFailing);
-                return p;
-            }
-        }
-
         [Fact]
         public void TestBootstrapNuGet() {
             // delete any copies of nuget if they are installed.
@@ -327,7 +325,7 @@ namespace OneGet.PowerShell.Module.Test {
             }
 
             // verify that nuget is not installed.
-            Assert.False(IsNuGetInstalled);
+            Assert.False(IsNuGetInstalled, "NuGet is still installed at :".format(NuGetPath));
 
             var PS = NewPowerShellSession;
 
@@ -342,8 +340,5 @@ namespace OneGet.PowerShell.Module.Test {
             // and is the nuget.exe where we expect it?
             Assert.True(IsNuGetInstalled);
         }
-
-
-
     }
 }

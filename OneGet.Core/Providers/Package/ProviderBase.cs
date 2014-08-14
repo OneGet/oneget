@@ -46,8 +46,9 @@ namespace Microsoft.OneGet.Providers.Package {
         public abstract string ProviderName {get;}
 
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
-        public IReadOnlyDictionary<string, List<string>> Features {
+        public IDictionary<string, List<string>> Features {
             get {
+                // todo: this dictionary should be read only (.net 4.0 doesn't have that!)
                 return _features;
             }
         }

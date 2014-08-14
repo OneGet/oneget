@@ -53,7 +53,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
                     var p = args[0].GetType().GetProperty(key);
                     if (p != null) {
                         replacedByName = true;
-                        return p.GetValue(args[0]).ToString();
+                        return p.GetValue(args[0], null).ToString();
                     }
                     return "${{" + m.Groups["macro"].Value + "}}";
                 }));

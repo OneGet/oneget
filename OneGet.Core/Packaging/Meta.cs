@@ -20,7 +20,7 @@ namespace Microsoft.OneGet.Packaging {
     using System.Xml.Linq;
     using Utility.Collections;
 
-    public class Meta : MarshalByRefObject, IReadOnlyDictionary<string, string> {
+    public class Meta : MarshalByRefObject, IDictionary<string, string> {
         public override object InitializeLifetimeService() {
             return null;
         }
@@ -39,14 +39,48 @@ namespace Microsoft.OneGet.Packaging {
             return GetEnumerator();
         }
 
+        public void Add(KeyValuePair<string, string> item) {
+            throw new NotImplementedException();
+        }
+
+        public void Clear() {
+            throw new NotImplementedException();
+        }
+
+        public bool Contains(KeyValuePair<string, string> item) {
+            throw new NotImplementedException();
+        }
+
+        public void CopyTo(KeyValuePair<string, string>[] array, int arrayIndex) {
+            throw new NotImplementedException();
+        }
+
+        public bool Remove(KeyValuePair<string, string> item) {
+            throw new NotImplementedException();
+        }
+
         public int Count {
             get {
                 return _element.Attributes().Count();
             }
         }
 
+        public bool IsReadOnly {
+            get {
+                return true;
+            }
+        }
+
         public bool ContainsKey(string key) {
             return _element.Attribute( key) != null;
+        }
+
+        public void Add(string key, string value) {
+            throw new NotImplementedException();
+        }
+
+        public bool Remove(string key) {
+            throw new NotImplementedException();
         }
 
         public bool TryGetValue(string key, out string value) {
@@ -58,17 +92,20 @@ namespace Microsoft.OneGet.Packaging {
             get {
                 return _element.Get( key);
             }
-        }
-
-        public IEnumerable<string> Keys {
-            get {
-                return new SerializableEnumerable<string>(_element.Attributes().Select(each => each.Name.LocalName));
+            set {
+                throw new NotImplementedException();
             }
         }
 
-        public IEnumerable<string> Values {
+        public ICollection<string> Keys {
             get {
-                return new SerializableEnumerable<string>(_element.Attributes().Select(each => each.Value));
+                return new SerializableCollection<string>(_element.Attributes().Select(each => each.Name.LocalName).ToList());
+            }
+        }
+
+        public ICollection<string> Values {
+            get {
+                return new SerializableCollection<string>(_element.Attributes().Select(each => each.Value).ToList());
             }
         }
     }

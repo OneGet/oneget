@@ -203,10 +203,17 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                
 
                 if (BaseFolder != null) {
-                    var files = Directory.EnumerateFiles(BaseFolder, "*.psm1").Concat(Directory.EnumerateFiles(BaseFolder, "*.psd1"));
+                    var files = Directory.EnumerateFiles(BaseFolder, "*.psd1", SearchOption.AllDirectories);
 
                     // load the powershell functions into this runspace in case something needed it on module load.
                     var psf = ps.ImportModule(Name: PowerShellProviderFunctions, PassThru: true);
+
+#if DEBUG 
+                    var testProviders = Directory.EnumerateFiles(BaseFolder, "*.psm1", SearchOption.AllDirectories);
+                    foreach (var provider in testProviders) {
+                        yield return provider;
+                    }
+#endif 
 
                     foreach (var each in files) {
                         DynamicPowershellResult items = ps.ImportModule(Name: each, PassThru: true);
@@ -315,8 +322,13 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             Parallel.ForEach(modules, modulePath => {
                 var provider = Create(modulePath);
                 if (provider != null) {
-                    // looks good to me, let's add this to the list of moduels this meta provider can create.
-                    _packageProviders.AddOrSet(provider.GetPackageProviderName(), provider);
+                    if (provider.GetPackageProviderName() != null) {
+                        // looks good to me, let's add this to the list of moduels this meta provider can create.
+                        _packageProviders.AddOrSet(provider.GetPackageProviderName(), provider);
+                    } else {
+                        provider.Dispose();
+                        provider = null;
+                    }
                 }
             });
         }
