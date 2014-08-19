@@ -102,3 +102,4 @@ policheck*
 *.orig
 OneGet.orig.sln
 
+.nuget
