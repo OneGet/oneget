@@ -59,6 +59,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         internal void SetParameters(IEnumerable<object> unnamedArguments, IEnumerable<KeyValuePair<string, object>> namedArguments) {
             foreach (var arg in unnamedArguments) {
+                if (arg is DynamicPowershellResult) {
+                    // pipelining arguments into command.
+                    _commandPipeline.Input.Write(arg, true);
+                    continue;
+                }
                 _command.Parameters.Add(null, arg);
             }
             foreach (var arg in namedArguments) {
