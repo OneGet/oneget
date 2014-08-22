@@ -69,6 +69,7 @@ namespace Microsoft.OneGet.Providers.Package {
                 return _context ?? (_context = new object[] {
                     PackageManagementService._instance.ServicesProvider,
                     new {
+                        CoreVersion = new Func<int>(() => 1),
                         GetPackageManagementService = new Func<object, object>((requestImpl) => PackageManagementService._instance),
                         GetIRequestInterface = new Func<Type>(() => typeof (IRequest)),
 #if DEBUG
@@ -184,13 +185,17 @@ namespace Microsoft.OneGet.Providers.Package {
             var list = new List<string>();
 
             return CallAndCollect<DynamicOption>(
-                result => Provider.GetDynamicOptions((int)operation, ExtendRequest(requestImpl, new {
+                result => Provider.GetDynamicOptions(operation.ToString(), ExtendRequest(requestImpl, new {
+
                     YieldDynamicOption = new YieldDynamicOption((category, name, type, isRequired) => {
                         if (lastItem != null) {
                             lastItem.PossibleValues = list.ToArray();
                             list = new List<string>();
                             result.Add(lastItem);
                         }
+
+#if CORE_VERSION_V0
+
 
                         lastItem = new DynamicOption {
                             Category = (OptionCategory)category,
@@ -199,6 +204,20 @@ namespace Microsoft.OneGet.Providers.Package {
                             IsRequired = isRequired,
                             ProviderName = ProviderName,
                         };
+#else
+                        OptionCategory cat;
+                        OptionType typ;
+
+                        if (Enum.TryParse(category, true, out cat) && Enum.TryParse(type, true, out typ) ) {
+                            lastItem = new DynamicOption {
+                                Category = cat,
+                                Name = name,
+                                Type = typ,
+                                IsRequired = isRequired,
+                                ProviderName = ProviderName,
+                            };    
+                        }
+#endif 
                         return !(isCancelled() || result.IsCancelled);
                     }),
                     YieldKeyValuePair = new YieldKeyValuePair((key, value) => {

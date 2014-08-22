@@ -81,6 +81,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 // check if we have a 1 package per name 
                 if (_resultsPerName[n].Count > 1) {
                     Error(Errors.DisambiguateForUninstall, n, _resultsPerName[n]);
+                    return false;
                 }
 
                 if (Stopping) {

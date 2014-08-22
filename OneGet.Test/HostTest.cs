@@ -120,6 +120,7 @@ namespace Microsoft.OneGet.Test {
         }
     }
 
+    [Priority(1)]
     public class PackageManagementServiceTest : MarshalByRefObject {
 
         public override object InitializeLifetimeService() {

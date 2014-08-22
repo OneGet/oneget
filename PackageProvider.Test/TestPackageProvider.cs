@@ -74,7 +74,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public void GetDynamicOptions(int category, RequestImpl requestImpl){
+        public void GetDynamicOptions(string category, RequestImpl requestImpl){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.

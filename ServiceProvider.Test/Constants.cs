@@ -25,6 +25,13 @@ namespace Microsoft.OneGet.ServiceProvider.Test {
         internal const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
         internal const string DependencyResolutionError = "MSG:UnableToResolveDependency_dependencyPackage";
         internal const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependencyPackage";
+        internal const string PackageProviderExists = "MSG:PackageProviderExists";
+        internal const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
+
+        internal const string IsUpdateParameter = "IsUpdatePackageSource";
+
+        internal const string NameParameter = "Name";
+        internal const string LocationParameter = "Location";
 
         #endregion
 

@@ -92,7 +92,7 @@ namespace Microsoft.PowerShell.OneGet {
 
         internal const string BootstrapProviderUserRequested = "MSG:BootstrapProviderUserRequested";
         internal const string BootstrapProviderProviderRequested = "MSG:BootstrapProviderProviderRequested";
-        internal const string BootstrapManualAssembly = "MSGBootstrapManualAssembly:";
+        internal const string BootstrapManualAssembly = "MSG:BootstrapManualAssembly";
         internal const string BootstrapManualInstall = "MSG:BootstrapManualInstall";
         internal const string QueryBootstrap = "MSG:QueryBootstrap";
         internal const string ActionRegisterPackageSource = "MSG:ActionRegisterPackageSource";
@@ -100,7 +100,7 @@ namespace Microsoft.PowerShell.OneGet {
 
         internal const string NoMatchesForWildcard = "MSG:NoMatchesForWildcard";
 
-        internal const string TargetPackage = "MSG:PackageTarget";
+        internal const string TargetPackage = "MSG:TargetPackage";
 
         internal const string NameOrLocationRequired = "MSG:NameOrLocationRequired";
     }

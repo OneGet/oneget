@@ -116,7 +116,7 @@ namespace CustomCodeGenerator {
         }
 
         private Regex RegionRx(string type, string suffix) {
-            return new Regex(string.Format(@"(?<whitespace>[\x20\t]*)#region\s*{0}\s*(?<name>\w*?)-{1}\s*(?<content>.*?)#endregion", type, suffix), RegexOptions.Singleline);
+            return new Regex(string.Format(@"(?<whitespace>[\x20\t]*)\#region\s*{0}\s*(?<name>\w*?)-{1}\s*(?<content>.*?)\#endregion", type, suffix), RegexOptions.Singleline);
         }
 
         private IEnumerable<Match> GetRegion(string type, string suffix, string text) {
