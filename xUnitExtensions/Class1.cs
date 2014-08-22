@@ -18,82 +18,131 @@ namespace xUnitExtensions {
     using System.Linq;
     using System.Threading;
     using Xunit;
+    using Xunit.Extensions;
     using Xunit.Sdk;
-   
-    [Prioritized]
-    public class Class2 {
 
-        [Fact, TestPriority(2)]
-        public void testMe() {
-            Thread.Sleep(1000);
-            Console.WriteLine("First");
+
+    internal static class Number {
+        internal static int Value;
+    }
+
+    [Priority(2)]
+    public class SecondClass {
+
+        [Fact]
+        public void B_SecondMethod() {
+            Thread.Sleep(100);
+            Console.WriteLine("ran {0}", Number.Value++);
         }
 
-        [Fact, TestPriority(1)]
-        public void testMeToo() {
-            Thread.Sleep(2000);
-            Console.WriteLine("Second");
+        [Fact(Priority = 3)]
+        public void A_ThirdMethod() {
+            Thread.Sleep(200);
+            Console.WriteLine("ran {0}", Number.Value++);
+        }
+
+
+        [Fact(Priority = 1)]
+        public void Z_FirstMethod() {
+            Thread.Sleep(200);
+            Console.WriteLine("ran {0}", Number.Value++);
         }
     }
-    [Prioritized]
-    public class Class3 {
 
-        [Fact, TestPriority(2)]
-        public void testMe() {
-            Thread.Sleep(1000);
-            Console.WriteLine("First");
+
+    [Priority(1)]
+    public class FirstClass {
+
+        [Fact(Priority = 2)]
+        public void SecondMethod() {
+            Thread.Sleep(100);
+            Console.WriteLine("ran {0}", Number.Value++);
         }
 
-        [Fact, TestPriority(1)]
-        public void testMeToo() {
-            Thread.Sleep(2000);
-            Console.WriteLine("Second");
+        [Fact(Priority = 1)]
+        public void FirstMethod() {
+            Thread.Sleep(200);
+            Console.WriteLine("ran {0}", Number.Value++);
+        }
+
+        [Fact(Priority = 5)]
+        public void FifthMethod() {
+            Thread.Sleep(200);
+            Console.WriteLine("ran {0}", Number.Value++);
         }
     }
-    
-    class PrioritizedAttribute : RunWithAttribute {
+
+
+    [Priority(0)]
+    public class ZeroClass {
+        [Fact(Priority = 0)]
+        public void ZeroMethod() {
+            Thread.Sleep(200);
+            Console.WriteLine("ran {0}", Number.Value++);
+        }
+
+        [Fact(Priority = 0)]
+        public void SecondMethod() {
+            Thread.Sleep(100);
+            Console.WriteLine("ran {0}", Number.Value++);
+        }
+
+        [Fact(Priority = 0)]
+        public void FirstMethod() {
+            Thread.Sleep(200);
+            Console.WriteLine("ran {0}", Number.Value++);
+        }
+
+        [Fact(Priority = 0)]
+        public void FifthMethod() {
+            Thread.Sleep(2000);
+            Console.WriteLine("ran {0}", Number.Value++);
+        }
+    }
+    /*
+    public class PrioritizedAttribute : RunWithAttribute {
         public PrioritizedAttribute()
             : base(typeof(PrioritizedFixtureClassCommand)) {
         }
     }
 
     class PrioritizedFixtureClassCommand : ITestClassCommand {
-        readonly TestClassCommand _inner = new TestClassCommand();
+        readonly TestClassCommand _base = new TestClassCommand();
 
         public int ChooseNextTest(ICollection<IMethodInfo> testsLeftToRun) {
             return 0;
         }
 
         public Exception ClassFinish() {
-            return _inner.ClassFinish();
+            return _base.ClassFinish();
         }
 
         public Exception ClassStart() {
-            return _inner.ClassStart();
+            return _base.ClassStart();
         }
 
         public IEnumerable<ITestCommand> EnumerateTestCommands(IMethodInfo testMethod) {
-            return _inner.EnumerateTestCommands(testMethod);
+            return _base.EnumerateTestCommands(testMethod);
         }
 
         public IEnumerable<IMethodInfo> EnumerateTestMethods() {
-            return from m in _inner.EnumerateTestMethods()
+            return from m in _base.EnumerateTestMethods()
                    let priority = GetPriority(m)
-                   orderby priority
+                   orderby  priority ascending 
                    select m;
         }
 
         public bool IsTestMethod(IMethodInfo testMethod) {
-            return _inner.IsTestMethod(testMethod);
+            return _base.IsTestMethod(testMethod);
         }
 
         public object ObjectUnderTest {
-            get { return _inner.ObjectUnderTest; }
+            get { return _base.ObjectUnderTest; }
         }
 
         public ITypeInfo TypeUnderTest {
-            get { return _inner.TypeUnderTest; }
-            set { _inner.TypeUnderTest = value; }
+            get { return _base.TypeUnderTest; }
+            set { _base.TypeUnderTest = value; }
         }
 
         private static int GetPriority(IMethodInfo method) {
@@ -102,7 +151,7 @@ namespace xUnitExtensions {
                 .FirstOrDefault();
 
             return priorityAttribute == null
-                ? 0
+                ? 100000
                 : priorityAttribute.GetPropertyValue<int>("Priority");
         }
     }
@@ -119,4 +168,5 @@ namespace xUnitExtensions {
             get { return _priority; }
         }
     }
+     */
 }

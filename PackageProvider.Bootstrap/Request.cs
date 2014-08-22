@@ -33,7 +33,6 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
         #region copy core-apis
 
         /* Synced/Generated code =================================================== */
-
         /// <summary>
         ///     The provider can query to see if the operation has been cancelled.
         ///     This provides for a gentle way for the caller to notify the callee that
@@ -60,6 +59,15 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
         /// <returns></returns>
         public abstract Type GetIRequestInterface();
 
+        /// <summary>
+        /// Returns the internal version of the OneGet core.
+        /// 
+        /// This will usually only be updated if there is a breaking API or Interface change that might 
+        /// require other code to know which version is running.
+        /// </summary>
+        /// <returns>Internal Version of OneGet</returns>
+        public abstract int CoreVersion();
+
         public abstract bool NotifyBeforePackageInstall(string packageName, string version, string source, string destination);
 
         public abstract bool NotifyPackageInstalled(string packageName, string version, string source, string destination);
@@ -75,7 +83,6 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
         public abstract string ParsePackageName(string canonicalPackageId);
 
         public abstract string ParsePackageVersion(string canonicalPackageId);
-
         #endregion
 
         #region copy host-apis
@@ -99,12 +106,24 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
 
         public abstract bool CompleteProgress(int activityId, bool isSuccessful);
 
+        public abstract IEnumerable<string> GetOptionValues(string category, string key);
+
         /// <summary>
         ///     Used by a provider to request what metadata keys were passed from the user
+        ///
+        /// This is API is deprecated, use the string variant instead.
         /// </summary>
         /// <returns></returns>
         public abstract IEnumerable<string> GetOptionKeys(int category);
 
+        /// <summary>
+        /// 
+        /// 
+        /// This is API is deprecated, use the string variant instead.
+        /// </summary>
+        /// <param name="category"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public abstract IEnumerable<string> GetOptionValues(int category, string key);
 
         public abstract IEnumerable<string> GetSources();
@@ -134,7 +153,6 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
         public abstract bool IsInteractive();
 
         public abstract int CallCount();
-
         #endregion
 
         #region copy service-apis
@@ -169,7 +187,6 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
         public abstract string GetKnownFolder(string knownFolder, RequestImpl requestImpl);
 
         public abstract bool IsElevated(RequestImpl requestImpl);
-
         #endregion
 
         #region copy response-apis
@@ -205,12 +222,12 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
 
         public abstract bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
 
-#if M2
+        #if M2
         public abstract bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
 
         public abstract bool YieldMetadata(string fieldId, string @namespace, string name, string value);
 
-        #endif
+        #endif 
 
         /// <summary>
         ///     Used by a provider to return fields for a package source (repository)
@@ -221,7 +238,7 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
         /// <param name="isRegistered"></param>
         /// <param name="isValidated"></param>
         /// <returns></returns>
-        public abstract bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
+        public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
@@ -234,21 +251,21 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
         /// <returns></returns>
         public abstract bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired);
 
+        public abstract bool YieldDynamicOption(string category, string name, string expectedType, bool isRequired);
+
         public abstract bool YieldKeyValuePair(string key, string value);
 
         public abstract bool YieldValue(string value);
-
         #endregion
 
         #region copy Request-implementation
-
-        /* Synced/Generated code =================================================== */
+/* Synced/Generated code =================================================== */
 
         public bool Warning(string messageText, params object[] args) {
-            return Warning(FormatMessageString(messageText, args));
+            return Warning(FormatMessageString(messageText,args));
         }
 
-        internal bool Error(ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
+        internal bool Error( ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
             return Error(messageText, category.ToString(), targetObjectValue, FormatMessageString(messageText, args));
         }
 
@@ -258,31 +275,31 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
         }
 
         public bool Message(string messageText, params object[] args) {
-            return Message(FormatMessageString(messageText, args));
+            return Message(FormatMessageString(messageText,args));
         }
 
         public bool Verbose(string messageText, params object[] args) {
-            return Verbose(FormatMessageString(messageText, args));
-        }
+            return Verbose(FormatMessageString(messageText,args));
+        } 
 
         public bool Debug(string messageText, params object[] args) {
-            return Debug(FormatMessageString(messageText, args));
+            return Debug(FormatMessageString(messageText,args));
         }
 
         public int StartProgress(int parentActivityId, string messageText, params object[] args) {
-            return StartProgress(parentActivityId, FormatMessageString(messageText, args));
+            return StartProgress(parentActivityId, FormatMessageString(messageText,args));
         }
 
         public bool Progress(int activityId, int progressPercentage, string messageText, params object[] args) {
-            return Progress(activityId, progressPercentage, FormatMessageString(messageText, args));
+            return Progress(activityId, progressPercentage, FormatMessageString(messageText,args));
         }
 
         private static string FixMeFormat(string formatString, object[] args) {
-            if (args == null || args.Length == 0) {
+            if (args == null || args.Length == 0 ) {
                 // not really any args, and not really expectng any
                 return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
             }
-            return Enumerable.Aggregate(args,  formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
+            return System.Linq.Enumerable.Aggregate(args, formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture," \u00ab{0}\u00bb", arg));
         }
 
         internal string GetMessageStringInternal(string messageText) {
@@ -296,12 +313,12 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
 
             if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
                 // check with the caller first, then with the local resources, and fallback to using the messageText itself.
-                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ?? GetMessageStringInternal(messageText) ?? messageText;
+                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ?? GetMessageStringInternal(messageText) ?? messageText;    
             }
 
             // if it doesn't look like we have the correct number of parameters
             // let's return a fixmeformat string.
-            var c = Enumerable.Count(Enumerable.Where(messageText.ToCharArray(), each => each == '{'));
+            var c = System.Linq.Enumerable.Count( System.Linq.Enumerable.Where(messageText.ToCharArray(), each => each == '{'));
             if (c < args.Length) {
                 return FixMeFormat(messageText, args);
             }
@@ -320,7 +337,7 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
 
         public string Username {
             get {
-                return GetCredentialUsername();
+                return  GetCredentialUsername();
             }
         }
 
@@ -330,6 +347,7 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
         }
 
         public virtual void Dispose(bool disposing) {
+
         }
 
         public static implicit operator MarshalByRefObject(Request req) {
@@ -350,6 +368,38 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
             return RequestExtensions.Extend(this, GetIRequestInterface(), objects);
         }
 
+        internal string GetOptionValue(OptionCategory category, string name) {
+            // get the value from the request
+            if (CoreVersion() > 0) {
+                return (GetOptionValues(category.ToString(), name) ?? Enumerable.Empty<string>()).LastOrDefault();
+            }
+            return (GetOptionValues((int)category, name) ?? Enumerable.Empty<string>()).LastOrDefault();
+        }
+
+        internal IEnumerable<string> GetOptionValues(OptionCategory category, string name) {
+            // get the value from the request
+            if (CoreVersion() > 0) {
+                return (GetOptionValues(category.ToString(), name) ?? Enumerable.Empty<string>());
+            }
+            return (GetOptionValues((int)category, name) ?? Enumerable.Empty<string>());
+        }
+
+        public bool YieldDynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired) {
+            if (CoreVersion() > 0) {
+                return YieldDynamicOption(category.ToString(), name, expectedType.ToString(), isRequired);
+            }
+
+            // Deprecated--August Preview build uses ints.
+            return YieldDynamicOption((int)category, name, (int)expectedType, isRequired);
+        }
+
+        public bool YieldDynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired, IEnumerable<string> permittedValues) {
+            if (CoreVersion() > 0) {
+                return YieldDynamicOption(category.ToString(), name, expectedType.ToString(), isRequired) && (permittedValues ?? Enumerable.Empty<string>()).All(each => YieldKeyValuePair(name, each));
+            }
+            return YieldDynamicOption((int)category, name, (int)expectedType, isRequired) && (permittedValues ?? Enumerable.Empty<string>()).All(each => YieldKeyValuePair(name, each));
+        }
+
         #endregion
 
         public bool Yield(KeyValuePair<string, string[]> pair) {
@@ -357,14 +407,6 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
                 return YieldKeyValuePair(pair.Key, null);
             }
             return pair.Value.All(each => YieldKeyValuePair(pair.Key, each));
-        }
-
-        public bool YieldDynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired) {
-            return YieldDynamicOption((int)category, name, (int)expectedType, isRequired);
-        }
-
-        public bool YieldDynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired, IEnumerable<string> permittedValues) {
-            return YieldDynamicOption((int)category, name, (int)expectedType, isRequired) && (permittedValues ?? Enumerable.Empty<string>()).All(each => YieldKeyValuePair(name, each));
         }
 
         private string GetValue(OptionCategory category, string name) {
@@ -419,7 +461,6 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
             string result = null;
             try {
                 var client = new WebClient();
-
 
                 // Apparently, places like Codeplex know to let this thru!
                 client.Headers.Add("user-agent", "chocolatey command line");

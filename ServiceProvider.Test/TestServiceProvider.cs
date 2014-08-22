@@ -12,10 +12,9 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.ServicesProvider.Test {
+namespace Microsoft.OneGet.ServiceProvider.Test {
     using System;
     using System.Collections.Generic;
-    using ServiceProvider.Test;
     using RequestImpl = System.Object;
 
     public class TestServicesProvider {
@@ -96,4 +95,35 @@ namespace Microsoft.OneGet.ServicesProvider.Test {
         #endregion
 
     }
+
+    #region copy PackageProvider-types
+/* Synced/Generated code =================================================== */
+
+    public enum OptionCategory {
+        Package = 0,
+        Provider = 1,
+        Source = 2,
+        Install = 3
+    }
+
+    public enum OptionType {
+        String = 0,
+        StringArray = 1,
+        Int = 2,
+        Switch = 3,
+        Folder = 4,
+        File = 5,
+        Path = 6,
+        Uri = 7,
+        SecureString = 8
+    }
+
+    public enum EnvironmentContext {
+        All = 0,
+        User = 1,
+        System = 2
+    }
+
+    #endregion
+
 }

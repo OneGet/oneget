@@ -41,7 +41,6 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             RequestExtensions.RemoteDynamicInterface = dynamicInterface;
         }
 
-
         /// <summary>
         /// Gets the features advertized from the provider
         /// </summary>
@@ -64,7 +63,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         /// </summary>
         /// <param name="category"></param>
         /// <param name="requestImpl"></param>
-        public void GetDynamicOptions(int category, RequestImpl requestImpl) {
+        public void GetDynamicOptions(string category, RequestImpl requestImpl) {
             if (requestImpl == null) {
                 throw new ArgumentNullException("requestImpl");
             }
@@ -82,7 +81,6 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             return "Common";
         }
 
-
         public void DownloadFile(Uri remoteLocation, string localFilename, RequestImpl requestImpl) {
             if (requestImpl == null) {
                 throw new ArgumentNullException("requestImpl");
@@ -91,7 +89,6 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             if (remoteLocation == null) {
                 throw new ArgumentNullException("remoteLocation");
             }
-
 
             using (var request =requestImpl.As<Request>()) {
                 request.Debug("Calling 'CommonServiceProvider::DownloadFile'");
@@ -303,7 +300,7 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
             }
 
             using (var request =requestImpl.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::DeleteFolder'");
+                request.Debug("Calling 'CommonServiceProvider::DeleteFolder' {0}",folder);
                 if (string.IsNullOrEmpty(folder)) {
                     return;
                 }
@@ -380,9 +377,34 @@ namespace Microsoft.OneGet.ServicesProvider.Common {
         }
     }
 
+    #region copy PackageProvider-types
+/* Synced/Generated code =================================================== */
+
+    public enum OptionCategory {
+        Package = 0,
+        Provider = 1,
+        Source = 2,
+        Install = 3
+    }
+
+    public enum OptionType {
+        String = 0,
+        StringArray = 1,
+        Int = 2,
+        Switch = 3,
+        Folder = 4,
+        File = 5,
+        Path = 6,
+        Uri = 7,
+        SecureString = 8
+    }
+
     public enum EnvironmentContext {
-        Process = 0,
+        All = 0,
         User = 1,
         System = 2
     }
+
+    #endregion
+
 }

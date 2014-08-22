@@ -142,8 +142,13 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public void GetInstalledPackages(string name, RequestImpl requestImpl) {
             Call("GetInstalledPackages",requestImpl, name);
         }
-        public void GetDynamicOptions(int category, RequestImpl requestImpl) {
-            Call("GetDynamicOptions",requestImpl, (OptionCategory)category);
+        public void GetDynamicOptions(string category, RequestImpl requestImpl) {
+            OptionCategory cat;
+            if (Enum.TryParse(category ?? "", true, out cat)) {
+                // if this version of the plugin doesn't support that category
+                // there's no point in trying to get options from that type.
+                Call("GetDynamicOptions", requestImpl, cat);
+            }
         }
 
         private string _providerName;
