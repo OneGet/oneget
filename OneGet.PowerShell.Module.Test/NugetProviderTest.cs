@@ -141,7 +141,7 @@ namespace OneGet.PowerShell.Module.Test {
             Assert.False(result.IsFailing, "Did not manage to find nuget provider.");
         }
 
-        [Fact]
+        [Fact(Skip = "impossible to check.")]
         //TODO
         //Has warning, not error, impossible to check at the moment. [BUG]
         public void TestFindPackageInvalidProvider() {
