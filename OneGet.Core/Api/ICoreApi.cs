@@ -45,6 +45,15 @@ namespace Microsoft.OneGet.Api {
         /// <returns></returns>
         Type GetIRequestInterface();
 
+        /// <summary>
+        /// Returns the internal version of the OneGet core.
+        /// 
+        /// This will usually only be updated if there is a breaking API or Interface change that might 
+        /// require other code to know which version is running.
+        /// </summary>
+        /// <returns>Internal Version of OneGet</returns>
+        int CoreVersion();
+
         bool NotifyBeforePackageInstall(string packageName, string version, string source, string destination);
         bool NotifyPackageInstalled(string packageName, string version, string source, string destination);
         bool NotifyBeforePackageUninstall(string packageName, string version, string source, string destination);

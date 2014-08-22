@@ -77,15 +77,21 @@ namespace Microsoft.OneGet.PackageProvider.Bootstrap {
             }
         }
 
-        public void GetDynamicOptions(int category, RequestImpl requestImpl) {
+        public void GetDynamicOptions(string category, RequestImpl requestImpl) {
             if (requestImpl == null) {
                 throw new ArgumentNullException("requestImpl");
             }
 
             using (var request = requestImpl.As<Request>()) {
                 try {
-                    var cat = (OptionCategory)category;
-                    request.Debug("Calling 'Bootstrap::GetDynamicOptions ({0})'", cat);
+                    request.Debug("Calling 'Bootstrap::GetDynamicOptions ({0})'", category);
+
+                    OptionCategory cat;
+                    if (!Enum.TryParse(category ?? "", true, out cat)) {
+                        // unknown category
+                        return;
+                    }
+                    
 
                     switch (cat) {
                         case OptionCategory.Package:

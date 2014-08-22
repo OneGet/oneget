@@ -42,7 +42,9 @@ namespace Microsoft.OneGet.Providers.Package {
 
     public delegate bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
 
-    public delegate bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired);
+    //public delegate bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired);
+
+    public delegate bool YieldDynamicOption(string category, string name, string expectedType, bool isRequired);
 
     public delegate bool YieldKeyValuePair(string key, string value);
 

@@ -61,7 +61,7 @@ namespace Microsoft.OneGet.Api {
         /// <param name="isRegistered"></param>
         /// <param name="isValidated"></param>
         /// <returns></returns>
-        bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated); 
+        bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
@@ -73,6 +73,9 @@ namespace Microsoft.OneGet.Api {
         /// <param name="isRequired">if the parameter is mandatory</param>
         /// <returns></returns>
         bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired);
+
+        bool YieldDynamicOption(string category, string name, string expectedType, bool isRequired);
+
 
         bool YieldKeyValuePair(string key, string value);
 

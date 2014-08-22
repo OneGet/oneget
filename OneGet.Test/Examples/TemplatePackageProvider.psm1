@@ -23,8 +23,7 @@ function Add-PackageSource {
     param(
         [string] $name,
         [string] $location,
-        [bool] $trusted,
-        [Object] $c
+        [bool] $trusted
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -45,8 +44,7 @@ function Find-Package {
         [string] $requiredVersion,
         [string] $minimumVersion,
         [string] $maximumVersion,
-        [int] $id,
-        [Object] $c
+        [int] $id
     )
 
 }
@@ -57,8 +55,7 @@ function Find-Package {
 function Find-PackageByFile { 
     param(
         [string] $file,
-        [int] $id,
-        [Object] $c
+        [int] $id
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -76,8 +73,7 @@ function Find-PackageByFile {
 function Find-PackageByUri { 
     param(
         [Uri] $uri,
-        [int] $id,
-        [Object] $c
+        [int] $id
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -94,8 +90,7 @@ function Find-PackageByUri {
 #>
 function Get-InstalledPackage { 
     param(
-        [string] $name,
-        [Object] $c
+        [string] $name
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -262,8 +257,7 @@ function Is-ValidPackageSource {
 #>
 function Remove-PackageSource { 
     param(
-        [string] $name,
-        [Object] $c
+        [string] $name
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -280,8 +274,7 @@ function Remove-PackageSource {
 #>
 function Uninstall-Package { 
     param(
-        [string] $fastPath,
-        [Object] $c
+        [string] $fastPath
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -315,8 +308,7 @@ function Get-Feature {
 function Download-Package { 
     param(
         [string] $fastPath,
-        [string] $location,
-        [Object] $c
+        [string] $location
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -333,8 +325,7 @@ function Download-Package {
 #>
 function Get-PackageDependencie { 
     param(
-        [string] $fastPath,
-        [Object] $c
+        [string] $fastPath
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -351,8 +342,7 @@ function Get-PackageDependencie {
 #>
 function Get-PackageDetail { 
     param(
-        [string] $fastPath,
-        [Object] $c
+        [string] $fastPath
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -369,8 +359,7 @@ function Get-PackageDetail {
 #>
 function Install-Package { 
     param(
-        [string] $fastPath,
-        [Object] $c
+        [string] $fastPath
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -404,7 +393,6 @@ function Get-DynamicOption {
 #>
 function Start-Find { 
     param(
-        [Object] $c
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -421,8 +409,7 @@ function Start-Find {
 #>
 function Complete-Find { 
     param(
-        [int] $id,
-        [Object] $c
+        [int] $id
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -452,7 +439,6 @@ function Get-IsSourceRequired {
 #>
 function Resolve-PackageSource { 
     param(
-        [Object] $c
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
