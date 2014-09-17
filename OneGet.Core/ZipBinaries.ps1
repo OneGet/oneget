@@ -18,8 +18,6 @@ mkdir .\tmpfiles
 copy  ..\..\..\..\..\LICENSE .\tmpfiles
 copy Microsoft.OneGet.dll .\tmpfiles
 copy Microsoft.OneGet.MetaProvider.PowerShell.dll .\tmpfiles
-copy Microsoft.OneGet.PackageProvider.Bootstrap.dll .\tmpfiles
-copy Microsoft.OneGet.ServicesProvider.Common.dll .\tmpfiles
 copy Microsoft.OneGet.Utility.dll .\tmpfiles
 copy Microsoft.OneGet.Utility.PowerShell.dll .\tmpfiles
 copy Microsoft.PowerShell.OneGet.dll .\tmpfiles
