@@ -205,6 +205,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
             // based on the application name
             var appName = (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName().Name;
             if (OriginalTempFolder.IndexOf(appName, StringComparison.CurrentCultureIgnoreCase) == -1) {
+
                 var appTempPath = Path.Combine(OriginalTempFolder, appName);
                 if (!Directory.Exists(appTempPath)) {
                     Directory.CreateDirectory(appTempPath);
@@ -219,6 +220,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 Environment.SetEnvironmentVariable("TEMP", TempPath);
 
                 // make sure this temp directory gets marked for eventual cleanup.
+                MoveFileOverwrite(appTempPath, null);
                 MoveFileAtNextBoot(TempPath, null);
             }
 

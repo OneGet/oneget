@@ -25,6 +25,66 @@ namespace Microsoft.OneGet {
         internal const string ProviderPluginLoadFailure = "MSG:ProviderPluginLoadFailure";
         internal const string Invalidoperation = "InvalidOperation";
 
+        internal const string UnsupportedArchive = "MSG:UnsupportedArchive";
+        internal const string CreatefolderFailed = "MSG:CreatefolderFailed";
+        internal const string UnableToOverwriteExistingFile = "MSG:UnableToOverwriteExistingFile";
+        internal const string UnableToCopyFileTo = "MSG:UnableToCopyFileTo";
+        internal const string UnableToCreateShortcutTargetDoesNotExist = "MSG:UnableToCreateShortcutTargetDoesNotExist";
+        internal const string RemoveEnvironmentVariableRequiresElevation = "MSG:RemoveEnvironmentVariableRequiresElevation";
+        internal const string UnknownFolderId = "MSG:UnknownFolderId";
+
+        internal const string InvalidResult = "InvalidResult";
+        internal const string SchemeNotSupported = "MSG:SchemeNotSupported";
+
+        internal const string SoftwareIdentity = "SoftwareIdentity";
+        internal const string ProviderSwidtagUnavailable = "MSG:ProviderSwidtagUnavailable";
+        internal const string UnableToResolvePackage = "MSG:UnableToResolvePackage";
+        internal const string UnsupportedProviderType = "MSG:UnsupportedProviderType";
+        internal const string DestinationPathNotSet = "MSG:DestinationPathNotSet";
+        internal const string InvalidFilename = "MSG:InvalidFilename";
+        internal const string UnableToRemoveFile = "MSG:UnableToRemoveFile";
+        internal const string FileFailedVerification = "MSG:FileFailedVerification";
+
+        internal const string AutomationOnlyFeature = "automation-only";
+
         internal const string MinVersion = "0.0.0.1";
+
+        internal static string[] Empty = new string[0];
     }
+
+    internal enum ErrorCategory {
+        NotSpecified,
+        OpenError,
+        CloseError,
+        DeviceError,
+        DeadlockDetected,
+        InvalidArgument,
+        InvalidData,
+        InvalidOperation,
+        InvalidResult,
+        InvalidType,
+        MetadataError,
+        NotImplemented,
+        NotInstalled,
+        ObjectNotFound,
+        OperationStopped,
+        OperationTimeout,
+        SyntaxError,
+        ParserError,
+        PermissionDenied,
+        ResourceBusy,
+        ResourceExists,
+        ResourceUnavailable,
+        ReadError,
+        WriteError,
+        FromStdErr,
+        SecurityError,
+        ProtocolError,
+        ConnectionError,
+        AuthenticationError,
+        LimitsExceeded,
+        QuotaExceeded,
+        NotEnabled,
+    }
+
 }

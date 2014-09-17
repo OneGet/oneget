@@ -14,7 +14,7 @@
 
 namespace Microsoft.OneGet.Test {
     using System.Linq;
-    using Providers.Package;
+    using Implementation;
     using Xunit;
 
     public class BootstrapTests {
@@ -24,7 +24,7 @@ namespace Microsoft.OneGet.Test {
         public static IPackageManagementService Service {
             get {
                 if (_service == null) {
-                    _service = new PackageManagementService().Instance;
+                    _service = new PackageManager().Instance;
                     _service.Initialize(new Req());
                 }
                 return _service;

@@ -68,6 +68,10 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         private static bool DoNamesMatchAcceptably(string originalName, string candidateName) {
+            if (originalName.EqualsIgnoreCase(candidateName)) {
+                return true;
+            }
+
             // transform non-leading underscores to nothing.
             if (!candidateName.StartsWith("_",StringComparison.OrdinalIgnoreCase)) {
                 candidateName = candidateName.Replace("_", "");

@@ -12,7 +12,11 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Api {
-    public interface IRequest : IHostApi, ICoreApi, IResponseApi {
+namespace Microsoft.OneGet.Packaging {
+    public enum OptionCategory {
+        Package = 0,
+        Provider = 1,
+        Source = 2,
+        Install = 3
     }
 }

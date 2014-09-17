@@ -14,7 +14,8 @@
 
 namespace Microsoft.OneGet {
     using System.Collections.Generic;
-    using Providers.Package;
+    using Api;
+    using Implementation;
     using RequestImpl = System.Object;
 
     /// <summary>
@@ -35,6 +36,8 @@ namespace Microsoft.OneGet {
         IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName);
 
         IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
+
+        IProviderServices ProviderServices {get;}
 
         bool Initialize(RequestImpl requestImpl);
 

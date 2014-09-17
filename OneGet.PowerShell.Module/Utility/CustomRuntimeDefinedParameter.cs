@@ -19,9 +19,8 @@ namespace Microsoft.PowerShell.OneGet.Utility {
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
-    using Microsoft.OneGet;
+    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Providers.Package;
     using Microsoft.OneGet.Utility.Extensions;
     using Microsoft.OneGet.Utility.PowerShell;
 

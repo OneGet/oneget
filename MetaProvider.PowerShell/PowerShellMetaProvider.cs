@@ -247,9 +247,11 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     }
                 }
 
+                /*
                 foreach (var onegetModule in ModulesFromResult((DynamicPowershellResult)ps.GetModule(ListAvailable: true)).SelectMany(GetOneGetModules)) {
                     yield return onegetModule;
                 }
+                 * */
             }
         }
 

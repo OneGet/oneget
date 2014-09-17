@@ -96,19 +96,23 @@ namespace Microsoft.OneGet.Utility.Platform {
             }
         }
 
-        public static string[] Append(this string[] searchPath, string pathToAdd) {
-            if (searchPath.Any(s => s.EqualsIgnoreCase(pathToAdd))) {
-                return searchPath;
+        public static string[] Append(this IEnumerable<string> searchPath, string pathToAdd) {
+            var p = searchPath.ToArray();
+
+            if (p.Any(s => s.EqualsIgnoreCase(pathToAdd))) {
+                return p;
             }
-            return searchPath.Union(new[] {pathToAdd}).ToArray();
+            return p.Union(new[] {pathToAdd}).ToArray();
         }
 
-        public static string[] Prepend(this string[] searchPath, string pathToAdd) {
-            if (searchPath.Any(s => s.EqualsIgnoreCase(pathToAdd))) {
-                return searchPath;
+        public static string[] Prepend(this IEnumerable<string> searchPath, string pathToAdd) {
+            var p = searchPath.ToArray();
+
+            if (p.Any(s => s.EqualsIgnoreCase(pathToAdd))) {
+                return p;
             }
             
-            return new[] { pathToAdd }.Union(searchPath).ToArray();
+            return new[] { pathToAdd }.Union(p).ToArray();
         }
 
 

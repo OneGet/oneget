@@ -17,7 +17,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading;
-    using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Implementation;
+    using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Collections;
     using Utility;
 

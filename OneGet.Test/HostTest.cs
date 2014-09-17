@@ -22,9 +22,9 @@ namespace Microsoft.OneGet.Test {
     using System.Reflection;
     // using MetaProvider.PowerShell;
     using Api;
+    using Implementation;
     using Packaging;
     using PowerShell.OneGet.CmdLets;
-    using Providers.Package;
     using Utility.Extensions;
     using Utility.Plugin;
     using Xunit;
@@ -179,7 +179,7 @@ namespace Microsoft.OneGet.Test {
         public static IPackageManagementService Service {
             get {
                 if (_service == null) {
-                    _service = new PackageManagementService().Instance;
+                    _service = new PackageManager().Instance;
                     _service.Initialize(new Req());
                 }
                 return _service;

@@ -71,7 +71,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             if (appDomainSetup == null) {
                 throw new ArgumentNullException("appDomainSetup");
             }
-            _identity = (name + _count++) ?? Guid.NewGuid().ToString();
+            _identity = (name + _count++);
             appDomainSetup.ApplicationName = appDomainSetup.ApplicationName ?? "PluginDomain" + _identity;
 
             _appDomain = AppDomain.CreateDomain(_identity, null, appDomainSetup);

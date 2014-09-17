@@ -100,9 +100,9 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
         }
 
-        internal object CreateInstance(List<object> instances, List<Delegate, MethodInfo> delegates) {
+        internal object CreateInstance(List<Type,object> instances, List<Delegate, MethodInfo> delegates) {
             var proxyConstructor = Type.GetConstructors()[0];
-            var instance = proxyConstructor.Invoke(instances.Concat(delegates.Select(each => each.Key)).ToArray());
+            var instance = proxyConstructor.Invoke(instances.Select(each=>each.Value).Concat(delegates.Select(each => each.Key)).ToArray());
             // set the implemented methods collection 
             var imf = Type.GetField("__implementedMethods", BindingFlags.NonPublic | BindingFlags.Instance);
             if (imf != null) {
@@ -113,7 +113,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         private TypeBuilder DefineDynamicType(Type interfaceType) {
-            _proxyName = "{0}_proxy_{1}_in_{2}".format(interfaceType.NiceName().MakeSafeFileName(), _typeCounter++, AppDomain.CurrentDomain.FriendlyName.MakeSafeFileName().Replace("[","_").Replace("]","_"));
+            _proxyName = "{0}_proxy_{1}_in_{2}".format(interfaceType.NiceName().MakeSafeFileName(),_typeCounter++, AppDomain.CurrentDomain.FriendlyName.MakeSafeFileName().Replace("[","_").Replace("]","_"));
 
             _fullpath = (_proxyName+".dll").GenerateTemporaryFilename();
             _directory = Path.GetDirectoryName(_fullpath);

@@ -172,40 +172,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract int CallCount();
         #endregion
 
-        #region copy service-apis
-
-        /* Synced/Generated code =================================================== */
-        public abstract void DownloadFile(Uri remoteLocation, string localFilename, RequestImpl requestImpl);
-
-        public abstract bool IsSupportedArchive(string localFilename, RequestImpl requestImpl);
-
-        public abstract IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, RequestImpl requestImpl);
-
-        public abstract void AddPinnedItemToTaskbar(string item, RequestImpl requestImpl);
-
-        public abstract void RemovePinnedItemFromTaskbar(string item, RequestImpl requestImpl);
-
-        public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, RequestImpl requestImpl);
-
-        public abstract void SetEnvironmentVariable(string variable, string value, int context, RequestImpl requestImpl);
-
-        public abstract void RemoveEnvironmentVariable(string variable, int context, RequestImpl requestImpl);
-
-        public abstract void CopyFile(string sourcePath, string destinationPath, RequestImpl requestImpl);
-
-        public abstract void Delete(string path, RequestImpl requestImpl);
-
-        public abstract void DeleteFolder(string folder, RequestImpl requestImpl);
-
-        public abstract void CreateFolder(string folder, RequestImpl requestImpl);
-
-        public abstract void DeleteFile(string filename, RequestImpl requestImpl);
-
-        public abstract string GetKnownFolder(string knownFolder, RequestImpl requestImpl);
-
-        public abstract bool IsElevated(RequestImpl requestImpl);
-        #endregion
-
         #region copy response-apis
 
         /* Synced/Generated code =================================================== */

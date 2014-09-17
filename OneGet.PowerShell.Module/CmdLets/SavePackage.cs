@@ -15,8 +15,8 @@
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.IO;
     using System.Management.Automation;
+    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Providers.Package;
 
     [Cmdlet(VerbsData.Save, Constants.PackageNoun, SupportsShouldProcess = true)]
     public sealed class SavePackage : CmdletWithSearchAndSource {

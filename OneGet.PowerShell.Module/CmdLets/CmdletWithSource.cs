@@ -14,8 +14,8 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
+    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Providers.Package;
     using Microsoft.OneGet.Utility.Extensions;
 
     public abstract class CmdletWithSource : CmdletWithProvider {

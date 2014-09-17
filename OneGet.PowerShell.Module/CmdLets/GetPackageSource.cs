@@ -17,8 +17,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Diagnostics.Eventing;
     using System.Linq;
     using System.Management.Automation;
+    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Providers.Package;
     using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Get, Constants.PackageSourceNoun)]

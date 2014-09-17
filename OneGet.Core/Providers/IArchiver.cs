@@ -1,4 +1,4 @@
-// 
+﻿// 
 //  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -12,7 +12,25 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Api {
-    public interface IRequest : IHostApi, ICoreApi, IResponseApi {
+namespace Microsoft.OneGet.Providers {
+    using System;
+    using System.Collections.Generic;
+    using Utility.Plugin;
+
+    public interface IArchiver : IProvider {
+        [Required]
+        IEnumerable<string> SupportedFormats {get;}
+
+        /// <summary>
+        ///     Returns the name of the Provider.
+        /// </summary>
+        /// <returns></returns>
+        [Required]
+        string GetArchiverName();
+
+        [Required]
+        IEnumerable<string> Unpack(string localFilename, string destinationFolder, Object requestImpl);
+
+        bool IsSupportedArchive(string localFilename);
     }
 }

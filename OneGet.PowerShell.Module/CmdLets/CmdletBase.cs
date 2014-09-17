@@ -19,7 +19,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet;
-    using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Utility.Extensions;
     using Microsoft.OneGet.Utility.PowerShell;
     using Resources;
@@ -33,7 +33,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         private static readonly object _lockObject = new object();
         private readonly int _callCount;
         private readonly Hashtable _dynamicOptions;
-        private static readonly IPackageManagementService _packageManagementService = new PackageManagementService().Instance;
+        private static readonly IPackageManagementService _packageManagementService = new PackageManager().Instance;
 
         [Parameter]
         public SwitchParameter ForceBootstrap;
