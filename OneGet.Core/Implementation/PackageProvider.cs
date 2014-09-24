@@ -83,6 +83,14 @@ namespace Microsoft.OneGet.Implementation {
                 throw new ArgumentNullException("names");
             }
 
+            if (names.Length == 0) {
+                return FindPackage(null, requiredVersion, minimumVersion, maximumVersion, 0, requestImpl);
+            }
+
+            if (names.Length == 1) {
+                return FindPackage(names[0], requiredVersion, minimumVersion, maximumVersion, 0,requestImpl);
+            }
+
             requestImpl = ExtendRequest(requestImpl);
             var cts = new CancellationTokenSource();
             return new CancellableEnumerable<SoftwareIdentity>(cts, FindPackagesImpl(cts, names, requiredVersion, minimumVersion, maximumVersion, requestImpl));
@@ -176,7 +184,7 @@ namespace Microsoft.OneGet.Implementation {
             if (!softwareIdentity.FromTrustedSource) {
                 try {
                     if (!request.ShouldContinueWithUntrustedPackageSource(softwareIdentity.Name, softwareIdentity.Source)) {
-                        request.Warning(request.FormatMessageString(Constants.UserDeclinedUntrustedPackageInstall, softwareIdentity.Name));
+                        request.Warning(request.FormatMessageString(Constants.Messages.UserDeclinedUntrustedPackageInstall, softwareIdentity.Name));
                         return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), Enumerable.Empty<SoftwareIdentity>());
                     }
                 } catch {
@@ -184,11 +192,11 @@ namespace Microsoft.OneGet.Implementation {
                 }
             }
 
-            return new Response<SoftwareIdentity>(requestImpl, this, Constants.Installed, response => Provider.InstallPackage(softwareIdentity.FastPackageReference, response)).Result;
+            return new Response<SoftwareIdentity>(requestImpl, this, Constants.PackageStatus.Installed, response => Provider.InstallPackage(softwareIdentity.FastPackageReference, response)).Result;
         }
 
         public ICancellableEnumerable<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, Object requestImpl) {
-            return new Response<SoftwareIdentity>(requestImpl, this, Constants.Uninstalled, response => Provider.UninstallPackage(softwareIdentity.FastPackageReference, response)).Result;
+            return new Response<SoftwareIdentity>(requestImpl, this, Constants.PackageStatus.Uninstalled, response => Provider.UninstallPackage(softwareIdentity.FastPackageReference, response)).Result;
         }
 
         public ICancellableEnumerable<PackageSource> ResolvePackageSources(Object requestImpl) {
@@ -206,11 +214,9 @@ namespace Microsoft.OneGet.Implementation {
 
             Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, ExtendRequest(requestImpl));
         }
+
+        internal void ElevatedAction(string payload, Object requestImpl) {
+            
+        }
     }
-
-    #region declare PackageProvider-types
-
-    /* Synced/Generated code =================================================== */
-
-    #endregion
 }

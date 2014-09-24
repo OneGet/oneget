@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq" />
@@ -49,7 +50,92 @@
     <Compile Include="Collections\HashSet.cs" />
     <Compile Include="Collections\SerializableEnumerable.cs" />
     <Compile Include="Collections\SerializableEnumerator.cs" />
-    <Compile Include="Constants.cs" />
+    <Compile Include="Deployment\Compression.Cab\CabEngine.cs" />
+    <Compile Include="Deployment\Compression.Cab\CabException.cs" />
+    <Compile Include="Deployment\Compression.Cab\CabFileInfo.cs" />
+    <Compile Include="Deployment\Compression.Cab\CabInfo.cs" />
+    <Compile Include="Deployment\Compression.Cab\CabPacker.cs" />
+    <Compile Include="Deployment\Compression.Cab\CabUnpacker.cs" />
+    <Compile Include="Deployment\Compression.Cab\CabWorker.cs" />
+    <Compile Include="Deployment\Compression.Cab\HandleManager.cs" />
+    <Compile Include="Deployment\Compression.Cab\NativeMethods.cs" />
+    <Compile Include="Deployment\Compression.Zip\ConcatStream.cs" />
+    <Compile Include="Deployment\Compression.Zip\CrcStream.cs" />
+    <Compile Include="Deployment\Compression.Zip\ZipCompressionMethod.cs" />
+    <Compile Include="Deployment\Compression.Zip\ZipEngine.cs" />
+    <Compile Include="Deployment\Compression.Zip\ZipException.cs" />
+    <Compile Include="Deployment\Compression.Zip\ZipFileInfo.cs" />
+    <Compile Include="Deployment\Compression.Zip\ZipFormat.cs" />
+    <Compile Include="Deployment\Compression.Zip\ZipInfo.cs" />
+    <Compile Include="Deployment\Compression.Zip\ZipPacker.cs" />
+    <Compile Include="Deployment\Compression.Zip\ZipUnpacker.cs" />
+    <Compile Include="Deployment\Compression\ArchiveException.cs" />
+    <Compile Include="Deployment\Compression\ArchiveFileInfo.cs" />
+    <Compile Include="Deployment\Compression\ArchiveFileStreamContext.cs" />
+    <Compile Include="Deployment\Compression\ArchiveInfo.cs" />
+    <Compile Include="Deployment\Compression\ArchiveProgressEventArgs.cs" />
+    <Compile Include="Deployment\Compression\ArchiveProgressType.cs" />
+    <Compile Include="Deployment\Compression\BasicUnpackStreamContext.cs" />
+    <Compile Include="Deployment\Compression\CargoStream.cs" />
+    <Compile Include="Deployment\Compression\CompressionEngine.cs" />
+    <Compile Include="Deployment\Compression\CompressionLevel.cs" />
+    <Compile Include="Deployment\Compression\DuplicateStream.cs" />
+    <Compile Include="Deployment\Compression\IPackStreamContext.cs" />
+    <Compile Include="Deployment\Compression\IUnpackStreamContext.cs" />
+    <Compile Include="Deployment\Compression\OffsetStream.cs" />
+    <Compile Include="Deployment\Compression\SafeNativeMethods.cs" />
+    <Compile Include="Deployment\WindowsInstaller.Linq\Attributes.cs" />
+    <Compile Include="Deployment\WindowsInstaller.Linq\Entities.cs" />
+    <Compile Include="Deployment\WindowsInstaller.Linq\QDatabase.cs" />
+    <Compile Include="Deployment\WindowsInstaller.Linq\QRecord.cs" />
+    <Compile Include="Deployment\WindowsInstaller.Linq\QTable.cs" />
+    <Compile Include="Deployment\WindowsInstaller.Linq\Query.cs" />
+    <Compile Include="Deployment\WindowsInstaller.Package\InstallPackage.cs" />
+    <Compile Include="Deployment\WindowsInstaller.Package\InstallPath.cs" />
+    <Compile Include="Deployment\WindowsInstaller.Package\PatchPackage.cs" />
+    <Compile Include="Deployment\WindowsInstaller.Package\TransformInfo.cs" />
+    <Compile Include="Deployment\WindowsInstaller\ColumnCollection.cs" />
+    <Compile Include="Deployment\WindowsInstaller\ColumnEnums.cs" />
+    <Compile Include="Deployment\WindowsInstaller\ColumnInfo.cs" />
+    <Compile Include="Deployment\WindowsInstaller\ComponentInfo.cs" />
+    <Compile Include="Deployment\WindowsInstaller\ComponentInstallation.cs" />
+    <Compile Include="Deployment\WindowsInstaller\CustomActionAttribute.cs" />
+    <Compile Include="Deployment\WindowsInstaller\customactiondata.cs" />
+    <Compile Include="Deployment\WindowsInstaller\CustomActionProxy.cs" />
+    <Compile Include="Deployment\WindowsInstaller\Database.cs" />
+    <Compile Include="Deployment\WindowsInstaller\DatabaseQuery.cs" />
+    <Compile Include="Deployment\WindowsInstaller\DatabaseTransform.cs" />
+    <Compile Include="Deployment\WindowsInstaller\EmbeddedUIProxy.cs" />
+    <Compile Include="Deployment\WindowsInstaller\Enums.cs" />
+    <Compile Include="Deployment\WindowsInstaller\Exceptions.cs" />
+    <Compile Include="Deployment\WindowsInstaller\ExternalUIHandler.cs" />
+    <Compile Include="Deployment\WindowsInstaller\FeatureInfo.cs" />
+    <Compile Include="Deployment\WindowsInstaller\FeatureInstallation.cs" />
+    <Compile Include="Deployment\WindowsInstaller\Handle.cs" />
+    <Compile Include="Deployment\WindowsInstaller\IEmbeddedUI.cs" />
+    <Compile Include="Deployment\WindowsInstaller\Installation.cs" />
+    <Compile Include="Deployment\WindowsInstaller\InstallationPart.cs" />
+    <Compile Include="Deployment\WindowsInstaller\InstallCost.cs" />
+    <Compile Include="Deployment\WindowsInstaller\Installer.cs" />
+    <Compile Include="Deployment\WindowsInstaller\InstallerAdvertise.cs" />
+    <Compile Include="Deployment\WindowsInstaller\InstallerUtils.cs" />
+    <Compile Include="Deployment\WindowsInstaller\MediaDisk.cs" />
+    <Compile Include="Deployment\WindowsInstaller\NativeMethods.cs" />
+    <Compile Include="Deployment\WindowsInstaller\PatchInstallation.cs" />
+    <Compile Include="Deployment\WindowsInstaller\ProductInstallation.cs" />
+    <Compile Include="Deployment\WindowsInstaller\Record.cs" />
+    <Compile Include="Deployment\WindowsInstaller\RecordStream.cs" />
+    <Compile Include="Deployment\WindowsInstaller\RemotableNativeMethods.cs" />
+    <Compile Include="Deployment\WindowsInstaller\Session.cs" />
+    <Compile Include="Deployment\WindowsInstaller\ShortcutTarget.cs" />
+    <Compile Include="Deployment\WindowsInstaller\SourceList.cs" />
+    <Compile Include="Deployment\WindowsInstaller\SourceMediaList.cs" />
+    <Compile Include="Deployment\WindowsInstaller\SummaryInfo.cs" />
+    <Compile Include="Deployment\WindowsInstaller\TableCollection.cs" />
+    <Compile Include="Deployment\WindowsInstaller\TableInfo.cs" />
+    <Compile Include="Deployment\WindowsInstaller\Transaction.cs" />
+    <Compile Include="Deployment\WindowsInstaller\ValidationErrorInfo.cs" />
+    <Compile Include="Deployment\WindowsInstaller\View.cs" />
     <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="Plugin\WrappedAction.cs">
       <AutoGen>True</AutoGen>
@@ -110,11 +196,23 @@
     <Compile Include="Platform\STGM.cs" />
     <Compile Include="Platform\ShellApplication.cs" />
     <Compile Include="Platform\Win32FindData.cs" />
+    <Compile Include="Deployment\Resources\BitmapResource.cs" />
+    <Compile Include="Deployment\Resources\FixedFileVersionInfo.cs" />
+    <Compile Include="Deployment\Resources\GroupIconInfo.cs" />
+    <Compile Include="Deployment\Resources\GroupIconResource.cs" />
     <Compile Include="Resources\Messages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Messages.resx</DependentUpon>
     </Compile>
+    <Compile Include="Deployment\Resources\NativeMethods.cs" />
+    <Compile Include="Deployment\Resources\Resource.cs" />
+    <Compile Include="Deployment\Resources\ResourceCollection.cs" />
+    <Compile Include="Deployment\Resources\ResourceType.cs" />
+    <Compile Include="Deployment\Resources\VersionEnums.cs" />
+    <Compile Include="Deployment\Resources\VersionInfo.cs" />
+    <Compile Include="Deployment\Resources\VersionResource.cs" />
+    <Compile Include="Deployment\Resources\VersionStringTable.cs" />
     <Compile Include="Versions\FourPartVersion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Xml\DynamicAttributes.cs" />
@@ -135,11 +233,18 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Deployment\Compression.Cab\Errors.resources" />
+    <EmbeddedResource Include="Deployment\WindowsInstaller\Errors.resources" />
     <EmbeddedResource Include="Resources\Messages.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>Messages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Fakes Include="Deployment\WindowsInstaller\Errors.txt" />
+    <None Include="Deployment\Compression.Cab\Errors.txt" />
+    <Content Include="Deployment\Compression\Compression.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

@@ -28,6 +28,8 @@ function Get-Feature {
 
 	#advertise which file extensions we support
 	write-Output (new-feature "extensions" @("nupkg") )
+
+	write-Output (new-feature "IsChainingProvider" @("true") )
 }
 
 function Get-DynamicOptions { 

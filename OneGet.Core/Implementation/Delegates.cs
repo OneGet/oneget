@@ -24,7 +24,7 @@ namespace Microsoft.OneGet.Implementation {
 
     public delegate bool OkToContinue();
 
-    public delegate bool YieldDynamicOption(string category, string name, string expectedType, bool isRequired);
+    public delegate bool YieldDynamicOption(string name, string expectedType, bool isRequired);
 
     public delegate bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint);
 
@@ -43,8 +43,6 @@ namespace Microsoft.OneGet.Implementation {
     public delegate bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
 
     public delegate bool YieldValue(string value);
-
-    //public delegate bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired);
 
     #endregion
 

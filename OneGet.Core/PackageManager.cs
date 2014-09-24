@@ -61,5 +61,9 @@ namespace Microsoft.OneGet {
         public T GetTypedInstance<T>() {
             return new DynamicInterface().Create<T>(Instance);
         }
+
+        public int Main(string[] args) {
+            
+        }
     }
 }

@@ -96,5 +96,8 @@ namespace Microsoft.OneGet.Utility.Extensions {
             return d;
         }
 
+        public static TValue Get<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key) {
+            return dictionary.ContainsKey(key) ? dictionary[key] : default(TValue);
+        }
     }
 }

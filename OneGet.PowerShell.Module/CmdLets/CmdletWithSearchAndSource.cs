@@ -161,15 +161,21 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         ProcessPackage(packageProvider, name, p);
                     }
                 } else {
-                    foreach (var pkg in from p in packages
-                        group p by p.Name
-                        // for a given name
-                        into grouping
-                            // get the latest version only
-                        select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()) {
-                        found = true;
-                        // each package name should only show up once here.
-                        ProcessPackage(packageProvider, name, pkg);
+                    if (!string.IsNullOrWhiteSpace(MaximumVersion) || !string.IsNullOrWhiteSpace(MinimumVersion)) {
+                        foreach (var pkg in from p in packages
+                            group p by p.Name
+                            // for a given name
+                            into grouping
+                                // get the latest version only
+                            select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()) {
+                            found = true;
+                            // each package name should only show up once here.
+                            ProcessPackage(packageProvider, name, pkg);
+                        }
+                    } else {
+                        foreach (var pkg in packages ) {
+                            ProcessPackage(packageProvider, name, pkg);
+                        }
                     }
                 }
             }

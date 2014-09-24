@@ -36,7 +36,7 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object requestImpl) {
-            return Provider.Unpack(localFilename, destinationFolder, ExtendRequest(requestImpl)).ByRefEnumerable();
+            return  Provider.UnpackArchive(localFilename, destinationFolder, ExtendRequest(requestImpl)).ByRefEnumerable();
         }
     }
 }

@@ -45,19 +45,30 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     public class DynamicOption : Yieldable {
         public DynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired, IEnumerable<object> permittedValues) {
             Name = name;
-            Category = category;
             ExpectedType = expectedType;
             IsRequired = isRequired;
             PermittedValues = permittedValues;
         }
 
+        public DynamicOption(string name, OptionType expectedType, bool isRequired, IEnumerable<object> permittedValues) {
+            Name = name;
+            ExpectedType = expectedType;
+            IsRequired = isRequired;
+            PermittedValues = permittedValues;
+        }
+
+
         public DynamicOption(OptionCategory category,string name,  OptionType expectedType, bool isRequired) : this(category, name , expectedType, isRequired, null) {
         }
+
+        public DynamicOption(string name, OptionType expectedType, bool isRequired)
+            : this(name, expectedType, isRequired, null) {
+        }
+
 
         public DynamicOption() {
         }
 
-        public OptionCategory Category {get; set;}
         public string Name {get; set;}
         public OptionType ExpectedType {get; set;}
         public bool IsRequired {get; set;}
@@ -67,12 +78,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             if (r == null) {
                 throw new ArgumentNullException("r");
             }
-            if (r.CoreVersion() > 0) {
-                return r.YieldDynamicOption(Category.ToString(), Name, ExpectedType.ToString(), IsRequired) &&
-                   PermittedValues.WhereNotNull().Select(each => each.ToString()).ToArray().All(v => r.YieldKeyValuePair(Name, v));
-            }
-            return r.YieldDynamicOption((int)Category, Name, (int)ExpectedType, IsRequired) &&
-                   PermittedValues.WhereNotNull().Select(each => each.ToString()).ToArray().All(v => r.YieldKeyValuePair(Name, v));
+            return r.YieldDynamicOption(Name, ExpectedType.ToString(), IsRequired) && PermittedValues.WhereNotNull().Select(each => each.ToString()).ToArray().All(v => r.YieldKeyValuePair(Name, v));
         }
     }
 }

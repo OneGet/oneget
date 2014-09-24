@@ -65,7 +65,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// </summary>
         /// <param name="requestImpl"></param>
         /// <returns></returns>
-        public abstract object GetPackageManagementService(RequestImpl requestImpl);
+        public abstract object GetPackageManagementService();
 
         /// <summary>
         ///     Returns the interface type for a Request that the OneGet Core is expecting
@@ -123,25 +123,13 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract bool CompleteProgress(int activityId, bool isSuccessful);
 
-        public abstract IEnumerable<string> GetOptionValues(string category, string key);
+        public abstract IEnumerable<string> GetOptionValues(string key);
 
         /// <summary>
         ///     Used by a provider to request what metadata keys were passed from the user
-        ///
-        /// This is API is deprecated, use the string variant instead.
         /// </summary>
         /// <returns></returns>
-        public abstract IEnumerable<string> GetOptionKeys(int category);
-
-        /// <summary>
-        /// 
-        /// 
-        /// This is API is deprecated, use the string variant instead.
-        /// </summary>
-        /// <param name="category"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public abstract IEnumerable<string> GetOptionValues(int category, string key);
+        public abstract IEnumerable<string> GetOptionKeys();
 
         public abstract IEnumerable<string> GetSources();
 
@@ -227,14 +215,11 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         ///     Used by a provider to return the fields for a Metadata Definition
         ///     The cmdlets can use this to supply tab-completion for metadata to the user.
         /// </summary>
-        /// <param name="category"> one of ['provider', 'source', 'package', 'install']</param>
         /// <param name="name">the provider-defined name of the option</param>
         /// <param name="expectedType"> one of ['string','int','path','switch']</param>
         /// <param name="isRequired">if the parameter is mandatory</param>
         /// <returns></returns>
-        public abstract bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired);
-
-        public abstract bool YieldDynamicOption(string category, string name, string expectedType, bool isRequired);
+        public abstract bool YieldDynamicOption(string name, string expectedType, bool isRequired);
 
         public abstract bool YieldKeyValuePair(string key, string value);
 
@@ -252,11 +237,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             return Error(messageText, category.ToString(), targetObjectValue, FormatMessageString(messageText, args));
         }
 
-        internal bool ThrowError(ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
-            Error(messageText, category.ToString(), targetObjectValue, FormatMessageString(messageText, args));
-            throw new Exception("MSG:TerminatingError");
-        }
-
+      
         public bool Message(string messageText, params object[] args) {
             return Message(FormatMessageString(messageText,args));
         }
@@ -334,53 +315,20 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         public static implicit operator MarshalByRefObject(Request req) {
-            return req.RemoteThis;
+            return req.Extend();
         }
 
         public static MarshalByRefObject ToMarshalByRefObject(Request request) {
-            return request.RemoteThis;
-        }
-
-        internal MarshalByRefObject RemoteThis {
-            get {
-                return Extend();
-            }
+            return request.Extend();
         }
 
         internal MarshalByRefObject Extend(params object[] objects) {
             return RequestExtensions.Extend(this, GetIRequestInterface(), objects);
         }
 
-        internal string GetOptionValue(OptionCategory category, string name) {
+        internal string GetOptionValue(string name) {
             // get the value from the request
-            if (CoreVersion() > 0) {
-                return (GetOptionValues(category.ToString(), name) ?? Enumerable.Empty<string>()).LastOrDefault();
-            }
-            return (GetOptionValues((int)category, name) ?? Enumerable.Empty<string>()).LastOrDefault();
-        }
-
-        internal IEnumerable<string> GetOptionValues(OptionCategory category, string name) {
-            // get the value from the request
-            if (CoreVersion() > 0) {
-                return (GetOptionValues(category.ToString(), name) ?? Enumerable.Empty<string>());
-            }
-            return (GetOptionValues((int)category, name) ?? Enumerable.Empty<string>());
-        }
-
-        public bool YieldDynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired) {
-            if (CoreVersion() > 0) {
-                return YieldDynamicOption(category.ToString(), name, expectedType.ToString(), isRequired);
-            }
-
-            // Deprecated--August Preview build uses ints.
-            return YieldDynamicOption((int)category, name, (int)expectedType, isRequired);
-        }
-
-        public bool YieldDynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired, IEnumerable<string> permittedValues) {
-            if (CoreVersion() > 0) {
-                return YieldDynamicOption(category.ToString(), name, expectedType.ToString(), isRequired) && (permittedValues ?? Enumerable.Empty<string>()).All(each => YieldKeyValuePair(name, each));
-            }
-            return YieldDynamicOption((int)category, name, (int)expectedType, isRequired) && (permittedValues ?? Enumerable.Empty<string>()).All(each => YieldKeyValuePair(name, each));
+            return (GetOptionValues(name) ?? Enumerable.Empty<string>()).LastOrDefault();
         }
 
         #endregion
@@ -402,26 +350,22 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 if (_options == null) {
                     _options = new Hashtable();
                     //quick and dirty, grab all four sets and merge them.
-                    for (int i = 0; i < 4; i++) {
-                        var keys = GetOptionKeys(i).ToArray();
-                        foreach (var k in keys) {
-                            if (_options.ContainsKey(k)) {
-                                continue;
-                            }
-                            var values = GetOptionValues(i, k).ToArray();
-                            if (values.Length == 1) {
-                                if (values[0].IsTrue()) {
-                                    _options.Add(k, true);
-                                }
-                                else if (values[0].StartsWith("SECURESTRING:",StringComparison.OrdinalIgnoreCase)) {
-                                    _options.Add(k, values[0].Substring(13).FromProtectedString("salt") );
-                                }
-                                else {
-                                    _options.Add(k, values[0]);
-                                }
+                    var keys = GetOptionKeys().ToArray();
+                    foreach (var k in keys) {
+                        if (_options.ContainsKey(k)) {
+                            continue;
+                        }
+                        var values = GetOptionValues(k).ToArray();
+                        if (values.Length == 1) {
+                            if (values[0].IsTrue()) {
+                                _options.Add(k, true);
+                            } else if (values[0].StartsWith("SECURESTRING:", StringComparison.OrdinalIgnoreCase)) {
+                                _options.Add(k, values[0].Substring(13).FromProtectedString("salt"));
                             } else {
-                                _options.Add(k, values);
+                                _options.Add(k, values[0]);
                             }
+                        } else {
+                            _options.Add(k, values);
                         }
                     }
                 }
@@ -461,11 +405,11 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
 
             return Extend(new {
-                GetOptionKeys = new Func<int, IEnumerable<string>>(category => {
+                GetOptionKeys = new Func< IEnumerable<string>>(() => {
                     return lst.Keys.ToArray();
                 }),
 
-                GetOptionValues = new Func<int, string, IEnumerable<string>>((category, key) => {
+                GetOptionValues = new Func< string, IEnumerable<string>>((key) => {
                     if (lst.ContainsKey(key)) {
                         return lst[key];    
                     }
@@ -510,7 +454,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
         public IPackageManagementService PackageManagementService {
             get {
-                return _packageManagementService ?? (_packageManagementService = GetPackageManagementService(RemoteThis) as IPackageManagementService);
+                return _packageManagementService ?? (_packageManagementService = GetPackageManagementService() as IPackageManagementService);
             }
         }
 
@@ -527,11 +471,11 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         public object SelectProvider(string providerName) {
-            return PackageManagementService.SelectProviders(providerName,RemoteThis).FirstOrDefault(each => each.Name.EqualsIgnoreCase(providerName));
+            return PackageManagementService.SelectProviders(providerName,Extend()).FirstOrDefault(each => each.Name.EqualsIgnoreCase(providerName));
         }
 
         public IEnumerable<object> SelectProviders(string providerName) {
-            return PackageManagementService.SelectProviders(providerName, RemoteThis);
+            return PackageManagementService.SelectProviders(providerName, Extend());
         }
         public IEnumerable<object> SelectProvidersWithFeature(string featureName) {
             return PackageManagementService.SelectProvidersWithFeature(featureName);
@@ -543,7 +487,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public bool RequirePackageProvider(string packageProviderName, string minimumVersion) {
             var pp = (_provider as PowerShellPackageProvider);
-            return PackageManagementService.RequirePackageProvider(  pp == null ? Constants.ProviderNameUnknown : pp.GetPackageProviderName() ,packageProviderName, minimumVersion, RemoteThis);
+            return PackageManagementService.RequirePackageProvider(  pp == null ? Constants.ProviderNameUnknown : pp.GetPackageProviderName() ,packageProviderName, minimumVersion, Extend());
         }
 
     }

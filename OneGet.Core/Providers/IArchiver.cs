@@ -29,7 +29,7 @@ namespace Microsoft.OneGet.Providers {
         string GetArchiverName();
 
         [Required]
-        IEnumerable<string> Unpack(string localFilename, string destinationFolder, Object requestImpl);
+        IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object requestImpl);
 
         bool IsSupportedArchive(string localFilename);
     }

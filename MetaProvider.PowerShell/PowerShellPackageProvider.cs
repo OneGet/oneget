@@ -142,6 +142,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public void GetInstalledPackages(string name, RequestImpl requestImpl) {
             Call("GetInstalledPackages",requestImpl, name);
         }
+
         public void GetDynamicOptions(string category, RequestImpl requestImpl) {
             OptionCategory cat;
             if (Enum.TryParse(category ?? "", true, out cat)) {

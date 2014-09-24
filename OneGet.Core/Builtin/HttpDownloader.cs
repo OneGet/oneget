@@ -1,29 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//  http://www.apache.org/licenses/LICENSE-2.0
+//  
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//  
 
 namespace Microsoft.OneGet.Builtin {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Net;
     using System.Threading;
     using Implementation;
-    using Providers;
     using Utility.Extensions;
     using Utility.Plugin;
 
-    class HttpDownloader {
-        private static readonly string[] _schemes = new [] {
+    public class HttpDownloader {
+        private static readonly string[] _schemes = new[] {
             "http", "https"
         };
-        public void InitializeProvider(object dynamicInterface, object requestImpl) {
-            
-        }
 
         public IEnumerable<string> SupportedSchemes {
             get {
                 return _schemes;
             }
+        }
+
+        public void InitializeProvider(object dynamicInterface, object requestImpl) {
         }
 
         public string GetDownloaderName() {
@@ -43,7 +53,7 @@ namespace Microsoft.OneGet.Builtin {
                 request.Debug("Calling 'HttpDownloader::DownloadFile' '{0}','{1}'", remoteLocation, localFilename);
 
                 if (remoteLocation.Scheme.ToLowerInvariant() != "http" && remoteLocation.Scheme.ToLowerInvariant() != "https") {
-                    request.Error(Constants.InvalidResult, remoteLocation.ToString(), Constants.SchemeNotSupported, remoteLocation.Scheme);
+                    request.Error(ErrorCategory.InvalidResult, remoteLocation.ToString(), Constants.Messages.SchemeNotSupported, remoteLocation.Scheme);
                     return;
                 }
 
@@ -83,13 +93,13 @@ namespace Microsoft.OneGet.Builtin {
                     done.Set();
                 };
                 webClient.DownloadProgressChanged += (sender, args) => {
-                    var percent = (args.BytesReceived * 100) / args.TotalBytesToReceive;
+                    var percent = (args.BytesReceived*100)/args.TotalBytesToReceive;
                     // Progress(requestImpl, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
                 };
                 webClient.DownloadFileAsync(remoteLocation, localFilename);
                 done.WaitOne();
                 if (!File.Exists(localFilename)) {
-                    request.Error(Constants.InvalidResult, remoteLocation.ToString(), "Unable to download '{0}' to file '{1}'", remoteLocation.ToString(), localFilename);
+                    request.Error(ErrorCategory.InvalidResult, remoteLocation.ToString(), Constants.Messages.UnableToDownload, remoteLocation.ToString(), localFilename);
                 }
             }
         }

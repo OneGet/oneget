@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet {
     using System;
     using System.Collections.Generic;
+    using Utility.Extensions;
 
     public interface IProviderServices {
         #region declare service-apis
@@ -50,14 +51,20 @@ namespace Microsoft.OneGet {
 
         bool IsElevated {get;}
 
+        string CanonicalizePath(string text, string currentDirectory);
+
+        bool FileExists(string path);
+
+        bool DirectoryExists(string path);
+
+        bool Install(string fileName, string additionalArgs, Object requestImpl);
+
+        bool IsSignedAndTrusted(string filename, Object requestImpl);
+
         #endregion
 
 #if NOT_ADDED_YET
         
-        void UnzipFileIncremental(string zipFile, string folder, RequestImpl requestImpl);
-
-        void UnzipFile(string zipFile, string folder, RequestImpl requestImpl);
-
         void AddFileAssociation();
 
         void RemoveFileAssociation();
@@ -69,10 +76,6 @@ namespace Microsoft.OneGet {
         void AddFolderToPath();
 
         void RemoveFolderFromPath();
-
-        void InstallMSI();
-
-        void RemoveMSI();
 
         void StartProcess();
 

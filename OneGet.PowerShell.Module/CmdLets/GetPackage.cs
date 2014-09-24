@@ -114,7 +114,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
             if (!Stopping) {
                 foreach (var provider in UnprocessedProviders) {
-                    Warning(Constants.NoPackagesFoundForProvider, provider);
+                    Debug(Constants.NoPackagesFoundForProvider, provider);
                 }
             }
             return true;

@@ -44,7 +44,7 @@ namespace Microsoft.OneGet.Builtin {
             { "schemes", new[] { "http", "https", "file" } },
             { "extensions", new[] { "exe", "msi" }}, 
             { "magic-signatures", Constants.Empty },
-            { Constants.AutomationOnlyFeature, Constants.Empty }
+            { Constants.Features.AutomationOnly, Constants.Empty }
         };
 
         internal static IEnumerable<string> SupportedSchemes {
@@ -87,23 +87,18 @@ namespace Microsoft.OneGet.Builtin {
                 try {
                     request.Debug("Calling 'Bootstrap::GetDynamicOptions ({0})'", category);
 
-                    OptionCategory cat;
-                    if (!Enum.TryParse(category ?? "", true, out cat)) {
-                        // unknown category
-                        return;
-                    }
-
-                    switch (cat) {
-                        case OptionCategory.Package:
-                            // request.YieldDynamicOption(cat, "ForceCheck", OptionType.Switch, false);
+                    
+                    switch ((category??string.Empty).ToLowerInvariant()) {
+                        case "package":
+                            // request.YieldDynamicOption( "ForceCheck", OptionType.Switch, false);
 
                             break;
 
-                        case OptionCategory.Source:
+                        case "source":
                             break;
 
-                        case OptionCategory.Install:
-                            request.YieldDynamicOption(cat.ToString(), "DestinationPath", OptionType.Folder.ToString(), true);
+                        case "install":
+                            request.YieldDynamicOption("DestinationPath", OptionType.Folder.ToString(), true);
                             break;
                     }
                 } catch {
@@ -131,7 +126,7 @@ namespace Microsoft.OneGet.Builtin {
 
                 var master = request.DownloadSwidtag(_urls);
                 if (master == null) {
-                    request.Warning(Constants.ProviderSwidtagUnavailable);
+                    request.Warning(Constants.Messages.ProviderSwidtagUnavailable);
                     return;
                 }
 
@@ -193,7 +188,7 @@ namespace Microsoft.OneGet.Builtin {
 
                 var master = request.DownloadSwidtag(_urls);
                 if (master == null) {
-                    request.Warning(Constants.ProviderSwidtagUnavailable);
+                    request.Warning(Constants.Messages.ProviderSwidtagUnavailable);
                     return;
                 }
 
@@ -202,17 +197,17 @@ namespace Microsoft.OneGet.Builtin {
                     // install the 'package'
 
                     if (!provider.XPath("/swid:SoftwareIdentity/swid:Meta[@providerType = 'assembly']").Any()) {
-                        request.Error(ErrorCategory.InvalidOperation.ToString(), fastPath, request.FormatMessageString(Constants.UnsupportedProviderType, fastPath));
+                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.UnsupportedProviderType, fastPath);
                         return;
                     }
                     if (!Directory.Exists(request.DestinationPath)) {
-                        request.Error(ErrorCategory.InvalidOperation.ToString(), fastPath, request.FormatMessageString(Constants.DestinationPathNotSet));
+                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.DestinationPathNotSet);
                         return;
                     }
 
                     var targetFilename = provider.XPath("/swid:SoftwareIdentity/swid:Meta[@targetFilename]").GetAttribute("targetFilename");
                     if (string.IsNullOrEmpty(targetFilename)) {
-                        request.Error(ErrorCategory.InvalidOperation.ToString(), fastPath, request.FormatMessageString(Constants.InvalidFilename));
+                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.InvalidFilename);
                         return;
                     }
                     targetFilename = Path.GetFileName(targetFilename);
@@ -245,7 +240,7 @@ namespace Microsoft.OneGet.Builtin {
                             if (result != WinVerifyTrustResult.Success) {
                                 request.Debug("Not Valid file '{0}' => '{1}'", href, tmpFile);
                                 failedBecauseInvalid = true;
-                                request.Warning(Constants.FileFailedVerification, href);
+                                request.Warning(Constants.Messages.FileFailedVerification, href);
 #if !DEBUG
                                 tmpFile.TryHardToDelete();
                                 continue;
@@ -260,7 +255,7 @@ namespace Microsoft.OneGet.Builtin {
 
                             // is that file still there? 
                             if (File.Exists(targetFile)) {
-                                request.Error(ErrorCategory.InvalidOperation.ToString(), fastPath, Constants.UnableToRemoveFile, targetFile);
+                                request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.UnableToRemoveFile, targetFile);
                                 return;
                             }
 
@@ -280,10 +275,10 @@ namespace Microsoft.OneGet.Builtin {
                         }
                     }
                     if (failedBecauseInvalid) {
-                        request.Error(ErrorCategory.InvalidData.ToString(), fastPath, Constants.FileFailedVerification, fastPath);
+                        request.Error(ErrorCategory.InvalidData, fastPath, Constants.Messages.FileFailedVerification, fastPath);
                     }
                 } else {
-                    request.Error(ErrorCategory.InvalidData.ToString(), fastPath, Constants.UnableToResolvePackage, fastPath);
+                    request.Error(ErrorCategory.InvalidData, fastPath, Constants.Messages.UnableToResolvePackage, fastPath);
                 }
             }
         }
@@ -306,13 +301,13 @@ namespace Microsoft.OneGet.Builtin {
 
         internal string DestinationPath {
             get {
-                return Path.GetFullPath(GetValue(OptionCategory.Install, "DestinationPath"));
+                return Path.GetFullPath(GetValue("DestinationPath"));
             }
         }
 
-        private string GetValue(OptionCategory category, string name) {
+        private string GetValue(string name) {
             // get the value from the request
-            return (GetOptionValues((int)category, name) ?? Enumerable.Empty<string>()).LastOrDefault();
+            return (GetOptionValues(name) ?? Enumerable.Empty<string>()).LastOrDefault();
         }
 
         internal DynamicElement DownloadSwidtag(IEnumerable<string> locations) {
@@ -324,7 +319,7 @@ namespace Microsoft.OneGet.Builtin {
                     if (!String.IsNullOrEmpty(content)) {
                         try {
                             document = XDocument.Parse(content);
-                            if (document.Root != null && document.Root.Name.LocalName == Constants.SoftwareIdentity) {
+                            if (document.Root != null && document.Root.Name.LocalName == Constants.SwidTag.SoftwareIdentity) {
                                 // future todo: we could do more checks here.
 
                                 return new DynamicElement(document, NamespaceManager);

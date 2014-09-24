@@ -68,7 +68,7 @@ namespace Microsoft.OneGet.Implementation {
 
         // well known, built in provider assemblies.
         private readonly string[] _defaultProviders = {
-            Assembly.GetExecutingAssembly().CodeBase, // load the providers from this assembly 
+            Path.GetFullPath(Assembly.GetExecutingAssembly().Location), // load the providers from this assembly 
             "Microsoft.OneGet.MetaProvider.PowerShell.dll",
         };
 
@@ -95,7 +95,7 @@ namespace Microsoft.OneGet.Implementation {
                     TryToLoadProviderAssembly(providerAssemblyName, request);
 
                 } catch {
-                    request.Error(Constants.ProviderPluginLoadFailure, Constants.Invalidoperation, providerAssemblyName, request.FormatMessageString(Constants.ProviderPluginLoadFailure, providerAssemblyName));
+                    request.Error(Constants.Messages.ProviderPluginLoadFailure, ErrorCategory.InvalidOperation.ToString(), providerAssemblyName, request.FormatMessageString(Constants.Messages.ProviderPluginLoadFailure, providerAssemblyName));
                 }
             });
         }
@@ -153,7 +153,7 @@ namespace Microsoft.OneGet.Implementation {
                     var hostApi = requestImpl.As<IHostApi>();
 
                     // warn the user that that provider wasn't found.
-                    hostApi.Warning(hostApi.FormatMessageString(Constants.UnknownProvider,providerName));
+                    hostApi.Warning(hostApi.FormatMessageString(Constants.Messages.UnknownProvider,providerName));
                 }
                 return Enumerable.Empty<PackageProvider>().ByRef();
             }
@@ -455,7 +455,7 @@ namespace Microsoft.OneGet.Implementation {
                 // todo: what should we say here?
                 if (request.ShouldBootstrapProvider(requestor, pkg[0].Name, pkg[0].Version, providerType, location, destination)) {
                     var newRequest = requestImpl.Extend<IRequest>(new {
-                        GetOptionValues = new Func<int, string, IEnumerable<string>>((category, key) => {
+                        GetOptionValues = new Func<string, IEnumerable<string>>((key) => {
                             if (key == "DestinationPath") {
                                 return new string[] {
                                     destination
@@ -467,7 +467,7 @@ namespace Microsoft.OneGet.Implementation {
                     var packagesInstalled = bootstrap.InstallPackage(pkg[0], newRequest).LastOrDefault();
                     if (packagesInstalled == null) {
                         // that's sad.
-                        request.Error(Constants.FailedProviderBootstrap, Constants.Invalidoperation, package.Name, request.FormatMessageString(Constants.FailedProviderBootstrap,package.Name));
+                        request.Error(Constants.Messages.FailedProviderBootstrap, ErrorCategory.InvalidOperation.ToString(), package.Name, request.FormatMessageString(Constants.Messages.FailedProviderBootstrap,package.Name));
                         return false;
                     }
                     // so it installed something

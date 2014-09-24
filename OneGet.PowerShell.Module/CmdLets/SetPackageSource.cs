@@ -78,15 +78,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
 
-        public override IEnumerable<string> GetOptionKeys(int category) {
-            return base.GetOptionKeys(category).ConcatSingleItem("IsUpdatePackageSource").ByRef();
+        public override IEnumerable<string> GetOptionKeys() {
+            return base.GetOptionKeys().ConcatSingleItem("IsUpdatePackageSource").ByRef();
         }
 
-        public override IEnumerable<string> GetOptionValues(int category, string key) {
+        public override IEnumerable<string> GetOptionValues(string key) {
             if (key != null && key.EqualsIgnoreCase("IsUpdatePackageSource")) {
                 return "true".SingleItemAsEnumerable().ByRef();
             }
-            return base.GetOptionValues(category, key);
+            return base.GetOptionValues(key);
         }
 
         private void UpdatePackageSource(PackageSource source) {

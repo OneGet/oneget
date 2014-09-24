@@ -34,7 +34,7 @@ namespace Microsoft.OneGet.Api {
         /// </summary>
         /// <param name="requestImpl"></param>
         /// <returns></returns>
-        object GetPackageManagementService(RequestImpl requestImpl);
+        object GetPackageManagementService();
 
         /// <summary>
         ///     Returns the interface type for a Request that the OneGet Core is expecting

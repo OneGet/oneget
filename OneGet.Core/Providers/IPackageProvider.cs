@@ -82,6 +82,8 @@ namespace Microsoft.OneGet.Providers {
 
         void UninstallPackage(string fastPath, Object requestImpl);
 
+        void ElevatedAction(string payload, Object requestImpl);
+
         #endregion
     }
 }

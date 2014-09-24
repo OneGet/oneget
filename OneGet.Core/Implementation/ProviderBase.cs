@@ -69,7 +69,7 @@ namespace Microsoft.OneGet.Implementation {
                 return _context ?? (_context = new object[] {
                     new {
                         CoreVersion = new Func<int>(() => 1),
-                        GetPackageManagementService = new Func<object, object>((requestImpl) => PackageManager._instance),
+                        GetPackageManagementService = new Func<object>(() => PackageManager._instance),
                         GetIRequestInterface = new Func<Type>(() => typeof (IRequest)),
 #if DEBUG
                         Debug = new Action<string>(NativeMethods.OutputDebugString),
@@ -88,15 +88,26 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
+        private List<DynamicOption> _dynamicOptions;
+            
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
         public List<DynamicOption> DynamicOptions {
             get {
-                var result = new List<DynamicOption>();
-                result.AddRange(GetDynamicOptions(OptionCategory.Install, null));
-                result.AddRange(GetDynamicOptions(OptionCategory.Package, null));
-                result.AddRange(GetDynamicOptions(OptionCategory.Provider, null));
-                result.AddRange(GetDynamicOptions(OptionCategory.Source, null));
-                return result;
+                if (_dynamicOptions == null) {
+                    
+                    var result = new List<DynamicOption>();
+                    result.AddRange(GetDynamicOptions(OptionCategory.Install, null));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Package, null));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Provider, null));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Source, null));
+                    if( Features.ContainsKey("IsChainingProvider") ) {
+                        // chaining package providers should not cache results
+                        return result;
+                    }
+                   
+                    _dynamicOptions = result;
+                }
+                return _dynamicOptions;
             }
         }
 
@@ -186,37 +197,25 @@ namespace Microsoft.OneGet.Implementation {
             return CallAndCollect<DynamicOption>(
                 result => Provider.GetDynamicOptions(operation.ToString(), ExtendRequest(requestImpl, new {
 
-                    YieldDynamicOption = new YieldDynamicOption((category, name, type, isRequired) => {
+                    YieldDynamicOption = new YieldDynamicOption((name, type, isRequired) => {
                         if (lastItem != null) {
                             lastItem.PossibleValues = list.ToArray();
                             list = new List<string>();
                             result.Add(lastItem);
                         }
 
-#if CORE_VERSION_V0
-
-
-                        lastItem = new DynamicOption {
-                            Category = (OptionCategory)category,
-                            Name = name,
-                            Type = (OptionType)type,
-                            IsRequired = isRequired,
-                            ProviderName = ProviderName,
-                        };
-#else
-                        OptionCategory cat;
                         OptionType typ;
 
-                        if (Enum.TryParse(category, true, out cat) && Enum.TryParse(type, true, out typ) ) {
+                        if (Enum.TryParse(type, true, out typ) ) {
                             lastItem = new DynamicOption {
-                                Category = cat,
+                                Category = operation,
                                 Name = name,
                                 Type = typ,
                                 IsRequired = isRequired,
                                 ProviderName = ProviderName,
                             };    
                         }
-#endif 
+
                         return !(isCancelled() || result.IsCancelled);
                     }),
                     YieldKeyValuePair = new YieldKeyValuePair((key, value) => {

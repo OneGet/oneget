@@ -16,6 +16,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
@@ -39,6 +40,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         private BlockingCollection<TaskCompletionSource<bool>> _messages;
 
         private int? _parentProgressId;
+
+        private Stopwatch _stopwatch;
 
 #if DEBUG
         [Parameter()]
@@ -309,7 +312,12 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         public bool Debug(string messageText, params object[] args) {
             if (IsInvocation) {
-                WriteVerbose(FormatMessageString(messageText, args));
+                if (_stopwatch == null) {
+                    _stopwatch = new Stopwatch();
+                    _stopwatch.Start();
+                }
+
+                WriteVerbose("{0} {1}".format( _stopwatch.Elapsed,FormatMessageString(messageText, args)));
             }
 
             // rather than wait on the result of the async WriteVerbose,
@@ -463,7 +471,9 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         protected T CancelWhenStopped<T>(T cancellable) where T : ICancellable {
-            _cancelWhenStopped.Add(cancellable);
+            lock (_cancelWhenStopped) {
+                _cancelWhenStopped.Add(cancellable);
+            }
             return cancellable;
         }
 

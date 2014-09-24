@@ -241,7 +241,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
                     try {
                         pathUri = new Uri(Path.GetFullPath(path));
                     } catch {
-                        throw new Exception("PathIsNotUri {0} {1}".format(path, pathUri));
+                        return null;
                     }
                 }
 
@@ -269,15 +269,26 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 if (isPotentiallyRelativePath) {
                     return CanonicalizePath(Path.GetFullPath(path), false);
                 }
-                throw new ArgumentException("specified path can not be resolved as a file name or path (unc, url, localpath)", path);
+                return null;
             }
         }
 
-        public static bool FileExists(this string input) {
-            if (!string.IsNullOrEmpty(input)) {
+        public static bool FileExists(this string path) {
+            if (!string.IsNullOrEmpty(path)) {
                 try {
-                    return File.Exists(CanonicalizePath(input, true));
+                    return File.Exists(CanonicalizePath(path, true));
                 } catch {
+                }
+            }
+            return false;
+        }
+
+        public static bool DirectoryExists(this string path) {
+            if (!string.IsNullOrEmpty(path)) {
+                try {
+                    return Directory.Exists(CanonicalizePath(path, true));
+                }
+                catch {
                 }
             }
             return false;

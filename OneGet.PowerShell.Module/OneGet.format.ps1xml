@@ -26,7 +26,6 @@
     <TableControl>
       <TableHeaders>
         <TableColumnHeader>
-          <Width>32</Width>
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>16</Width>
@@ -35,7 +34,7 @@
           <Width>16</Width>
         </TableColumnHeader>
         <TableColumnHeader>
-          <Width>14</Width>
+          <Width>16</Width>
         </TableColumnHeader>
         <TableColumnHeader>
 
@@ -121,8 +120,8 @@
   <View>
     <Name>PackageProvider</Name>
     <ViewSelectedBy>
-      <TypeName>Microsoft.OneGet.Providers.Package.PackageProvider</TypeName>
-      <TypeName>Deserialized.Microsoft.OneGet.Providers.Package.PackageProvider</TypeName>
+      <TypeName>Microsoft.OneGet.Implementation.PackageProvider</TypeName>
+      <TypeName>Deserialized.Microsoft.OneGet.Implementation.PackageProvider</TypeName>
     </ViewSelectedBy>
     <TableControl>
       <TableHeaders>

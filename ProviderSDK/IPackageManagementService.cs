@@ -1,4 +1,4 @@
-﻿// 
+// 
 //  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -12,7 +12,14 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Utility {
-   internal static class Constants {
+namespace OneGet.ProviderSDK {
+    using RequestImpl = System.MarshalByRefObject;
+
+    public interface IPackageManagementService {
+        object ProviderServices {get;}
+
+        bool Initialize(RequestImpl requestImpl);
+
+        bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, RequestImpl requestImpl);
     }
 }

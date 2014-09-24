@@ -161,13 +161,7 @@ namespace Microsoft.OneGet.Implementation {
             return Continue;
         }
 
-        public bool YieldDynamicOption(string category, string name, string expectedType, bool isRequired) {
-            Console.WriteLine("TEMPORARY: SHOULD NOT GET HERE [YieldDynamicOption] ================================================");
-            return false;
-        }
-
-
-        public bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired) {
+        public bool YieldDynamicOption(string name, string expectedType, bool isRequired) {
             Console.WriteLine("TEMPORARY: SHOULD NOT GET HERE [YieldDynamicOption] ================================================");
             return false;
         }

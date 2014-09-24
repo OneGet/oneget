@@ -51,7 +51,15 @@ namespace Microsoft.OneGet.Implementation {
                 throw new ArgumentNullException("requestImpl");
             }
 
-            requestImpl.As<IRequest>().Error("PROTOCOL_NOT_SUPPORTED", "NotImplemented", remoteLocation.Scheme, "PROTOCOL_NOT_SUPPORTED");
+            using (var request = requestImpl.As<Request>()) {
+                foreach (var downloader in _packageManagementService.Downloaders.Values) {
+                    if (downloader.SupportedSchemes.Contains(remoteLocation.Scheme, StringComparer.InvariantCultureIgnoreCase)) {
+                        downloader.DownloadFile(remoteLocation, localFilename, request);
+                        return;
+                    }
+                }
+                request.Error(ErrorCategory.NotImplemented, Constants.Messages.ProtocolNotSupported, remoteLocation.Scheme, Constants.Messages.ProtocolNotSupported, remoteLocation.Scheme);
+            }
         }
 
         public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object requestImpl) {
@@ -61,16 +69,35 @@ namespace Microsoft.OneGet.Implementation {
                 throw new ArgumentNullException("requestImpl");
             }
 
-            requestImpl.As<IRequest>().Error("ARCHIVE_NOT_SUPPORTED", "NotImplemented", localFilename, "PROTOCOL_NOT_SUPPORTED");
+            using (var request = requestImpl.As<Request>()) {
+                foreach (var archiver in _packageManagementService.Archivers.Values) {
+                    if (archiver.IsSupportedArchive(localFilename) ) {
+                        return archiver.UnpackArchive(localFilename, destinationFolder, request);
+                    }
+                }
+                request.Error(ErrorCategory.NotImplemented, localFilename, Constants.Messages.UnsupportedArchive);
+            }
             return Enumerable.Empty<string>();
         }
 
         public void AddPinnedItemToTaskbar(string item, object requestImpl) {
-            
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
+            }
+            using (var request = requestImpl.As<Request>()) {
+                request.Debug("Calling 'ProviderService::AddPinnedItemToTaskbar'");
+                ShellApplication.Pin(item);
+            }
         }
 
         public void RemovePinnedItemFromTaskbar(string item, object requestImpl) {
-            
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
+            }
+            using (var request = requestImpl.As<Request>()) {
+                request.Debug("Calling 'ProviderService::RemovePinnedItemFromTaskbar'");
+                ShellApplication.Unpin(item);
+            }
         }
 
         public void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Object requestImpl) {
@@ -79,13 +106,13 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             using (var request = requestImpl.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::CreateShortcutLink'");
+                request.Debug("Calling 'ProviderService::CreateShortcutLink'");
 
                 if (File.Exists(linkPath)) {
                     request.Verbose("Creating Shortcut '{0}' => '{1}'", linkPath, targetPath);
                     ShellLink.CreateShortcut(linkPath, targetPath, description, workingDirectory, arguments);
                 }
-                request.Error("ObjectNotFound", targetPath, Constants.UnableToCreateShortcutTargetDoesNotExist, targetPath);
+                request.Error(ErrorCategory.InvalidData, targetPath, Constants.Messages.UnableToCreateShortcutTargetDoesNotExist, targetPath);
             }
         }
 
@@ -95,7 +122,7 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             using (var request = requestImpl.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::SetEnvironmentVariable'");
+                request.Debug("Calling 'ProviderService::SetEnvironmentVariable'");
                 if (string.IsNullOrEmpty(value)) {
                     RemoveEnvironmentVariable(variable, context, requestImpl);
                 }
@@ -125,7 +152,7 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             using (var request = requestImpl.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::RemoveEnvironmentVariable'");
+                request.Debug("Calling 'ProviderService::RemoveEnvironmentVariable'");
 
                 if (string.IsNullOrEmpty(variable)) {
                     return;
@@ -138,7 +165,7 @@ namespace Microsoft.OneGet.Implementation {
 
                     case "system":
                         if (!IsElevated) {
-                            request.Warning(Constants.RemoveEnvironmentVariableRequiresElevation, variable);
+                            request.Warning(Constants.Messages.RemoveEnvironmentVariableRequiresElevation, variable);
                             return;
                         }
                         request.Verbose("RemoveEnvironmentVariable (machine)", "'{0}'", variable);
@@ -161,7 +188,7 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             using (var request = requestImpl.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::CopyFile'");
+                request.Debug("Calling 'ProviderService::CopyFile'");
                 if (sourcePath == null) {
                     throw new ArgumentNullException("sourcePath");
                 }
@@ -171,12 +198,12 @@ namespace Microsoft.OneGet.Implementation {
                 if (File.Exists(destinationPath)) {
                     destinationPath.TryHardToDelete();
                     if (File.Exists(destinationPath)) {
-                        request.Error("OpenError", destinationPath, Constants.UnableToOverwriteExistingFile, destinationPath);
+                        request.Error(ErrorCategory.OpenError, destinationPath, Constants.Messages.UnableToOverwriteExistingFile, destinationPath);
                     }
                 }
                 File.Copy(sourcePath, destinationPath);
                 if (!File.Exists(destinationPath)) {
-                    request.Error("InvalidResult", destinationPath, Constants.UnableToCopyFileTo, destinationPath);
+                    request.Error(ErrorCategory.InvalidResult,  destinationPath, Constants.Messages.UnableToCopyFileTo, destinationPath);
                 }
             }
         }
@@ -187,7 +214,7 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             using (var request = requestImpl.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::Delete'");
+                request.Debug("Calling 'ProviderService::Delete'");
                 if (string.IsNullOrEmpty(path)) {
                     return;
                 }
@@ -202,7 +229,7 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             using (var request = requestImpl.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::DeleteFolder' {0}", folder);
+                request.Debug("Calling 'ProviderService::DeleteFolder' {0}".format(folder));
                 if (string.IsNullOrEmpty(folder)) {
                     return;
                 }
@@ -218,7 +245,7 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             using (var request = requestImpl.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::CreateFolder'");
+                request.Debug("Calling 'ProviderService::CreateFolder'");
 
                 if (!Directory.Exists(folder)) {
                     try {
@@ -227,7 +254,7 @@ namespace Microsoft.OneGet.Implementation {
                         return;
                     }
                     catch (Exception e) {
-                        request.Error("InvalidResult", folder, Constants.CreatefolderFailed, folder, e.Message);
+                        request.Error(ErrorCategory.InvalidResult, folder, Constants.Messages.CreatefolderFailed, folder, e.Message);
                         return;
                     }
                 }
@@ -241,7 +268,7 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             using (var request = requestImpl.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::DeleteFile'");
+                request.Debug("Calling 'ProviderService::DeleteFile'");
                 if (string.IsNullOrEmpty(filename)) {
                     return;
                 }
@@ -258,7 +285,7 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             using (var request = requestImpl.As<Request>()) {
-                request.Debug("Calling 'CommonServiceProvider::GetKnownFolder'");
+                request.Debug("Calling 'ProviderService::GetKnownFolder'");
                 if (!string.IsNullOrEmpty(knownFolder)) {
                     if (knownFolder.Equals("tmp", StringComparison.OrdinalIgnoreCase) || knownFolder.Equals("temp", StringComparison.OrdinalIgnoreCase)) {
                         return FilesystemExtensions.TempPath;
@@ -269,9 +296,88 @@ namespace Microsoft.OneGet.Implementation {
                     }
                 }
 
-                request.Error("InvalidArgument", knownFolder, Constants.UnknownFolderId, knownFolder);
+                request.Error(ErrorCategory.InvalidArgument, knownFolder, Constants.Messages.UnknownFolderId, knownFolder);
             }
             return null;
+        }
+
+        public string CanonicalizePath(string path,string currentDirectory) {
+            return path.CanonicalizePath(!string.IsNullOrEmpty(currentDirectory));
+        }
+
+        public bool FileExists(string path) {
+            return path.FileExists();
+        }
+        public bool DirectoryExists(string path) {
+            return path.DirectoryExists();
+        }
+
+        public bool Install(string fileName, string additionalArgs, Object requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
+            }
+
+            if (string.IsNullOrEmpty(fileName)) {
+                return false;
+            }
+
+            using (var request = requestImpl.As<Request>()) {
+
+                // high-level api for simply installing a file 
+                // returns false if unsuccessful.
+                foreach (var provider in PackageManager._instance.PackageProviders) {
+                    var packages = provider.FindPackageByFile(fileName, 0, request).ToArray();
+                    if (packages.Length > 0) {
+                        // found a provider that can handle this package.
+                        // install with this provider
+                        // ToDo: @FutureGarrett -- we need to be able to handle priorities and who wins...
+                        foreach (var package in packages) {
+                            foreach (var installedPackage in provider.InstallPackage(package, request.Extend<IRequest>(new {
+                                    GetOptionValues = new Func<string,IEnumerable<string>> ((key) => {
+                                        if (key.EqualsIgnoreCase("additionalArguments")) {
+                                            return new String[] {additionalArgs};
+                                        }
+                                        return request.GetOptionValues(key);
+                                    })
+                                }))) {
+
+                                request.Debug("Installed internal package {0}", installedPackage.Name);
+                            } 
+                        }
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public bool IsSignedAndTrusted(string filename, Object requestImpl) {
+            if (requestImpl == null) {
+                throw new ArgumentNullException("requestImpl");
+            }
+
+            if (string.IsNullOrEmpty(filename) || !FileExists(filename)) {
+                return false;
+            }
+
+            using (var request = requestImpl.As<Request>()) {
+                request.Debug("Calling 'ProviderService::IsSignedAndTrusted, '{0}'",filename);
+
+                var wtd = new WinTrustData(filename);
+                var result = NativeMethods.WinVerifyTrust(new IntPtr(-1), new Guid("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}"), wtd);
+                return result == WinVerifyTrustResult.Success;
+            }
+        }
+
+        public void ExecuteElevatedAction(string provider, string payload, Object requestImpl ) {
+            // launches a new elevated host that 
+            // talks back to this (unelevated) host for everything in HostApi
+            // everything else should be handled in the new process.
+           
+            
+            
+
         }
 
         public bool IsElevated {

@@ -144,7 +144,12 @@ namespace Microsoft.OneGet.Utility.Plugin {
                     Debug.WriteLine(s);
                 }
 #endif
-                if (types.Any(actualType => actualType.GetDefaultConstructor() == null)) {
+                try {
+                    if (types.Any(actualType => actualType.GetDefaultConstructor() == null)) {
+                        return false;
+                    }
+                } catch {
+                    // if the actualType's assembly isn't available to this appdomain, we can't create an object from the type anyway.
                     return false;
                 }
 #if DEEPDEBUG
