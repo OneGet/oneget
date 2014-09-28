@@ -28,7 +28,10 @@
         <TableColumnHeader>
         </TableColumnHeader>
         <TableColumnHeader>
-          <Width>16</Width>
+          <Width>12</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>12</Width>
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>16</Width>
@@ -51,6 +54,9 @@
             </TableColumnItem>
             <TableColumnItem>
               <PropertyName>Status</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>ProviderName</PropertyName>
             </TableColumnItem>
             <TableColumnItem>
               <PropertyName>Source</PropertyName>

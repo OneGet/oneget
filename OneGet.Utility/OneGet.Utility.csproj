@@ -47,6 +47,7 @@
     <Compile Include="Collections\ByRefCancellationToken.cs" />
     <Compile Include="Collections\ByRefCancellationTokenSource.cs" />
     <Compile Include="Collections\CachingEnumerable.cs" />
+    <Compile Include="Collections\FilenameEqualityComparer.cs" />
     <Compile Include="Collections\HashSet.cs" />
     <Compile Include="Collections\SerializableEnumerable.cs" />
     <Compile Include="Collections\SerializableEnumerator.cs" />

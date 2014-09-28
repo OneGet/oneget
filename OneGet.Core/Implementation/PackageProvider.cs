@@ -215,8 +215,8 @@ namespace Microsoft.OneGet.Implementation {
             Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, ExtendRequest(requestImpl));
         }
 
-        internal void ElevatedAction(string payload, Object requestImpl) {
-            
+        internal void ExecuteElevatedAction(string payload, Object requestImpl) {
+            Provider.ExecuteElevatedAction(payload, ExtendRequest(requestImpl));
         }
     }
 }

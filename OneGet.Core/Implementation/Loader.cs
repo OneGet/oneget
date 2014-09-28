@@ -28,9 +28,12 @@ namespace Microsoft.OneGet.Implementation {
 
     internal static class Loader {
         [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFile", Justification = "This is a plugin loader. It *needs* to do that.")]
-        internal static bool AcquireProviders(string assemblyPath, IRequest request, YieldMetaProvider yieldMetaProvider, YieldPackageProvider yieldPackageProvider, YieldArchiver yieldArchiver, YieldDownloader yieldDownloader) {
+        internal static bool AcquireProviders(string assemblyPath, IRequest request,  YieldMetaProvider yieldMetaProvider, YieldPackageProvider yieldPackageProvider, YieldArchiver yieldArchiver, YieldDownloader yieldDownloader) {
+            var found = false;
             try {
+
                 var assembly = Assembly.LoadFile(assemblyPath);
+                AppDomain.CurrentDomain.SetData("DynamicInteface", DynamicInterface.Instance);
 
                 if (assembly == null) {
                     return false;
@@ -38,29 +41,47 @@ namespace Microsoft.OneGet.Implementation {
 
                 var asmVersion = GetAssemblyVersion(assembly);
 
-                // process Meta Providers
-                foreach (var metaProviderClass in DynamicInterface.Instance.FilterTypesCompatibleTo<IMetaProvider>(assembly)) {
-                    AcquireProvidersViaMetaProvider(DynamicInterface.Instance.Create<IMetaProvider>(metaProviderClass), yieldMetaProvider, yieldPackageProvider, yieldArchiver, yieldDownloader, asmVersion, request);
-                }
+                var t1 = Task.Factory.StartNew(() => {
+                    // process Meta Providers
+                    foreach (var metaProviderClass in DynamicInterface.Instance.FilterTypesCompatibleTo<IMetaProvider>(assembly)) {
+                       found = found |  AcquireProvidersViaMetaProvider(DynamicInterface.Instance.Create<IMetaProvider>(metaProviderClass), yieldMetaProvider, yieldPackageProvider, yieldArchiver, yieldDownloader, asmVersion, request);
+                    }
+                }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
 
-                // process Package Providers
-                foreach (var packageProviderClass in DynamicInterface.Instance.FilterTypesCompatibleTo<IPackageProvider>(assembly)) {
-                    ProcessPackageProvider(DynamicInterface.Instance.Create<IPackageProvider>(packageProviderClass), yieldPackageProvider, asmVersion, request);
-                }
+                var t2 = Task.Factory.StartNew(() => {
+                    // process Package Providers
+                    Parallel.ForEach(DynamicInterface.Instance.FilterTypesCompatibleTo<IPackageProvider>(assembly), packageProviderClass => {
+                        //foreach (var packageProviderClass in DynamicInterface.Instance.FilterTypesCompatibleTo<IPackageProvider>(assembly)) {
+                        found = found | ProcessPackageProvider(DynamicInterface.Instance.Create<IPackageProvider>(packageProviderClass), yieldPackageProvider, asmVersion, request);
+                    });
+                },TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
 
-                // Process archiver Providers
-                foreach (var serviceProviderClass in DynamicInterface.Instance.FilterTypesCompatibleTo<IArchiver>(assembly)) {
-                    ProcessArchiver(DynamicInterface.Instance.Create<IArchiver>(serviceProviderClass), yieldArchiver, asmVersion, request);
-                }
+                var t3 = Task.Factory.StartNew(() => {
 
-                // Process downloader Providers
-                foreach (var serviceProviderClass in DynamicInterface.Instance.FilterTypesCompatibleTo<IDownloader>(assembly)) {
-                    ProcessDownloader(DynamicInterface.Instance.Create<IDownloader>(serviceProviderClass), yieldDownloader, asmVersion, request);
-                }
+                    // Process archiver Providers
+                    Parallel.ForEach(DynamicInterface.Instance.FilterTypesCompatibleTo<IArchiver>(assembly), serviceProviderClass => {
+                        // foreach (var serviceProviderClass in DynamicInterface.Instance.FilterTypesCompatibleTo<IArchiver>(assembly)) {
+                        found = found | ProcessArchiver(DynamicInterface.Instance.Create<IArchiver>(serviceProviderClass), yieldArchiver, asmVersion, request);
+                    });
+                }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
+
+                var t4 = Task.Factory.StartNew(() => {
+                    // Process downloader Providers
+                    Parallel.ForEach(DynamicInterface.Instance.FilterTypesCompatibleTo<IDownloader>(assembly), serviceProviderClass => {
+                    // foreach (var serviceProviderClass in DynamicInterface.Instance.FilterTypesCompatibleTo<IDownloader>(assembly)) {
+                        found = found | ProcessDownloader(DynamicInterface.Instance.Create<IDownloader>(serviceProviderClass), yieldDownloader, asmVersion, request);
+                    })
+                    ;
+                }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
+              
+                t1.Wait();
+                t2.Wait();
+                t3.Wait();
+                t4.Wait();
             } catch (Exception e) {
                 e.Dump();
             }
-            return true;
+            return found;
         }
 
         private static FourPartVersion GetAssemblyVersion(Assembly asm) {
@@ -96,44 +117,57 @@ namespace Microsoft.OneGet.Implementation {
             return result;
         }
 
-        private static void ProcessPackageProvider(IPackageProvider provider, YieldPackageProvider yieldPackageProvider, FourPartVersion asmVersion, IRequest request) {
+        private static bool ProcessPackageProvider(IPackageProvider provider, YieldPackageProvider yieldPackageProvider, FourPartVersion asmVersion, IRequest request) {
             try {
-                provider.InitializeProvider(DynamicInterface.Instance, request);
+                // provider.InitializeProvider(DynamicInterface.Instance, request);
                 FourPartVersion ver = provider.GetProviderVersion();
-                yieldPackageProvider(provider.GetPackageProviderName(), provider, ver == 0 ? asmVersion : ver, request);
+                if (yieldPackageProvider(provider.GetPackageProviderName(), provider, ver == 0 ? asmVersion : ver, request)) {
+                    // provider.InitializeProvider(request);
+                    return true;
+                }
             } catch (Exception e) {
                 e.Dump();
             }
+            return false;
         }
 
-        private static void ProcessArchiver(IArchiver provider, YieldArchiver yieldArchiver, FourPartVersion asmVersion, IRequest request) {
+        private static bool ProcessArchiver(IArchiver provider, YieldArchiver yieldArchiver, FourPartVersion asmVersion, IRequest request) {
             try {
-                provider.InitializeProvider(DynamicInterface.Instance, request);
                 FourPartVersion ver = provider.GetProviderVersion();
-                yieldArchiver(provider.GetArchiverName(), provider, ver == 0 ? asmVersion : ver, request);
+                if (yieldArchiver(provider.GetArchiverName(), provider, ver == 0 ? asmVersion : ver, request)) {
+                    // provider.InitializeProvider(request);
+                    return true;
+                }
             } catch (Exception e) {
                 e.Dump();
             }
+            return false;
         }
 
-        private static void ProcessDownloader(IDownloader provider, YieldDownloader yieldDownloader, FourPartVersion asmVersion, IRequest request) {
+        private static bool ProcessDownloader(IDownloader provider, YieldDownloader yieldDownloader, FourPartVersion asmVersion, IRequest request) {
+
             try {
-                provider.InitializeProvider(DynamicInterface.Instance, request);
+                // provider.InitializeProvider(DynamicInterface.Instance, request);
                 FourPartVersion ver = provider.GetProviderVersion();
-                yieldDownloader(provider.GetDownloaderName(), provider, ver == 0 ? asmVersion : ver, request);
+                if (yieldDownloader(provider.GetDownloaderName(), provider, ver == 0 ? asmVersion : ver, request)) {
+                    // provider.InitializeProvider(request);
+                    return true;
+                }
             } catch (Exception e) {
                 e.Dump();
             }
+            return false;
         }
 
-        internal static void AcquireProvidersViaMetaProvider(IMetaProvider provider, YieldMetaProvider yieldMetaProvider, YieldPackageProvider yieldPackageProvider, YieldArchiver yieldArchiver, YieldDownloader yieldDownloader, FourPartVersion asmVersion,
+        internal static bool AcquireProvidersViaMetaProvider(IMetaProvider provider, YieldMetaProvider yieldMetaProvider, YieldPackageProvider yieldPackageProvider, YieldArchiver yieldArchiver, YieldDownloader yieldDownloader, FourPartVersion asmVersion,
             IRequest request) {
+            var found = false;
             var metaProviderName = provider.GetMetaProviderName();
             FourPartVersion metaProviderVersion = provider.GetProviderVersion();
             var reloading = yieldMetaProvider(metaProviderName, provider, (metaProviderVersion == 0 ? asmVersion : metaProviderVersion), request);
 
             try {
-                provider.InitializeProvider(DynamicInterface.Instance, request);
+                provider.InitializeProvider(request);
                 var metaProvider = provider;
                 Parallel.ForEach(provider.GetProviderNames(), name => {
                     // foreach (var name in provider.GetProviderNames()) {
@@ -142,7 +176,7 @@ namespace Microsoft.OneGet.Implementation {
                         // check if it's a Package Provider
                         if (DynamicInterface.Instance.IsInstanceCompatible<IPackageProvider>(instance)) {
                             try {
-                                ProcessPackageProvider(DynamicInterface.Instance.Create<IPackageProvider>(instance), yieldPackageProvider, asmVersion, request);
+                                found = found | ProcessPackageProvider(DynamicInterface.Instance.Create<IPackageProvider>(instance), yieldPackageProvider, asmVersion, request);
                             } catch (Exception e) {
                                 e.Dump();
                             }
@@ -151,7 +185,7 @@ namespace Microsoft.OneGet.Implementation {
                         // check if it's a Services Provider
                         if (DynamicInterface.Instance.IsInstanceCompatible<IArchiver>(instance)) {
                             try {
-                                ProcessArchiver(DynamicInterface.Instance.Create<IArchiver>(instance), yieldArchiver, asmVersion, request);
+                                found = found | ProcessArchiver(DynamicInterface.Instance.Create<IArchiver>(instance), yieldArchiver, asmVersion, request);
                             } catch (Exception e) {
                                 e.Dump();
                             }
@@ -159,7 +193,7 @@ namespace Microsoft.OneGet.Implementation {
 
                         if (DynamicInterface.Instance.IsInstanceCompatible<IDownloader>(instance)) {
                             try {
-                                ProcessDownloader(DynamicInterface.Instance.Create<IDownloader>(instance), yieldDownloader, asmVersion, request);
+                                found = found | ProcessDownloader(DynamicInterface.Instance.Create<IDownloader>(instance), yieldDownloader, asmVersion, request);
                             } catch (Exception e) {
                                 e.Dump();
                             }
@@ -169,6 +203,7 @@ namespace Microsoft.OneGet.Implementation {
             } catch (Exception e) {
                 e.Dump();
             }
+            return found;
         }
     }
 }

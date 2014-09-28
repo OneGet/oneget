@@ -45,7 +45,7 @@ namespace Microsoft.OneGet.Builtin {
         /// </summary>
         /// <param name="dynamicInterface">a <c>System.Type</c> that represents a remote interface for that a request needs to implement when passing the request back to methods in the CORE. (Advanced Usage)</param>
         /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void InitializeProvider(object dynamicInterface, RequestImpl requestImpl) {
+        public void InitializeProvider(RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestImpl.As<Request>()) {
@@ -58,7 +58,7 @@ namespace Microsoft.OneGet.Builtin {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::InitializeProvider' -- {1}\\{2}\r\n{3}"), ProviderName, e.GetType().Name, e.Message, e.StackTrace);
+                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::InitializeProvider' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
             }
         }
 
@@ -81,7 +81,7 @@ namespace Microsoft.OneGet.Builtin {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::GetFeatures' -- {1}\\{2}\r\n{3}"), ProviderName, e.GetType().Name, e.Message, e.StackTrace);
+                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::GetFeatures' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
             }
         }
 
@@ -124,7 +124,7 @@ namespace Microsoft.OneGet.Builtin {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::GetDynamicOptions' -- {1}\\{2}\r\n{3}"), ProviderName, e.GetType().Name, e.Message, e.StackTrace);
+                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::GetDynamicOptions' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
             }
         }
 
@@ -149,7 +149,7 @@ namespace Microsoft.OneGet.Builtin {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::FindPackageByFile' -- {1}\\{2}\r\n{3}"), ProviderName, e.GetType().Name, e.Message, e.StackTrace);
+                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::FindPackageByFile' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
             }
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.OneGet.Builtin {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::GetInstalledPackages' -- {1}\\{2}\r\n{3}"), ProviderName, e.GetType().Name, e.Message, e.StackTrace);
+                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::GetInstalledPackages' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
             }
         }
 
@@ -193,7 +193,7 @@ namespace Microsoft.OneGet.Builtin {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::InstallPackage' -- {1}\\{2}\r\n{3}"), ProviderName, e.GetType().Name, e.Message, e.StackTrace);
+                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::InstallPackage' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
             }
         }
 
@@ -215,7 +215,7 @@ namespace Microsoft.OneGet.Builtin {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::UninstallPackage' -- {1}\\{2}\r\n{3}"), ProviderName, e.GetType().Name, e.Message, e.StackTrace);
+                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::UninstallPackage' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
             }
         }
     }

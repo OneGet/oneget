@@ -27,11 +27,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         }
 
-        [Parameter(ValueFromPipeline = true, ParameterSetName = Constants.SourceByInputObjectSet)]
+        [Parameter(ValueFromPipeline = true, ParameterSetName = Constants.SourceByInputObjectSet,Mandatory = true)]
         public PackageSource InputObject;
 
         [Alias("ProviderName")]
-        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.SourceBySearchSet)]
+        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.SourceBySearchSet, Mandatory = true)]
         public string Provider { get; set; }
 
         public override string[] ProviderName {

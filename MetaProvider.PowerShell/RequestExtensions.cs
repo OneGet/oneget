@@ -42,12 +42,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// </summary>
         public static dynamic RemoteDynamicInterface {
             get {
-                return _remoteDynamicInterface;
-            }
-            set {
-                if (_remoteDynamicInterface == null) {
-                    _remoteDynamicInterface = value;
-                }
+                return _remoteDynamicInterface ?? ( _remoteDynamicInterface = AppDomain.CurrentDomain.GetData("DynamicInteface"));
             }
         }
 

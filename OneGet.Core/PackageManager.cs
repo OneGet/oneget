@@ -13,7 +13,15 @@
 //  
 
 namespace Microsoft.OneGet {
+    using System;
+    using System.Linq;
+    using System.Runtime.Remoting;
+    using System.Runtime.Remoting.Channels;
+    using System.Runtime.Remoting.Channels.Ipc;
+    using Api;
     using Implementation;
+    using Utility.Extensions;
+    using Utility.Platform;
     using Utility.Plugin;
 
     /// <summary>
@@ -62,8 +70,27 @@ namespace Microsoft.OneGet {
             return new DynamicInterface().Create<T>(Instance);
         }
 
-        public int Main(string[] args) {
+        public static int Main(string[] args) {
+            // this entrypoint is only for use when inter-process remoting to get an elevated host.
+            if (args.Length != 3 || !AdminPrivilege.IsElevated) {
+                return 1;
+            }
+
+            var pms = new PackageManager().Instance;
+            string rpc = args[0];
+            string provider = args[1];
+            string payload = args[2];
+
+            var clientChannel = new IpcClientChannel();
+            ChannelServices.RegisterChannel(clientChannel, true);
+            var remoteRequest = (IHostApi)RemotingServices.Connect(typeof(IHostApi), rpc, null);
+            var localRequest = new RemotableHostApi(remoteRequest);
+
+            pms.Initialize(localRequest);
+            var pro = pms.SelectProviders(provider,localRequest).FirstOrDefault();
+            pro.ExecuteElevatedAction(payload.FromBase64(), localRequest);
             
+            return 0;
         }
     }
 }

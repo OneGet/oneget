@@ -29,6 +29,13 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
     public delegate bool OnMainThread(Func<bool> onMainThreadDelegate);
 
+    internal class ProgressTracker {
+        internal int Id;
+        internal string Activity;
+        internal List<ProgressTracker> Children= new List<ProgressTracker>();
+        internal ProgressTracker Parent;
+    }
+
     public abstract class AsyncCmdlet : PSCmdlet, IDynamicParameters, IDisposable {
         private readonly HashSet<string> _errors = new HashSet<string>();
         private readonly HashSet<string> _warnings = new HashSet<string>();
@@ -39,14 +46,27 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         private BlockingCollection<TaskCompletionSource<bool>> _messages;
 
-        private int? _parentProgressId;
-
         private Stopwatch _stopwatch;
 
 #if DEBUG
         [Parameter()]
         public SwitchParameter IsTesting;
 #endif
+
+        private static int _ignoreDepth = 0;
+
+        protected static bool IgnoreErrors {
+            get {
+                return _ignoreDepth != 0;
+            }
+            set {
+                if (value) {
+                    _ignoreDepth++;
+                } else {
+                    _ignoreDepth--;
+                }
+            }
+        }
 
         protected bool Confirm {
             get {
@@ -248,27 +268,28 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public bool Error(string id,string category, string targetObjectValue, string messageText, params object[] args) {
-            
 
-            if (IsInvocation) {
-                var errorMessage = FormatMessageString(messageText, args);
+            if (!IgnoreErrors) {
+                if (IsInvocation) {
+                    var errorMessage = FormatMessageString(messageText, args);
 
-                if (!_errors.Contains(errorMessage)) {
-                    if (!_errors.Any()) {
-                        ErrorCategory errorCategory;
-                        if (!Enum.TryParse(category, true, out errorCategory)) {
-                            errorCategory = ErrorCategory.NotSpecified;
+                    if (!_errors.Contains(errorMessage)) {
+                        if (!_errors.Any()) {
+                            ErrorCategory errorCategory;
+                            if (!Enum.TryParse(category, true, out errorCategory)) {
+                                errorCategory = ErrorCategory.NotSpecified;
+                            }
+                            try {
+                                WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrEmpty(targetObjectValue) ? (object)this : targetObjectValue)).Wait();
+                            } catch {
+                                // this will throw if the provider thread abends before we get back our result.
+                            }
                         }
-                        try {
-                        WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrEmpty(targetObjectValue) ? (object)this : targetObjectValue)).Wait();
-                        } catch {
-                            // this will throw if the provider thread abends before we get back our result.
-                        }
+                        _errors.Add(errorMessage);
                     }
-                    _errors.Add(errorMessage);
                 }
+                _failing = true;
             }
-            _failing = true;
             // rather than wait on the result of the async'd message,
             // we'll just return the stopping state.
             return IsCancelled();
@@ -316,8 +337,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     _stopwatch = new Stopwatch();
                     _stopwatch.Start();
                 }
-
-                WriteVerbose("{0} {1}".format( _stopwatch.Elapsed,FormatMessageString(messageText, args)));
+                
+                WriteDebug("{0} {1}".format( _stopwatch.Elapsed,FormatMessageString(messageText, args)));
             }
 
             // rather than wait on the result of the async WriteVerbose,
@@ -329,7 +350,40 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             return StartProgress(parentActivityId, message, Constants.NoParameters);
         }
 
+        private List<ProgressTracker> _progressTrackers = new List<ProgressTracker>();
+
+        private ProgressTracker _activeProgressId;
+        private int _nextProgressId = 1;
+
         public int StartProgress(int parentActivityId, string message, params object[] args) {
+            if (IsInvocation) {
+                lock (_progressTrackers) {
+                    ProgressTracker parent = null;
+
+                    if (parentActivityId <= 0) {
+                        if (_activeProgressId != null) {
+                            parent = _activeProgressId;
+                        }
+                    } else {
+                        parent = _progressTrackers.FirstOrDefault(each => each.Id == parentActivityId);
+                    }
+                    var p = new ProgressTracker() {
+                        Activity = FormatMessageString(message, args),
+                        Id = _nextProgressId++,
+                        Parent = parent
+                    };
+                    if (parent != null) {
+                        parent.Children.Add(p);
+                    }
+                    _progressTrackers.Add( p);
+
+                    WriteProgress(new ProgressRecord(p.Id, p.Activity, " ") {
+                        PercentComplete = 0,
+                        RecordType = ProgressRecordType.Processing
+                    });
+                    return p.Id;
+                }
+            }
             return 0;
         }
 
@@ -338,39 +392,62 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public bool Progress(int activityId, int progressPercentage, string messageText, params object[] args) {
-            if (IsInvocation) {
-                if (_parentProgressId == null) {
-                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", FormatMessageString(messageText, args)) {
-                        PercentComplete = progressPercentage
-                    });
-                } else {
-                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup;", FormatMessageString(messageText, args)) {
-                        ParentActivityId = (int)_parentProgressId,
-                        PercentComplete = progressPercentage
-                    });
+            lock (_progressTrackers) {
+                if (IsInvocation) {
+                    var p = _progressTrackers.FirstOrDefault(each => each.Id == activityId);
+                    if (p!= null) {
+                        if (progressPercentage >= 100) {
+                            progressPercentage = 100;
+                        }
+
+                        WriteProgress(new ProgressRecord(p.Id, p.Activity, FormatMessageString(messageText,args)) {
+                            ParentActivityId = p.Parent != null ? p.Parent.Id : 0,
+                            PercentComplete = progressPercentage,
+                            RecordType = ProgressRecordType.Processing
+                        });
+
+                        if (progressPercentage >= 100) {
+                            return CompleteProgress(activityId, true);
+                        }
+                    }
                 }
             }
-
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
             return IsCancelled();
         }
 
         public bool CompleteProgress(int activityId, bool isSuccessful) {
-            if (IsInvocation) {
-                if (_parentProgressId == null) {
-                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", "") {
-                        PercentComplete = 100,
-                        RecordType = ProgressRecordType.Completed
-                    });
-                } else {
-                    WriteProgress(new ProgressRecord(Math.Abs(activityId) + 1, "todo:activitylookup", "") {
-                        ParentActivityId = (int)_parentProgressId,
-                        PercentComplete = 100,
-                        RecordType = ProgressRecordType.Completed
-                    });
+            lock (_progressTrackers) {
+                if (IsInvocation) {
+                    
+                    var p = _progressTrackers.FirstOrDefault(each => each.Id == activityId);
+                    if (p!= null) {
+                        // complete all of this trackers kids.
+                        foreach (var child in p.Children) {
+                            CompleteProgress(child.Id,isSuccessful);
+                        }
+                        if (p.Parent != null) {
+                            p.Parent.Children.Remove(p);
+                        }
+                        _progressTrackers.Remove(p);
+                        if (_messages == null) {
+                            base.WriteProgress(new ProgressRecord(p.Id, p.Activity, "Completed.") {
+                                ParentActivityId = p.Parent != null ? p.Parent.Id : 0,
+                                PercentComplete = 100,
+                                RecordType = ProgressRecordType.Completed
+                            });
+                        } else {
+                            WriteProgress(new ProgressRecord(p.Id, p.Activity, "Completed.") {
+                                ParentActivityId = p.Parent != null ? p.Parent.Id : 0,
+                                PercentComplete = 100,
+                                RecordType = ProgressRecordType.Completed
+                            });
+                        }
+                    }
                 }
             }
+
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
             return IsCancelled();
@@ -465,8 +542,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
 
             // make sure that we mark progress complete.
-            if (_parentProgressId != null) {
-                MasterCompleteProgress();
+            if (_progressTrackers.Any()) {
+                AllProgressComplete();
             }
         }
 
@@ -493,8 +570,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 // just use our async/message pump to handle this activity
                 AsyncRun(StopProcessingAsync);
             }
-            if (_parentProgressId != null) {
-                MasterCompleteProgress();
+            if (_progressTrackers.Any()) {
+                AllProgressComplete();
             }
         }
 
@@ -541,19 +618,13 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             });
         }
 
-        public Task<bool> WriteMasterProgress(string activity, int percent, string format, params object[] args) {
-            _parentProgressId = 0;
-            return QueueMessage(() => base.WriteProgress(new ProgressRecord(0, activity, format.format(args)) {
-                PercentComplete = percent
-            }));
-        }
-
-        public Task<bool> MasterCompleteProgress() {
-            _parentProgressId = null;
-            return QueueMessage(() => base.WriteProgress(new ProgressRecord(0, "", "") {
-                PercentComplete = 100,
-                RecordType = ProgressRecordType.Completed
-            }));
+        public Task<bool> AllProgressComplete() {
+            lock (_progressTrackers) {
+                while (_progressTrackers.Any()) {
+                    CompleteProgress(_progressTrackers.FirstOrDefault().Id, true);
+                }
+            }
+            return IsCancelled().AsResultTask();
         }
 
         public new Task<bool> WriteWarning(string text) {

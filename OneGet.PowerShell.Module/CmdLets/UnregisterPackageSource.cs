@@ -102,7 +102,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length > 0) {
+
+                IgnoreErrors = true;
                 var sources = prov.SelectMany(each => each.ResolvePackageSources(this).Where( source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source) )).ToArray()).ToArray();
+                IgnoreErrors = false;
 
                 if (sources.Length == 0) {
                     return Error(Errors.SourceNotFound, Source);

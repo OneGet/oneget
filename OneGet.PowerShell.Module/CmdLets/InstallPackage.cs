@@ -49,6 +49,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
         public override string MaximumVersion {get; set;}
 
+        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
+        public override  string[] Source { get; set; }
+
         [Alias("Provider")]
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
         public override string[] ProviderName {get; set;}
@@ -116,12 +119,16 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (IsCancelled()) {
                 return false;
             }
+            int progressId = 0;
 
+            if (packagesToInstall.Length > 1) {
+                progressId = StartProgress(0, "Installing {0} packages", packagesToInstall.Length);
+            }
+            int n = 0;
             foreach (var pkg in packagesToInstall) {
-                // if (!WhatIf) {
-                //  WriteMasterProgress("Installing", 1, "Installing package '{0}' ({1} of {2})", pkg.Name, n++, packagesToInstall.Length);
-                // }
-
+                if (packagesToInstall.Length > 1) {
+                    Progress(progressId, (n*100/packagesToInstall.Length) + 1, "Installing Package '{0}' ({1} of {2})", pkg.Name, ++n, packagesToInstall.Length);
+                }
                 var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
                 if (provider == null) {
                     Error(Errors.UnknownProvider, pkg.ProviderName);
@@ -149,6 +156,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     e.Dump();
                     Error(Errors.InstallationFailure, pkg.Name);
                     return false;
+                }
+                if (packagesToInstall.Length > 1) {
+                    Progress(progressId, (n*100/packagesToInstall.Length) + 1, "Installed Package '{0}' ({1} of {2})", pkg.Name, n, packagesToInstall.Length);
                 }
             }
 

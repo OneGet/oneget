@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{7044B856-6D51-498F-90F9-01F219909F79}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.OneGet</RootNamespace>
     <AssemblyName>Microsoft.OneGet</AssemblyName>
@@ -13,6 +13,9 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>
     <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>Microsoft.OneGet.PackageManager</StartupObject>
   </PropertyGroup>
   <Import Project="$(SolutionPath).props" Condition="Exists('$(SolutionPath).props')" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -35,6 +38,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
@@ -48,10 +52,12 @@
     <Compile Include="Builtin\MsuProvider.cs" />
     <Compile Include="Builtin\SwidProvider.cs" />
     <Compile Include="Builtin\VSixProvider.cs" />
+    <Compile Include="Builtin\WindowsFeaturesProvider.cs" />
     <Compile Include="Builtin\WindowsUpdateProvider.cs" />
     <Compile Include="Builtin\ZipArchiver.cs" />
     <Compile Include="ErrorCategory.cs" />
     <Compile Include="Implementation\Delegates.cs" />
+    <Compile Include="Implementation\RemotableHostApi.cs" />
     <Compile Include="Packaging\DynamicOption.cs" />
     <Compile Include="Packaging\OptionCategory.cs" />
     <Compile Include="Packaging\OptionType.cs" />
@@ -112,6 +118,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="RunToUnblock.cmd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="ZipBinaries.ps1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -126,6 +135,11 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

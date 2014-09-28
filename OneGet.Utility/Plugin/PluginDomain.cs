@@ -21,6 +21,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using System.Reflection;
     using Extensions;
 
+#if USE_APPDOMAINS
     internal partial class PluginDomain : MarshalByRefObject, IDisposable {
         private AppDomain _appDomain;
         private string _identity;
@@ -164,4 +165,5 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return domain._appDomain;
         }
     }
+#endif
 }

@@ -17,12 +17,19 @@ namespace Microsoft.OneGet.Utility.Collections {
     using System.Collections.Generic;
     using System.Linq;
 
-    public static class CachingEnumerableExtensions {
-        public static CacheEnumerable<T> ToCacheEnumerable<T>(this IEnumerable<T> collection) {
+    public static class EnumerableExtensions {
+        /// <summary>
+        /// Returns a ReEnumerable wrapper around the collection which timidly (cautiously) pulls items
+        /// but still allows you to to re-enumerate without re-running the query.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection"></param>
+        /// <returns></returns>
+        public static ReEnumerable<T> Timid<T>(this IEnumerable<T> collection) {
             if (collection == null) {
-                return new CacheEnumerable<T>(Enumerable.Empty<T>());
+                return new ReEnumerable<T>(Enumerable.Empty<T>());
             }
-            return collection as CacheEnumerable<T> ?? new CacheEnumerable<T>(collection);
+            return collection as ReEnumerable<T> ?? new ReEnumerable<T>(collection);
         }
     }
 
@@ -32,22 +39,22 @@ namespace Microsoft.OneGet.Utility.Collections {
     ///     (and it doesn't need to iterate thru the whole collection first, like ToList() )
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class CacheEnumerable<T> : IEnumerable<T> {
+    public class ReEnumerable<T> : IEnumerable<T> {
         private readonly IEnumerable<T> _source;
         private List<T> _list;
         private IEnumerator<T> _sourceIterator;
 
-        public CacheEnumerable(IEnumerable<T> source) {
+        public ReEnumerable(IEnumerable<T> source) {
             _source = source ?? new T[0];
         }
 
-        public CacheEnumerable(IEnumerator<T> sourceIterator) {
+        public ReEnumerable(IEnumerator<T> sourceIterator) {
             _source = null;
             _sourceIterator = sourceIterator;
         }
 
-        public CacheEnumerable<T> Concat(IEnumerable<T> additionalItems) {
-            return Enumerable.Concat(this, additionalItems).ToCacheEnumerable();
+        public ReEnumerable<T> Concat(IEnumerable<T> additionalItems) {
+            return Enumerable.Concat(this, additionalItems).Timid();
         }
 
         public IEnumerable<IEnumerator<T>> GetEnumerators(int copies) {
@@ -56,7 +63,7 @@ namespace Microsoft.OneGet.Utility.Collections {
             }
         }
 
-        private bool IsOk(int index) {
+        private bool ItemExists(int index) {
             if (index < _list.Count) {
                 return true;
             }
@@ -76,13 +83,11 @@ namespace Microsoft.OneGet.Utility.Collections {
             return false;
         }
 
-        #region Nested type: LazyEnumerator
-
-        internal class LazyEnumerator<TT> : IEnumerator<TT> {
-            private CacheEnumerable<TT> _collection;
+        internal class Enumerator<TT> : IEnumerator<TT> {
+            private ReEnumerable<TT> _collection;
             private int _index = -1;
 
-            internal LazyEnumerator(CacheEnumerable<TT> collection) {
+            internal Enumerator(ReEnumerable<TT> collection) {
                 _collection = collection;
             }
 
@@ -106,7 +111,7 @@ namespace Microsoft.OneGet.Utility.Collections {
 
             public bool MoveNext() {
                 _index++;
-                return _collection.IsOk(_index);
+                return _collection.ItemExists(_index);
             }
 
             public void Reset() {
@@ -114,15 +119,13 @@ namespace Microsoft.OneGet.Utility.Collections {
             }
 
             public IEnumerator<TT> Clone() {
-                return new LazyEnumerator<TT>(_collection) {
+                return new Enumerator<TT>(_collection) {
                     _index = _index
                 };
             }
 
             #endregion
         }
-
-        #endregion
 
         #region IEnumerable<T> Members
 
@@ -133,7 +136,7 @@ namespace Microsoft.OneGet.Utility.Collections {
                 }
             }
 
-            return new LazyEnumerator<T>(this);
+            return new Enumerator<T>(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator() {

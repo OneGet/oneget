@@ -79,6 +79,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         internal Type Type {
             get {
+#if USE_APPDOMAINS
                 lock (PluginDomain.DynamicAssemblyPaths) {
                     try {
                         if (_type == null) {
@@ -97,6 +98,19 @@ namespace Microsoft.OneGet.Utility.Plugin {
                         throw;
                     }
                 }
+#else 
+                try {
+                    if (_type == null) {
+                        _type = _dynamicType.CreateType();
+                        //_dynamicAssembly.Save(_filename);
+                    }
+                    return _type;
+                }
+                catch (Exception e) {
+                    e.Dump();
+                    throw;
+                }
+#endif
             }
         }
 
@@ -120,7 +134,6 @@ namespace Microsoft.OneGet.Utility.Plugin {
             _filename = Path.GetFileName(_fullpath);
 
             _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.RunAndSave, _directory);
-
             // Define a dynamic module in this assembly.
             // , "{0}.dll".format(_proxyName)
             var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName,_filename);

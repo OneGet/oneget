@@ -10,10 +10,9 @@ namespace Microsoft.OneGet.Providers {
         ///     Allows the Provider to do one-time initialization.
         ///     This is called after the Provider is instantiated .
         /// </summary>
-        /// <param name="dynamicInterface">A reference to the DynamicInterface class -- used to implement late-binding</param>
         /// <param name="requestImpl">Object implementing some or all IRequest methods</param>
         [Required]
-        void InitializeProvider(object dynamicInterface, Object requestImpl);
+        void InitializeProvider(Object requestImpl);
 
         /// <summary>
         ///     Gets the features advertized from the provider

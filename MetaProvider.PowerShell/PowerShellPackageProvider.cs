@@ -165,7 +165,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             Call("ResolvePackageSources", requestImpl);
         }
 
-        public void InitializeProvider(object dynamicInterface, RequestImpl requestImpl) {
+        public void InitializeProvider(RequestImpl requestImpl) {
             Call("InitializeProvider", requestImpl);
         }
 

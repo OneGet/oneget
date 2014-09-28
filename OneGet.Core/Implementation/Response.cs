@@ -54,7 +54,7 @@ namespace Microsoft.OneGet.Implementation {
             : this(requestImpl, provider) {
             Task.Factory.StartNew(() => {
                 try {
-                    call(provider.ExtendRequest(_context, this));
+                    call(provider.ExtendRequest(_context,  this));
                 } catch (Exception e) {
                     e.Dump();
                 } finally {

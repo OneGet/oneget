@@ -60,6 +60,8 @@ namespace OneGet.ProviderSDK {
 
         public abstract bool IsSignedAndTrusted(string filename, RequestImpl requestImpl);
 
+        public abstract bool ExecuteElevatedAction(string provider, string payload, RequestImpl requestImpl);
+
         #endregion
     }
 }

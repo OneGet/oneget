@@ -16,14 +16,19 @@ erase .\OneGet*.zip
 mkdir .\tmpfiles
 
 copy  ..\..\..\..\..\LICENSE .\tmpfiles
-copy Microsoft.OneGet.dll .\tmpfiles
+copy Microsoft.OneGet.exe .\tmpfiles
 copy Microsoft.OneGet.MetaProvider.PowerShell.dll .\tmpfiles
+copy .\Merged\NuGet-AnyCPU.exe .\tmpfiles
 copy Microsoft.OneGet.Utility.dll .\tmpfiles
 copy Microsoft.OneGet.Utility.PowerShell.dll .\tmpfiles
 copy Microsoft.PowerShell.OneGet.dll .\tmpfiles
 copy OneGet.psd1 .\tmpfiles
 copy etc\PackageProviderFunctions.psm1 .\tmpfiles
 copy OneGet.format.ps1xml .\tmpfiles
+copy c:\root\bin\streams.exe .\tmpfiles
+copy RunToUnBlock.cmd .\tmpfiles
+copy ReadMe.txt .\tmpfiles
+
 
 ZipFiles $n .\tmpFiles
 rmdir -Recurse -Force  .\tmpfiles

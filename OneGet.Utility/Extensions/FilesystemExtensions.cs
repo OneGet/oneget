@@ -216,14 +216,11 @@ namespace Microsoft.OneGet.Utility.Extensions {
                     Directory.CreateDirectory(TempPath);
                 }
 
-                Environment.SetEnvironmentVariable("TMP", TempPath);
-                Environment.SetEnvironmentVariable("TEMP", TempPath);
-
                 // make sure this temp directory gets marked for eventual cleanup.
                 MoveFileOverwrite(appTempPath, null);
                 MoveFileAtNextBoot(TempPath, null);
             }
-
+            
             TempPath = TempPath ?? OriginalTempFolder;
         }
 

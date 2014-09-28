@@ -62,7 +62,7 @@ namespace Microsoft.OneGet.Builtin {
             return "Bootstrap";
         }
 
-        public void InitializeProvider(object dynamicInterface, RequestImpl requestImpl) {
+        public void InitializeProvider(RequestImpl requestImpl) {
         }
 
         public void GetFeatures(RequestImpl requestImpl) {

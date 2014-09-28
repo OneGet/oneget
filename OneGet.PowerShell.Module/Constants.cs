@@ -32,6 +32,9 @@ namespace Microsoft.PowerShell.OneGet {
         internal const string SourceByInputObjectSet = "SourceByInputObject";
         internal const string SourceBySearchSet = "SourceBySearch";
 
+        internal const string DestinationPathSet = "DestinationPath";
+        internal const string LiteralPathSet = "LiteralPath";
+
         internal const string AssemblyProviderType = "assembly";
 
         // features we need to know about

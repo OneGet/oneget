@@ -14,9 +14,17 @@
 
 namespace Microsoft.OneGet.Implementation {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
+    using System.Runtime.InteropServices;
+    using System.Runtime.Remoting;
+    using System.Runtime.Remoting.Channels;
+    using System.Runtime.Remoting.Channels.Ipc;
+    using System.Security.Cryptography;
     using Api;
     using Utility.Extensions;
     using Utility.Platform;
@@ -370,14 +378,53 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        public void ExecuteElevatedAction(string provider, string payload, Object requestImpl ) {
+        public bool ExecuteElevatedAction(string provider, string payload, Object requestImpl ) {
             // launches a new elevated host that 
             // talks back to this (unelevated) host for everything in HostApi
             // everything else should be handled in the new process.
-           
-            
-            
+            var guid = Guid.NewGuid();
 
+            var properties = new Hashtable();
+            properties.Add("portName", "OneGet_"+guid.ToString());
+            properties.Add("authorizedGroup", "Administrators");
+            properties.Add("secure", "true");
+            properties.Add("exclusiveAddressUse", "true");
+            properties.Add("strictBinding", "false");
+            properties.Add("name", "OneGetHost");
+
+            // set up the server IPC channel
+            var serverChannel = new IpcServerChannel(properties, new BinaryServerFormatterSinkProvider(properties,null));
+
+            ChannelServices.RegisterChannel(serverChannel, true);
+
+            var instance = new RemotableHostApi(requestImpl.As<IHostApi>());
+
+            var objRef = RemotingServices.Marshal(instance, "Host", typeof(IHostApi));
+            var remoteUris = serverChannel.GetUrlsForUri("Host");
+            var uri = remoteUris[0];
+            // Create the client elevated
+            try {
+                var process = AsyncProcess.Start(new ProcessStartInfo {
+                    FileName = Assembly.GetExecutingAssembly().Location,
+                    Arguments = string.Format("{0} {1} {2}", uri, provider, (string.IsNullOrWhiteSpace(payload) ? "null" : payload).ToBase64()),
+#if !DEBUG                    
+                    WindowStyle = ProcessWindowStyle.Hidden,
+#endif 
+                    Verb = "runas",
+                });
+
+                process.WaitForExit();
+                if (process.ExitCode != 0) {
+                    return false;
+                }
+            } catch (Exception e) {
+                e.Dump();
+                return false;
+            } finally {
+                RemotingServices.Disconnect(instance);
+                ChannelServices.UnregisterChannel(serverChannel);
+            }
+            return true;
         }
 
         public bool IsElevated {

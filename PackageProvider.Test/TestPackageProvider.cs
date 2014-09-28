@@ -108,9 +108,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public void InitializeProvider(object dynamicInterface, RequestImpl requestImpl) {
-            RequestExtensions.RemoteDynamicInterface = dynamicInterface;
-
+        public void InitializeProvider(RequestImpl requestImpl) {
             using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug( "Calling 'InitializeProvider'");

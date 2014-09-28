@@ -61,6 +61,8 @@ namespace Microsoft.OneGet {
 
         bool IsSignedAndTrusted(string filename, Object requestImpl);
 
+        bool ExecuteElevatedAction(string provider, string payload, Object requestImpl);
+
         #endregion
 
 #if NOT_ADDED_YET

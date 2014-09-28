@@ -34,7 +34,7 @@ namespace Microsoft.OneGet.Builtin {
             }
         }
 
-        public void InitializeProvider(object dynamicInterface, object requestImpl) {
+        public void InitializeProvider(object requestImpl) {
         }
 
         /// <summary>
@@ -59,7 +59,8 @@ namespace Microsoft.OneGet.Builtin {
             var processed = new List<string>();
 
             using (var request = requestImpl.As<Request>()) {
-                request.Debug("Unpacking {0} {1}", localFilename, destinationFolder);
+                // request.Debug("Unpacking {0} {1}", localFilename, destinationFolder);
+                var pid = request.StartProgress(0, "Unpacking Archive '{0}' ", Path.GetFileName(localFilename));
                 try {
                     info.Unpack(destinationFolder, (sender, args) => {
                         if (args.ProgressType == ArchiveProgressType.FinishFile) {
@@ -68,7 +69,7 @@ namespace Microsoft.OneGet.Builtin {
                             var complete = (index*100)/files.Count;
                             if (complete != percent) {
                                 percent = complete;
-                                request.Debug("Percent Complete {0}", percent);
+                                request.Progress(pid, percent, "Unpacked {0}", args.CurrentFileName);
                             }
                             /*
                          * Does not currently support cancellation . 
@@ -87,7 +88,8 @@ namespace Microsoft.OneGet.Builtin {
                     e.Dump();
                 }
 
-                request.Debug("DONE Unpacking {0} {1}", localFilename, destinationFolder);
+                // request.Debug("DONE Unpacking {0} {1}", localFilename, destinationFolder);
+                request.CompleteProgress(pid, true);
             }
             // return the list of files to the parent.
             return processed.ToArray();

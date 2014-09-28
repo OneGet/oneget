@@ -68,6 +68,7 @@ namespace Microsoft.OneGet {
             internal const string RemoveEnvironmentVariableRequiresElevation = "MSG:RemoveEnvironmentVariableRequiresElevation";
             internal const string UnknownFolderId = "MSG:UnknownFolderId";
             internal const string ProtocolNotSupported = "MSG:ProtocolNotSupported";
+            internal const string UnableToUninstallPackage = "MSG:UnableToUninstallPackage";
         }
 
         #endregion

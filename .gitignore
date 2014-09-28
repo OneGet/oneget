@@ -101,5 +101,5 @@ streams.exe
 policheck*
 *.orig
 OneGet.orig.sln
-
+*pingme*
 .nuget
