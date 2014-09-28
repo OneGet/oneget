@@ -19,7 +19,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet;
-    using Microsoft.OneGet.Providers.Package;
+    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Utility.Extensions;
     using Microsoft.OneGet.Utility.PowerShell;
     using Resources;
@@ -33,7 +33,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         private static readonly object _lockObject = new object();
         private readonly int _callCount;
         private readonly Hashtable _dynamicOptions;
-        private static readonly IPackageManagementService _packageManagementService = new PackageManagementService().Instance;
+        private static readonly IPackageManagementService _packageManagementService = new PackageManager().Instance;
 
         [Parameter]
         public SwitchParameter ForceBootstrap;
@@ -229,15 +229,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return true;
         }
 
-        public virtual IEnumerable<string> GetOptionKeys(int category) {
-            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category)).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys).ByRef();
+        public virtual IEnumerable<string> GetOptionKeys() {
+            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys).ByRef();
         }
 
-        public virtual IEnumerable<string> GetOptionKeys(string category) {
-            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => o.Category.ToString().EqualsIgnoreCase(category) )).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys).ByRef();
-        }
-
-        public virtual IEnumerable<string> GetOptionValues(string category, string key) {
+        public virtual IEnumerable<string> GetOptionValues( string key) {
             if (MyInvocation.BoundParameters.ContainsKey(key)) {
                 var value = MyInvocation.BoundParameters[key];
                 if (value is string || value is int) {
@@ -257,30 +253,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     MyInvocation.BoundParameters[key].ToString()
                 }.ByRef();
             }
-            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => o.Category.ToString().EqualsIgnoreCase(category) ) && each.Name == key).SelectMany(each => each.GetValues(this)).ByRef();
-        }
-        
-        public virtual IEnumerable<string> GetOptionValues(int category, string key) {
-            if (MyInvocation.BoundParameters.ContainsKey(key)) {
-                var value = MyInvocation.BoundParameters[key];
-                if (value is string || value is int) {
-                    return new[] {
-                        MyInvocation.BoundParameters[key].ToString()
-                    }.ByRef();
-                }
-                if (value is SwitchParameter) {
-                    return new[] {
-                        ((SwitchParameter)MyInvocation.BoundParameters[key]).IsPresent.ToString()
-                    }.ByRef();
-                }
-                if (value is string[]) {
-                    return ((string[])value).ByRef();
-                }
-                return new[] {
-                    MyInvocation.BoundParameters[key].ToString()
-                }.ByRef();
-            }
-            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Options.Any(o => (int)o.Category == category) && each.Name == key).SelectMany(each => each.GetValues(this)).ByRef();
+            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Name == key).SelectMany(each => each.GetValues(this)).ByRef();
         }
 
         public virtual string GetCredentialUsername() {

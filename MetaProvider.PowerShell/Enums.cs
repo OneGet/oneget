@@ -13,9 +13,6 @@
 //  
 
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
-    #region copy PackageProvider-types
-/* Synced/Generated code =================================================== */
-
     public enum OptionCategory {
         Package = 0,
         Provider = 1,
@@ -34,13 +31,4 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         Uri = 7,
         SecureString = 8
     }
-
-    public enum EnvironmentContext {
-        All = 0,
-        User = 1,
-        System = 2
-    }
-
-    #endregion
-
 }

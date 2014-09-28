@@ -73,7 +73,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static string formatWithIEnumerable(this string formatString, IEnumerable<object> args) {
-            var arguments = args.ToCacheEnumerable();
+            var arguments = args.Timid();
             if (arguments.IsNullOrEmpty()) {
                 return formatString;
             }
@@ -201,7 +201,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static TSource SafeAggregate<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, TSource> func) {
-            var src = source.ToCacheEnumerable();
+            var src = source.Timid();
             if (source != null && src.Any()) {
                 return src.Aggregate(func);
             }
@@ -336,7 +336,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         /// <remarks>
         /// </remarks>
         public static string UnprotectForUser(this IEnumerable<byte> binaryData, string salt ) {
-            var data = binaryData.UnprotectBinaryForUser(salt).ToCacheEnumerable();
+            var data = binaryData.UnprotectBinaryForUser(salt).Timid();
             return data.Any() ? data.ToUtf8String() : String.Empty;
         }
 
@@ -349,7 +349,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         /// <remarks>
         /// </remarks>
         public static string UnprotectForMachine(this IEnumerable<byte> binaryData, string salt ) {
-            var data = binaryData.UnprotectBinaryForMachine(salt).ToCacheEnumerable();
+            var data = binaryData.UnprotectBinaryForMachine(salt).Timid();
             return data.Any() ? data.ToUtf8String() : String.Empty;
         }
 
@@ -409,5 +409,26 @@ namespace Microsoft.OneGet.Utility.Extensions {
 
             Marshal.ZeroFreeGlobalAllocUnicode(unmanagedString);
         }
+
+        public static bool ContainsIgnoreCase(this IEnumerable<string> collection, string value) {
+            if (collection == null) {
+                return false;
+            }
+            return collection.Any(s => s.EqualsIgnoreCase(value));
+        }
+
+        public static bool ContainsAnyOfIgnoreCase(this IEnumerable<string> collection, params object[] values) {
+            return collection.ContainsAnyOfIgnoreCase(values.Select(value =>value == null ? null : value.ToString()));
+        }
+
+        public static bool ContainsAnyOfIgnoreCase(this IEnumerable<string> collection, IEnumerable<string> values) {
+            if (collection == null) {
+                return false;
+            }
+            var set = values.Timid();
+
+            return collection.Any(set.ContainsIgnoreCase);
+        }
+       
     }
 }

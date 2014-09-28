@@ -26,7 +26,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         private Dictionary<string, List<SoftwareIdentity>> _resultsPerName;
 
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.PackageByInputObjectSet)]
-        public SoftwareIdentity[] Package {get; set;}
+        public SoftwareIdentity[] InputObject {get; set;}
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = Constants.PackageBySearchSet)]
         public override string[] Name { get; set; }
@@ -41,9 +41,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
         public override string MaximumVersion { get; set; }
 
+        [Alias("Provider")]
+        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName= Constants.PackageBySearchSet)]
+        public override string[] ProviderName { get; set; }
+
         public override bool ProcessRecordAsync() {
             if (IsPackageByObject) {
-                return UninstallPackages(Package);
+                return UninstallPackages(InputObject);
             }
 
             // otherwise, it's just packages by name 

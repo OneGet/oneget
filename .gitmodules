@@ -1,15 +1,6 @@
-[submodule "packageprovider.chocolatey"]
-	path = packageprovider.chocolatey
-	url = ../packageprovider.chocolatey
-[submodule "packageprovider.template"]
-	path = packageprovider.template
-	url = ../packageprovider.template
 [submodule "packageprovider.template.powershell"]
 	path = packageprovider.template.powershell
 	url = ../packageprovider.template.powershell
-[submodule "serviceprovider.template"]
-	path = serviceprovider.template
-	url = ../serviceprovider.template
 [submodule "serviceprovider.template.powershell"]
 	path = serviceprovider.template.powershell
 	url = ../serviceprovider.template.powershell

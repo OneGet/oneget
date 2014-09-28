@@ -529,6 +529,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 		}
     }
 
+#if USE_APPDOMAINS
       internal partial class PluginDomain {
         public void Invoke(Action action) {
             ((WrappedAction)new Proxy<WrappedAction>(this, new WrappedAction(action))).Invoke();
@@ -647,4 +648,5 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
         }
     }
+	#endif
 }

@@ -15,8 +15,8 @@
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.IO;
     using System.Management.Automation;
+    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Providers.Package;
 
     [Cmdlet(VerbsData.Save, Constants.PackageNoun, SupportsShouldProcess = true)]
     public sealed class SavePackage : CmdletWithSearchAndSource {
@@ -29,8 +29,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter()]
         public SwitchParameter IncludeDependencies { get; set; }
 
-        [Parameter(Mandatory = true)]
+        [Parameter(Mandatory = true, ParameterSetName = Constants.DestinationPathSet)]
         public string DestinationPath { get; set; }
+
+        [Parameter(Mandatory = true, ParameterSetName = Constants.LiteralPathSet)]
+        public string LiteralPath { get; set; }
 
         private string SaveFileName(string packageName) {
             if (string.IsNullOrEmpty(DestinationPath)) {

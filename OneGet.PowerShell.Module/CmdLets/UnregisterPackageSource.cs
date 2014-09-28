@@ -17,8 +17,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
+    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Providers.Package;
     using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsLifecycle.Unregister, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
@@ -102,7 +102,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length > 0) {
+
+                IgnoreErrors = true;
                 var sources = prov.SelectMany(each => each.ResolvePackageSources(this).Where( source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source) )).ToArray()).ToArray();
+                IgnoreErrors = false;
 
                 if (sources.Length == 0) {
                     return Error(Errors.SourceNotFound, Source);

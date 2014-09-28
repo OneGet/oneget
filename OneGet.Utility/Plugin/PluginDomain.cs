@@ -21,6 +21,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using System.Reflection;
     using Extensions;
 
+#if USE_APPDOMAINS
     internal partial class PluginDomain : MarshalByRefObject, IDisposable {
         private AppDomain _appDomain;
         private string _identity;
@@ -71,7 +72,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             if (appDomainSetup == null) {
                 throw new ArgumentNullException("appDomainSetup");
             }
-            _identity = (name + _count++) ?? Guid.NewGuid().ToString();
+            _identity = (name + _count++);
             appDomainSetup.ApplicationName = appDomainSetup.ApplicationName ?? "PluginDomain" + _identity;
 
             _appDomain = AppDomain.CreateDomain(_identity, null, appDomainSetup);
@@ -164,4 +165,5 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return domain._appDomain;
         }
     }
+#endif
 }

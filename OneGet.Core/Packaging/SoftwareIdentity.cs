@@ -15,10 +15,7 @@
 namespace Microsoft.OneGet.Packaging {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Globalization;
     using System.Linq;
-    using System.Net.NetworkInformation;
     using System.Text;
     using System.Xml;
     using System.Xml.Linq;
@@ -35,15 +32,15 @@ namespace Microsoft.OneGet.Packaging {
         }
 
         #region OneGet specific data
+
         internal string FastPackageReference {get; set;}
 
         public string ProviderName {get; internal set;}
         public string Source {get; internal set;}
         public string Status {get; internal set;}
 
-
         public string SearchKey {get; internal set;}
-        
+
         public string FullPath {get; internal set;}
         public string PackageFilename {get; internal set;}
 
@@ -52,12 +49,13 @@ namespace Microsoft.OneGet.Packaging {
         // OneGet shortcut property -- Summary *should* be stored in SoftwareMetadata
         public string Summary {
             get {
-                return Swid.Root().Elements(Iso19770_2.Meta).Select( each => each.Get(Iso19770_2.SummaryAttribute)).WhereNotNull().FirstOrDefault();
+                return Swid.Root().Elements(Iso19770_2.Meta).Select(each => each.Get(Iso19770_2.SummaryAttribute)).WhereNotNull().FirstOrDefault();
             }
             internal set {
                 Set(Iso19770_2.SummaryAttribute.LocalName, value);
             }
         }
+
         #endregion
 
         #region ISO-19770-2-2014 metadata
@@ -88,6 +86,7 @@ namespace Microsoft.OneGet.Packaging {
                 Swid.Root().Set(Iso19770_2.VersionSchemeAttribute, value);
             }
         }
+
         public string TagVersion {
             get {
                 return Swid.Root().Get(Iso19770_2.TagVersionAttribute);
@@ -124,7 +123,8 @@ namespace Microsoft.OneGet.Packaging {
             }
         }
 
-        public string AppliesToMedia {  get {
+        public string AppliesToMedia {
+            get {
                 return Swid.Root().Get(Iso19770_2.MediaAttribute);
             }
             internal set {
@@ -166,14 +166,14 @@ namespace Microsoft.OneGet.Packaging {
 
         internal Entity AddEntity(string name, string regid, string role, string thumbprint = null) {
             XElement e;
-            Swid.Root().Add( e= new XElement(Iso19770_2.Entity)
-                .Set(Iso19770_2.NameAttribute, name )
+            Swid.Root().Add(e = new XElement(Iso19770_2.Entity)
+                .Set(Iso19770_2.NameAttribute, name)
                 .Set(Iso19770_2.RegIdAttribute, regid)
                 .Set(Iso19770_2.RoleAttribute, role)
-                .Set(Iso19770_2.ThumbprintAttribute,thumbprint)
-               );
+                .Set(Iso19770_2.ThumbprintAttribute, thumbprint)
+                );
             return new Entity(e);
-        } 
+        }
 
         public IEnumerable<Link> Links {
             get {
@@ -191,9 +191,9 @@ namespace Microsoft.OneGet.Packaging {
                 .Set(Iso19770_2.UseAttribute, use)
                 .Set(Iso19770_2.MediaAttribute, appliesToMedia)
                 .Set(Iso19770_2.ArtifactAttribute, artifact)
-               );
+                );
             return new Link(e);
-        } 
+        }
 
 #if M2
         public Evidence Evidence {get; internal set;}
@@ -213,6 +213,7 @@ namespace Microsoft.OneGet.Packaging {
         }
 
         private XDocument _swidTag;
+
         public XDocument Swid {
             get {
                 if (_swidTag == null) {
@@ -221,7 +222,6 @@ namespace Microsoft.OneGet.Packaging {
                 return _swidTag;
             }
             internal set {
-                
             }
         }
 
@@ -234,7 +234,7 @@ namespace Microsoft.OneGet.Packaging {
                 settings.Indent = true;
                 settings.NewLineOnAttributes = true;
                 settings.NamespaceHandling = NamespaceHandling.OmitDuplicates;
-                
+
                 using (var xmlWriter = XmlWriter.Create(stringBuilder, settings)) {
                     Swid.Save(xmlWriter);
                 }
@@ -242,155 +242,7 @@ namespace Microsoft.OneGet.Packaging {
                 return stringBuilder.ToString();
             }
         }
+
         #endregion
-    }
-
-    public class SoftwareIdentityVersionComparer : IComparer<SoftwareIdentity> {
-        public static SoftwareIdentityVersionComparer Instance = new SoftwareIdentityVersionComparer();
-
-        public int Compare(SoftwareIdentity x, SoftwareIdentity y) {
-            if (x == null || y == null) {
-                // can't compare vs null.
-                return 0;
-            }
-            var xVersionScheme = x.VersionScheme ?? string.Empty;
-            var yVersionScheme = y.VersionScheme ?? string.Empty;
-
-            if (!x.VersionScheme.EqualsIgnoreCase(yVersionScheme)) {
-                // can't compare versions between different version schemes
-                return 0;
-            }
-
-            return CompareVersions(xVersionScheme, x.Version, y.Version);
-        }
-
-        public static int CompareVersions(string versionScheme, string xVersion, string yVersion) {
-            xVersion = xVersion ?? string.Empty;
-            yVersion = yVersion ?? string.Empty;
-
-            switch ((versionScheme ?? "unknown").ToLowerInvariant()) {
-                case "alphanumeric":
-                    // string sort
-                    return String.Compare(xVersion, yVersion, StringComparison.Ordinal);
-
-                case "decimal":
-                    double xDouble;
-                    double yDouble;
-                    if (double.TryParse(xVersion, out xDouble) && double.TryParse(yVersion, out yDouble)) {
-                        return xDouble.CompareTo(yDouble);
-                    }
-                    return 0;
-
-                case "multipartnumeric":
-                    return CompareMultipartNumeric(xVersion, yVersion);
-
-                case "multipartnumeric+suffix":
-                    return CompareMultipartNumericSuffix(xVersion, yVersion);
-
-                case "semver":
-                    return CompareSemVer(xVersion, yVersion);
-
-                case "unknown":
-                    // can't sort what we don't know
-                    return 0;
-
-                default:
-                    // can't sort what we don't know
-                    return 0;
-            }
-        }
-
-        private static int CompareMultipartNumeric(string xVersion, string yVersion) {
-            var xs = xVersion.Split('.');
-            var ys = yVersion.Split('.');
-            for (var i = 0; i < xs.Length; i++) {
-                ulong xLong;
-                ulong yLong;
-
-                if (ulong.TryParse(xs[i], out xLong) && ulong.TryParse(ys.Length > i ? ys[i] : "0", out yLong)) {
-                    var compare = xLong.CompareTo(yLong);
-                    if (compare != 0) {
-                        return compare;
-                    }
-                    continue;
-                }
-                return 0;
-            }
-            return 0;
-        }
-
-        private static int CompareMultipartNumericSuffix(string xVersion, string yVersion) {
-            var xPos = IndexOfNotAny(xVersion);
-            var yPos = IndexOfNotAny(yVersion);
-            var xMulti = xPos == -1 ? xVersion : xVersion.Substring(0, xPos);
-            var yMulti = yPos == -1 ? yVersion : yVersion.Substring(0, yPos);
-            var compare = CompareMultipartNumeric(xMulti, yMulti);
-            if (compare != 0) {
-                return compare;
-            }
-
-            if (xPos == -1 && yPos == -1) {
-                // no suffixes?
-                return 0;
-            }
-
-            if (xPos == -1) {
-                // x has no suffix, y does
-                // y is later.
-                return -1;
-            }
-
-            if (yPos == -1) {
-                // x has suffix, y doesn't
-                // x is later.
-                return 1;
-            }
-
-            return String.Compare(xVersion.Substring(xPos), yVersion.Substring(yPos), StringComparison.Ordinal);
-        }
-
-        private static int CompareSemVer(string xVersion, string yVersion) {
-            var xPos = IndexOfNotAny(xVersion);
-            var yPos = IndexOfNotAny(yVersion);
-            var xMulti = xPos == -1 ? xVersion : xVersion.Substring(0, xPos);
-            var yMulti = yPos == -1 ? yVersion : yVersion.Substring(0, yPos);
-            var compare = CompareMultipartNumeric(xMulti, yMulti);
-            if (compare != 0) {
-                return compare;
-            }
-
-            if (xPos == -1 && yPos == -1) {
-                // no suffixes?
-                return 0;
-            }
-
-            if (xPos == -1) {
-                // x has no suffix, y does
-                // x is later.
-                return 1;
-            }
-
-            if (yPos == -1) {
-                // x has suffix, y doesn't
-                // y is later.
-                return -1;
-            }
-
-            return String.Compare(xVersion.Substring(xPos), yVersion.Substring(yPos), StringComparison.Ordinal);
-        }
-
-        private static int IndexOfNotAny(string version, params char[] chars) {
-            if (string.IsNullOrEmpty(version)) {
-                return -1;
-            }
-            var n = 0;
-            foreach (var ch in version) {
-                if (chars.Contains(ch)) {
-                    return n;
-                }
-                n++;
-            }
-            return -1;
-        }
     }
 }

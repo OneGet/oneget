@@ -15,7 +15,7 @@
 namespace Microsoft.OneGet.Packaging {
     using System;
     using System.Collections.Generic;
-    using Providers.Package;
+    using Implementation;
 
     /// <summary>
     ///     Represents a package source (repository)

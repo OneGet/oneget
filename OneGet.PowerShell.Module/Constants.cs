@@ -16,6 +16,7 @@ namespace Microsoft.PowerShell.OneGet {
     using System.Management.Automation;
     using Microsoft.OneGet;
     using Microsoft.OneGet.Utility.PowerShell;
+    using ErrorCategory = System.Management.Automation.ErrorCategory;
 
     internal static class Constants {
 
@@ -30,6 +31,9 @@ namespace Microsoft.PowerShell.OneGet {
         internal const string PackageByInputObjectSet = "PackageByInputObject";
         internal const string SourceByInputObjectSet = "SourceByInputObject";
         internal const string SourceBySearchSet = "SourceBySearch";
+
+        internal const string DestinationPathSet = "DestinationPath";
+        internal const string LiteralPathSet = "LiteralPath";
 
         internal const string AssemblyProviderType = "assembly";
 

@@ -16,8 +16,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
+    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Providers.Package;
     using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Set, Constants.PackageSourceNoun, SupportsShouldProcess = true,DefaultParameterSetName =Constants.SourceBySearchSet)]
@@ -27,11 +27,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         }
 
-        [Parameter(ValueFromPipeline = true, ParameterSetName = Constants.SourceByInputObjectSet)]
+        [Parameter(ValueFromPipeline = true, ParameterSetName = Constants.SourceByInputObjectSet,Mandatory = true)]
         public PackageSource InputObject;
 
         [Alias("ProviderName")]
-        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.SourceBySearchSet)]
+        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.SourceBySearchSet, Mandatory = true)]
         public string Provider { get; set; }
 
         public override string[] ProviderName {
@@ -78,15 +78,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
 
-        public override IEnumerable<string> GetOptionKeys(int category) {
-            return base.GetOptionKeys(category).ConcatSingleItem("IsUpdatePackageSource").ByRef();
+        public override IEnumerable<string> GetOptionKeys() {
+            return base.GetOptionKeys().ConcatSingleItem("IsUpdatePackageSource").ByRef();
         }
 
-        public override IEnumerable<string> GetOptionValues(int category, string key) {
+        public override IEnumerable<string> GetOptionValues(string key) {
             if (key != null && key.EqualsIgnoreCase("IsUpdatePackageSource")) {
                 return "true".SingleItemAsEnumerable().ByRef();
             }
-            return base.GetOptionValues(category, key);
+            return base.GetOptionValues(key);
         }
 
         private void UpdatePackageSource(PackageSource source) {

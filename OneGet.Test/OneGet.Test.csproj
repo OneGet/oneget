@@ -56,7 +56,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Examples\ServiceProvider.psm1" />
     <None Include="Examples\TemplatePackageProvider.psm1" />
     <None Include="Providers\TestChainingPackageProvider.psm1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -92,10 +91,6 @@
     <ProjectReference Include="..\PackageProvider.Test\PackageProvider.Test.csproj">
       <Project>{2270c018-364a-47dd-bc2e-0095c8e8deaf}</Project>
       <Name>PackageProvider.Test</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceProvider.Test\ServiceProvider.Test.csproj">
-      <Project>{8a7e33bf-1ac2-432d-bd5c-976d8386fd97}</Project>
-      <Name>ServiceProvider.Test</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

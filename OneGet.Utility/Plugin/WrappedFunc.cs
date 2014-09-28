@@ -512,6 +512,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 		}
     }
 
+#if USE_APPDOMAINS
     internal partial class PluginDomain {
         public TRet InvokeFunc<TRet>(Func<TRet> func) {
             return ((WrappedFunc<TRet>)new Proxy<WrappedFunc<TRet>>(this, func)).Invoke();
@@ -662,4 +663,5 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
     }
+#endif
 }

@@ -16,6 +16,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using System;
     using System.Reflection;
 
+#if USE_APPDOMAINS
     internal class Proxy<T> : IDisposable where T : MarshalByRefObject {
         private PluginDomain _domain;
         private bool _isDisposed;
@@ -50,4 +51,5 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return proxy._target;
         }
     }
+#endif
 }

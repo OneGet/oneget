@@ -18,8 +18,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
+    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Providers.Package;
     using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Get, Constants.PackageNoun)]
@@ -114,7 +114,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
             if (!Stopping) {
                 foreach (var provider in UnprocessedProviders) {
-                    Warning(Constants.NoPackagesFoundForProvider, provider);
+                    Debug(Constants.NoPackagesFoundForProvider, provider);
                 }
             }
             return true;

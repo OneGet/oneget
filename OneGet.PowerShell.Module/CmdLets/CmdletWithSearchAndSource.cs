@@ -19,8 +19,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading.Tasks;
+    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Providers.Package;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
 
@@ -51,16 +51,28 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected override IEnumerable<PackageProvider> SelectedProviders {
             get {
-                // filter on provider names  - if they specify a provider name, narrow to only those provider names.
-                var providers = SelectProviders(ProviderName);
+                try {
+                    // filter on provider names  - if they specify a provider name, narrow to only those provider names.
+                    var providers = SelectProviders(ProviderName).Timid();
 
-                // filter out providers that don't have the sources that have been specified (only if we have specified a source!)
-                if (Source != null && Source.Length > 0) {
-                    providers = providers.Where(each => each.ResolvePackageSources(this).Any());
+                    // filter out providers that don't have the sources that have been specified (only if we have specified a source!)
+                    if (Source != null && Source.Length > 0) {
+                        IgnoreErrors = true;
+                        // sources must actually match a name or location. Keeps providers from being a bit dishonest
+
+                        var potentialSources = providers.SelectMany(each => each.ResolvePackageSources(this).Where(source => Source.ContainsAnyOfIgnoreCase(source.Name, source.Location))).Timid();
+
+                        // prefer registered sources
+                        var registeredSources = potentialSources.Where(source => source.IsRegistered).Timid();
+
+                        providers = registeredSources.Any() ? registeredSources.Select(source => source.Provider).Distinct().Timid() : potentialSources.Select(source => source.Provider).Distinct().Timid();
+
+                    }
+                    // filter on: dynamic options - if they specify any dynamic options, limit the provider set to providers with those options.
+                    return FilterProvidersUsingDynamicParameters(providers).ToArray();
+                } finally {
+                    IgnoreErrors = false;
                 }
-
-                // filter on: dynamic options - if they specify any dynamic options, limit the provider set to providers with those options.
-                return FilterProvidersUsingDynamicParameters(providers).ToArray();
             }
         }
 
@@ -118,7 +130,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 // first, try to resolve the filenames
                 try {
                     ProviderInfo providerInfo = null;
-                    var files = GetResolvedProviderPathFromPSPath(filePath, out providerInfo).Where(File.Exists).ToCacheEnumerable();
+                    var files = GetResolvedProviderPathFromPSPath(filePath, out providerInfo).Where(File.Exists).Timid();
 
                     if (files.Any()) {
                         // found at least some files
@@ -161,15 +173,21 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         ProcessPackage(packageProvider, name, p);
                     }
                 } else {
-                    foreach (var pkg in from p in packages
-                        group p by p.Name
-                        // for a given name
-                        into grouping
-                            // get the latest version only
-                        select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()) {
-                        found = true;
-                        // each package name should only show up once here.
-                        ProcessPackage(packageProvider, name, pkg);
+                    if (!string.IsNullOrWhiteSpace(MaximumVersion) || !string.IsNullOrWhiteSpace(MinimumVersion)) {
+                        foreach (var pkg in from p in packages
+                            group p by p.Name
+                            // for a given name
+                            into grouping
+                                // get the latest version only
+                            select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()) {
+                            found = true;
+                            // each package name should only show up once here.
+                            ProcessPackage(packageProvider, name, pkg);
+                        }
+                    } else {
+                        foreach (var pkg in packages ) {
+                            ProcessPackage(packageProvider, name, pkg);
+                        }
                     }
                 }
             }
@@ -213,7 +231,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         protected bool CheckUnmatchedPackages() {
-            var unmatched = _resultsPerName.Keys.Where(each => _resultsPerName[each] == null).ToCacheEnumerable();
+            var unmatched = _resultsPerName.Keys.Where(each => _resultsPerName[each] == null).Timid();
             var result = true;
 
             if (unmatched.Any()) {
@@ -238,7 +256,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected bool CheckMatchedDuplicates() {
             var overMatched = _resultsPerName.Keys.Select(each => _resultsPerName[each])
-                .Where(each => each != null && each.Count > 1).ToCacheEnumerable();
+                .Where(each => each != null && each.Count > 1).Timid();
 
             if (overMatched.Any()) {
                 foreach (var set in overMatched) {

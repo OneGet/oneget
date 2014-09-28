@@ -79,6 +79,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         internal Type Type {
             get {
+#if USE_APPDOMAINS
                 lock (PluginDomain.DynamicAssemblyPaths) {
                     try {
                         if (_type == null) {
@@ -97,12 +98,25 @@ namespace Microsoft.OneGet.Utility.Plugin {
                         throw;
                     }
                 }
+#else 
+                try {
+                    if (_type == null) {
+                        _type = _dynamicType.CreateType();
+                        //_dynamicAssembly.Save(_filename);
+                    }
+                    return _type;
+                }
+                catch (Exception e) {
+                    e.Dump();
+                    throw;
+                }
+#endif
             }
         }
 
-        internal object CreateInstance(List<object> instances, List<Delegate, MethodInfo> delegates) {
+        internal object CreateInstance(List<Type,object> instances, List<Delegate, MethodInfo> delegates) {
             var proxyConstructor = Type.GetConstructors()[0];
-            var instance = proxyConstructor.Invoke(instances.Concat(delegates.Select(each => each.Key)).ToArray());
+            var instance = proxyConstructor.Invoke(instances.Select(each=>each.Value).Concat(delegates.Select(each => each.Key)).ToArray());
             // set the implemented methods collection 
             var imf = Type.GetField("__implementedMethods", BindingFlags.NonPublic | BindingFlags.Instance);
             if (imf != null) {
@@ -113,14 +127,13 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         private TypeBuilder DefineDynamicType(Type interfaceType) {
-            _proxyName = "{0}_proxy_{1}_in_{2}".format(interfaceType.NiceName().MakeSafeFileName(), _typeCounter++, AppDomain.CurrentDomain.FriendlyName.MakeSafeFileName().Replace("[","_").Replace("]","_"));
+            _proxyName = "{0}_proxy_{1}_in_{2}".format(interfaceType.NiceName().MakeSafeFileName(),_typeCounter++, AppDomain.CurrentDomain.FriendlyName.MakeSafeFileName().Replace("[","_").Replace("]","_"));
 
             _fullpath = (_proxyName+".dll").GenerateTemporaryFilename();
             _directory = Path.GetDirectoryName(_fullpath);
             _filename = Path.GetFileName(_fullpath);
 
             _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.RunAndSave, _directory);
-
             // Define a dynamic module in this assembly.
             // , "{0}.dll".format(_proxyName)
             var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName,_filename);

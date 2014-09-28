@@ -17,8 +17,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Diagnostics.Eventing;
     using System.Linq;
     using System.Management.Automation;
+    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Providers.Package;
     using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Get, Constants.PackageSourceNoun)]
@@ -85,7 +85,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     if (noCriteria) {
                         // no criteria means just return whatever we found
                         if (WriteSources(sources)) {
-                            return true;
+                            continue;
                         }
                     } else {
                         var all = sources.ToArray();
@@ -95,12 +95,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         if (noName) {
                             // just location was specified
                             if (WriteSources(registered.Where(each => each.Location.EqualsIgnoreCase(Location)))) {
-                                return true;
+                                continue;
                             }
                         } else {
                             // source was specified (check both name and location fields for match)
                             if (WriteSources(registered.Where(each => each.Name.EqualsIgnoreCase(Name) || each.Location.EqualsIgnoreCase(Name)))) {
-                                return true;
+                                continue;
                             }
                         }
                         // we haven't returned anything to the user yet...

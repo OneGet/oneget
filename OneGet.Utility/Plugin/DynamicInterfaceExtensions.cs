@@ -68,6 +68,10 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         private static bool DoNamesMatchAcceptably(string originalName, string candidateName) {
+            if (originalName.EqualsIgnoreCase(candidateName)) {
+                return true;
+            }
+
             // transform non-leading underscores to nothing.
             if (!candidateName.StartsWith("_",StringComparison.OrdinalIgnoreCase)) {
                 candidateName = candidateName.Replace("_", "");
@@ -129,7 +133,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         private static IEnumerable<MethodInfo> DisambiguateMethodsBySignature(params IEnumerable<MethodInfo>[] setsOfMethods) {
             var unique = new HashSet<string>();
 
-            return setsOfMethods.SelectMany(methodSet => methodSet.ToCacheEnumerable()).Where(method => {
+            return setsOfMethods.SelectMany(methodSet => methodSet.Timid()).Where(method => {
                 var sig = method.ToSignatureString();
                 if (!unique.Contains(sig)) {
                     unique.Add(sig);

@@ -37,28 +37,19 @@ namespace Microsoft.OneGet.Api {
 
         bool CompleteProgress(int activityId, bool isSuccessful);
 
-        IEnumerable<string> GetOptionValues(string category, string key);
-
-
 
         /// <summary>
         ///     Used by a provider to request what metadata keys were passed from the user
-        ///
-        /// This is API is deprecated, use the string variant instead.
         /// </summary>
         /// <returns></returns>
-        IEnumerable<string> GetOptionKeys(int category);
+        IEnumerable<string> GetOptionKeys();
 
         /// <summary>
         /// 
-        /// 
-        /// This is API is deprecated, use the string variant instead.
         /// </summary>
-        /// <param name="category"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        IEnumerable<string> GetOptionValues(int category, string key);
-
+        IEnumerable<string> GetOptionValues(string key);
 
         IEnumerable<string> GetSources();
 

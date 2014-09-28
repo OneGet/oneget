@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.PackageProvider.Test {
     using System;
     using System.Collections.Generic;
+    using global::OneGet.ProviderSDK;
     using RequestImpl = System.Object;
 
     public class TestPackageProvider {
@@ -107,9 +108,7 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
             return  default(bool);
         }
-        public void InitializeProvider(object dynamicInterface, RequestImpl requestImpl) {
-            RequestExtensions.RemoteDynamicInterface = dynamicInterface;
-
+        public void InitializeProvider(RequestImpl requestImpl) {
             using (var request =requestImpl.As<Request>()) {
                 // use the request object to interact with the OneGet core:
                 request.Debug( "Calling 'InitializeProvider'");
@@ -274,34 +273,6 @@ namespace Microsoft.OneGet.PackageProvider.Test {
 
     }
 
-    #region copy PackageProvider-types
-/* Synced/Generated code =================================================== */
-
-    public enum OptionCategory {
-        Package = 0,
-        Provider = 1,
-        Source = 2,
-        Install = 3
-    }
-
-    public enum OptionType {
-        String = 0,
-        StringArray = 1,
-        Int = 2,
-        Switch = 3,
-        Folder = 4,
-        File = 5,
-        Path = 6,
-        Uri = 7,
-        SecureString = 8
-    }
-
-    public enum EnvironmentContext {
-        All = 0,
-        User = 1,
-        System = 2
-    }
-
-    #endregion
+   
 
 }

@@ -18,8 +18,8 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
-    using Utility.Collections;
-    using Utility.Extensions;
+    using Collections;
+    using Extensions;
 
     public class DynamicInterface {
         public static readonly DynamicInterface Instance = new DynamicInterface();
@@ -144,11 +144,14 @@ namespace Microsoft.OneGet.Utility.Plugin {
                     Debug.WriteLine(s);
                 }
 #endif
-
-                if (types.Any(actualType => actualType.GetDefaultConstructor() == null)) {
+                try {
+                    if (types.Any(actualType => actualType.GetDefaultConstructor() == null)) {
+                        return false;
+                    }
+                } catch {
+                    // if the actualType's assembly isn't available to this appdomain, we can't create an object from the type anyway.
                     return false;
                 }
-
 #if DEEPDEBUG
                 foreach (var s in types) {
                     Debug.WriteLine(string.Format("»»»{0}",s.Name));
@@ -257,19 +260,31 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         private object CreateProxy(Type tInterface, params object[] instances) {
-            var matrix = instances.Select(instance => new {
-                instance,
-                SupportsMethod = DynamicInterfaceExtensions.GenerateInstanceSupportsMethod(instance),
-                Type = instance.GetType(),
-                Methods = instance.GetType().GetPublicMethods(),
-                Fields = instance.GetType().GetPublicDelegateFields(),
-                Properties = instance.GetType().GetPublicDelegateProperties()
+            var matrix = instances.SelectMany(instance => {
+                var instanceType = instance.GetType();
+                // get all the public interfaces for the instances and place them at the top
+                // and let it try to bind against those.
+                return instanceType.GetInterfaces().Where(each => each.IsPublic).Select(each => new {
+                    instance,
+                    SupportsMethod = DynamicInterfaceExtensions.GenerateInstanceSupportsMethod(instance),
+                    Type = each,
+                    Methods = each.GetPublicMethods(),
+                    Fields = each.GetPublicDelegateFields(),
+                    Properties = each.GetPublicDelegateProperties()
+                }).ConcatSingleItem(new {
+                    instance,
+                    SupportsMethod = DynamicInterfaceExtensions.GenerateInstanceSupportsMethod(instance),
+                    Type = instanceType,
+                    Methods = instanceType.GetPublicMethods(),
+                    Fields = instanceType.GetPublicDelegateFields(),
+                    Properties = instanceType.GetPublicDelegateProperties()
+                });
             }).ToArray();
 
             var instanceMethods = new OrderedDictionary<Type, List<MethodInfo, MethodInfo>>();
             var delegateMethods = new List<Delegate, MethodInfo>();
             var stubMethods = new List<MethodInfo>();
-            var usedInstances = new List<object>();
+            var usedInstances = new List<Type, object>();
 
             foreach (var method in tInterface.GetVirtualMethods()) {
                 // figure out where it's going to get implemented
@@ -285,8 +300,8 @@ namespace Microsoft.OneGet.Utility.Plugin {
                         var instanceMethod = instance.Methods.FindMethod(method);
                         if (instanceMethod != null) {
                             instanceMethods.GetOrAdd(instance.Type, () => new List<MethodInfo, MethodInfo>()).Add(method, instanceMethod);
-                            if (!usedInstances.Contains(instance.instance)) {
-                                usedInstances.Add(instance.instance);
+                            if (!usedInstances.Contains(instance.Type, instance.instance)) {
+                                usedInstances.Add(instance.Type, instance.instance);
                             }
                             found = true;
                             break;
@@ -309,7 +324,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
 
             // now we can calculate the key based on the content of the *Methods collections
-            var key = instanceMethods.Keys.Select(each => each.FullName + "." + instanceMethods[each].Select(mi => mi.Value.ToSignatureString()).JoinWithComma()).JoinWith(";\r\n") +
+            var key = tInterface.Name + ":::" + instanceMethods.Keys.Select(each => each.FullName + "." + instanceMethods[each].Select(mi => mi.Value.ToSignatureString()).JoinWithComma()).JoinWith(";\r\n") +
                       "::" + delegateMethods.Select(each => each.GetType().FullName).JoinWith(";\r\n") +
                       "::" + stubMethods.Select(mi => mi.ToSignatureString()).JoinWithComma();
 

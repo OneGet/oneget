@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{7044B856-6D51-498F-90F9-01F219909F79}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.OneGet</RootNamespace>
     <AssemblyName>Microsoft.OneGet</AssemblyName>
@@ -13,6 +13,9 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>
     <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>Microsoft.OneGet.PackageManager</StartupObject>
   </PropertyGroup>
   <Import Project="$(SolutionPath).props" Condition="Exists('$(SolutionPath).props')" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -35,23 +38,46 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Builtin\ArpProvider.cs" />
+    <Compile Include="Builtin\BootstrapProvider.cs" />
+    <Compile Include="Builtin\CabArchiver.cs" />
+    <Compile Include="Builtin\HttpDownloader.cs" />
+    <Compile Include="Builtin\MsiProvider.cs" />
+    <Compile Include="Builtin\MsuProvider.cs" />
+    <Compile Include="Builtin\SwidProvider.cs" />
+    <Compile Include="Builtin\VSixProvider.cs" />
+    <Compile Include="Builtin\WindowsFeaturesProvider.cs" />
+    <Compile Include="Builtin\WindowsUpdateProvider.cs" />
+    <Compile Include="Builtin\ZipArchiver.cs" />
+    <Compile Include="ErrorCategory.cs" />
+    <Compile Include="Implementation\Delegates.cs" />
+    <Compile Include="Implementation\RemotableHostApi.cs" />
+    <Compile Include="Packaging\DynamicOption.cs" />
+    <Compile Include="Packaging\OptionCategory.cs" />
+    <Compile Include="Packaging\OptionType.cs" />
+    <Compile Include="Implementation\PackageManagementService.cs" />
+    <Compile Include="Implementation\Request.cs" />
+    <Compile Include="Packaging\SoftwareIdentityVersionComparer.cs" />
+    <Compile Include="Providers\IArchiver.cs" />
     <Compile Include="Api\ICoreApi.cs" />
+    <Compile Include="Providers\IDownloader.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Packaging\Iso19770_2.cs" />
     <Compile Include="Packaging\SoftwareMetadata.cs" />
-    <Compile Include="Providers\Package\IPackageProvider.cs" />
+    <Compile Include="Providers\IPackageProvider.cs" />
     <Compile Include="Api\IRequest.cs" />
-    <Compile Include="Providers\Package\ProviderBase.cs" />
-    <Compile Include="Providers\Package\Response.cs" />
-    <Compile Include="Providers\Service\AggregateServicesProvider.cs" />
-    <Compile Include="Providers\Service\Instance.cs" />
+    <Compile Include="Implementation\ProviderBase.cs" />
+    <Compile Include="Implementation\Response.cs" />
+    <Compile Include="Implementation\Archiver.cs" />
+    <Compile Include="Implementation\ProviderServices.cs" />
     <Compile Include="Api\IResponseApi.cs" />
-    <Compile Include="Api\IServiceApi.cs" />
+    <Compile Include="IProviderServices.cs" />
     <Compile Include="Api\IHostAPI.cs" />
     <Compile Include="Packaging\Entity.cs" />
     <Compile Include="Packaging\Evidence.cs" />
@@ -61,15 +87,15 @@
     <Compile Include="Packaging\SoftwareIdentity.cs" />
     <Compile Include="Packaging\PackageSource.cs" />
     <Compile Include="Packaging\Payload.cs" />
-    <Compile Include="Providers\Package\PackageProvider.cs" />
-    <Compile Include="Providers\Meta\MetaProvider.cs" />
-    <Compile Include="Providers\Service\IServicesProvider.cs" />
-    <Compile Include="Providers\Service\ServiceProvider.cs" />
+    <Compile Include="Implementation\PackageProvider.cs" />
+    <Compile Include="Providers\IMetaProvider.cs" />
+    <Compile Include="Implementation\Downloader.cs" />
     <Compile Include="IPackageManagementService.cs" />
-    <Compile Include="PackageManagementServiceImplementation.cs" />
+    <Compile Include="Implementation\Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PackageManagementService.cs" />
-    <Compile Include="Providers\Loader.cs" />
+    <Compile Include="PackageManager.cs" />
+    <Compile Include="Implementation\Loader.cs" />
+    <Compile Include="Providers\IProvider.cs" />
     <Compile Include="Resources\Messages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -92,8 +118,27 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="RunToUnblock.cmd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="ZipBinaries.ps1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="WUApiLib">
+      <Guid>{B596CC9F-56E5-419E-A622-E01BB457431E}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

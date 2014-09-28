@@ -205,6 +205,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
             // based on the application name
             var appName = (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName().Name;
             if (OriginalTempFolder.IndexOf(appName, StringComparison.CurrentCultureIgnoreCase) == -1) {
+
                 var appTempPath = Path.Combine(OriginalTempFolder, appName);
                 if (!Directory.Exists(appTempPath)) {
                     Directory.CreateDirectory(appTempPath);
@@ -215,13 +216,11 @@ namespace Microsoft.OneGet.Utility.Extensions {
                     Directory.CreateDirectory(TempPath);
                 }
 
-                Environment.SetEnvironmentVariable("TMP", TempPath);
-                Environment.SetEnvironmentVariable("TEMP", TempPath);
-
                 // make sure this temp directory gets marked for eventual cleanup.
+                MoveFileOverwrite(appTempPath, null);
                 MoveFileAtNextBoot(TempPath, null);
             }
-
+            
             TempPath = TempPath ?? OriginalTempFolder;
         }
 
@@ -239,7 +238,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
                     try {
                         pathUri = new Uri(Path.GetFullPath(path));
                     } catch {
-                        throw new Exception("PathIsNotUri {0} {1}".format(path, pathUri));
+                        return null;
                     }
                 }
 
@@ -267,15 +266,26 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 if (isPotentiallyRelativePath) {
                     return CanonicalizePath(Path.GetFullPath(path), false);
                 }
-                throw new ArgumentException("specified path can not be resolved as a file name or path (unc, url, localpath)", path);
+                return null;
             }
         }
 
-        public static bool FileExists(this string input) {
-            if (!string.IsNullOrEmpty(input)) {
+        public static bool FileExists(this string path) {
+            if (!string.IsNullOrEmpty(path)) {
                 try {
-                    return File.Exists(CanonicalizePath(input, true));
+                    return File.Exists(CanonicalizePath(path, true));
                 } catch {
+                }
+            }
+            return false;
+        }
+
+        public static bool DirectoryExists(this string path) {
+            if (!string.IsNullOrEmpty(path)) {
+                try {
+                    return Directory.Exists(CanonicalizePath(path, true));
+                }
+                catch {
                 }
             }
             return false;

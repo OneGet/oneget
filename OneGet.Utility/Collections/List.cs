@@ -20,17 +20,29 @@ namespace Microsoft.OneGet.Utility.Collections {
         public void Add(TKey key, TValue value) {
             Add(new KeyValuePair<TKey, TValue>(key, value));
         }
+
+        public bool Contains(TKey key, TValue value) {
+            return Contains(new KeyValuePair<TKey, TValue>(key, value));
+        }
+
     }
 
     public class List<T1, T2, T3> : List<Tuple<T1, T2, T3>> {
         public void Add(T1 p1, T2 p2, T3 p3) {
             Add(new Tuple<T1, T2, T3>(p1, p2, p3));
         }
+        public bool Contains(T1 p1, T2 p2, T3 p3) {
+            return Contains(new Tuple<T1, T2, T3>(p1, p2, p3));
+        }
+
     }
 
     public class List<T1, T2, T3, T4> : List<Tuple<T1, T2, T3, T4>> {
         public void Add(T1 p1, T2 p2, T3 p3, T4 p4) {
             Add(new Tuple<T1, T2, T3, T4>(p1, p2, p3, p4));
+        }
+        public bool Contains(T1 p1, T2 p2, T3 p3,T4 p4) {
+            return Contains(new Tuple<T1, T2, T3,T4>(p1, p2, p3,p4));
         }
     }
 
@@ -38,5 +50,9 @@ namespace Microsoft.OneGet.Utility.Collections {
         public void Add(T1 p1, T2 p2, T3 p3, T4 p4, T5 p5) {
             Add(new Tuple<T1, T2, T3, T4, T5>(p1, p2, p3, p4, p5));
         }
+        public bool Contains(T1 p1, T2 p2, T3 p3, T4 p4,T5 p5) {
+            return Contains(new Tuple<T1, T2, T3, T4, T5>(p1, p2, p3, p4,p5));
+        }
+
     }
 }

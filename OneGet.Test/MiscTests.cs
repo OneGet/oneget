@@ -71,7 +71,7 @@ namespace Microsoft.OneGet.Test {
         [Fact]
         public void TestIEnumerableByRef() {
 
-
+#if USE_APPDOMAINS
             Console.WriteLine("STARTING");
 
             PluginDomain pd = new PluginDomain("testdomain"); 
@@ -103,7 +103,7 @@ namespace Microsoft.OneGet.Test {
             foreach (var n in r) {
                 Debug.WriteLine(string.Format("Item :{0}", n.B));
             }
-
+#endif
         }
     }
 

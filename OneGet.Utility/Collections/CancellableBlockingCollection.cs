@@ -43,7 +43,7 @@ namespace Microsoft.OneGet.Utility.Collections {
         public bool IsCancelled {
             get {
                 try {
-                    return _disposed || _cancellationTokenSource == null || _cancellationTokenSource.Token.IsCancellationRequested;
+                    return _disposed || _cancellationTokenSource == null || _cancellationTokenSource.IsCancellationRequested || _cancellationTokenSource.Token.IsCancellationRequested;
                 } catch {
                     return false;
                 }

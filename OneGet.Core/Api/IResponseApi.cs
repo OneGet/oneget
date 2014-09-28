@@ -67,14 +67,11 @@ namespace Microsoft.OneGet.Api {
         ///     Used by a provider to return the fields for a Metadata Definition
         ///     The cmdlets can use this to supply tab-completion for metadata to the user.
         /// </summary>
-        /// <param name="category"> one of ['provider', 'source', 'package', 'install']</param>
         /// <param name="name">the provider-defined name of the option</param>
         /// <param name="expectedType"> one of ['string','int','path','switch']</param>
         /// <param name="isRequired">if the parameter is mandatory</param>
         /// <returns></returns>
-        bool YieldDynamicOption(int category, string name, int expectedType, bool isRequired);
-
-        bool YieldDynamicOption(string category, string name, string expectedType, bool isRequired);
+        bool YieldDynamicOption(string name, string expectedType, bool isRequired);
 
 
         bool YieldKeyValuePair(string key, string value);
