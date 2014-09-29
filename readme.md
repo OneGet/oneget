@@ -1,6 +1,8 @@
 # OneGet
 <hr><hr>
 
+### NOTE: If you are looking for the Latest experimental build: download http://oneget.org/oneget.zip 
+
 ### NOTE: You are looking at the master branch.
 
 ### It is nearing stable. It should build and run (at least with the NuGet provider)
