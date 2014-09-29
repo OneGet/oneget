@@ -32,6 +32,11 @@ It's now built using .NET 4.0 -- this may run on Windows 7
 and Server 2008 R2. on WMF 3. Please test it :D
 
 
+Changelog
+--------------
+==LOG==
+
+
 Not Functional Yet:
 ---------------------------
 	
