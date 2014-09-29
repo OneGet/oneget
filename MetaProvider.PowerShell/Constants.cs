@@ -15,23 +15,21 @@
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     internal static class Constants {
         #region copy constants-implementation
-/* Synced/Generated code =================================================== */
+public const string MSGPrefix = "MSG:";
+        public const string TerminatingError = "MSG:TerminatingError";
+        public const string SourceLocationNotValid = "MSG:SourceLocationNotValid_Location";
+        public const string UriSchemeNotSupported = "MSG:UriSchemeNotSupported_Scheme";
+        public const string UnableToResolveSource = "MSG:UnableToResolveSource_NameOrLocation";
+        public const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
+        public const string DependencyResolutionError = "MSG:UnableToResolveDependency_dependencyPackage";
+        public const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependencyPackage";
+        public const string PackageProviderExists = "MSG:PackageProviderExists";
+        public const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
 
-        internal const string MSGPrefix = "MSG:";
-        internal const string TerminatingError = "MSG:TerminatingError";
-        internal const string SourceLocationNotValid = "MSG:SourceLocationNotValid_Location";
-        internal const string UriSchemeNotSupported = "MSG:UriSchemeNotSupported_Scheme";
-        internal const string UnableToResolveSource = "MSG:UnableToResolveSource_NameOrLocation";
-        internal const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
-        internal const string DependencyResolutionError = "MSG:UnableToResolveDependency_dependencyPackage";
-        internal const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependencyPackage";
-        internal const string PackageProviderExists = "MSG:PackageProviderExists";
-        internal const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
+        public const string IsUpdateParameter = "IsUpdatePackageSource";
 
-        internal const string IsUpdateParameter = "IsUpdatePackageSource";
-
-        internal const string NameParameter = "Name";
-        internal const string LocationParameter = "Location";
+        public const string NameParameter = "Name";
+        public const string LocationParameter = "Location";
 
         #endregion
 
@@ -42,42 +40,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     }
 
     #region copy errorcategory-implementation
-/* generated code ====================================================== */
-
-    public enum ErrorCategory {
-        NotSpecified,
-        OpenError,
-        CloseError,
-        DeviceError,
-        DeadlockDetected,
-        InvalidArgument,
-        InvalidData,
-        InvalidOperation,
-        InvalidResult,
-        InvalidType,
-        MetadataError,
-        NotImplemented,
-        NotInstalled,
-        ObjectNotFound,
-        OperationStopped,
-        OperationTimeout,
-        SyntaxError,
-        ParserError,
-        PermissionDenied,
-        ResourceBusy,
-        ResourceExists,
-        ResourceUnavailable,
-        ReadError,
-        WriteError,
-        FromStdErr,
-        SecurityError,
-        ProtocolError,
-        ConnectionError,
-        AuthenticationError,
-        LimitsExceeded,
-        QuotaExceeded,
-        NotEnabled,
-    }
 
     #endregion
 

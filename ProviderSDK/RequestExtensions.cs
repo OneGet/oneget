@@ -23,6 +23,8 @@ namespace OneGet.ProviderSDK {
     using System.Text.RegularExpressions;
     using RequestImpl = System.MarshalByRefObject;
 
+    #region declare requestextension-implementation
+
     public static class RequestExtensions {
         private static dynamic _remoteDynamicInterface;
         private static dynamic _localDynamicInterface;
@@ -360,4 +362,5 @@ namespace OneGet.ProviderSDK {
             Marshal.ZeroFreeGlobalAllocUnicode(unmanagedString);
         }
     }
+    #endregion
 }

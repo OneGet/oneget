@@ -123,13 +123,18 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract bool CompleteProgress(int activityId, bool isSuccessful);
 
-        public abstract IEnumerable<string> GetOptionValues(string key);
-
         /// <summary>
         ///     Used by a provider to request what metadata keys were passed from the user
         /// </summary>
         /// <returns></returns>
         public abstract IEnumerable<string> GetOptionKeys();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public abstract IEnumerable<string> GetOptionValues(string key);
 
         public abstract IEnumerable<string> GetSources();
 
@@ -227,43 +232,91 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         #endregion
 
         #region copy Request-implementation
-/* Synced/Generated code =================================================== */
-
-        public bool Warning(string messageText, params object[] args) {
-            return Warning(FormatMessageString(messageText,args));
+public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        internal bool Error( ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
+        public virtual void Dispose(bool disposing) {
+
+        }
+
+        public bool Yield(KeyValuePair<string, string[]> pair) {
+            if (pair.Value.Length == 0) {
+                return YieldKeyValuePair(pair.Key, null);
+            }
+            return pair.Value.All(each => YieldKeyValuePair(pair.Key, each));
+        }
+
+        public bool Error(ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
             return Error(messageText, category.ToString(), targetObjectValue, FormatMessageString(messageText, args));
         }
 
-      
+        public bool Warning(string messageText, params object[] args) {
+            return Warning(FormatMessageString(messageText, args));
+        }
+
         public bool Message(string messageText, params object[] args) {
-            return Message(FormatMessageString(messageText,args));
+            return Message(FormatMessageString(messageText, args));
         }
 
         public bool Verbose(string messageText, params object[] args) {
-            return Verbose(FormatMessageString(messageText,args));
-        } 
+            return Verbose(FormatMessageString(messageText, args));
+        }
 
         public bool Debug(string messageText, params object[] args) {
-            return Debug(FormatMessageString(messageText,args));
+            return Debug(FormatMessageString(messageText, args));
         }
 
         public int StartProgress(int parentActivityId, string messageText, params object[] args) {
-            return StartProgress(parentActivityId, FormatMessageString(messageText,args));
+            return StartProgress(parentActivityId, FormatMessageString(messageText, args));
         }
 
         public bool Progress(int activityId, int progressPercentage, string messageText, params object[] args) {
-            return Progress(activityId, progressPercentage, FormatMessageString(messageText,args));
+            return Progress(activityId, progressPercentage, FormatMessageString(messageText, args));
+        }
+
+        public string GetOptionValue(string name) {
+            // get the value from the request
+            return (GetOptionValues(name) ?? Enumerable.Empty<string>()).LastOrDefault();
         }
 
         private static string FixMeFormat(string formatString, object[] args) {
-            if (args == null || args.Length == 0 ) {
+            if (args == null || args.Length == 0) {
                 // not really any args, and not really expectng any
                 return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
             }
-            return System.Linq.Enumerable.Aggregate(args, formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture," \u00ab{0}\u00bb", arg));
+            return Enumerable.Aggregate(args, formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
+        }
+
+        public SecureString Password {
+            get {
+                var p = GetCredentialPassword();
+                if (p == null) {
+                    return null;
+                }
+                return p.FromProtectedString("salt");
+            }
+        }
+
+        public string Username {
+            get {
+                return GetCredentialUsername();
+            }
+        }
+
+        #endregion
+
+        public static implicit operator MarshalByRefObject(Request req) {
+            return req.Extend();
+        }
+
+        public static MarshalByRefObject ToMarshalByRefObject(Request request) {
+            return request.Extend();
+        }
+
+        internal MarshalByRefObject Extend(params object[] objects) {
+            return RequestExtensions.Extend(this, GetIRequestInterface(), objects);
         }
 
         internal string GetMessageStringInternal(string messageText) {
@@ -288,50 +341,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
             return string.Format(CultureInfo.CurrentCulture, messageText, args);
         }
-
-        public SecureString Password {
-            get {
-                var p = GetCredentialPassword();
-                if (p == null) {
-                    return null;
-                }
-                return p.FromProtectedString("salt");
-            }
-        }
-
-        public string Username {
-            get {
-                return  GetCredentialUsername();
-            }
-        }
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public virtual void Dispose(bool disposing) {
-
-        }
-
-        public static implicit operator MarshalByRefObject(Request req) {
-            return req.Extend();
-        }
-
-        public static MarshalByRefObject ToMarshalByRefObject(Request request) {
-            return request.Extend();
-        }
-
-        internal MarshalByRefObject Extend(params object[] objects) {
-            return RequestExtensions.Extend(this, GetIRequestInterface(), objects);
-        }
-
-        internal string GetOptionValue(string name) {
-            // get the value from the request
-            return (GetOptionValues(name) ?? Enumerable.Empty<string>()).LastOrDefault();
-        }
-
-        #endregion
 
         public PSCredential Credential {
             get {

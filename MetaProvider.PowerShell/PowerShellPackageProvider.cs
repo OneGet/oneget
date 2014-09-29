@@ -277,6 +277,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 }
             }
         }
+        public void ExecuteElevatedAction(string payload, RequestImpl requestImpl){
+             // TODO: Fill in implementation
+             // Delete this method if you do not need to implement it
+             // Please don't throw an not implemented exception, it's not optimal.
+
+        }
 
         #endregion
 

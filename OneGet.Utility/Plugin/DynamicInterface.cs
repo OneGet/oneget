@@ -324,7 +324,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
 
             // now we can calculate the key based on the content of the *Methods collections
-            var key = tInterface.Name + ":::" + instanceMethods.Keys.Select(each => each.FullName + "." + instanceMethods[each].Select(mi => mi.Value.ToSignatureString()).JoinWithComma()).JoinWith(";\r\n") +
+            var key = tInterface.FullName + ":::" + instanceMethods.Keys.Select(each => each.FullName + "." + instanceMethods[each].Select(mi => mi.Value.ToSignatureString()).JoinWithComma()).JoinWith(";\r\n") +
                       "::" + delegateMethods.Select(each => each.GetType().FullName).JoinWith(";\r\n") +
                       "::" + stubMethods.Select(mi => mi.ToSignatureString()).JoinWithComma();
 
