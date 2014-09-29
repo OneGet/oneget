@@ -59,5 +59,15 @@ namespace Microsoft.OneGet.Utility.Resources {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}:  PackageName: {1} MinVersion: {2} MaxVersion: {3} RequiredVersion: 1.5 AllVersions: true.
+        /// </summary>
+        internal static string NugetProviderTest_TestFindPackageSuccessfulCombinations__0____PackageName___1__MinVersion___2__MaxVersion___3__RequiredVersion__1_5_AllVersions__true {
+            get {
+                return ResourceManager.GetString("NugetProviderTest_TestFindPackageSuccessfulCombinations__0____PackageName___1__Mi" +
+                        "nVersion___2__MaxVersion___3__RequiredVersion__1_5_AllVersions__true", resourceCulture);
+            }
+        }
     }
 }

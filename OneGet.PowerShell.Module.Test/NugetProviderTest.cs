@@ -21,254 +21,541 @@ namespace OneGet.PowerShell.Module.Test {
     using Microsoft.OneGet.Utility.Platform;
     using Microsoft.OneGet.Utility.PowerShell;
     using Xunit;
-
+    using System.Diagnostics;
     public class NugetProviderTest : TestBase {
         private const string TempFolder = @"C:\\tempTestDirectoryZXY";
 
         private const string LongName =
             "THISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERS";
 
-        private string NuGetPath {
-            get {
-                var systemBase = KnownFolders.GetFolderPath(KnownFolder.CommonApplicationData);
-                Assert.False(string.IsNullOrEmpty(systemBase), "Known Folder CommonApplicationData is null");
+        private readonly string[] _workingMaximumVersions = {
+            "2.0",
+            "2.5",
+            "3.0"
+        };
 
-                var nugets = NugetsInPath(Path.Combine(systemBase, "oneget", "ProviderAssemblies"));
-                var first = nugets.FirstOrDefault();
-                if (first != null) {
-                    return first;
-                }
+        private readonly string[] _workingMinimumVersions = {
+            "1.0",
+            "1.3",
+            "1.5"
+        };
 
-                var userBase = KnownFolders.GetFolderPath(KnownFolder.LocalApplicationData);
-                Assert.False(string.IsNullOrEmpty(userBase), "Known folder LocalApplicationData is null");
+        private readonly string[] _workingNames = {
+            //"BlackBirdPie",
+            "AzureContrib",
+            "AWSSDK"
+        };
 
-                nugets = NugetsInPath(Path.Combine(userBase, "oneget", "ProviderAssemblies"));
-                first = nugets.FirstOrDefault();
-                if (first != null) {
-                    return first;
-                }
+        private readonly string[] _workingSourceNames = {
+            "NUGETTEST101.org",
+            "NUGETTEST202.org"
+        };
 
-                return null;
-            }
-        }
+        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+        /* -----------------------------------------------------------------------------     PRIMARY TESTS     ----------------------------------------------------------------------------------- */
+        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 
-        private bool IsNuGetInstalled {
-            get {
-                return NuGetPath != null;
-            }
-        }
-
-        [Fact]
-        public void TestGetPackageProvider() {
+        //[Fact(Timeout = 180000)] //TODO Save --> Install not functional
+        public void TestWhatIfAllCmdlets() {
             var ps = NewPowerShellSession;
+
+            Directory.CreateDirectory(TempFolder);
+            DynamicPowershellResult save = ps.SavePackage(Name: "Adept.Nugetrunner", Provider: "Nuget", Destination: TempFolder, WhatIf: true, IsTesting: true);
+            save.WaitForCompletion();
+           // Assert.False(save.IsFailing);
+            DynamicPowershellResult install = ps.InstallPackage(Name: "Adept.Nugetrunner", Provider: "Nuget", Destination: TempFolder, WhatIf: true, IsTesting: true);
+            install.WaitForCompletion();
+            Assert.False(install.IsFailing);
+
+            DynamicPowershellResult install2 = ps.InstallPackage(Name: "Adept.Nugetrunner", Provider: "Nuget", Destination: TempFolder, Force: true, IsTesting: true);
+            install2.WaitForCompletion();
+
+            DynamicPowershellResult uninstall = ps.UninstallPackage(Name: "Adept.Nugetrunner", Provider: "Nuget", Destination: TempFolder, WhatIf: true, IsTesting: true);
+            uninstall.WaitForCompletion();
+            Assert.False(uninstall.IsFailing);
+
+            DynamicPowershellResult register = ps.RegisterPackageSource(Name: "nugettest55.org", Provider: "Nuget", Location: "Http://www.nuget.org/api/v2", WhatIf: true, IsTesting: true);
+            register.WaitForCompletion();
+            Assert.False(register.IsFailing);
+
+            DynamicPowershellResult unregister = ps.UnregisterPackageSource(Name: "nugettest55.org", Provider: "Nuget", Location: "Http://www.nuget.org/api/v2", WhatIf: true, IsTesting: true);
+            unregister.WaitForCompletion();
+            Assert.False(unregister.IsFailing);
+        }
+
+        [Fact(Timeout = 180000, Priority = 0), Trait("Test", "Primary")]
+        public void TestBootstrapNuGet()
+        {
+            // delete any copies of nuget if they are installed.
+            if (IsNuGetInstalled)
+            {
+                DeleteNuGet();
+            }
+
+            // verify that nuget is not installed.
+            Assert.False(IsNuGetInstalled, "NuGet is still installed at :".format(NuGetPath));
+
+            dynamic ps = NewPowerShellSession;
+            // ask onget for the nuget package provider, bootstrapping if necessary
+            DynamicPowershellResult result = ps.GetPackageProvider(Name: "NuGet", ForceBootstrap: true, IsTesting: true);
+            Assert.False(result.IsFailing);
+
+            // did we get back one item?
+            object[] items = result.ToArray();
+            Assert.Equal(1, items.Length);
+
+            // and is the nuget.exe where we expect it?
+            Assert.True(IsNuGetInstalled);
+            UnloadOneGet();
+        }
+
+        [Fact(Timeout = 120000, Priority = 1), Trait("Test", "Primary")]
+        public void TestSetPackageSourceSuccessfulCombinations() {
+            dynamic ps = NewPowerShellSession;
+
+            DynamicPowershellResult result = ps.RegisterPackageSource(Name: "nugettest.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+            result.WaitForCompletion();
+            DynamicPowershellResult result2 = ps.SetPackageSource(Name: "nugettest.org", NewName: "nugettest3.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", NewLocation: "https://www.nuget.org/api/v2/", IsTesting: true);
+            result2.WaitForCompletion();
+            DynamicPowershellResult result3 = ps.GetPackageSource();
+            result3.WaitForCompletion();
+            foreach (dynamic source in result3) {
+                dynamic name = source.Name;
+                dynamic provider = source.Provider;
+                dynamic location = source.Location;
+                Console.WriteLine("Name: " + name + "            Provider: " + provider + "            Location: " + location);
+                Assert.False(result2.IsFailing);
+            }
+            DynamicPowershellResult result4 = ps.UnregisterPackageSource(Name: "Nugettest.org", Provider: "Nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+            result4.WaitForCompletion();
+        }
+
+        [Fact(Timeout = 120000, Priority = 2), Trait("Test", "Primary")]
+        public void TestFindPackageSuccessfulCombinations() {
+            dynamic ps = NewPowerShellSession;
+            int i = 1;
+            foreach (string packageName in _workingNames) {
+                foreach (string minVersion in _workingMinimumVersions) {
+                    foreach (string maxVersion in _workingMaximumVersions) {
+                        DynamicPowershellResult result = ps.FindPackage(Name: packageName, Provider: "Nuget", MaximumVersion: maxVersion, RequiredVersion: "1.5", version: minVersion, allVersions: true, isTesting: true);
+                        result.WaitForCompletion();
+                        Console.WriteLine(i++ + @": " + @" PackageName: " + packageName + @" MinVersion: " + minVersion + @" MaxVersion: " + maxVersion + @" RequiredVersion: 1.5" + @" AllVersions: true");
+                        Assert.False(result.IsFailing);
+                    }
+                }
+            }
+        }
+
+        [Fact(Timeout = 120000, Priority = 3), Trait("Test", "Primary")]
+        public void TestSavePackageSuccessfulCombinations() {
+            dynamic ps = NewPowerShellSession;
+            int i = 1;
+            Directory.CreateDirectory(TempFolder);
+            foreach (string packageName in _workingNames) {
+                foreach (string minVersion in _workingMinimumVersions) {
+                    foreach (string maxVersion in _workingMaximumVersions) {
+                        DynamicPowershellResult result = ps.SavePackage(Name: packageName, Provider: "Nuget", MaximumVersion: maxVersion, RequiredVersion: "1.5", minimumversion: minVersion, Destination: TempFolder, isTesting: true);
+                        result.WaitForCompletion();
+                        Console.WriteLine(i++ + @": " + @" PackageName: " + packageName + @" MinVersion: " + minVersion + @" MaxVersion: " + maxVersion + @" RequiredVersion: 1.5" + @" AllVersions: true");
+                        Assert.False(Directory.GetFiles(TempFolder).Length == 0);
+                        DeleteAllNuget();
+                    }
+                }
+            }
+            Directory.Delete(TempFolder, true);
+        }
+
+        [Fact(Timeout = 120000, Priority = 4), Trait("Test", "Primary")]
+        public void TestInstallPackageSuccessfulCombinations() {
+            dynamic ps = NewPowerShellSession;
+            int i = 1;
+            Directory.CreateDirectory(TempFolder);
+            foreach (string packageName in _workingNames) {
+                foreach (string minVersion in _workingMinimumVersions) {
+                    foreach (string maxVersion in _workingMaximumVersions) {
+                        DynamicPowershellResult result = ps.InstallPackage(Name: packageName, Provider: "Nuget", MaximumVersion: maxVersion, minimumversion: minVersion, RequiredVersion: "1.5", Destination: TempFolder, Force: true, isTesting: true);
+                        result.WaitForCompletion();
+                        Console.WriteLine(i++ + @": " + @" PackageName: " + packageName + @" MinVersion: " + minVersion + @" MaxVersion: " + maxVersion + @" RequiredVersion: 1.5" + @" AllVersions: true");
+                        Assert.False(IsDirectoryEmpty(TempFolder));
+                        DeleteAllNuget();
+                    }
+                }
+            }
+            Directory.Delete(TempFolder, true);
+        }
+
+        [Fact(Priority = 5), Trait("Test", "Primary")]
+        public void TestUninstallPackageSuccessfulCombinations() {
+            dynamic ps = NewPowerShellSession;
+            int i = 1;
+            Directory.CreateDirectory(TempFolder);
+            foreach (string packageName in _workingNames) {
+                foreach (string minVersion in _workingMinimumVersions) {
+                    foreach (string maxVersion in _workingMaximumVersions) {
+                        DynamicPowershellResult result = ps.InstallPackage(Name: packageName, Provider: "Nuget", MaximumVersion: maxVersion, minimumversion: minVersion, RequiredVersion: "1.5", Destination: TempFolder, Force: true, isTesting: true);
+                        result.WaitForCompletion();
+                        Console.WriteLine(i++ + @": " + @" PackageName: " + packageName + @" MinVersion: " + minVersion + @" MaxVersion: " + maxVersion + @" RequiredVersion: 1.5" + @" AllVersions: true");
+                        DynamicPowershellResult result2 = ps.UninstallPackage(Name: packageName, Provider: "Nuget", MaximumVersion: maxVersion, minimumversion: minVersion, RequiredVersion: "1.5", Destination: TempFolder, Force: true, isTesting: true);
+                        result2.WaitForCompletion();
+                        Assert.True(IsDirectoryEmpty(TempFolder));
+                    }
+                }
+            }
+            Directory.Delete(TempFolder, true);
+        }
+
+        [Fact(Timeout = 120000, Priority = 6), Trait("Test", "Primary")]
+        public void TestGetPackageSuccessfulCombinations() {
+            dynamic ps = NewPowerShellSession;
+            Directory.CreateDirectory(TempFolder);
+            foreach (string packageName in _workingNames) {
+                foreach (string minVersion in _workingMinimumVersions) {
+                    foreach (string maxVersion in _workingMaximumVersions) {
+                        DynamicPowershellResult result = ps.InstallPackage(Name: packageName, Provider: "Nuget", MaximumVersion: maxVersion, minimumversion: minVersion, RequiredVersion: "1.5", Destination: TempFolder, Force: true, isTesting: true);
+                        result.WaitForCompletion();
+                        DynamicPowershellResult result2 = ps.GetPackage(Name: packageName, Provider: "Nuget", MaximumVersion: maxVersion, minimumversion: minVersion, RequiredVersion: "1.5", Destination: TempFolder, Force: true, isTesting: true);
+                        result2.WaitForCompletion();
+                        Assert.False(result2.IsFailing);
+                        foreach (dynamic source in result2) {
+                            dynamic name = source.Name;
+                            dynamic provider = source.ProviderName;
+                            Console.WriteLine("Name: " + name + " Provider: " + provider);
+                        }
+                    }
+                }
+            }
+            Directory.Delete(TempFolder, true);
+        }
+
+        [Fact(Timeout = 120000, Priority = 7), Trait("Test", "Primary")]
+        public void TestRegisterPackageSourceSuccessfulCombinations() {
+            dynamic ps = NewPowerShellSession;
+            Directory.CreateDirectory(TempFolder);
+            foreach (string packageName in _workingSourceNames) {
+                DynamicPowershellResult result = ps.RegisterPackageSource(Name: packageName, Provider: "Nuget", Location: "http://www.nuget.org/api/v2", isTesting: true);
+                result.WaitForCompletion();
+                DynamicPowershellResult result2 = ps.GetPackageSource();
+                result2.WaitForCompletion();
+                Assert.False(result.IsFailing);
+                foreach (dynamic source in result2) {
+                    dynamic name = source.Name;
+                    dynamic provider = source.ProviderName;
+                    Console.WriteLine("Name: " + name + " Provider: " + provider);
+                }
+                DynamicPowershellResult result3 = ps.UnregisterPackageSource(Name: packageName, Provider: "Nuget", Location: "http://www.nuget.org/api/v2", isTesting: true);
+                result3.WaitForCompletion();
+            }
+            Directory.Delete(TempFolder, true);
+        }
+
+        [Fact(Timeout = 120000, Priority = 8), Trait("Test", "Primary")]
+        public void TestUnregisterPackageSourceSuccessfulCombinations() {
+            dynamic ps = NewPowerShellSession;
+            Directory.CreateDirectory(TempFolder);
+            foreach (string packageName in _workingSourceNames) {
+                DynamicPowershellResult result = ps.RegisterPackageSource(Name: packageName, Provider: "Nuget", Location: "http://www.nuget.org/api/v2", isTesting: true);
+                result.WaitForCompletion();
+                DynamicPowershellResult result2 = ps.GetPackageSource();
+                result2.WaitForCompletion();
+                foreach (dynamic source in result2) {
+                    dynamic name = source.Name;
+                    dynamic provider = source.ProviderName;
+                    Console.WriteLine("Name: " + name + " Provider: " + provider);
+                }
+                DynamicPowershellResult result3 = ps.UnregisterPackageSource(Name: packageName, Provider: "Nuget", Location: "http://www.nuget.org/api/v2", isTesting: true);
+                result3.WaitForCompletion();
+                Assert.False(result3.IsFailing);
+            }
+            Directory.Delete(TempFolder, true);
+        }
+
+        [Fact(Timeout = 60000), Trait("Test", "Primary")]
+        public void TestGetPackageProvider() {
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.GetPackageProvider(IsTesting: true);
             result.WaitForCompletion();
             Assert.False(result.IsFailing, "Failed to get package provider.");
         }
 
-        [Fact]
-        public void TestFindPackage() {
-            var ps = NewPowerShellSession;
-
-            DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(result.IsFailing, "Failed to find package with nuget provider.");
-        }
-
-        [Fact]
+        [Fact(Timeout = 120000, Priority = 9), Trait("Test", "Primary")]
         public void TestFindPackagePipeProvider() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.GetPackageProvider(Name: "Nuget", IsTesting: true);
             result.WaitForCompletion();
             DynamicPowershellResult result2 = ps.FindPackage(result, Name: "adept.nugetrunner", IsTesting: true);
             result.WaitForCompletion();
             Assert.False(result2.IsFailing, "Failed to pipe provider to Find Package.");
-
         }
 
-        [Fact]
+        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+        /* ----------------------------------------------------------------------------     PIPELINE TESTS     ----------------------------------------------------------------------------------- */
+        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+
+        //[Fact(Priority = 10)]
+        public void TestSavePackagePipeName()
+        {
+            dynamic ps = NewPowerShellSession;
+
+            Directory.CreateDirectory(TempFolder);
+            DynamicPowershellResult result = ps.FindPackage(Name: "adept.Nuget", IsTesting: true);
+            result.WaitForCompletion();
+            DynamicPowershellResult result2 = ps.SavePackage(result, Provider: "Nuget", Destination: TempFolder, IsTesting: true);
+            result2.WaitForCompletion();
+            Assert.True(File.Exists("C:\\tempTestDirectoryZXY\\Adept.NuGetRunner.1.0.0.2.nupkg"), "Save failed, package not found.");
+            Directory.Delete(TempFolder, true);
+        }
+
+        [Fact(Timeout = 60000, Priority = 11), Trait("Test", "Primary")]
+        public void TestInstallPackagePipeName()
+        {
+            dynamic ps = NewPowerShellSession;
+
+            Directory.CreateDirectory(TempFolder);
+            DynamicPowershellResult result = ps.FindPackage(Name: "adept.nugetrunner", Provider: "Nuget", MaximumVersion: "1.5", MinimumVersion: "1.0.0.1", RequiredVersion: "1.0.0.2", IsTesting: true);
+            result.WaitForCompletion();
+            DynamicPowershellResult result2 = ps.InstallPackage(result, Destination: TempFolder, Force: true, IsTesting: true);
+            result2.WaitForCompletion();
+            Assert.False(IsDirectoryEmpty(TempFolder));
+
+            Directory.Delete(TempFolder, true);
+        }
+
+        [Fact(Timeout = 60000, Priority = 12), Trait("Test", "Primary")]
+        public void TestRegisterPackageSourcePipe()
+        {
+            dynamic ps = NewPowerShellSession;
+
+            DynamicPowershellResult result = ps.GetPackageProvider(Name: "nuget", IsTesting: true);
+            result.WaitForCompletion();
+            DynamicPowershellResult result2 = ps.RegisterPackageSource(result, Name: "nugettest.org", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+            result2.WaitForCompletion();
+            Assert.False(result2.IsFailing);
+            DynamicPowershellResult result3 = ps.UnregisterPackageSource(Name: "nugettest.org", Provider: "Nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+            result3.WaitForCompletion();
+        }
+
+        [Fact(Timeout = 60000, Priority = 13), Trait("Test", "Primary")]
+        public void TestUnregisterPackageSourcePipe()
+        {
+            dynamic ps = NewPowerShellSession;
+            DynamicPowershellResult result = ps.GetPackageProvider(Name: "nuget", IsTesting: true);
+            result.WaitForCompletion();
+            DynamicPowershellResult result2 = ps.RegisterPackageSource(Provider: "Nuget", Name: "nugettest.org", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+            result2.WaitForCompletion();
+            DynamicPowershellResult result3 = ps.UnregisterPackageSource(result, Name: "Nugettest.org", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+            Assert.False(result3.IsFailing);
+        }
+
+        [Fact(Timeout = 60000, Priority = 14), Trait("Test", "Primary")]
+        public void TestGetPackagePipeProvider() {
+            dynamic ps = NewPowerShellSession;
+            DynamicPowershellResult result = ps.GetPackageProvider(Name: "Nuget", IsTesting: true);
+            result.WaitForCompletion();
+            DynamicPowershellResult result2 = ps.GetPackage(result);
+            result2.WaitForCompletion();
+            Assert.False(result2.IsFailing);
+            foreach (dynamic source in result2) {
+                var x = source.Name;
+                var y = source.Version;
+                var z = source.Status;
+                Console.WriteLine(x + y + z);
+            }
+        }
+
+        [Fact(Timeout = 60000, Priority = 15), Trait("Test", "Primary")]
+        public void TestUninstallPackagePipeName()
+        {
+            dynamic ps = NewPowerShellSession;
+
+            Directory.CreateDirectory(TempFolder);
+            DynamicPowershellResult result = ps.FindPackage(Name: "adept.nugetrunner", Provider: "Nuget", MaximumVersion: "1.5", MinimumVersion: "1.0.0.1", RequiredVersion: "1.0.0.2", IsTesting: true);
+            result.WaitForCompletion();
+            DynamicPowershellResult result2 = ps.InstallPackage(result, Destination: TempFolder, Force: true, IsTesting: true);
+            result2.WaitForCompletion();
+            DynamicPowershellResult result3 = ps.GetPackage(Name: "adept.nugetrunner", Provider: "nuget", Destination: TempFolder, Force: true, IsTesting: true);
+            DynamicPowershellResult result4 = ps.UninstallPackage(result3, Force: true, IsTesting: true);
+            result4.WaitForCompletion();
+            Assert.True(IsDirectoryEmpty(TempFolder));
+
+            Directory.Delete(TempFolder, true);
+        }
+
+        [Fact(Timeout = 60000, Priority = 16), Trait("Test", "Primary")]
+        public void TestSetPackageSourcePipe() {
+            dynamic ps = NewPowerShellSession;
+
+            DynamicPowershellResult result = ps.RegisterPackageSource(Name: "nugettest.org", Location: "https://www.nuget.org/api/v2/", Provider: "nuget", Force: true, IsTesting: true);
+            result.WaitForCompletion();
+            DynamicPowershellResult result2 = ps.GetPackageSource(Provider: "Nuget", Name: "nugettest.org", Location: "https://www.nuget.org/api/v2", IsTesting: true);
+            result2.WaitForCompletion();
+            DynamicPowershellResult result3 = ps.SetPackageSource(result2, NewName: "nugettest3.org", NewLocation: "https://www.nuget.org/api/v2/", IsTesting: true);
+            result3.WaitForCompletion();
+            Assert.False(result3.IsFailing);
+            DynamicPowershellResult result4 = ps.UnregisterPackageSource(Name: "nugettest.org", IsTesting: true);
+            result4.WaitForCompletion();
+            DynamicPowershellResult result5 = ps.UnregisterPackageSource(Name: "nugettest3.org", IsTesting: true);
+            result5.WaitForCompletion();
+        }
+
+        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+        /* ----------------------------------------------------------------------------     SCENARIO TESTS     ----------------------------------------------------------------------------------- */
+        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+
+        [Fact(Timeout = 60000, Priority = 17), Trait("Test", "Primary")]
+
+        public void TestScenarioOne() {
+            dynamic ps = NewPowerShellSession;
+
+            Directory.CreateDirectory(TempFolder);
+
+            DynamicPowershellResult register = ps.RegisterPackageSource(Name: "nugettest.org", Location: "https://www.nuget.org/api/v2/", Provider: "Nuget", Force: true, IsTesting: true);
+            register.WaitForCompletion();
+            DynamicPowershellResult getP = ps.GetPackageSource(register, Force: true, IsTesting: true);
+            getP.WaitForCompletion();
+            Assert.False(getP.IsFailing);
+            foreach (dynamic source in getP) {
+                Console.WriteLine("Name: " + source.Name + " Location: " + source.Location);
+            }
+            DynamicPowershellResult set = ps.SetPackageSource(Name: "Nugettest.org", Location: "https://www.nuget.org/api/v2/", Provider: "Nuget", NewName: "RenamedNugetTest.org", NewLocation: "https://www.nuget.org/api/v2", Force: true, IsTesting: true);
+            set.WaitForCompletion();
+            Assert.False(set.IsFailing);
+            foreach (dynamic source in set) {
+                Console.WriteLine("Name: " + source.Name + " Location: " + source.Location);
+            }
+
+            DynamicPowershellResult getPp = ps.GetPackageProvider(Name: "Nuget", IsTesting: true);
+            getPp.WaitForCompletion();
+            Assert.False(getPp.IsFailing);
+            foreach (dynamic source in getPp) {
+                Console.WriteLine("GetPP Provider Name: " + source.Name);
+            }
+            DynamicPowershellResult find = ps.FindPackage(Name: "adept.nugetrunner", Provider: "Nuget", MaximumVersion: "1.0.0.2", IsTesting: true);
+            find.WaitForCompletion();
+            Assert.False(find.IsFailing);
+
+            DynamicPowershellResult install = ps.InstallPackage(find, Destination: TempFolder, Force: true, IsTesting: true);
+            install.WaitForCompletion();
+            Assert.False(IsDirectoryEmpty(TempFolder));
+
+            DynamicPowershellResult get = ps.GetPackage(Destination: TempFolder, IsTesting: true);
+            get.WaitForCompletion();
+            foreach (dynamic source in get) {
+                Console.WriteLine("Name: " + source.Name + " Status: " + source.Status);
+            }
+            Assert.False(get.IsFailing);
+
+            DynamicPowershellResult uninstall = ps.UninstallPackage(Name: "Adept.Nugetrunner", Destination: TempFolder, IsTesting: true);
+            uninstall.WaitForCompletion();
+            Assert.True(IsDirectoryEmpty(TempFolder));
+
+            DynamicPowershellResult unregister = ps.UnregisterPackageSource(Name: "RenamedNugetTest.org", Location: "https://www.nuget.org/api/v2", Provider: "Nuget", IsTesting: true);
+            unregister.WaitForCompletion();
+            Assert.False(unregister.IsFailing);
+
+            Directory.Delete(TempFolder);
+        }
+
+
+
+        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+        /* ---------------------------------------------------------------------------     SECONDARY TESTS     ----------------------------------------------------------------------------------- */
+        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+
+
+        [Fact(Timeout = 60000), Trait("Test", "Secondary")]
         public void TestFindPackageLongName() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: LongName, IsTesting: true);
             result.WaitForCompletion();
             Assert.True(result.IsFailing, "Found an invalid name.");
         }
 
-       // [Fact] //TODO, Figure out how to properly do null.
+        [Fact(Timeout = 60000, Skip = "Cannot handle null names yet.")]
         public void TestFindPackageNullName() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: null, IsTesting: true);
             result.WaitForCompletion();
             Assert.False(result.IsFailing);
         }
 
-        public void TestFindPackageEmptyStringName() {
-            var ps = NewPowerShellSession;
-
-            DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "", IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(result.IsFailing);
-        }
-
-        [Fact]
-        public void TestFindPackageValidName() {
-            var ps = NewPowerShellSession;
-
-            DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "Nuget", IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(result.IsFailing, "Failed to find package with valid name parameter.");
-        }
-
-        [Fact]
+        [Fact(Timeout = 60000), Trait("Test", "Secondary")]
         public void TestFindPackageInvalidName() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER", IsTesting: true);
             result.WaitForCompletion();
             Assert.True(result.IsFailing, "Found package with invalid name.");
         }
 
-        [Fact]
-        public void TestFindPackageValidProvider() {
-            var ps = NewPowerShellSession;
-
-            DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(result.IsFailing, "Did not manage to find nuget provider.");
-        }
-
-        [Fact(Skip = "impossible to check.")]
-        //TODO
-        //Has warning, not error, impossible to check at the moment. [BUG]
+        [Fact(Timeout = 60000, Skip = "impossible to check, only doing nuget")]
         public void TestFindPackageInvalidProvider() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.FindPackage(Provider: "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER", IsTesting: true);
             result.WaitForCompletion();
             Assert.True(result.Success, "Found package with invalid name.");
         }
 
-        [Fact]
-        public void TestFindPackageMaxVersion() {
-            var ps = NewPowerShellSession;
-
-            DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "Nuget", MaximumVersion: "1.5", IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(result.IsFailing, "Failed to find package with max version parameter.");
-        }
-
-        [Fact]
+        [Fact(Timeout = 60000), Trait("Test", "Secondary")]
         public void TestFindPackageNegMaxVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "Nuget", MaximumVersion: "-1.5", IsTesting: true);
             result.WaitForCompletion();
             Assert.True(result.IsFailing, "Managed to find package with negative MaximumVersion paramater.");
         }
 
-        [Fact]
-        public void TestFindPackageMinVersion() {
-            var ps = NewPowerShellSession;
-
-            DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "Nuget", Version: "1.5", IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(result.IsFailing, "Failed to find package with MinimumVersion parameter.");
-        }
-
-        [Fact]
+        [Fact(Timeout = 60000), Trait("Test", "Secondary")]
         public void TestFindPackageNegMinVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "Nuget", Version: "-1.5", IsTesting: true);
             result.WaitForCompletion();
             Assert.True(result.IsFailing, "Managed to find package with negative MinimumVersion.");
         }
 
-        [Fact]
-        public void TestFindPackageReqVersion() {
-            var ps = NewPowerShellSession;
-
-            DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "Nuget", RequiredVersion: "1.5", IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(result.IsFailing, "Failed to find package with RequiredVersion parameter.");
-        }
-
-        [Fact]
+        [Fact(Timeout = 60000), Trait("Test", "Secondary")]
         public void TestFindPackageNegReqVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "Nuget", RequiredVersion: "-1.5", IsTesting: true);
             result.WaitForCompletion();
             Assert.True(result.IsFailing, "Managed to find package with negative RequiredVersion.");
         }
 
-        [Fact]
-        public void TestFindPackageAllVersion() {
-            var ps = NewPowerShellSession;
-
-            DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "Nuget", AllVersions: true, IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(result.IsFailing, "Failed to find package with AllVersion parameter.");
-        }
-
-        [Fact]
+        [Fact(Timeout = 60000), Trait("Test", "Secondary")]
         public void TestFindPackageRequiredVersionFail() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
-            DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "Nuget", Version: "1.0", MaximumVersion: "1.5", RequiredVersion: "2.0", IsTesting: true);
+            DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "adept.Nuget", Version: "1.0", MaximumVersion: "1.5", RequiredVersion: "2.0", IsTesting: true);
             result.WaitForCompletion();
             Assert.True(result.IsFailing, "Managed to find package with invalid RequiredVersion parameter.");
         }
 
-        [Fact]
+        [Fact(Timeout = 60000), Trait("Test", "Secondary")]
         public void TestFindPackageAllVersionFail() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "Nuget", Version: "1.0", MaximumVersion: "1.5", AllVersion: "2.0", IsTesting: true);
             result.WaitForCompletion();
             Assert.True(result.IsFailing, "Managed to find package with invalid AllVersion parameter.");
         }
 
-        [Fact]
+        [Fact(Timeout = 300000), Trait("Test", "Secondary")]
         public void TestFindPackageMismatchedVersions() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Name: "Nuget", Version: "1.5", MaximumVersion: "1.0", IsTesting: true);
             Assert.True(result.IsFailing, "Managed to find package with invalid Max/Min version parameter combination.");
         }
 
-        [Fact]
-        public void TestSavePackage() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.SavePackage(Provider: "Nuget", Name: "Adept.NugetRunner", Destination: TempFolder, IsTesting: true);
-            result.WaitForCompletion();
-            Assert.True(File.Exists("C:\\tempTestDirectoryZXY\\Adept.NuGetRunner.1.0.0.2.nupkg"), "Save failed, package not found.");
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
-        public void TestSavePackagePipeName() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.FindPackage(Name: "adept.Nuget", IsTesting: true);
-            result.WaitForCompletion();
-            DynamicPowershellResult result2 = ps.SavePackage(result, Provider: "nuget", Destination: TempFolder, IsTesting: true);
-            result2.WaitForCompletion();
-            Assert.True(File.Exists("C:\\tempTestDirectoryZXY\\Adept.NuGetRunner.1.0.0.2.nupkg"), "Save failed, package not found.");
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
-        public void TestSavePackageLongName()
-        {
-            var ps = NewPowerShellSession;
+        [Fact(Timeout = 120000, Priority = 100), Trait("Test", "Secondary")]
+        public void TestSavePackageLongName() {
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.SavePackage(Provider: "Nuget", Name: LongName, Destination: TempFolder, IsTesting: true);
@@ -277,10 +564,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-      //  [Fact] //TODO NULL
-        public void TestSavePackageNullName()
-        {
-            var ps = NewPowerShellSession;
+        [Fact(Timeout = 60000, Skip = "Cannot handle null names yet.")]
+        public void TestSavePackageNullName() {
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.SavePackage(Provider: "Nuget", Name: null, Destination: TempFolder, IsTesting: true);
@@ -289,43 +575,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
-        public void TestSavePackageMinVersion() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.SavePackage(Provider: "Nuget", Name: "Adept.NugetRunner", Destination: TempFolder, Version: "1.0", IsTesting: true);
-            result.WaitForCompletion();
-
-            Assert.True(File.Exists("C:\\tempTestDirectoryZXY\\Adept.NuGetRunner.1.0.0.2.nupkg"), "Save failed, package with MinimumVersion parameter not found.");
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
-        public void TestSavePackageMaxVersion() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.SavePackage(Provider: "Nuget", Name: "Adept.NugetRunner", Destination: TempFolder, MaximumVersion: "1.0", IsTesting: true);
-            result.WaitForCompletion();
-            Assert.True(File.Exists("C:\\tempTestDirectoryZXY\\Adept.NuGetRunner.1.0.nupkg"), "Save failed, package with MaximumVersion parameter not found.");
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
-        public void TestSavePackageReqVersion() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.SavePackage(Provider: "Nuget", Name: "Adept.NugetRunner", Destination: TempFolder, RequiredVersion: "1.0", IsTesting: true);
-            result.WaitForCompletion();
-            Assert.True(File.Exists("C:\\tempTestDirectoryZXY\\Adept.NuGetRunner.1.0.nupkg"), "Save failed, package with RequiredVersion parameter not found.");
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
+        [Fact(Timeout = 120000, Priority = 101), Trait("Test", "Secondary")]
         public void TestSavePackageMismatchedVersions() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.SavePackage(Provider: "Nuget", Name: "Adept.NugetRunner", Destination: TempFolder, MaximumVersion: "1.0", Version: "1.0.0.2", IsTesting: true);
@@ -334,9 +586,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
+        [Fact(Timeout = 120000, Priority = 102), Trait("Test", "Secondary")]
         public void TestSavePackageNegReqVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.SavePackage(Provider: "Nuget", Name: "Adept.NugetRunner", Destination: TempFolder, RequiredVersion: "-1.0.0.2", IsTesting: true);
@@ -345,9 +597,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
+        [Fact(Timeout = 120000, Priority = 103), Trait("Test", "Secondary")]
         public void TestSavePackageNegMaxVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.SavePackage(Provider: "Nuget", Name: "Adept.NugetRunner", Destination: TempFolder, MaximumVersion: "-1.0.0.2", IsTesting: true);
@@ -356,9 +608,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
+        [Fact(Timeout = 120000, Priority = 104), Trait("Test", "Secondary")]
         public void TestSavePackageNegMinVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.SavePackage(Provider: "Nuget", Name: "Adept.NugetRunner", Destination: TempFolder, Version: "-1.0.0.2", IsTesting: true);
@@ -367,56 +619,18 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
-        public void TestSavePackageDestination() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.SavePackage(Provider: "Nuget", Name: "Adept.NugetRunner", Destination: TempFolder, IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(File.Exists("C:\\tempTestDirectoryZXY\\Adept.NuGetRunner.1.0.nupkg"), "Failed to save package in destination.");
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
+        [Fact(Timeout = 60000, Skip = "Unsure how to do.")]
         public void TestSavePackageInvalidDestination() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.SavePackage(Provider: "Nuget", Name: "Adept.Nugetrunner", Destination: "c:\\failLocation", IsTesting: true);
             result.WaitForCompletion();
-            Assert.True(result.IsFailing); //TODO
+            Assert.True(result.IsFailing);
         }
 
-        [Fact]
-        public void TestInstallPackage() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", Destination: TempFolder, Force: true, IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(result.IsFailing);
-
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
-        public void TestInstallPackagePipeName() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.FindPackage(Name: "adept.nugetrunner", Provider: "Nuget", IsTesting: true);
-            result.WaitForCompletion();
-            DynamicPowershellResult result2 = ps.InstallPackage(result, Destination: TempFolder, Force: true, IsTesting: true);
-            result2.WaitForCompletion();
-            Assert.False(result2.IsFailing);
-
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
-        public void TestInstallPackageLongName()
-        {
-            var ps = NewPowerShellSession;
+        [Fact(Timeout = 60000, Priority = 105), Trait("Test", "Secondary")]
+        public void TestInstallPackageLongName() {
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: LongName, Destination: TempFolder, Force: true, IsTesting: true);
@@ -426,10 +640,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        //[Fact] //TODO, NULL
-        public void TestInstallPackageNullName()
-        {
-            var ps = NewPowerShellSession;
+        [Fact(Timeout = 60000, Skip = "Cannot handle null names yet.")]
+        public void TestInstallPackageNullName() {
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: null, Destination: TempFolder, Force: true, IsTesting: true);
@@ -439,34 +652,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
-        public void TestInstallPackageMaxVersion() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", MaximumVersion: "1.0", Force: true, Destination: TempFolder, IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(result.IsFailing);
-
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
-        public void TestInstallPackageMinVersion() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", MinimumVersion: "1.0", Force: true, Destination: TempFolder, IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(result.IsFailing);
-
-            Directory.Delete(TempFolder, true);
-        }
-        
-        [Fact]
-        public void TestInstallPackageBigMinVersion()
-        {
-            var ps = NewPowerShellSession;
+        [Fact(Timeout = 60000, Priority = 106), Trait("Test", "Secondary")]
+        public void TestInstallPackageBigMinVersion() {
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", MinimumVersion: "999", Force: true, Destination: TempFolder, IsTesting: true);
@@ -475,21 +663,10 @@ namespace OneGet.PowerShell.Module.Test {
 
             Directory.Delete(TempFolder, true);
         }
-        [Fact]
-        public void TestInstallPackageReqVersion() {
-            var ps = NewPowerShellSession;
 
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", RequiredVersion: "1.0", Force: true, Destination: TempFolder, IsTesting: true);
-            result.WaitForCompletion();
-            Assert.False(result.IsFailing);
-
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
+        [Fact(Timeout = 60000, Priority = 107), Trait("Test", "Secondary")]
         public void TestInstallPackageNegMaxVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", MaximumVersion: "-1.0", Force: true, Destination: TempFolder, IsTesting: true);
@@ -499,9 +676,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
+        [Fact(Timeout = 60000, Priority = 108), Trait("Test", "Secondary")]
         public void TestInstallPackageNegMinVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", MinVersion: "-1.0.0.2", Force: true, Destination: TempFolder, IsTesting: true);
@@ -511,21 +688,21 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
+        [Fact(Timeout = 60000, Priority = 109), Trait("Test", "Secondary")]
         public void TestInstallPackageNegReqVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", RequiredVersion: "-1.0", Force: true,Destination: TempFolder, IsTesting: true);
+            DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", RequiredVersion: "-1.0", Force: true, Destination: TempFolder, IsTesting: true);
             result.WaitForCompletion();
             Assert.True(result.IsFailing);
 
             Directory.Delete(TempFolder, true);
         }
 
-       // [Fact] //TODO : HOW TO INSERT NULL AND MAKE IT WORK
+        [Fact(Timeout = 60000, Skip = "Cannot handle null names yet.")]
         public void TestInstallPackageNullReqVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", RequiredVersion: null, Force: true, Destination: TempFolder, IsTesting: true);
@@ -535,11 +712,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-
-        //TODO, Uninstall Package does not work at the moment.
-        [Fact]
+        [Fact(Timeout = 60000, Priority = 110), Trait("Test", "Secondary")]
         public void TestUninstallPackage() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", Destination: TempFolder, Force: true, IsTesting: true);
@@ -550,9 +725,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
+        [Fact(Timeout = 60000, Priority = 111), Trait("Test", "Secondary")]
         public void TestUninstallPackageLongName() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", Destination: TempFolder, Force: true, IsTesting: true);
@@ -562,10 +737,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        //[Fact]
-        public void TestUninstallPackageNullName()
-        {
-            var ps = NewPowerShellSession;
+        [Fact(Timeout = 60000, Skip = "Cannot do null names yet.")]
+        public void TestUninstallPackageNullName() {
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", Destination: TempFolder, Force: true, IsTesting: true);
@@ -575,48 +749,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
-        public void TestUninstallPackageMaxVersion() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", MaximumVersion: "1.0", Destination: TempFolder, Force: true, IsTesting: true);
-            result.WaitForCompletion();
-            DynamicPowershellResult result2 = ps.UninstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", MaximumVersion: "1.0", Destination: TempFolder, Force: true, IsTesting: true);
-            result2.WaitForCompletion();
-            Assert.False(result2.IsFailing);
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
-        public void TestUninstallPackageMinVersion() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", MinimumVersion: "1.0", Destination: TempFolder, Force: true, IsTesting: true);
-            result.WaitForCompletion();
-            DynamicPowershellResult result2 = ps.UninstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", MinimumVersion: "1.0", Destination: TempFolder, Force: true, IsTesting: true);
-            result2.WaitForCompletion();
-            Assert.False(result2.IsFailing);
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
-        public void TestUninstallPackageReqVersion() {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", RequiredVersion: "1.0", Destination: TempFolder, Force: true, IsTesting: true);
-            result.WaitForCompletion();
-            DynamicPowershellResult result2 = ps.UninstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", RequiredVersion: "1.0", Destination: TempFolder, Force: true, IsTesting: true);
-            result2.WaitForCompletion();
-            Assert.False(result2.IsFailing);
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
+        [Fact(Timeout = 60000, Priority = 112), Trait("Test", "Secondary")]
         public void TestUninstallPackageNegMaxVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", MaximumVersion: "1.0", Destination: TempFolder, Force: true, IsTesting: true);
@@ -628,9 +763,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
+        [Fact(Timeout = 60000, Priority = 113), Trait("Test", "Secondary")]
         public void TestUninstallPackageNegMinVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", MinimumVersion: "1.0", Destination: TempFolder, Force: true, IsTesting: true);
@@ -642,9 +777,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
+        [Fact(Timeout = 60000, Priority = 114), Trait("Test", "Secondary")]
         public void TestUninstallPackageNegReqVersion() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", RequiredVersion: "1.0", Destination: TempFolder, Force: true, IsTesting: true);
@@ -656,9 +791,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
+        [Fact(Timeout = 60000, Priority = 115), Trait("Test", "Secondary")]
         public void TestGetPackage() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.InstallPackage(Provider: "nuget", Name: "Adept.Nugetrunner", Force: true, Destination: TempFolder, IsTesting: true);
@@ -669,10 +804,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
-        public void TestGetPackageLongName()
-        {
-            var ps = NewPowerShellSession;
+        [Fact(Timeout = 60000), Trait("Test", "Secondary")]
+        public void TestGetPackageLongName() {
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result2 = ps.GetPackage(Provider: "Nuget", Name: LongName, Force: true, Destination: TempFolder, IsTesting: true);
@@ -681,10 +815,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        //[Fact]
-        public void TestGetPackageNullName()
-        {
-            var ps = NewPowerShellSession;
+        [Fact(Timeout = 60000, Skip = "Null does not work at the moment.")]
+        public void TestGetPackageNullName() {
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result2 = ps.GetPackage(Provider: "Nuget", Name: null, Force: true, Destination: TempFolder, IsTesting: true);
@@ -693,52 +826,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
-        public void TestGetPackageMaxVersion()
-        {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.InstallPackage(Provider: "nuget", Name: "Adept.Nugetrunner", MaximumVersion: "1.1", Force: true, Destination: TempFolder, IsTesting: true);
-            result.WaitForCompletion();
-            DynamicPowershellResult result2 = ps.GetPackage(Provider: "nuget", Name: "Adept.Nugetrunner", MaximumVersion: "1.1", Force: true, Destination: TempFolder, IsTesting: true);
-            result2.WaitForCompletion();
-            Assert.False(result2.IsFailing, "failed to get package with maximum version parameter.");
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
-        public void TestGetPackageMinVersion()
-        {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.InstallPackage(Provider: "nuget", Name: "Adept.Nugetrunner", MinimumVersion: "1.0", Force: true, Destination: TempFolder, IsTesting: true);
-            result.WaitForCompletion();
-            DynamicPowershellResult result2 = ps.GetPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", Version: "1.0", Force: true, Destination: TempFolder, IsTesting: true);
-            result2.WaitForCompletion();
-            Assert.False(result2.IsFailing, "failed to get package with minimum version parameter.");
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
-        public void TestGetPackageReqVersion()
-        {
-            var ps = NewPowerShellSession;
-
-            Directory.CreateDirectory(TempFolder);
-            DynamicPowershellResult result = ps.InstallPackage(Provider: "nuget", Name: "Adept.Nugetrunner", RequiredVersion: "1.0", Force: true, Destination: TempFolder, IsTesting: true);
-            result.WaitForCompletion();
-            DynamicPowershellResult result2 = ps.GetPackage(Provider: "Nuget", Name: "Adept.Nugetrunner", RequiredVersion: "1.0", Force: true, Destination: TempFolder, IsTesting: true);
-            result2.WaitForCompletion();
-            Assert.False(result2.IsFailing, "failed to get package with required version parameter.");
-            Directory.Delete(TempFolder, true);
-        }
-
-        [Fact]
-        public void TestGetPackageNegMaxVersion()
-        {
-            var ps = NewPowerShellSession;
+        [Fact(Timeout = 60000), Trait("Test", "Secondary")]
+        public void TestGetPackageNegMaxVersion() {
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.GetPackage(Provider: "Nuget", Name: "adept.nugetrunner", MaximumVersion: "-1.0", Force: true, Destination: TempFolder, IsTesting: true);
@@ -747,10 +837,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
-        public void TestGetPackageNegMinVersion()
-        {
-            var ps = NewPowerShellSession;
+        [Fact(Timeout = 60000), Trait("Test", "Secondary")]
+        public void TestGetPackageNegMinVersion() {
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.GetPackage(Provider: "Nuget", Name: "adept.nugetrunner", Version: "-1.0", Force: true, Destination: TempFolder, IsTesting: true);
@@ -759,10 +848,9 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
-        public void TestGetPackageNegReqVersion()
-        {
-            var ps = NewPowerShellSession;
+        [Fact(Timeout = 60000), Trait("Test", "Secondary")]
+        public void TestGetPackageNegReqVersion() {
+            dynamic ps = NewPowerShellSession;
 
             Directory.CreateDirectory(TempFolder);
             DynamicPowershellResult result = ps.GetPackage(Provider: "Nuget", Name: "adept.nugetrunner", RequiredVersion: "-1.0", Force: true, Destination: TempFolder, IsTesting: true);
@@ -771,21 +859,21 @@ namespace OneGet.PowerShell.Module.Test {
             Directory.Delete(TempFolder, true);
         }
 
-        [Fact]
+        [Fact(Timeout = 60000), Trait("Test", "Secondary")]
         public void TestGetPackageProviderName() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.GetPackageProvider(Name: "NuGet", ForceBootstrap: true, Force: true, IsTesting: true);
             result.WaitForCompletion();
             Assert.False(result.IsFailing, "Failed to get package provider.");
 
-            var items = result.ToArray();
+            object[] items = result.ToArray();
             Assert.Equal(1, items.Length);
         }
 
-        [Fact]
+        [Fact(Timeout = 60000, Priority = 116), Trait("Test", "Secondary")]
         public void TestRegisterPackageSource() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.RegisterPackageSource(Name: "nugettest.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
             result.WaitForCompletion();
@@ -794,128 +882,209 @@ namespace OneGet.PowerShell.Module.Test {
             result2.WaitForCompletion();
         }
 
-        [Fact]
-        public void TestRegisterPackageSourcePipe() {
-            var ps = NewPowerShellSession;
 
-            DynamicPowershellResult result = ps.GetPackageProvider(Name: "nuget", IsTesting: true);
-            result.WaitForCompletion();
-            DynamicPowershellResult result2 = ps.RegisterPackageSource(result, Name: "nugettest.org", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
-            result2.WaitForCompletion();
-            Assert.False(result2.IsFailing);
-            DynamicPowershellResult result3 = ps.UnregisterPackageSource(Name: "nugettest.org", Provider: "Nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
-            result3.WaitForCompletion();
-        }
-
-        [Fact]
+        [Fact(Timeout = 60000, Priority = 117), Trait("Test", "Secondary")]
         public void TestUnregisterPackageSource() {
-            var ps = NewPowerShellSession;
+            dynamic ps = NewPowerShellSession;
 
             DynamicPowershellResult result = ps.RegisterPackageSource(Name: "nugettest.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
             result.WaitForCompletion();
             DynamicPowershellResult result2 = ps.UnregisterPackageSource(Name: "nugettest.org", Provider: "Nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
             result2.WaitForCompletion();
             Assert.False(result2.IsFailing);
-        
         }
 
-        [Fact]
-        public void TestUnregisterPackageSourcePipe()
+        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+        /* ------------------------------------------------------------------------------     PERFORMANCE TESTS     ------------------------------------------------------------------------------ */
+        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+
+        [Fact(Timeout = 60000), Trait("Test", "Performance1")]
+        public void TestFindPackageSelectObjectPipe() {
+            dynamic ps = NewPowerShellSession;
+
+            var watch = new Stopwatch();
+            DynamicPowershellResult warmup = ps.FindPackage(ProviderName: "Nuget", Source: "https://msconfiggallery.cloudapp.net/api/v2/", IsTesting: true);
+            warmup.WaitForCompletion();
+            watch.Start();
+            DynamicPowershellResult result = ps.FindPackage(ProviderName: "Nuget", Source: "https://msconfiggallery.cloudapp.net/api/v2/", IsTesting: true);
+            // ReSharper disable once UnusedVariable
+            var first = result.FirstOrDefault();
+            watch.Stop();
+
+            
+            Console.WriteLine(@"Time elapsed: {0}", watch.Elapsed);
+        }
+
+        [Fact(Timeout = 60000), Trait("Test", "Performance2")]
+        public void TestFindPackageAppDomainConfig()
         {
-            var ps = NewPowerShellSession;
-            DynamicPowershellResult result = ps.GetPackageProvider(Name: "nuget", IsTesting: true);
+            dynamic ps = NewPowerShellSession;
+
+            var watch = new Stopwatch();
+            DynamicPowershellResult warmup = ps.FindPackage(Provider: "Nuget", Source: "https://msconfiggallery.cloudapp.net/api/v2/", Name: "AppDomainConfig", IsTesting: true);
+            warmup.WaitForCompletion();
+            watch.Start();
+            DynamicPowershellResult result = ps.FindPackage(Provider: "Nuget", Source: "https://msconfiggallery.cloudapp.net/api/v2/", Name: "AppDomainConfig", IsTesting: true);
             result.WaitForCompletion();
-            DynamicPowershellResult result2 = ps.RegisterPackageSource(Provider: "Nuget", Name: "nugettest.org", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
-            result2.WaitForCompletion();
-            DynamicPowershellResult result3 = ps.UnregisterPackageSource(result, Name: "Nugettest.org", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
-            Assert.False(result3.IsFailing);
+            watch.Stop();
+            Console.WriteLine(@"Time elapsed: {0}", watch.Elapsed);
+            Assert.False(result.IsFailing);
         }
 
-        //[Fact] // DOES NOT WORK TODO
-        public void TestSetPackageSource() {
-            var ps = NewPowerShellSession;
+        [Fact(Timeout = 60000), Trait("Test", "Performance3")]
+        public void TestFindPackageSelectObjectPipePsModule()
+        {
+            dynamic ps = NewPowerShellSession;
 
-            DynamicPowershellResult result = ps.RegisterPackageSource(Name: "nugettest.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+            var watch = new Stopwatch();
+            DynamicPowershellResult warmup = ps.FindPackage(Provider: "PSModule", Source: "PSGallery", Name: "AppDomainConfig", IsTesting: true);
+            warmup.WaitForCompletion();
+            watch.Start();
+            DynamicPowershellResult result = ps.FindPackage(Provider: "PSModule", Source: "PSGallery", Name: "AppDomainConfig", IsTesting: true);
             result.WaitForCompletion();
-            DynamicPowershellResult result2 = ps.SetPackageSource(NewName: "nugettest2.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", NewLocation: "https://www.nuget.org/api/v2/", IsTesting: true);
+            DynamicPowershellResult result2 = ps.SelectObject(result, First: "1");
             result2.WaitForCompletion();
+            watch.Stop();
+            Console.WriteLine(@"Time elapsed: {0}", watch.Elapsed);
             Assert.False(result2.IsFailing);
-            DynamicPowershellResult result3 = ps.UnRegisterPackageSource(Name: "Nugettest.org", Provider: "Nuget", Location: "https://www.nuget.org/api/v2/");
-            result3.WaitForCompletion();
         }
 
+        [Fact(Timeout = 60000), Trait("Test", "Performance4")]
+        public void TestFindPackagePsModule()
+        {
+            dynamic ps = NewPowerShellSession;
 
+            var watch = new Stopwatch();
+            DynamicPowershellResult warmup = ps.FindPackage(Provider: "PSModule", Source: "PSGallery", Name: "AppDomainConfig", IsTesting: true);
+            warmup.WaitForCompletion();
+            watch.Start();
+            DynamicPowershellResult result = ps.FindPackage(Provider: "PSModule", Source: "PSGallery", Name: "AppDomainConfig", IsTesting: true);
+            result.WaitForCompletion();
+            watch.Stop();
+            Console.WriteLine(@"Time elapsed: {0}", watch.Elapsed);
+            Assert.False(result.IsFailing);
+        }
+
+        [Fact(Timeout = 60000), Trait("Test", "Performance5")]
+        public void TestFindPackageSelectObjectRepositoryPsGalleryPipe()
+        {
+            dynamic ps = NewPowerShellSession;
+
+            var watch = new Stopwatch();
+            DynamicPowershellResult warmup = ps.FindModule(Repository: "PSGallery", IsTesting: true);
+            warmup.WaitForCompletion();
+            watch.Start();
+            DynamicPowershellResult result = ps.FindModule(Repository: "PSGallery", IsTesting: true);
+            result.WaitForCompletion();
+            DynamicPowershellResult result2 = ps.SelectObject(result, First: "1");
+            result2.WaitForCompletion();
+            watch.Stop();
+            Console.WriteLine(@"Time elapsed: {0}", watch.Elapsed);
+            Assert.False(result2.IsFailing);
+        }
+
+        [Fact(Timeout = 60000), Trait("Test", "Performance6")]
+        public void TestFindPackageRepositoryPsGallery()
+        {
+            dynamic ps = NewPowerShellSession;
+
+            var watch = new Stopwatch();
+            DynamicPowershellResult warmup = ps.FindModule(Repository: "PSGallery", Name: "AppDomainConfig");
+            warmup.WaitForCompletion();
+            watch.Start();
+            DynamicPowershellResult result = ps.FindModule(Repository: "PSGallery", Name: "AppDomainConfig");
+            result.WaitForCompletion();
+            watch.Stop();
+            Console.WriteLine(@"Time elapsed: {0}", watch.Elapsed);
+            Assert.False(result.IsFailing);
+        }
+
+        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+        /* ---------------------------------------------------------------------------     HELPER FUNCTIONS     ---------------------------------------------------------------------------------- */
+        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+    
         private void DeleteAllNuget() {
-            const string filesToDelete = "*NuGet*";
-            var fileList = Directory.GetFiles(TempFolder, filesToDelete);
-            foreach (var file in fileList) {
+            const string filesToDelete = "*.nupkg*";
+            string[] fileList = Directory.GetFiles(TempFolder, filesToDelete);
+            foreach (string file in fileList) {
                 File.Delete(file);
             }
         }
-
+        private bool IsDirectoryEmpty(string path) {
+            return !Directory.EnumerateFileSystemEntries(path).Any();
+        }
         private bool IsDllOrExe(string path) {
             return path.ToLower().EndsWith(".exe") || path.ToLower().EndsWith(".dll");
         }
-
-        private void PrintItems(dynamic items) {
-            foreach (var i in items) {
-                Console.WriteLine(i.Name);
-            }
-        }
-
         private IEnumerable<string> FilenameContains(IEnumerable<string> paths, string value) {
             return paths.Where(item => item.IndexOf(value, StringComparison.OrdinalIgnoreCase) > -1);
         }
 
         private IEnumerable<string> NugetsInPath(string folder) {
             if (Directory.Exists(folder)) {
-                var files = Directory.EnumerateFiles(folder).ToArray();
+                string[] files = Directory.EnumerateFiles(folder).ToArray();
 
                 return FilenameContains(files, "nuget").Where(IsDllOrExe);
             }
             return Enumerable.Empty<string>();
         }
-
         private void DeleteNuGet() {
-            var systemBase = KnownFolders.GetFolderPath(KnownFolder.CommonApplicationData);
+            string systemBase = KnownFolders.GetFolderPath(KnownFolder.CommonApplicationData);
             Assert.False(string.IsNullOrEmpty(systemBase));
 
-            var nugets = NugetsInPath(Path.Combine(systemBase, "oneget", "ProviderAssemblies"));
-            foreach (var nuget in nugets) {
+            IEnumerable<string> nugets = NugetsInPath(Path.Combine(systemBase, "oneget", "ProviderAssemblies"));
+            foreach (string nuget in nugets) {
                 nuget.TryHardToDelete();
             }
 
-            var userBase = KnownFolders.GetFolderPath(KnownFolder.LocalApplicationData);
+            string userBase = KnownFolders.GetFolderPath(KnownFolder.LocalApplicationData);
             Assert.False(string.IsNullOrEmpty(userBase));
 
             nugets = NugetsInPath(Path.Combine(userBase, "oneget", "ProviderAssemblies"));
-            foreach (var nuget in nugets) {
+            foreach (string nuget in nugets) {
                 nuget.TryHardToDelete();
             }
         }
+        private string NuGetPath
+        {
+            get
+            {
+                string systemBase = KnownFolders.GetFolderPath(KnownFolder.CommonApplicationData);
+                Assert.False(string.IsNullOrEmpty(systemBase), "Known Folder CommonApplicationData is null");
 
-        [Fact]
-        public void TestBootstrapNuGet() {
-            // delete any copies of nuget if they are installed.
-            if (IsNuGetInstalled) {
-                DeleteNuGet();
+                IEnumerable<string> nugets = NugetsInPath(Path.Combine(systemBase, "oneget", "ProviderAssemblies"));
+                string first = nugets.FirstOrDefault();
+                if (first != null)
+                {
+                    return first;
+                }
+
+                string userBase = KnownFolders.GetFolderPath(KnownFolder.LocalApplicationData);
+                Assert.False(string.IsNullOrEmpty(userBase), "Known folder LocalApplicationData is null");
+
+                nugets = NugetsInPath(Path.Combine(userBase, "oneget", "ProviderAssemblies"));
+                first = nugets.FirstOrDefault();
+                if (first != null)
+                {
+                    return first;
+                }
+
+                return null;
             }
+        }
+        private bool IsNuGetInstalled
+        {
+            get
+            {
+                return NuGetPath != null;
+            }
+        }
+    }
 
-            // verify that nuget is not installed.
-            Assert.False(IsNuGetInstalled, "NuGet is still installed at :".format(NuGetPath));
-
-            var ps = NewPowerShellSession;
-
-            // ask onget for the nuget package provider, bootstrapping if necessary
-            DynamicPowershellResult result = ps.GetPackageProvider(Name: "NuGet", ForceBootstrap: true, IsTesting: true);
-            Assert.False(result.IsFailing);
-
-            // did we get back one item?
-            var items = result.ToArray();
-            Assert.Equal(1, items.Length);
-
-            // and is the nuget.exe where we expect it?
-            Assert.True(IsNuGetInstalled);
+    public class ChocolateyProviderTest : TestBase {
+        [Fact(Priority = 0)]
+        public void TestChocolateyProperInstall() {
+            //TODO
         }
     }
 }

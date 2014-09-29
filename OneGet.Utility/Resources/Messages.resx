@@ -98,4 +98,7 @@
 	<resheader name="writer">
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
+  <data name="NugetProviderTest_TestFindPackageSuccessfulCombinations__0____PackageName___1__MinVersion___2__MaxVersion___3__RequiredVersion__1_5_AllVersions__true" xml:space="preserve">
+    <value>{0}:  PackageName: {1} MinVersion: {2} MaxVersion: {3} RequiredVersion: 1.5 AllVersions: true</value>
+  </data>
 </root>
