@@ -41,6 +41,7 @@
 *.fs -text
 *.fsx -text
 *.hs -text
+*.tt -text
 
 *.csproj -text merge=union 
 *.vbproj -text merge=union 
