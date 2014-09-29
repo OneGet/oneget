@@ -13,7 +13,7 @@
 //  
 
 namespace Microsoft.OneGet {
-    internal enum ErrorCategory {
+    public enum ErrorCategory {
         NotSpecified,
         OpenError,
         CloseError,

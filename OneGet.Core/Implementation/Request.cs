@@ -25,6 +25,7 @@ namespace Microsoft.OneGet.Implementation {
     public abstract class Request : IRequest, IDisposable {
 
         #region copy core-apis
+
         /* Synced/Generated code =================================================== */
         /// <summary>
         ///     The provider can query to see if the operation has been cancelled.
@@ -62,17 +63,24 @@ namespace Microsoft.OneGet.Implementation {
         public abstract int CoreVersion();
 
         public abstract bool NotifyBeforePackageInstall(string packageName, string version, string source, string destination);
+
         public abstract bool NotifyPackageInstalled(string packageName, string version, string source, string destination);
+
         public abstract bool NotifyBeforePackageUninstall(string packageName, string version, string source, string destination);
+
         public abstract bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
 
         public abstract string GetCanonicalPackageId(string providerName, string packageName, string version);
+
         public abstract string ParseProviderName(string canonicalPackageId);
+
         public abstract string ParsePackageName(string canonicalPackageId);
+
         public abstract string ParsePackageVersion(string canonicalPackageId);
         #endregion
 
         #region copy host-apis
+
         /* Synced/Generated code =================================================== */
         public abstract string GetMessageString(string messageText);
 
@@ -135,6 +143,7 @@ namespace Microsoft.OneGet.Implementation {
         #endregion
 
         #region copy response-apis
+
         /* Synced/Generated code =================================================== */
 
         /// <summary>
@@ -166,12 +175,12 @@ namespace Microsoft.OneGet.Implementation {
 
         public abstract bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
 
-#if M2
+        #if M2
         public abstract bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
 
         public abstract bool YieldMetadata(string fieldId, string @namespace, string name, string value);
 
-#endif
+        #endif 
 
         /// <summary>
         ///     Used by a provider to return fields for a package source (repository)
@@ -182,13 +191,12 @@ namespace Microsoft.OneGet.Implementation {
         /// <param name="isRegistered"></param>
         /// <param name="isValidated"></param>
         /// <returns></returns>
-        public abstract bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
+        public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
         ///     The cmdlets can use this to supply tab-completion for metadata to the user.
         /// </summary>
-        /// <param name="category"> one of ['provider', 'source', 'package', 'install']</param>
         /// <param name="name">the provider-defined name of the option</param>
         /// <param name="expectedType"> one of ['string','int','path','switch']</param>
         /// <param name="isRequired">if the parameter is mandatory</param>
@@ -217,10 +225,9 @@ namespace Microsoft.OneGet.Implementation {
             return pair.Value.All(each => YieldKeyValuePair(pair.Key, each));
         }
 
-        internal bool Error(ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
+        public bool Error(ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
             return Error(messageText, category.ToString(), targetObjectValue, FormatMessageString(messageText, args));
         }
-
 
         public bool Warning(string messageText, params object[] args) {
             return Warning(FormatMessageString(messageText, args));
@@ -274,7 +281,6 @@ namespace Microsoft.OneGet.Implementation {
                 return GetCredentialUsername();
             }
         }
-
 
         #endregion
 

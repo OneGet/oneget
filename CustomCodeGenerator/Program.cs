@@ -60,6 +60,10 @@ namespace CustomCodeGenerator {
 
                     return "${{" + key + "}}";
                 }));
+
+                formatString = formatString.Replace("{get;}", "{{get;}}");
+                formatString = formatString.Replace("{get;set;}", "{{get;set;}}");
+
                 return String.Format(CultureInfo.CurrentCulture, formatString, args);
             } catch (Exception) {
                 return formatString.Replace('{', '[').Replace('}', ']');
@@ -177,13 +181,14 @@ namespace CustomCodeGenerator {
         }
 
         private int Run() {
-            var sourceFiles = Directory.EnumerateFiles(_solutionDir, "*.cs", SearchOption.AllDirectories).Where(each => each.IndexOf(@"\intermediate\") == -1 && each.IndexOf(@"\output\") == -1 && each.IndexOf(@"\CustomCodeGenerator\") == -1);
+            var sourceFiles = Directory.EnumerateFiles(_solutionDir, "*.cs", SearchOption.AllDirectories).Where(each => each.IndexOf(@"\intermediate\") == -1 && each.IndexOf(@"\output\") == -1 && each.IndexOf(@"\attic\") == -1 && each.IndexOf(@"\CustomCodeGenerator\") == -1);
 
             var contents = sourceFiles.Select(File.ReadAllText).ToArray();
 
             var parameterRx = new Regex(@"\s*(?<type>[\w,\<\>]+)\s*(?<name>\w+)\s*(?<init>=\s*[\w\.]*\s*)?\s*?(?:\,)?");
             // var delegateRx = new Regex(@"\s*(?<preamble>.*?)(?<scope>public|internal)\s*delegate\s*(?<TRet>\S*)\s*(?<name>\w+)\((?<params>.*?)\).*?;", RegexOptions.Singleline);
             var interfaceRx = new Regex(@"\s*(?<preamble>.*?)\s*(?<TRet>\S*)\s*(?<name>\w+)\((?<params>.*?)\).*?;", RegexOptions.Singleline);
+            var interfacePropertiesRx = new Regex(@"\s*(?<preamble>.*?)\s*(?<TRet>\S*)\s*(?<name>\w+)\{get;\}", RegexOptions.Singleline);
 
             // ------------------------------------------------------------------------------------------------------------------------------
             // scan for #region declare *-apis
@@ -262,6 +267,7 @@ namespace CustomCodeGenerator {
                     init = p.GetValue("init"),
                 }).ToArray()
             })).ToArray();
+
 
             // ------------------------------------------------------------------------------------------------------------------------------
             // scan for #region declare *-interface
@@ -358,8 +364,8 @@ namespace CustomCodeGenerator {
                 }
 
                 // for c# files:
-                var targetFiles = Directory.EnumerateFiles(targetDir, "*.cs", SearchOption.AllDirectories).Where(each => each.IndexOf(@"\intermediate\") == -1 && each.IndexOf(@"\output\") == -1 && each.IndexOf(@"\CustomCodeGenerator\") == -1);
-                targetFiles = targetFiles.Union(Directory.EnumerateFiles(targetDir, "*.psm1", SearchOption.AllDirectories).Where(each => each.IndexOf(@"\intermediate\") == -1 && each.IndexOf(@"\output\") == -1 && each.IndexOf(@"\CustomCodeGenerator\") == -1));
+                var targetFiles = Directory.EnumerateFiles(targetDir, "*.cs", SearchOption.AllDirectories).Where(each => each.IndexOf(@"\intermediate\") == -1 && each.IndexOf(@"\attic\") == -1 && each.IndexOf(@"\output\") == -1 && each.IndexOf(@"\CustomCodeGenerator\") == -1);
+                targetFiles = targetFiles.Union(Directory.EnumerateFiles(targetDir, "*.psm1", SearchOption.AllDirectories).Where(each => each.IndexOf(@"\intermediate\") == -1 && each.IndexOf(@"\attic\") == -1  && each.IndexOf(@"\output\") == -1 && each.IndexOf(@"\CustomCodeGenerator\") == -1));
                 foreach (var targetFile in targetFiles) {
                     var originalText = File.ReadAllText(targetFile);
                     var text = originalText;

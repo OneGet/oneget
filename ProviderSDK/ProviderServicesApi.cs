@@ -18,10 +18,11 @@ namespace OneGet.ProviderSDK {
     using RequestImpl = System.MarshalByRefObject;
 
     public abstract class ProviderServicesApi {
+        public abstract bool IsElevated { get; }
+
         #region copy service-apis
 
         /* Synced/Generated code =================================================== */
-        public abstract bool IsElevated {get;}
         public abstract void DownloadFile(Uri remoteLocation, string localFilename, RequestImpl requestImpl);
 
         public abstract bool IsSupportedArchive(string localFilename, RequestImpl requestImpl);
@@ -34,9 +35,9 @@ namespace OneGet.ProviderSDK {
 
         public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, RequestImpl requestImpl);
 
-        public abstract void SetEnvironmentVariable(string variable, string value, int context, RequestImpl requestImpl);
+        public abstract void SetEnvironmentVariable(string variable, string value, string context, RequestImpl requestImpl);
 
-        public abstract void RemoveEnvironmentVariable(string variable, int context, RequestImpl requestImpl);
+        public abstract void RemoveEnvironmentVariable(string variable, string context, RequestImpl requestImpl);
 
         public abstract void CopyFile(string sourcePath, string destinationPath, RequestImpl requestImpl);
 
@@ -61,7 +62,7 @@ namespace OneGet.ProviderSDK {
         public abstract bool IsSignedAndTrusted(string filename, RequestImpl requestImpl);
 
         public abstract bool ExecuteElevatedAction(string provider, string payload, RequestImpl requestImpl);
-
         #endregion
+
     }
 }

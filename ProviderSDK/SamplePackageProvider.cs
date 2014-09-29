@@ -617,32 +617,6 @@ namespace OneGet.PackageProvider.Template {
     }
 
     #region copy PackageProvider-types
-/* Synced/Generated code =================================================== */
-
-    public enum OptionCategory {
-        Package = 0,
-        Provider = 1,
-        Source = 2,
-        Install = 3
-    }
-
-    public enum OptionType {
-        String = 0,
-        StringArray = 1,
-        Int = 2,
-        Switch = 3,
-        Folder = 4,
-        File = 5,
-        Path = 6,
-        Uri = 7,
-        SecureString = 8
-    }
-
-    public enum EnvironmentContext {
-        All = 0,
-        User = 1,
-        System = 2
-    }
 
     #endregion
 
