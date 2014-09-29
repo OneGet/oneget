@@ -69,14 +69,17 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             // if we have a valid path, make a local copy of the file.
             if (!string.IsNullOrEmpty(savePath)) {
-                provider.DownloadPackage(package, SaveFileName(savePath), this);
-                if (File.Exists(savePath)) {
-                    package.FullPath = savePath;
+                if (ShouldProcess(savePath, Constants.SavePackage).Result) {
+                    provider.DownloadPackage(package, SaveFileName(savePath), this);
+                    if (File.Exists(savePath)) {
+                        package.FullPath = savePath;
+                    }
                 }
+                // return the object to the caller.
+                WriteObject(package);
+
             }
 
-            // return the object to the caller.
-            WriteObject(package);
 
             if (IncludeDependencies) {
                 foreach (var dep in provider.GetPackageDependencies(package, this)) {

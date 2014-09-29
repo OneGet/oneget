@@ -107,6 +107,8 @@ namespace Microsoft.PowerShell.OneGet {
         internal const string TargetPackage = "MSG:TargetPackage";
 
         internal const string NameOrLocationRequired = "MSG:NameOrLocationRequired";
+
+        internal const string SavePackage = "MSG:SavePackage";
     }
 
     internal static class Errors {
