@@ -149,7 +149,6 @@ namespace Microsoft.OneGet.Utility.Extensions {
                     MoveFileOverwrite(File.Exists(tmpFilename) ? tmpFilename : location, null);
                 } catch {
                     // really. Hmmm. 
-                    
                 }
 
                 if (File.Exists(location)) {
@@ -205,7 +204,6 @@ namespace Microsoft.OneGet.Utility.Extensions {
             // based on the application name
             var appName = (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName().Name;
             if (OriginalTempFolder.IndexOf(appName, StringComparison.CurrentCultureIgnoreCase) == -1) {
-
                 var appTempPath = Path.Combine(OriginalTempFolder, appName);
                 if (!Directory.Exists(appTempPath)) {
                     Directory.CreateDirectory(appTempPath);
@@ -220,7 +218,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 MoveFileOverwrite(appTempPath, null);
                 MoveFileAtNextBoot(TempPath, null);
             }
-            
+
             TempPath = TempPath ?? OriginalTempFolder;
         }
 
@@ -284,8 +282,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
             if (!string.IsNullOrEmpty(path)) {
                 try {
                     return Directory.Exists(CanonicalizePath(path, true));
-                }
-                catch {
+                } catch {
                 }
             }
             return false;

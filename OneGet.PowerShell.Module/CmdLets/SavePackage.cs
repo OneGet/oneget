@@ -14,9 +14,11 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.IO;
+    using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.PowerShell;
 
     [Cmdlet(VerbsData.Save, Constants.PackageNoun, SupportsShouldProcess = true)]
     public sealed class SavePackage : CmdletWithSearchAndSource {
@@ -29,18 +31,27 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter()]
         public SwitchParameter IncludeDependencies { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = Constants.DestinationPathSet)]
+        [Parameter()]
         public string DestinationPath { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = Constants.LiteralPathSet)]
+        [Parameter()]
         public string LiteralPath { get; set; }
 
-        private string SaveFileName(string packageName) {
-            if (string.IsNullOrEmpty(DestinationPath)) {
-                return null;
-            }
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = Constants.PackageByInputObjectSet)]
+        public SoftwareIdentity InputObject { get; set; }
 
-            var path = Path.GetFullPath(DestinationPath);
+        [Parameter(ValueFromPipelineByPropertyName = true)]
+        public override string[] Source { get; set; }
+
+
+        private string SaveFileName(string packageName) {
+            string path = null;
+
+            if (string.IsNullOrEmpty(DestinationPath)) {
+                path = Path.GetFullPath(LiteralPath);
+            } else {
+                path = GetUnresolvedProviderPathFromPSPath(DestinationPath);
+            }
 
             if (Directory.Exists(path)) {
                 // it appears to be a directory name
@@ -61,6 +72,22 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             Warning(Constants.DestinationPathInvalid, DestinationPath, packageName);
             return null;
         }
+
+
+        public override bool ProcessRecordAsync() {
+            if (string.IsNullOrEmpty(DestinationPath) && string.IsNullOrEmpty(LiteralPath)) {
+                Error(Errors.DestinationOrLiteralPathNotSpecified);
+                return false;
+            }
+
+            if (IsPackageByObject) {
+                ProcessPackage(SelectProviders(InputObject.ProviderName).FirstOrDefault(), InputObject.Name, InputObject);
+                return true;
+            } 
+            return base.ProcessRecordAsync();
+            
+        }
+
 
         protected override void ProcessPackage(PackageProvider provider, string searchKey, SoftwareIdentity package) {
             base.ProcessPackage(provider, searchKey, package);
@@ -89,7 +116,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool EndProcessingAsync() {
-            return CheckUnmatchedPackages();
+            if (IsCancelled()) {
+                return false;
+            }
+            if (!IsSourceByObject) {
+                return CheckUnmatchedPackages();
+            }
+            return true;
         }
     }
 }
