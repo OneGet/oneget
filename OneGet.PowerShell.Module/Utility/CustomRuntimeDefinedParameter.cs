@@ -19,7 +19,6 @@ namespace Microsoft.PowerShell.OneGet.Utility {
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
-    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Extensions;
     using Microsoft.OneGet.Utility.PowerShell;
@@ -45,7 +44,7 @@ namespace Microsoft.PowerShell.OneGet.Utility {
             if (IsSet && Value != null) {
                 switch (Options.FirstOrDefault().Type) {
                     case OptionType.Switch:
-                        return new string[] {
+                        return new[] {
                             ((SwitchParameter)Value).IsPresent.ToString()
                         };
                     case OptionType.StringArray:

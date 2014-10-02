@@ -23,7 +23,7 @@ namespace Microsoft.OneGet.Builtin {
     using Utility.Plugin;
 
     public class WebDownloader {
-        private static readonly string[] _schemes = new[] {
+        private static readonly string[] _schemes = {
             "http", "https", "ftp", "file"
         };
 
@@ -90,15 +90,14 @@ namespace Microsoft.OneGet.Builtin {
 
                     done.Set();
                 };
-                int lastPercent = 0;
+                var lastPercent = 0;
 
                 webClient.DownloadProgressChanged += (sender, args) => {
-                        
                     // Progress(requestImpl, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
                     var percent = (int)((args.BytesReceived*100)/args.TotalBytesToReceive);
                     if (percent > lastPercent) {
                         lastPercent = percent;
-                        request.Progress(pid, (int)((args.BytesReceived * 100) / args.TotalBytesToReceive), "To {0}", localFilename);    
+                        request.Progress(pid, (int)((args.BytesReceived*100)/args.TotalBytesToReceive), "To {0}", localFilename);
                     }
                 };
                 webClient.DownloadFileAsync(remoteLocation, localFilename);

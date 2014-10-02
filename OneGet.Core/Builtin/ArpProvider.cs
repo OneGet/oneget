@@ -14,7 +14,6 @@
 
 namespace Microsoft.OneGet.Builtin {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
@@ -22,28 +21,22 @@ namespace Microsoft.OneGet.Builtin {
     using System.Security.AccessControl;
     using Implementation;
     using Packaging;
-    using Utility.Collections;
-    using Utility.Deployment.WindowsInstaller;
-    using Utility.Deployment.WindowsInstaller.Package;
     using Utility.Extensions;
     using Utility.Platform;
     using Utility.Plugin;
     using Win32;
-    using NativeMethods = Utility.Deployment.WindowsInstaller.NativeMethods;
     using RequestImpl = System.Object;
 
     public class ArpProvider {
         /// <summary>
-        /// The name of this Package Provider
+        ///     The name of this Package Provider
         /// </summary>
         internal const string ProviderName = "ARP";
 
-        private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
-
-        };
+        private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]>();
 
         /// <summary>
-        /// Returns the name of the Provider. 
+        ///     Returns the name of the Provider.
         /// </summary>
         /// <returns>The name of this proivder (uses the constant declared at the top of the class)</returns>
         public string GetPackageProviderName() {
@@ -51,30 +44,38 @@ namespace Microsoft.OneGet.Builtin {
         }
 
         /// <summary>
-        /// Performs one-time initialization of the PROVIDER.
+        ///     Performs one-time initialization of the PROVIDER.
         /// </summary>
-        /// <param name="dynamicInterface">a <c>System.Type</c> that represents a remote interface for that a request needs to implement when passing the request back to methods in the CORE. (Advanced Usage)</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="dynamicInterface">
+        ///     a <c>System.Type</c> that represents a remote interface for that a request needs to
+        ///     implement when passing the request back to methods in the CORE. (Advanced Usage)
+        /// </param>
+        /// <param name="requestImpl">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         public void InitializeProvider(RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestImpl.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::InitializeProvider'", ProviderName);
-
                 }
             } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::InitializeProvider' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::InitializeProvider' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
 
         /// <summary>
-        /// Returns a collection of strings to the client advertizing features this provider supports.
+        ///     Returns a collection of strings to the client advertizing features this provider supports.
         /// </summary>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="requestImpl">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         public void GetFeatures(RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
@@ -90,15 +91,18 @@ namespace Microsoft.OneGet.Builtin {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::GetFeatures' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::GetFeatures' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
 
         /// <summary>
-        /// Returns dynamic option definitions to the HOST
+        ///     Returns dynamic option definitions to the HOST
         /// </summary>
         /// <param name="category">The category of dynamic options that the HOST is interested in</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="requestImpl">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         public void GetDynamicOptions(string category, RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
@@ -129,15 +133,17 @@ namespace Microsoft.OneGet.Builtin {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::GetDynamicOptions' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::GetDynamicOptions' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="requestImpl">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         public void GetInstalledPackages(string name, RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
@@ -149,12 +155,12 @@ namespace Microsoft.OneGet.Builtin {
                     var includeWindowsInstaller = request.GetOptionValue("IncludeWindowsInstaller").IsTrue();
                     if (Environment.Is64BitOperatingSystem) {
                         using (var hklm64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
-                            if (!YieldPackages("hklm64",hklm64, name,includeWindowsInstaller, request)) {
+                            if (!YieldPackages("hklm64", hklm64, name, includeWindowsInstaller, request)) {
                                 return;
                             }
                         }
 
-                        using(var hkcu64 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",false)) {
+                        using (var hkcu64 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false)) {
                             if (!YieldPackages("hkcu64", hkcu64, name, includeWindowsInstaller, request)) {
                                 return;
                             }
@@ -169,21 +175,18 @@ namespace Microsoft.OneGet.Builtin {
 
                     using (var hkcu32 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false)) {
                         if (!YieldPackages("hkcu32", hkcu32, name, includeWindowsInstaller, request)) {
-                            return;
                         }
                     }
-
-
                 }
             } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::GetInstalledPackages' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::GetInstalledPackages' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
 
-        private bool YieldPackages(string hive,RegistryKey regkey, string name, bool includeWindowsInstaller, Request request) {
+        private bool YieldPackages(string hive, RegistryKey regkey, string name, bool includeWindowsInstaller, Request request) {
             if (regkey != null) {
                 foreach (var key in regkey.GetSubKeyNames()) {
                     var subkey = regkey.OpenSubKey(key);
@@ -192,7 +195,6 @@ namespace Microsoft.OneGet.Builtin {
 
                         if (includeWindowsInstaller || (!properties.ContainsKey("WindowsInstaller") || properties["WindowsInstaller"] != "1")) {
                             var productName = "";
-                           
 
                             if (!properties.TryGetValue("DisplayName", out productName)) {
                                 // no product name?
@@ -200,15 +202,13 @@ namespace Microsoft.OneGet.Builtin {
                             }
 
                             if (string.IsNullOrEmpty(name) || productName.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) > -1) {
-
                                 var productVersion = properties.Get("DisplayVersion") ?? "";
                                 var publisher = properties.Get("Publisher") ?? "";
                                 var uninstallString = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
                                 var comments = properties.Get("Comments") ?? "";
 
-                                var fp = hive +@"\"+ subkey;
-                                if (request.YieldSoftwareIdentity(fp, productName, productVersion, "unknown",comments, "",name,"","")) {
-                                    
+                                var fp = hive + @"\" + subkey;
+                                if (request.YieldSoftwareIdentity(fp, productName, productVersion, "unknown", comments, "", name, "", "")) {
                                     if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => !request.YieldSoftwareMetadata(fp, k.MakeSafeFileName(), properties[k]))) {
                                         return false;
                                     }
@@ -221,39 +221,40 @@ namespace Microsoft.OneGet.Builtin {
             return true;
         }
 
-
-        private bool YieldPackage(string path,string searchKey, Dictionary<string, string> properties, Request request) {
-
+        private bool YieldPackage(string path, string searchKey, Dictionary<string, string> properties, Request request) {
             var productName = properties.Get("DisplayName") ?? "";
             var productVersion = properties.Get("DisplayVersion") ?? "";
             var publisher = properties.Get("Publisher") ?? "";
             var uninstallString = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
             var comments = properties.Get("Comments") ?? "";
-            
-            if (request.YieldSoftwareIdentity(path, productName, productVersion, "unknown",comments, "",searchKey,"","")) {
-                                    
+
+            if (request.YieldSoftwareIdentity(path, productName, productVersion, "unknown", comments, "", searchKey, "", "")) {
                 if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => !request.YieldSoftwareMetadata(path, k.MakeSafeFileName(), properties[k]))) {
                     return false;
                 }
             }
             return true;
         }
+
         /// <summary>
-        /// Uninstalls a package 
+        ///     Uninstalls a package
         /// </summary>
         /// <param name="fastPackageReference"></param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="requestImpl">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         public void UninstallPackage(string fastPackageReference, RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestImpl.As<Request>()) {
                     request.Debug("Calling '{0}::UninstallPackage' '{1}'", ProviderName, fastPackageReference);
-                    
+
                     // Nice-to-have put a debug message in that tells what's going on.
-                    
-                    var path = fastPackageReference.Split(new []{'\\'} , 3);
-                    string uninstallCommand = string.Empty;
-                    Dictionary<string,string> properties = null;
+
+                    var path = fastPackageReference.Split(new[] {'\\'}, 3);
+                    var uninstallCommand = string.Empty;
+                    Dictionary<string, string> properties = null;
                     if (path.Length == 3) {
                         switch (path[0].ToLowerInvariant()) {
                             case "hklm64":
@@ -281,14 +282,13 @@ namespace Microsoft.OneGet.Builtin {
                                 }
                                 break;
                         }
-                        
+
                         if (!string.IsNullOrWhiteSpace(uninstallCommand)) {
-                            do
-                            {
+                            do {
                                 if (File.Exists(uninstallCommand)) {
                                     ExecStandalone(uninstallCommand);
                                     break;
-                                } 
+                                }
 
                                 // not a single file.
                                 // check if it's just quoted.
@@ -322,17 +322,16 @@ namespace Microsoft.OneGet.Builtin {
                                     var p = uninstallCommand.IndexOf('"', 1);
                                     if (p > 0) {
                                         var file = uninstallCommand.Substring(1, p - 1);
-                                        var args = uninstallCommand.Substring(p+1);
+                                        var args = uninstallCommand.Substring(p + 1);
                                         if (File.Exists(file)) {
                                             CommandWithParameters(file, args);
-                                            continue;
                                         }
                                     }
                                 } else {
                                     var p = uninstallCommand.IndexOf(' ');
                                     if (p > 0) {
                                         var file = uninstallCommand.Substring(0, p);
-                                        var args = uninstallCommand.Substring(p+1);
+                                        var args = uninstallCommand.Substring(p + 1);
                                         if (File.Exists(file)) {
                                             CommandWithParameters(file, args);
                                             continue;
@@ -359,42 +358,36 @@ namespace Microsoft.OneGet.Builtin {
                                         }
                                     }
                                 }
-                            } while(false);
+                            } while (false);
                             YieldPackage(fastPackageReference, fastPackageReference, properties, request);
                             return;
                         }
                         request.Error(ErrorCategory.InvalidOperation, properties["DisplayName"], Constants.Messages.UnableToUninstallPackage);
-                        return;
                     }
                 }
             } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::UninstallPackage' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::UninstallPackage' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
 
         private void RunDll32(string uninstallCommand) {
-
         }
 
         private void MsiUninstall(string uninstallCommand) {
-            
         }
 
         private void CommandWithParameters(string file, string args) {
-            
         }
 
         private void CmdCommand(string args) {
-
         }
-
 
         private void ExecStandalone(string uninstallCommand) {
             // we could examine the EXE a bit here to see if it's a NSIS installer and if it is, tack on a /S to get it to go silently.
-            
+
             // uninstall via standalone EXE
             var proc = AsyncProcess.Start(new ProcessStartInfo {
                 FileName = uninstallCommand,

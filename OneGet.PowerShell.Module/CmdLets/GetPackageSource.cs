@@ -14,15 +14,18 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
-    using System.Diagnostics.Eventing;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Get, Constants.PackageSourceNoun)]
     public sealed class GetPackageSource : CmdletWithProvider {
+        private readonly List<PackageSource> _unregistered = new List<PackageSource>();
+        private bool _found;
+        private bool _noLocation;
+        private bool _noName;
+
         public GetPackageSource()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source
@@ -46,13 +49,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
             }
         }
+
         public override IEnumerable<string> Sources {
             get {
                 return _sources.ByRef();
             }
         }
-
-        private bool _found = false;
 
         private bool WriteSources(IEnumerable<PackageSource> sources) {
             foreach (var source in sources) {
@@ -62,10 +64,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return _found;
         }
 
-        private readonly List<PackageSource> _unregistered = new List<PackageSource>();
-        private bool _noName;
-        private bool _noLocation;
-
         public override bool ProcessRecordAsync() {
             var noName = string.IsNullOrEmpty(Name);
             var noLocation = string.IsNullOrEmpty(Location);
@@ -73,7 +71,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             // store the information if we've ever had a name or location
             _noName = _noName || noName;
-            _noLocation = _noLocation ||  noLocation;
+            _noLocation = _noLocation || noLocation;
 
             foreach (var provider in SelectedProviders) {
                 if (Stopping) {
@@ -81,16 +79,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
 
                 using (var sources = CancelWhenStopped(provider.ResolvePackageSources(this))) {
-
                     if (noCriteria) {
                         // no criteria means just return whatever we found
                         if (WriteSources(sources)) {
-                            continue;
                         }
                     } else {
                         var all = sources.ToArray();
                         var registered = all.Where(each => each.IsRegistered);
-                        
 
                         if (noName) {
                             // just location was specified
@@ -129,7 +124,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     if (WriteSources(_unregistered.Where(each => each.Location.EqualsIgnoreCase(Location)))) {
                         return true;
                     }
-                    Warning(Constants.SourceNotFoundForLocation,Location);
+                    Warning(Constants.SourceNotFoundForLocation, Location);
                     return true;
                 }
 
@@ -139,7 +134,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
                 Warning(Constants.SourceNotFound, Name);
                 return true;
-
             }
             return true;
         }

@@ -16,32 +16,27 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Extensions;
 
-    [Cmdlet(VerbsCommon.Set, Constants.PackageSourceNoun, SupportsShouldProcess = true,DefaultParameterSetName =Constants.SourceBySearchSet)]
+    [Cmdlet(VerbsCommon.Set, Constants.PackageSourceNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.SourceBySearchSet)]
     public sealed class SetPackageSource : CmdletWithProvider {
-
-        public SetPackageSource() : base(new[] { OptionCategory.Provider, OptionCategory.Source }) {
-
-        }
-
-        [Parameter(ValueFromPipeline = true, ParameterSetName = Constants.SourceByInputObjectSet,Mandatory = true)]
+        [Parameter(ValueFromPipeline = true, ParameterSetName = Constants.SourceByInputObjectSet, Mandatory = true)]
         public PackageSource InputObject;
+
+        public SetPackageSource() : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
+        }
 
         [Alias("ProviderName")]
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.SourceBySearchSet, Mandatory = true)]
-        public string Provider { get; set; }
+        public string Provider {get; set;}
 
         public override string[] ProviderName {
             get {
                 if (string.IsNullOrEmpty(Provider)) {
                     return null;
                 }
-                return new[] {
-                    Provider
-                };
+                return new[] {Provider};
             }
             set {
                 // nothing
@@ -50,33 +45,31 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         [Alias("SourceName")]
         [Parameter(Position = 0, ParameterSetName = Constants.SourceBySearchSet)]
-        public string Name { get; set; }
+        public string Name {get; set;}
 
         [Parameter(ParameterSetName = Constants.SourceBySearchSet)]
-        public string Location { get; set; }
+        public string Location {get; set;}
 
         [Parameter]
-        public string NewLocation { get; set; }
+        public string NewLocation {get; set;}
 
         [Parameter]
-        public string NewName { get; set; }
+        public string NewName {get; set;}
 
         [Parameter]
-        public SwitchParameter Trusted { get; set; }
-
+        public SwitchParameter Trusted {get; set;}
 
         public override IEnumerable<string> Sources {
             get {
                 if (Name.IsEmptyOrNull() && Location.IsEmptyOrNull()) {
-                    return new string[0];
+                    return Microsoft.OneGet.Constants.Empty;
                 }
-                
-                return new [] {
+
+                return new[] {
                     Name ?? Location
                 };
             }
         }
-
 
         public override IEnumerable<string> GetOptionKeys() {
             return base.GetOptionKeys().ConcatSingleItem("IsUpdatePackageSource").ByRef();
@@ -123,7 +116,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             if (prov.Length > 0) {
                 var sources = prov.SelectMany(each => each.ResolvePackageSources(this).Where(source => source.IsRegistered &&
-                    (Name == null || source.Name.EqualsIgnoreCase(Name)) || (Location == null || source.Location.EqualsIgnoreCase(Location))).ToArray()).ToArray();
+                                                                                                       (Name == null || source.Name.EqualsIgnoreCase(Name)) || (Location == null || source.Location.EqualsIgnoreCase(Location))).ToArray()).ToArray();
 
                 if (sources.Length == 0) {
                     return Error(Errors.SourceNotFound, Name);
@@ -137,6 +130,5 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
             return true;
         }
-
     }
 }

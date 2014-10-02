@@ -25,7 +25,7 @@ namespace Microsoft.OneGet.Utility.Collections {
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
         /// <returns></returns>
-        public static ReEnumerable<T> Timid<T>(this IEnumerable<T> collection) {
+        public static ReEnumerable<T> ReEnumerable<T>(this IEnumerable<T> collection) {
             if (collection == null) {
                 return new ReEnumerable<T>(Enumerable.Empty<T>());
             }
@@ -54,7 +54,7 @@ namespace Microsoft.OneGet.Utility.Collections {
         }
 
         public ReEnumerable<T> Concat(IEnumerable<T> additionalItems) {
-            return Enumerable.Concat(this, additionalItems).Timid();
+            return Enumerable.Concat(this, additionalItems).ReEnumerable();
         }
 
         public IEnumerable<IEnumerator<T>> GetEnumerators(int copies) {

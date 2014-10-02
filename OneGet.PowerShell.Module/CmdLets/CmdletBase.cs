@@ -31,15 +31,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     public abstract class CmdletBase : AsyncCmdlet {
         private static int _globalCallCount = 1;
         private static readonly object _lockObject = new object();
+        private static readonly IPackageManagementService _packageManagementService = new PackageManager().Instance;
         private readonly int _callCount;
         private readonly Hashtable _dynamicOptions;
-        private static readonly IPackageManagementService _packageManagementService = new PackageManager().Instance;
-
-        [Parameter]
-        public SwitchParameter ForceBootstrap;
 
         [Parameter]
         public SwitchParameter Force;
+
+        [Parameter]
+        public SwitchParameter ForceBootstrap;
 
         [Parameter(DontShow = true)]
         public GetMessageString MessageResolver;
@@ -67,31 +67,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
-#if TRY_TO_LOAD_PROVIDERS_EARLY
-        private static Task<IPackageManagementService> _startServiceTask;
-
-        static CmdletBase()  {
-                 _startServiceTask = Task<IPackageManagementService>.Factory.StartNew(() => {
-                     NativeMethods.OutputDebugString("STARTING IPMS");
-                     lock (_lockObject) {
-                         try {
-                             NativeMethods.OutputDebugString("IPMS THREAD START");
-                             IsInitialized = _packageManagementService.Initialize(new {
-                                 IsCancelled = new Func<bool>(()=>false),
-                                 GetMessageString = new GetMessageString((messageText) => Messages.ResourceManager.GetString(messageText) ?? messageText)
-                             });
-                             
-                         }
-                         catch (Exception e) {
-                             e.Dump();
-                         }
-                         NativeMethods.OutputDebugString("IPMS THREAD END");
-                         return _packageManagementService;
-                     }
-                 },TaskCreationOptions.LongRunning);
-             }
-#endif
-
         protected internal IPackageManagementService PackageManagementService {
             get {
                 lock (_lockObject) {
@@ -104,10 +79,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 }
                 return _packageManagementService;
-
-#if TRY_TO_LOAD_PROVIDERS_EARLY               
-                return _startServiceTask.Result;
-#endif
             }
         }
 
@@ -164,8 +135,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     return true;
                 }).Wait();
             }
-            
-            return result ?? Messages.ResourceManager.GetString(messageText) ;
+
+            return result ?? Messages.ResourceManager.GetString(messageText);
         }
 
         public override bool ConsumeDynamicParameters() {
@@ -183,14 +154,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public virtual bool ShouldProcessPackageInstall(string packageName, string version, string source) {
 #if DEBUG
             Message(Constants.NotImplemented, packageName);
-#endif 
+#endif
             return false;
         }
 
         public virtual bool ShouldProcessPackageUninstall(string packageName, string version) {
 #if DEBUG
             Message(Constants.NotImplemented, packageName);
-#endif 
+#endif
             return false;
         }
 
@@ -233,7 +204,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys).ByRef();
         }
 
-        public virtual IEnumerable<string> GetOptionValues( string key) {
+        public virtual IEnumerable<string> GetOptionValues(string key) {
             if (MyInvocation.BoundParameters.ContainsKey(key)) {
                 var value = MyInvocation.BoundParameters[key];
                 if (value is string || value is int) {

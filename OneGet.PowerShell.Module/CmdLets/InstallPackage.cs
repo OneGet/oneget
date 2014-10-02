@@ -17,10 +17,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using System.Threading.Tasks;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
@@ -50,7 +48,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public override string MaximumVersion {get; set;}
 
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
-        public override  string[] Source { get; set; }
+        public override string[] Source {get; set;}
 
         [Alias("Provider")]
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
@@ -95,10 +93,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (WhatIf) {
                 // grab the dependencies and return them *first*
                 foreach (var dep in provider.GetPackageDependencies(package, this)) {
-                    ProcessPackage(provider, searchKey+dep.Name, dep);
+                    ProcessPackage(provider, searchKey + dep.Name, dep);
                 }
             }
-            base.ProcessPackage(provider,searchKey,package);
+            base.ProcessPackage(provider, searchKey, package);
         }
 
         private bool InstallPackages(params SoftwareIdentity[] packagesToInstall) {
@@ -107,7 +105,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             foreach (var package in packagesToInstall) {
                 var pkg = package;
                 foreach (var parameter in DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>()
-                    .Where(param => param.IsSet == false && param.Options.Any( option => option.ProviderName == pkg.ProviderName && option.Category == OptionCategory.Install && option.IsRequired) )) {
+                    .Where(param => param.IsSet == false && param.Options.Any(option => option.ProviderName == pkg.ProviderName && option.Category == OptionCategory.Install && option.IsRequired))) {
                     // this is not good. there is a required parameter for the package 
                     // and the user didn't specify it. We should return the error to the user
                     // and they can try again.
@@ -119,12 +117,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (IsCancelled()) {
                 return false;
             }
-            int progressId = 0;
+            var progressId = 0;
 
             if (packagesToInstall.Length > 1) {
                 progressId = StartProgress(0, "Installing {0} packages", packagesToInstall.Length);
             }
-            int n = 0;
+            var n = 0;
             foreach (var pkg in packagesToInstall) {
                 if (packagesToInstall.Length > 1) {
                     Progress(progressId, (n*100/packagesToInstall.Length) + 1, "Installing Package '{0}' ({1} of {2})", pkg.Name, ++n, packagesToInstall.Length);
@@ -135,12 +133,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     return false;
                 }
                 try {
-
                     // if (WhatIf) {
-                        // we should just tell it which packages will be installed.
-                        // todo: [M2] should we be checking the installed status before we show this
-                        // todo:      or should we rethink allowing the providers to willingly support -whatif?
-                        // ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source);
+                    // we should just tell it which packages will be installed.
+                    // todo: [M2] should we be checking the installed status before we show this
+                    // todo:      or should we rethink allowing the providers to willingly support -whatif?
+                    // ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source);
                     //} else {
                     if (ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source)) {
                         foreach (var installedPkg in CancelWhenStopped(provider.InstallPackage(pkg, this))) {
@@ -151,7 +148,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             WriteObject(installedPkg);
                         }
                     }
-                //}
+                    //}
                 } catch (Exception e) {
                     e.Dump();
                     Error(Errors.InstallationFailure, pkg.Name);
@@ -167,7 +164,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ShouldProcessPackageInstall(string packageName, string version, string source) {
             try {
-                return Force || ShouldProcess(FormatMessageString(Constants.TargetPackage,packageName, version, source), FormatMessageString(Constants.ActionInstallPackage)).Result;
+                return Force || ShouldProcess(FormatMessageString(Constants.TargetPackage, packageName, version, source), FormatMessageString(Constants.ActionInstallPackage)).Result;
             } catch {
             }
             return false;
@@ -197,7 +194,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
             try {
-                return Force || ShouldContinue(FormatMessageString(Constants.QueryShouldThePackageScriptAtBeProcessed, scriptLocation), FormatMessageString(Constants.CaptionPackageContainsInstallationScript,packageName)).Result;
+                return Force || ShouldContinue(FormatMessageString(Constants.QueryShouldThePackageScriptAtBeProcessed, scriptLocation), FormatMessageString(Constants.CaptionPackageContainsInstallationScript, packageName)).Result;
             } catch {
             }
             return false;

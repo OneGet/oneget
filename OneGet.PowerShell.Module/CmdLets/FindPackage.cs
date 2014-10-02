@@ -13,14 +13,9 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
     using System.Management.Automation;
-    using System.Threading.Tasks;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Find, Constants.PackageNoun), OutputType(typeof (SoftwareIdentity))]
     public sealed class FindPackage : CmdletWithSearchAndSource {
@@ -30,22 +25,21 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }) {
         }
 
-        [Parameter()]
-        public SwitchParameter IncludeDependencies { get; set; }
+        [Parameter]
+        public SwitchParameter IncludeDependencies {get; set;}
 
-        [Parameter()]
-        public override SwitchParameter AllVersions { get; set; }
+        [Parameter]
+        public override SwitchParameter AllVersions {get; set;}
 
-    
-        protected override void ProcessPackage( PackageProvider provider,string searchKey ,SoftwareIdentity package) {
-            base.ProcessPackage(provider,searchKey,package );
+        protected override void ProcessPackage(PackageProvider provider, string searchKey, SoftwareIdentity package) {
+            base.ProcessPackage(provider, searchKey, package);
 
             // return the object to the caller now.
             WriteObject(package);
 
             if (IncludeDependencies) {
                 foreach (var dep in provider.GetPackageDependencies(package, this)) {
-                    ProcessPackage(provider,searchKey, dep);
+                    ProcessPackage(provider, searchKey, dep);
                 }
             }
         }

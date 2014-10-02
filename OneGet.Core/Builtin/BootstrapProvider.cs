@@ -31,20 +31,20 @@ namespace Microsoft.OneGet.Builtin {
     using RequestImpl = System.Object;
 
     public class BootstrapProvider {
-        private static readonly string[] _urls = new[] {
+        private static readonly string[] _urls = {
 #if LOCAL_DEBUG
             "http://localhost:81/OneGet-Bootstrap.swidtag",
 #endif 
-            "https://oneget.org/oneget-bootstrap.swidtag",
             "https://go.microsoft.com/fwlink/?LinkId=404337",
             "https://go.microsoft.com/fwlink/?LinkId=404338",
+            "https://oneget.org/oneget-providers.swidtag"
         };
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
-            { "schemes", new[] { "http", "https", "file" } },
-            { "extensions", new[] { "exe", "msi" }}, 
-            { "magic-signatures", Constants.Empty },
-            { Constants.Features.AutomationOnly, Constants.Empty }
+            {"schemes", new[] {"http", "https", "file"}},
+            {"extensions", new[] {"exe", "msi"}},
+            {"magic-signatures", Constants.Empty},
+            {Constants.Features.AutomationOnly, Constants.Empty}
         };
 
         internal static IEnumerable<string> SupportedSchemes {
@@ -87,8 +87,7 @@ namespace Microsoft.OneGet.Builtin {
                 try {
                     request.Debug("Calling 'Bootstrap::GetDynamicOptions ({0})'", category);
 
-                    
-                    switch ((category??string.Empty).ToLowerInvariant()) {
+                    switch ((category ?? string.Empty).ToLowerInvariant()) {
                         case "package":
                             // request.YieldDynamicOption( "ForceCheck", OptionType.Switch, false);
 
@@ -325,7 +324,6 @@ namespace Microsoft.OneGet.Builtin {
                                 return new DynamicElement(document, NamespaceManager);
                             }
                         } catch {
-                            continue;
                         }
                     }
                 }

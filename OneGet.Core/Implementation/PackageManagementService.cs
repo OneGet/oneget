@@ -178,12 +178,13 @@ namespace Microsoft.OneGet.Implementation {
 
         public IEnumerable<PackageProvider> SelectProviders(string providerName, Object requestImpl) {
             if (providerName.Is()) {
-                // strict name match for now.
-                if (_packageProviders.ContainsKey(providerName)) {
-                    return _packageProviders[providerName].SingleItemAsEnumerable().ByRef();
+                
+                // match with wildcards
+                var results = _packageProviders.Values.Where(each => each.ProviderName.IsWildcardMatch(providerName)).ReEnumerable();
+                if (results.Any()) {
+                    return results.ByRef();
                 }
-
-                if (requestImpl != null) {
+                if (requestImpl != null && !providerName.ContainsWildcards()) {
                     // if the end user requested a provider that's not there. perhaps the bootstrap provider can find it.
                     if (RequirePackageProvider(null, providerName, Constants.MinVersion, requestImpl)) {
                         // seems to think we found it.
