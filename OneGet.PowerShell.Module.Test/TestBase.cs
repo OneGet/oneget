@@ -19,12 +19,29 @@ namespace OneGet.PowerShell.Module.Test {
     using Xunit;
 
     public class TestBase {
+        private static object lockObject = new object();
+        private static dynamic PowerShellSession;
+
         protected dynamic NewPowerShellSession {
             get {
-                dynamic p = new DynamicPowershell();
-                DynamicPowershellResult result = p.ImportModule(".\\oneget.psd1");
+                lock (lockObject) {
+                    if (PowerShellSession == null) {
+
+                        PowerShellSession = new DynamicPowershell();
+                        DynamicPowershellResult result = PowerShellSession.ImportModule(".\\oneget.psd1");
                 Assert.False(result.IsFailing, "unable to import '.\\oneget.psd1  (PWD:'{0}')".format(Environment.CurrentDirectory));
-                return p;
+                    }
+                    return PowerShellSession;
+                }
+            }
+        }
+
+        protected void UnloadOneGet() {
+            lock (lockObject) {
+                if (PowerShellSession != null) {
+                    PowerShellSession.Dispose();
+                    PowerShellSession = null;
+                }
             }
         }
     }

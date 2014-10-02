@@ -14,7 +14,6 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
-    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
 
     public abstract class CmdletWithSearch : CmdletWithProvider {
@@ -24,15 +23,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         [Parameter(Position = 0)]
         public virtual string[] Name {get; set;}
-        
+
         [Parameter]
-        public virtual string RequiredVersion { get; set; }
+        public virtual string RequiredVersion {get; set;}
 
         [Alias("Version")]
         [Parameter]
-        public virtual string MinimumVersion { get; set; }
+        public virtual string MinimumVersion {get; set;}
 
         [Parameter]
-        public virtual string MaximumVersion { get; set; }
+        public virtual string MaximumVersion {get; set;}
     }
 }

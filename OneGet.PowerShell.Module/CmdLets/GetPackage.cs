@@ -29,7 +29,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public GetPackage()
             : base(new[] {
-                OptionCategory.Provider, OptionCategory.Install,
+                OptionCategory.Provider, OptionCategory.Install
             }) {
         }
 

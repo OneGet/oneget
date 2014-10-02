@@ -4,7 +4,7 @@ foreach( $file in $files) {
 
     $byteArray = Get-Content  $file.FullName -Encoding Byte  -TotalCount 1024
     if( $byteArray -contains 0 ) {
-        echo "$file => BINARY"
+        # echo "$file => BINARY"
         continue;
     }
     
@@ -27,7 +27,7 @@ foreach( $file in $files) {
     }
 
     if( $CRs -eq 0 -and $LFs -eq 0 -and $CRLFs -eq 0 ) {
-        echo "$file => NONE"
+        # echo "$file => NONE"
         continue;
     }
     if( $CRs -gt 0 -and $LFs -eq 0 -and $CRLFs -eq 0 ) {
@@ -36,11 +36,13 @@ foreach( $file in $files) {
     }
 
     if( $CRs -eq 0 -and $LFs -gt 0 -and $CRLFs -eq 0 ) {
-        echo "$file => LF"
+        # echo "$file => LF"
+        echo "$file"
         continue;
     }
     
-    echo "$file => OTHER"
+    #echo "$file => OTHER"
+    echo "$file"
     continue;
     
 

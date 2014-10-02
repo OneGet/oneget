@@ -106,6 +106,22 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     }
                 }
 
+                if (methodName.StartsWith("add", StringComparison.OrdinalIgnoreCase)) {
+                    // try it with 'register' instead
+                    var result = GetMethod("register" + methodName.Substring(3));
+                    if (result != null) {
+                        return result;
+                    }
+                }
+
+                if (methodName.StartsWith("remove", StringComparison.OrdinalIgnoreCase)) {
+                    // try it with 'register' instead
+                    var result = GetMethod("unregister" + methodName.Substring(6));
+                    if (result != null) {
+                        return result;
+                    }
+                }
+
                 // can't find one, return null.
                 return null;
             });

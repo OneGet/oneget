@@ -29,21 +29,21 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public SoftwareIdentity[] InputObject {get; set;}
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = Constants.PackageBySearchSet)]
-        public override string[] Name { get; set; }
-        
+        public override string[] Name {get; set;}
+
         [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
-        public override string RequiredVersion { get; set; }
+        public override string RequiredVersion {get; set;}
 
         [Alias("Version")]
         [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
-        public override string MinimumVersion { get; set; }
+        public override string MinimumVersion {get; set;}
 
         [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
-        public override string MaximumVersion { get; set; }
+        public override string MaximumVersion {get; set;}
 
         [Alias("Provider")]
-        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName= Constants.PackageBySearchSet)]
-        public override string[] ProviderName { get; set; }
+        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
+        public override string[] ProviderName {get; set;}
 
         public override bool ProcessRecordAsync() {
             if (IsPackageByObject) {
@@ -117,7 +117,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 } catch (Exception e) {
                     e.Dump();
-                    Error(Errors.UninstallationFailure, pkg.Name );
+                    Error(Errors.UninstallationFailure, pkg.Name);
                     return false;
                 }
             }
@@ -125,15 +125,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool ShouldProcessPackageUninstall(string packageName, string version) {
-            return Force || ShouldProcess(FormatMessageString(Constants.TargetPackage,packageName), FormatMessageString(Constants.ActionUninstallPackage)).Result;
+            return Force || ShouldProcess(FormatMessageString(Constants.TargetPackage, packageName), FormatMessageString(Constants.ActionUninstallPackage)).Result;
         }
 
         public override bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source) {
-            return Force || ShouldContinue(FormatMessageString(Constants.QueryContinueUninstallingAfterFailing), FormatMessageString(Constants.CaptionPackageUninstallFailure,packageName)).Result;
+            return Force || ShouldContinue(FormatMessageString(Constants.QueryContinueUninstallingAfterFailing), FormatMessageString(Constants.CaptionPackageUninstallFailure, packageName)).Result;
         }
 
         public override bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation) {
-            return Force || ShouldContinue(FormatMessageString(Constants.QueryShouldThePackageUninstallScriptAtBeProcessed,scriptLocation), FormatMessageString(Constants.CaptionPackageContainsUninstallationScript)).Result;
+            return Force || ShouldContinue(FormatMessageString(Constants.QueryShouldThePackageUninstallScriptAtBeProcessed, scriptLocation), FormatMessageString(Constants.CaptionPackageContainsUninstallationScript)).Result;
         }
     }
 }

@@ -16,15 +16,19 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Collections;
+    using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
     [Cmdlet(VerbsLifecycle.Register, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
     public sealed class RegisterPackageSource : CmdletWithProvider {
-    
-        [Parameter( ValueFromPipelineByPropertyName = true, Mandatory = true)]
-        public new string ProviderName { get; set; }
+        public RegisterPackageSource()
+            : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
+        }
+
+        [Parameter(ValueFromPipelineByPropertyName = true, Mandatory = true)]
+        public new string ProviderName {get; set;}
 
         [Parameter(Position = 0)]
         public string Name {get; set;}
@@ -38,23 +42,20 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter]
         public SwitchParameter Trusted {get; set;}
 
-        public RegisterPackageSource()
-            : base(new[] { OptionCategory.Provider, OptionCategory.Source }) {
-        }
-
         public override bool GenerateDynamicParameters() {
-            var packageProvider = PackageManagementService.SelectProviders(ProviderName, this).FirstOrDefault();
-            if (packageProvider == null) {
+            var packageProvider = SelectProviders(ProviderName).ReEnumerable();
+
+            // if more than one provider is selected, this will never work
+            if (packageProvider.Count() != 1) {
                 return false;
             }
 
             // if the provider is selected, we can get package metadata keys from the provider
-            foreach (var md in packageProvider.GetDynamicOptions(OptionCategory.Source, this)) {
+            foreach (var md in packageProvider.First().GetDynamicOptions(OptionCategory.Source, this)) {
                 if (DynamicParameterDictionary.ContainsKey(md.Name)) {
                     // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
                     (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
-                }
-                else {
+                } else {
                     DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md));
                 }
             }
@@ -66,13 +67,22 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return false;
             }
 
-            var packageProvider = PackageManagementService.SelectProviders(ProviderName, this).FirstOrDefault();
-            if (packageProvider == null) {
-                Error(Errors.UnknownProvider,ProviderName);
-                return false;
+            var packageProvider = SelectProviders(ProviderName).ReEnumerable();
+
+            switch (packageProvider.Count()) {
+                case 0:
+                    Error(Errors.UnknownProvider, ProviderName);
+                    return false;
+
+                case 1:
+                    break;
+
+                default:
+                    Error(Errors.MatchesMultipleProviders, packageProvider.Select(provider => provider.ProviderName).JoinWithComma());
+                    return false;
             }
 
-            using (var sources = CancelWhenStopped(packageProvider.ResolvePackageSources(this))) {
+            using (var sources = CancelWhenStopped(packageProvider.First().ResolvePackageSources(this))) {
                 // first, check if there is a source by this name already.
                 var existingSources = sources.Where(each => each.IsRegistered && each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase)).ToArray();
 
@@ -81,11 +91,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     foreach (var existingSource in existingSources) {
                         if (Force) {
                             if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource, existingSource.Name, existingSource.Location, existingSource.ProviderName), Constants.ActionReplacePackageSource).Result) {
-                                using (var removedSources = CancelWhenStopped(packageProvider.RemovePackageSource(existingSource.Name, this))) {
+                                using (var removedSources = CancelWhenStopped(packageProvider.First().RemovePackageSource(existingSource.Name, this))) {
                                     foreach (var removedSource in removedSources) {
                                         Verbose(Constants.OverwritingPackageSource, removedSource.Name);
                                     }
-                                }    
+                                }
                             }
                         } else {
                             Error(Errors.PackageSourceExists, existingSource.Name);
@@ -95,8 +105,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
             }
 
-            if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource,Name, Location, ProviderName),FormatMessageString(Constants.ActionRegisterPackageSource)).Result) {
-                using (var added = CancelWhenStopped(packageProvider.AddPackageSource(Name, Location, Trusted, this))) {
+            if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource, Name, Location, ProviderName), FormatMessageString(Constants.ActionRegisterPackageSource)).Result) {
+                using (var added = CancelWhenStopped(packageProvider.First().AddPackageSource(Name, Location, Trusted, this))) {
                     foreach (var addedSource in added) {
                         WriteObject(addedSource);
                     }

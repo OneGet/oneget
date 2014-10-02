@@ -118,6 +118,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="ForcePowerShellToLoadThisVersion.ps1" />
     <None Include="RunToUnblock.cmd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
