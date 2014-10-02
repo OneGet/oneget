@@ -14,6 +14,5 @@
 
 namespace Microsoft.OneGet.Builtin {
     public class WindowsFeaturesProvider {
-
     }
 }

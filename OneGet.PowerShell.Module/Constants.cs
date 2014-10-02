@@ -104,12 +104,16 @@ namespace Microsoft.PowerShell.OneGet {
 
         internal const string NoMatchesForWildcard = "MSG:NoMatchesForWildcard";
 
+        internal const string MatchesMultipleProviders = "MSG:MatchesMultipleProviders";
+
         internal const string TargetPackage = "MSG:TargetPackage";
 
         internal const string NameOrLocationRequired = "MSG:NameOrLocationRequired";
         internal const string DestinationOrLiteralPathRequired = "MSG:DestinationOrLiteralPathRequired";
 
         internal const string SavePackage = "MSG:SavePackage";
+
+
     }
 
     internal static class Errors {
@@ -143,6 +147,7 @@ namespace Microsoft.PowerShell.OneGet {
         public static ErrorMessage UnableToFindProviderForSource = new ErrorMessage(Constants.UnableToFindProviderForSource, ErrorCategory.ObjectNotFound);
 
         public static ErrorMessage DestinationOrLiteralPathNotSpecified = new ErrorMessage(Constants.DestinationOrLiteralPathRequired, ErrorCategory.InvalidArgument);
+        public static ErrorMessage MatchesMultipleProviders= new ErrorMessage(Constants.MatchesMultipleProviders, ErrorCategory.InvalidArgument);
 
         // ReSharper restore InconsistentNaming
     }

@@ -29,16 +29,18 @@ namespace Microsoft.OneGet.Builtin {
 
     public class MsiProvider {
         /// <summary>
-        /// The name of this Package Provider
+        ///     The name of this Package Provider
         /// </summary>
         internal const string ProviderName = "msi";
 
-        private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]>{
-            {"extensions", new[]{"msi"} }
+        private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
+            {"extensions", new[] {"msi"}}
         };
 
+        private int _progressId;
+
         /// <summary>
-        /// Returns the name of the Provider. 
+        ///     Returns the name of the Provider.
         /// </summary>
         /// <returns>The name of this proivder (uses the constant declared at the top of the class)</returns>
         public string GetPackageProviderName() {
@@ -46,31 +48,38 @@ namespace Microsoft.OneGet.Builtin {
         }
 
         /// <summary>
-        /// Performs one-time initialization of the PROVIDER.
+        ///     Performs one-time initialization of the PROVIDER.
         /// </summary>
-        /// <param name="dynamicInterface">a <c>System.Type</c> that represents a remote interface for that a request needs to implement when passing the request back to methods in the CORE. (Advanced Usage)</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="dynamicInterface">
+        ///     a <c>System.Type</c> that represents a remote interface for that a request needs to
+        ///     implement when passing the request back to methods in the CORE. (Advanced Usage)
+        /// </param>
+        /// <param name="requestImpl">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         public void InitializeProvider(RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestImpl.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::InitializeProvider'", ProviderName);
-
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::InitializeProvider' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::InitializeProvider' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
 
         /// <summary>
-        /// Returns a collection of strings to the client advertizing features this provider supports.
+        ///     Returns a collection of strings to the client advertizing features this provider supports.
         /// </summary>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="requestImpl">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         public void GetFeatures(RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
@@ -82,32 +91,33 @@ namespace Microsoft.OneGet.Builtin {
                         request.Yield(feature);
                     }
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::GetFeatures' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::GetFeatures' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
-
         }
 
         /// <summary>
-        /// Returns dynamic option definitions to the HOST
+        ///     Returns dynamic option definitions to the HOST
         /// </summary>
         /// <param name="category">The category of dynamic options that the HOST is interested in</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="requestImpl">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         public void GetDynamicOptions(string category, RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestImpl.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::GetDynamicOptions' '{1}'", ProviderName, category);
-                    
-                    switch((category??string.Empty).ToLowerInvariant()){
+
+                    switch ((category ?? string.Empty).ToLowerInvariant()) {
                         case "install":
                             // options required for install/uninstall/getinstalledpackages
-                            request.YieldDynamicOption( "AdditionalArguments", OptionType.StringArray.ToString(), false);
+                            request.YieldDynamicOption("AdditionalArguments", OptionType.StringArray.ToString(), false);
                             break;
 
                         case "provider":
@@ -123,23 +133,28 @@ namespace Microsoft.OneGet.Builtin {
                             break;
                     }
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::GetDynamicOptions' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::GetDynamicOptions' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
 
         /// <summary>
-        /// Finds packages given a locally-accessible filename
-        /// 
-        /// Package information must be returned using <c>request.YieldPackage(...)</c> function.
+        ///     Finds packages given a locally-accessible filename
+        ///     Package information must be returned using <c>request.YieldPackage(...)</c> function.
         /// </summary>
         /// <param name="file">the full path to the file to determine if it is a package</param>
-        /// <param name="id">if this is greater than zero (and the number should have been generated using <c>StartFind(...)</c>, the core is calling this multiple times to do a batch search request. The operation can be delayed until <c>CompleteFind(...)</c> is called</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="id">
+        ///     if this is greater than zero (and the number should have been generated using <c>StartFind(...)</c>,
+        ///     the core is calling this multiple times to do a batch search request. The operation can be delayed until
+        ///     <c>CompleteFind(...)</c> is called
+        /// </param>
+        /// <param name="requestImpl">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         public void FindPackageByFile(string file, int id, RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
@@ -154,26 +169,27 @@ namespace Microsoft.OneGet.Builtin {
                         var package = new InstallPackage(file, DatabaseOpenMode.ReadOnly);
                         YieldPackage(package, file, request);
                         package.Close();
-                    } catch(Exception e ) {
+                    } catch (Exception e) {
                         e.Dump();
                         // any exception at this point really just means that 
                         request.Error(ErrorCategory.OpenError, file, Constants.Messages.UnableToResolvePackage, file);
                     }
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::FindPackageByFile' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::FindPackageByFile' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="requestImpl">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         public void GetInstalledPackages(string name, RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
@@ -181,27 +197,29 @@ namespace Microsoft.OneGet.Builtin {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", ProviderName, name);
                     var products = ProductInstallation.AllProducts;
-                    var installed = string.IsNullOrWhiteSpace(name) ? products.Where(each => each.IsInstalled).Timid() : products.Where( each => each.IsInstalled && each.ProductName.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) > -1).Timid();
+                    var installed = string.IsNullOrWhiteSpace(name)
+                        ? products.Where(each => each.IsInstalled).ReEnumerable() : products.Where(each => each.IsInstalled && each.ProductName.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) > -1).ReEnumerable();
 
                     // dump out results.
                     if (installed.Any(p => !YieldPackage(p, name, request))) {
-                        return;
-                    }   
+                    }
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::GetInstalledPackages' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::GetInstalledPackages' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
 
         /// <summary>
-        /// Installs a given package.
+        ///     Installs a given package.
         /// </summary>
         /// <param name="fastPackageReference">A provider supplied identifier that specifies an exact package</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="requestImpl">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         public void InstallPackage(string fastPackageReference, RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
@@ -218,7 +236,7 @@ namespace Microsoft.OneGet.Builtin {
 
                         Installer.SetInternalUI(InstallUIOptions.UacOnly | InstallUIOptions.Silent);
 
-                        ExternalUIHandler handler = CreateProgressHandler(request);
+                        var handler = CreateProgressHandler(request);
                         _progressId = request.StartProgress(0, "Installing MSI '{0}'", file);
                         Installer.SetExternalUI(handler, InstallLogModes.Progress | InstallLogModes.Info);
                         Installer.InstallProduct(file, "REBOOT=REALLYSUPPRESS");
@@ -232,30 +250,29 @@ namespace Microsoft.OneGet.Builtin {
                         if (Installer.RebootRequired) {
                             request.Warning("Reboot is required to complete Installation.");
                         }
-
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         e.Dump();
                         request.Error(ErrorCategory.InvalidOperation, file, Constants.Messages.UnableToResolvePackage, file);
                     }
 
                     request.CompleteProgress(_progressId, true);
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::InstallPackage' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::InstallPackage' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
 
-        private int _progressId;
-
         /// <summary>
-        /// Uninstalls a package 
+        ///     Uninstalls a package
         /// </summary>
         /// <param name="fastPackageReference"></param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="requestImpl">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         public void UninstallPackage(string fastPackageReference, RequestImpl requestImpl) {
             try {
                 // create a strongly-typed request object.
@@ -280,8 +297,7 @@ namespace Microsoft.OneGet.Builtin {
 
                         Installer.SetInternalUI(InstallUIOptions.UacOnly | InstallUIOptions.Silent);
                         _progressId = request.StartProgress(0, "Uninstalling MSI '{0}'", productName);
-                        ExternalUIHandler handler = CreateProgressHandler(request);
-
+                        var handler = CreateProgressHandler(request);
 
                         Installer.SetExternalUI(handler, InstallLogModes.Progress | InstallLogModes.Info);
                         Installer.InstallProduct(product.LocalPackage, "REMOVE=ALL REBOOT=REALLYSUPPRESS");
@@ -301,21 +317,19 @@ namespace Microsoft.OneGet.Builtin {
                     request.CompleteProgress(_progressId, true);
                     _progressId = 0;
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
-                Debug.WriteLine(string.Format("Unexpected Exception thrown in '{0}::UninstallPackage' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace));
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::UninstallPackage' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
 
         private ExternalUIHandler CreateProgressHandler(Request request) {
-
-            int currentTotalTicks = -1;
-            int currentProgress = 0;
-            int progressDirection = 1;
-            int actualPercent = 0;
+            var currentTotalTicks = -1;
+            var currentProgress = 0;
+            var progressDirection = 1;
+            var actualPercent = 0;
 
             ExternalUIHandler handler = (type, message, buttons, icon, button) => {
                 if (request.IsCancelled()) {
@@ -328,7 +342,7 @@ namespace Microsoft.OneGet.Builtin {
                             var msg = message.Split(": ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(m => m.ToInt32(0)).ToArray();
 
                             switch (msg[1]) {
-                                // http://msdn.microsoft.com/en-us/library/aa370354(v=VS.85).aspx
+                                    // http://msdn.microsoft.com/en-us/library/aa370354(v=VS.85).aspx
                                 case 0: //Resets progress bar and sets the expected total number of ticks in the bar.
                                     currentTotalTicks = msg[3];
                                     currentProgress = 0;
@@ -343,7 +357,7 @@ namespace Microsoft.OneGet.Builtin {
                                     if (currentTotalTicks == -1) {
                                         break;
                                     }
-                                    currentProgress += msg[3] * progressDirection;
+                                    currentProgress += msg[3]*progressDirection;
                                     break;
                                 case 3:
                                     //Enables an action (such as CustomAction) to add ticks to the expected total number of progress of the progress bar.
@@ -352,11 +366,11 @@ namespace Microsoft.OneGet.Builtin {
                         }
 
                         if (currentTotalTicks > 0) {
-                            var newPercent = (currentProgress * 100 / currentTotalTicks);
+                            var newPercent = (currentProgress*100/currentTotalTicks);
                             if (actualPercent < newPercent) {
                                 actualPercent = newPercent;
                                 // request.Debug("Progress : {0}", newPercent);
-                                request.Progress(_progressId,actualPercent,"installing..." );
+                                request.Progress(_progressId, actualPercent, "installing...");
                             }
                         }
                         break;
@@ -368,7 +382,7 @@ namespace Microsoft.OneGet.Builtin {
             return handler;
         }
 
-        private bool YieldPackage(InstallPackage package, string filename,  Request request) {
+        private bool YieldPackage(InstallPackage package, string filename, Request request) {
             /*
                        var properties = package.ExecuteStringQuery("SELECT `Property` FROM `Property` ");
                        foreach (var i in properties) {
@@ -377,8 +391,8 @@ namespace Microsoft.OneGet.Builtin {
                        */
             if (request.YieldSoftwareIdentity(filename, package.Property["ProductName"], package.Property["ProductVersion"], "multipartnumeric", package.Property["Summary"], filename, filename, filename, Path.GetFileName(filename))) {
                 var trusted = request.GetPackageManagementService().As<IPackageManagementService>().ProviderServices.IsSignedAndTrusted(filename, "");
-                
-                if(!request.YieldSoftwareMetadata(filename, "FromTrustedSource", trusted.ToString()) ) {
+
+                if (!request.YieldSoftwareMetadata(filename, "FromTrustedSource", trusted.ToString())) {
                     return false;
                 }
 
@@ -397,7 +411,6 @@ namespace Microsoft.OneGet.Builtin {
         }
 
         private bool YieldPackage(ProductInstallation package, string searchKey, Request request) {
-            
             if (request.YieldSoftwareIdentity(package.ProductCode, package.ProductName, package.ProductVersion.ToString(), "multipartnumeric", package["Summary"], package.InstallSource, searchKey, package.InstallLocation, "?")) {
                 if (!request.YieldSoftwareMetadata(package.ProductCode, "ProductCode", package.ProductCode)) {
                     return false;
@@ -410,9 +423,5 @@ namespace Microsoft.OneGet.Builtin {
             }
             return false;
         }
-
-        
     }
-
-   
 }

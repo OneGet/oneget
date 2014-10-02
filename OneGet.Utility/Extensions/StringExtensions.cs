@@ -73,7 +73,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static string formatWithIEnumerable(this string formatString, IEnumerable<object> args) {
-            var arguments = args.Timid();
+            var arguments = args.ReEnumerable();
             if (arguments.IsNullOrEmpty()) {
                 return formatString;
             }
@@ -201,7 +201,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static TSource SafeAggregate<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, TSource> func) {
-            var src = source.Timid();
+            var src = source.ReEnumerable();
             if (source != null && src.Any()) {
                 return src.Aggregate(func);
             }
@@ -336,7 +336,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         /// <remarks>
         /// </remarks>
         public static string UnprotectForUser(this IEnumerable<byte> binaryData, string salt ) {
-            var data = binaryData.UnprotectBinaryForUser(salt).Timid();
+            var data = binaryData.UnprotectBinaryForUser(salt).ReEnumerable();
             return data.Any() ? data.ToUtf8String() : String.Empty;
         }
 
@@ -349,7 +349,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         /// <remarks>
         /// </remarks>
         public static string UnprotectForMachine(this IEnumerable<byte> binaryData, string salt ) {
-            var data = binaryData.UnprotectBinaryForMachine(salt).Timid();
+            var data = binaryData.UnprotectBinaryForMachine(salt).ReEnumerable();
             return data.Any() ? data.ToUtf8String() : String.Empty;
         }
 
@@ -425,10 +425,41 @@ namespace Microsoft.OneGet.Utility.Extensions {
             if (collection == null) {
                 return false;
             }
-            var set = values.Timid();
+            var set = values.ReEnumerable();
 
             return collection.Any(set.ContainsIgnoreCase);
         }
-       
+
+        private static readonly char[] _wildcardCharacters = new[] {
+            '*', '?'
+        };
+        private static readonly Regex _escapeFilepathCharacters = new Regex(@"([\\|\$|\^|\{|\[|\||\)|\+|\.|\]|\}|\/])");
+        private static Regex WildcardToRegex(string wildcard, string noEscapePrefix = "^") {
+            return new Regex(noEscapePrefix + _escapeFilepathCharacters.Replace(wildcard, "\\$1")
+                                                                      .Replace("?", @".")
+                                                                      .Replace("**", @"?")
+                                                                      .Replace("*", @"[^\\\/\<\>\|]*")
+                                                                      .Replace("?", @".*") + '$', RegexOptions.IgnoreCase);
+        }
+
+        /// <summary>
+        ///     Determines whether the specified input has wildcards.
+        /// </summary>
+        /// <param name="input"> The input. </param>
+        /// <returns>
+        ///     <c>true</c> if the specified input has wildcards; otherwise, <c>false</c> .
+        /// </returns>
+        /// <remarks>
+        /// </remarks>
+        public static bool ContainsWildcards(this string input) {
+            return input.IndexOfAny(_wildcardCharacters) > -1;
+        }
+
+        public static bool IsWildcardMatch(this string input, string wildcardMask) {
+            if (input == null || string.IsNullOrEmpty(wildcardMask)) {
+                return false; 
+            }
+            return WildcardToRegex(wildcardMask).IsMatch(input);
+        }
     }
 }

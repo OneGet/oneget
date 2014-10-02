@@ -133,7 +133,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         private static IEnumerable<MethodInfo> DisambiguateMethodsBySignature(params IEnumerable<MethodInfo>[] setsOfMethods) {
             var unique = new HashSet<string>();
 
-            return setsOfMethods.SelectMany(methodSet => methodSet.Timid()).Where(method => {
+            return setsOfMethods.SelectMany(methodSet => methodSet.ReEnumerable()).Where(method => {
                 var sig = method.ToSignatureString();
                 if (!unique.Contains(sig)) {
                     unique.Add(sig);

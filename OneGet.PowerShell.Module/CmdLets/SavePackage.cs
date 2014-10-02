@@ -18,7 +18,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.PowerShell;
 
     [Cmdlet(VerbsData.Save, Constants.PackageNoun, SupportsShouldProcess = true)]
     public sealed class SavePackage : CmdletWithSearchAndSource {
@@ -28,21 +27,20 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }) {
         }
 
-        [Parameter()]
-        public SwitchParameter IncludeDependencies { get; set; }
+        [Parameter]
+        public SwitchParameter IncludeDependencies {get; set;}
 
-        [Parameter()]
-        public string DestinationPath { get; set; }
+        [Parameter]
+        public string DestinationPath {get; set;}
 
-        [Parameter()]
-        public string LiteralPath { get; set; }
+        [Parameter]
+        public string LiteralPath {get; set;}
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = Constants.PackageByInputObjectSet)]
-        public SoftwareIdentity InputObject { get; set; }
+        public SoftwareIdentity InputObject {get; set;}
 
         [Parameter(ValueFromPipelineByPropertyName = true)]
-        public override string[] Source { get; set; }
-
+        public override string[] Source {get; set;}
 
         private string SaveFileName(string packageName) {
             string path = null;
@@ -73,7 +71,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return null;
         }
 
-
         public override bool ProcessRecordAsync() {
             if (string.IsNullOrEmpty(DestinationPath) && string.IsNullOrEmpty(LiteralPath)) {
                 Error(Errors.DestinationOrLiteralPathNotSpecified);
@@ -83,11 +80,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (IsPackageByObject) {
                 ProcessPackage(SelectProviders(InputObject.ProviderName).FirstOrDefault(), InputObject.Name, InputObject);
                 return true;
-            } 
+            }
             return base.ProcessRecordAsync();
-            
         }
-
 
         protected override void ProcessPackage(PackageProvider provider, string searchKey, SoftwareIdentity package) {
             base.ProcessPackage(provider, searchKey, package);
@@ -104,9 +99,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
                 // return the object to the caller.
                 WriteObject(package);
-
             }
-
 
             if (IncludeDependencies) {
                 foreach (var dep in provider.GetPackageDependencies(package, this)) {

@@ -5,7 +5,7 @@
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
 //  
-//  Unless required by appliZiple law or agreed to in writing, software
+//  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
@@ -16,16 +16,13 @@ namespace Microsoft.OneGet.Builtin {
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Threading.Tasks;
     using Implementation;
-    using Utility.Collections;
     using Utility.Deployment.Compression;
     using Utility.Deployment.Compression.Zip;
     using Utility.Extensions;
     using Utility.Plugin;
 
-    public class ZipArchiver  {
+    public class ZipArchiver {
         public IEnumerable<string> SupportedFormats {
             get {
                 return new[] {
@@ -50,8 +47,6 @@ namespace Microsoft.OneGet.Builtin {
         }
 
         private IEnumerable<string> _UnpackArchive(string localFilename, string destinationFolder, Object requestImpl) {
-
-
             var info = new ZipInfo(localFilename);
             var files = info.GetFiles();
             var percent = 0;
@@ -64,7 +59,7 @@ namespace Microsoft.OneGet.Builtin {
                 try {
                     info.Unpack(destinationFolder, (sender, args) => {
                         if (args.ProgressType == ArchiveProgressType.FinishFile) {
-                            processed.Add( Path.Combine(destinationFolder, args.CurrentFileName));
+                            processed.Add(Path.Combine(destinationFolder, args.CurrentFileName));
                             index++;
                             var complete = (index*100)/files.Count;
                             if (complete != percent) {
@@ -80,11 +75,9 @@ namespace Microsoft.OneGet.Builtin {
                             }
                         }
                     });
-                }
-                catch (OperationCanceledException) {
+                } catch (OperationCanceledException) {
                     // no worries.
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.Dump();
                 }
 
@@ -144,7 +137,6 @@ namespace Microsoft.OneGet.Builtin {
                     return ze.IsArchive(zipFile);
                 }
             } catch {
-
             }
             return false;
         }
