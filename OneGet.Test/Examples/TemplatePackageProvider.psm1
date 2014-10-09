@@ -24,7 +24,7 @@ function Add-PackageSource {
         [string] $name,
         [string] $location,
         [bool] $trusted,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -46,7 +46,7 @@ function Find-Package {
         [string] $minimumVersion,
         [string] $maximumVersion,
         [int] $id,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
 
 }
@@ -58,7 +58,7 @@ function Find-PackageByFile {
     param(
         [string] $file,
         [int] $id,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -77,7 +77,7 @@ function Find-PackageByUri {
     param(
         [Uri] $uri,
         [int] $id,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -95,7 +95,7 @@ function Find-PackageByUri {
 function Get-InstalledPackage { 
     param(
         [string] $name,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -263,7 +263,7 @@ function Is-ValidPackageSource {
 function Remove-PackageSource { 
     param(
         [string] $name,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -281,7 +281,7 @@ function Remove-PackageSource {
 function Uninstall-Package { 
     param(
         [string] $fastPath,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -316,7 +316,7 @@ function Download-Package {
     param(
         [string] $fastPath,
         [string] $location,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -334,7 +334,7 @@ function Download-Package {
 function Get-PackageDependencie { 
     param(
         [string] $fastPath,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -352,7 +352,7 @@ function Get-PackageDependencie {
 function Get-PackageDetail { 
     param(
         [string] $fastPath,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -370,7 +370,7 @@ function Get-PackageDetail {
 function Install-Package { 
     param(
         [string] $fastPath,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -404,7 +404,7 @@ function Get-DynamicOption {
 #>
 function Start-Find { 
     param(
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -422,7 +422,7 @@ function Start-Find {
 function Complete-Find { 
     param(
         [int] $id,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -452,7 +452,7 @@ function Get-IsSourceRequired {
 #>
 function Resolve-PackageSource { 
     param(
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -467,7 +467,7 @@ function Resolve-PackageSource {
 function Execute-ElevatedAction { 
     param(
         [string] $payload,
-        [Object] $requestImpl
+        [Object] $requestObject
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it

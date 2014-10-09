@@ -12,14 +12,9 @@
 //  limitations under the License.
 //  
 
-namespace OneGet.ProviderSDK {
-    using IRequestObject = System.MarshalByRefObject;
+namespace Microsoft.OneGet.Utility.Collections {
+    using System.Collections.Generic;
 
-    public interface IPackageManagementService {
-        object ProviderServices {get;}
-
-        bool Initialize(IRequestObject requestObject);
-
-        bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject);
+    public interface IAsyncEnumerable<out T> : IAsyncAction, IEnumerable<T> {
     }
 }

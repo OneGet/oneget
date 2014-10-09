@@ -19,30 +19,15 @@ namespace OneGet.ProviderSDK {
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Security;
+    using System.Threading;
     using PackageProvider.Template.Resources;
-    using RequestImpl = System.MarshalByRefObject;
+    using IRequestObject = System.MarshalByRefObject;
 
     public abstract class Request : IDisposable {
 
         #region copy core-apis
 
         /* Synced/Generated code =================================================== */
-        /// <summary>
-        ///     The provider can query to see if the operation has been cancelled.
-        ///     This provides for a gentle way for the caller to notify the callee that
-        ///     they don't want any more results.
-        /// </summary>
-        /// <returns>returns TRUE if the operation has been cancelled.</returns>
-        public abstract bool IsCancelled();
-
-        /// <summary>
-        ///     Returns a reference to the PackageManagementService API
-        ///     The consumer of this function should either use this as a dynamic object
-        ///     Or DuckType it to an interface that resembles IPacakgeManagementService
-        /// </summary>
-        /// <param name="requestImpl"></param>
-        /// <returns></returns>
-        public abstract object GetPackageManagementService();
 
         /// <summary>
         ///     Returns the interface type for a Request that the OneGet Core is expecting
@@ -70,6 +55,17 @@ namespace OneGet.ProviderSDK {
 
         public abstract bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
 
+        public abstract IEnumerable<string> ProviderNames { get; }
+
+        public abstract object PackageProviders { get; }
+
+        public abstract object SelectProvidersWithFeature(string featureName);
+
+        public abstract object SelectProvidersWithFeature(string featureName, string value);
+
+        public abstract object SelectProviders(string providerName, IRequestObject requestObject);
+
+        public abstract bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject);
         public abstract string GetCanonicalPackageId(string providerName, string packageName, string version);
 
         public abstract string ParseProviderName(string canonicalPackageId);
@@ -140,6 +136,10 @@ namespace OneGet.ProviderSDK {
         public abstract bool IsInteractive();
 
         public abstract int CallCount();
+
+        public abstract bool IsCanceled { get; }
+
+        public abstract WaitHandle CancellationEvent { get; }
         #endregion
 
         #region copy response-apis
@@ -208,8 +208,54 @@ namespace OneGet.ProviderSDK {
         public abstract bool YieldValue(string value);
         #endregion
 
+        #region copy service-apis
+
+        /* Synced/Generated code =================================================== */
+
+        public abstract void DownloadFile(Uri remoteLocation, string localFilename, Object requestObject);
+
+        public abstract bool IsSupportedArchive(string localFilename, Object requestObject);
+
+        public abstract IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object requestObject);
+
+        public abstract void AddPinnedItemToTaskbar(string item, Object requestObject);
+
+        public abstract void RemovePinnedItemFromTaskbar(string item, Object requestObject);
+
+        public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Object requestObject);
+
+        public abstract void SetEnvironmentVariable(string variable, string value, string context, Object requestObject);
+
+        public abstract void RemoveEnvironmentVariable(string variable, string context, Object requestObject);
+
+        public abstract void CopyFile(string sourcePath, string destinationPath, Object requestObject);
+
+        public abstract void Delete(string path, Object requestObject);
+
+        public abstract void DeleteFolder(string folder, Object requestObject);
+
+        public abstract void CreateFolder(string folder, Object requestObject);
+
+        public abstract void DeleteFile(string filename, Object requestObject);
+
+        public abstract string GetKnownFolder(string knownFolder, Object requestObject);
+
+        public abstract string CanonicalizePath(string text, string currentDirectory);
+
+        public abstract bool FileExists(string path);
+
+        public abstract bool DirectoryExists(string path);
+
+        public abstract bool Install(string fileName, string additionalArgs, Object requestObject);
+
+        public abstract bool IsSignedAndTrusted(string filename, Object requestObject);
+
+        public abstract bool ExecuteElevatedAction(string provider, string payload, Object requestObject);
+
+        #endregion
+
         #region copy Request-implementation
-public void Dispose() {
+public virtual void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -329,12 +375,7 @@ public void Dispose() {
             return YieldDynamicOption(name, expectedType, isRequired) && (permittedValues ?? Enumerable.Empty<string>()).All(each => YieldKeyValuePair(name, each));
         }
 
-        private ProviderServicesApi _providerServices;
-        public ProviderServicesApi ProviderServices {
-            get {
-                return _providerServices ?? (_providerServices = GetPackageManagementService().As<IPackageManagementService>().ProviderServices.As<ProviderServicesApi>());
-            }
-        }
+      
 
     }
 

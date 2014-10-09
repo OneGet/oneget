@@ -12,14 +12,23 @@
 //  limitations under the License.
 //  
 
-namespace OneGet.ProviderSDK {
-    using IRequestObject = System.MarshalByRefObject;
+namespace Microsoft.OneGet.Utility.Collections {
+    using System;
+    using System.Threading;
 
-    public interface IPackageManagementService {
-        object ProviderServices {get;}
+    public interface IAsyncAction : IDisposable {
+        WaitHandle CompleteEvent {get;}
+        TimeSpan Timeout {get; set;}
+        TimeSpan Responsiveness {get; set;}
 
-        bool Initialize(IRequestObject requestObject);
+        bool IsCanceled {get;}
+        bool IsAborted {get;}
+        bool IsCompleted {get;}
+        void Cancel();
+        void Abort();
 
-        bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject);
+        event Action OnComplete;
+        event Action OnCancel;
+        event Action OnAbort;
     }
 }

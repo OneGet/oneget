@@ -15,14 +15,11 @@
 namespace Microsoft.OneGet.Implementation {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Security.AccessControl;
     using System.Security.Principal;
-    using System.Threading.Tasks;
     using Api;
     using Packaging;
     using Providers;
@@ -31,6 +28,7 @@ namespace Microsoft.OneGet.Implementation {
     using Utility.Platform;
     using Utility.Plugin;
     using Win32;
+    using IRequestObject = System.Object;
 
     /// <summary>
     ///     The Client API is designed for use by installation hosts:
@@ -48,14 +46,6 @@ namespace Microsoft.OneGet.Implementation {
         internal readonly IDictionary<string, Downloader> Downloaders = new Dictionary<string, Downloader>(StringComparer.OrdinalIgnoreCase);
 
         private readonly object _lockObject = new object();
-
-        private ProviderServices _providerServices;
-
-        public IProviderServices ProviderServices {
-            get {
-                return _providerServices ?? (_providerServices = new ProviderServices(this));
-            }
-        }
 
         public IEnumerable<PackageProvider> PackageProviders {
             get {
@@ -75,9 +65,6 @@ namespace Microsoft.OneGet.Implementation {
             return _initialized;
         }
 
-        internal PackageManagementService() {
-        }
-
         public override object InitializeLifetimeService() {
             return null;
         }
@@ -85,9 +72,8 @@ namespace Microsoft.OneGet.Implementation {
         // well known, built in provider assemblies.
         private readonly string[] _defaultProviders = {
             Path.GetFullPath(Assembly.GetExecutingAssembly().Location), // load the providers from this assembly 
-            "Microsoft.OneGet.MetaProvider.PowerShell.dll",
+            "Microsoft.OneGet.MetaProvider.PowerShell.dll"
         };
-
 
         private static readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase) {
             Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location), // already in autload list
@@ -106,6 +92,7 @@ namespace Microsoft.OneGet.Implementation {
             "CustomCodeGenerator", // doesn't have any 
             "NuGet", // doesn't have any 
         };
+
         private bool IsExcluded(string assemblyPath) {
             return _excludes.Contains(Path.GetFileNameWithoutExtension(assemblyPath));
         }
@@ -129,7 +116,7 @@ namespace Microsoft.OneGet.Implementation {
             providerAssemblies = providerAssemblies.Distinct(new PathEqualityComparer(PathCompareOption.FileWithoutExtension));
 
             // there is no trouble with loading providers concurrently.
-            Parallel.ForEach(providerAssemblies, providerAssemblyName => {
+            providerAssemblies.ParallelForEach(providerAssemblyName => {
                 try {
                     request.Debug(request.FormatMessageString("Trying provider assembly: {0}", providerAssemblyName));
                     if (TryToLoadProviderAssembly(providerAssemblyName, request)) {
@@ -158,8 +145,8 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        public IEnumerable<PackageSource> GetAllSourceNames(Object requestImpl) {
-            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(requestImpl)).ByRef();
+        public IEnumerable<PackageSource> GetAllSourceNames(IRequestObject requestObject) {
+            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(requestObject)).ByRef();
         }
 
         public IEnumerable<string> ProviderNames {
@@ -176,23 +163,22 @@ namespace Microsoft.OneGet.Implementation {
             return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName) && each.Features[featureName].Contains(value)).ByRef();
         }
 
-        public IEnumerable<PackageProvider> SelectProviders(string providerName, Object requestImpl) {
+        public IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject) {
             if (providerName.Is()) {
-                
                 // match with wildcards
                 var results = _packageProviders.Values.Where(each => each.ProviderName.IsWildcardMatch(providerName)).ReEnumerable();
                 if (results.Any()) {
                     return results.ByRef();
                 }
-                if (requestImpl != null && !providerName.ContainsWildcards()) {
+                if (requestObject != null && !providerName.ContainsWildcards()) {
                     // if the end user requested a provider that's not there. perhaps the bootstrap provider can find it.
-                    if (RequirePackageProvider(null, providerName, Constants.MinVersion, requestImpl)) {
+                    if (RequirePackageProvider(null, providerName, Constants.MinVersion, requestObject)) {
                         // seems to think we found it.
                         if (_packageProviders.ContainsKey(providerName)) {
                             return _packageProviders[providerName].SingleItemAsEnumerable().ByRef();
                         }
                     }
-                    var hostApi = requestImpl.As<IHostApi>();
+                    var hostApi = requestObject.As<IHostApi>();
 
                     // warn the user that that provider wasn't found.
                     hostApi.Warning(hostApi.FormatMessageString(Constants.Messages.UnknownProvider, providerName));
@@ -295,7 +281,7 @@ namespace Microsoft.OneGet.Implementation {
                 return false;
             }
 
-            #if USE_APPDOMAINS
+#if USE_APPDOMAINS
             var pluginDomain = CreatePluginDomain(assemblyPath);
 
             if (!pluginDomain.InvokeFunc(Loader.AcquireProviders, assemblyPath, request, (YieldMetaProvider)AddMetaProvider, (YieldPackageProvider)AddPackageProvider, (YieldArchiver)AddArchvier, (YieldDownloader)AddDownloader)) {
@@ -305,7 +291,7 @@ namespace Microsoft.OneGet.Implementation {
                 return false;
             }
 #else
-            if (!Loader.AcquireProviders(assemblyPath, request, (YieldMetaProvider)AddMetaProvider, (YieldPackageProvider)AddPackageProvider, (YieldArchiver)AddArchvier, (YieldDownloader)AddDownloader)) {
+            if (!Loader.AcquireProviders(assemblyPath, request, AddMetaProvider, AddPackageProvider, AddArchvier, AddDownloader)) {
                 return false;
             }
 #endif
@@ -331,13 +317,12 @@ namespace Microsoft.OneGet.Implementation {
         }
 #endif
 
-
 #if USE_APPDOMAINS
-        /// <summary>
-        ///     PROTOTYPE - assembly/provider loader.
-        /// </summary>
-        /// <param name="primaryAssemblyPath"></param>
-        /// <returns></returns>
+    /// <summary>
+    ///     PROTOTYPE - assembly/provider loader.
+    /// </summary>
+    /// <param name="primaryAssemblyPath"></param>
+    /// <returns></returns>
         private PluginDomain CreatePluginDomain(string primaryAssemblyPath) {
             try {
                 // this needs to load the assembly in it's own domain
@@ -354,7 +339,7 @@ namespace Microsoft.OneGet.Implementation {
             }
             return null;
         }
-#endif 
+#endif
 
         /// <summary>
         ///     PROTOTYPE -- extremely simplified assembly locator.
@@ -417,7 +402,7 @@ namespace Microsoft.OneGet.Implementation {
         internal IEnumerable<string> AutoloadedAssemblyLocations {
             get {
                 return new[] {
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), SystemAssemblyLocation, UserAssemblyLocation, 
+                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), SystemAssemblyLocation, UserAssemblyLocation
                 };
             }
         }
@@ -458,10 +443,10 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        private static int _lastCallCount = 0;
+        private static int _lastCallCount;
         private static HashSet<string> _providersTriedThisCall;
 
-        public bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, Object requestImpl) {
+        public bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject) {
             // check if the package provider is already installed
             if (_packageProviders.ContainsKey(packageProviderName)) {
                 var current = _packageProviders[packageProviderName].Version;
@@ -470,7 +455,7 @@ namespace Microsoft.OneGet.Implementation {
                 }
             }
 
-            var request = requestImpl.As<IRequest>();
+            var request = requestObject.As<IRequest>();
 
             var currentCallCount = request.CallCount();
 
@@ -506,7 +491,7 @@ namespace Microsoft.OneGet.Implementation {
                 return false;
             }
 
-            var pkg = bootstrap.FindPackage(packageProviderName, null, minimumVersion, null, 0, requestImpl).ToArray();
+            var pkg = bootstrap.FindPackage(packageProviderName, null, minimumVersion, null, 0, requestObject).ToArray();
             if (pkg.Length == 1) {
                 // Yeah? Install it.
                 var package = pkg[0];
@@ -522,10 +507,10 @@ namespace Microsoft.OneGet.Implementation {
                 // what can't find an installationmedia link? 
                 // todo: what should we say here?
                 if (request.ShouldBootstrapProvider(requestor, pkg[0].Name, pkg[0].Version, providerType, location, destination)) {
-                    var newRequest = requestImpl.Extend<IRequest>(new {
-                        GetOptionValues = new Func<string, IEnumerable<string>>((key) => {
+                    var newRequest = requestObject.Extend<IRequest>(new {
+                        GetOptionValues = new Func<string, IEnumerable<string>>(key => {
                             if (key == "DestinationPath") {
-                                return new string[] {
+                                return new[] {
                                     destination
                                 };
                             }

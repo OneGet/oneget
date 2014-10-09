@@ -208,7 +208,7 @@ $PSCmdlet.ThrowTerminatingError
 
 		foreach( $pkg in $pm.FindPackages( $names, $requiredVersion, $minimumVersion, $maximumVersion, (new-request -options @{ } -sources @( $mySrcLocation ) -Credential $c) ) ) {
 			## IMPORTANT: Don't keep returning values if it's cancelled!!!!!
-			if( $request.IsCancelled() )  {
+			if( $request.IsCanceled )  {
 				return 
 			}
 

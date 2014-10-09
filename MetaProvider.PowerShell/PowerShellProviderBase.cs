@@ -18,7 +18,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading;
+    using System.Threading.Tasks;
     using Resources;
+    using Utility.Collections;
     using Utility.Extensions;
     using Utility.PowerShell;
 
@@ -157,6 +159,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
         }
 
+        internal void CancelRequest() {
+            if (!_reentrancyLock.WaitOne(0)) {
+                // it's running right now.
+                _powershell.Stop();
+                _powershell["request"] = null;
+            }
+        }
+
         internal object CallPowerShell(Request request, params object[] args) {
             // the lock ensures that we're not re-entrant into the same powershell runspace 
             lock (_lock) {
@@ -168,6 +178,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     // into this provider. That's just bad bad bad.
                     throw new Exception("Re-entrancy Violation in powershell module");
                 }
+                
+                
 
                 try {
                     // otherwise, this is the first time we've been here during this call.
@@ -218,6 +230,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     // it's ok if someone else calls into this module now.
                     _reentrancyLock.Set();
                 }
+
+                
+
                 return null;
             }
         }

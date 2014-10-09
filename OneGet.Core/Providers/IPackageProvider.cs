@@ -15,7 +15,7 @@
 namespace Microsoft.OneGet.Providers {
     using System;
     using Utility.Plugin;
-    using RequestImpl = System.Object;
+    using IRequestObject = System.Object;
 
     public interface IPackageProvider : IProvider {
         #region declare PackageProvider-interface
@@ -37,16 +37,16 @@ namespace Microsoft.OneGet.Providers {
         /// <param name="name">The name of the package source. If this parameter is null or empty the PROVIDER should use the location as the name (if the PROVIDER actually stores names of package sources)</param>
         /// <param name="location">The location (ie, directory, URL, etc) of the package source. If this is null or empty, the PROVIDER should use the name as the location (if valid)</param>
         /// <param name="trusted">A boolean indicating that the user trusts this package source. Packages returned from this source should be marked as 'trusted'</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        void AddPackageSource(string name, string location, bool trusted, RequestImpl requestImpl);
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        void AddPackageSource(string name, string location, bool trusted, IRequestObject requestObject);
 
-        void ResolvePackageSources(RequestImpl requestImpl);
+        void ResolvePackageSources(IRequestObject requestObject);
 
-        void RemovePackageSource(string name, RequestImpl requestImpl);
+        void RemovePackageSource(string name, IRequestObject requestObject);
 
-        int StartFind(RequestImpl requestImpl);
+        int StartFind(IRequestObject requestObject);
 
-        void CompleteFind(int id, RequestImpl requestImpl);
+        void CompleteFind(int id, IRequestObject requestObject);
 
         // --- Finds packages ---------------------------------------------------------------------------------------------------
         /// <summary>
@@ -60,30 +60,30 @@ namespace Microsoft.OneGet.Providers {
         /// <param name="minimumVersion"></param>
         /// <param name="maximumVersion"></param>
         /// <param name="id"></param>
-        /// <param name="requestImpl"></param>
+        /// <param name="requestObject"></param>
         /// <returns></returns>
-        void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, RequestImpl requestImpl);
+        void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequestObject requestObject);
 
-        void FindPackageByFile(string file, int id, RequestImpl requestImpl);
-        void FindPackageByUri(Uri uri, int id, RequestImpl requestImpl);
+        void FindPackageByFile(string file, int id, IRequestObject requestObject);
+        void FindPackageByUri(Uri uri, int id, IRequestObject requestObject);
 
-        void GetInstalledPackages(string name, RequestImpl requestImpl);
+        void GetInstalledPackages(string name, IRequestObject requestObject);
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        void DownloadPackage(string fastPath, string location, RequestImpl requestImpl);
-        void GetPackageDependencies(string fastPath, RequestImpl requestImpl);
-        void GetPackageDetails(string fastPath, RequestImpl requestImpl);
+        void DownloadPackage(string fastPath, string location, IRequestObject requestObject);
+        void GetPackageDependencies(string fastPath, IRequestObject requestObject);
+        void GetPackageDetails(string fastPath, IRequestObject requestObject);
 
-        void InstallPackage(string fastPath, RequestImpl requestImpl);
+        void InstallPackage(string fastPath, IRequestObject requestObject);
         // auto-install-dependencies
         // skip-dependency-check
         // continue-on-failure
         // location system/user/folder
         // fn call-back for each package installed when installing dependencies?
 
-        void UninstallPackage(string fastPath, RequestImpl requestImpl);
+        void UninstallPackage(string fastPath, IRequestObject requestObject);
 
-        void ExecuteElevatedAction(string payload, RequestImpl requestImpl);
+        void ExecuteElevatedAction(string payload, IRequestObject requestObject);
 
         #endregion
     }

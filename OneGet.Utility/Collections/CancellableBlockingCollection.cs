@@ -14,11 +14,15 @@
 
 namespace Microsoft.OneGet.Utility.Collections {
     using System;
+    using System.Collections;
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Threading;
 
+#if OLD_CBC
     public class CancellableBlockingCollection<T> : MarshalByRefObject, IDisposable {
-        private readonly BlockingCollection<T> _collection = new BlockingCollection<T>();
+        // private readonly BlockingCollection<T> _collection = new BlockingCollection<T>();
+        private readonly MyBlockingCollection<T> _collection = new MyBlockingCollection<T>();
         protected CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private ManualResetEvent _completedEvent = new ManualResetEvent(false);
 
@@ -40,7 +44,7 @@ namespace Microsoft.OneGet.Utility.Collections {
             }
         }
 
-        public bool IsCancelled {
+        public bool IsCanceled {
             get {
                 try {
                     return _disposed || _cancellationTokenSource == null || _cancellationTokenSource.IsCancellationRequested || _cancellationTokenSource.Token.IsCancellationRequested;
@@ -102,5 +106,11 @@ namespace Microsoft.OneGet.Utility.Collections {
         public bool WaitForCompletion(int timeout) {
             return _completedEvent.WaitOne(timeout);
         }
+
+        public IEnumerable<T> ToIEnumerable() {
+            WaitForCompletion();
+            return _collection;
+        }
     }
+#endif
 }

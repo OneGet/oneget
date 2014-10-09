@@ -115,8 +115,10 @@ namespace Microsoft.OneGet.Test {
             return isSuccessful;
         }
 
-        public bool IsCancelled() {
-            return false;
+        public bool IsCanceled {
+            get {
+                return false;
+            }
         }
     }
 
@@ -134,9 +136,11 @@ namespace Microsoft.OneGet.Test {
         ///     This provides for a gentle way for the caller to notify the callee that
         ///     they don't want any more results.
         /// </summary>
-        /// <returns>returns TRUE if the operation has been cancelled.</returns>
-        public bool IsCancelled() {
-            return false;
+        /// <value>returns TRUE if the operation has been cancelled.</value>
+        public bool IsCanceled {
+            get {
+                return false;
+            }
         }
 
         [Fact]
@@ -259,7 +263,7 @@ namespace Microsoft.OneGet.Test {
 
         [Fact]
         public void Provider_MultiFind() {
-            var id = TestPSProvider.StartFind(Request);
+            var id = TestPSProvider.StartFind(Request).Value;
             Assert.NotEqual(0,id);
             var pkgs = TestPSProvider.FindPackage(@"first", null, null, null, id, Request).ToArray();
             pkgs = pkgs.Concat(TestPSProvider.FindPackage(@"second", null, null, null, id, Request)).ToArray();
@@ -269,7 +273,7 @@ namespace Microsoft.OneGet.Test {
             Assert.Equal(4,pkgs.Length);
 
 
-            id = TestPSProvider.StartFind(Request);
+            id = TestPSProvider.StartFind(Request).Value;
             Assert.NotEqual(0, id);
             pkgs = TestPSProvider.FindPackageByFile(@"c:\test\a.testpkg", id, Request).ToArray();
             pkgs = pkgs.Concat(TestPSProvider.FindPackageByFile(@"c:\test\b.testpkg", id, Request)).ToArray();

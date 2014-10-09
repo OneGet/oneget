@@ -109,7 +109,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool EndProcessingAsync() {
-            if (IsCancelled()) {
+            if (IsCanceled) {
                 return false;
             }
             if (!IsSourceByObject) {

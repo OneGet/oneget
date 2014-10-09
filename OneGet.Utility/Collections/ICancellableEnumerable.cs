@@ -14,11 +14,43 @@
 
 namespace Microsoft.OneGet.Utility.Collections {
     using System;
+    using System.CodeDom;
     using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Runtime.InteropServices;
+    using System.Threading;
 
-    public interface ICancellableEnumerable<out T> : IEnumerable<T>, IDisposable, ICancellable {
+  
+
+    /*
+    public interface ICancellationToken {
+        CancellationToken Token {get;}
     }
 
-    public interface ICancellableEnumerator<out T> : IEnumerator<T>, ICancellable {
+    public class RemotableCancellationToken : MarshalByRefObject, ICancellationToken, IDisposable {
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+
+        CancellationToken ICancellationToken.Token {
+            get {
+                return _cancellationTokenSource.Token;
+            }
+        }
+
+        public void Cancel() {
+            _cancellationTokenSource.Cancel();
+        }
+        public void Dispose() {
+            Dispose(true); 
+            GC.SuppressFinalize(this);
+        }
+
+        public void Dispose(bool isDisposing) {
+            if (isDisposing) {
+                _cancellationTokenSource.Dispose();
+            }
+        }
     }
+    */
+
+  
 }

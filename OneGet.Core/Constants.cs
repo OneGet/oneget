@@ -13,12 +13,29 @@
 //  
 
 namespace Microsoft.OneGet {
+    using System;
 
     internal static class Constants {
+
+        internal const int CoreVersion = 1;
+        internal const int TimeoutUnspecified = 0;
+        internal const int TimeoutHostNotAvailable= -1;
+
+        internal static TimeSpan DefaultCallTimeout = TimeSpan.FromMinutes(60);
+        internal static TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(15);  
+
+        internal const int HostNotAvailableTimeout = 5 * 60;  // time when host not around
+        internal const int HostNotAvailableResponsiveness = 5;  // five seconds
+
+        internal const int TimeoutAfterCancel = 60;
+        internal const int ResponsivenessAfterCancel = 1;
+
+        internal static TimeSpan Zero = new TimeSpan(0);
+
         #region declare common-constants-implementation
         /* Synced/Generated code =================================================== */
 
-
+        
         internal const string MinVersion = "0.0.0.1";
         internal static string[] Empty = new string[0];
         internal const string MSGPrefix = "MSG:";
@@ -34,6 +51,9 @@ namespace Microsoft.OneGet {
 
         internal static class Features {
             internal const string AutomationOnly = "automation-only";
+            internal const string SupportedExtensions = "file-extensions";
+            internal const string MagicSignatures = "magic-signatures";
+            internal const string SupportedSchemes = "uri-schemes";
         }
 
         internal static class Parameters {

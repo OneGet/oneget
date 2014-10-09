@@ -28,7 +28,7 @@ namespace Microsoft.OneGet.Builtin {
     using Utility.Plugin;
     using Utility.Versions;
     using Utility.Xml;
-    using RequestImpl = System.Object;
+    using IRequestObject = System.Object;
 
     public class BootstrapProvider {
         private static readonly string[] _urls = {
@@ -41,15 +41,15 @@ namespace Microsoft.OneGet.Builtin {
         };
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
-            {"schemes", new[] {"http", "https", "file"}},
-            {"extensions", new[] {"exe", "msi"}},
-            {"magic-signatures", Constants.Empty},
+            {Constants.Features.SupportedSchemes, new[] {"http", "https", "file"}},
+            {Constants.Features.SupportedExtensions, new[] {"exe", "msi"}},
+            {Constants.Features.MagicSignatures, Constants.Empty},
             {Constants.Features.AutomationOnly, Constants.Empty}
         };
 
         internal static IEnumerable<string> SupportedSchemes {
             get {
-                return _features["schemes"];
+                return _features[Constants.Features.SupportedSchemes];
             }
         }
 
@@ -62,15 +62,15 @@ namespace Microsoft.OneGet.Builtin {
             return "Bootstrap";
         }
 
-        public void InitializeProvider(RequestImpl requestImpl) {
+        public void InitializeProvider(IRequestObject requestObject) {
         }
 
-        public void GetFeatures(RequestImpl requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public void GetFeatures(IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
 
-            using (var request = requestImpl.As<Request>()) {
+            using (var request = requestObject.As<Request>()) {
                 request.Debug("Calling 'Bootstrap::GetFeatures'");
                 foreach (var feature in _features) {
                     request.Yield(feature);
@@ -78,12 +78,12 @@ namespace Microsoft.OneGet.Builtin {
             }
         }
 
-        public void GetDynamicOptions(string category, RequestImpl requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public void GetDynamicOptions(string category, IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
 
-            using (var request = requestImpl.As<BoostrapRequest>()) {
+            using (var request = requestObject.As<BoostrapRequest>()) {
                 try {
                     request.Debug("Calling 'Bootstrap::GetDynamicOptions ({0})'", category);
 
@@ -114,13 +114,13 @@ namespace Microsoft.OneGet.Builtin {
         /// <param name="minimumVersion"></param>
         /// <param name="maximumVersion"></param>
         /// <param name="id"></param>
-        /// <param name="requestImpl"></param>
+        /// <param name="requestObject"></param>
         /// <returns></returns>
-        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, RequestImpl requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
-            using (var request = requestImpl.As<BoostrapRequest>()) {
+            using (var request = requestObject.As<BoostrapRequest>()) {
                 request.Debug("Calling 'Bootstrap::FindPackage'");
 
                 var master = request.DownloadSwidtag(_urls);
@@ -154,33 +154,33 @@ namespace Microsoft.OneGet.Builtin {
             }
         }
 
-        public void GetInstalledPackages(string name, RequestImpl requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public void GetInstalledPackages(string name, IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
 
-            using (var request = requestImpl.As<BoostrapRequest>()) {
+            using (var request = requestObject.As<BoostrapRequest>()) {
                 request.Debug("Calling 'Bootstrap::GetInstalledPackages'");
                 // return all the package providers as packages
             }
         }
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        public void DownloadPackage(string fastPath, string location, RequestImpl requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public void DownloadPackage(string fastPath, string location, IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
-            using (var request = requestImpl.As<BoostrapRequest>()) {
+            using (var request = requestObject.As<BoostrapRequest>()) {
                 request.Debug("Calling 'Bootstrap::DownloadPackage'");
             }
         }
 
-        public void InstallPackage(string fastPath, RequestImpl requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public void InstallPackage(string fastPath, IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
             // ensure that mandatory parameters are present.
-            using (var request = requestImpl.As<BoostrapRequest>()) {
+            using (var request = requestObject.As<BoostrapRequest>()) {
                 request.Debug("Calling 'Bootstrap::InstallPackage'");
 
                 // verify the package integrity (ie, check if it's digitally signed before installing)

@@ -16,18 +16,31 @@ namespace Microsoft.OneGet.Utility.Collections {
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
+    /*
+    public interface ICancellableEnumerable<out T> : IEnumerable<T>, IDisposable, ICancellable {
+    }
+
+    public interface ICancellableEnumerator<out T> : IEnumerator<T>, ICancellable {
+    }
 
     [Serializable]
     public class CancellableEnumerable<T> : SerializableEnumerable<T>, ICancellableEnumerable<T> {
         protected ByRefCancellationTokenSource _cancellationTokenSource;
+
+        public static CancellableEnumerable<T> Empty {
+            get {
+                return new CancellableEnumerable<T>(new CancellationTokenSource(), Enumerable.Empty<T>());
+            }
+        }
 
         public CancellableEnumerable(CancellationTokenSource cts, IEnumerable enumerable)
             : base(enumerable) {
             _cancellationTokenSource = new ByRefCancellationTokenSource(cts);
         }
 
-        public bool IsCancelled {
+        public bool IsCanceled {
             get {
                 return _cancellationTokenSource.Token.IsCancellationRequested;
             }
@@ -71,7 +84,7 @@ namespace Microsoft.OneGet.Utility.Collections {
             _cancellationTokenSource = cts;
         }
 
-        public bool IsCancelled {
+        public bool IsCanceled {
             get {
                 return _cancellationTokenSource.Token.IsCancellationRequested;
             }
@@ -108,4 +121,5 @@ namespace Microsoft.OneGet.Utility.Collections {
         }
     }
 #endif
+     * */
 }

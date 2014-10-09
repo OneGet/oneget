@@ -23,6 +23,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using System.Linq;
     using System.Management.Automation;
     using System.Runtime.Remoting.Messaging;
+    using System.Threading;
     using System.Threading.Tasks;
     using Utility.Collections;
     using Utility.Extensions;
@@ -39,12 +40,12 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     public abstract class AsyncCmdlet : PSCmdlet, IDynamicParameters, IDisposable {
         private readonly HashSet<string> _errors = new HashSet<string>();
         private readonly HashSet<string> _warnings = new HashSet<string>();
-        private List<ICancellable> _cancelWhenStopped = new List<ICancellable>();
+        // private List<ICancellable> _cancelWhenStopped = new List<ICancellable>();
         private bool _consumed;
         private RuntimeDefinedParameterDictionary _dynamicParameters;
-        protected bool _failing = false;
-
-        private BlockingCollection<TaskCompletionSource<bool>> _messages;
+        // private ManualResetEvent _cancellationEvent = new ManualResetEvent(false);
+        protected CancellationTokenSource _cancellationEvent = new CancellationTokenSource();
+        private MyBlockingCollection<TaskCompletionSource<bool>> _messages;
 
         private Stopwatch _stopwatch;
 
@@ -202,7 +203,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 // message queue isn't active. Just run the message now.
                 InvokeMessage(message);
             } else {
-                if (!_messages.IsAddingCompleted) {
+                if (!_messages.IsCompleted) {
                     _messages.Add(message);
                 }
             }
@@ -245,7 +246,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
-            return IsCancelled();
+            return IsCanceled;
         }
 
         protected bool Error(ErrorMessage errorMessage) {
@@ -288,11 +289,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                         _errors.Add(errorMessage);
                     }
                 }
-                _failing = true;
+                Cancel();
             }
             // rather than wait on the result of the async'd message,
             // we'll just return the stopping state.
-            return IsCancelled();
+            return IsCanceled;
         }
 
         public bool Message(string messageText) {
@@ -309,7 +310,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
-            return IsCancelled();
+            return IsCanceled;
         }
 
         public bool Verbose(string messageText) {
@@ -324,7 +325,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
-            return IsCancelled();
+            return IsCanceled;
         }
 
         public bool Debug(string messageText) {
@@ -343,7 +344,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
-            return IsCancelled();
+            return IsCanceled;
         }
 
         public int StartProgress(int parentActivityId, string message) {
@@ -414,7 +415,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
-            return IsCancelled();
+            return IsCanceled;
         }
 
         public bool CompleteProgress(int activityId, bool isSuccessful) {
@@ -450,7 +451,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
-            return IsCancelled();
+            return IsCanceled;
         }
 
         /// <summary>
@@ -458,9 +459,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         ///     This provides for a gentle way for the caller to notify the callee that
         ///     they don't want any more results.
         /// </summary>
-        /// <returns>returns TRUE if the operation has been cancelled.</returns>
-        public bool IsCancelled() {
-            return Stopping || _failing;
+        /// <value>returns TRUE if the operation has been cancelled.</value>
+        public bool IsCanceled {
+            get {
+                return Stopping || _cancellationEvent == null || _cancellationEvent.IsCancellationRequested;
+            }
         }
 
         public virtual string GetMessageString(string messageText) {
@@ -480,7 +483,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         private void AsyncRun(Func<bool> asyncAction) {
-            using (_messages = new BlockingCollection<TaskCompletionSource<bool>>()) {
+            using (_messages = new MyBlockingCollection<TaskCompletionSource<bool>>()) {
                 // spawn the activity off in another thread.
                 var task = IsInitialized ?
                     Task.Factory.StartNew(asyncAction, TaskCreationOptions.LongRunning) :
@@ -496,13 +499,13 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 // when the task is done, mark the msg queue as complete
                 task.ContinueWith(antecedent => {
                     if (_messages != null) {
-                        _messages.CompleteAdding();
+                        _messages.Complete();
                     }
                 });
 
                 // process the queue of messages back in the main thread so that they
                 // can properly access the non-thread-safe-things in cmdlet
-                foreach (var message in _messages.GetConsumingEnumerable()) {
+                foreach (var message in _messages) {
                     InvokeMessage(message);
                 }
             }
@@ -547,23 +550,39 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
         }
 
+        /*
         protected T CancelWhenStopped<T>(T cancellable) where T : ICancellable {
+            if (IsCanceled) {
+                cancellable.Cancel();
+                return cancellable;
+            }
+
             lock (_cancelWhenStopped) {
                 _cancelWhenStopped.Add(cancellable);
             }
+
             return cancellable;
+        }
+        */
+
+        public void Cancel() {
+            // notify anyone listening that we're stopping this call.
+            _cancellationEvent.Cancel();
+
+            /*
+            // actively cancel any calls in progress
+            foreach (var i in _cancelWhenStopped.Where(i => i != null)) {
+                i.Cancel();
+            }
+            _cancelWhenStopped.Clear();
+            _cancelWhenStopped = null;
+             * */
         }
 
         protected override sealed void StopProcessing() {
-            if (IsCancelled()) {
-                foreach (var i in _cancelWhenStopped) {
-                    if (i != null) {
-                        i.Cancel();
-                    }
-                }
-                _cancelWhenStopped.Clear();
-                _cancelWhenStopped = null;
-            }
+            // Console.WriteLine("===============================================================CTRL-C PRESSED");
+            base.WriteWarning("Stopping...");
+            Cancel();
             // let's not even bother doing all this if they didn't even
             // override the method.
             if (IsOverridden(Constants.StopProcessingAsyncMethod)) {
@@ -596,7 +615,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         public new Task<bool> WriteObject(object obj) {
             return QueueMessage(() => {
-                if (!IsCancelled()) {
+                if (!IsCanceled) {
                     base.WriteObject(obj);
                 }
             });
@@ -604,7 +623,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         public new Task<bool> WriteObject(object sendToPipeline, bool enumerateCollection) {
             return QueueMessage(() => {
-                if (!IsCancelled()) {
+                if (!IsCanceled) {
                     base.WriteObject(sendToPipeline, enumerateCollection);
                 }
             });
@@ -612,7 +631,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         public new Task<bool> WriteProgress(ProgressRecord progressRecord) {
             return QueueMessage(() => {
-                if (!IsCancelled()) {
+                if (!IsCanceled) {
                     base.WriteProgress(progressRecord);
                 }
             });
@@ -624,7 +643,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     CompleteProgress(_progressTrackers.FirstOrDefault().Id, true);
                 }
             }
-            return IsCancelled().AsResultTask();
+            return IsCanceled.AsResultTask();
         }
 
         public new Task<bool> WriteWarning(string text) {
@@ -661,7 +680,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public new Task<bool> ShouldContinue(string query, string caption) {
-            if (IsCancelled() || !IsInvocation) {
+            if (IsCanceled || !IsInvocation) {
                 return false.AsResultTask();
             }
             return QueueMessage(() => base.ShouldContinue(query, caption));
@@ -669,7 +688,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", Justification = "MYOB.")]
         public new Task<bool> ShouldContinue(string query, string caption, ref bool yesToAll, ref bool noToAll) {
-            if (IsCancelled() || !IsInvocation) {
+            if (IsCanceled || !IsInvocation) {
                 return false.AsResultTask();
             }
 
@@ -678,7 +697,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public new Task<bool> ShouldProcess(string target) {
-            if (IsCancelled() || !IsInvocation) {
+            if (IsCanceled || !IsInvocation) {
                 return false.AsResultTask();
             }
 
@@ -686,7 +705,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public new Task<bool> ShouldProcess(string target, string action) {
-            if (IsCancelled() || !IsInvocation) {
+            if (IsCanceled || !IsInvocation) {
                 return false.AsResultTask();
             }
 
@@ -694,7 +713,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public new Task<bool> ShouldProcess(string verboseDescription, string verboseWarning, string caption) {
-            if (IsCancelled() || !IsInvocation) {
+            if (IsCanceled || !IsInvocation) {
                 return false.AsResultTask();
             }
 
@@ -702,7 +721,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public new Task<bool> ShouldProcess(string verboseDescription, string verboseWarning, string caption, out ShouldProcessReason shouldProcessReason) {
-            if (IsCancelled() || !IsInvocation) {
+            if (IsCanceled || !IsInvocation) {
                 shouldProcessReason = ShouldProcessReason.None;
                 return false.AsResultTask();
             }
@@ -725,10 +744,17 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         protected virtual void Dispose(bool disposing) {
             if (disposing) {
+/*
                 if (_cancelWhenStopped != null) {
                     _cancelWhenStopped.Clear();
                     _cancelWhenStopped = null;
                 }
+*/
+                if (_cancellationEvent != null) {
+                    _cancellationEvent.Dispose();
+                    _cancellationEvent = null;
+                }
+
                 // According to http://msdn.microsoft.com/en-us/library/windows/desktop/ms714463(v=vs.85).aspx
                 // Powershell will dispose the cmdlet if it implements IDisposable.
 

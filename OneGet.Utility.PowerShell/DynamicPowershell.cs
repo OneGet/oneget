@@ -58,6 +58,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
         }
 
+        public void Stop() {
+            
+            _currentCommand.Stop();
+        }
+
         private Runspace Runspace {
             get {
                 lock (this) {
@@ -186,8 +191,10 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
             try {
                 // command
+                // FYI: This is the most expensive part of the call (the first time.)
+                // I've thought about up-fronting this, but it's probably just not worth the effort.
                 _currentCommand = new DynamicPowershellCommand(CreatePipeline(), new Command(GetPropertyValue(LookupCommand(name), "Name")));
-
+            
                 // parameters
                 var unnamedCount = args.Length - argumentNames.Length;
                 var namedArguments = argumentNames.Select((each, index) => new KeyValuePair<string, object>(each, args[index + unnamedCount]));
@@ -207,6 +214,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             } catch (Exception e) {
                 e.Dump();
                 return null;
+            } finally {
             }
         }
 

@@ -21,17 +21,11 @@ namespace Microsoft.OneGet.Builtin {
     using Utility.Deployment.Compression.Zip;
     using Utility.Extensions;
     using Utility.Plugin;
+    using IRequestObject = System.Object;
 
     public class ZipArchiver {
-        public IEnumerable<string> SupportedFormats {
-            get {
-                return new[] {
-                    "zip"
-                };
-            }
-        }
 
-        public void InitializeProvider(object requestImpl) {
+        public void InitializeProvider(IRequestObject requestObject) {
         }
 
         /// <summary>
@@ -42,18 +36,18 @@ namespace Microsoft.OneGet.Builtin {
             return "zip";
         }
 
-        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object requestImpl) {
-            return _UnpackArchive(localFilename, destinationFolder, requestImpl).ByRefEnumerable();
+        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject) {
+            return _UnpackArchive(localFilename, destinationFolder, requestObject).ByRefEnumerable();
         }
 
-        private IEnumerable<string> _UnpackArchive(string localFilename, string destinationFolder, Object requestImpl) {
+        private IEnumerable<string> _UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject) {
             var info = new ZipInfo(localFilename);
             var files = info.GetFiles();
             var percent = 0;
             var index = 0;
             var processed = new List<string>();
 
-            using (var request = requestImpl.As<Request>()) {
+            using (var request = requestObject.As<Request>()) {
                 // request.Debug("Unpacking {0} {1}", localFilename, destinationFolder);
                 var pid = request.StartProgress(0, "Unpacking Archive '{0}' ", Path.GetFileName(localFilename));
                 try {
@@ -70,7 +64,7 @@ namespace Microsoft.OneGet.Builtin {
                          * Does not currently support cancellation . 
                          * Todo: add cancellation support to DTF compression classes.
                          * */
-                            if (request.IsCancelled()) {
+                            if (request.IsCanceled) {
                                 throw new OperationCanceledException("cancelling");
                             }
                         }
@@ -90,7 +84,7 @@ namespace Microsoft.OneGet.Builtin {
 #if manually            
             var result = new CancellableBlockingCollection<string>();
             Task.Factory.StartNew(() => {
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     request.Debug("Unpacking {0} {1}", localFilename, destinationFolder);
 
                     var info = new ZipInfo(localFilename);
@@ -130,7 +124,7 @@ namespace Microsoft.OneGet.Builtin {
              * */
         }
 
-        public bool IsSupportedArchive(string localFilename) {
+        public bool IsSupportedFile(string localFilename) {
             try {
                 var ze = new ZipEngine();
                 using (var zipFile = File.OpenRead(localFilename)) {

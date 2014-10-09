@@ -18,14 +18,6 @@ namespace Microsoft.OneGet.Api {
         /* Synced/Generated code =================================================== */
 
         /// <summary>
-        ///     The provider can query to see if the operation has been cancelled.
-        ///     This provides for a gentle way for the caller to notify the callee that
-        ///     they don't want any more results. It's essentially just !IsCancelled
-        /// </summary>
-        /// <returns>returns FALSE if the operation has been cancelled.</returns>
-        bool OkToContinue();
-
-        /// <summary>
         ///     Used by a provider to return fields for a SoftwareIdentity.
         /// </summary>
         /// <param name="fastPath"></param>

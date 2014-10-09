@@ -461,5 +461,36 @@ namespace Microsoft.OneGet.Utility.Extensions {
             }
             return WildcardToRegex(wildcardMask).IsMatch(input);
         }
+
+        private static byte FromHexChar(this char c) {
+            if ((c >= 'a') && (c <= 'f')) {
+                return (byte)(c - 'a' + 10);
+            }
+            if ((c >= 'A') && (c <= 'F')) {
+                return (byte)(c - 'A' + 10);
+            }
+            if ((c >= '0') && (c <= '9')) {
+                return (byte)(c - '0');
+            }
+            throw new ArgumentException("invalid hex char");
+        }
+
+        public static byte[] FromHex(this string hex) {
+            if (string.IsNullOrEmpty(hex)) {
+                return new byte[0];
+            }
+
+            if ((hex.Length & 0x1) == 0x1) {
+                throw new ArgumentException("Length must be a multiple of 2");
+            }
+            var input = hex.ToCharArray();
+            var result = new byte[hex.Length >> 1];
+
+            for (var i = 0; i < input.Length; i += 2) {
+                result[i >> 1] = (byte)(((byte)(FromHexChar(input[i]) << 4)) | FromHexChar(input[i + 1]));
+            }
+           
+            return result;
+        }
     }
 }

@@ -14,27 +14,14 @@
 
 namespace Microsoft.OneGet.Api {
     using System;
-    using RequestImpl = System.Object;
+    using System.Collections.Generic;
+    using System.Security.Cryptography.X509Certificates;
+    using Implementation;
+    using IRequestObject = System.Object;
 
     public interface ICoreApi {
         #region declare core-apis
         /* Synced/Generated code =================================================== */
-        /// <summary>
-        ///     The provider can query to see if the operation has been cancelled.
-        ///     This provides for a gentle way for the caller to notify the callee that
-        ///     they don't want any more results.
-        /// </summary>
-        /// <returns>returns TRUE if the operation has been cancelled.</returns>
-        bool IsCancelled();
-
-        /// <summary>
-        ///     Returns a reference to the PackageManagementService API
-        ///     The consumer of this function should either use this as a dynamic object
-        ///     Or DuckType it to an interface that resembles IPacakgeManagementService
-        /// </summary>
-        /// <param name="requestImpl"></param>
-        /// <returns></returns>
-        object GetPackageManagementService();
 
         /// <summary>
         ///     Returns the interface type for a Request that the OneGet Core is expecting
@@ -59,11 +46,25 @@ namespace Microsoft.OneGet.Api {
         bool NotifyBeforePackageUninstall(string packageName, string version, string source, string destination);
         bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
 
+        IEnumerable<string> ProviderNames { get; }
+
+        IEnumerable<PackageProvider> PackageProviders { get; }
+
+        IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName);
+
+        IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
+
+        IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject);
+
+        bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject);
+
+
         string GetCanonicalPackageId(string providerName, string packageName, string version);
         string ParseProviderName(string canonicalPackageId);
         string ParsePackageName(string canonicalPackageId);
         string ParsePackageVersion(string canonicalPackageId);
 
+        bool IsCanceled {get;}
         #endregion
     }
 }

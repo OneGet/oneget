@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Utility.Plugin {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
     using Collections;
@@ -149,7 +150,28 @@ namespace Microsoft.OneGet.Utility.Plugin {
                     ? (IEnumerable<MethodInfo>)type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance)
                     : (IEnumerable<MethodInfo>)type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance).Where(each => each.IsAbstract || each.IsVirtual));
 
-                var interfaceMethods = type.GetInterfaces().SelectMany(GetVirtualMethods);
+
+                methods = methods.Where( each => each.Name != "Dispose");
+
+                // option 1: 
+                // if the target type is a class, and implements an interface -- and the implementation of that interface is already present (ie, abstract class Foo : IDisposable { public void Dispose() {} }  ) then
+                // the generated type should not try to create a method for that interface 
+
+                // option 2: 
+                // I think we're just talking about IDisposable here. maybe we shouldn't try to ducktype IDisposable at all.
+                
+                //  try option2 :
+                /*
+                var ifaces = type.GetInterfaces().ToArray();
+                if (ifaces.Any()) {
+                    Console.WriteLine("Interface: {0}",ifaces.Select(each=>each.Name).JoinWithComma());
+                    if (ifaces.Any(each => each == typeof (IDisposable))) {
+                        Debugger.Break();
+                    }
+                }
+                 */
+
+                var interfaceMethods = type.GetInterfaces().Where( each => each != typeof(IDisposable)).SelectMany(GetVirtualMethods);
 
                 return DisambiguateMethodsBySignature(methods, interfaceMethods).ToArray();
             });

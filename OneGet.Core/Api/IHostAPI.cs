@@ -14,6 +14,7 @@
 
 namespace Microsoft.OneGet.Api {
     using System.Collections.Generic;
+    using System.Threading;
 
     public interface IHostApi {
         #region declare host-apis
@@ -61,24 +62,13 @@ namespace Microsoft.OneGet.Api {
 
         bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
-        bool ShouldProcessPackageInstall(string packageName, string version, string source);
-
-        bool ShouldProcessPackageUninstall(string packageName, string version);
-
-        bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source);
-
-        bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source);
-
-        bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation);
-
-        bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation);
-
         bool AskPermission(string permission);
 
         bool IsInteractive();
 
         int CallCount();
 
+        bool IsCanceled {get;}
 
         #endregion
     }

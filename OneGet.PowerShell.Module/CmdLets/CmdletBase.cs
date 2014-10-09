@@ -70,7 +70,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         protected internal IPackageManagementService PackageManagementService {
             get {
                 lock (_lockObject) {
-                    if (!IsCancelled() && !IsInitialized) {
+                    if (!IsCanceled && !IsInitialized) {
                         try {
                             IsInitialized = _packageManagementService.Initialize(this);
                         } catch (Exception e) {
@@ -148,48 +148,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     _dynamicOptions[rdp.Name] = rdp.Value;
                 }
             }
-            return true;
-        }
-
-        public virtual bool ShouldProcessPackageInstall(string packageName, string version, string source) {
-#if DEBUG
-            Message(Constants.NotImplemented, packageName);
-#endif
-            return false;
-        }
-
-        public virtual bool ShouldProcessPackageUninstall(string packageName, string version) {
-#if DEBUG
-            Message(Constants.NotImplemented, packageName);
-#endif
-            return false;
-        }
-
-        public virtual bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source) {
-#if DEBUG
-            Message(Constants.NotImplemented, packageName);
-#endif
-            return false;
-        }
-
-        public virtual bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source) {
-#if DEBUG
-            Message(Constants.NotImplemented, packageName);
-#endif
-            return false;
-        }
-
-        public virtual bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
-#if DEBUG
-            Message(Constants.NotImplemented, packageName);
-#endif
-            return false;
-        }
-
-        public virtual bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation) {
-#if DEBUG
-            Message(Constants.NotImplemented, packageName);
-#endif
             return true;
         }
 

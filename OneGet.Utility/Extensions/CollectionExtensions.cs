@@ -17,6 +17,8 @@ namespace Microsoft.OneGet.Utility.Extensions {
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Utility.Collections;
 
     public static class CollectionExtensions {
@@ -190,5 +192,43 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 list.AddRange(items);
             }
         }
+
+        public static void ParallelForEach<T>(this IEnumerable<T> enumerable, Action<T> action) {
+            var items = enumerable.ReEnumerable();
+            object first = items.FirstOrDefault();
+            if (first != null) {
+                object second = items.Skip(1).FirstOrDefault();
+                if (second != null) {
+                    Parallel.ForEach(items, new ParallelOptions {
+                        MaxDegreeOfParallelism = -1,
+                        TaskScheduler = new ThreadPerTaskScheduler()
+                    }, action);
+                } else {
+                    action(items.FirstOrDefault());
+                }
+            }
+        }
+
     }
+
+    // <summary>Provides a task scheduler that dedicates a thread per task.</summary> 
+    public class ThreadPerTaskScheduler : TaskScheduler {
+        /// <summary>Gets the tasks currently scheduled to this scheduler.</summary> 
+        /// <remarks>This will always return an empty enumerable, as tasks are launched as soon as they're queued.</remarks> 
+        protected override IEnumerable<Task> GetScheduledTasks() { return Enumerable.Empty<Task>(); }
+
+        /// <summary>Starts a new thread to process the provided task.</summary> 
+        /// <param name="task">The task to be executed.</param> 
+        protected override void QueueTask(Task task) {
+            new Thread(() => TryExecuteTask(task)) { IsBackground = true }.Start();
+        }
+
+        /// <summary>Runs the provided task on the current thread.</summary> 
+        /// <param name="task">The task to be executed.</param> 
+        /// <param name="taskWasPreviouslyQueued">Ignored.</param> 
+        /// <returns>Whether the task could be executed on the current thread.</returns> 
+        protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued) {
+            return TryExecuteTask(task);
+        }
+    } 
 }

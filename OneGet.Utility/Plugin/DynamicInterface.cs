@@ -79,6 +79,13 @@ namespace Microsoft.OneGet.Utility.Plugin {
             if (items == null) {
                 yield break;
             }
+
+            if (items is IAsyncAction) {
+                yield return items;
+                yield break;
+            }
+            
+
             foreach (var item in items) {
                 if (item is object[] || item is IEnumerable<object>) {
                     foreach (var inner in Flatten(item as IEnumerable<object>)) {

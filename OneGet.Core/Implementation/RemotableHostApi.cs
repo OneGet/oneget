@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Implementation {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using Api;
 
     public class RemotableHostApi : MarshalByRefObject, IHostApi {
@@ -88,30 +89,6 @@ namespace Microsoft.OneGet.Implementation {
             return _hostApi.ShouldContinueWithUntrustedPackageSource(package, packageSource);
         }
 
-        public bool ShouldProcessPackageInstall(string packageName, string version, string source) {
-            return _hostApi.ShouldProcessPackageInstall(packageName, version, source);
-        }
-
-        public bool ShouldProcessPackageUninstall(string packageName, string version) {
-            return _hostApi.ShouldProcessPackageUninstall(packageName, version);
-        }
-
-        public bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source) {
-            return _hostApi.ShouldContinueAfterPackageInstallFailure(packageName, version, source);
-        }
-
-        public bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source) {
-            return _hostApi.ShouldContinueAfterPackageUninstallFailure(packageName, version, source);
-        }
-
-        public bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
-            return _hostApi.ShouldContinueRunningInstallScript(packageName, version, source, scriptLocation);
-        }
-
-        public bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation) {
-            return _hostApi.ShouldContinueRunningUninstallScript(packageName, version, source, scriptLocation);
-        }
-
         public bool AskPermission(string permission) {
             return _hostApi.AskPermission(permission);
         }
@@ -123,6 +100,14 @@ namespace Microsoft.OneGet.Implementation {
         public int CallCount() {
             return _hostApi.CallCount();
         }
+
+        public bool IsCanceled {
+            get {
+                return _hostApi.IsCanceled;
+            }
+        }
+
+      
 
         public override object InitializeLifetimeService() {
             return null;

@@ -32,6 +32,16 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             _command = command;
         }
 
+        public void Stop() {
+            try {
+                if (_commandPipeline != null && _commandPipeline.PipelineStateInfo.State == PipelineState.Running) {
+                    _commandPipeline.StopAsync();
+                }
+            } catch  {
+                
+            }
+        }
+
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);

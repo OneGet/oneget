@@ -41,7 +41,6 @@
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Builtin\ArpProvider.cs" />
@@ -56,8 +55,16 @@
     <Compile Include="Builtin\WindowsUpdateProvider.cs" />
     <Compile Include="Builtin\ZipArchiver.cs" />
     <Compile Include="ErrorCategory.cs" />
+    <Compile Include="Implementation\ActionResponse.cs" />
+    <Compile Include="Implementation\AsyncEnumerableResponse.cs" />
     <Compile Include="Implementation\Delegates.cs" />
+    <Compile Include="Implementation\DictionaryResponse.cs" />
+    <Compile Include="Implementation\DynamicOptionResponse.cs" />
+    <Compile Include="Implementation\FuncResponse.cs" />
+    <Compile Include="Implementation\CoreResponse.cs" />
+    <Compile Include="Implementation\PackageSourceResponse.cs" />
     <Compile Include="Implementation\RemotableHostApi.cs" />
+    <Compile Include="Implementation\SoftwareIdentityResponse.cs" />
     <Compile Include="Packaging\DynamicOption.cs" />
     <Compile Include="Packaging\OptionCategory.cs" />
     <Compile Include="Packaging\OptionType.cs" />
@@ -73,11 +80,9 @@
     <Compile Include="Providers\IPackageProvider.cs" />
     <Compile Include="Api\IRequest.cs" />
     <Compile Include="Implementation\ProviderBase.cs" />
-    <Compile Include="Implementation\Response.cs" />
     <Compile Include="Implementation\Archiver.cs" />
-    <Compile Include="Implementation\ProviderServices.cs" />
     <Compile Include="Api\IResponseApi.cs" />
-    <Compile Include="IProviderServices.cs" />
+    <Compile Include="Api\IProviderServices.cs" />
     <Compile Include="Api\IHostAPI.cs" />
     <Compile Include="Packaging\Entity.cs" />
     <Compile Include="Packaging\Evidence.cs" />
@@ -123,7 +128,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ZipBinaries.ps1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

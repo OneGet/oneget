@@ -44,11 +44,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Async\AsyncActionExtensions.cs" />
+    <Compile Include="Async\AsyncAction.cs" />
     <Compile Include="Collections\ByRefCancellationToken.cs" />
     <Compile Include="Collections\ByRefCancellationTokenSource.cs" />
     <Compile Include="Collections\CachingEnumerable.cs" />
+    <Compile Include="Async\EmptyAsyncEnumerable.cs" />
     <Compile Include="Collections\FilenameEqualityComparer.cs" />
     <Compile Include="Collections\HashSet.cs" />
+    <Compile Include="Async\IAsyncAction.cs" />
+    <Compile Include="Async\IAsyncValue.cs" />
+    <Compile Include="Async\IAsyncEnumerable.cs" />
     <Compile Include="Collections\SerializableEnumerable.cs" />
     <Compile Include="Collections\SerializableEnumerator.cs" />
     <Compile Include="Deployment\Compression.Cab\CabEngine.cs" />
@@ -171,7 +177,6 @@
     <Compile Include="Plugin\PrivateProxy.cs" />
     <Compile Include="Plugin\ProxyClass.cs" />
     <Compile Include="Plugin\RequiredAttribute.cs" />
-    <Compile Include="Extensions\CancellationTokenSourceExtensions.cs" />
     <Compile Include="Extensions\DelegateExtensions.cs" />
     <Compile Include="Plugin\PluginAssemblyResolver.cs" />
     <Compile Include="Plugin\PluginDomain.cs" />

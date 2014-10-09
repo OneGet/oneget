@@ -21,9 +21,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
+    using System.Threading;
+    using Implementation;
     using Resources;
+    using Utility.Collections;
     using Utility.Extensions;
-    using RequestImpl = System.MarshalByRefObject;
+    using IRequestObject = System.MarshalByRefObject;
 
     public abstract class Request : IDisposable {
 
@@ -50,22 +53,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         #region copy core-apis
 
         /* Synced/Generated code =================================================== */
-        /// <summary>
-        ///     The provider can query to see if the operation has been cancelled.
-        ///     This provides for a gentle way for the caller to notify the callee that
-        ///     they don't want any more results.
-        /// </summary>
-        /// <returns>returns TRUE if the operation has been cancelled.</returns>
-        public abstract bool IsCancelled();
-
-        /// <summary>
-        ///     Returns a reference to the PackageManagementService API
-        ///     The consumer of this function should either use this as a dynamic object
-        ///     Or DuckType it to an interface that resembles IPacakgeManagementService
-        /// </summary>
-        /// <param name="requestImpl"></param>
-        /// <returns></returns>
-        public abstract object GetPackageManagementService();
 
         /// <summary>
         ///     Returns the interface type for a Request that the OneGet Core is expecting
@@ -92,6 +79,19 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract bool NotifyBeforePackageUninstall(string packageName, string version, string source, string destination);
 
         public abstract bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
+
+        public abstract IEnumerable<string> ProviderNames { get; }
+
+        public abstract IEnumerable<PackageProvider> PackageProviders { get; }
+
+        public abstract IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName);
+
+        public abstract IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
+
+        public abstract IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject);
+
+        public abstract bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject);
+
 
         public abstract string GetCanonicalPackageId(string providerName, string packageName, string version);
 
@@ -146,36 +146,17 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
-        public abstract bool ShouldProcessPackageInstall(string packageName, string version, string source);
-
-        public abstract bool ShouldProcessPackageUninstall(string packageName, string version);
-
-        public abstract bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source);
-
-        public abstract bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source);
-
-        public abstract bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation);
-
-        public abstract bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation);
-
         public abstract bool AskPermission(string permission);
 
         public abstract bool IsInteractive();
 
-        public abstract int CallCount();
+        public abstract bool IsCanceled { get; }
+
         #endregion
 
         #region copy response-apis
 
         /* Synced/Generated code =================================================== */
-
-        /// <summary>
-        ///     The provider can query to see if the operation has been cancelled.
-        ///     This provides for a gentle way for the caller to notify the callee that
-        ///     they don't want any more results. It's essentially just !IsCancelled
-        /// </summary>
-        /// <returns>returns FALSE if the operation has been cancelled.</returns>
-        public abstract bool OkToContinue();
 
         /// <summary>
         ///     Used by a provider to return fields for a SoftwareIdentity.
@@ -447,8 +428,11 @@ public void Dispose() {
             return null;
         }
 
-        internal static Request New(Object requestImpl, PowerShellProviderBase provider, string methodName) {
-            var req =requestImpl.As<Request>();
+        internal static Request New(Object requestObject, PowerShellProviderBase provider, string methodName) {
+            if (requestObject is IAsyncAction) {
+                ((IAsyncAction)(requestObject)).OnCancel += provider.CancelRequest;
+            }
+            var req =requestObject.As<Request>();
 
             req.CommandInfo = provider.GetMethod(methodName);
             if (req.CommandInfo == null) {
@@ -458,45 +442,17 @@ public void Dispose() {
             return req;
         }
 
-        private IPackageManagementService _packageManagementService;
-
-        [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
-        public IPackageManagementService PackageManagementService {
-            get {
-                return _packageManagementService ?? (_packageManagementService = GetPackageManagementService() as IPackageManagementService);
-            }
-        }
-
-        public IEnumerable<string> ProviderNames {
-            get {
-                return PackageManagementService.ProviderNames;
-            }
-        }
-
-        public IEnumerable<object> PackageProviders {
-            get {
-                return PackageManagementService.PackageProviders;
-            }
-        }
-
         public object SelectProvider(string providerName) {
-            return PackageManagementService.SelectProviders(providerName,Extend()).FirstOrDefault(each => each.Name.EqualsIgnoreCase(providerName));
+            return SelectProviders(providerName,Extend()).FirstOrDefault(each => each.Name.EqualsIgnoreCase(providerName));
         }
 
         public IEnumerable<object> SelectProviders(string providerName) {
-            return PackageManagementService.SelectProviders(providerName, Extend());
-        }
-        public IEnumerable<object> SelectProvidersWithFeature(string featureName) {
-            return PackageManagementService.SelectProvidersWithFeature(featureName);
-        }
-
-        public IEnumerable<object> SelectProvidersWithFeature(string featureName, string value) {
-            return PackageManagementService.SelectProvidersWithFeature(featureName,value);
+            return SelectProviders(providerName, Extend());
         }
 
         public bool RequirePackageProvider(string packageProviderName, string minimumVersion) {
             var pp = (_provider as PowerShellPackageProvider);
-            return PackageManagementService.RequirePackageProvider(  pp == null ? Constants.ProviderNameUnknown : pp.GetPackageProviderName() ,packageProviderName, minimumVersion, Extend());
+            return RequirePackageProvider(  pp == null ? Constants.ProviderNameUnknown : pp.GetPackageProviderName() ,packageProviderName, minimumVersion, Extend());
         }
 
     }

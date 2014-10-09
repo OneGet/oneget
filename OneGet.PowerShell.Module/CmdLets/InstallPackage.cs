@@ -19,6 +19,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
@@ -110,11 +111,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     // and the user didn't specify it. We should return the error to the user
                     // and they can try again.
                     Error(Errors.PackageInstallRequiresOption, package.Name, package.ProviderName, parameter.Name);
-                    _failing = true;
+                    Cancel();
                 }
             }
 
-            if (IsCancelled()) {
+            if (IsCanceled) {
                 return false;
             }
             var progressId = 0;
@@ -140,8 +141,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     // ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source);
                     //} else {
                     if (ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source)) {
-                        foreach (var installedPkg in CancelWhenStopped(provider.InstallPackage(pkg, this))) {
-                            if (IsCancelled()) {
+                        foreach (var installedPkg in provider.InstallPackage(pkg, this).CancelWhen(_cancellationEvent.Token)) {
+                            if (IsCanceled) {
                                 // if we're stopping, just get out asap.
                                 return false;
                             }
@@ -162,7 +163,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return true;
         }
 
-        public override bool ShouldProcessPackageInstall(string packageName, string version, string source) {
+        public bool ShouldProcessPackageInstall(string packageName, string version, string source) {
             try {
                 return Force || ShouldProcess(FormatMessageString(Constants.TargetPackage, packageName, version, source), FormatMessageString(Constants.ActionInstallPackage)).Result;
             } catch {
@@ -184,20 +185,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return false;
         }
 
-        public override bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source) {
-            try {
-                return Force || ShouldContinue(FormatMessageString(Constants.QueryContinueInstallingAfterFailing), FormatMessageString(Constants.CaptionPackageInstallFailure, packageName)).Result;
-            } catch {
-            }
-            return false;
-        }
-
-        public override bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
-            try {
-                return Force || ShouldContinue(FormatMessageString(Constants.QueryShouldThePackageScriptAtBeProcessed, scriptLocation), FormatMessageString(Constants.CaptionPackageContainsInstallationScript, packageName)).Result;
-            } catch {
-            }
-            return false;
-        }
+       
     }
 }

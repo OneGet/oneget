@@ -16,23 +16,32 @@ namespace Microsoft.OneGet.Implementation {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.IO;
+    using System.Linq;
     using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
     using Api;
     using Packaging;
     using Providers;
-    using Resources;
     using Utility.Collections;
     using Utility.Extensions;
-    using Utility.Platform;
     using Utility.Plugin;
     using Utility.Versions;
+    using IRequestObject = System.Object;
 
-    public abstract class ProviderBase<T> : MarshalByRefObject where T : IProvider {
+    public abstract class ProviderBase : MarshalByRefObject {
+        public abstract string ProviderName { get; }
+
+    }
+
+    public abstract class ProviderBase<T> : ProviderBase where T : IProvider {
         private static Regex _canonicalPackageRegex = new Regex("(.*?):(.*?)/(.*)");
         private object _context;
+        private List<DynamicOption> _dynamicOptions;
         private Dictionary<string, List<string>> _features;
         private bool _initialized;
+        private byte[][] _magicSignatures;
+        private string[] _supportedFileExtensions;
+        private string[] _supportedSchemes;
         private FourPartVersion _version;
 
         public ProviderBase(T provider) {
@@ -40,10 +49,6 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         protected T Provider {get; private set;}
-
-        // we don't want these objects being gc's out because they remain unused...
-
-        public abstract string ProviderName {get;}
 
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
         public IDictionary<string, List<string>> Features {
@@ -64,60 +69,89 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        private Object AdditionalImplementedFunctions {
+        public IEnumerable<string> SupportedFileExtensions {
             get {
-                return _context ?? (_context = new object[] {
-                    new {
-                        CoreVersion = new Func<int>(() => 1),
-                        GetPackageManagementService = new Func<object>(() => PackageManager._instance),
-                        GetIRequestInterface = new Func<Type>(() => typeof (IRequest)),
-#if DEBUG
-                        Debug = new Action<string>(NativeMethods.OutputDebugString),
-#endif
-                        // ensure that someone says 'yeah, it's ok to continue' for each package install/uninstall notification 
-                        NotifyBeforePackageInstall = new Func<string, string, string, string, bool>((pkgName, pkgVersion, source, destination) => true),
-                        NotifyPackageInstalled = new Func<string, string, string, string, bool>((pkgName, pkgVersion, source, destination) => true),
-                        NotifyBeforePackageUninstall = new Func<string, string, string, string, bool>((pkgName, pkgVersion, source, destination) => true),
-                        NotifyPackageUninstalled = new Func<string, string, string, string, bool>((pkgName, pkgVersion, source, destination) => true),
-                        GetCanonicalPackageId = new Func<string, string, string, string>((providerName, packageName, version) => "{0}:{1}/{2}".format(providerName, packageName, version)),
-                        ParseProviderName = new Func<string, string>((canonicalPackageId) => _canonicalPackageRegex.Match(canonicalPackageId).Groups[1].Value),
-                        ParsePackageName = new Func<string, string>((canonicalPackageId) => _canonicalPackageRegex.Match(canonicalPackageId).Groups[2].Value),
-                        ParsePackageVersion = new Func<string, string>((canonicalPackageId) => _canonicalPackageRegex.Match(canonicalPackageId).Groups[3].Value),
-                    }
-                });
+                return (_supportedFileExtensions ?? (_supportedFileExtensions = Features.ContainsKey(Constants.Features.SupportedExtensions) ? Features[Constants.Features.SupportedExtensions].ToArray() : Constants.Empty)).ByRef();
             }
         }
 
-        private List<DynamicOption> _dynamicOptions;
-            
+        public IEnumerable<string> SupportedUriSchemes {
+            get {
+                return (_supportedSchemes ?? (_supportedSchemes = Features.ContainsKey(Constants.Features.SupportedSchemes) ? Features[Constants.Features.SupportedSchemes].ToArray() : Constants.Empty)).ByRef();
+            }
+        }
+
+        internal byte[][] MagicSignatures {
+            get {
+                return _magicSignatures ?? (_magicSignatures = Features.ContainsKey(Constants.Features.MagicSignatures) ? Features[Constants.Features.MagicSignatures].Select(each => each.FromHex()).ToArray() : new byte[][] {});
+            }
+        }
+
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
         public List<DynamicOption> DynamicOptions {
             get {
                 if (_dynamicOptions == null) {
-                    
+                    var o = new object();
                     var result = new List<DynamicOption>();
-                    result.AddRange(GetDynamicOptions(OptionCategory.Install, null));
-                    result.AddRange(GetDynamicOptions(OptionCategory.Package, null));
-                    result.AddRange(GetDynamicOptions(OptionCategory.Provider, null));
-                    result.AddRange(GetDynamicOptions(OptionCategory.Source, null));
-                    if( Features.ContainsKey("IsChainingProvider") ) {
+                    result.AddRange(GetDynamicOptions(OptionCategory.Install, o));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Package, o));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Provider, o));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Source, o));
+                    if (Features.ContainsKey("IsChainingProvider")) {
                         // chaining package providers should not cache results
                         return result;
                     }
-                   
+
                     _dynamicOptions = result;
                 }
                 return _dynamicOptions;
             }
         }
 
-        internal IRequest ExtendRequest(Object requestImpl, params object[] objects) {
-            var baseGetMessageString = requestImpl.As<GetMessageString>();
+        public virtual bool IsSupportedFileName(string filename) {
+            try {
+                var extension = Path.GetExtension(filename);
+                if (!string.IsNullOrEmpty(extension)) {
+                    return SupportedFileExtensions.ContainsIgnoreCase(extension);
+                }
+            } catch {
+            }
+            return false;
+        }
 
-            return requestImpl.Extend<IRequest>(new {
-                // check the caller's resource manager first, then fall back to this resource manager
-                GetMessageString = new Func<string, string>((s) => baseGetMessageString(s) ?? Messages.ResourceManager.GetString(s)),
-            }, objects, AdditionalImplementedFunctions);
+        public virtual bool IsSupportedFile(string filename) {
+            if (filename.FileExists()) {
+                var buffer = new byte[1024];
+                var sz = 0;
+                try {
+                    using (var file = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read)) {
+                        sz = file.Read(buffer, 0, 1024);
+                    }
+                    return MagicSignatures.Any(magic => BufferMatchesMagicBytes(magic, buffer, sz));
+                } catch {
+                    // not openable. whatever.
+                }
+            }
+            return false;
+        }
+
+        public virtual bool IsFileSupported(byte[] header) {
+            return MagicSignatures.Any(magic => BufferMatchesMagicBytes(magic, header, header.Length));
+        }
+
+        public virtual bool IsSupportedScheme(Uri uri) {
+            try {
+                return SupportedUriSchemes.ContainsIgnoreCase(uri.Scheme);
+            } catch {
+            }
+            return false;
+        }
+
+        private bool BufferMatchesMagicBytes(byte[] magic, byte[] buffer, int maxSize) {
+            if (magic.Length <= maxSize) {
+                return !magic.Where((t, i) => t != buffer[i]).Any();
+            }
+            return false;
         }
 
         public override object InitializeLifetimeService() {
@@ -129,107 +163,22 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         internal void Initialize(IRequest request) {
-            // Provider.InitializeProvider(dynamicInstance, c);
             if (!_initialized) {
-                _features = GetFeatures(request);
+                _features = GetFeatures(request).Value;
                 _initialized = true;
             }
         }
 
-        internal CancellableEnumerable<TItem> CallAndCollect<TItem>(Action<CancellableBlockingCollection<TItem>> call, Action<CancellableBlockingCollection<TItem>> atFinally = null) {
-            var collection = new CancellableBlockingCollection<TItem>();
-            Task.Factory.StartNew(() => {
-                try {
-                    call(collection);
-                } catch (Exception e) {
-                    e.Dump();
-                } finally {
-                    if (atFinally != null) {
-                        atFinally(collection);
-                    }
-                    collection.CompleteAdding();
-                }
-            });
-
-            return collection;
-        }
-
-        internal CancellableEnumerable<TItem> CallAndCollect<TItem>(Object requestImpl, Response<TItem> response, Action<object> call) {
-            Task.Factory.StartNew(() => {
-                try {
-                    call(ExtendRequest(requestImpl, response));
-                } catch (Exception e) {
-                    e.Dump();
-                } finally {
-                    response.Complete();
-                }
-            });
-
-            return response.Result;
-        }
-
-        public Dictionary<string, List<string>> GetFeatures(Object requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public IAsyncValue<Dictionary<string, List<string>>> GetFeatures(IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
 
-            var isCancelled = requestImpl.As<IsCancelled>();
-            var result = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            Provider.GetFeatures(ExtendRequest(requestImpl, new {
-                YieldKeyValuePair = new YieldKeyValuePair((key, value) => {
-                    result.GetOrAdd(key, () => new List<string>()).Add(value);
-                    return !(isCancelled());
-                })
-            }));
-            return result;
+            return new DictionaryRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetFeatures(request));
         }
 
-        public ICancellableEnumerable<DynamicOption> GetDynamicOptions(OptionCategory operation, Object requestImpl) {
-            requestImpl = requestImpl ?? new {
-                IsCancelled = new IsCancelled(() => false)
-            };
-
-            var isCancelled = requestImpl.As<IsCancelled>();
-
-            DynamicOption lastItem = null;
-            var list = new List<string>();
-
-            return CallAndCollect<DynamicOption>(
-                result => Provider.GetDynamicOptions(operation.ToString(), ExtendRequest(requestImpl, new {
-
-                    YieldDynamicOption = new YieldDynamicOption((name, type, isRequired) => {
-                        if (lastItem != null) {
-                            lastItem.PossibleValues = list.ToArray();
-                            list = new List<string>();
-                            result.Add(lastItem);
-                        }
-
-                        OptionType typ;
-
-                        if (Enum.TryParse(type, true, out typ) ) {
-                            lastItem = new DynamicOption {
-                                Category = operation,
-                                Name = name,
-                                Type = typ,
-                                IsRequired = isRequired,
-                                ProviderName = ProviderName,
-                            };    
-                        }
-
-                        return !(isCancelled() || result.IsCancelled);
-                    }),
-                    YieldKeyValuePair = new YieldKeyValuePair((key, value) => {
-                        if (lastItem != null && lastItem.Name == key) {
-                            list.Add(value);
-                        }
-                        return !(isCancelled() || result.IsCancelled);
-                    })
-                })), collection => {
-                    if (lastItem != null) {
-                        lastItem.PossibleValues = list.ToArray();
-                        collection.Add(lastItem);
-                    }
-                });
+        public IAsyncEnumerable<DynamicOption> GetDynamicOptions(OptionCategory category, IRequestObject requestObject) {
+            return new DynamicOptionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetDynamicOptions(category.ToString(), request),category);
         }
     }
 }
