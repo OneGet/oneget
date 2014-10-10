@@ -386,10 +386,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     var collection = obj as IEnumerable;
                     if (collection != null) {
                         val = collection.Cast<object>().Select(each => each.ToString()).ToArray();
+                    } else {
+                        // meh. ToString, and goodnight.
+                        val = new[] {obj.ToString()};
                     }
-
-                    // meh. ToString, and goodnight.
-                    val = new[] { obj.ToString() };
 
                     lst.Add(k.ToString(),val );    
                 }
