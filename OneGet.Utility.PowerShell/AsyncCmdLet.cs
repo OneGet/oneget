@@ -581,7 +581,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         protected override sealed void StopProcessing() {
             // Console.WriteLine("===============================================================CTRL-C PRESSED");
-            base.WriteWarning("Stopping...");
             Cancel();
             // let's not even bother doing all this if they didn't even
             // override the method.

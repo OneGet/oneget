@@ -53,7 +53,7 @@ namespace Microsoft.OneGet.Implementation {
                 FullPath = fullPath,
                 PackageFilename = packageFileName
             };
-
+            
             return !IsCanceled;
         }
 
@@ -74,6 +74,7 @@ namespace Microsoft.OneGet.Implementation {
                 _currentItem.Set(name, value);
             }
 
+            
             return !IsCanceled;
         }
 
