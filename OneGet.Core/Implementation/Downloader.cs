@@ -33,8 +33,8 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        public IAsyncAction DownloadFile(Uri remoteLocation, string localFilename, IRequestObject requestObject) {
-            return new ActionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.DownloadFile(remoteLocation, localFilename, request));
+        public void DownloadFile(Uri remoteLocation, string localFilename, IRequestObject requestObject) {
+            new ActionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.DownloadFile(remoteLocation, localFilename, request)).Wait();
         }
     }
 }

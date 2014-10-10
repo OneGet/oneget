@@ -18,8 +18,6 @@ namespace Microsoft.OneGet.Providers {
     using Utility.Plugin;
     using IRequestObject =System.Object;
     public interface IDownloader : IProvider {
-        [Required]
-        IEnumerable<string> SupportedSchemes {get;}
 
         /// <summary>
         ///     Returns the name of the Provider.

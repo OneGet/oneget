@@ -22,6 +22,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     [Cmdlet(VerbsLifecycle.Unregister, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
     public sealed class UnregisterPackageSource : CmdletWithSource {
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] { Constants.SourceByInputObjectSet, Constants.SourceBySearchSet };
+            }
+        }
+
         public UnregisterPackageSource()
             : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
         }

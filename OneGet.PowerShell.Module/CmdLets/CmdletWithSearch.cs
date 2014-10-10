@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
+    using System.Collections.Generic;
     using System.Management.Automation;
     using Microsoft.OneGet.Packaging;
 
@@ -20,6 +21,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         protected CmdletWithSearch(OptionCategory[] categories)
             : base(categories) {
         }
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] { "" };
+            }
+        }
+
 
         [Parameter(Position = 0)]
         public virtual string[] Name {get; set;}

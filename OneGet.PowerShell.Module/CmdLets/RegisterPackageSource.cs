@@ -14,6 +14,7 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Packaging;
@@ -23,6 +24,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     [Cmdlet(VerbsLifecycle.Register, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
     public sealed class RegisterPackageSource : CmdletWithProvider {
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {  ""};
+            }
+        }
+
+
         public RegisterPackageSource()
             : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
         }
@@ -43,6 +52,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public SwitchParameter Trusted {get; set;}
 
         public override bool GenerateDynamicParameters() {
+
             var packageProvider = SelectProviders(ProviderName).ReEnumerable();
 
             // if more than one provider is selected, this will never work
@@ -54,9 +64,17 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             foreach (var md in packageProvider.First().GetDynamicOptions(OptionCategory.Source, this)) {
                 if (DynamicParameterDictionary.ContainsKey(md.Name)) {
                     // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
-                    (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
-                } else {
-                    DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md));
+                    // (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
+                    if (IsInvocation) {
+                        (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
+                    }
+                    else {
+                        (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).IncludeInParameterSet(md, IsInvocation, ParameterSets);
+                    }
+                }
+                else {
+                    // DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md));
+                    DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
                 }
             }
             return true;

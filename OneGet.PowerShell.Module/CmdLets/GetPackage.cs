@@ -29,6 +29,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         private readonly Dictionary<string, bool> _namesProcessed = new Dictionary<string, bool>();
         private readonly Dictionary<string, bool> _providersProcessed = new Dictionary<string, bool>();
 
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {"" };
+            }
+        }
+
         public GetPackage()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Install

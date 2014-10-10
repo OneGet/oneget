@@ -21,6 +21,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     [Cmdlet(VerbsCommon.Set, Constants.PackageSourceNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.SourceBySearchSet)]
     public sealed class SetPackageSource : CmdletWithProvider {
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new [] {Constants.SourceByInputObjectSet, Constants.SourceBySearchSet};
+            }
+        }
+
+
         [Parameter(ValueFromPipeline = true, ParameterSetName = Constants.SourceByInputObjectSet, Mandatory = true)]
         public PackageSource InputObject;
 

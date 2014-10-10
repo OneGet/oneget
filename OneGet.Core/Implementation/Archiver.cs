@@ -38,8 +38,8 @@ namespace Microsoft.OneGet.Implementation {
             return base.IsSupportedFile(localFilename) && Provider.IsSupportedFile(localFilename);
         }
 
-        public IAsyncValue<IEnumerable<string>> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject) {
-            return new FuncRequestObject<IEnumerable<string>>(this, requestObject.As<IHostApi>(), (request) => Provider.UnpackArchive(localFilename, destinationFolder, request).ByRefEnumerable());
+        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject) {
+            return new FuncRequestObject<IEnumerable<string>>(this, requestObject.As<IHostApi>(), (request) => Provider.UnpackArchive(localFilename, destinationFolder, request).ByRefEnumerable()).Value;
         }
     }
 }

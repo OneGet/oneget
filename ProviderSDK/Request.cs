@@ -17,7 +17,6 @@ namespace OneGet.ProviderSDK {
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
-    using System.Runtime.InteropServices;
     using System.Security;
     using System.Threading;
     using PackageProvider.Template.Resources;
@@ -26,6 +25,8 @@ namespace OneGet.ProviderSDK {
     public abstract class Request : IDisposable {
 
         #region copy core-apis
+
+        public abstract bool IsCanceled { get; }
 
         /* Synced/Generated code =================================================== */
 
@@ -66,6 +67,7 @@ namespace OneGet.ProviderSDK {
         public abstract object SelectProviders(string providerName, IRequestObject requestObject);
 
         public abstract bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject);
+
         public abstract string GetCanonicalPackageId(string providerName, string packageName, string version);
 
         public abstract string ParseProviderName(string canonicalPackageId);
@@ -119,40 +121,16 @@ namespace OneGet.ProviderSDK {
 
         public abstract bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
-        public abstract bool ShouldProcessPackageInstall(string packageName, string version, string source);
-
-        public abstract bool ShouldProcessPackageUninstall(string packageName, string version);
-
-        public abstract bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source);
-
-        public abstract bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source);
-
-        public abstract bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation);
-
-        public abstract bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation);
-
         public abstract bool AskPermission(string permission);
 
         public abstract bool IsInteractive();
 
         public abstract int CallCount();
-
-        public abstract bool IsCanceled { get; }
-
-        public abstract WaitHandle CancellationEvent { get; }
         #endregion
 
         #region copy response-apis
 
         /* Synced/Generated code =================================================== */
-
-        /// <summary>
-        ///     The provider can query to see if the operation has been cancelled.
-        ///     This provides for a gentle way for the caller to notify the callee that
-        ///     they don't want any more results. It's essentially just !IsCancelled
-        /// </summary>
-        /// <returns>returns FALSE if the operation has been cancelled.</returns>
-        public abstract bool OkToContinue();
 
         /// <summary>
         ///     Used by a provider to return fields for a SoftwareIdentity.
@@ -211,34 +189,33 @@ namespace OneGet.ProviderSDK {
         #region copy service-apis
 
         /* Synced/Generated code =================================================== */
+        public abstract void DownloadFile(Uri remoteLocation, string localFilename, IRequestObject requestObject);
 
-        public abstract void DownloadFile(Uri remoteLocation, string localFilename, Object requestObject);
+        public abstract bool IsSupportedArchive(string localFilename, IRequestObject requestObject);
 
-        public abstract bool IsSupportedArchive(string localFilename, Object requestObject);
+        public abstract IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject);
 
-        public abstract IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object requestObject);
+        public abstract void AddPinnedItemToTaskbar(string item, IRequestObject requestObject);
 
-        public abstract void AddPinnedItemToTaskbar(string item, Object requestObject);
+        public abstract void RemovePinnedItemFromTaskbar(string item, IRequestObject requestObject);
 
-        public abstract void RemovePinnedItemFromTaskbar(string item, Object requestObject);
+        public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, IRequestObject requestObject);
 
-        public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Object requestObject);
+        public abstract void SetEnvironmentVariable(string variable, string value, string context, IRequestObject requestObject);
 
-        public abstract void SetEnvironmentVariable(string variable, string value, string context, Object requestObject);
+        public abstract void RemoveEnvironmentVariable(string variable, string context, IRequestObject requestObject);
 
-        public abstract void RemoveEnvironmentVariable(string variable, string context, Object requestObject);
+        public abstract void CopyFile(string sourcePath, string destinationPath, IRequestObject requestObject);
 
-        public abstract void CopyFile(string sourcePath, string destinationPath, Object requestObject);
+        public abstract void Delete(string path, IRequestObject requestObject);
 
-        public abstract void Delete(string path, Object requestObject);
+        public abstract void DeleteFolder(string folder, IRequestObject requestObject);
 
-        public abstract void DeleteFolder(string folder, Object requestObject);
+        public abstract void CreateFolder(string folder, IRequestObject requestObject);
 
-        public abstract void CreateFolder(string folder, Object requestObject);
+        public abstract void DeleteFile(string filename, IRequestObject requestObject);
 
-        public abstract void DeleteFile(string filename, Object requestObject);
-
-        public abstract string GetKnownFolder(string knownFolder, Object requestObject);
+        public abstract string GetKnownFolder(string knownFolder, IRequestObject requestObject);
 
         public abstract string CanonicalizePath(string text, string currentDirectory);
 
@@ -246,22 +223,20 @@ namespace OneGet.ProviderSDK {
 
         public abstract bool DirectoryExists(string path);
 
-        public abstract bool Install(string fileName, string additionalArgs, Object requestObject);
+        public abstract bool Install(string fileName, string additionalArgs, IRequestObject requestObject);
 
-        public abstract bool IsSignedAndTrusted(string filename, Object requestObject);
+        public abstract bool IsSignedAndTrusted(string filename, IRequestObject requestObject);
 
-        public abstract bool ExecuteElevatedAction(string provider, string payload, Object requestObject);
-
+        public abstract bool ExecuteElevatedAction(string provider, string payload, IRequestObject requestObject);
         #endregion
 
         #region copy Request-implementation
-public virtual void Dispose() {
+        public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
         public virtual void Dispose(bool disposing) {
-
         }
 
         public bool Yield(KeyValuePair<string, string[]> pair) {
@@ -309,7 +284,7 @@ public virtual void Dispose() {
                 // not really any args, and not really expectng any
                 return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
             }
-            return Enumerable.Aggregate(args, formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
+            return args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
         }
 
         public SecureString Password {
@@ -374,8 +349,6 @@ public virtual void Dispose() {
         public bool YieldDynamicOption(string name, string expectedType, bool isRequired, IEnumerable<string> permittedValues) {
             return YieldDynamicOption(name, expectedType, isRequired) && (permittedValues ?? Enumerable.Empty<string>()).All(each => YieldKeyValuePair(name, each));
         }
-
-      
 
     }
 

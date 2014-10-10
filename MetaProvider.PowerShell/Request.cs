@@ -54,6 +54,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         /* Synced/Generated code =================================================== */
 
+
+        public abstract bool IsCanceled { get; }
+
+
         /// <summary>
         ///     Returns the interface type for a Request that the OneGet Core is expecting
         ///     This is (currently) neccessary to provide an appropriately-typed version
@@ -91,7 +95,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject);
 
         public abstract bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject);
-
 
         public abstract string GetCanonicalPackageId(string providerName, string packageName, string version);
 
@@ -150,8 +153,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract bool IsInteractive();
 
-        public abstract bool IsCanceled { get; }
-
+        public abstract int CallCount();
         #endregion
 
         #region copy response-apis
@@ -213,13 +215,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         #endregion
 
         #region copy Request-implementation
-public void Dispose() {
+         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
         public virtual void Dispose(bool disposing) {
-
         }
 
         public bool Yield(KeyValuePair<string, string[]> pair) {
@@ -267,7 +268,7 @@ public void Dispose() {
                 // not really any args, and not really expectng any
                 return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
             }
-            return Enumerable.Aggregate(args, formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
+            return args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
         }
 
         public SecureString Password {

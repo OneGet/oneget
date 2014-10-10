@@ -27,6 +27,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         private bool _noLocation;
         private bool _noName;
 
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] { ""};
+            }
+        }
+
+
         public GetPackageSource()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source

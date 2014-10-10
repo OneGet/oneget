@@ -24,6 +24,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     [Cmdlet(VerbsLifecycle.Uninstall, Constants.PackageNoun, SupportsShouldProcess = true)]
     public sealed class UninstallPackage : GetPackage {
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] { Constants.PackageByInputObjectSet, Constants.PackageBySearchSet };
+            }
+        }
+
         private Dictionary<string, List<SoftwareIdentity>> _resultsPerName;
 
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.PackageByInputObjectSet)]

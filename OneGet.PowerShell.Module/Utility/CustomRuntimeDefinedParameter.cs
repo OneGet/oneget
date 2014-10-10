@@ -26,13 +26,35 @@ namespace Microsoft.PowerShell.OneGet.Utility {
     internal class CustomRuntimeDefinedParameter : RuntimeDefinedParameter {
         internal HashSet<DynamicOption> Options = new HashSet<DynamicOption>();
 
-        public CustomRuntimeDefinedParameter(DynamicOption option) : base(option.Name, ActualParameterType(option.Type), new Collection<Attribute> {
-            new ParameterAttribute()
-        }) {
+        public CustomRuntimeDefinedParameter(DynamicOption option, bool isInvocation, IEnumerable<string> parameterSets)
+            : base(option.Name, ActualParameterType(option.Type), new Collection<Attribute>()) {
+
+            if (isInvocation) {
+                Attributes.Add( new ParameterAttribute()); 
+            } else {
+               IncludeInParameterSet(option,isInvocation,parameterSets);
+            }
+            
             Options.Add(option);
             var values = option.PossibleValues.ToArray();
             if (!values.IsNullOrEmpty()) {
                 Attributes.Add(new ValidateSetAttribute(values));
+            }
+            
+        }
+
+        public void IncludeInParameterSet(DynamicOption option, bool isInvocation, IEnumerable<string> parameterSets) {
+            foreach (var ps in parameterSets) {
+
+                var parameterSetName = ps.Is() ? option.ProviderName + ":" + ps : option.ProviderName;
+                if (Attributes.Select(each => each as ParameterAttribute).WhereNotNull().Any(each => each.ParameterSetName == parameterSetName)) {
+                    continue;
+                }
+                Attributes.Add(
+                new ParameterAttribute() {
+                    ParameterSetName = parameterSetName,
+                    Mandatory = option.IsRequired
+                });
             }
         }
 

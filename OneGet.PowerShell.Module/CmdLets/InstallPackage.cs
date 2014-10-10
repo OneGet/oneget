@@ -33,6 +33,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }) {
         }
 
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] { Constants.PackageBySearchSet, Constants.PackageByInputObjectSet};
+            }
+        }
+
         [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = Constants.PackageByInputObjectSet)]
         public SoftwareIdentity[] InputObject {get; set;}
 

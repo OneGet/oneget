@@ -13,12 +13,21 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
+    using System.Collections.Generic;
     using System.Management.Automation;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
 
     [Cmdlet(VerbsCommon.Find, Constants.PackageNoun), OutputType(typeof (SoftwareIdentity))]
     public sealed class FindPackage : CmdletWithSearchAndSource {
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] { "", };
+            }
+        }
+
+
         public FindPackage()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source, OptionCategory.Package

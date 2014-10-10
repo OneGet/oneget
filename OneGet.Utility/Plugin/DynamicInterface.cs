@@ -324,7 +324,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 }
                 if (!found && (tInterface.IsInterface || method.IsAbstract)) {
 #if DEEPDEBUG
-                    Debug.WriteLine(" Generating stub method for {0} -> {1}".format(typeof (TInterface).NiceName(), method.ToSignatureString()));
+                    Console.WriteLine(" Generating stub method for {0} -> {1}".format(tInterface.NiceName(), method.ToSignatureString()));
 #endif
                     stubMethods.Add(method);
                 }

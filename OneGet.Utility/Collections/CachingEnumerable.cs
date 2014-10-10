@@ -126,12 +126,18 @@ namespace Microsoft.OneGet.Utility.Collections {
 
         public bool IsCompleted {
             get {
+                if (_completed == null) {
+                    return true;
+                }
                 return _completed.WaitOne(0);
             }
         }
 
         public void Complete() {
-            _completed.Set();
+            if( _completed !=null ) {
+                _completed.Set();
+            }
+
         }
 
         public IEnumerable<T> GetConsumingEnumerable() {

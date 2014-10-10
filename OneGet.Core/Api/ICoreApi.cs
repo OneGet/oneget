@@ -23,6 +23,10 @@ namespace Microsoft.OneGet.Api {
         #region declare core-apis
         /* Synced/Generated code =================================================== */
 
+
+        bool IsCanceled { get; }
+
+
         /// <summary>
         ///     Returns the interface type for a Request that the OneGet Core is expecting
         ///     This is (currently) neccessary to provide an appropriately-typed version
@@ -64,7 +68,6 @@ namespace Microsoft.OneGet.Api {
         string ParsePackageName(string canonicalPackageId);
         string ParsePackageVersion(string canonicalPackageId);
 
-        bool IsCanceled {get;}
         #endregion
     }
 }

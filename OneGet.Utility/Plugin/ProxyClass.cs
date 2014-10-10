@@ -60,6 +60,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 _dynamicType.GenerateMethodForDelegateCall(d.Value, field);
             }
 
+
             foreach (var method in stubs) {
                 // did not find a matching method or signature, or the instance told us that it doesn't actually support it 
                 // that's ok, if we get here, it must not be a required method.
