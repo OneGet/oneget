@@ -23,6 +23,7 @@ namespace Microsoft.OneGet.Implementation {
         public FuncRequestObject(ProviderBase provider, IHostApi hostApi, Func<RequestObject, T> function)
             : base(provider,hostApi,null ) {
             _action = r => {_result = function(r);};
+            InvokeImpl();
         }
 
         public T Value {

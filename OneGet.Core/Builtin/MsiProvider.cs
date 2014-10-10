@@ -36,7 +36,7 @@ namespace Microsoft.OneGet.Builtin {
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
             {Constants.Features.SupportedExtensions, new[] {"msi","msp"}},
-            {Constants.Features.MagicSignatures, new [] { "D0CF11E0A1B11AE1"}}
+            {Constants.Features.MagicSignatures, new [] {Constants.Signatures.OleCompoundDocument}}
         };
 
         private int _progressId;

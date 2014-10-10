@@ -30,7 +30,7 @@ namespace Microsoft.OneGet.Builtin {
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
             {Constants.Features.SupportedExtensions, new[] {"msu"}},
-            {Constants.Features.MagicSignatures, new[] {"4D534346" }}
+            {Constants.Features.MagicSignatures, new[] {Constants.Signatures.Cab }}
         };
 
         /// <summary>

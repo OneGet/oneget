@@ -96,6 +96,22 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return candidate.GetParameterTypes().SequenceEqual(member.GetParameterTypes(), AssignableTypeComparer.Instance) && (member.ReturnType == candidate.ReturnType || member.ReturnType.IsAssignableFrom(candidate.ReturnType));
         }
 
+#if THINKING_OUTLOUD
+        original function:
+
+        IAsyncEnumerable<string>  UnpackArchive(string filename, string folder, IRequestObject request) ;
+
+        ok for client representation:
+            object UnpackArchive(string filename, string folder, IRequestObject request);
+            
+        IMyAsyncEnumerable<string> UnpackArchive(string filename, string folder, IRequestObject request);
+        
+        is( NEW_RETURN_TYPE assignable?) -> No
+        is( NEW_RETURN_TYPE not sealed/static ) -> YES
+            is( NEW_RETURN_TYPE duckable to ORIGINAL_RETURN_TYPE ) -> YES
+
+#endif
+
         internal static MethodInfo[] GetPublicMethods(this Type type) {
             return _methodCache.GetOrAdd(type, () => {
                 if (type != null) {

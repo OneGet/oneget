@@ -390,7 +390,7 @@ namespace Microsoft.OneGet.Implementation {
             using (var request = requestObject.As<Request>()) {
                 foreach (var archiver in PackageManager._instance.Archivers.Values) {
                     if (archiver.IsSupportedFile(localFilename)) {
-                        return archiver.UnpackArchive(localFilename, destinationFolder, request);
+                        return archiver.UnpackArchive(localFilename, destinationFolder, request).ByRefEnumerable();
                     }
                 }
                 request.Error(ErrorCategory.NotImplemented, localFilename, Constants.Messages.UnsupportedArchive);

@@ -107,7 +107,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
             if (names.IsNullOrEmpty()) {
-                return PackageManagementService.SelectProviders(null, this).Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature));
+                return PackageManagementService.SelectProviders(null, this).Where(each => !each.Features.ContainsKey(Constants.Features.AutomationOnly));
             }
             // you can manually ask for any provider by name, if it is for automation only.
             return names.SelectMany(each => PackageManagementService.SelectProviders(each, this)); // .Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature));

@@ -40,9 +40,19 @@ namespace Microsoft.OneGet {
         internal static string[] Empty = new string[0];
         internal const string MSGPrefix = "MSG:";
 
+        internal static class Signatures {
+            internal const string Zip = "504b0304";
+            internal const string Cab = "4D534346";
+            internal const string OleCompoundDocument = "D0CF11E0A1B11AE1";
+            internal static string[] ZipVariants = new[] {Zip, /* should have EXEs? */};
+            
+        }
+
         internal static class PackageStatus {
             internal const string Installed = "Installed";
             internal const string Uninstalled = "Uninstalled";
+            internal const string Available = "Available";
+            internal const string Dependency = "Dependency";
         }
 
         internal static class SwidTag {
@@ -54,6 +64,7 @@ namespace Microsoft.OneGet {
             internal const string SupportedExtensions = "file-extensions";
             internal const string MagicSignatures = "magic-signatures";
             internal const string SupportedSchemes = "uri-schemes";
+            internal const string SupportsPowerShellModules = "supports-powershell-modules";
         }
 
         internal static class Parameters {
@@ -89,6 +100,12 @@ namespace Microsoft.OneGet {
             internal const string UnknownFolderId = "MSG:UnknownFolderId";
             internal const string ProtocolNotSupported = "MSG:ProtocolNotSupported";
             internal const string UnableToUninstallPackage = "MSG:UnableToUninstallPackage";
+
+            public const string SourceLocationNotValid = "MSG:SourceLocationNotValid_Location";
+            public const string UriSchemeNotSupported = "MSG:UriSchemeNotSupported_Scheme";
+            public const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
+            public const string DependencyResolutionError = "MSG:UnableToResolveDependency_dependencyPackage";
+            public const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependency";
         }
 
         #endregion
