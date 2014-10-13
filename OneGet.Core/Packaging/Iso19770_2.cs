@@ -1,25 +1,24 @@
+// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//  http://www.apache.org/licenses/LICENSE-2.0
+//  
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//  
+
 namespace Microsoft.OneGet.Packaging {
     using System;
-    using System.Diagnostics;
-    using System.Globalization;
     using System.Linq;
     using System.Xml.Linq;
 
     internal static class Iso19770_2 {
         internal static XNamespace Namespace = XNamespace.Get("http://standards.iso.org/iso/19770/-2/2014/schema.xsd");
-
-        internal static XAttribute DefaultNamespace {
-            get {
-                return new XAttribute(XNamespace.Xmlns + "swidtag", Namespace);
-            }
-        }
-
-        internal static XDocument NewDocument {
-            get {
-                return new XDocument( new XDeclaration("1.0", "UTF-8", "yes"),
-                    new XElement(SoftwareIdentity) );
-            }
-        }
 
         internal static XName SoftwareIdentity = Namespace + "SoftwareIdentity";
         internal static XName Entity = Namespace + "Entity";
@@ -65,11 +64,9 @@ namespace Microsoft.OneGet.Packaging {
         internal static XName SummaryAttribute = "summary";
         internal static XName DescriptionAttribute = "description";
 
-
         internal static XName RegIdAttribute = "regId";
         internal static XName RoleAttribute = "role";
         internal static XName ThumbprintAttribute = "thumbprint";
-
 
         internal static XName HRefAttribute = "href";
         internal static XName RelationshipAttribute = "rel";
@@ -78,11 +75,21 @@ namespace Microsoft.OneGet.Packaging {
         internal static XName UseAttribute = "use";
         internal static XName ArtifactAttribute = "artifact";
 
+        internal static XAttribute DefaultNamespace {
+            get {
+                return new XAttribute(XNamespace.Xmlns + "swidtag", Namespace);
+            }
+        }
 
-
+        internal static XDocument NewDocument {
+            get {
+                return new XDocument(new XDeclaration("1.0", "UTF-8", "yes"),
+                    new XElement(SoftwareIdentity));
+            }
+        }
 
         internal static XElement Root(this XDocument xmlDocument) {
-            return xmlDocument.Elements(SoftwareIdentity ).FirstOrDefault();
+            return xmlDocument.Elements(SoftwareIdentity).FirstOrDefault();
         }
 
         internal static string Get(this XElement element, XName attribute) {
@@ -98,14 +105,13 @@ namespace Microsoft.OneGet.Packaging {
                 return null;
             }
 
-            if (string.IsNullOrEmpty(value) ) {
+            if (string.IsNullOrEmpty(value)) {
                 return element;
             }
 
             var current = element.Get(attribute);
 
-
-            if (current != null && value != current ) {
+            if (current != null && value != current) {
                 // Debug.WriteLine( string.Format(CultureInfo.CurrentCulture,"REPLACING value in swidtag attribute {0}: {1} for {2}", attribute.LocalName, current, value));
                 throw new Exception("INVALID_SWIDTAG_ATTRIBUTE_VALUE_CHANGE");
             }

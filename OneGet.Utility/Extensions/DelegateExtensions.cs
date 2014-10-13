@@ -1,27 +1,30 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.OneGet.Utility.Extensions {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
     using Plugin;
 
     internal static class DelegateExtensions {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "shhh.")]
+        private static readonly Dictionary<Type, Delegate> _emptyDelegates = new Dictionary<Type, Delegate>();
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "shhh.")]
         internal static Type GetDelegateReturnType(this Delegate delegateInstance) {
             return GetDelegateReturnType(delegateInstance.GetType());
         }
@@ -52,7 +55,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         internal static IEnumerable<string> GetDelegateParameterNames(this Type delegateType) {
-            if (delegateType.BaseType != typeof(MulticastDelegate)) {
+            if (delegateType.BaseType != typeof (MulticastDelegate)) {
                 throw new ApplicationException("Not a delegate.");
             }
 
@@ -79,19 +82,19 @@ namespace Microsoft.OneGet.Utility.Extensions {
             }
 
 #if CAN_WE_CHEAT
-            // this is an opportunity to decide if a set of parameters is equal.
-            // unfortunately, even if we *say* they are, they don't coerce
-            // so unless we put something somewhere else that could
-            // coerce one type to another I can't see how we can use this.
-            //
-            // I wanted to have the Invoke delegate type declared independently in providers
-            // and just nod my head that yes, the types are equal but of course
-            // the typechecking is more stringent than that, and we'd have to perform
-            // some miracle-level idenfication and marshalling to pass that thru
-            // when it was just easier and alias Invoke to Callback
-            //
-            // when plugins are loaded out-of-proc, this is all up for grabs again
-            // since we're going to have to detect and marshal those manually anyway.
+    // this is an opportunity to decide if a set of parameters is equal.
+    // unfortunately, even if we *say* they are, they don't coerce
+    // so unless we put something somewhere else that could
+    // coerce one type to another I can't see how we can use this.
+    //
+    // I wanted to have the Invoke delegate type declared independently in providers
+    // and just nod my head that yes, the types are equal but of course
+    // the typechecking is more stringent than that, and we'd have to perform
+    // some miracle-level idenfication and marshalling to pass that thru
+    // when it was just easier and alias Invoke to Callback
+    //
+    // when plugins are loaded out-of-proc, this is all up for grabs again
+    // since we're going to have to detect and marshal those manually anyway.
 
             var methTypes = methodInfo.GetParameterTypes();
             var deleTypes = delegateType.GetDelegateParameterTypes();
@@ -107,7 +110,6 @@ namespace Microsoft.OneGet.Utility.Extensions {
                     return false;
             }
 #else
-
 
             if (!delegateType.GetDelegateParameterTypes().SequenceEqual(methodInfo.GetParameterTypes(), AssignableTypeComparer.Instance)) {
                 return false;
@@ -133,14 +135,11 @@ namespace Microsoft.OneGet.Utility.Extensions {
             }
 
             // are all the parameters the same types?
-            if (!delegateType.GetDelegateParameterTypes().SequenceEqual(candidateDelegateType.GetDelegateParameterTypes(),AssignableTypeComparer.Instance)) {
+            if (!delegateType.GetDelegateParameterTypes().SequenceEqual(candidateDelegateType.GetDelegateParameterTypes(), AssignableTypeComparer.Instance)) {
                 return false;
             }
             return true;
         }
-
-
-        private static readonly Dictionary<Type, Delegate> _emptyDelegates = new Dictionary<Type, Delegate>();
 
         internal static Delegate CreateEmptyDelegate(this Type delegateType) {
             if (delegateType == null) {

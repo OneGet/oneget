@@ -24,7 +24,7 @@ namespace Microsoft.OneGet.Implementation {
         private SoftwareIdentity _currentItem;
 
         public SoftwareIdentityRequestObject(ProviderBase provider, IHostApi request, Action<RequestObject> action, string status)
-            : base(provider,request,action) {
+            : base(provider, request, action) {
             _status = status;
             InvokeImpl();
         }
@@ -53,7 +53,7 @@ namespace Microsoft.OneGet.Implementation {
                 FullPath = fullPath,
                 PackageFilename = packageFileName
             };
-            
+
             return !IsCanceled;
         }
 
@@ -74,7 +74,6 @@ namespace Microsoft.OneGet.Implementation {
                 _currentItem.Set(name, value);
             }
 
-            
             return !IsCanceled;
         }
 

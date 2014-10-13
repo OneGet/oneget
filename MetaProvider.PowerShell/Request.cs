@@ -24,6 +24,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Threading;
     using Implementation;
     using Resources;
+    using Utility.Async;
     using Utility.Collections;
     using Utility.Extensions;
     using IRequestObject = System.MarshalByRefObject;

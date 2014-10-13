@@ -28,8 +28,8 @@ namespace Microsoft.OneGet.Utility.Plugin {
             "exe", "dll"
         };
 
-        private Func<string, string> _alternatePathResolver;
         private readonly Dictionary<string, Assembly> _cache = new Dictionary<string, Assembly>();
+        private Func<string, string> _alternatePathResolver;
 
         private Func<string, Assembly> _loadWhenResolving;
         private string[] _searchPath = new string[0];

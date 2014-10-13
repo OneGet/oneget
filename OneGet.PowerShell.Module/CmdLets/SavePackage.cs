@@ -22,18 +22,16 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     [Cmdlet(VerbsData.Save, Constants.PackageNoun, SupportsShouldProcess = true)]
     public sealed class SavePackage : CmdletWithSearchAndSource {
-
-        protected override IEnumerable<string> ParameterSets {
-            get {
-                return new[] { Constants.PackageByInputObjectSet,  "" };
-            }
-        }
-
-
         public SavePackage()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source, OptionCategory.Package
             }) {
+        }
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {Constants.PackageByInputObjectSet, ""};
+            }
         }
 
         [Parameter]

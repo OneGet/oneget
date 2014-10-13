@@ -15,19 +15,8 @@
 namespace Microsoft.OneGet.Utility.Extensions {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Linq.Expressions;
     using System.Runtime.CompilerServices;
-    using System.Threading.Tasks;
-
-    public static class TaskExtensions {
-        public static Task<T> AsResultTask<T>(this T result) {
-            var x = new TaskCompletionSource<T>(TaskCreationOptions.AttachedToParent);
-            x.SetResult(result);
-            return x.Task;
-        }
-
-    }
 
     public static class TypeExtensions {
         private static readonly IDictionary<TwoTypes, Func<object, object>> _typeCoercers = new Dictionary<TwoTypes, Func<object, object>>();
@@ -54,50 +43,6 @@ namespace Microsoft.OneGet.Utility.Extensions {
         private static Func<object, object> GetConverter(Type targetType, Type fromType) {
             return _typeCoercers.GetOrAdd(new TwoTypes(fromType, targetType), () => (Func<object, object>)Expression.Lambda(
                 Expression.Convert(Expression.Convert(Expression.Convert(_parameter, fromType), targetType), typeof (object)), _parameter).Compile());
-        }
-    }
-
-    internal class TwoTypes {
-        private readonly Type _first;
-        private readonly Type _second;
-
-        public TwoTypes(Type first, Type second) {
-            _first = first;
-            _second = second;
-        }
-
-        public override int GetHashCode() {
-            return 31 * _first.GetHashCode() + _second.GetHashCode();
-        }
-
-        public override bool Equals(object obj) {
-            if (obj == this) {
-                return true;
-            }
-            var other = obj as TwoTypes;
-            return other != null && (_first == other._first && _second == other._second);
-        }
-    }
-
-    internal class Types {
-        private readonly Type _first;
-        private readonly Type[] _second;
-
-        public Types(Type first, params Type[] second) {
-            _first = first;
-            _second = second;
-        }
-
-        public override int GetHashCode() {
-            return  _second.Aggregate(_first.FullName.GetHashCode(), (current,each)=> current ^ each.GetHashCode() );
-        }
-
-        public override bool Equals(object obj) {
-            if (obj == this) {
-                return true;
-            }
-            var other = obj as Types;
-            return other != null && (_first == other._first && _second.SequenceEqual(other._second));
         }
     }
 }

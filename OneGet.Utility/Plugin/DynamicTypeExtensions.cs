@@ -17,7 +17,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using System.Collections.Generic;
     using System.Reflection;
     using System.Reflection.Emit;
-    using Utility.Extensions;
+    using Extensions;
 
     internal static class DynamicTypeExtensions {
         private static readonly Type[] _emptyTypes = {

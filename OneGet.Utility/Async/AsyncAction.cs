@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Utility.Collections {
+namespace Microsoft.OneGet.Utility.Async {
     using System;
     using System.Threading;
 
@@ -85,7 +85,7 @@ namespace Microsoft.OneGet.Utility.Collections {
             _cancellationTokenSource.Cancel();
 #if DEEP_DEBUG
             Console.WriteLine("Passed Cancel Token {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif 
+#endif
             // actively tell anyone who is listening that we're trying to cancel this.
             if (OnCancel != null) {
                 OnCancel();
@@ -96,7 +96,7 @@ namespace Microsoft.OneGet.Utility.Collections {
             lock (this) {
 #if DEEP_DEBUG
                 Console.WriteLine("CANCELLED {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif 
+#endif
                 if (_actionState < ActionState.Canceled) {
                     _actionState = ActionState.Canceled;
                 }
@@ -185,7 +185,7 @@ namespace Microsoft.OneGet.Utility.Collections {
         public virtual void Dispose(bool disposing) {
 #if DEEP_DEBUG
             Console.WriteLine("START DISPOSING OF TASK {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif 
+#endif
 
             lock (this) {
                 // make sure this kind of thing doesn't happen twice.
@@ -204,7 +204,7 @@ namespace Microsoft.OneGet.Utility.Collections {
 
 #if DEEP_DEBUG
                     Console.WriteLine("GIVING 5 seconds to die for TASK {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif 
+#endif
                     _timer.Change(5000, -1);
                 } else {
                     // stop timer activity
@@ -217,7 +217,7 @@ namespace Microsoft.OneGet.Utility.Collections {
             }
 #if DEEP_DEBUG
             Console.WriteLine("DONE TASK {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif 
+#endif
         }
 
         private void DisposeTimer() {
@@ -256,7 +256,7 @@ namespace Microsoft.OneGet.Utility.Collections {
             if (_actionState < ActionState.Cancelling) {
 #if DEEP_DEBUG
                 Console.WriteLine("Signalled to Cancel ================================== {0} : {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif 
+#endif
                 Cancel();
                 return;
             }
@@ -265,14 +265,14 @@ namespace Microsoft.OneGet.Utility.Collections {
                 // we were in a cancelled state when we noticed the timer hit zero.
 #if DEEP_DEBUG
                 Console.WriteLine("ARE WE SUPPOSED TO ABORT HERE? ================================== {0} : {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif 
+#endif
                 return;
             }
 
             if (_actionState == ActionState.Canceled) {
 #if DEEP_DEBUG
                 Console.WriteLine("Signalled to Abort ================================== {0} : {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif 
+#endif
                 // we were in a cancelled state when we noticed the timer hit zero.
                 Abort();
             }

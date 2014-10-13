@@ -18,6 +18,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
+    using Async;
     using Collections;
     using Extensions;
 
@@ -84,7 +85,6 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 yield return items;
                 yield break;
             }
-            
 
             foreach (var item in items) {
                 if (item is object[] || item is IEnumerable<object>) {

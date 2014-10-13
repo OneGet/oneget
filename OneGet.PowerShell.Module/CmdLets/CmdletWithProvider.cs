@@ -13,7 +13,6 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
@@ -21,15 +20,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Collections;
-    using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
     public abstract class CmdletWithProvider : CmdletBase {
         public static ManualResetEvent _reentrancyLock = new ManualResetEvent(false);
         private readonly OptionCategory[] _optionCategories;
-
-     
-
 
         protected CmdletWithProvider(OptionCategory[] categories) {
             _optionCategories = categories;
@@ -103,7 +98,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     // foreach (var md in _optionCategories.SelectMany(category => providers.SelectMany(provider => provider.GetDynamicOptions(category, this)))) {
                     if (DynamicParameterDictionary.ContainsKey(md.Name)) {
                         // todo: if the dynamic parameters from two providers aren't compatible, then what? 
-                        
+
                         // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
                         // (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
                         if (IsInvocation) {
@@ -115,7 +110,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
                     }
                 }
-                
             } finally {
                 _reentrancyLock.Reset();
             }

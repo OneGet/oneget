@@ -14,11 +14,10 @@
 
 namespace Microsoft.OneGet.Providers {
     using System;
-    using System.Collections.Generic;
     using Utility.Plugin;
-    using IRequestObject =System.Object;
-    public interface IDownloader : IProvider {
+    using IRequestObject = System.Object;
 
+    public interface IDownloader : IProvider {
         /// <summary>
         ///     Returns the name of the Provider.
         /// </summary>

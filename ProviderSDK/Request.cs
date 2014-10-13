@@ -18,15 +18,13 @@ namespace OneGet.ProviderSDK {
     using System.Globalization;
     using System.Linq;
     using System.Security;
-    using System.Threading;
     using PackageProvider.Template.Resources;
     using IRequestObject = System.MarshalByRefObject;
 
     public abstract class Request : IDisposable {
-
         #region copy core-apis
 
-        public abstract bool IsCanceled { get; }
+        public abstract bool IsCanceled {get;}
 
         /* Synced/Generated code =================================================== */
 
@@ -40,10 +38,9 @@ namespace OneGet.ProviderSDK {
         public abstract Type GetIRequestInterface();
 
         /// <summary>
-        /// Returns the internal version of the OneGet core.
-        /// 
-        /// This will usually only be updated if there is a breaking API or Interface change that might 
-        /// require other code to know which version is running.
+        ///     Returns the internal version of the OneGet core.
+        ///     This will usually only be updated if there is a breaking API or Interface change that might
+        ///     require other code to know which version is running.
         /// </summary>
         /// <returns>Internal Version of OneGet</returns>
         public abstract int CoreVersion();
@@ -56,9 +53,9 @@ namespace OneGet.ProviderSDK {
 
         public abstract bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
 
-        public abstract IEnumerable<string> ProviderNames { get; }
+        public abstract IEnumerable<string> ProviderNames {get;}
 
-        public abstract object PackageProviders { get; }
+        public abstract object PackageProviders {get;}
 
         public abstract object SelectProvidersWithFeature(string featureName);
 
@@ -75,6 +72,7 @@ namespace OneGet.ProviderSDK {
         public abstract string ParsePackageName(string canonicalPackageId);
 
         public abstract string ParsePackageVersion(string canonicalPackageId);
+
         #endregion
 
         #region copy host-apis
@@ -105,7 +103,6 @@ namespace OneGet.ProviderSDK {
         public abstract IEnumerable<string> GetOptionKeys();
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -126,6 +123,7 @@ namespace OneGet.ProviderSDK {
         public abstract bool IsInteractive();
 
         public abstract int CallCount();
+
         #endregion
 
         #region copy response-apis
@@ -153,12 +151,12 @@ namespace OneGet.ProviderSDK {
 
         public abstract bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
 
-        #if M2
+#if M2
         public abstract bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
 
         public abstract bool YieldMetadata(string fieldId, string @namespace, string name, string value);
 
-        #endif 
+        #endif
 
         /// <summary>
         ///     Used by a provider to return fields for a package source (repository)
@@ -169,7 +167,7 @@ namespace OneGet.ProviderSDK {
         /// <param name="isRegistered"></param>
         /// <param name="isValidated"></param>
         /// <returns></returns>
-        public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
+        public abstract bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
@@ -184,6 +182,7 @@ namespace OneGet.ProviderSDK {
         public abstract bool YieldKeyValuePair(string key, string value);
 
         public abstract bool YieldValue(string value);
+
         #endregion
 
         #region copy service-apis
@@ -228,9 +227,11 @@ namespace OneGet.ProviderSDK {
         public abstract bool IsSignedAndTrusted(string filename, IRequestObject requestObject);
 
         public abstract bool ExecuteElevatedAction(string provider, string payload, IRequestObject requestObject);
+
         #endregion
 
         #region copy Request-implementation
+
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -320,12 +321,12 @@ namespace OneGet.ProviderSDK {
 
             if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
                 // check with the caller first, then with the local resources, and fallback to using the messageText itself.
-                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ?? GetMessageStringInternal(messageText) ?? messageText;    
+                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ?? GetMessageStringInternal(messageText) ?? messageText;
             }
 
             // if it doesn't look like we have the correct number of parameters
             // let's return a fixmeformat string.
-            var c = System.Linq.Enumerable.Count( System.Linq.Enumerable.Where(messageText.ToCharArray(), each => each == '{'));
+            var c = Enumerable.Count(Enumerable.Where(messageText.ToCharArray(), each => each == '{'));
             if (c < args.Length) {
                 return FixMeFormat(messageText, args);
             }
@@ -349,7 +350,5 @@ namespace OneGet.ProviderSDK {
         public bool YieldDynamicOption(string name, string expectedType, bool isRequired, IEnumerable<string> permittedValues) {
             return YieldDynamicOption(name, expectedType, isRequired) && (permittedValues ?? Enumerable.Empty<string>()).All(each => YieldKeyValuePair(name, each));
         }
-
     }
-
 }

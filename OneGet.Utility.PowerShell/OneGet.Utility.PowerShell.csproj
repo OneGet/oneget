@@ -47,6 +47,8 @@
     <Compile Include="DynamicPowershellCommand.cs" />
     <Compile Include="DynamicPowershellResult.cs" />
     <Compile Include="ErrorMessage.cs" />
+    <Compile Include="Errors.cs" />
+    <Compile Include="ProgressTracker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

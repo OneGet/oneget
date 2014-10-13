@@ -35,8 +35,8 @@ namespace Microsoft.OneGet.Builtin {
         internal const string ProviderName = "msi";
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
-            {Constants.Features.SupportedExtensions, new[] {"msi","msp"}},
-            {Constants.Features.MagicSignatures, new [] {Constants.Signatures.OleCompoundDocument}}
+            {Constants.Features.SupportedExtensions, new[] {"msi", "msp"}},
+            {Constants.Features.MagicSignatures, new[] {Constants.Signatures.OleCompoundDocument}}
         };
 
         private int _progressId;
@@ -115,7 +115,6 @@ namespace Microsoft.OneGet.Builtin {
                 using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::GetDynamicOptions' '{1}'", ProviderName, category);
-                    
 
                     switch ((category ?? string.Empty).ToLowerInvariant()) {
                         case "install":

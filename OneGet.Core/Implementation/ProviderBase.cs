@@ -22,6 +22,7 @@ namespace Microsoft.OneGet.Implementation {
     using Api;
     using Packaging;
     using Providers;
+    using Utility.Async;
     using Utility.Collections;
     using Utility.Extensions;
     using Utility.Plugin;
@@ -29,8 +30,7 @@ namespace Microsoft.OneGet.Implementation {
     using IRequestObject = System.Object;
 
     public abstract class ProviderBase : MarshalByRefObject {
-        public abstract string ProviderName { get; }
-
+        public abstract string ProviderName {get;}
     }
 
     public abstract class ProviderBase<T> : ProviderBase where T : IProvider {
@@ -178,7 +178,7 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         public IAsyncEnumerable<DynamicOption> GetDynamicOptions(OptionCategory category, IRequestObject requestObject) {
-            return new DynamicOptionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetDynamicOptions(category.ToString(), request),category);
+            return new DynamicOptionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetDynamicOptions(category.ToString(), request), category);
         }
     }
 }

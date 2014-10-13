@@ -43,16 +43,19 @@ namespace Microsoft.OneGet.Packaging {
                 return this[Iso19770_2.OwnershipAttribute.LocalName];
             }
         }
+
         public string Relationship {
             get {
                 return this[Iso19770_2.RelationshipAttribute.LocalName];
             }
         }
+
         public string MediaType {
             get {
                 return this[Iso19770_2.MediaTypeAttribute.LocalName];
             }
         }
+
         public string Use {
             get {
                 return this[Iso19770_2.UseAttribute.LocalName];

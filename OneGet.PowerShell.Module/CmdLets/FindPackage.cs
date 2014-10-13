@@ -20,18 +20,16 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     [Cmdlet(VerbsCommon.Find, Constants.PackageNoun), OutputType(typeof (SoftwareIdentity))]
     public sealed class FindPackage : CmdletWithSearchAndSource {
-
-        protected override IEnumerable<string> ParameterSets {
-            get {
-                return new[] { "", };
-            }
-        }
-
-
         public FindPackage()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source, OptionCategory.Package
             }) {
+        }
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {"",};
+            }
         }
 
         [Parameter]

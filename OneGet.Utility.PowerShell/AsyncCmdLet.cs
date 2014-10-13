@@ -14,7 +14,6 @@
 
 namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
@@ -22,20 +21,12 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
-    using System.Runtime.Remoting.Messaging;
     using System.Threading;
     using System.Threading.Tasks;
-    using Utility.Collections;
-    using Utility.Extensions;
+    using Collections;
+    using Extensions;
 
     public delegate bool OnMainThread(Func<bool> onMainThreadDelegate);
-
-    internal class ProgressTracker {
-        internal int Id;
-        internal string Activity;
-        internal List<ProgressTracker> Children= new List<ProgressTracker>();
-        internal ProgressTracker Parent;
-    }
 
     public abstract class AsyncCmdlet : PSCmdlet, IDynamicParameters, IDisposable {
         private readonly HashSet<string> _errors = new HashSet<string>();
@@ -95,7 +86,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 if (IsTesting) {
                     return true;
                 }
-#endif 
+#endif
                 return MyInvocation.Line.Is();
             }
         }
@@ -268,8 +259,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             return messageText.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase) ? messageText.Substring(4) : messageText;
         }
 
-        public bool Error(string id,string category, string targetObjectValue, string messageText, params object[] args) {
-
+        public bool Error(string id, string category, string targetObjectValue, string messageText, params object[] args) {
             if (!IgnoreErrors) {
                 if (IsInvocation) {
                     var errorMessage = FormatMessageString(messageText, args);
@@ -338,8 +328,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     _stopwatch = new Stopwatch();
                     _stopwatch.Start();
                 }
-                
-                WriteDebug("{0} {1}".format( _stopwatch.Elapsed,FormatMessageString(messageText, args)));
+
+                WriteDebug("{0} {1}".format(_stopwatch.Elapsed, FormatMessageString(messageText, args)));
             }
 
             // rather than wait on the result of the async WriteVerbose,
@@ -376,7 +366,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     if (parent != null) {
                         parent.Children.Add(p);
                     }
-                    _progressTrackers.Add( p);
+                    _progressTrackers.Add(p);
 
                     WriteProgress(new ProgressRecord(p.Id, p.Activity, " ") {
                         PercentComplete = 0,
@@ -396,12 +386,12 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             lock (_progressTrackers) {
                 if (IsInvocation) {
                     var p = _progressTrackers.FirstOrDefault(each => each.Id == activityId);
-                    if (p!= null) {
+                    if (p != null) {
                         if (progressPercentage >= 100) {
                             progressPercentage = 100;
                         }
 
-                        WriteProgress(new ProgressRecord(p.Id, p.Activity, FormatMessageString(messageText,args)) {
+                        WriteProgress(new ProgressRecord(p.Id, p.Activity, FormatMessageString(messageText, args)) {
                             ParentActivityId = p.Parent != null ? p.Parent.Id : 0,
                             PercentComplete = progressPercentage,
                             RecordType = ProgressRecordType.Processing
@@ -421,12 +411,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         public bool CompleteProgress(int activityId, bool isSuccessful) {
             lock (_progressTrackers) {
                 if (IsInvocation) {
-                    
                     var p = _progressTrackers.FirstOrDefault(each => each.Id == activityId);
-                    if (p!= null) {
+                    if (p != null) {
                         // complete all of this trackers kids.
                         foreach (var child in p.Children) {
-                            CompleteProgress(child.Id,isSuccessful);
+                            CompleteProgress(child.Id, isSuccessful);
                         }
                         if (p.Parent != null) {
                             p.Parent.Children.Remove(p);
@@ -476,7 +465,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
 
             if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
-                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ??  messageText;
+                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ?? messageText;
             }
 
             return args == null || args.Length == 0 ? messageText : messageText.format(args);
@@ -494,7 +483,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                             e.Dump();
                         }
                     })
-                ;
+                    ;
 
                 // when the task is done, mark the msg queue as complete
                 task.ContinueWith(antecedent => {
@@ -743,7 +732,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         protected virtual void Dispose(bool disposing) {
             if (disposing) {
-/*
+                /*
                 if (_cancelWhenStopped != null) {
                     _cancelWhenStopped.Clear();
                     _cancelWhenStopped = null;

@@ -18,22 +18,21 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
     [Cmdlet(VerbsLifecycle.Register, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
     public sealed class RegisterPackageSource : CmdletWithProvider {
+        public RegisterPackageSource()
+            : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
+        }
 
         protected override IEnumerable<string> ParameterSets {
             get {
-                return new[] {  ""};
+                return new[] {""};
             }
-        }
-
-
-        public RegisterPackageSource()
-            : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
         }
 
         [Parameter(ValueFromPipelineByPropertyName = true, Mandatory = true)]
@@ -52,7 +51,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public SwitchParameter Trusted {get; set;}
 
         public override bool GenerateDynamicParameters() {
-
             var packageProvider = SelectProviders(ProviderName).ReEnumerable();
 
             // if more than one provider is selected, this will never work
@@ -67,12 +65,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     // (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
                     if (IsInvocation) {
                         (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
-                    }
-                    else {
+                    } else {
                         (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).IncludeInParameterSet(md, IsInvocation, ParameterSets);
                     }
-                }
-                else {
+                } else {
                     // DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md));
                     DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
                 }
@@ -109,11 +105,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     foreach (var existingSource in existingSources) {
                         if (Force) {
                             if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource, existingSource.Name, existingSource.Location, existingSource.ProviderName), Constants.ActionReplacePackageSource).Result) {
-                                var removedSources = packageProvider.First().RemovePackageSource(existingSource.Name, this).CancelWhen(_cancellationEvent.Token); 
+                                var removedSources = packageProvider.First().RemovePackageSource(existingSource.Name, this).CancelWhen(_cancellationEvent.Token);
                                 foreach (var removedSource in removedSources) {
                                     Verbose(Constants.OverwritingPackageSource, removedSource.Name);
                                 }
-                                
                             }
                         } else {
                             Error(Errors.PackageSourceExists, existingSource.Name);

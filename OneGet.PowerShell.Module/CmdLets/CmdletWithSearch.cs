@@ -24,10 +24,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected override IEnumerable<string> ParameterSets {
             get {
-                return new[] { "" };
+                return new[] {""};
             }
         }
-
 
         [Parameter(Position = 0)]
         public virtual string[] Name {get; set;}

@@ -21,16 +21,15 @@ namespace Microsoft.OneGet.Utility.Platform {
     using System.Text;
 
     public static class ShellApplication {
-
         private static readonly string _pin;
         private static readonly string _unpin;
 
         static ShellApplication() {
-            var instance = IntPtr.Zero ;
+            var instance = IntPtr.Zero;
             try {
                 var buffer = new StringBuilder(0x100);
                 instance = NativeMethods.LoadLibrary("shell32.dll");
-                if( NativeMethods.LoadString(instance, 0x150a, buffer, buffer.Capacity) > 0 ) {
+                if (NativeMethods.LoadString(instance, 0x150a, buffer, buffer.Capacity) > 0) {
                     _pin = buffer.ToString();
                 }
                 if (NativeMethods.LoadString(instance, 0x150b, buffer, buffer.Capacity) > 0) {
@@ -81,7 +80,6 @@ namespace Microsoft.OneGet.Utility.Platform {
                     v.DoIt();
                 }
             } catch {
-                
             }
             if (shell != null) {
                 Marshal.ReleaseComObject(shell);

@@ -1,16 +1,16 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.OneGet.Utility.Collections {
     using System;
@@ -18,12 +18,8 @@ namespace Microsoft.OneGet.Utility.Collections {
     using System.Collections.Generic;
     using System.Linq;
 
-    public abstract class AbstractDictionary<TKey, TVal> : MarshalByRefObject , IDictionary<TKey, TVal>  {
+    public abstract class AbstractDictionary<TKey, TVal> : MarshalByRefObject, IDictionary<TKey, TVal> {
         // we don't want these objects being gc's out because they remain unused...
-        public override object InitializeLifetimeService() {
-            return null;
-        }
-
 
         public virtual IEnumerator<KeyValuePair<TKey, TVal>> GetEnumerator() {
             return new VirtualEnumerator<KeyValuePair<TKey, TVal>>(Keys.GetEnumerator(), enumerator => new KeyValuePair<TKey, TVal>((TKey)enumerator.Current, this[(TKey)enumerator.Current]));
@@ -104,5 +100,9 @@ namespace Microsoft.OneGet.Utility.Collections {
         public abstract TVal this[TKey key] {get; set;}
         public abstract ICollection<TKey> Keys {get;}
         public abstract bool Remove(TKey key);
+
+        public override object InitializeLifetimeService() {
+            return null;
+        }
     }
 }

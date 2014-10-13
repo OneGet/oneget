@@ -14,7 +14,6 @@
 
 namespace Microsoft.OneGet {
     using System.Collections.Generic;
-    using Api;
     using Implementation;
     using IRequestObject = System.Object;
 
@@ -27,11 +26,10 @@ namespace Microsoft.OneGet {
     ///     method to dynamically generate a matching implementation at load time.
     /// </summary>
     public interface IPackageManagementService {
-        bool Initialize(IRequestObject requestObject);
-
         IEnumerable<string> ProviderNames {get;}
 
-        IEnumerable<PackageProvider> PackageProviders { get; }
+        IEnumerable<PackageProvider> PackageProviders {get;}
+        bool Initialize(IRequestObject requestObject);
 
         IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName);
 

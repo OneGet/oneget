@@ -44,9 +44,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Builtin\ArpProvider.cs" />
+    <Compile Include="Builtin\BoostrapRequest.cs" />
     <Compile Include="Builtin\BootstrapProvider.cs" />
     <Compile Include="Builtin\CabArchiver.cs" />
-    <Compile Include="Builtin\HttpDownloader.cs" />
+    <Compile Include="Builtin\WebDownloader.cs" />
     <Compile Include="Builtin\MsiProvider.cs" />
     <Compile Include="Builtin\MsuProvider.cs" />
     <Compile Include="Builtin\SwidProvider.cs" />
@@ -55,16 +56,16 @@
     <Compile Include="Builtin\WindowsUpdateProvider.cs" />
     <Compile Include="Builtin\ZipArchiver.cs" />
     <Compile Include="ErrorCategory.cs" />
-    <Compile Include="Implementation\ActionResponse.cs" />
-    <Compile Include="Implementation\AsyncEnumerableResponse.cs" />
+    <Compile Include="Implementation\ActionRequestObject.cs" />
+    <Compile Include="Implementation\EnumerableRequestObject.cs" />
     <Compile Include="Implementation\Delegates.cs" />
-    <Compile Include="Implementation\DictionaryResponse.cs" />
-    <Compile Include="Implementation\DynamicOptionResponse.cs" />
-    <Compile Include="Implementation\FuncResponse.cs" />
-    <Compile Include="Implementation\CoreResponse.cs" />
-    <Compile Include="Implementation\PackageSourceResponse.cs" />
+    <Compile Include="Implementation\DictionaryRequestObject.cs" />
+    <Compile Include="Implementation\DynamicOptionRequestObject.cs" />
+    <Compile Include="Implementation\FuncRequestObject.cs" />
+    <Compile Include="Implementation\RequestObject.cs" />
+    <Compile Include="Implementation\PackageSourceRequestObject.cs" />
     <Compile Include="Implementation\RemotableHostApi.cs" />
-    <Compile Include="Implementation\SoftwareIdentityResponse.cs" />
+    <Compile Include="Implementation\SoftwareIdentityRequestObject.cs" />
     <Compile Include="Packaging\DynamicOption.cs" />
     <Compile Include="Packaging\OptionCategory.cs" />
     <Compile Include="Packaging\OptionType.cs" />

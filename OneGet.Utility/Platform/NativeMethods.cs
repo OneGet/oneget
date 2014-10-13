@@ -26,49 +26,6 @@ namespace Microsoft.OneGet.Utility.Platform {
         UntrustedRootCert = 0x800B0109 //A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider. 
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    internal class WinTrustFileInfo {
-        private UInt32 StructSize = (UInt32)Marshal.SizeOf(typeof(WinTrustFileInfo));
-        private IntPtr FilePath; // required, file name to be verified
-        private IntPtr hFile = IntPtr.Zero; // optional, open handle to FilePath
-        private IntPtr pgKnownSubject = IntPtr.Zero; // optional, subject type if it is known
-
-        public WinTrustFileInfo(String filePath) {
-            FilePath = Marshal.StringToCoTaskMemAuto(filePath);
-        }
-
-        ~WinTrustFileInfo() {
-            Marshal.FreeCoTaskMem(FilePath);
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    internal class WinTrustData {
-        private UInt32 StructSize = (UInt32)Marshal.SizeOf(typeof(WinTrustData));
-        private IntPtr PolicyCallbackData = IntPtr.Zero;
-        private IntPtr SIPClientData = IntPtr.Zero;
-        private uint UIChoice = 2;
-        private uint RevocationChecks = 0;
-        private uint UnionChoice = 1;
-        private IntPtr FileInfoPtr;
-        private uint StateAction = 0;
-        private IntPtr StateData = IntPtr.Zero;
-        private String URLReference;
-        private uint ProvFlags = 0x00000040; // check revocation chain.
-        private uint UIContext = 0;
-
-        // constructor for silent WinTrustDataChoice.File check
-        public WinTrustData(String filename) {
-            var wtfiData = new WinTrustFileInfo(filename);
-            FileInfoPtr = Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(WinTrustFileInfo)));
-            Marshal.StructureToPtr(wtfiData, FileInfoPtr, false);
-        }
-
-        ~WinTrustData() {
-            Marshal.FreeCoTaskMem(FileInfoPtr);
-        }
-    }
-
     public static class NativeMethods {
         [DllImport("kernel32.dll", EntryPoint = "MoveFileEx", CharSet = CharSet.Unicode)]
         internal static extern bool MoveFileEx(string lpExistingFileName, string lpNewFileName, MoveFileFlags dwFlags);
@@ -92,13 +49,10 @@ namespace Microsoft.OneGet.Utility.Platform {
         [DllImport("kernel32")]
         internal static extern bool FreeLibrary(IntPtr Instance);
 
-
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern void OutputDebugString(string debugMessageText);
 
-
         [DllImport("wintrust.dll", ExactSpelling = true, SetLastError = false, CharSet = CharSet.Unicode)]
         internal static extern WinVerifyTrustResult WinVerifyTrust(IntPtr hwnd, [MarshalAs(UnmanagedType.LPStruct)] Guid pgActionID, WinTrustData pWVTData);
-
     }
 }

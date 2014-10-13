@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Utility.Collections {
+namespace Microsoft.OneGet.Utility.Async {
     using System.Collections.Generic;
 
     public interface IAsyncEnumerable<out T> : IAsyncAction, IEnumerable<T> {

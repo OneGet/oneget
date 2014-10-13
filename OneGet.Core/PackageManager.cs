@@ -13,7 +13,6 @@
 //  
 
 namespace Microsoft.OneGet {
-    using System;
     using System.Linq;
     using System.Runtime.Remoting;
     using System.Runtime.Remoting.Channels;
@@ -77,19 +76,19 @@ namespace Microsoft.OneGet {
             }
 
             var pms = new PackageManager().Instance;
-            string rpc = args[0];
-            string provider = args[1];
-            string payload = args[2];
+            var rpc = args[0];
+            var provider = args[1];
+            var payload = args[2];
 
             var clientChannel = new IpcClientChannel();
             ChannelServices.RegisterChannel(clientChannel, true);
-            var remoteRequest = (IHostApi)RemotingServices.Connect(typeof(IHostApi), rpc, null);
+            var remoteRequest = (IHostApi)RemotingServices.Connect(typeof (IHostApi), rpc, null);
             var localRequest = new RemotableHostApi(remoteRequest);
 
             pms.Initialize(localRequest);
-            var pro = pms.SelectProviders(provider,localRequest).FirstOrDefault();
+            var pro = pms.SelectProviders(provider, localRequest).FirstOrDefault();
             pro.ExecuteElevatedAction(payload.FromBase64(), localRequest);
-            
+
             return 0;
         }
     }

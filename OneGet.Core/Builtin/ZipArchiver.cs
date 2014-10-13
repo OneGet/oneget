@@ -25,17 +25,15 @@ namespace Microsoft.OneGet.Builtin {
     using IRequestObject = System.Object;
 
     public class ZipArchiver {
-
-        public void InitializeProvider(IRequestObject requestObject) {
-        }
+        private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
+            {Constants.Features.SupportedExtensions, new[] {"zip"}},
+            {Constants.Features.MagicSignatures, new[] {Constants.Signatures.Zip}},
+        };
 
         private string ProviderName = "zipfile";
 
-        private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
-            {Constants.Features.SupportedExtensions, new[] {"zip"}},
-            {Constants.Features.MagicSignatures, new[] {Constants.Signatures.Zip }},
-        };
-
+        public void InitializeProvider(IRequestObject requestObject) {
+        }
 
         /// <summary>
         ///     Returns a collection of strings to the client advertizing features this provider supports.
@@ -46,7 +44,6 @@ namespace Microsoft.OneGet.Builtin {
         /// </param>
         public void GetFeatures(IRequestObject requestObject) {
             try {
-
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
@@ -55,8 +52,7 @@ namespace Microsoft.OneGet.Builtin {
                         request.Yield(feature);
                     }
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
@@ -116,48 +112,6 @@ namespace Microsoft.OneGet.Builtin {
             }
             // return the list of files to the parent.
             return processed.ToArray();
-
-#if manually            
-            var result = new CancellableBlockingCollection<string>();
-            Task.Factory.StartNew(() => {
-                using (var request = requestObject.As<Request>()) {
-                    request.Debug("Unpacking {0} {1}", localFilename, destinationFolder);
-
-                    var info = new ZipInfo(localFilename);
-                    var files = info.GetFiles();
-                    request.Debug("File Count", files.Count);
-
-                    var percent = 0;
-                    var index = 0;
-
-                    foreach (var zipfile in info) {
-                        index ++;
-                        var complete = (index*100)/files.Count;
-                        if (complete != percent) {
-                            percent = complete;
-                            request.Debug("Percent Complete {0}", percent);
-                        }
-                        var outputFilename = Path.Combine(destinationFolder, zipfile.Path, zipfile.Name);
-                        zipfile.CopyTo(outputFilename, true);
-                        result.Add(outputFilename);
-                    }
-                    request.Debug("DONE Unpacking {0} {1}", localFilename, destinationFolder);
-                    result.CompleteAdding();
-                }
-
-            });
-                return CancellableBlockingCollection<string>.ToCancellableEnumerable(result);
-#endif
-            /*
-            var info = new ZipInfo(localFilename);
-            
-            foreach (var zipfile in info.GetFiles()) {
-                var outputFilename = Path.Combine(destinationFolder, zipfile.Path, zipfile.Name);
-                zipfile.CopyTo(outputFilename, true);
-
-                yield return outputFilename;
-            }
-             * */
         }
 
         public bool IsSupportedFile(string localFilename) {

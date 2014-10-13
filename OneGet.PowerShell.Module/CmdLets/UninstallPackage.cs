@@ -17,20 +17,20 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using System.Threading.Tasks;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsLifecycle.Uninstall, Constants.PackageNoun, SupportsShouldProcess = true)]
     public sealed class UninstallPackage : GetPackage {
+        private Dictionary<string, List<SoftwareIdentity>> _resultsPerName;
+
         protected override IEnumerable<string> ParameterSets {
             get {
-                return new[] { Constants.PackageByInputObjectSet, Constants.PackageBySearchSet };
+                return new[] {Constants.PackageByInputObjectSet, Constants.PackageBySearchSet};
             }
         }
-
-        private Dictionary<string, List<SoftwareIdentity>> _resultsPerName;
 
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.PackageByInputObjectSet)]
         public SoftwareIdentity[] InputObject {get; set;}
@@ -134,6 +134,5 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public bool ShouldProcessPackageUninstall(string packageName, string version) {
             return Force || ShouldProcess(FormatMessageString(Constants.TargetPackage, packageName), FormatMessageString(Constants.ActionUninstallPackage)).Result;
         }
-
     }
 }

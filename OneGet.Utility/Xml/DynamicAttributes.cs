@@ -17,7 +17,6 @@ namespace Microsoft.OneGet.Utility.Xml {
     using System.Collections;
     using System.Collections.Generic;
     using System.Dynamic;
-    using System.Linq;
     using System.Xml.Linq;
 
     /// <summary>
@@ -56,6 +55,14 @@ namespace Microsoft.OneGet.Utility.Xml {
             set {
                 _element.SetAttributeValue(attributeName, value);
             }
+        }
+
+        public IEnumerator<XAttribute> GetEnumerator() {
+            return _element.Attributes().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
         }
 
         /// <summary>
@@ -99,14 +106,6 @@ namespace Microsoft.OneGet.Utility.Xml {
             }
             _element.SetAttributeValue(binder.Name, value);
             return true;
-        }
-
-        public IEnumerator<XAttribute> GetEnumerator() {
-            return _element.Attributes().GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator();
         }
     }
 }

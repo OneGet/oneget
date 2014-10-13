@@ -12,14 +12,13 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Implementation {
-    using System;
-    using Api;
-    using Utility.Collections;
+namespace Microsoft.OneGet.Utility.PowerShell {
+    using System.Collections.Generic;
 
-    public class ActionRequestObject : RequestObject {
-        public ActionRequestObject(ProviderBase provider, IHostApi hostApi, Action<RequestObject> action) : base(provider,hostApi,action) {
-            InvokeImpl();
-        }
+    internal class ProgressTracker {
+        internal string Activity;
+        internal List<ProgressTracker> Children = new List<ProgressTracker>();
+        internal int Id;
+        internal ProgressTracker Parent;
     }
 }

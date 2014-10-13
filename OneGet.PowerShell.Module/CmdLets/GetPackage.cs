@@ -17,10 +17,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
 
@@ -29,16 +28,16 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         private readonly Dictionary<string, bool> _namesProcessed = new Dictionary<string, bool>();
         private readonly Dictionary<string, bool> _providersProcessed = new Dictionary<string, bool>();
 
-        protected override IEnumerable<string> ParameterSets {
-            get {
-                return new[] {"" };
-            }
-        }
-
         public GetPackage()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Install
             }) {
+        }
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {""};
+            }
         }
 
         protected IEnumerable<string> UnprocessedNames {
@@ -70,7 +69,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool ProcessRecordAsync() {
-            SelectedProviders.ParallelForEach( provider => {
+            SelectedProviders.ParallelForEach(provider => {
                 _providersProcessed.GetOrAdd(provider.ProviderName, () => false);
 
                 try {

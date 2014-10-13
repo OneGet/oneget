@@ -25,7 +25,7 @@ namespace Microsoft.OneGet.Builtin {
     using IRequestObject = System.Object;
 
     public class WebDownloader {
-        internal static string ProviderName ="WebDownloader";
+        internal static string ProviderName = "WebDownloader";
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
             {Constants.Features.SupportedSchemes, new[] {"http", "https", "ftp", "file"}},
@@ -40,7 +40,6 @@ namespace Microsoft.OneGet.Builtin {
         /// </param>
         public void GetFeatures(IRequestObject requestObject) {
             try {
-
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
@@ -49,8 +48,7 @@ namespace Microsoft.OneGet.Builtin {
                         request.Yield(feature);
                     }
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
                 // Really this is just here as a precautionary to behave correctly.
                 // At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.

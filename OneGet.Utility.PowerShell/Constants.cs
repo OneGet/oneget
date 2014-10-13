@@ -13,19 +13,8 @@
 //  
 
 namespace Microsoft.OneGet.Utility.PowerShell {
-    using System.Management.Automation;
-
-    internal static class Errors {
-        public static ErrorMessage FileNotFound = new ErrorMessage(Constants.FileNotFound, ErrorCategory.ObjectNotFound);
-        public static ErrorMessage FolderNotFound = new ErrorMessage(Constants.FolderNotFound, ErrorCategory.ObjectNotFound);
-        public static ErrorMessage MoreThanOneFolderMatched = new ErrorMessage(Constants.MoreThanOneFolderMatched, ErrorCategory.ObjectNotFound);
-        public static ErrorMessage MoreThanOneFileMatched = new ErrorMessage(Constants.MoreThanOneFileMatched, ErrorCategory.ObjectNotFound);
-    }
-
     internal static class Constants {
         public const string MSGPrefix = "MSG:";
-
-        internal static object[] NoParameters = new object[0];
 
         public const string ConfirmParameter = "Confirm";
         public const string WhatIfParameter = "WhatIf";
@@ -40,5 +29,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         public const string GenerateDynamicParametersMethod = "GenerateDynamicParameters";
         public const string BeginProcessingAsyncMethod = "BeginProcessingAsync";
         public const string EndProcessingAsyncMethod = "EndProcessingAsync";
+        internal static object[] NoParameters = new object[0];
     }
 }

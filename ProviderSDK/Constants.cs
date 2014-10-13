@@ -17,24 +17,8 @@ namespace OneGet.ProviderSDK {
         #region copy common-constants-implementation /internal/public
 
         public const string MinVersion = "0.0.0.1";
-        public static string[] Empty = new string[0];
         public const string MSGPrefix = "MSG:";
-
-        public static class Signatures {
-            public const string Zip = "504b0304";
-            public const string Cab = "4D534346";
-            public const string OleCompoundDocument = "D0CF11E0A1B11AE1";
-            public static string[] ZipVariants = new[] { Zip, /* should have EXEs? */};
-        }
-
-        public static class PackageStatus {
-            public const string Installed = "Installed";
-            public const string Uninstalled = "Uninstalled";
-        }
-
-        public static class SwidTag {
-            public const string SoftwareIdentity = "SoftwareIdentity";
-        }
+        public static string[] Empty = new string[0];
 
         public static class Features {
             public const string AutomationOnly = "automation-only";
@@ -42,12 +26,6 @@ namespace OneGet.ProviderSDK {
             public const string MagicSignatures = "magic-signatures";
             public const string SupportedSchemes = "uri-schemes";
             public const string SupportsPowerShellModules = "supports-powershell-modules";
-        }
-
-        public static class Parameters {
-            public const string IsUpdate = "IsUpdatePackageSource";
-            public const string Name = "Name";
-            public const string Location = "Location";
         }
 
         public static class Messages {
@@ -94,6 +72,28 @@ namespace OneGet.ProviderSDK {
             public const string Path = "Path";
             public const string Uri = "Uri";
             public const string SecureString = "SecureString";
+        }
+
+        public static class PackageStatus {
+            public const string Installed = "Installed";
+            public const string Uninstalled = "Uninstalled";
+        }
+
+        public static class Parameters {
+            public const string IsUpdate = "IsUpdatePackageSource";
+            public const string Name = "Name";
+            public const string Location = "Location";
+        }
+
+        public static class Signatures {
+            public const string Zip = "504b0304";
+            public const string Cab = "4D534346";
+            public const string OleCompoundDocument = "D0CF11E0A1B11AE1";
+            public static string[] ZipVariants = new[] {Zip, /* should have EXEs? */};
+        }
+
+        public static class SwidTag {
+            public const string SoftwareIdentity = "SoftwareIdentity";
         }
 
         #endregion

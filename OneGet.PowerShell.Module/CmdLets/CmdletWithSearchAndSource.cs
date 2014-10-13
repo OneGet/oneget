@@ -18,18 +18,17 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Microsoft.OneGet;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
     using Constants = OneGet.Constants;
 
     public abstract class CmdletWithSearchAndSource : CmdletWithSearch {
-        protected readonly OrderedDictionary<string, List<SoftwareIdentity>> _resultsPerName = new OrderedDictionary<string, List<SoftwareIdentity>>();
         protected readonly List<string, string> _filesWithoutMatches = new List<string, string>();
+        protected readonly OrderedDictionary<string, List<SoftwareIdentity>> _resultsPerName = new OrderedDictionary<string, List<SoftwareIdentity>>();
         protected List<PackageProvider> _providersNotFindingAnything = new List<PackageProvider>();
 
         protected CmdletWithSearchAndSource(OptionCategory[] categories)
@@ -110,16 +109,16 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return true;
         }
 
-        internal bool FindViaUri(PackageProvider packageProvider,string searchKey, Uri packageuri) {
+        internal bool FindViaUri(PackageProvider packageProvider, string searchKey, Uri packageuri) {
             var found = false;
-            
+
             using (var packages = packageProvider.FindPackageByUri(packageuri, 0, this).CancelWhen(_cancellationEvent.Token)) {
                 foreach (var p in packages) {
                     found = true;
                     ProcessPackage(packageProvider, searchKey, p);
                 }
             }
-            
+
             return found;
         }
 
@@ -160,11 +159,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             } catch {
                 // didn't actually map to a filename ...  keep movin'
             }
-        
+
             // it doesn't look like we found any files.
             // either because we didn't find any file paths that match
             // or the provider couldn't make sense of the files.
-
 
             return found;
         }
@@ -200,16 +198,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return found;
         }
 
-        private IEnumerable<PackageProvider> SelectProvidersSupportingFile(PackageProvider[] providers ,string filename) {
+        private IEnumerable<PackageProvider> SelectProvidersSupportingFile(PackageProvider[] providers, string filename) {
             if (filename.FileExists()) {
                 var buffer = new byte[1024];
-                int sz = 0;
+                var sz = 0;
                 try {
                     using (var file = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read)) {
                         sz = file.Read(buffer, 0, 1024);
                     }
-                }
-                catch {
+                } catch {
                     // not openable. whatever.
                 }
                 foreach (var p in providers) {
@@ -221,18 +218,17 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         protected void SearchForPackages() {
-
             var providers = SelectedProviders.ToArray();
 
             if (!Name.IsNullOrEmpty()) {
                 Name.ParallelForEach(name => {
                     var found = false;
-                    
+
                     if (Uri.IsWellFormedUriString(name, UriKind.Absolute)) {
                         // try everyone as via uri
                         var packageUri = new Uri(name, UriKind.Absolute);
                         if (!packageUri.IsFile) {
-                            providers.ParallelForEach( provider => {
+                            providers.ParallelForEach(provider => {
                                 try {
                                     found = found | FindViaUri(provider, name, packageUri);
                                 } catch (Exception e) {
@@ -241,10 +237,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             });
                             // we're done searching for this provider
                             return;
-                        } 
+                        }
                         // file uris should be treated like files, not uris.
                     }
-                   
+
                     var files = FindFiles(name);
                     if (files.Any()) {
                         lock (_filesWithoutMatches) {
@@ -272,7 +268,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     // it didn't match any files
                     // and it's not a uri of any kind
                     // so we'll just ask if there is a package by that name.
-                    providers.ParallelForEach( provider => {
+                    providers.ParallelForEach(provider => {
                         try {
 #if DEEP_DEBUG
                              Console.WriteLine("Processing find via name [{0}]",provider.Name);
@@ -298,7 +294,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 });
             }
-/*
+            /*
             Parallel.ForEach(SelectedProviders, provider => {
                 try {
                     if (!Name.IsNullOrEmpty()) {

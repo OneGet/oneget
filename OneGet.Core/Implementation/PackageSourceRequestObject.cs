@@ -22,7 +22,7 @@ namespace Microsoft.OneGet.Implementation {
         private PackageSource _currentItem;
 
         public PackageSourceRequestObject(ProviderBase provider, IHostApi request, Action<RequestObject> action)
-            : base(provider,request,action) {
+            : base(provider, request, action) {
             InvokeImpl();
         }
 

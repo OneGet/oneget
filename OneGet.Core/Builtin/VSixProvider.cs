@@ -28,7 +28,7 @@ namespace Microsoft.OneGet.Builtin {
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
             {Constants.Features.SupportedExtensions, new[] {"vsix"}},
-            {Constants.Features.MagicSignatures, new [] { Constants.Signatures.Zip }}
+            {Constants.Features.MagicSignatures, new[] {Constants.Signatures.Zip}}
         };
 
         /// <summary>

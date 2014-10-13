@@ -24,7 +24,7 @@ namespace Microsoft.OneGet.Implementation {
         private List<string> _list = new List<string>();
 
         public DynamicOptionRequestObject(ProviderBase provider, IHostApi request, Action<RequestObject> action, OptionCategory category)
-            : base(provider,request,action) {
+            : base(provider, request, action) {
             _category = category;
             InvokeImpl();
         }

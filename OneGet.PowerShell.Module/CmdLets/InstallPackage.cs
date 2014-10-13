@@ -19,6 +19,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
     using Utility;
@@ -35,11 +36,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected override IEnumerable<string> ParameterSets {
             get {
-                return new[] { Constants.PackageBySearchSet, Constants.PackageByInputObjectSet};
+                return new[] {Constants.PackageBySearchSet, Constants.PackageByInputObjectSet};
             }
         }
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = Constants.PackageByInputObjectSet)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = Constants.PackageByInputObjectSet),]
         public SoftwareIdentity[] InputObject {get; set;}
 
         [Parameter(Position = 0, ParameterSetName = Constants.PackageBySearchSet)]
@@ -190,7 +191,5 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
             return false;
         }
-
-       
     }
 }

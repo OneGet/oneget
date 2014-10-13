@@ -13,15 +13,6 @@
 //  
 
 namespace Microsoft.OneGet.Utility.Collections {
-    using System;
-    using System.CodeDom;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Runtime.InteropServices;
-    using System.Threading;
-
-  
-
     /*
     public interface ICancellationToken {
         CancellationToken Token {get;}
@@ -51,6 +42,4 @@ namespace Microsoft.OneGet.Utility.Collections {
         }
     }
     */
-
-  
 }

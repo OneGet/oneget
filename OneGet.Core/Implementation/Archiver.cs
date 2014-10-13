@@ -16,7 +16,6 @@ namespace Microsoft.OneGet.Implementation {
     using System.Collections.Generic;
     using Api;
     using Providers;
-    using Utility.Collections;
     using Utility.Extensions;
     using Utility.Plugin;
     using IRequestObject = System.Object;

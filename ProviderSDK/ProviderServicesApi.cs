@@ -13,8 +13,6 @@
 //  
 
 namespace OneGet.ProviderSDK {
-    using System;
-    using System.Collections.Generic;
     using IRequestObject = System.MarshalByRefObject;
 
 #if SEPERATE_PROVIDER_API

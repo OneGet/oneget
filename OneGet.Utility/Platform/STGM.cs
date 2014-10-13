@@ -28,7 +28,7 @@ namespace Microsoft.OneGet.Utility.Platform {
         /// <summary>
         ///     Select the mode bit.
         /// </summary>
-        Mode = 0x00001000, 
+        Mode = 0x00001000,
 
         /// <summary>
         ///     Read access.
@@ -48,7 +48,7 @@ namespace Microsoft.OneGet.Utility.Platform {
         /// <summary>
         ///     Flag to zero in on the access bits.
         /// </summary>
-        Access = 0x00000003, 
+        Access = 0x00000003,
 
         /// <summary>
         ///     ReadWrite
@@ -73,6 +73,6 @@ namespace Microsoft.OneGet.Utility.Platform {
         /// <summary>
         ///     Flag to select the Share bits.
         /// </summary>
-        Sharing = 0x00000070, 
+        Sharing = 0x00000070,
     }
 }

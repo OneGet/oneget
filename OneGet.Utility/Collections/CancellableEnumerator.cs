@@ -14,12 +14,7 @@
 
 namespace Microsoft.OneGet.Utility.Collections {
     using System.Collections;
-    using System.Collections.Generic;
-    using System.Security.Cryptography.X509Certificates;
 
-    public interface ICancellableEnumerator<out T> : IEnumerator<T> {
-        void Cancel();
-    }
     public class CancellableEnumerator<T> : SerializableEnumerator<T>, ICancellableEnumerator<T> {
         private readonly ByRefCancellationTokenSource _cancellationTokenSource;
 
@@ -37,5 +32,4 @@ namespace Microsoft.OneGet.Utility.Collections {
             _cancellationTokenSource.Cancel();
         }
     }
-    
 }

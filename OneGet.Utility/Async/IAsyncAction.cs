@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Utility.Collections {
+namespace Microsoft.OneGet.Utility.Async {
     using System;
     using System.Threading;
 

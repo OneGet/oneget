@@ -15,7 +15,6 @@
 namespace Microsoft.OneGet.Implementation {
     using System;
     using System.Collections.Generic;
-    using System.Threading;
     using Api;
 
     public class RemotableHostApi : MarshalByRefObject, IHostApi {
@@ -23,6 +22,12 @@ namespace Microsoft.OneGet.Implementation {
 
         internal RemotableHostApi(IHostApi host) {
             _hostApi = host;
+        }
+
+        public bool IsCanceled {
+            get {
+                return _hostApi.IsCanceled;
+            }
         }
 
         public string GetMessageString(string messageText) {
@@ -100,14 +105,6 @@ namespace Microsoft.OneGet.Implementation {
         public int CallCount() {
             return _hostApi.CallCount();
         }
-
-        public bool IsCanceled {
-            get {
-                return _hostApi.IsCanceled;
-            }
-        }
-
-      
 
         public override object InitializeLifetimeService() {
             return null;

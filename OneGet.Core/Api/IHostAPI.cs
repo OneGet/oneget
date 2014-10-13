@@ -14,9 +14,11 @@
 
 namespace Microsoft.OneGet.Api {
     using System.Collections.Generic;
-    using System.Threading;
 
     public interface IHostApi {
+
+        bool IsCanceled {get;}
+
         #region declare host-apis
 
         /* Synced/Generated code =================================================== */
@@ -38,7 +40,6 @@ namespace Microsoft.OneGet.Api {
 
         bool CompleteProgress(int activityId, bool isSuccessful);
 
-
         /// <summary>
         ///     Used by a provider to request what metadata keys were passed from the user
         /// </summary>
@@ -46,7 +47,6 @@ namespace Microsoft.OneGet.Api {
         IEnumerable<string> GetOptionKeys();
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -67,8 +67,6 @@ namespace Microsoft.OneGet.Api {
         bool IsInteractive();
 
         int CallCount();
-
-        bool IsCanceled {get;}
 
         #endregion
     }

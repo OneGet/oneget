@@ -18,13 +18,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     [Cmdlet(VerbsCommon.Get, Constants.PackageProviderNoun)]
     public sealed class GetPackageProvider : CmdletBase {
-
         protected override IEnumerable<string> ParameterSets {
             get {
-                return new[] { "", };
+                return new[] {"",};
             }
         }
-
 
         [Parameter(Position = 0)]
         public string[] Name {get; set;}

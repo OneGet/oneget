@@ -14,28 +14,24 @@
 
 namespace Microsoft.OneGet.Implementation {
     using System;
-    using System.Collections.Generic;
     using Api;
+    using Utility.Async;
     using Utility.Collections;
-    using Utility.Extensions;
 
-    public class DictionaryRequestObject : RequestObject , IAsyncValue<Dictionary<string, List<string>>> {
-        private readonly Dictionary<string, List<string>> _results = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+    public class FuncRequestObject<T> : RequestObject, IAsyncValue<T> {
+        private T _result;
 
-        public DictionaryRequestObject(ProviderBase provider, IHostApi request, Action<RequestObject> action )
-            : base(provider,request,action) {
+        public FuncRequestObject(ProviderBase provider, IHostApi hostApi, Func<RequestObject, T> function)
+            : base(provider, hostApi, null) {
+            _action = r => {_result = function(r);};
             InvokeImpl();
         }
 
-        public override bool YieldKeyValuePair(string key, string value) {
-            _results.GetOrAdd(key, () => new List<string>()).Add(value);
-            return !IsCanceled;
-        }
-
-        public Dictionary<string, List<string>> Value {
+        public T Value {
             get {
+                // wait for end.
                 this.Wait();
-                return _results;
+                return _result;
             }
         }
     }

@@ -15,7 +15,6 @@
 namespace Microsoft.OneGet.Implementation {
     using System;
     using System.Collections;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
@@ -28,22 +27,23 @@ namespace Microsoft.OneGet.Implementation {
     using System.Threading;
     using System.Threading.Tasks;
     using Api;
+    using Utility.Async;
     using Utility.Collections;
     using Utility.Extensions;
     using Utility.Platform;
     using Utility.Plugin;
     using IRequestObject = System.Object;
-  
+
     public abstract class RequestObject : AsyncAction, IRequest {
-
         private static readonly Regex _canonicalPackageRegex = new Regex("(.*?):(.*?)/(.*)");
-        protected Action<RequestObject> _action;
+        private static int _c;
 
-        protected readonly ProviderBase Provider; 
+        protected readonly ProviderBase Provider;
+        protected Action<RequestObject> _action;
 
         private IHostApi _hostApi;
         protected Task _invocationTask;
-        
+
         internal RequestObject(ProviderBase provider, IHostApi hostApi, Action<RequestObject> action) {
             // construct request object
             _hostApi = hostApi;
@@ -67,7 +67,6 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-    
         #region HostApi Wrapper
 
         public bool IsElevated {
@@ -209,6 +208,7 @@ namespace Microsoft.OneGet.Implementation {
             }
             return 0;
         }
+
         #endregion
 
         #region CoreApi implementation
@@ -242,7 +242,6 @@ namespace Microsoft.OneGet.Implementation {
             Activity();
             return true;
         }
-
 
         public IEnumerable<string> ProviderNames {
             get {
@@ -297,9 +296,11 @@ namespace Microsoft.OneGet.Implementation {
             Activity();
             return _canonicalPackageRegex.Match(canonicalPackageId).Groups[3].Value;
         }
+
         #endregion
 
         #region response api implementation
+
         public virtual bool YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName) {
             Console.WriteLine("SHOULD NOT GET HERE [YieldSoftwareIdentity] ================================================");
             // todo: give an actual error here
@@ -347,9 +348,11 @@ namespace Microsoft.OneGet.Implementation {
             // todo: give an actual error here
             return true; // cancel
         }
+
         #endregion
 
         #region IProviderServices implementation 
+
         public bool IsSupportedArchive(string localFilename, IRequestObject requestObject) {
             Activity();
             return PackageManager._instance.Archivers.Values.Any(archiver => archiver.IsSupportedFile(localFilename));
@@ -771,31 +774,26 @@ namespace Microsoft.OneGet.Implementation {
 
         #endregion
 
-
         public override object InitializeLifetimeService() {
             return null;
         }
 
-        private static int _c;
-
         protected void InvokeImpl() {
             _invocationTask = Task.Factory.StartNew(() => {
                 _invocationThread = Thread.CurrentThread;
-                _invocationThread.Name = Provider.ProviderName + ":"+_c++;
+                _invocationThread.Name = Provider.ProviderName + ":" + _c++;
                 try {
                     _action(this);
-                }
-                catch (ThreadAbortException) {
+                } catch (ThreadAbortException) {
 #if DEEP_DEBUG
                     Console.WriteLine("Thread Aborted for {0} : {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
 #endif
                     Thread.ResetAbort();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.Dump();
                 }
             }, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default).ContinueWith(antecedent => Complete());
-            
+
             // start thread, call function
             StartCall();
         }

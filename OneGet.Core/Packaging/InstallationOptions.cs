@@ -13,8 +13,6 @@
 //  
 
 namespace Microsoft.OneGet.Packaging {
-    using Implementation;
-
     public enum InstallationContext {
         System = 0,
         User = 1,

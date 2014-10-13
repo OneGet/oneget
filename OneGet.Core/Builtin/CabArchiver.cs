@@ -21,14 +21,14 @@ namespace Microsoft.OneGet.Builtin {
     using IRequestObject = System.Object;
 
     public class CabArchiver {
-        private string ProviderName = "cabfile";
-
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
             {Constants.Features.SupportedExtensions, new[] {"cab", "msu"}},
             {Constants.Features.MagicSignatures, new[] {Constants.Signatures.Cab}}
         };
 
-         /// <summary>
+        private string ProviderName = "cabfile";
+
+        /// <summary>
         ///     Returns a collection of strings to the client advertizing features this provider supports.
         /// </summary>
         /// <param name="requestObject">
@@ -37,7 +37,6 @@ namespace Microsoft.OneGet.Builtin {
         /// </param>
         public void GetFeatures(IRequestObject requestObject) {
             try {
-                
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
@@ -53,7 +52,7 @@ namespace Microsoft.OneGet.Builtin {
                 Debug.WriteLine("Unexpected Exception thrown in '{0}::GetFeatures' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
-        
+
         /// <summary>
         ///     Returns the name of the Provider.
         /// </summary>

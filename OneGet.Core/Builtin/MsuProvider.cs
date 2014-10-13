@@ -30,7 +30,7 @@ namespace Microsoft.OneGet.Builtin {
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
             {Constants.Features.SupportedExtensions, new[] {"msu"}},
-            {Constants.Features.MagicSignatures, new[] {Constants.Signatures.Cab }}
+            {Constants.Features.MagicSignatures, new[] {Constants.Signatures.Cab}}
         };
 
         /// <summary>
@@ -159,7 +159,6 @@ namespace Microsoft.OneGet.Builtin {
                         foreach (var i in files) {
                             request.Verbose("File {0}", i.FullName);
                         }
-                        
                     }
                 }
             } catch (Exception e) {

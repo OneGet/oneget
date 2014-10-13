@@ -19,11 +19,6 @@ namespace Microsoft.OneGet.Utility.Collections {
     public class ByRefCancellationTokenSource : MarshalByRefObject, IDisposable {
         protected CancellationTokenSource _cancellationTokenSource;
 
-        public override object InitializeLifetimeService() {
-            return null;
-        }
-
-
         public ByRefCancellationTokenSource() {
         }
 
@@ -48,6 +43,10 @@ namespace Microsoft.OneGet.Utility.Collections {
             GC.SuppressFinalize(this);
         }
 
+        public override object InitializeLifetimeService() {
+            return null;
+        }
+
         protected virtual void Dispose(bool disposing) {
             if (disposing) {
                 var cts = _cancellationTokenSource;
@@ -59,7 +58,7 @@ namespace Microsoft.OneGet.Utility.Collections {
         }
 
         public
-             void Cancel() {
+            void Cancel() {
             if (_cancellationTokenSource != null) {
                 _cancellationTokenSource.Cancel();
             }

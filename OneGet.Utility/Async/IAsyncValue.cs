@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Utility.Collections {
+namespace Microsoft.OneGet.Utility.Async {
     public interface IAsyncValue<out T> : IAsyncAction {
         T Value {get;}
     }

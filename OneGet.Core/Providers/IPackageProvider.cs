@@ -19,6 +19,7 @@ namespace Microsoft.OneGet.Providers {
 
     public interface IPackageProvider : IProvider {
         #region declare PackageProvider-interface
+
         /* Synced/Generated code =================================================== */
 
         /// <summary>
@@ -28,16 +29,26 @@ namespace Microsoft.OneGet.Providers {
         [Required]
         string GetPackageProviderName();
 
-
         /// <summary>
-        /// This is called when the user is adding (or updating) a package source
-        /// 
-        /// If this PROVIDER doesn't support user-defined package sources, remove this method.
+        ///     This is called when the user is adding (or updating) a package source
+        ///     If this PROVIDER doesn't support user-defined package sources, remove this method.
         /// </summary>
-        /// <param name="name">The name of the package source. If this parameter is null or empty the PROVIDER should use the location as the name (if the PROVIDER actually stores names of package sources)</param>
-        /// <param name="location">The location (ie, directory, URL, etc) of the package source. If this is null or empty, the PROVIDER should use the name as the location (if valid)</param>
-        /// <param name="trusted">A boolean indicating that the user trusts this package source. Packages returned from this source should be marked as 'trusted'</param>
-        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="name">
+        ///     The name of the package source. If this parameter is null or empty the PROVIDER should use the
+        ///     location as the name (if the PROVIDER actually stores names of package sources)
+        /// </param>
+        /// <param name="location">
+        ///     The location (ie, directory, URL, etc) of the package source. If this is null or empty, the
+        ///     PROVIDER should use the name as the location (if valid)
+        /// </param>
+        /// <param name="trusted">
+        ///     A boolean indicating that the user trusts this package source. Packages returned from this source
+        ///     should be marked as 'trusted'
+        /// </param>
+        /// <param name="requestObject">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         void AddPackageSource(string name, string location, bool trusted, IRequestObject requestObject);
 
         void ResolvePackageSources(IRequestObject requestObject);

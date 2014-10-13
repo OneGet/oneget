@@ -14,31 +14,30 @@
 
 namespace Microsoft.OneGet.Implementation {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using Api;
+    using Utility.Async;
     using Utility.Collections;
+    using Utility.Extensions;
 
-    public class EnumerableRequestObject<T> : RequestObject, IAsyncEnumerable<T> {
-        protected readonly MyBlockingCollection<T> Results = new MyBlockingCollection<T>();
+    public class DictionaryRequestObject : RequestObject, IAsyncValue<Dictionary<string, List<string>>> {
+        private readonly Dictionary<string, List<string>> _results = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
-        internal EnumerableRequestObject(ProviderBase provider, IHostApi request, Action<RequestObject> action)
-            : base(provider,request,action) {
-            OnCancel += Complete;
-            OnAbort += Complete;
+        public DictionaryRequestObject(ProviderBase provider, IHostApi request, Action<RequestObject> action)
+            : base(provider, request, action) {
+            InvokeImpl();
         }
 
-        protected override void Complete() {
-            Results.Complete();
-            base.Complete();
+        public Dictionary<string, List<string>> Value {
+            get {
+                this.Wait();
+                return _results;
+            }
         }
 
-        public IEnumerator<T> GetEnumerator() {
-            return new CancellableEnumerator<T>(new ByRefCancellationTokenSource( _cancellationTokenSource), Results.GetEnumerator());
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator();
+        public override bool YieldKeyValuePair(string key, string value) {
+            _results.GetOrAdd(key, () => new List<string>()).Add(value);
+            return !IsCanceled;
         }
     }
 }

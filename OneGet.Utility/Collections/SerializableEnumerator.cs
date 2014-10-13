@@ -31,15 +31,6 @@ namespace Microsoft.OneGet.Utility.Collections {
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing) {
-            if (disposing) {
-                if (_enumerator is IDisposable) {
-                    (_enumerator as IDisposable).Dispose();
-                }
-                _enumerator = null;
-            }
-        }
-
         public virtual bool MoveNext() {
             return _enumerator.MoveNext();
         }
@@ -57,6 +48,15 @@ namespace Microsoft.OneGet.Utility.Collections {
         object IEnumerator.Current {
             get {
                 return _enumerator.Current;
+            }
+        }
+
+        protected virtual void Dispose(bool disposing) {
+            if (disposing) {
+                if (_enumerator is IDisposable) {
+                    (_enumerator as IDisposable).Dispose();
+                }
+                _enumerator = null;
             }
         }
     }

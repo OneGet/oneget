@@ -18,7 +18,6 @@ namespace Microsoft.OneGet.Implementation {
     using System.Globalization;
     using System.Linq;
     using System.Security;
-    using System.Threading;
     using Api;
     using Utility.Extensions;
     using IRequestObject = System.Object;
@@ -26,8 +25,7 @@ namespace Microsoft.OneGet.Implementation {
     public abstract class Request : IRequest, IDisposable {
         #region copy core-apis
 
-
-        public abstract bool IsCanceled { get; }
+        public abstract bool IsCanceled {get;}
 
         /* Synced/Generated code =================================================== */
 
@@ -41,10 +39,9 @@ namespace Microsoft.OneGet.Implementation {
         public abstract Type GetIRequestInterface();
 
         /// <summary>
-        /// Returns the internal version of the OneGet core.
-        /// 
-        /// This will usually only be updated if there is a breaking API or Interface change that might 
-        /// require other code to know which version is running.
+        ///     Returns the internal version of the OneGet core.
+        ///     This will usually only be updated if there is a breaking API or Interface change that might
+        ///     require other code to know which version is running.
         /// </summary>
         /// <returns>Internal Version of OneGet</returns>
         public abstract int CoreVersion();
@@ -57,9 +54,9 @@ namespace Microsoft.OneGet.Implementation {
 
         public abstract bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
 
-        public abstract IEnumerable<string> ProviderNames { get; }
+        public abstract IEnumerable<string> ProviderNames {get;}
 
-        public abstract IEnumerable<PackageProvider> PackageProviders { get; }
+        public abstract IEnumerable<PackageProvider> PackageProviders {get;}
 
         public abstract IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName);
 
@@ -76,6 +73,7 @@ namespace Microsoft.OneGet.Implementation {
         public abstract string ParsePackageName(string canonicalPackageId);
 
         public abstract string ParsePackageVersion(string canonicalPackageId);
+
         #endregion
 
         #region copy host-apis
@@ -106,7 +104,6 @@ namespace Microsoft.OneGet.Implementation {
         public abstract IEnumerable<string> GetOptionKeys();
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -127,6 +124,7 @@ namespace Microsoft.OneGet.Implementation {
         public abstract bool IsInteractive();
 
         public abstract int CallCount();
+
         #endregion
 
         #region copy response-apis
@@ -154,12 +152,12 @@ namespace Microsoft.OneGet.Implementation {
 
         public abstract bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
 
-        #if M2
+#if M2
         public abstract bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
 
         public abstract bool YieldMetadata(string fieldId, string @namespace, string name, string value);
 
-        #endif 
+        #endif
 
         /// <summary>
         ///     Used by a provider to return fields for a package source (repository)
@@ -170,7 +168,7 @@ namespace Microsoft.OneGet.Implementation {
         /// <param name="isRegistered"></param>
         /// <param name="isValidated"></param>
         /// <returns></returns>
-        public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
+        public abstract bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
@@ -185,6 +183,7 @@ namespace Microsoft.OneGet.Implementation {
         public abstract bool YieldKeyValuePair(string key, string value);
 
         public abstract bool YieldValue(string value);
+
         #endregion
 
         #region copy service-apis
@@ -231,6 +230,7 @@ namespace Microsoft.OneGet.Implementation {
         public abstract bool IsSignedAndTrusted(string filename, IRequestObject requestObject);
 
         public abstract bool ExecuteElevatedAction(string provider, string payload, IRequestObject requestObject);
+
         #endregion
 
         #region declare Request-implementation

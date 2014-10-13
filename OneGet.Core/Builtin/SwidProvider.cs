@@ -27,7 +27,8 @@ namespace Microsoft.OneGet.Builtin {
     ///     methods isn't used or implemented it should be removed (or commented out)
     ///     - Error Handling: Avoid throwing exceptions from these methods. To properly return errors to the user, use the
     ///     request.Error(...) method to notify the user of an error conditionm and then return.
-    ///     - Communicating with the HOST and CORE: each method takes a IRequestObject (in reality, an alias for System.Object),
+    ///     - Communicating with the HOST and CORE: each method takes a IRequestObject (in reality, an alias for
+    ///     System.Object),
     ///     which can be used in one of two ways:
     ///     - use the c# 'dynamic' keyword, and call functions on the object directly.
     ///     - use the <code><![CDATA[ .As<Request>() ]]></code> extension method to strongly-type it to the Request type (which

@@ -44,12 +44,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter(DontShow = true)]
         public GetMessageString MessageResolver;
 
-        protected abstract IEnumerable<string> ParameterSets {get;}
-
         protected CmdletBase() {
             _callCount = _globalCallCount++;
             _dynamicOptions = new Hashtable();
         }
+
+        protected abstract IEnumerable<string> ParameterSets {get;}
 
         protected bool IsPackageBySearch {
             get {

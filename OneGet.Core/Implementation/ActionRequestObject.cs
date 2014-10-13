@@ -15,23 +15,10 @@
 namespace Microsoft.OneGet.Implementation {
     using System;
     using Api;
-    using Utility.Collections;
 
-    public class FuncRequestObject<T> : RequestObject, IAsyncValue<T> {
-        private T _result;
-
-        public FuncRequestObject(ProviderBase provider, IHostApi hostApi, Func<RequestObject, T> function)
-            : base(provider,hostApi,null ) {
-            _action = r => {_result = function(r);};
+    public class ActionRequestObject : RequestObject {
+        public ActionRequestObject(ProviderBase provider, IHostApi hostApi, Action<RequestObject> action) : base(provider, hostApi, action) {
             InvokeImpl();
-        }
-
-        public T Value {
-            get {
-                // wait for end.
-                this.Wait();
-                return _result;
-            }
         }
     }
 }

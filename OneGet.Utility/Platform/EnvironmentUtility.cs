@@ -25,8 +25,47 @@ namespace Microsoft.OneGet.Utility.Platform {
         private const Int32 WM_SETTINGCHANGE = 0x001A;
         private const Int32 SMTO_ABORTIFHUNG = 0x0002;
 
+        public static IEnumerable<string> SystemPath {
+            get {
+                var path = GetSystemEnvironmentVariable("PATH");
+                return string.IsNullOrEmpty(path) ? new string[] {} : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            }
+            set {
+                var newValue = value.ToPathString();
+                if (newValue != GetSystemEnvironmentVariable("PATH")) {
+                    SetSystemEnvironmentVariable("PATH", newValue);
+                }
+            }
+        }
+
+        public static IEnumerable<string> UserPath {
+            get {
+                var path = GetUserEnvironmentVariable("PATH");
+                return string.IsNullOrEmpty(path) ? new string[] {} : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            }
+            set {
+                var newValue = value.ToPathString();
+                if (newValue != GetUserEnvironmentVariable("PATH")) {
+                    SetUserEnvironmentVariable("PATH", newValue);
+                }
+            }
+        }
+
+        public static IEnumerable<string> Path {
+            get {
+                var path = GetEnvironmentVariable("PATH");
+                return string.IsNullOrEmpty(path) ? new string[] {} : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            }
+            set {
+                var newValue = value.ToPathString();
+                if (newValue != GetEnvironmentVariable("PATH")) {
+                    SetEnvironmentVariable("PATH", newValue);
+                }
+            }
+        }
+
         public static void BroadcastChange() {
-            Task.Factory.StartNew(() => {NativeMethods.SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, "Environment", SMTO_ABORTIFHUNG, 1000, IntPtr.Zero);},TaskCreationOptions.LongRunning);
+            Task.Factory.StartNew(() => {NativeMethods.SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, "Environment", SMTO_ABORTIFHUNG, 1000, IntPtr.Zero);}, TaskCreationOptions.LongRunning);
         }
 
         public static string GetSystemEnvironmentVariable(string name) {
@@ -57,45 +96,6 @@ namespace Microsoft.OneGet.Utility.Platform {
             return value.SafeAggregate((current, each) => current + ";" + each) ?? string.Empty;
         }
 
-        public static IEnumerable<string> SystemPath {
-            get {
-                var path = GetSystemEnvironmentVariable("PATH");
-                return string.IsNullOrEmpty(path) ? new string[]{} : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            }
-            set {
-                var newValue = value.ToPathString();
-                if (newValue != GetSystemEnvironmentVariable("PATH")) {
-                    SetSystemEnvironmentVariable("PATH", newValue);
-                }
-            }
-        }
-
-        public static IEnumerable<string> UserPath {
-            get {
-                var path = GetUserEnvironmentVariable("PATH");
-                return string.IsNullOrEmpty(path) ? new string[] { } : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            }
-            set {
-                var newValue = value.ToPathString();
-                if (newValue != GetUserEnvironmentVariable("PATH")) {
-                    SetUserEnvironmentVariable("PATH", newValue);
-                }
-            }
-        }
-
-        public static IEnumerable<string> Path {
-            get {
-                var path = GetEnvironmentVariable("PATH");
-                return string.IsNullOrEmpty(path) ? new string[] { } : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            }
-            set {
-                var newValue = value.ToPathString();
-                if (newValue != GetEnvironmentVariable("PATH")) {
-                    SetEnvironmentVariable("PATH", newValue);
-                }
-            }
-        }
-
         public static string[] Append(this IEnumerable<string> searchPath, string pathToAdd) {
             var p = searchPath.ToArray();
 
@@ -111,10 +111,9 @@ namespace Microsoft.OneGet.Utility.Platform {
             if (p.Any(s => s.EqualsIgnoreCase(pathToAdd))) {
                 return p;
             }
-            
-            return new[] { pathToAdd }.Union(p).ToArray();
-        }
 
+            return new[] {pathToAdd}.Union(p).ToArray();
+        }
 
         public static string[] Remove(this string[] searchPath, string pathToRemove) {
             return searchPath.Where(s => !s.EqualsIgnoreCase(pathToRemove)).ToArray();
@@ -136,7 +135,7 @@ namespace Microsoft.OneGet.Utility.Platform {
                 }
 
                 // merge path-like variables.
-                if (key.ToString().IndexOf("path",StringComparison.OrdinalIgnoreCase) > -1 &&  user.Contains(key)) {
+                if (key.ToString().IndexOf("path", StringComparison.OrdinalIgnoreCase) > -1 && user.Contains(key)) {
                     value = value + ";" + user[key];
                     user.Remove(key);
                 }
