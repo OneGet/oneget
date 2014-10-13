@@ -18,7 +18,7 @@ namespace OneGet.ProviderSDK {
     using System.Globalization;
     using System.Linq;
     using System.Security;
-    using PackageProvider.Template.Resources;
+    using OneGet.ProviderSDK.Resources;
     using IRequestObject = System.MarshalByRefObject;
 
     public abstract class Request : IDisposable {
