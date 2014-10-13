@@ -202,7 +202,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     object finalValue = null;
 
                     foreach (var value in result) {
-                        if (result.IsFailing) {
+                        if (result.ContainsErrors) {
                             ReportErrors(request, result.Errors);
                             return null;
                         }
@@ -215,7 +215,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                         }
                     }
 
-                    if (result.IsFailing) {
+                    if (result.ContainsErrors) {
                         ReportErrors(request, result.Errors);
                         return null;
                     }

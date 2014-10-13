@@ -51,7 +51,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             if (methodName.EqualsIgnoreCase("startfind") || methodName.EqualsIgnoreCase("completeFind")) {
                 return true;
             }
-#if DEBUG
+#if DEEP_DEBUG
             var r = GetMethod(methodName) != null;
             if (!r) {
                 Debug.WriteLine(" -> '{0}' Not Found In PowerShell Module '{1}'".format(methodName, _module.Name));

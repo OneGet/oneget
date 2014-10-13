@@ -112,9 +112,9 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OneGet.Utility\OneGet.Utility.csproj">
+    <ProjectReference Include="..\Utility\Utility.csproj">
       <Project>{7044b856-6d51-498f-8192-01f219908192}</Project>
-      <Name>OneGet.Utility</Name>
+      <Name>Utility</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -29,7 +29,7 @@ namespace OneGet.PowerShell.Module.Test {
 
                         PowerShellSession = new DynamicPowershell();
                         DynamicPowershellResult result = PowerShellSession.ImportModule(".\\oneget.psd1");
-                Assert.False(result.IsFailing, "unable to import '.\\oneget.psd1  (PWD:'{0}')".format(Environment.CurrentDirectory));
+                Assert.False(result.ContainsErrors, "unable to import '.\\oneget.psd1  (PWD:'{0}')".format(Environment.CurrentDirectory));
                     }
                     return PowerShellSession;
                 }

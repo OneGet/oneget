@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2270C018-364A-47DD-BC2E-0095C8E8DEAF}</ProjectGuid>
+    <ProjectGuid>{3F9D75F9-A4AD-46C1-8937-B55604E8D5D9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.OneGet.PackageProvider.Test</RootNamespace>
-    <AssemblyName>Microsoft.OneGet.PackageProvider.Test</AssemblyName>
+    <RootNamespace>Microsoft.OneGet.Utility.PowerShell</RootNamespace>
+    <AssemblyName>Microsoft.OneGet.Utility.PowerShell</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>
@@ -35,32 +35,26 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\WindowsPowerShell\3.0\System.Management.Automation.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Resources\Messages.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Messages.resx</DependentUpon>
-    </Compile>
-    <Compile Include="TestPackageProvider.cs" />
+    <Compile Include="AsyncCmdLet.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="DynamicPowershell.cs" />
+    <Compile Include="DynamicPowershellCommand.cs" />
+    <Compile Include="DynamicPowershellResult.cs" />
+    <Compile Include="ErrorMessage.cs" />
+    <Compile Include="Errors.cs" />
+    <Compile Include="ProgressTracker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Messages.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ProviderSDK\ProviderSDK.csproj">
-      <Project>{12bc926f-a38b-47db-a490-21e8686514f6}</Project>
-      <Name>ProviderSDK</Name>
+    <ProjectReference Include="..\Utility\Utility.csproj">
+      <Project>{7044b856-6d51-498f-8192-01f219908192}</Project>
+      <Name>Utility</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

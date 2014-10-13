@@ -28,7 +28,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         private ManualResetEvent _startedEvent = new ManualResetEvent(false);
 
         public bool LastIsTerminatingError {get; internal set;}
-        public bool IsFailing {get; internal set;}
+        public bool ContainsErrors {get; internal set;}
 
         public object Value {
             get {

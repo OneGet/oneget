@@ -3,30 +3,28 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneGet.PowerShell.Module", "OneGet.PowerShell.Module\OneGet.PowerShell.Module.csproj", "{F2133AC2-39DD-4321-A3B1-8BDBCDFF743E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShell.Module", "PowerShell.Module\PowerShell.Module.csproj", "{F2133AC2-39DD-4321-A3B1-8BDBCDFF743E}"
 	ProjectSection(ProjectDependencies) = postProject
 		{EBEB46B5-3683-4D9F-939B-B1B2BBEEA369} = {EBEB46B5-3683-4D9F-939B-B1B2BBEEA369}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneGet.Core", "OneGet.Core\OneGet.Core.csproj", "{7044B856-6D51-498F-90F9-01F219909F79}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneGet", "OneGet\OneGet.csproj", "{7044B856-6D51-498F-90F9-01F219909F79}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneGet.Utility", "OneGet.Utility\OneGet.Utility.csproj", "{7044B856-6D51-498F-8192-01F219908192}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "Utility\Utility.csproj", "{7044B856-6D51-498F-8192-01F219908192}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaProvider.Powershell", "MetaProvider.Powershell\MetaProvider.Powershell.csproj", "{EBEB46B5-3683-4D9F-939B-B1B2BBEEA369}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShell.MetaProvider", "PowerShell.MetaProvider\PowerShell.MetaProvider.csproj", "{EBEB46B5-3683-4D9F-939B-B1B2BBEEA369}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneGet.Test", "OneGet.Test\OneGet.Test.csproj", "{B953E5C8-ECBB-489E-A5A4-6AC64ABDCB2E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneGet.Test", "Test\unit\OneGet\OneGet.Test.csproj", "{B953E5C8-ECBB-489E-A5A4-6AC64ABDCB2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageProvider.Test", "PackageProvider.Test\PackageProvider.Test.csproj", "{2270C018-364A-47DD-BC2E-0095C8E8DEAF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageProvider.Test", "test\scenario\PackageProvider\PackageProvider.Test.csproj", "{2270C018-364A-47DD-BC2E-0095C8E8DEAF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{36DAFA4E-0F8B-45BA-B5A8-8382E79316C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneGet.Utility.PowerShell", "OneGet.Utility.PowerShell\OneGet.Utility.PowerShell.csproj", "{3F9D75F9-A4AD-46C1-8937-B55604E8D5D9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility.PowerShell", "Utility.PowerShell\Utility.PowerShell.csproj", "{3F9D75F9-A4AD-46C1-8937-B55604E8D5D9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugin", "Plugin", "{34AC81D5-D41C-48C3-8779-CD79700E1E63}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomCodeGenerator", "tools\CustomCodeGenerator\CustomCodeGenerator.csproj", "{24112707-FFAD-466A-85B1-424C0F856A4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomCodeGenerator", "CustomCodeGenerator\CustomCodeGenerator.csproj", "{24112707-FFAD-466A-85B1-424C0F856A4B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneGet.PowerShell.Module.Test", "OneGet.PowerShell.Module.Test\OneGet.PowerShell.Module.Test.csproj", "{8AC045FA-7375-4D7D-BDD3-D56E9B7E1E34}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShell.Module.Test", "test\bvt\PowerShell.Module\PowerShell.Module.Test.csproj", "{8AC045FA-7375-4D7D-BDD3-D56E9B7E1E34}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{299D82C3-D301-4ACC-B008-546B86DF005B}"
 EndProject
@@ -55,12 +53,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{4E7ADF
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{8DF5F1D2-2B9F-4BC8-891C-6D5267C8FA01}"
-	ProjectSection(SolutionItems) = preProject
-		tools\xunit.console.exe = tools\xunit.console.exe
-		tools\xunit.gui.exe = tools\xunit.gui.exe
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProviderSDK", "ProviderSDK\ProviderSDK.csproj", "{12BC926F-A38B-47DB-A490-21E8686514F6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bin", "bin", "{F0E03D37-A64E-44A3-9C9A-E98B8C8AB0B7}"
+	ProjectSection(SolutionItems) = preProject
+		tools\bin\xunit.console.exe = tools\bin\xunit.console.exe
+		tools\bin\xunit.dll = tools\bin\xunit.dll
+		tools\bin\xunit.extensions.dll = tools\bin\xunit.extensions.dll
+		tools\bin\xunit.gui.exe = tools\bin\xunit.gui.exe
+		tools\bin\xunit.runner.utility.dll = tools\bin\xunit.runner.utility.dll
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -133,7 +136,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{EBEB46B5-3683-4D9F-939B-B1B2BBEEA369} = {34AC81D5-D41C-48C3-8779-CD79700E1E63}
 		{2270C018-364A-47DD-BC2E-0095C8E8DEAF} = {36DAFA4E-0F8B-45BA-B5A8-8382E79316C1}
 		{B953E5C8-ECBB-489E-A5A4-6AC64ABDCB2E} = {36DAFA4E-0F8B-45BA-B5A8-8382E79316C1}
 		{8AC045FA-7375-4D7D-BDD3-D56E9B7E1E34} = {36DAFA4E-0F8B-45BA-B5A8-8382E79316C1}
@@ -144,5 +146,7 @@ Global
 		{5376E601-D111-4198-8BC2-F1118433CC83} = {F1E146F1-2FF9-4F7B-B758-7AE6E7C5CB1F}
 		{135A5956-39CD-495C-8FB2-06678A90488D} = {F1E146F1-2FF9-4F7B-B758-7AE6E7C5CB1F}
 		{F016882A-C798-4446-BB75-D3C393A38B32} = {F1E146F1-2FF9-4F7B-B758-7AE6E7C5CB1F}
+		{F0E03D37-A64E-44A3-9C9A-E98B8C8AB0B7} = {8DF5F1D2-2B9F-4BC8-891C-6D5267C8FA01}
+		{24112707-FFAD-466A-85B1-424C0F856A4B} = {8DF5F1D2-2B9F-4BC8-891C-6D5267C8FA01}
 	EndGlobalSection
 EndGlobal

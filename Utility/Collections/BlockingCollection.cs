@@ -17,7 +17,7 @@ namespace Microsoft.OneGet.Utility.Collections {
     using System.Collections.Generic;
     using System.Threading;
 
-    public class MyBlockingCollection<T> : MutableEnumerable<T>, IList<T>, IDisposable {
+    public class BlockingCollection<T> : MutableEnumerable<T>, IList<T>, IDisposable {
         private ManualResetEvent _added = new ManualResetEvent(false);
         private ManualResetEvent _completed = new ManualResetEvent(false);
 

@@ -21,7 +21,7 @@ namespace Microsoft.OneGet.Implementation {
     using Utility.Collections;
 
     public class EnumerableRequestObject<T> : RequestObject, IAsyncEnumerable<T> {
-        protected readonly MyBlockingCollection<T> Results = new MyBlockingCollection<T>();
+        protected readonly BlockingCollection<T> Results = new BlockingCollection<T>();
 
         internal EnumerableRequestObject(ProviderBase provider, IHostApi request, Action<RequestObject> action)
             : base(provider, request, action) {

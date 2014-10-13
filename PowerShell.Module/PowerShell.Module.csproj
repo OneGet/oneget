@@ -85,15 +85,15 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OneGet.Core\OneGet.Core.csproj">
+    <ProjectReference Include="..\OneGet\OneGet.csproj">
       <Project>{7044b856-6d51-498f-90f9-01f219909f79}</Project>
       <Name>OneGet.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OneGet.Utility.PowerShell\OneGet.Utility.PowerShell.csproj">
+    <ProjectReference Include="..\Utility.PowerShell\Utility.PowerShell.csproj">
       <Project>{3F9D75F9-A4AD-46C1-8937-B55604E8D5D9}</Project>
       <Name>OneGet.Utility.PowerShell</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OneGet.Utility\OneGet.Utility.csproj">
+    <ProjectReference Include="..\Utility\Utility.csproj">
       <Project>{7044b856-6d51-498f-8192-01f219908192}</Project>
       <Name>OneGet.Utility</Name>
     </ProjectReference>

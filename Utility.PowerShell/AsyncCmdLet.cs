@@ -36,7 +36,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         private RuntimeDefinedParameterDictionary _dynamicParameters;
         // private ManualResetEvent _cancellationEvent = new ManualResetEvent(false);
         protected CancellationTokenSource _cancellationEvent = new CancellationTokenSource();
-        private MyBlockingCollection<TaskCompletionSource<bool>> _messages;
+        private BlockingCollection<TaskCompletionSource<bool>> _messages;
 
         private Stopwatch _stopwatch;
 
@@ -472,7 +472,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         private void AsyncRun(Func<bool> asyncAction) {
-            using (_messages = new MyBlockingCollection<TaskCompletionSource<bool>>()) {
+            using (_messages = new BlockingCollection<TaskCompletionSource<bool>>()) {
                 // spawn the activity off in another thread.
                 var task = IsInitialized ?
                     Task.Factory.StartNew(asyncAction, TaskCreationOptions.LongRunning) :

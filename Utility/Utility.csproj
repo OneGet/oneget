@@ -58,7 +58,7 @@
     <Compile Include="Async\IAsyncEnumerable.cs" />
     <Compile Include="Collections\ICancellableEnumerator.cs" />
     <Compile Include="Collections\MutableEnumerable.cs" />
-    <Compile Include="Collections\MyBlockingCollection.cs" />
+    <Compile Include="Collections\BlockingCollection.cs" />
     <Compile Include="Collections\PathEqualityComparer.cs" />
     <Compile Include="Collections\ReEnumerable.cs" />
     <Compile Include="Collections\SerializableCollection.cs" />

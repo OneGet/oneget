@@ -114,14 +114,14 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     if (item is PSObject) {
                         var record = (item as PSObject).ImmediateBaseObject;
                         if (record is ErrorRecord) {
-                            _result.IsFailing = true;
+                            _result.ContainsErrors = true;
                             _result.Errors.Add(record as ErrorRecord);
                         }
                     }
                 }
 
                 if (_commandPipeline.PipelineStateInfo.State == PipelineState.Failed) {
-                    _result.IsFailing = true;
+                    _result.ContainsErrors = true;
 
                     var cie = _commandPipeline.PipelineStateInfo.Reason as RuntimeException;
                     if (cie != null && cie.ErrorRecord != null) {

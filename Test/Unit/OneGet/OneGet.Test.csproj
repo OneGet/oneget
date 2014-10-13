@@ -68,27 +68,27 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MetaProvider.Powershell\MetaProvider.Powershell.csproj">
+    <ProjectReference Include="..\..\..\PowerShell.MetaProvider\PowerShell.MetaProvider.csproj">
       <Project>{ebeb46b5-3683-4d9f-939b-b1b2bbeea369}</Project>
       <Name>MetaProvider.Powershell</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OneGet.Core\OneGet.Core.csproj">
+    <ProjectReference Include="..\..\..\OneGet\OneGet.csproj">
       <Project>{7044b856-6d51-498f-90f9-01f219909f79}</Project>
       <Name>OneGet.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OneGet.PowerShell.Module\OneGet.PowerShell.Module.csproj">
+    <ProjectReference Include="..\..\..\PowerShell.Module\PowerShell.Module.csproj">
       <Project>{f2133ac2-39dd-4321-a3b1-8bdbcdff743e}</Project>
       <Name>OneGet.PowerShell.Module</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OneGet.Utility.PowerShell\OneGet.Utility.PowerShell.csproj">
+    <ProjectReference Include="..\..\..\Utility.PowerShell\Utility.PowerShell.csproj">
       <Project>{3f9d75f9-a4ad-46c1-8937-b55604e8d5d9}</Project>
       <Name>OneGet.Utility.PowerShell</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OneGet.Utility\OneGet.Utility.csproj">
+    <ProjectReference Include="..\..\..\Utility\Utility.csproj">
       <Project>{7044b856-6d51-498f-8192-01f219908192}</Project>
       <Name>OneGet.Utility</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PackageProvider.Test\PackageProvider.Test.csproj">
+    <ProjectReference Include="..\..\scenario\PackageProvider\PackageProvider.Test.csproj">
       <Project>{2270c018-364a-47dd-bc2e-0095c8e8deaf}</Project>
       <Name>PackageProvider.Test</Name>
     </ProjectReference>
