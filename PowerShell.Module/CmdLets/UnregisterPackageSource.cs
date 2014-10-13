@@ -18,6 +18,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsLifecycle.Unregister, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
@@ -102,9 +103,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length > 0) {
-                IgnoreErrors = true;
-                var sources = prov.SelectMany(each => each.ResolvePackageSources(this).Where(source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source))).ToArray()).ToArray();
-                IgnoreErrors = false;
+                var sources = prov.SelectMany(each => each.ResolvePackageSources(SuppressErrorsAndWarnings).Where(source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source))).ToArray()).ToArray();
 
                 if (sources.Length == 0) {
                     return Error(Errors.SourceNotFound, Source);
@@ -125,7 +124,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 throw new ArgumentNullException("source");
             }
             if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource, source.Name, source.Location, source.ProviderName), FormatMessageString(Constants.ActionUnregisterPackageSource)).Result) {
-                source.Provider.RemovePackageSource(source.Name, this);
+                source.Provider.RemovePackageSource(source.Name, this).Wait();
                 return true;
             }
             return false;

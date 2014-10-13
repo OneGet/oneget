@@ -121,7 +121,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length > 0) {
-                var sources = prov.SelectMany(each => each.ResolvePackageSources(this).Where(source => source.IsRegistered &&
+                var sources = prov.SelectMany(each => each.ResolvePackageSources(SuppressErrorsAndWarnings).Where(source => source.IsRegistered &&
                                                                                                        (Name == null || source.Name.EqualsIgnoreCase(Name)) || (Location == null || source.Location.EqualsIgnoreCase(Location))).ToArray()).ToArray();
 
                 if (sources.Length == 0) {

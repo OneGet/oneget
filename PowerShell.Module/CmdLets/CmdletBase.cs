@@ -105,17 +105,48 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
+
+        /// <summary>
+        /// This can be used when we want to override some of the functions that are passed
+        /// in as the implementation of the IHostApi (ie, 'request object').
+        /// 
+        /// Because the DynamicInterface DuckTyper will use all the objects passed in in order
+        /// to implement a given API, if we put in delegates to handle some of the functions
+        /// they will get called instead of the implementation in the current class. ('this')
+        /// </summary>
+        protected object SuppressErrorsAndWarnings {
+            get {
+                return new object[] {
+                    new {
+                        Error = new Func<string, string, string, string, bool>((id, cat, targetobjectvalue, messageText) => {
+#if DEBUG                            
+                            Verbose("Suppressed Error", messageText);
+#endif 
+                            return false;
+                        }),
+                        Warning = new Func<string, bool>((messageText) => {
+#if DEBUG
+                            Verbose("Suppressed Warning", messageText);
+#endif
+                            return true;
+                        })
+                    },
+                    this,
+                };
+            }
+        }
+
         protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
             if (names.IsNullOrEmpty()) {
-                return PackageManagementService.SelectProviders(null, this).Where(each => !each.Features.ContainsKey(Constants.Features.AutomationOnly));
+                return PackageManagementService.SelectProviders(null, SuppressErrorsAndWarnings).Where(each => !each.Features.ContainsKey(Constants.Features.AutomationOnly));
             }
             // you can manually ask for any provider by name, if it is for automation only.
-            return names.SelectMany(each => PackageManagementService.SelectProviders(each, this)); // .Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature));
+            return names.SelectMany(each => PackageManagementService.SelectProviders(each, SuppressErrorsAndWarnings)); // .Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature));
         }
 
         protected IEnumerable<PackageProvider> SelectProviders(string name) {
             // you can manually ask for any provider by name, if it is for automation only.
-            var result = PackageManagementService.SelectProviders(name, this).ToArray(); //.Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature))
+            var result = PackageManagementService.SelectProviders(name, SuppressErrorsAndWarnings).ToArray(); //.Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature))
             if (result.Length == 0) {
                 Warning(Errors.UnknownProvider, name);
             }

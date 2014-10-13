@@ -52,29 +52,26 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
+
+
         protected override IEnumerable<PackageProvider> SelectedProviders {
             get {
-                try {
-                    // filter on provider names  - if they specify a provider name, narrow to only those provider names.
-                    var providers = SelectProviders(ProviderName).ReEnumerable();
+                // filter on provider names  - if they specify a provider name, narrow to only those provider names.
+                var providers = SelectProviders(ProviderName).ReEnumerable();
 
-                    // filter out providers that don't have the sources that have been specified (only if we have specified a source!)
-                    if (Source != null && Source.Length > 0) {
-                        IgnoreErrors = true;
-                        // sources must actually match a name or location. Keeps providers from being a bit dishonest
+                // filter out providers that don't have the sources that have been specified (only if we have specified a source!)
+                if (Source != null && Source.Length > 0) {
+                    // sources must actually match a name or location. Keeps providers from being a bit dishonest
 
-                        var potentialSources = providers.SelectMany(each => each.ResolvePackageSources(this).Where(source => Source.ContainsAnyOfIgnoreCase(source.Name, source.Location))).ReEnumerable();
+                    var potentialSources = providers.SelectMany(each => each.ResolvePackageSources(SuppressErrorsAndWarnings).Where(source => Source.ContainsAnyOfIgnoreCase(source.Name, source.Location))).ReEnumerable();
 
-                        // prefer registered sources
-                        var registeredSources = potentialSources.Where(source => source.IsRegistered).ReEnumerable();
+                    // prefer registered sources
+                    var registeredSources = potentialSources.Where(source => source.IsRegistered).ReEnumerable();
 
-                        providers = registeredSources.Any() ? registeredSources.Select(source => source.Provider).Distinct().ReEnumerable() : potentialSources.Select(source => source.Provider).Distinct().ReEnumerable();
-                    }
-                    // filter on: dynamic options - if they specify any dynamic options, limit the provider set to providers with those options.
-                    return FilterProvidersUsingDynamicParameters(providers).ToArray();
-                } finally {
-                    IgnoreErrors = false;
+                    providers = registeredSources.Any() ? registeredSources.Select(source => source.Provider).Distinct().ReEnumerable() : potentialSources.Select(source => source.Provider).Distinct().ReEnumerable();
                 }
+                // filter on: dynamic options - if they specify any dynamic options, limit the provider set to providers with those options.
+                return FilterProvidersUsingDynamicParameters(providers).ToArray();
             }
         }
 
@@ -129,10 +126,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return paths.SelectMany(each => each.FileExists() ? each.SingleItemAsEnumerable() : each.DirectoryExists() ? Directory.GetFiles(each) : Microsoft.OneGet.Constants.Empty).ReEnumerable();
             }
             return Microsoft.OneGet.Constants.Empty.ReEnumerable();
-        }
-
-        internal void RememberWarning(string warning, params object[] args) {
-            //
         }
 
         internal bool FindViaFile(PackageProvider packageProvider, string searchKey, string filePath) {
@@ -265,6 +258,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         return;
                     }
 
+                    _resultsPerName.GetOrAdd(name, null);
+
                     // it didn't match any files
                     // and it's not a uri of any kind
                     // so we'll just ask if there is a package by that name.
@@ -283,6 +278,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     });
                 });
             } else {
+                
                 providers.ParallelForEach(provider => {
                     try {
                         if (!FindViaName(provider, string.Empty)) {

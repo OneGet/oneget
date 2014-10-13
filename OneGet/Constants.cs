@@ -44,6 +44,10 @@ namespace Microsoft.OneGet {
             internal const string MagicSignatures = "magic-signatures";
             internal const string SupportedSchemes = "uri-schemes";
             internal const string SupportsPowerShellModules = "supports-powershell-modules";
+
+            internal const string SupportsWildcardSearch = "supports-wildcard-search";
+            internal const string SupportsRegexSearch = "supports-regex-search";
+            internal const string SupportsSubstringSearch = "supports-substring-search";
         }
 
         internal static class Messages {

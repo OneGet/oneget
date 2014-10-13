@@ -86,7 +86,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     return false;
                 }
 
-                using (var sources = provider.ResolvePackageSources(this).CancelWhen(_cancellationEvent.Token)) {
+                using (var sources = provider.ResolvePackageSources(SuppressErrorsAndWarnings).CancelWhen(_cancellationEvent.Token)) {
                     if (noCriteria) {
                         // no criteria means just return whatever we found
                         if (WriteSources(sources)) {

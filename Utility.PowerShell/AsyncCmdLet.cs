@@ -45,21 +45,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         public SwitchParameter IsTesting;
 #endif
 
-        private static int _ignoreDepth = 0;
-
-        protected static bool IgnoreErrors {
-            get {
-                return _ignoreDepth != 0;
-            }
-            set {
-                if (value) {
-                    _ignoreDepth++;
-                } else {
-                    _ignoreDepth--;
-                }
-            }
-        }
-
         protected bool Confirm {
             get {
                 return MyInvocation.BoundParameters.ContainsKey(Constants.ConfirmParameter) && (SwitchParameter)MyInvocation.BoundParameters[Constants.ConfirmParameter];
@@ -260,27 +245,25 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public bool Error(string id, string category, string targetObjectValue, string messageText, params object[] args) {
-            if (!IgnoreErrors) {
-                if (IsInvocation) {
-                    var errorMessage = FormatMessageString(messageText, args);
+            if (IsInvocation) {
+                var errorMessage = FormatMessageString(messageText, args);
 
-                    if (!_errors.Contains(errorMessage)) {
-                        if (!_errors.Any()) {
-                            ErrorCategory errorCategory;
-                            if (!Enum.TryParse(category, true, out errorCategory)) {
-                                errorCategory = ErrorCategory.NotSpecified;
-                            }
-                            try {
-                                WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrEmpty(targetObjectValue) ? (object)this : targetObjectValue)).Wait();
-                            } catch {
-                                // this will throw if the provider thread abends before we get back our result.
-                            }
+                if (!_errors.Contains(errorMessage)) {
+                    if (!_errors.Any()) {
+                        ErrorCategory errorCategory;
+                        if (!Enum.TryParse(category, true, out errorCategory)) {
+                            errorCategory = ErrorCategory.NotSpecified;
                         }
-                        _errors.Add(errorMessage);
+                        try {
+                            WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrEmpty(targetObjectValue) ? (object)this : targetObjectValue)).Wait();
+                        } catch {
+                            // this will throw if the provider thread abends before we get back our result.
+                        }
                     }
+                    _errors.Add(errorMessage);
                 }
-                Cancel();
             }
+            Cancel();
             // rather than wait on the result of the async'd message,
             // we'll just return the stopping state.
             return IsCanceled;
