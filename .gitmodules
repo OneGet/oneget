@@ -1,9 +1,3 @@
-[submodule "packageprovider.template.powershell"]
-	path = packageprovider.template.powershell
-	url = ../packageprovider.template.powershell
-[submodule "serviceprovider.template.powershell"]
-	path = serviceprovider.template.powershell
-	url = ../serviceprovider.template.powershell
 [submodule "nuget"]
 	path = nuget
-	url = git@github.com:OneGet/nuget.git
+	url = ../nuget
