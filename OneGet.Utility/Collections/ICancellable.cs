@@ -13,7 +13,13 @@
 //  
 
 namespace Microsoft.OneGet.Utility.Collections {
+    /*
     public interface ICancellable {
         void Cancel();
     }
+
+    public interface ICancellable<out T> : ICancellable {
+        T Value { get; }
+    }
+     * */
 }

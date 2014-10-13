@@ -14,9 +14,11 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
     using Utility;
@@ -25,6 +27,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     public sealed class RegisterPackageSource : CmdletWithProvider {
         public RegisterPackageSource()
             : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
+        }
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {""};
+            }
         }
 
         [Parameter(ValueFromPipelineByPropertyName = true, Mandatory = true)]
@@ -54,9 +62,15 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             foreach (var md in packageProvider.First().GetDynamicOptions(OptionCategory.Source, this)) {
                 if (DynamicParameterDictionary.ContainsKey(md.Name)) {
                     // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
-                    (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
+                    // (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
+                    if (IsInvocation) {
+                        (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
+                    } else {
+                        (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).IncludeInParameterSet(md, IsInvocation, ParameterSets);
+                    }
                 } else {
-                    DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md));
+                    // DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md));
+                    DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
                 }
             }
             return true;
@@ -82,7 +96,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     return false;
             }
 
-            using (var sources = CancelWhenStopped(packageProvider.First().ResolvePackageSources(this))) {
+            using (var sources = packageProvider.First().ResolvePackageSources(this).CancelWhen(_cancellationEvent.Token)) {
                 // first, check if there is a source by this name already.
                 var existingSources = sources.Where(each => each.IsRegistered && each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase)).ToArray();
 
@@ -91,10 +105,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     foreach (var existingSource in existingSources) {
                         if (Force) {
                             if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource, existingSource.Name, existingSource.Location, existingSource.ProviderName), Constants.ActionReplacePackageSource).Result) {
-                                using (var removedSources = CancelWhenStopped(packageProvider.First().RemovePackageSource(existingSource.Name, this))) {
-                                    foreach (var removedSource in removedSources) {
-                                        Verbose(Constants.OverwritingPackageSource, removedSource.Name);
-                                    }
+                                var removedSources = packageProvider.First().RemovePackageSource(existingSource.Name, this).CancelWhen(_cancellationEvent.Token);
+                                foreach (var removedSource in removedSources) {
+                                    Verbose(Constants.OverwritingPackageSource, removedSource.Name);
                                 }
                             }
                         } else {
@@ -106,7 +119,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource, Name, Location, ProviderName), FormatMessageString(Constants.ActionRegisterPackageSource)).Result) {
-                using (var added = CancelWhenStopped(packageProvider.First().AddPackageSource(Name, Location, Trusted, this))) {
+                using (var added = packageProvider.First().AddPackageSource(Name, Location, Trusted, this).CancelWhen(_cancellationEvent.Token)) {
                     foreach (var addedSource in added) {
                         WriteObject(addedSource);
                     }

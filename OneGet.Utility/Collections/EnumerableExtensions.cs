@@ -13,33 +13,33 @@
 //  
 
 namespace Microsoft.OneGet.Utility.Collections {
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
 
     public static class EnumerableExtensions {
         /// <summary>
-        /// Returns a ReEnumerable wrapper around the collection which timidly (cautiously) pulls items
-        /// but still allows you to to re-enumerate without re-running the query.
+        ///     Returns a ReEnumerable wrapper around the collection which timidly (cautiously) pulls items
+        ///     but still allows you to to re-enumerate without re-running the query.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
         /// <returns></returns>
-        public static ReEnumerable<T> ReEnumerable<T>(this IEnumerable<T> collection) {
+        public static MutableEnumerable<T> ReEnumerable<T>(this IEnumerable<T> collection) {
             if (collection == null) {
                 return new ReEnumerable<T>(Enumerable.Empty<T>());
             }
-            return collection as ReEnumerable<T> ?? new ReEnumerable<T>(collection);
+            return collection as MutableEnumerable<T> ?? new ReEnumerable<T>(collection);
         }
     }
 
+    /*
     /// <summary>
     ///     This IEnumerable Wrapper will cache the results incrementally on first use of the source collection
     ///     into a List, so that subsequent uses of the collection are pulled from the list.
     ///     (and it doesn't need to iterate thru the whole collection first, like ToList() )
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ReEnumerable<T> : IEnumerable<T> {
+    public class _ReEnumerable<T> : IEnumerable<T> {
         private readonly IEnumerable<T> _source;
         private List<T> _list;
         private IEnumerator<T> _sourceIterator;
@@ -145,4 +145,5 @@ namespace Microsoft.OneGet.Utility.Collections {
 
         #endregion
     }
+     */
 }

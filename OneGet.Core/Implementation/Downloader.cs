@@ -14,9 +14,12 @@
 
 namespace Microsoft.OneGet.Implementation {
     using System;
-    using System.Collections.Generic;
+    using Api;
     using Providers;
-    using Utility.Extensions;
+    using Utility.Async;
+    using Utility.Collections;
+    using Utility.Plugin;
+    using IRequestObject = System.Object;
 
     internal class Downloader : ProviderBase<IDownloader> {
         private string _name;
@@ -31,15 +34,8 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        public IEnumerable<string> SupportedSchemes {
-            get {
-                return Provider.SupportedSchemes.ByRefEnumerable();    
-            }
+        public void DownloadFile(Uri remoteLocation, string localFilename, IRequestObject requestObject) {
+            new ActionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.DownloadFile(remoteLocation, localFilename, request)).Wait();
         }
-
-        public void DownloadFile(Uri remoteLocation, string localFilename, Object requestImpl) {
-            Provider.DownloadFile(remoteLocation, localFilename, ExtendRequest(requestImpl));
-        }
-
     }
 }

@@ -38,7 +38,6 @@ namespace Microsoft.OneGet.Utility.Collections {
             _enumerator.Reset();
         }
 
-
         object IEnumerator.Current {
             get {
                 // return Current;

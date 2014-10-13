@@ -1,21 +1,20 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
     using System.Collections.Generic;
-    using System.Linq.Expressions;
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
     using System.Threading;
@@ -23,9 +22,9 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
     internal class DynamicPowershellCommand : IDisposable {
         private readonly Command _command;
+        private readonly ManualResetEvent _endOfPipelines = new ManualResetEvent(false);
         private Pipeline _commandPipeline;
         private DynamicPowershellResult _result = new DynamicPowershellResult();
-        private readonly ManualResetEvent _endOfPipelines = new ManualResetEvent(false);
 
         internal DynamicPowershellCommand(Pipeline pipeline, Command command) {
             _commandPipeline = pipeline;
@@ -35,6 +34,15 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public void Stop() {
+            try {
+                if (_commandPipeline != null && _commandPipeline.PipelineStateInfo.State == PipelineState.Running) {
+                    _commandPipeline.StopAsync();
+                }
+            } catch {
+            }
         }
 
         protected virtual void Dispose(bool disposing) {
@@ -116,7 +124,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     _result.IsFailing = true;
 
                     var cie = _commandPipeline.PipelineStateInfo.Reason as RuntimeException;
-                    if (cie != null && cie.ErrorRecord != null ) {
+                    if (cie != null && cie.ErrorRecord != null) {
                         _result.Errors.Add(cie.ErrorRecord);
                     } else {
                         _result.Errors.Add(new ErrorRecord(_commandPipeline.PipelineStateInfo.Reason, "Unknown Exception type [{0}]".format(_commandPipeline.PipelineStateInfo.Reason.GetType()), ErrorCategory.NotSpecified, null));

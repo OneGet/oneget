@@ -13,36 +13,39 @@
 //  
 
 namespace Microsoft.OneGet {
+    using System;
 
     internal static class Constants {
+        internal const int CoreVersion = 1;
+        internal const int TimeoutUnspecified = 0;
+        internal const int TimeoutHostNotAvailable = -1;
+
+        internal const int HostNotAvailableTimeout = 5*60; // time when host not around
+        internal const int HostNotAvailableResponsiveness = 5; // five seconds
+
+        internal const int TimeoutAfterCancel = 60;
+        internal const int ResponsivenessAfterCancel = 1;
+        internal static TimeSpan DefaultCallTimeout = TimeSpan.FromMinutes(60);
+        internal static TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(15);
+
+        internal static TimeSpan Zero = new TimeSpan(0);
+
         #region declare common-constants-implementation
+
         /* Synced/Generated code =================================================== */
 
-
         internal const string MinVersion = "0.0.0.1";
-        internal static string[] Empty = new string[0];
         internal const string MSGPrefix = "MSG:";
-
-        internal static class PackageStatus {
-            internal const string Installed = "Installed";
-            internal const string Uninstalled = "Uninstalled";
-        }
-
-        internal static class SwidTag {
-            internal const string SoftwareIdentity = "SoftwareIdentity";
-        }
+        internal static string[] Empty = new string[0];
 
         internal static class Features {
             internal const string AutomationOnly = "automation-only";
+            internal const string SupportedExtensions = "file-extensions";
+            internal const string MagicSignatures = "magic-signatures";
+            internal const string SupportedSchemes = "uri-schemes";
+            internal const string SupportsPowerShellModules = "supports-powershell-modules";
         }
 
-        internal static class Parameters {
-            internal const string IsUpdate = "IsUpdatePackageSource";
-            internal const string Name = "Name";
-            internal const string Location = "Location";
-        }
-
-        
         internal static class Messages {
             internal const string UnableToDownload = "MSG:UnableToDownload";
             internal const string FailedProviderBootstrap = "MSG:FailedProviderBootstrap";
@@ -69,6 +72,36 @@ namespace Microsoft.OneGet {
             internal const string UnknownFolderId = "MSG:UnknownFolderId";
             internal const string ProtocolNotSupported = "MSG:ProtocolNotSupported";
             internal const string UnableToUninstallPackage = "MSG:UnableToUninstallPackage";
+
+            public const string SourceLocationNotValid = "MSG:SourceLocationNotValid_Location";
+            public const string UriSchemeNotSupported = "MSG:UriSchemeNotSupported_Scheme";
+            public const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
+            public const string DependencyResolutionError = "MSG:UnableToResolveDependency_dependencyPackage";
+            public const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependency";
+        }
+
+        internal static class PackageStatus {
+            internal const string Installed = "Installed";
+            internal const string Uninstalled = "Uninstalled";
+            internal const string Available = "Available";
+            internal const string Dependency = "Dependency";
+        }
+
+        internal static class Parameters {
+            internal const string IsUpdate = "IsUpdatePackageSource";
+            internal const string Name = "Name";
+            internal const string Location = "Location";
+        }
+
+        internal static class Signatures {
+            internal const string Zip = "504b0304";
+            internal const string Cab = "4D534346";
+            internal const string OleCompoundDocument = "D0CF11E0A1B11AE1";
+            internal static string[] ZipVariants = new[] {Zip, /* should have EXEs? */};
+        }
+
+        internal static class SwidTag {
+            internal const string SoftwareIdentity = "SoftwareIdentity";
         }
 
         #endregion

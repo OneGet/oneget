@@ -13,43 +13,42 @@
 //  
 
 namespace OneGet.ProviderSDK {
-    using System;
-    using System.Collections.Generic;
-    using RequestImpl = System.MarshalByRefObject;
+    using IRequestObject = System.MarshalByRefObject;
 
+#if SEPERATE_PROVIDER_API
     public abstract class ProviderServicesApi {
         public abstract bool IsElevated { get; }
 
         #region copy service-apis
 
         /* Synced/Generated code =================================================== */
-        public abstract void DownloadFile(Uri remoteLocation, string localFilename, RequestImpl requestImpl);
+        public abstract void DownloadFile(Uri remoteLocation, string localFilename, IRequestObject requestObject);
 
-        public abstract bool IsSupportedArchive(string localFilename, RequestImpl requestImpl);
+        public abstract bool IsSupportedArchive(string localFilename, IRequestObject requestObject);
 
-        public abstract IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, RequestImpl requestImpl);
+        public abstract IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject);
 
-        public abstract void AddPinnedItemToTaskbar(string item, RequestImpl requestImpl);
+        public abstract void AddPinnedItemToTaskbar(string item, IRequestObject requestObject);
 
-        public abstract void RemovePinnedItemFromTaskbar(string item, RequestImpl requestImpl);
+        public abstract void RemovePinnedItemFromTaskbar(string item, IRequestObject requestObject);
 
-        public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, RequestImpl requestImpl);
+        public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, IRequestObject requestObject);
 
-        public abstract void SetEnvironmentVariable(string variable, string value, string context, RequestImpl requestImpl);
+        public abstract void SetEnvironmentVariable(string variable, string value, string context, IRequestObject requestObject);
 
-        public abstract void RemoveEnvironmentVariable(string variable, string context, RequestImpl requestImpl);
+        public abstract void RemoveEnvironmentVariable(string variable, string context, IRequestObject requestObject);
 
-        public abstract void CopyFile(string sourcePath, string destinationPath, RequestImpl requestImpl);
+        public abstract void CopyFile(string sourcePath, string destinationPath, IRequestObject requestObject);
 
-        public abstract void Delete(string path, RequestImpl requestImpl);
+        public abstract void Delete(string path, IRequestObject requestObject);
 
-        public abstract void DeleteFolder(string folder, RequestImpl requestImpl);
+        public abstract void DeleteFolder(string folder, IRequestObject requestObject);
 
-        public abstract void CreateFolder(string folder, RequestImpl requestImpl);
+        public abstract void CreateFolder(string folder, IRequestObject requestObject);
 
-        public abstract void DeleteFile(string filename, RequestImpl requestImpl);
+        public abstract void DeleteFile(string filename, IRequestObject requestObject);
 
-        public abstract string GetKnownFolder(string knownFolder, RequestImpl requestImpl);
+        public abstract string GetKnownFolder(string knownFolder, IRequestObject requestObject);
 
         public abstract string CanonicalizePath(string text, string currentDirectory);
 
@@ -57,12 +56,13 @@ namespace OneGet.ProviderSDK {
 
         public abstract bool DirectoryExists(string path);
 
-        public abstract bool Install(string fileName, string additionalArgs, RequestImpl requestImpl);
+        public abstract bool Install(string fileName, string additionalArgs, IRequestObject requestObject);
 
-        public abstract bool IsSignedAndTrusted(string filename, RequestImpl requestImpl);
+        public abstract bool IsSignedAndTrusted(string filename, IRequestObject requestObject);
 
-        public abstract bool ExecuteElevatedAction(string provider, string payload, RequestImpl requestImpl);
+        public abstract bool ExecuteElevatedAction(string provider, string payload, IRequestObject requestObject);
         #endregion
 
     }
+#endif
 }

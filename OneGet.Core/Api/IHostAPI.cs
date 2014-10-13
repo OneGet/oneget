@@ -16,6 +16,9 @@ namespace Microsoft.OneGet.Api {
     using System.Collections.Generic;
 
     public interface IHostApi {
+
+        bool IsCanceled {get;}
+
         #region declare host-apis
 
         /* Synced/Generated code =================================================== */
@@ -37,7 +40,6 @@ namespace Microsoft.OneGet.Api {
 
         bool CompleteProgress(int activityId, bool isSuccessful);
 
-
         /// <summary>
         ///     Used by a provider to request what metadata keys were passed from the user
         /// </summary>
@@ -45,7 +47,6 @@ namespace Microsoft.OneGet.Api {
         IEnumerable<string> GetOptionKeys();
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -61,24 +62,11 @@ namespace Microsoft.OneGet.Api {
 
         bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
-        bool ShouldProcessPackageInstall(string packageName, string version, string source);
-
-        bool ShouldProcessPackageUninstall(string packageName, string version);
-
-        bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source);
-
-        bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source);
-
-        bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation);
-
-        bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation);
-
         bool AskPermission(string permission);
 
         bool IsInteractive();
 
         int CallCount();
-
 
         #endregion
     }

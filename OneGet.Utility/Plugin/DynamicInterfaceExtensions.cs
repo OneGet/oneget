@@ -21,7 +21,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using Extensions;
 
     internal static class DynamicInterfaceExtensions {
-        private readonly static Type[] _emptyTypes = { };
+        private static readonly Type[] _emptyTypes = {};
 
         private static readonly Dictionary<Type, MethodInfo[]> _methodCache = new Dictionary<Type, MethodInfo[]>();
         private static readonly Dictionary<Type[], MethodInfo[]> _methodCacheForTypes = new Dictionary<Type[], MethodInfo[]>();
@@ -35,7 +35,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return methods.FirstOrDefault(candidate => DoNamesMatchAcceptably(methodSignature.Name, candidate.Name) && DoSignaturesMatchAcceptably(methodSignature, candidate));
         }
 
-        public static MethodInfo FindMethod(this MethodInfo[] methods, Type delegateType ) {
+        public static MethodInfo FindMethod(this MethodInfo[] methods, Type delegateType) {
             return methods.FirstOrDefault(candidate => DoNamesMatchAcceptably(delegateType.Name, candidate.Name) && delegateType.IsDelegateAssignableFromMethod(candidate));
         }
 
@@ -48,23 +48,23 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         public static Delegate FindDelegate(this PropertyInfo[] properties, object actualInstance, MethodInfo signature) {
             return (from property in properties
-                let value = property.GetValue(actualInstance,null) as Delegate
+                let value = property.GetValue(actualInstance, null) as Delegate
                 where DoNamesMatchAcceptably(signature.Name, property.Name) && property.PropertyType.IsDelegateAssignableFromMethod(signature) && value != null
                 select value).FirstOrDefault();
         }
 
         public static Delegate FindDelegate(this FieldInfo[] fields, object actualInstance, Type delegateType) {
             return (from candidate in fields
-                    let value = candidate.GetValue(actualInstance) as Delegate
-                    where value != null && DoNamesMatchAcceptably(delegateType.Name, candidate.Name) && delegateType.IsDelegateAssignableFromDelegate(value.GetType()) 
-                    select value).FirstOrDefault();
+                let value = candidate.GetValue(actualInstance) as Delegate
+                where value != null && DoNamesMatchAcceptably(delegateType.Name, candidate.Name) && delegateType.IsDelegateAssignableFromDelegate(value.GetType())
+                select value).FirstOrDefault();
         }
 
         public static Delegate FindDelegate(this PropertyInfo[] properties, object actualInstance, Type delegateType) {
             return (from candidate in properties
-                    let value = candidate.GetValue(actualInstance, null) as Delegate
-                    where value != null && DoNamesMatchAcceptably(delegateType.Name, candidate.Name) && delegateType.IsDelegateAssignableFromDelegate(value.GetType()) 
-                    select value).FirstOrDefault();
+                let value = candidate.GetValue(actualInstance, null) as Delegate
+                where value != null && DoNamesMatchAcceptably(delegateType.Name, candidate.Name) && delegateType.IsDelegateAssignableFromDelegate(value.GetType())
+                select value).FirstOrDefault();
         }
 
         private static bool DoNamesMatchAcceptably(string originalName, string candidateName) {
@@ -73,7 +73,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
 
             // transform non-leading underscores to nothing.
-            if (!candidateName.StartsWith("_",StringComparison.OrdinalIgnoreCase)) {
+            if (!candidateName.StartsWith("_", StringComparison.OrdinalIgnoreCase)) {
                 candidateName = candidateName.Replace("_", "");
             }
 
@@ -95,6 +95,22 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return candidate.GetParameterTypes().SequenceEqual(member.GetParameterTypes(), AssignableTypeComparer.Instance) && (member.ReturnType == candidate.ReturnType || member.ReturnType.IsAssignableFrom(candidate.ReturnType));
         }
 
+#if THINKING_OUTLOUD
+        original function:
+
+        IAsyncEnumerable<string>  UnpackArchive(string filename, string folder, IRequestObject request) ;
+
+        ok for client representation:
+            object UnpackArchive(string filename, string folder, IRequestObject request);
+            
+        IMyAsyncEnumerable<string> UnpackArchive(string filename, string folder, IRequestObject request);
+        
+        is( NEW_RETURN_TYPE assignable?) -> No
+        is( NEW_RETURN_TYPE not sealed/static ) -> YES
+            is( NEW_RETURN_TYPE duckable to ORIGINAL_RETURN_TYPE ) -> YES
+
+#endif
+
         internal static MethodInfo[] GetPublicMethods(this Type type) {
             return _methodCache.GetOrAdd(type, () => {
                 if (type != null) {
@@ -110,7 +126,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         internal static IEnumerable<FieldInfo> GetPublicFields(this Type type) {
             if (type != null) {
-                return type.GetFields(BindingFlags.FlattenHierarchy|BindingFlags.Instance | BindingFlags.Public);
+                return type.GetFields(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public);
             }
             return Enumerable.Empty<FieldInfo>();
         }
@@ -125,7 +141,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         internal static IEnumerable<PropertyInfo> GetPublicProperties(this Type type) {
             if (type != null) {
-                return type.GetProperties(BindingFlags.FlattenHierarchy|BindingFlags.Instance | BindingFlags.Public);
+                return type.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public);
             }
             return Enumerable.Empty<PropertyInfo>();
         }
@@ -149,7 +165,27 @@ namespace Microsoft.OneGet.Utility.Plugin {
                     ? (IEnumerable<MethodInfo>)type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance)
                     : (IEnumerable<MethodInfo>)type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance).Where(each => each.IsAbstract || each.IsVirtual));
 
-                var interfaceMethods = type.GetInterfaces().SelectMany(GetVirtualMethods);
+                methods = methods.Where(each => each.Name != "Dispose");
+
+                // option 1: 
+                // if the target type is a class, and implements an interface -- and the implementation of that interface is already present (ie, abstract class Foo : IDisposable { public void Dispose() {} }  ) then
+                // the generated type should not try to create a method for that interface 
+
+                // option 2: 
+                // I think we're just talking about IDisposable here. maybe we shouldn't try to ducktype IDisposable at all.
+
+                //  try option2 :
+                /*
+                var ifaces = type.GetInterfaces().ToArray();
+                if (ifaces.Any()) {
+                    Console.WriteLine("Interface: {0}",ifaces.Select(each=>each.Name).JoinWithComma());
+                    if (ifaces.Any(each => each == typeof (IDisposable))) {
+                        Debugger.Break();
+                    }
+                }
+                 */
+
+                var interfaceMethods = type.GetInterfaces().Where(each => each != typeof (IDisposable)).SelectMany(GetVirtualMethods);
 
                 return DisambiguateMethodsBySignature(methods, interfaceMethods).ToArray();
             });
@@ -167,7 +203,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         internal static string ToSignatureString(this MethodInfo method) {
-            return "{0} {1}({2})".format(method.ReturnType.Name, method.Name, method.GetParameters().Select( each => "{0} {1}".format( each.ParameterType.NiceName(), each.Name)).JoinWithComma());
+            return "{0} {1}({2})".format(method.ReturnType.Name, method.Name, method.GetParameters().Select(each => "{0} {1}".format(each.ParameterType.NiceName(), each.Name)).JoinWithComma());
         }
 
         public static string NiceName(this Type type) {
@@ -188,7 +224,6 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return typeName + "<" + string.Join(",", type.GetGenericArguments().Select(NiceName).ToArray()) + ">";
         }
 
-
         internal static Func<string, bool> GenerateInstancesSupportsMethod(object[] actualInstance) {
             var ism = actualInstance.Select(GenerateInstanceSupportsMethod).ToArray();
             return (s) => ism.Any(each => each(s));
@@ -205,7 +240,6 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return imiMethodInfo == null ? (s) => true : actualInstance.CreateProxiedDelegate<Func<string, bool>>(imiMethodInfo);
         }
 
-        
         public static TInterface As<TInterface>(this object instance) {
             if (typeof (TInterface).IsDelegate()) {
                 // find a function in this object that matches the delegate that we are given
@@ -239,7 +273,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                     }
                     return instanceDelegate.CreateProxiedDelegate<TInterface>();
                 }
-                return (TInterface)(object) typeof(TInterface).CreateEmptyDelegate();
+                return (TInterface)(object)typeof (TInterface).CreateEmptyDelegate();
                 // throw new Exception("Delegate '{0}' not matched in object.".format(typeof (TInterface).NiceName()));
             }
             return DynamicInterface.Instance.Create<TInterface>(instance);
@@ -259,9 +293,9 @@ namespace Microsoft.OneGet.Utility.Plugin {
             foreach (var i in x) {
                 Debug.WriteLine("Creatable Type in assembly {0} - {1}", assembly.GetName(), i.Name);
             }
-#endif 
-            return _creatableTypesCache.GetOrAdd(assembly, () => assembly.GetTypes().Where(each => each.IsPublic && !each.IsEnum && !each.IsInterface && !each.IsAbstract && each.GetDefaultConstructor() != null && each.BaseType != typeof (MulticastDelegate)).ToArray());
+#endif
+            return _creatableTypesCache.GetOrAdd(assembly,
+                () => assembly.GetTypes().Where(each => each.IsPublic && !each.IsEnum && !each.IsInterface && !each.IsAbstract && each.GetDefaultConstructor() != null && each.BaseType != typeof (MulticastDelegate)).ToArray());
         }
-
     }
 }

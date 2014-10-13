@@ -14,20 +14,17 @@
 
 namespace Microsoft.PowerShell.OneGet {
     using System.Management.Automation;
-    using Microsoft.OneGet;
     using Microsoft.OneGet.Utility.PowerShell;
-    using ErrorCategory = System.Management.Automation.ErrorCategory;
 
     internal static class Constants {
-
         internal static object[] NoParameters = new object[0];
 
         // cmdlet naming/etc
-        internal  const string PackageNoun = "Package";
-        internal  const string PackageSourceNoun = "PackageSource";
-        internal  const string PackageProviderNoun = "PackageProvider";
-        
-        internal  const string PackageBySearchSet = "PackageBySearch";
+        internal const string PackageNoun = "Package";
+        internal const string PackageSourceNoun = "PackageSource";
+        internal const string PackageProviderNoun = "PackageProvider";
+
+        internal const string PackageBySearchSet = "PackageBySearch";
         internal const string PackageByInputObjectSet = "PackageByInputObject";
         internal const string SourceByInputObjectSet = "SourceByInputObject";
         internal const string SourceBySearchSet = "SourceBySearch";
@@ -37,9 +34,6 @@ namespace Microsoft.PowerShell.OneGet {
 
         internal const string AssemblyProviderType = "assembly";
 
-        // features we need to know about
-        internal const string AutomationOnlyFeature = "automation-only";
-
         // messages 
 
         // Implementation Note:
@@ -47,7 +41,7 @@ namespace Microsoft.PowerShell.OneGet {
         // control of spcifying messages to the end user, and falls back up the chain of responsibility
         // when resolving Messages from resources, we have prefixed the constants with MSG: in order
         // to *know* when we're trying to resolve a message. 
-        
+
         // As an optimization step, if the MSG: isn't present, then the application layer need not bother 
         // resolving the message (nor asking up the chain) since it's not a message id, but rather an
         // already resolved string.
@@ -113,11 +107,76 @@ namespace Microsoft.PowerShell.OneGet {
 
         internal const string SavePackage = "MSG:SavePackage";
 
+        #region copy common-constants-implementation
 
+        /* Synced/Generated code =================================================== */
+
+        internal const string MinVersion = "0.0.0.1";
+        internal static string[] Empty = new string[0];
+        internal const string MSGPrefix = "MSG:";
+
+        internal static class Signatures {
+            internal const string Zip = "504b0304";
+            internal const string Cab = "4D534346";
+            internal const string OleCompoundDocument = "D0CF11E0A1B11AE1";
+            internal static string[] ZipVariants = new[] {Zip, /* should have EXEs? */};
+        }
+
+        internal static class PackageStatus {
+            internal const string Installed = "Installed";
+            internal const string Uninstalled = "Uninstalled";
+        }
+
+        internal static class SwidTag {
+            internal const string SoftwareIdentity = "SoftwareIdentity";
+        }
+
+        internal static class Features {
+            internal const string AutomationOnly = "automation-only";
+            internal const string SupportedExtensions = "file-extensions";
+            internal const string MagicSignatures = "magic-signatures";
+            internal const string SupportedSchemes = "uri-schemes";
+            internal const string SupportsPowerShellModules = "supports-powershell-modules";
+        }
+
+        internal static class Parameters {
+            internal const string IsUpdate = "IsUpdatePackageSource";
+            internal const string Name = "Name";
+            internal const string Location = "Location";
+        }
+
+        internal static class Messages {
+            internal const string UnableToDownload = "MSG:UnableToDownload";
+            internal const string FailedProviderBootstrap = "MSG:FailedProviderBootstrap";
+            internal const string UnknownProvider = "MSG:UnknownProvider";
+            internal const string UserDeclinedUntrustedPackageInstall = "MSG:UserDeclinedUntrustedPackageInstall";
+            internal const string ProviderPluginLoadFailure = "MSG:ProviderPluginLoadFailure";
+            internal const string ProviderSwidtagUnavailable = "MSG:ProviderSwidtagUnavailable";
+            internal const string UnableToResolvePackage = "MSG:UnableToResolvePackage";
+            internal const string UnsupportedProviderType = "MSG:UnsupportedProviderType";
+            internal const string DestinationPathNotSet = "MSG:DestinationPathNotSet";
+            internal const string InvalidFilename = "MSG:InvalidFilename";
+            internal const string UnableToRemoveFile = "MSG:UnableToRemoveFile";
+            internal const string FileFailedVerification = "MSG:FileFailedVerification";
+            internal const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
+            internal const string SchemeNotSupported = "MSG:SchemeNotSupported";
+            internal const string PackageProviderExists = "MSG:PackageProviderExists";
+            internal const string UnableToResolveSource = "MSG:UnableToResolveSource_NameOrLocation";
+            internal const string UnsupportedArchive = "MSG:UnsupportedArchive";
+            internal const string CreatefolderFailed = "MSG:CreatefolderFailed";
+            internal const string UnableToOverwriteExistingFile = "MSG:UnableToOverwriteExistingFile";
+            internal const string UnableToCopyFileTo = "MSG:UnableToCopyFileTo";
+            internal const string UnableToCreateShortcutTargetDoesNotExist = "MSG:UnableToCreateShortcutTargetDoesNotExist";
+            internal const string RemoveEnvironmentVariableRequiresElevation = "MSG:RemoveEnvironmentVariableRequiresElevation";
+            internal const string UnknownFolderId = "MSG:UnknownFolderId";
+            internal const string ProtocolNotSupported = "MSG:ProtocolNotSupported";
+            internal const string UnableToUninstallPackage = "MSG:UnableToUninstallPackage";
+        }
+
+        #endregion
     }
 
     internal static class Errors {
-        
         // ReSharper disable InconsistentNaming
 
         public static ErrorMessage UnknownProvider = new ErrorMessage(Constants.UnknownProvider, ErrorCategory.ObjectNotFound);
@@ -126,15 +185,15 @@ namespace Microsoft.PowerShell.OneGet {
 
         public static ErrorMessage SourceFoundInMultipleProviders = new ErrorMessage(Constants.SourceFoundInMultipleProviders, ErrorCategory.InvalidArgument);
 
-        public static ErrorMessage NoMatchFound = new ErrorMessage(Constants.NoMatchFound , ErrorCategory.ObjectNotFound);
+        public static ErrorMessage NoMatchFound = new ErrorMessage(Constants.NoMatchFound, ErrorCategory.ObjectNotFound);
 
         public static ErrorMessage NoPackagesFoundForProvider = new ErrorMessage(Constants.NoPackagesFoundForProvider, ErrorCategory.ObjectNotFound);
 
-        public static ErrorMessage DisambiguateForInstall = new ErrorMessage(Constants.DisambiguateForInstall , ErrorCategory.InvalidArgument);
+        public static ErrorMessage DisambiguateForInstall = new ErrorMessage(Constants.DisambiguateForInstall, ErrorCategory.InvalidArgument);
 
         public static ErrorMessage InstallationFailure = new ErrorMessage(Constants.InstallationFailure, ErrorCategory.InvalidOperation);
 
-        public static ErrorMessage DisambiguateForUninstall = new ErrorMessage(Constants.DisambiguateForUninstall , ErrorCategory.InvalidArgument);
+        public static ErrorMessage DisambiguateForUninstall = new ErrorMessage(Constants.DisambiguateForUninstall, ErrorCategory.InvalidArgument);
 
         public static ErrorMessage UninstallationFailure = new ErrorMessage(Constants.UninstallationFailure, ErrorCategory.InvalidOperation);
 
@@ -147,7 +206,7 @@ namespace Microsoft.PowerShell.OneGet {
         public static ErrorMessage UnableToFindProviderForSource = new ErrorMessage(Constants.UnableToFindProviderForSource, ErrorCategory.ObjectNotFound);
 
         public static ErrorMessage DestinationOrLiteralPathNotSpecified = new ErrorMessage(Constants.DestinationOrLiteralPathRequired, ErrorCategory.InvalidArgument);
-        public static ErrorMessage MatchesMultipleProviders= new ErrorMessage(Constants.MatchesMultipleProviders, ErrorCategory.InvalidArgument);
+        public static ErrorMessage MatchesMultipleProviders = new ErrorMessage(Constants.MatchesMultipleProviders, ErrorCategory.InvalidArgument);
 
         // ReSharper restore InconsistentNaming
     }

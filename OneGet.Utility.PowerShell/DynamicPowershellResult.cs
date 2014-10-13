@@ -22,21 +22,13 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using System.Threading;
 
     public class DynamicPowershellResult : IDisposable, IEnumerable<object> {
-        private ManualResetEvent _completedEvent = new ManualResetEvent(false);
-        private ManualResetEvent _startedEvent = new ManualResetEvent(false);
-        private BlockingCollection<object> _output = new BlockingCollection<object>();
-
         public BlockingCollection<ErrorRecord> Errors = new BlockingCollection<ErrorRecord>();
-        
+        private ManualResetEvent _completedEvent = new ManualResetEvent(false);
+        private BlockingCollection<object> _output = new BlockingCollection<object>();
+        private ManualResetEvent _startedEvent = new ManualResetEvent(false);
+
         public bool LastIsTerminatingError {get; internal set;}
         public bool IsFailing {get; internal set;}
-        public void WaitForCompletion() {
-            _completedEvent.WaitOne();
-        }
-
-        public void WaitForStart() {
-            _startedEvent.WaitOne();
-        }
 
         public object Value {
             get {
@@ -69,6 +61,33 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
         }
 
+        public bool IsCompleted {
+            get {
+                return _output.IsCompleted;
+            }
+        }
+
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public IEnumerator<object> GetEnumerator() {
+            return _output.GetConsumingEnumerable().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
+
+        public void WaitForCompletion() {
+            _completedEvent.WaitOne();
+        }
+
+        public void WaitForStart() {
+            _startedEvent.WaitOne();
+        }
+
         public void Started() {
             _startedEvent.Set();
         }
@@ -81,14 +100,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             _completedEvent.Set();
         }
 
-        public bool IsCompleted {
-            get {
-                return _output.IsCompleted;
-            }
-        }
-
         public void Add(object obj) {
-            _output.Add( obj);
+            _output.Add(obj);
         }
 
         public virtual void Dispose(bool disposing) {
@@ -113,21 +126,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     _completedEvent.Set();
                     _completedEvent.Dispose();
                     _completedEvent = null;
-                }    
+                }
             }
-        }
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public IEnumerator<object> GetEnumerator() {
-            return _output.GetConsumingEnumerable().GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator();
         }
     }
 }

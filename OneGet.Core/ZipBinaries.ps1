@@ -9,7 +9,7 @@ function ZipFiles( $zipfilename, $sourcedir )
 }
 
 $n = [int] (([System.DateTime]::Now - [System.DateTime]::Parse("03/19/2014") ).Ticks / 80000000)
-$n = "OneGet-$n.zip"
+$n = "oneget-$n.zip"
 
 erase .\OneGet*.zip
 mkdir .\tmpfiles
@@ -45,4 +45,4 @@ rmdir -Recurse -Force  .\tmpfiles
 copy-itemex -force $n oneget:providers\
 copy-itemex -force $n oneget:providers\oneget.zip 
 
-send-tweet -Message "Posted new #OneGet Experimental build https://oneget.blob.core.windows.net/providers/$n"
+send-tweet -Message "Posted new #OneGet Experimental build https://oneget.org/$n"

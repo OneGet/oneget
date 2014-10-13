@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
+    using System.Collections.Generic;
     using System.Management.Automation;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
@@ -23,6 +24,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source, OptionCategory.Package
             }) {
+        }
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {"",};
+            }
         }
 
         [Parameter]

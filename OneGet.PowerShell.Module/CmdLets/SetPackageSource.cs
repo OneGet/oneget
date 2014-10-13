@@ -27,6 +27,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public SetPackageSource() : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
         }
 
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {Constants.SourceByInputObjectSet, Constants.SourceBySearchSet};
+            }
+        }
+
         [Alias("ProviderName")]
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.SourceBySearchSet, Mandatory = true)]
         public string Provider {get; set;}

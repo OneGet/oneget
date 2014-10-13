@@ -1,16 +1,16 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.OneGet.Utility.Platform {
     using System;
@@ -24,16 +24,17 @@ namespace Microsoft.OneGet.Utility.Platform {
     using Extensions;
 
     /// <summary>
-    /// This is a wrapper around the Process class to provide easy access to asynchronous
-    /// stdout/stderr streams.
-    /// TODO: add support for a cancellation token to kill the process when cancelled.
+    ///     This is a wrapper around the Process class to provide easy access to asynchronous
+    ///     stdout/stderr streams.
+    ///     TODO: add support for a cancellation token to kill the process when cancelled.
     /// </summary>
-    public class AsyncProcess :IDisposable {
+    public class AsyncProcess : IDisposable {
         protected Process _process;
+        private ManualResetEvent _stdErrStarted = new ManualResetEvent(false);
         private BlockingCollection<string> _stdError = new BlockingCollection<string>();
         private BlockingCollection<string> _stdOut = new BlockingCollection<string>();
         private ManualResetEvent _stdOutStarted = new ManualResetEvent(false);
-        private ManualResetEvent _stdErrStarted = new ManualResetEvent(false);
+
         protected AsyncProcess(Process process) {
             _process = process;
         }
@@ -274,7 +275,10 @@ namespace Microsoft.OneGet.Utility.Platform {
             }
         }
 
-       
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         public static AsyncProcess Start(ProcessStartInfo startInfo) {
             return Start(startInfo, null);
@@ -284,18 +288,17 @@ namespace Microsoft.OneGet.Utility.Platform {
             _stdErrStarted.Set();
             if (_stdError != null) {
                 _stdError.Add(args.Data ?? string.Empty);
-            }
-            else {
+            } else {
                 Console.WriteLine("Attempting to add when collection is null!!!!! (stdErr)");
                 _process.ErrorDataReceived -= ErrorDataReceived;
             }
         }
+
         private void OutputDataReceived(object sender, DataReceivedEventArgs args) {
             _stdOutStarted.Set();
             if (_stdOut != null) {
                 _stdOut.Add(args.Data ?? string.Empty);
-            }
-            else {
+            } else {
                 Console.WriteLine("Attempting to add when collection is null!!!!! (stdOut)");
                 _process.OutputDataReceived -= OutputDataReceived;
             }
@@ -313,7 +316,7 @@ namespace Microsoft.OneGet.Utility.Platform {
             startInfo.RedirectStandardError = true;
             startInfo.RedirectStandardOutput = true;
             startInfo.UseShellExecute = false;
-            bool redirecting = true;
+            var redirecting = true;
 
             if (AdminPrivilege.IsElevated) {
                 startInfo.Verb = "";
@@ -484,11 +487,6 @@ namespace Microsoft.OneGet.Utility.Platform {
 
         public void Refresh() {
             _process.Refresh();
-        }
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
     }
 }

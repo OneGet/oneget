@@ -13,12 +13,19 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
+    using System.Collections.Generic;
     using System.Management.Automation;
     using Microsoft.OneGet.Packaging;
 
     public abstract class CmdletWithSearch : CmdletWithProvider {
         protected CmdletWithSearch(OptionCategory[] categories)
             : base(categories) {
+        }
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {""};
+            }
         }
 
         [Parameter(Position = 0)]

@@ -12,10 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet {
+namespace Microsoft.OneGet.Api {
     using System;
     using System.Collections.Generic;
-    using RequestImpl = System.Object;
+    using IRequestObject = System.Object;
 
     public interface IProviderServices {
         bool IsElevated {get;}
@@ -24,33 +24,33 @@ namespace Microsoft.OneGet {
 
         /* Synced/Generated code =================================================== */
 
-        void DownloadFile(Uri remoteLocation, string localFilename, RequestImpl requestImpl);
+        void DownloadFile(Uri remoteLocation, string localFilename, IRequestObject requestObject);
 
-        bool IsSupportedArchive(string localFilename, RequestImpl requestImpl);
+        bool IsSupportedArchive(string localFilename, IRequestObject requestObject);
 
-        IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, RequestImpl requestImpl);
+        IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject);
 
-        void AddPinnedItemToTaskbar(string item, RequestImpl requestImpl);
+        void AddPinnedItemToTaskbar(string item, IRequestObject requestObject);
 
-        void RemovePinnedItemFromTaskbar(string item, RequestImpl requestImpl);
+        void RemovePinnedItemFromTaskbar(string item, IRequestObject requestObject);
 
-        void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, RequestImpl requestImpl);
+        void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, IRequestObject requestObject);
 
-        void SetEnvironmentVariable(string variable, string value, string context, RequestImpl requestImpl);
+        void SetEnvironmentVariable(string variable, string value, string context, IRequestObject requestObject);
 
-        void RemoveEnvironmentVariable(string variable, string context, RequestImpl requestImpl);
+        void RemoveEnvironmentVariable(string variable, string context, IRequestObject requestObject);
 
-        void CopyFile(string sourcePath, string destinationPath, RequestImpl requestImpl);
+        void CopyFile(string sourcePath, string destinationPath, IRequestObject requestObject);
 
-        void Delete(string path, RequestImpl requestImpl);
+        void Delete(string path, IRequestObject requestObject);
 
-        void DeleteFolder(string folder, RequestImpl requestImpl);
+        void DeleteFolder(string folder, IRequestObject requestObject);
 
-        void CreateFolder(string folder, RequestImpl requestImpl);
+        void CreateFolder(string folder, IRequestObject requestObject);
 
-        void DeleteFile(string filename, RequestImpl requestImpl);
+        void DeleteFile(string filename, IRequestObject requestObject);
 
-        string GetKnownFolder(string knownFolder, RequestImpl requestImpl);
+        string GetKnownFolder(string knownFolder, IRequestObject requestObject);
 
         string CanonicalizePath(string text, string currentDirectory);
 
@@ -58,11 +58,11 @@ namespace Microsoft.OneGet {
 
         bool DirectoryExists(string path);
 
-        bool Install(string fileName, string additionalArgs, RequestImpl requestImpl);
+        bool Install(string fileName, string additionalArgs, IRequestObject requestObject);
 
-        bool IsSignedAndTrusted(string filename, RequestImpl requestImpl);
+        bool IsSignedAndTrusted(string filename, IRequestObject requestObject);
 
-        bool ExecuteElevatedAction(string provider, string payload, RequestImpl requestImpl);
+        bool ExecuteElevatedAction(string provider, string payload, IRequestObject requestObject);
 
         #endregion
 

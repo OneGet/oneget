@@ -14,29 +14,18 @@
 
 namespace OneGet.ProviderSDK {
     public static class Constants {
-        #region copy common-constants-implementation ** public
+        #region copy common-constants-implementation /internal/public
 
         public const string MinVersion = "0.0.0.1";
-        public static string[] Empty = new string[0];
         public const string MSGPrefix = "MSG:";
-
-        public static class PackageStatus {
-            public const string Installed = "Installed";
-            public const string Uninstalled = "Uninstalled";
-        }
-
-        public static class SwidTag {
-            public const string SoftwareIdentity = "SoftwareIdentity";
-        }
+        public static string[] Empty = new string[0];
 
         public static class Features {
             public const string AutomationOnly = "automation-only";
-        }
-
-        public static class Parameters {
-            public const string IsUpdate = "IsUpdatePackageSource";
-            public const string Name = "Name";
-            public const string Location = "Location";
+            public const string SupportedExtensions = "file-extensions";
+            public const string MagicSignatures = "magic-signatures";
+            public const string SupportedSchemes = "uri-schemes";
+            public const string SupportsPowerShellModules = "supports-powershell-modules";
         }
 
         public static class Messages {
@@ -64,14 +53,13 @@ namespace OneGet.ProviderSDK {
             public const string RemoveEnvironmentVariableRequiresElevation = "MSG:RemoveEnvironmentVariableRequiresElevation";
             public const string UnknownFolderId = "MSG:UnknownFolderId";
             public const string ProtocolNotSupported = "MSG:ProtocolNotSupported";
+            public const string UnableToUninstallPackage = "MSG:UnableToUninstallPackage";
 
-            // NEW:
             public const string SourceLocationNotValid = "MSG:SourceLocationNotValid_Location";
             public const string UriSchemeNotSupported = "MSG:UriSchemeNotSupported_Scheme";
             public const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
             public const string DependencyResolutionError = "MSG:UnableToResolveDependency_dependencyPackage";
-            public const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependencyPackage";
-
+            public const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependency";
         }
 
         public static class OptionType {
@@ -84,6 +72,28 @@ namespace OneGet.ProviderSDK {
             public const string Path = "Path";
             public const string Uri = "Uri";
             public const string SecureString = "SecureString";
+        }
+
+        public static class PackageStatus {
+            public const string Installed = "Installed";
+            public const string Uninstalled = "Uninstalled";
+        }
+
+        public static class Parameters {
+            public const string IsUpdate = "IsUpdatePackageSource";
+            public const string Name = "Name";
+            public const string Location = "Location";
+        }
+
+        public static class Signatures {
+            public const string Zip = "504b0304";
+            public const string Cab = "4D534346";
+            public const string OleCompoundDocument = "D0CF11E0A1B11AE1";
+            public static string[] ZipVariants = new[] {Zip, /* should have EXEs? */};
+        }
+
+        public static class SwidTag {
+            public const string SoftwareIdentity = "SoftwareIdentity";
         }
 
         #endregion

@@ -47,6 +47,7 @@
     <Compile Include="CmdLets\RegisterPackageSource.cs" />
     <Compile Include="CmdLets\SavePackage.cs" />
     <Compile Include="CmdLets\SetPackageSource.cs" />
+    <Compile Include="Utility\ValidateListAttribute.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Resources\Messages.Designer.cs">
       <AutoGen>True</AutoGen>

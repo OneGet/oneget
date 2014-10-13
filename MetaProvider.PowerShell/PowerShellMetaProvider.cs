@@ -25,7 +25,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Threading.Tasks;
     using Utility.Extensions;
     using Utility.PowerShell;
-    using RequestImpl = System.Object;
+    using IRequestObject = System.Object;
 
     /// <summary>
     ///     A OneGet MetaProvider class that loads Providers implemented as a PowerShell Module.
@@ -274,13 +274,21 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
         }
 
-        private PowerShellPackageProvider Create(string psModule) {
+        private PowerShellPackageProvider Create(Request req, string psModule) {
+            req.Debug("Creating dynamic ps object for [{0}]", psModule);
             dynamic ps = new DynamicPowershell();
+            req.Debug("Done Creating dynamic ps object for [{0}]", psModule);
             try {
+                req.Debug("Import PSF for [{0}]", psModule);
                 // load the powershell provider functions into this runspace.
                 var psf = ps.ImportModule(Name: PowerShellProviderFunctions, PassThru: true);
 
+                req.Debug("Done Import PSF for [{0}]", psModule);
+
                 DynamicPowershellResult result = ps.ImportModule(Name: psModule, PassThru: true);
+
+                req.Debug("Import Module Itself for [{0}]", psModule);
+
                 if (!result.LastIsTerminatingError) {
                     var providerModule = result.Value as PSModuleInfo;
                     if (result.Success && providerModule != null) {
@@ -295,6 +303,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 // something didn't go well.
                 // skip it.
                 e.Dump();
+            } finally {
+                req.Debug("Done Like Dinner for [{0}]", psModule);
             }
 
             // didn't import correctly.
@@ -302,24 +312,28 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             return null;
         }
 
-        public void InitializeProvider(RequestImpl requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public void InitializeProvider(IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
 
-            var req =requestImpl.As<Request>();
+            var req =requestObject.As<Request>();
             req.Debug("Initializing PowerShell MetaProvider");
 
             // to do : get modules to load (from configuration ?)
             var modules = ScanForModules(req).ToArray();
 
-            req.Debug("Scanned for PowerShell Provider Modules ");
+            req.Debug("Scanned for PowerShell Provider Modules [Count: {0}]",modules.Length);
 
             // try to create each module at least once.
-            Parallel.ForEach(modules, modulePath => {
-                var provider = Create(modulePath);
+            modules.ParallelForEach(modulePath => {
+                req.Debug("Attempting to load PowerShell Provider Module [{0}]", modulePath);
+                var provider = Create(req,modulePath);
+                req.Debug("Created object for PowerShell Provider Module [{0}]", modulePath);
                 if (provider != null) {
+                    
                     if (provider.GetPackageProviderName() != null) {
+                        req.Debug("Actual object for PowerShell Provider Module [{0}]", modulePath);
                         // looks good to me, let's add this to the list of moduels this meta provider can create.
                         _packageProviders.AddOrSet(provider.GetPackageProviderName(), provider);
                     } else {
@@ -327,6 +341,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                         provider = null;
                     }
                 }
+                req.Debug("Done That one [{0}]", modulePath);
             });
             req.Debug("Loaded PowerShell Provider Modules ");
         }

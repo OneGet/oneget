@@ -23,16 +23,16 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using Extensions;
 
     internal class ProxyClass {
-        private static int _typeCounter  = 1;
-        
+        private static int _typeCounter = 1;
+
         private readonly TypeBuilder _dynamicType;
         private readonly HashSet<string> _implementedMethods = new HashSet<string>();
         private readonly List<FieldBuilder> _storageFields = new List<FieldBuilder>();
-        private AssemblyBuilder _dynamicAssembly;
-        private string _proxyName;
-        private string _filename;
         private string _directory;
+        private AssemblyBuilder _dynamicAssembly;
+        private string _filename;
         private string _fullpath;
+        private string _proxyName;
         private Type _type;
 
         internal ProxyClass(Type interfaceType, OrderedDictionary<Type, List<MethodInfo, MethodInfo>> methods, List<Delegate, MethodInfo> delegates, List<MethodInfo> stubs) {
@@ -73,7 +73,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             DefineConstructor(interfaceType.IsInterface ? typeof (MarshalByRefObject) : interfaceType);
 
             //if (typeof (MarshalByRefObject).IsAssignableFrom(_dynamicType)) {
-                _dynamicType.OverrideInitializeLifetimeService();
+            _dynamicType.OverrideInitializeLifetimeService();
             //}
         }
 
@@ -98,15 +98,14 @@ namespace Microsoft.OneGet.Utility.Plugin {
                         throw;
                     }
                 }
-#else 
+#else
                 try {
                     if (_type == null) {
                         _type = _dynamicType.CreateType();
                         //_dynamicAssembly.Save(_filename);
                     }
                     return _type;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.Dump();
                     throw;
                 }
@@ -114,9 +113,9 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
         }
 
-        internal object CreateInstance(List<Type,object> instances, List<Delegate, MethodInfo> delegates) {
+        internal object CreateInstance(List<Type, object> instances, List<Delegate, MethodInfo> delegates) {
             var proxyConstructor = Type.GetConstructors()[0];
-            var instance = proxyConstructor.Invoke(instances.Select(each=>each.Value).Concat(delegates.Select(each => each.Key)).ToArray());
+            var instance = proxyConstructor.Invoke(instances.Select(each => each.Value).Concat(delegates.Select(each => each.Key)).ToArray());
             // set the implemented methods collection 
             var imf = Type.GetField("__implementedMethods", BindingFlags.NonPublic | BindingFlags.Instance);
             if (imf != null) {
@@ -127,16 +126,16 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         private TypeBuilder DefineDynamicType(Type interfaceType) {
-            _proxyName = "{0}_proxy_{1}_in_{2}".format(interfaceType.NiceName().MakeSafeFileName(),_typeCounter++, AppDomain.CurrentDomain.FriendlyName.MakeSafeFileName().Replace("[","_").Replace("]","_"));
+            _proxyName = "{0}_proxy_{1}_in_{2}".format(interfaceType.NiceName().MakeSafeFileName(), _typeCounter++, AppDomain.CurrentDomain.FriendlyName.MakeSafeFileName().Replace("[", "_").Replace("]", "_"));
 
-            _fullpath = (_proxyName+".dll").GenerateTemporaryFilename();
+            _fullpath = (_proxyName + ".dll").GenerateTemporaryFilename();
             _directory = Path.GetDirectoryName(_fullpath);
             _filename = Path.GetFileName(_fullpath);
 
             _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.RunAndSave, _directory);
             // Define a dynamic module in this assembly.
             // , "{0}.dll".format(_proxyName)
-            var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName,_filename);
+            var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName, _filename);
 
             // Define a runtime class with specified name and attributes.
             if (interfaceType.IsInterface) {
@@ -177,4 +176,4 @@ namespace Microsoft.OneGet.Utility.Plugin {
             il.Return();
         }
     }
-} 
+}

@@ -18,6 +18,7 @@ namespace Microsoft.OneGet.Builtin {
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using Api;
     using Implementation;
     using Packaging;
     using Utility.Collections;
@@ -25,7 +26,7 @@ namespace Microsoft.OneGet.Builtin {
     using Utility.Deployment.WindowsInstaller.Package;
     using Utility.Extensions;
     using Utility.Plugin;
-    using RequestImpl = System.Object;
+    using IRequestObject = System.Object;
 
     public class MsiProvider {
         /// <summary>
@@ -34,7 +35,8 @@ namespace Microsoft.OneGet.Builtin {
         internal const string ProviderName = "msi";
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
-            {"extensions", new[] {"msi"}}
+            {Constants.Features.SupportedExtensions, new[] {"msi", "msp"}},
+            {Constants.Features.MagicSignatures, new[] {Constants.Signatures.OleCompoundDocument}}
         };
 
         private int _progressId;
@@ -54,14 +56,14 @@ namespace Microsoft.OneGet.Builtin {
         ///     a <c>System.Type</c> that represents a remote interface for that a request needs to
         ///     implement when passing the request back to methods in the CORE. (Advanced Usage)
         /// </param>
-        /// <param name="requestImpl">
+        /// <param name="requestObject">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void InitializeProvider(RequestImpl requestImpl) {
+        public void InitializeProvider(IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::InitializeProvider'", ProviderName);
                 }
@@ -76,14 +78,14 @@ namespace Microsoft.OneGet.Builtin {
         /// <summary>
         ///     Returns a collection of strings to the client advertizing features this provider supports.
         /// </summary>
-        /// <param name="requestImpl">
+        /// <param name="requestObject">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetFeatures(RequestImpl requestImpl) {
+        public void GetFeatures(IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
 
@@ -103,14 +105,14 @@ namespace Microsoft.OneGet.Builtin {
         ///     Returns dynamic option definitions to the HOST
         /// </summary>
         /// <param name="category">The category of dynamic options that the HOST is interested in</param>
-        /// <param name="requestImpl">
+        /// <param name="requestObject">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetDynamicOptions(string category, RequestImpl requestImpl) {
+        public void GetDynamicOptions(string category, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::GetDynamicOptions' '{1}'", ProviderName, category);
 
@@ -151,14 +153,14 @@ namespace Microsoft.OneGet.Builtin {
         ///     the core is calling this multiple times to do a batch search request. The operation can be delayed until
         ///     <c>CompleteFind(...)</c> is called
         /// </param>
-        /// <param name="requestImpl">
+        /// <param name="requestObject">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void FindPackageByFile(string file, int id, RequestImpl requestImpl) {
+        public void FindPackageByFile(string file, int id, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::FindPackageByFile' '{1}','{2}'", ProviderName, file, id);
                     if (!file.FileExists()) {
@@ -186,14 +188,14 @@ namespace Microsoft.OneGet.Builtin {
         /// <summary>
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="requestImpl">
+        /// <param name="requestObject">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetInstalledPackages(string name, RequestImpl requestImpl) {
+        public void GetInstalledPackages(string name, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", ProviderName, name);
                     var products = ProductInstallation.AllProducts;
@@ -216,14 +218,14 @@ namespace Microsoft.OneGet.Builtin {
         ///     Installs a given package.
         /// </summary>
         /// <param name="fastPackageReference">A provider supplied identifier that specifies an exact package</param>
-        /// <param name="requestImpl">
+        /// <param name="requestObject">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void InstallPackage(string fastPackageReference, RequestImpl requestImpl) {
+        public void InstallPackage(string fastPackageReference, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::InstallPackage' '{1}'", ProviderName, fastPackageReference);
                     var file = fastPackageReference.CanonicalizePath(false);
@@ -269,14 +271,14 @@ namespace Microsoft.OneGet.Builtin {
         ///     Uninstalls a package
         /// </summary>
         /// <param name="fastPackageReference"></param>
-        /// <param name="requestImpl">
+        /// <param name="requestObject">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void UninstallPackage(string fastPackageReference, RequestImpl requestImpl) {
+        public void UninstallPackage(string fastPackageReference, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::UninstallPackage' '{1}'", ProviderName, fastPackageReference);
 
@@ -332,7 +334,7 @@ namespace Microsoft.OneGet.Builtin {
             var actualPercent = 0;
 
             ExternalUIHandler handler = (type, message, buttons, icon, button) => {
-                if (request.IsCancelled()) {
+                if (request.IsCanceled) {
                     return MessageResult.Cancel;
                 }
 
@@ -390,7 +392,7 @@ namespace Microsoft.OneGet.Builtin {
                        }
                        */
             if (request.YieldSoftwareIdentity(filename, package.Property["ProductName"], package.Property["ProductVersion"], "multipartnumeric", package.Property["Summary"], filename, filename, filename, Path.GetFileName(filename))) {
-                var trusted = request.GetPackageManagementService().As<IPackageManagementService>().ProviderServices.IsSignedAndTrusted(filename, "");
+                var trusted = request.IsSignedAndTrusted(filename, request.As<IRequest>());
 
                 if (!request.YieldSoftwareMetadata(filename, "FromTrustedSource", trusted.ToString())) {
                     return false;

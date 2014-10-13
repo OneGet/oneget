@@ -23,7 +23,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using Utility.Extensions;
     using Utility.PowerShell;
     using Utility.Versions;
-    using RequestImpl = System.Object;
+    using IRequestObject = System.Object;
 
     public class PowerShellPackageProvider : PowerShellProviderBase {
         private static int _findId = 1;
@@ -62,18 +62,18 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 #endif
         }
 
-        private object Call(string function, RequestImpl requestImpl, params object[] args) {
-            using (var request = Request.New(requestImpl, this, function)) {
+        private object Call(string function, IRequestObject requestObject, params object[] args) {
+            using (var request = Request.New(requestObject, this, function)) {
                 return request.CallPowerShell(args);
             }
         }
 
         #region implement PackageProvider-interface
 
-        public void AddPackageSource(string name, string location, bool trusted, RequestImpl requestImpl) {
-            Call("AddPackageSource", requestImpl, name, location, trusted);
+        public void AddPackageSource(string name, string location, bool trusted, IRequestObject requestObject) {
+            Call("AddPackageSource", requestObject, name, location, trusted);
         }
-        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, RequestImpl requestImpl) {
+        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequestObject requestObject) {
             // special case.
             // if FindPackage is implemented taking an array of strings
             // and the id > 0 then we need to hold onto the collection until 
@@ -87,16 +87,16 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 }
 
                 // not passed in as a set.
-                Call("FindPackage", requestImpl, new string[] {
+                Call("FindPackage", requestObject, new string[] {
                     name
                 }, requiredVersion, minimumVersion, maximumVersion);
                 return;
             }
 
             // otherwise, it has to take them one at a time and yield them anyway.
-            Call("FindPackage",requestImpl, name, requiredVersion, minimumVersion, maximumVersion);
+            Call("FindPackage",requestObject, name, requiredVersion, minimumVersion, maximumVersion);
         }
-        public void FindPackageByFile(string file, int id, RequestImpl requestImpl) {
+        public void FindPackageByFile(string file, int id, IRequestObject requestObject) {
             // special case.
             // if FindPackageByFile is implemented taking an array of strings
             // and the id > 0 then we need to hold onto the collection until 
@@ -109,16 +109,16 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     return;
                 }
                 // not passed in as a set.
-                Call("FindPackageByFile",requestImpl, new string[] {
+                Call("FindPackageByFile",requestObject, new string[] {
                     file
                 });
                 return;
             }
 
-            Call("FindPackageByFile", requestImpl, file);
+            Call("FindPackageByFile", requestObject, file);
             return;
         }
-        public void FindPackageByUri(Uri uri, int id, RequestImpl requestImpl) {
+        public void FindPackageByUri(Uri uri, int id, IRequestObject requestObject) {
             // special case.
             // if FindPackageByUri is implemented taking an array of strings
             // and the id > 0 then we need to hold onto the collection until 
@@ -131,24 +131,24 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     return;
                 }
                 // not passed in as a set.
-                Call("FindPackageByUri",requestImpl, new Uri[] {
+                Call("FindPackageByUri",requestObject, new Uri[] {
                     uri
                 });
                 return;
             }
 
-            Call("FindPackageByUri",requestImpl, uri);
+            Call("FindPackageByUri",requestObject, uri);
         }
-        public void GetInstalledPackages(string name, RequestImpl requestImpl) {
-            Call("GetInstalledPackages",requestImpl, name);
+        public void GetInstalledPackages(string name, IRequestObject requestObject) {
+            Call("GetInstalledPackages",requestObject, name);
         }
 
-        public void GetDynamicOptions(string category, RequestImpl requestImpl) {
+        public void GetDynamicOptions(string category, IRequestObject requestObject) {
             OptionCategory cat;
             if (Enum.TryParse(category ?? "", true, out cat)) {
                 // if this version of the plugin doesn't support that category
                 // there's no point in trying to get options from that type.
-                Call("GetDynamicOptions", requestImpl, cat);
+                Call("GetDynamicOptions", requestObject, cat);
             }
         }
 
@@ -161,12 +161,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public string GetPackageProviderName() {
             return _providerName ?? (_providerName = (string)CallPowerShellWithoutRequest("GetPackageProviderName"));
         }
-        public void ResolvePackageSources(RequestImpl requestImpl) {
-            Call("ResolvePackageSources", requestImpl);
+        public void ResolvePackageSources(IRequestObject requestObject) {
+            Call("ResolvePackageSources", requestObject);
         }
 
-        public void InitializeProvider(RequestImpl requestImpl) {
-            Call("InitializeProvider", requestImpl);
+        public void InitializeProvider(IRequestObject requestObject) {
+            Call("InitializeProvider", requestObject);
         }
 
         public string GetProviderVersion() {
@@ -187,17 +187,17 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
             return result;
         }
-        public void InstallPackage(string fastPath, RequestImpl requestImpl) {
-            Call("InstallPackage", requestImpl, fastPath);
+        public void InstallPackage(string fastPath, IRequestObject requestObject) {
+            Call("InstallPackage", requestObject, fastPath);
         }
-        public void RemovePackageSource(string name, RequestImpl requestImpl) {
-            Call("RemovePackageSource", requestImpl, name);
+        public void RemovePackageSource(string name, IRequestObject requestObject) {
+            Call("RemovePackageSource", requestObject, name);
         }
-        public void UninstallPackage(string fastPath, RequestImpl requestImpl) {
-            Call("UninstallPackage", requestImpl, fastPath);
+        public void UninstallPackage(string fastPath, IRequestObject requestObject) {
+            Call("UninstallPackage", requestObject, fastPath);
         }
-        public void GetFeatures(RequestImpl requestImpl) {
-            Call("GetFeatures", requestImpl);
+        public void GetFeatures(IRequestObject requestObject) {
+            Call("GetFeatures", requestObject);
         }
 
         // --- Optimization features -----------------------------------------------------------------------------------------------------
@@ -210,21 +210,21 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        public void DownloadPackage(string fastPath, string location, RequestImpl requestImpl) {
-            Call("DownloadPackage", requestImpl, fastPath, location);
+        public void DownloadPackage(string fastPath, string location, IRequestObject requestObject) {
+            Call("DownloadPackage", requestObject, fastPath, location);
         }
-        public void GetPackageDependencies(string fastPath, RequestImpl requestImpl) {
-            Call("GetPackageDependencies", requestImpl, fastPath);
+        public void GetPackageDependencies(string fastPath, IRequestObject requestObject) {
+            Call("GetPackageDependencies", requestObject, fastPath);
         }
-        public void GetPackageDetails(string fastPath, RequestImpl requestImpl) {
-            Call("GetPackageDetails", requestImpl, fastPath);
+        public void GetPackageDetails(string fastPath, IRequestObject requestObject) {
+            Call("GetPackageDetails", requestObject, fastPath);
         }
-        public int StartFind(RequestImpl requestImpl) {
+        public int StartFind(IRequestObject requestObject) {
             lock (this) {
                 return ++_findId;
             }
         }
-        public void CompleteFind(int id, RequestImpl requestImpl) {
+        public void CompleteFind(int id, IRequestObject requestObject) {
             if (id < 1) {
                 return;
             }
@@ -238,10 +238,10 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                         var names = nameBatch.Select(each => each.Item1).ToArray();
                         var p1 = nameBatch[0];
 
-                        Call("FindPackage", requestImpl,names, p1.Item2, p1.Item3, p1.Item4);
+                        Call("FindPackage", requestObject,names, p1.Item2, p1.Item3, p1.Item4);
                     } else {
                         foreach (var each in nameBatch) {
-                            Call("FindPackage",requestImpl, each.Item1, each.Item2, each.Item3, each.Item4);
+                            Call("FindPackage",requestObject, each.Item1, each.Item2, each.Item3, each.Item4);
                         }
                     }
                 }
@@ -252,12 +252,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 if (fileBatch != null) {
                     if (IsFirstParameterType<string[]>("FindPackageByFile")) {
                         // it takes a batch at a time.
-                        Call("FindPackageByFile", requestImpl, new object[] {
+                        Call("FindPackageByFile", requestObject, new object[] {
                             fileBatch.ToArray()
                         });
                     } else {
                         foreach (var each in fileBatch) {
-                            Call("FindPackageByFile",requestImpl, each);
+                            Call("FindPackageByFile",requestObject, each);
                         }
                     }
                 }
@@ -268,16 +268,16 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 if (uriBatch != null) {
                     if (IsFirstParameterType<string[]>("FindPackageByUri")) {
                         // it takes a batch at a time.
-                        Call("FindPackageByUri",requestImpl, new object[] {uriBatch.ToArray()});
+                        Call("FindPackageByUri",requestObject, new object[] {uriBatch.ToArray()});
                     } else {
                         foreach (var each in uriBatch) {
-                            Call("FindPackageByUri",requestImpl, each);
+                            Call("FindPackageByUri",requestObject, each);
                         }
                     }
                 }
             }
         }
-        public void ExecuteElevatedAction(string payload, RequestImpl requestImpl){
+        public void ExecuteElevatedAction(string payload, IRequestObject requestObject){
              // TODO: Fill in implementation
              // Delete this method if you do not need to implement it
              // Please don't throw an not implemented exception, it's not optimal.

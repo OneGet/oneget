@@ -100,9 +100,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         // todo: if the dynamic parameters from two providers aren't compatible, then what? 
 
                         // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
-                        (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
+                        // (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
+                        if (IsInvocation) {
+                            (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
+                        } else {
+                            (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).IncludeInParameterSet(md, IsInvocation, ParameterSets);
+                        }
                     } else {
-                        DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md));
+                        DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
                     }
                 }
             } finally {

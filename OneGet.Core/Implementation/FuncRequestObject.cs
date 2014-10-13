@@ -1,4 +1,4 @@
-﻿// 
+// 
 //  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -12,16 +12,27 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Utility.Extensions {
+namespace Microsoft.OneGet.Implementation {
     using System;
-    using System.Threading;
+    using Api;
+    using Utility.Async;
+    using Utility.Collections;
 
-    public static class CancellationTokenSourceExtensions {
-        public static bool OkToContinue(this CancellationTokenSource cts, Func<bool> isCancelled) {
-            if (isCancelled()) {
-                cts.Cancel();
+    public class FuncRequestObject<T> : RequestObject, IAsyncValue<T> {
+        private T _result;
+
+        public FuncRequestObject(ProviderBase provider, IHostApi hostApi, Func<RequestObject, T> function)
+            : base(provider, hostApi, null) {
+            _action = r => {_result = function(r);};
+            InvokeImpl();
+        }
+
+        public T Value {
+            get {
+                // wait for end.
+                this.Wait();
+                return _result;
             }
-            return !cts.Token.IsCancellationRequested;
         }
     }
 }

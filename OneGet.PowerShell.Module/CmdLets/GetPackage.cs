@@ -17,9 +17,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using System.Threading.Tasks;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Async;
+    using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Get, Constants.PackageNoun)]
@@ -31,6 +32,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Install
             }) {
+        }
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {""};
+            }
         }
 
         protected IEnumerable<string> UnprocessedNames {
@@ -62,7 +69,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool ProcessRecordAsync() {
-            Parallel.ForEach(SelectedProviders, provider => {
+            SelectedProviders.ParallelForEach(provider => {
                 _providersProcessed.GetOrAdd(provider.ProviderName, () => false);
 
                 try {
@@ -89,7 +96,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         protected IEnumerable<SoftwareIdentity> ProcessProvider(PackageProvider provider) {
-            using (var packages = CancelWhenStopped(provider.GetInstalledPackages("", this))) {
+            using (var packages = provider.GetInstalledPackages("", this).CancelWhen(_cancellationEvent.Token)) {
                 foreach (var p in packages) {
                     _providersProcessed.AddOrSet(provider.ProviderName, true);
                     yield return p;
@@ -99,7 +106,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected IEnumerable<SoftwareIdentity> ProcessNames(PackageProvider provider, string name) {
             _namesProcessed.GetOrAdd(name, () => false);
-            using (var packages = CancelWhenStopped(provider.GetInstalledPackages(name, this))) {
+            using (var packages = provider.GetInstalledPackages(name, this).CancelWhen(_cancellationEvent.Token)) {
                 foreach (var p in packages) {
                     _namesProcessed.AddOrSet(name, true);
                     _providersProcessed.AddOrSet(provider.ProviderName, true);

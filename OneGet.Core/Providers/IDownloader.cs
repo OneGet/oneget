@@ -14,13 +14,10 @@
 
 namespace Microsoft.OneGet.Providers {
     using System;
-    using System.Collections.Generic;
     using Utility.Plugin;
+    using IRequestObject = System.Object;
 
     public interface IDownloader : IProvider {
-        [Required]
-        IEnumerable<string> SupportedSchemes {get;}
-
         /// <summary>
         ///     Returns the name of the Provider.
         /// </summary>
@@ -29,6 +26,6 @@ namespace Microsoft.OneGet.Providers {
         string GetDownloaderName();
 
         [Required]
-        void DownloadFile(Uri remoteLocation, string localFilename, Object requestImpl);
+        void DownloadFile(Uri remoteLocation, string localFilename, IRequestObject requestObject);
     }
 }

@@ -15,15 +15,8 @@
 namespace Microsoft.OneGet.Api {
     public interface IResponseApi {
         #region declare response-apis
-        /* Synced/Generated code =================================================== */
 
-        /// <summary>
-        ///     The provider can query to see if the operation has been cancelled.
-        ///     This provides for a gentle way for the caller to notify the callee that
-        ///     they don't want any more results. It's essentially just !IsCancelled
-        /// </summary>
-        /// <returns>returns FALSE if the operation has been cancelled.</returns>
-        bool OkToContinue();
+        /* Synced/Generated code =================================================== */
 
         /// <summary>
         ///     Used by a provider to return fields for a SoftwareIdentity.
@@ -50,8 +43,8 @@ namespace Microsoft.OneGet.Api {
         bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
 
         bool YieldMetadata(string fieldId, string @namespace, string name, string value);
-#endif 
-        
+#endif
+
         /// <summary>
         ///     Used by a provider to return fields for a package source (repository)
         /// </summary>
@@ -61,7 +54,7 @@ namespace Microsoft.OneGet.Api {
         /// <param name="isRegistered"></param>
         /// <param name="isValidated"></param>
         /// <returns></returns>
-        bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
+        bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
@@ -73,12 +66,9 @@ namespace Microsoft.OneGet.Api {
         /// <returns></returns>
         bool YieldDynamicOption(string name, string expectedType, bool isRequired);
 
-
         bool YieldKeyValuePair(string key, string value);
 
         bool YieldValue(string value);
-
-
 
         #endregion
     }

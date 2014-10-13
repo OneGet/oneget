@@ -21,15 +21,11 @@ namespace Microsoft.OneGet.Packaging {
     using Utility.Collections;
 
     public class Meta : MarshalByRefObject, IDictionary<string, string> {
-        public override object InitializeLifetimeService() {
-            return null;
-        }
-
         private XElement _element;
-        internal protected Meta(XElement element) {
+
+        protected internal Meta(XElement element) {
             _element = element;
         }
-
 
         public IEnumerator<KeyValuePair<string, string>> GetEnumerator() {
             return new SerializableEnumerator<KeyValuePair<string, string>>(_element.Attributes().Select(each => new KeyValuePair<string, string>(each.Name.LocalName, each.Value)).GetEnumerator());
@@ -72,7 +68,7 @@ namespace Microsoft.OneGet.Packaging {
         }
 
         public bool ContainsKey(string key) {
-            return _element.Attribute( key) != null;
+            return _element.Attribute(key) != null;
         }
 
         public void Add(string key, string value) {
@@ -90,7 +86,7 @@ namespace Microsoft.OneGet.Packaging {
 
         public string this[string key] {
             get {
-                return _element.Get( key);
+                return _element.Get(key);
             }
             set {
                 throw new NotImplementedException();
@@ -107,6 +103,10 @@ namespace Microsoft.OneGet.Packaging {
             get {
                 return new SerializableCollection<string>(_element.Attributes().Select(each => each.Value).ToList());
             }
+        }
+
+        public override object InitializeLifetimeService() {
+            return null;
         }
     }
 }

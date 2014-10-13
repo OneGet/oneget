@@ -17,6 +17,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Async;
+    using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Get, Constants.PackageSourceNoun)]
@@ -30,6 +32,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source
             }) {
+        }
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {""};
+            }
         }
 
         [Parameter(Position = 0)]
@@ -78,7 +86,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     return false;
                 }
 
-                using (var sources = CancelWhenStopped(provider.ResolvePackageSources(this))) {
+                using (var sources = provider.ResolvePackageSources(this).CancelWhen(_cancellationEvent.Token)) {
                     if (noCriteria) {
                         // no criteria means just return whatever we found
                         if (WriteSources(sources)) {

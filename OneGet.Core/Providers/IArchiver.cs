@@ -13,14 +13,11 @@
 //  
 
 namespace Microsoft.OneGet.Providers {
-    using System;
     using System.Collections.Generic;
     using Utility.Plugin;
+    using IRequestObject = System.Object;
 
     public interface IArchiver : IProvider {
-        [Required]
-        IEnumerable<string> SupportedFormats {get;}
-
         /// <summary>
         ///     Returns the name of the Provider.
         /// </summary>
@@ -29,8 +26,8 @@ namespace Microsoft.OneGet.Providers {
         string GetArchiverName();
 
         [Required]
-        IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Object requestImpl);
+        IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject);
 
-        bool IsSupportedArchive(string localFilename);
+        bool IsSupportedFile(string localFilename);
     }
 }

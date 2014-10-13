@@ -18,6 +18,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
+    using Async;
     using Collections;
     using Extensions;
 
@@ -79,6 +80,12 @@ namespace Microsoft.OneGet.Utility.Plugin {
             if (items == null) {
                 yield break;
             }
+
+            if (items is IAsyncAction) {
+                yield return items;
+                yield break;
+            }
+
             foreach (var item in items) {
                 if (item is object[] || item is IEnumerable<object>) {
                     foreach (var inner in Flatten(item as IEnumerable<object>)) {
@@ -317,7 +324,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 }
                 if (!found && (tInterface.IsInterface || method.IsAbstract)) {
 #if DEEPDEBUG
-                    Debug.WriteLine(" Generating stub method for {0} -> {1}".format(typeof (TInterface).NiceName(), method.ToSignatureString()));
+                    Console.WriteLine(" Generating stub method for {0} -> {1}".format(tInterface.NiceName(), method.ToSignatureString()));
 #endif
                     stubMethods.Add(method);
                 }

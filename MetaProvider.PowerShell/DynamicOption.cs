@@ -18,30 +18,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Linq;
     using Utility.Extensions;
 
-    public class Feature : Yieldable {
-        private KeyValuePair<string, string[]> _pair;
-
-        public Feature(string name): this( name, new string[0]) {
-        }
-
-        public Feature(string name, string value) : this (name, new []{value}) {
-        }
-
-        public Feature(string name, string[] values) {
-            _pair = new KeyValuePair<string, string[]>(name, values);
-        }
-
-        public override bool YieldResult(Request r) {
-            if (r == null) {
-                throw new ArgumentNullException("r");
-            }
-            if (_pair.Value.Length == 0) {
-                return r.YieldKeyValuePair(_pair.Key, null);
-            }
-            return _pair.Value.All(each => r.YieldKeyValuePair(_pair.Key, each));
-        }
-    }
-
     public class DynamicOption : Yieldable {
         public DynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired, IEnumerable<object> permittedValues) {
             Name = name;

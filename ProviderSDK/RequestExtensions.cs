@@ -21,42 +21,13 @@ namespace OneGet.ProviderSDK {
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.RegularExpressions;
-    using RequestImpl = System.MarshalByRefObject;
+    using IRequestObject = System.MarshalByRefObject;
 
     #region declare requestextension-implementation
 
     public static class RequestExtensions {
         private static dynamic _remoteDynamicInterface;
         private static dynamic _localDynamicInterface;
-
-        public static string MakeSafeFileName(this string input) {
-            return new Regex(@"-+").Replace(new Regex(@"[^\d\w\[\]_\-\.\ ]").Replace(input, "-"), "-").Replace(" ", "");
-        }
-
-        public static TSource SafeAggregate<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, TSource> func) {
-            var src = source.ToArray();
-            if (source != null && src.Any()) {
-                return src.Aggregate(func);
-            }
-            return default(TSource);
-        }
-
-
-        public static string format(this string messageFormat, params object[] args) {
-            return string.Format(messageFormat, args);
-        }
-
-        public static bool EqualsIgnoreCase(this string str, string str2) {
-            if (str == null && str2 == null) {
-                return true;
-            }
-
-            if (str == null || str2 == null) {
-                return false;
-            }
-
-            return str.Equals(str2, StringComparison.OrdinalIgnoreCase);
-        }
 
         /// <summary>
         ///     This is the Instance for DynamicInterface that we use when we're giving another AppDomain a remotable object.
@@ -74,6 +45,34 @@ namespace OneGet.ProviderSDK {
             get {
                 return _remoteDynamicInterface ?? (_remoteDynamicInterface = AppDomain.CurrentDomain.GetData("DynamicInteface"));
             }
+        }
+
+        public static string MakeSafeFileName(this string input) {
+            return new Regex(@"-+").Replace(new Regex(@"[^\d\w\[\]_\-\.\ ]").Replace(input, "-"), "-").Replace(" ", "");
+        }
+
+        public static TSource SafeAggregate<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, TSource> func) {
+            var src = source.ToArray();
+            if (source != null && src.Any()) {
+                return src.Aggregate(func);
+            }
+            return default(TSource);
+        }
+
+        public static string format(this string messageFormat, params object[] args) {
+            return string.Format(messageFormat, args);
+        }
+
+        public static bool EqualsIgnoreCase(this string str, string str2) {
+            if (str == null && str2 == null) {
+                return true;
+            }
+
+            if (str == null || str2 == null) {
+                return false;
+            }
+
+            return str.Equals(str2, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -362,5 +361,6 @@ namespace OneGet.ProviderSDK {
             Marshal.ZeroFreeGlobalAllocUnicode(unmanagedString);
         }
     }
+
     #endregion
 }

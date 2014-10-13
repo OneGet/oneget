@@ -171,15 +171,6 @@ namespace Microsoft.OneGet.Utility.Xml {
             }
         }
 
-        public IEnumerable<DynamicElement> XPath(string query) {
-            return _element.XPathSelectElements(query, _namespaceManager).Select(each => new DynamicElement(each, _namespaceManager));
-        }
-
-
-        public IEnumerable<DynamicElement> XPath(string query, params object[] args) {
-                return _element.XPathSelectElements(string.Format(CultureInfo.CurrentCulture, query, args), _namespaceManager).Select(each => new DynamicElement(each, _namespaceManager));
-        }
-
         public DynamicAttributes Attributes {
             get {
                 return _attributes ?? (_attributes = new DynamicAttributes(_element));
@@ -192,6 +183,14 @@ namespace Microsoft.OneGet.Utility.Xml {
 
         IEnumerator IEnumerable.GetEnumerator() {
             return GetEnumerator();
+        }
+
+        public IEnumerable<DynamicElement> XPath(string query) {
+            return _element.XPathSelectElements(query, _namespaceManager).Select(each => new DynamicElement(each, _namespaceManager));
+        }
+
+        public IEnumerable<DynamicElement> XPath(string query, params object[] args) {
+            return _element.XPathSelectElements(string.Format(CultureInfo.CurrentCulture, query, args), _namespaceManager).Select(each => new DynamicElement(each, _namespaceManager));
         }
 
         private static bool TryXmlConvert(string value, Type returnType, out object result) {

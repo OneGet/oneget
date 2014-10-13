@@ -14,27 +14,19 @@
 
 namespace Microsoft.OneGet.Api {
     using System;
-    using RequestImpl = System.Object;
+    using System.Collections.Generic;
+    using Implementation;
+    using IRequestObject = System.Object;
 
     public interface ICoreApi {
         #region declare core-apis
-        /* Synced/Generated code =================================================== */
-        /// <summary>
-        ///     The provider can query to see if the operation has been cancelled.
-        ///     This provides for a gentle way for the caller to notify the callee that
-        ///     they don't want any more results.
-        /// </summary>
-        /// <returns>returns TRUE if the operation has been cancelled.</returns>
-        bool IsCancelled();
 
-        /// <summary>
-        ///     Returns a reference to the PackageManagementService API
-        ///     The consumer of this function should either use this as a dynamic object
-        ///     Or DuckType it to an interface that resembles IPacakgeManagementService
-        /// </summary>
-        /// <param name="requestImpl"></param>
-        /// <returns></returns>
-        object GetPackageManagementService();
+        /* Synced/Generated code =================================================== */
+
+        bool IsCanceled {get;}
+        IEnumerable<string> ProviderNames {get;}
+
+        IEnumerable<PackageProvider> PackageProviders {get;}
 
         /// <summary>
         ///     Returns the interface type for a Request that the OneGet Core is expecting
@@ -46,10 +38,9 @@ namespace Microsoft.OneGet.Api {
         Type GetIRequestInterface();
 
         /// <summary>
-        /// Returns the internal version of the OneGet core.
-        /// 
-        /// This will usually only be updated if there is a breaking API or Interface change that might 
-        /// require other code to know which version is running.
+        ///     Returns the internal version of the OneGet core.
+        ///     This will usually only be updated if there is a breaking API or Interface change that might
+        ///     require other code to know which version is running.
         /// </summary>
         /// <returns>Internal Version of OneGet</returns>
         int CoreVersion();
@@ -58,6 +49,14 @@ namespace Microsoft.OneGet.Api {
         bool NotifyPackageInstalled(string packageName, string version, string source, string destination);
         bool NotifyBeforePackageUninstall(string packageName, string version, string source, string destination);
         bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
+
+        IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName);
+
+        IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
+
+        IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject);
+
+        bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject);
 
         string GetCanonicalPackageId(string providerName, string packageName, string version);
         string ParseProviderName(string canonicalPackageId);

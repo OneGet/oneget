@@ -47,7 +47,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 il.Emit(index[argument]);
                 return;
             }
-            il.Emit(index[index.Length-1], argument);
+            il.Emit(index[index.Length - 1], argument);
         }
 
         public static void Return(this ILGenerator il) {
@@ -67,7 +67,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         public static void LoadThis(this ILGenerator il) {
-			LoadArgument(il, 0);
+            LoadArgument(il, 0);
         }
 
         public static void Call(this ILGenerator il, ConstructorInfo constructorInfo) {

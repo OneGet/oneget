@@ -196,7 +196,8 @@ $PSCmdlet.ThrowTerminatingError
 
 	# dump-object $Request
 	
-	$providers = $request.SelectProvidersWithFeature("supports-powershell-modules") 
+	# $providers = $request.SelectProvidersWithFeature("supports-powershell-modules") 
+	$providers = $request.SelectProvider("nuget") 
 
 	foreach( $pm in $providers) {
 	    
@@ -206,9 +207,9 @@ $PSCmdlet.ThrowTerminatingError
 		
 		$mySrcLocation = "https://nuget.org/api/v2"
 
-		foreach( $pkg in $pm.FindPackages( $names, $requiredVersion, $minimumVersion, $maximumVersion, (new-request -options @{ } -sources @( $mySrcLocation ) -Credential $c) ) ) {
+		foreach( $pkg in $pm.FindPackages( $names, $requiredVersion, $minimumVersion, $maximumVersion, (new-request -options @{ "tag" = @( "coapp" ) } -sources @( $mySrcLocation ) -Credential $c) ) ) {
 			## IMPORTANT: Don't keep returning values if it's cancelled!!!!!
-			if( $request.IsCancelled() )  {
+			if( $request.IsCanceled )  {
 				return 
 			}
 

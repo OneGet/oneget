@@ -20,8 +20,10 @@ namespace Microsoft.OneGet.Implementation {
     using Api;
     using Packaging;
     using Providers;
+    using Utility.Async;
     using Utility.Collections;
     using Utility.Plugin;
+    using IRequestObject = System.Object;
 
     public class PackageProvider : ProviderBase<IPackageProvider> {
         private string _name;
@@ -43,40 +45,49 @@ namespace Microsoft.OneGet.Implementation {
 
         // Friendly APIs
 
-        public ICancellableEnumerable<PackageSource> AddPackageSource(string name, string location, bool trusted, Object requestImpl) {
-            return new Response<PackageSource>(requestImpl, this, response => Provider.AddPackageSource(name, location, trusted, response)).CompleteResult;
+        public IAsyncEnumerable<PackageSource> AddPackageSource(string name, string location, bool trusted, IRequestObject requestObject) {
+            return new PackageSourceRequestObject(this, requestObject.As<IHostApi>(), request => Provider.AddPackageSource(name, location, trusted, request));
         }
 
-        public ICancellableEnumerable<PackageSource> RemovePackageSource(string name, Object requestImpl) {
-            return new Response<PackageSource>(requestImpl, this, response => Provider.RemovePackageSource(name, response)).CompleteResult;
+        public IAsyncEnumerable<PackageSource> RemovePackageSource(string name, IRequestObject requestObject) {
+            return new PackageSourceRequestObject(this, requestObject.As<IHostApi>(), request => Provider.RemovePackageSource(name, request));
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> FindPackageByUri(Uri uri, int id, Object requestImpl) {
-            return new Response<SoftwareIdentity>(requestImpl, this, "Available", response => Provider.FindPackageByUri(uri, id, response)).Result;
-        }
-
-        public ICancellableEnumerable<SoftwareIdentity> GetPackageDependencies(SoftwareIdentity package, Object requestImpl) {
-            return new Response<SoftwareIdentity>(requestImpl, this, "Dependency", response => Provider.GetPackageDependencies(package.FastPackageReference, response)).Result;
-        }
-
-        public ICancellableEnumerable<SoftwareIdentity> FindPackageByFile(string filename, int id, Object requestImpl) {
-            return new Response<SoftwareIdentity>(requestImpl, this, "Available", response => Provider.FindPackageByFile(filename, id, response)).Result;
-        }
-
-        public int StartFind(Object requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public IAsyncEnumerable<SoftwareIdentity> FindPackageByUri(Uri uri, int id, IRequestObject requestObject) {
+            if (!IsSupportedScheme(uri)) {
+                return new EmptyAsyncEnumerable<SoftwareIdentity>();
             }
-            return Provider.StartFind(requestImpl.As<IRequest>());
+
+            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.FindPackageByUri(uri, id, request), Constants.PackageStatus.Available);
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> CompleteFind(int i, Object requestImpl) {
-            return new Response<SoftwareIdentity>(requestImpl, this, "Available", response => Provider.CompleteFind(i, response)).Result;
+        public IAsyncEnumerable<SoftwareIdentity> GetPackageDependencies(SoftwareIdentity package, IRequestObject requestObject) {
+            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetPackageDependencies(package.FastPackageReference, request), Constants.PackageStatus.Dependency);
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, Object requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public IAsyncEnumerable<SoftwareIdentity> FindPackageByFile(string filename, int id, IRequestObject requestObject) {
+            if (!IsSupportedFile(filename)) {
+                return new EmptyAsyncEnumerable<SoftwareIdentity>();
+            }
+
+            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.FindPackageByFile(filename, id, request), Constants.PackageStatus.Available);
+        }
+
+        public IAsyncValue<int> StartFind(IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
+            }
+
+            return new FuncRequestObject<int>(this, requestObject.As<IHostApi>(), request => Provider.StartFind(request));
+        }
+
+        public IAsyncEnumerable<SoftwareIdentity> CompleteFind(int i, IRequestObject requestObject) {
+            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.CompleteFind(i, request), "Available");
+        }
+
+        public IAsyncEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
 
             if (names == null) {
@@ -84,139 +95,169 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             if (names.Length == 0) {
-                return FindPackage(null, requiredVersion, minimumVersion, maximumVersion, 0, requestImpl);
+                return FindPackage(null, requiredVersion, minimumVersion, maximumVersion, 0, requestObject);
             }
 
             if (names.Length == 1) {
-                return FindPackage(names[0], requiredVersion, minimumVersion, maximumVersion, 0,requestImpl);
+                return FindPackage(names[0], requiredVersion, minimumVersion, maximumVersion, 0, requestObject);
             }
 
-            requestImpl = ExtendRequest(requestImpl);
-            var cts = new CancellationTokenSource();
-            return new CancellableEnumerable<SoftwareIdentity>(cts, FindPackagesImpl(cts, names, requiredVersion, minimumVersion, maximumVersion, requestImpl));
+            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => {
+                var id = StartFind(request);
+                foreach (var name in names) {
+                    Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id.Value, request);
+                }
+                Provider.CompleteFind(id.Value, request);
+            }, Constants.PackageStatus.Available);
         }
 
-        private IEnumerable<SoftwareIdentity> FindPackagesImpl(CancellationTokenSource cancellationTokenSource, string[] names, string requiredVersion, string minimumVersion, string maximumVersion, Object requestImpl) {
-            var id = StartFind(requestImpl);
+        /*
+        private IEnumerable<SoftwareIdentity> FindPackagesImpl(CancellationTokenSource cancellationTokenSource, string[] names, string requiredVersion, string minimumVersion, string maximumVersion, IRequestObject requestObject) {
+            var id = StartFind(requestObject);
             foreach (var name in names) {
-                foreach (var pkg in FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, requestImpl).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                foreach (var pkg in FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
                     yield return pkg;
                 }
-                foreach (var pkg in CompleteFind(id, requestImpl).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                foreach (var pkg in CompleteFind(id, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
                     yield return pkg;
                 }
             }
         }
+*/
 
-        public ICancellableEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, Object requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public IAsyncEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
 
             if (uris == null) {
                 throw new ArgumentNullException("uris");
             }
 
-            requestImpl = ExtendRequest(requestImpl);
-            var cts = new CancellationTokenSource();
-            return new CancellableEnumerable<SoftwareIdentity>(cts, FindPackagesByUrisImpl(cts, uris, requestImpl));
+            if (uris.Length == 0) {
+                return new EmptyAsyncEnumerable<SoftwareIdentity>();
+            }
+
+            if (uris.Length == 1) {
+                return FindPackageByUri(uris[0], 0, requestObject);
+            }
+
+            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => {
+                var id = StartFind(request);
+                foreach (var uri in uris) {
+                    Provider.FindPackageByUri(uri, id.Value, request);
+                }
+                Provider.CompleteFind(id.Value, request);
+            }, Constants.PackageStatus.Available);
         }
 
-        private IEnumerable<SoftwareIdentity> FindPackagesByUrisImpl(CancellationTokenSource cancellationTokenSource, Uri[] uris, Object requestImpl) {
-            var id = StartFind(requestImpl);
+        /*
+        private IEnumerable<SoftwareIdentity> FindPackagesByUrisImpl(CancellationTokenSource cancellationTokenSource, Uri[] uris, IRequestObject requestObject) {
+            var id = StartFind(requestObject);
             foreach (var uri in uris) {
-                foreach (var pkg in FindPackageByUri(uri, id, requestImpl).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                foreach (var pkg in FindPackageByUri(uri, id.Value, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
                     yield return pkg;
                 }
-                foreach (var pkg in CompleteFind(id, requestImpl).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                foreach (var pkg in CompleteFind(id.Value, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
                     yield return pkg;
                 }
             }
         }
+*/
 
-        public ICancellableEnumerable<SoftwareIdentity> FindPackagesByFiles(string[] filenames, Object requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public IAsyncEnumerable<SoftwareIdentity> FindPackagesByFiles(string[] filenames, IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
 
             if (filenames == null) {
                 throw new ArgumentNullException("filenames");
             }
 
-            requestImpl = ExtendRequest(requestImpl);
-            var cts = new CancellationTokenSource();
-            return new CancellableEnumerable<SoftwareIdentity>(cts, FindPackagesByFilesImpl(cts, filenames, requestImpl));
+            if (filenames.Length == 0) {
+                return new EmptyAsyncEnumerable<SoftwareIdentity>();
+            }
+
+            if (filenames.Length == 1) {
+                return FindPackageByFile(filenames[0], 0, requestObject);
+            }
+
+            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => {
+                var id = StartFind(request);
+                foreach (var file in filenames) {
+                    Provider.FindPackageByFile(file, id.Value, request);
+                }
+                Provider.CompleteFind(id.Value, request);
+            }, Constants.PackageStatus.Available);
         }
 
-        private IEnumerable<SoftwareIdentity> FindPackagesByFilesImpl(CancellationTokenSource cancellationTokenSource, string[] filenames, Object requestImpl) {
-            var id = StartFind(requestImpl);
+        private IEnumerable<SoftwareIdentity> FindPackagesByFilesImpl(CancellationTokenSource cancellationTokenSource, string[] filenames, IRequestObject requestObject) {
+            var id = StartFind(requestObject);
             foreach (var file in filenames) {
-                foreach (var pkg in FindPackageByFile(file, id, requestImpl).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                foreach (var pkg in FindPackageByFile(file, id.Value, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
                     yield return pkg;
                 }
-                foreach (var pkg in CompleteFind(id, requestImpl).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
+                foreach (var pkg in CompleteFind(id.Value, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
                     yield return pkg;
                 }
             }
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Object requestImpl) {
-            return new Response<SoftwareIdentity>(requestImpl, this, "Available", response => Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, response)).Result;
+        public IAsyncEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequestObject requestObject) {
+            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, request), Constants.PackageStatus.Available);
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> GetInstalledPackages(string name, Object requestImpl) {
-            return new Response<SoftwareIdentity>(requestImpl, this, "Installed", response => Provider.GetInstalledPackages(name, response)).Result;
+        public IAsyncEnumerable<SoftwareIdentity> GetInstalledPackages(string name, IRequestObject requestObject) {
+            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetInstalledPackages(name, request), Constants.PackageStatus.Installed);
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, Object requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public IAsyncEnumerable<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
 
             if (softwareIdentity == null) {
                 throw new ArgumentNullException("softwareIdentity");
             }
-
-            var request = ExtendRequest(requestImpl);
-            ;
+            var hostApi = requestObject.As<IHostApi>();
 
             // if the provider didn't say this was trusted, we should ask the user if it's ok.
             if (!softwareIdentity.FromTrustedSource) {
                 try {
-                    if (!request.ShouldContinueWithUntrustedPackageSource(softwareIdentity.Name, softwareIdentity.Source)) {
-                        request.Warning(request.FormatMessageString(Constants.Messages.UserDeclinedUntrustedPackageInstall, softwareIdentity.Name));
-                        return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), Enumerable.Empty<SoftwareIdentity>());
+                    if (!hostApi.ShouldContinueWithUntrustedPackageSource(softwareIdentity.Name, softwareIdentity.Source)) {
+                        hostApi.Warning(hostApi.FormatMessageString(Constants.Messages.UserDeclinedUntrustedPackageInstall, softwareIdentity.Name));
+                        return new EmptyAsyncEnumerable<SoftwareIdentity>();
                     }
                 } catch {
-                    return new CancellableEnumerable<SoftwareIdentity>(new CancellationTokenSource(), Enumerable.Empty<SoftwareIdentity>());
+                    return new EmptyAsyncEnumerable<SoftwareIdentity>();
                 }
             }
 
-            return new Response<SoftwareIdentity>(requestImpl, this, Constants.PackageStatus.Installed, response => Provider.InstallPackage(softwareIdentity.FastPackageReference, response)).Result;
+            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.InstallPackage(softwareIdentity.FastPackageReference, request), Constants.PackageStatus.Installed);
         }
 
-        public ICancellableEnumerable<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, Object requestImpl) {
-            return new Response<SoftwareIdentity>(requestImpl, this, Constants.PackageStatus.Uninstalled, response => Provider.UninstallPackage(softwareIdentity.FastPackageReference, response)).Result;
+        public IAsyncEnumerable<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, IRequestObject requestObject) {
+            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.UninstallPackage(softwareIdentity.FastPackageReference, request), Constants.PackageStatus.Uninstalled);
         }
 
-        public ICancellableEnumerable<PackageSource> ResolvePackageSources(Object requestImpl) {
-            return new Response<PackageSource>(requestImpl, this, response => Provider.ResolvePackageSources(response)).Result;
+        public IAsyncEnumerable<PackageSource> ResolvePackageSources(IRequestObject requestObject) {
+            return new PackageSourceRequestObject(this, requestObject.As<IHostApi>(), request => Provider.ResolvePackageSources(request));
         }
 
-        public void DownloadPackage(SoftwareIdentity softwareIdentity, string destinationFilename, Object requestImpl) {
-            if (requestImpl == null) {
-                throw new ArgumentNullException("requestImpl");
+        public IAsyncAction DownloadPackage(SoftwareIdentity softwareIdentity, string destinationFilename, IRequestObject requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
             }
 
             if (softwareIdentity == null) {
                 throw new ArgumentNullException("softwareIdentity");
             }
 
-            Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, ExtendRequest(requestImpl));
+            return new ActionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, request));
         }
 
-        internal void ExecuteElevatedAction(string payload, Object requestImpl) {
-            Provider.ExecuteElevatedAction(payload, ExtendRequest(requestImpl));
+        internal void ExecuteElevatedAction(string payload, IRequestObject requestObject) {
+            new ActionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.ExecuteElevatedAction(payload, request)).Wait();
         }
     }
 }

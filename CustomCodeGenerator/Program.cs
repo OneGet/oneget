@@ -236,7 +236,7 @@ namespace CustomCodeGenerator {
                     }
                     return "{0} {1} {2}".format(t, n, i);
                 }).SafeAggregate((current, each) => current + "," + each) ?? "",
-                psParameterText = parameterRx.FindIn(match.GetValue("params")).Where(each => each.GetValue("type") != "RequestImpl").Select(p => {
+                psParameterText = parameterRx.FindIn(match.GetValue("params")).Where(each => each.GetValue("type") != "IRequestObject").Select(p => {
                     var t = p.GetValue("type");
                     if (t.Equals("IEnumerable<string>")) {
                         t = "string[]";
@@ -256,7 +256,7 @@ namespace CustomCodeGenerator {
                     if (t == "IEnumerable<object>" && n == "args") {
                         return "params object[] args";
                     }
-                    if (t == "RequestImpl") {
+                    if (t == "IRequestObject") {
                         return "Request request";
                     }
                     return "{0} {1} {2}".format(t, n, i);
@@ -318,12 +318,12 @@ namespace CustomCodeGenerator {
                     if (t == "IEnumerable<object>" && n == "args") {
                         return "params object[] args";
                     }
-                    if (t == "RequestImpl") {
+                    if (t == "IRequestObject") {
                         return "Request request";
                     }
                     return "{0} {1} {2}".format(t, n, i);
                 }).SafeAggregate((current, each) => current + "," + each) ?? "",
-                psParameterText = parameterRx.FindIn(match.GetValue("params")).Where(each => each.GetValue("type") != "RequestImpl").Select(p => {
+                psParameterText = parameterRx.FindIn(match.GetValue("params")).Where(each => each.GetValue("type") != "IRequestObject").Select(p => {
                     var t = p.GetValue("type");
                     var n = p.GetValue("name");
                     var i = p.GetValue("init");
@@ -427,13 +427,13 @@ namespace CustomCodeGenerator {
 {1}public ${returnType} ${fnName}(${parameterText}){2}".format(fn, whitespace, fn.code);
                                 }));
                             } else {
-                                if (api.parameterTypes.IndexOf("RequestImpl") != -1) {
+                                if (api.parameterTypes.IndexOf("IRequestObject") != -1) {
                                     newContent += @"{1}${preamble}
 {1}public ${returnType} ${delegateName}(${parameterText}){{
     {1} // TODO: Fill in implementation
     {1} // Delete this method if you do not need to implement it
     {1} // Please don't throw an not implemented exception, it's not optimal.
-    {1}using (var request =requestImpl.As<Request>()) {{
+    {1}using (var request =requestObject.As<Request>()) {{
     {1}    // use the request object to interact with the OneGet core:
     {1}    request.Debug(""Calling '::${delegateName}'"" );
     {1}}}
@@ -484,7 +484,7 @@ function ${fnName} {{
     ){1}".format(fn, fn.code); // use the positional parameter, since fn.code has braces in it.
                                 }));
                             } else {
-                                if (api.parameterTypes.IndexOf("RequestImpl") != -1) {
+                                if (api.parameterTypes.IndexOf("IRequestObject") != -1) {
                                     newContent += @"<# 
 ${preamble}
 #>

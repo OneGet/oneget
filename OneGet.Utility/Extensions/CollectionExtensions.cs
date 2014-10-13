@@ -17,7 +17,8 @@ namespace Microsoft.OneGet.Utility.Extensions {
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using Utility.Collections;
+    using System.Threading.Tasks;
+    using Collections;
 
     public static class CollectionExtensions {
         /// <summary>
@@ -148,13 +149,13 @@ namespace Microsoft.OneGet.Utility.Extensions {
 
         public static IEnumerable<T> Concat<T>(this IEnumerator<T> set1, IEnumerator<T> set2) {
             var s1 = set1 == null ? Enumerable.Empty<T>() : set1.ToIEnumerable();
-            IEnumerable<T> s2 = set2 == null ? Enumerable.Empty<T>() : set2.ToIEnumerable();
+            var s2 = set2 == null ? Enumerable.Empty<T>() : set2.ToIEnumerable();
             return s1.Concat(s2);
         }
 
         public static IEnumerable<T> Concat<T>(this IEnumerable<T> set1, IEnumerator<T> set2) {
             var s1 = set1 ?? Enumerable.Empty<T>();
-            IEnumerable<T> s2 = set2 == null ? Enumerable.Empty<T>() : set2.ToIEnumerable();
+            var s2 = set2 == null ? Enumerable.Empty<T>() : set2.ToIEnumerable();
             return s1.Concat(s2);
         }
 
@@ -182,6 +183,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 list.Add(item);
             }
         }
+
         public static void AddRangeLocked<T>(this List<T> list, IEnumerable<T> items) {
             if (list == null) {
                 throw new ArgumentNullException("list");
@@ -190,5 +192,23 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 list.AddRange(items);
             }
         }
+
+        public static void ParallelForEach<T>(this IEnumerable<T> enumerable, Action<T> action) {
+            var items = enumerable.ReEnumerable();
+            object first = items.FirstOrDefault();
+            if (first != null) {
+                object second = items.Skip(1).FirstOrDefault();
+                if (second != null) {
+                    Parallel.ForEach(items, new ParallelOptions {
+                        MaxDegreeOfParallelism = -1,
+                        TaskScheduler = new ThreadPerTaskScheduler()
+                    }, action);
+                } else {
+                    action(items.FirstOrDefault());
+                }
+            }
+        }
     }
+
+    // <summary>Provides a task scheduler that dedicates a thread per task.</summary> 
 }

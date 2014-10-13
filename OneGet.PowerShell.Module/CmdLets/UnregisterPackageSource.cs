@@ -26,6 +26,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
         }
 
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {Constants.SourceByInputObjectSet, Constants.SourceBySearchSet};
+            }
+        }
+
         [Alias("ProviderName")]
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.SourceBySearchSet)]
         public string Provider {get; set;}

@@ -21,7 +21,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
     using System.Threading;
-    using Utility.Extensions;
+    using Extensions;
 
     public class DynamicPowershell : DynamicObject, IDisposable {
         private readonly ManualResetEvent _availableEvent;
@@ -44,7 +44,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 _runspace.OpenAsync();
             }
             _runspaceIsOwned = true;
-
         }
 
         public object this[string variableName] {
@@ -76,6 +75,15 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
         }
 
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public void Stop() {
+            _currentCommand.Stop();
+        }
+
         public virtual void Dispose(bool disposing) {
             if (disposing) {
                 _runspace.AvailabilityChanged -= CheckIfRunspaceIsAvailable;
@@ -103,11 +111,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
         }
 
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
         public void WaitForAvailable() {
             _opened.WaitOne();
             _availableEvent.WaitOne();
@@ -133,7 +136,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             WaitForAvailable();
 
             //if (_runspaceWasLikeThatWhenIGotHere) {
-              //  return Runspace.CreateNestedPipeline();
+            //  return Runspace.CreateNestedPipeline();
             // }
             try {
                 TestIfInNestedPipeline();
@@ -142,7 +145,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 e.Dump();
 #if DEPRECATING
                 _runspaceWasLikeThatWhenIGotHere = true;
-#endif 
+#endif
                 return Runspace.CreateNestedPipeline();
             }
         }
@@ -186,6 +189,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
             try {
                 // command
+                // FYI: This is the most expensive part of the call (the first time.)
+                // I've thought about up-fronting this, but it's probably just not worth the effort.
                 _currentCommand = new DynamicPowershellCommand(CreatePipeline(), new Command(GetPropertyValue(LookupCommand(name), "Name")));
 
                 // parameters
@@ -207,6 +212,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             } catch (Exception e) {
                 e.Dump();
                 return null;
+            } finally {
             }
         }
 

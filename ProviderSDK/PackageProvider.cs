@@ -22,7 +22,7 @@ namespace OneGet.ProviderSDK {
     using System;
     using System.Diagnostics;
     using System.Security;
-    using RequestImpl = System.Object;
+    using IRequestObject = System.Object;
 
     /// <summary>
     /// A Package provider for OneGet.
@@ -31,7 +31,7 @@ namespace OneGet.ProviderSDK {
     /// Important notes:
     ///    - Required Methods: Not all methods are required; some package providers do not support some features. If the methods isn't used or implemented it should be removed (or commented out)
     ///    - Error Handling: Avoid throwing exceptions from these methods. To properly return errors to the user, use the request.Error(...) method to notify the user of an error conditionm and then return.
-    ///    - Communicating with the HOST and CORE: each method takes a RequestImpl (in reality, an alias for System.Object), which can be used in one of two ways:
+    ///    - Communicating with the HOST and CORE: each method takes a IRequestObject (in reality, an alias for System.Object), which can be used in one of two ways:
     ///         - use the c# 'dynamic' keyword, and call functions on the object directly.
     ///         - use the <code><![CDATA[ .As<Request>() ]]></code> extension method to strongly-type it to the Request type (which calls upon the duck-typer to generate a strongly-typed wrapper).  The strongly-typed wrapper also implements several helper functions to make using the request object easier.
     /// 
@@ -56,15 +56,15 @@ namespace OneGet.ProviderSDK {
         /// Performs one-time initialization of the PROVIDER.
         /// </summary>
         /// <param name="dynamicInterface">a <c>System.Type</c> that represents a remote interface for that a request needs to implement when passing the request back to methods in the CORE. (Advanced Usage)</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void InitializeProvider(RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void InitializeProvider(IRequestObject requestObject) {
             try {
                 // this is used by the RequestExtensions to generate a remotable dynamic interface for cross-appdomain calls.
                 // NOTE:leave this in, unless you really know what you're doing, and aren't going to use the strongly-typed request interface.
                 RequestExtensions.RemoteDynamicInterface = dynamicInterface;
 
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::InitializeProvider'", ProviderName);
 
@@ -82,11 +82,11 @@ namespace OneGet.ProviderSDK {
         /// Returns dynamic option definitions to the HOST
         /// </summary>
         /// <param name="category">The category of dynamic options that the HOST is interested in</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void GetDynamicOptions(string category, RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void GetDynamicOptions(string category, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::GetDynamicOptions' '{1}'", ProviderName, category);
                     
@@ -128,11 +128,11 @@ namespace OneGet.ProviderSDK {
         /// <param name="name">The name of the package source. If this parameter is null or empty the PROVIDER should use the location as the name (if the PROVIDER actually stores names of package sources)</param>
         /// <param name="location">The location (ie, directory, URL, etc) of the package source. If this is null or empty, the PROVIDER should use the name as the location (if valid)</param>
         /// <param name="trusted">A boolean indicating that the user trusts this package source. Packages returned from this source should be marked as 'trusted'</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void AddPackageSource(string name, string location, bool trusted, RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void AddPackageSource(string name, string location, bool trusted, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::AddPackageSource' '{1}','{2}','{3}'", ProviderName, name, location, trusted);
 
@@ -215,7 +215,7 @@ namespace OneGet.ProviderSDK {
 #endif
 
                     // it's good to check just before you actaully write something to see if the user has cancelled the operation
-                    if (request.IsCancelled()) {
+                    if (request.IsCanceled) {
                         return;
                     }
 
@@ -261,11 +261,11 @@ namespace OneGet.ProviderSDK {
         /// <param name="minimumVersion">A minimum version of the package. Null or empty if the user did not specify</param>
         /// <param name="maximumVersion">A maximum version of the package. Null or empty if the user did not specify</param>
         /// <param name="id">if this is greater than zero (and the number should have been generated using <c>StartFind(...)</c>, the core is calling this multiple times to do a batch search request. The operation can be delayed until <c>CompleteFind(...)</c> is called</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::FindPackage' '{1}','{2}','{3}','{4}'", ProviderName, requiredVersion, minimumVersion, maximumVersion, id);
 
@@ -285,11 +285,11 @@ namespace OneGet.ProviderSDK {
         /// </summary>
         /// <param name="file">the full path to the file to determine if it is a package</param>
         /// <param name="id">if this is greater than zero (and the number should have been generated using <c>StartFind(...)</c>, the core is calling this multiple times to do a batch search request. The operation can be delayed until <c>CompleteFind(...)</c> is called</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void FindPackageByFile(string file, int id, RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void FindPackageByFile(string file, int id, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::FindPackageByFile' '{1}','{2}'", ProviderName, file, id);
 
@@ -311,11 +311,11 @@ namespace OneGet.ProviderSDK {
         /// </summary>
         /// <param name="uri">the URI the client requesting a package for.</param>
         /// <param name="id">if this is greater than zero (and the number should have been generated using <c>StartFind(...)</c>, the core is calling this multiple times to do a batch search request. The operation can be delayed until <c>CompleteFind(...)</c> is called</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void FindPackageByUri(Uri uri, int id, RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void FindPackageByUri(Uri uri, int id, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::FindPackageByUri' '{1}','{2}'", ProviderName, uri, id);
 
@@ -332,11 +332,11 @@ namespace OneGet.ProviderSDK {
         /// 
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void GetInstalledPackages(string name, RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void GetInstalledPackages(string name, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", ProviderName, name);
 
@@ -364,11 +364,11 @@ namespace OneGet.ProviderSDK {
         /// 
         /// Sources are returned using <c>request.YieldPackageSource(...)</c>
         /// </summary>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void ResolvePackageSources(RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void ResolvePackageSources(IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::ResolvePackageSources'", ProviderName);
 
@@ -386,11 +386,11 @@ namespace OneGet.ProviderSDK {
         /// Installs a given package.
         /// </summary>
         /// <param name="fastPackageReference">A provider supplied identifier that specifies an exact package</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void InstallPackage(string fastPackageReference, RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void InstallPackage(string fastPackageReference, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::InstallPackage' '{1}'", ProviderName, fastPackageReference);
 
@@ -408,11 +408,11 @@ namespace OneGet.ProviderSDK {
         /// Removes/Unregisters a package source
         /// </summary>
         /// <param name="name">The name or location of a package source to remove.</param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void RemovePackageSource(string name, RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void RemovePackageSource(string name, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::RemovePackageSource' '{1}'", ProviderName, name);
 
@@ -430,11 +430,11 @@ namespace OneGet.ProviderSDK {
         /// Uninstalls a package 
         /// </summary>
         /// <param name="fastPackageReference"></param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void UninstallPackage(string fastPackageReference, RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void UninstallPackage(string fastPackageReference, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::UninstallPackage' '{1}'", ProviderName, fastPackageReference);
 
@@ -450,11 +450,11 @@ namespace OneGet.ProviderSDK {
         /// <summary>
         /// Returns a collection of strings to the client advertizing features this provider supports.
         /// </summary>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void GetFeatures(RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void GetFeatures(IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
 
@@ -472,11 +472,11 @@ namespace OneGet.ProviderSDK {
         /// </summary>
         /// <param name="fastPackageReference"></param>
         /// <param name="location"></param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void DownloadPackage(string fastPackageReference, string location, RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void DownloadPackage(string fastPackageReference, string location, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::DownloadPackage' '{1}','{2}'", ProviderName, fastPackageReference, location);
 
@@ -493,11 +493,11 @@ namespace OneGet.ProviderSDK {
         /// Returns package references for all the dependent packages
         /// </summary>
         /// <param name="fastPackageReference"></param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void GetPackageDependencies(string fastPackageReference, RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void GetPackageDependencies(string fastPackageReference, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::GetPackageDependencies' '{1}'", ProviderName, fastPackageReference);
 
@@ -514,11 +514,11 @@ namespace OneGet.ProviderSDK {
         /// 
         /// </summary>
         /// <param name="fastPackageReference"></param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
-        public void GetPackageDetails(string fastPackageReference, RequestImpl requestImpl) {
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        public void GetPackageDetails(string fastPackageReference, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::GetPackageDetails' '{1}'", ProviderName, fastPackageReference);
 
@@ -534,12 +534,12 @@ namespace OneGet.ProviderSDK {
         /// <summary>
         /// Initializes a batch search request.
         /// </summary>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         /// <returns></returns>
-        public int StartFind(RequestImpl requestImpl) {
+        public int StartFind(IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::StartFind'", ProviderName);
 
@@ -558,12 +558,12 @@ namespace OneGet.ProviderSDK {
         /// Finalizes a batch search request.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="requestImpl">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        /// <param name="requestObject">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         /// <returns></returns>
-        public void CompleteFind(int id, RequestImpl requestImpl) {
+        public void CompleteFind(int id, IRequestObject requestObject) {
             try {
                 // create a strongly-typed request object.
-                using (var request = requestImpl.As<Request>()) {
+                using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
                     request.Debug("Calling '{0}::CompleteFind' '{1}'", ProviderName, id);
 

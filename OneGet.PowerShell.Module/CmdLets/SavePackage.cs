@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
@@ -25,6 +26,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source, OptionCategory.Package
             }) {
+        }
+
+        protected override IEnumerable<string> ParameterSets {
+            get {
+                return new[] {Constants.PackageByInputObjectSet, ""};
+            }
         }
 
         [Parameter]
@@ -109,7 +116,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool EndProcessingAsync() {
-            if (IsCancelled()) {
+            if (IsCanceled) {
                 return false;
             }
             if (!IsSourceByObject) {

@@ -95,37 +95,6 @@ namespace Microsoft.OneGet.Utility.Collections {
             }
         }
 
-        internal class KvpEnumerator : IEnumerator<KeyValuePair<TKey, TValue>> {
-            private readonly IDictionaryEnumerator _enumerator;
-
-            internal KvpEnumerator(IDictionaryEnumerator e) {
-                _enumerator = e;
-            }
-
-            public void Dispose() {
-            }
-
-            public bool MoveNext() {
-                return _enumerator.MoveNext();
-            }
-
-            public void Reset() {
-                _enumerator.Reset();
-            }
-
-            public KeyValuePair<TKey, TValue> Current {
-                get {
-                    return new KeyValuePair<TKey, TValue>((TKey)_enumerator.Key, (TValue)_enumerator.Value);
-                }
-            }
-
-            object IEnumerator.Current {
-                get {
-                    return Current;
-                }
-            }
-        }
-
         internal class KeyCollection : ICollection<TKey> {
             private readonly OrderedDictionary _dictionary;
 
@@ -170,6 +139,37 @@ namespace Microsoft.OneGet.Utility.Collections {
             public bool IsReadOnly {
                 get {
                     return true;
+                }
+            }
+        }
+
+        internal class KvpEnumerator : IEnumerator<KeyValuePair<TKey, TValue>> {
+            private readonly IDictionaryEnumerator _enumerator;
+
+            internal KvpEnumerator(IDictionaryEnumerator e) {
+                _enumerator = e;
+            }
+
+            public void Dispose() {
+            }
+
+            public bool MoveNext() {
+                return _enumerator.MoveNext();
+            }
+
+            public void Reset() {
+                _enumerator.Reset();
+            }
+
+            public KeyValuePair<TKey, TValue> Current {
+                get {
+                    return new KeyValuePair<TKey, TValue>((TKey)_enumerator.Key, (TValue)_enumerator.Value);
+                }
+            }
+
+            object IEnumerator.Current {
+                get {
+                    return Current;
                 }
             }
         }

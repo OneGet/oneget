@@ -25,9 +25,14 @@ namespace Microsoft.OneGet.Utility.Extensions {
     using Collections;
 
     public static class StringExtensions {
+        private static readonly char[] _wildcardCharacters = new[] {
+            '*', '?'
+        };
+
+        private static readonly Regex _escapeFilepathCharacters = new Regex(@"([\\|\$|\^|\{|\[|\||\)|\+|\.|\]|\}|\/])");
 
         private static string FixMeFormat(string formatString, object[] args) {
-            return args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture," \u00ab{0}\u00bb", arg));
+            return args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
         }
 
         // ReSharper disable InconsistentNaming
@@ -45,7 +50,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
             }
 
             try {
-                bool replacedByName = false;
+                var replacedByName = false;
                 // first, try to replace 
                 formatString = new Regex(@"\$\{(?<macro>\w*?)\}").Replace(formatString, new MatchEvaluator((m) => {
                     var key = m.Groups["macro"].Value;
@@ -65,8 +70,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 }
 
                 return String.Format(CultureInfo.CurrentCulture, formatString, args);
-            }
-            catch (Exception) {
+            } catch (Exception) {
                 // if we got an exception, let's at least return a string that we can use to figure out what parameters should have been matched vs what was passed.
                 return FixMeFormat(formatString, args);
             }
@@ -91,6 +95,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         public static string DashedToCamelCase(this string dashedText, char separator) {
             return dashedText.IndexOf('-') == -1 ? dashedText : new string(dashedToCamelCase(dashedText, separator).ToArray());
         }
+
         public static string DashedToCamelCase(this string dashedText) {
             return dashedText.DashedToCamelCase('-');
         }
@@ -130,7 +135,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
             try {
                 return Encoding.UTF8.GetString(data);
             } finally {
-                Array.Clear(data,0,data.Length);
+                Array.Clear(data, 0, data.Length);
             }
         }
 
@@ -138,8 +143,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
             var data = bytes.ToArray();
             try {
                 return Encoding.Unicode.GetString(data);
-            }
-            finally {
+            } finally {
                 Array.Clear(data, 0, data.Length);
             }
         }
@@ -157,7 +161,6 @@ namespace Microsoft.OneGet.Utility.Extensions {
             }
             return Convert.FromBase64String(text).ToUtf8String();
         }
-
 
         public static bool IsTrue(this string text) {
             return text.Is() && text.Equals("true", StringComparison.CurrentCultureIgnoreCase);
@@ -187,6 +190,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
 
             return str.Equals(str2, StringComparison.OrdinalIgnoreCase);
         }
+
         // ReSharper restore InconsistentNaming
 
         public static IEnumerable<string> Quote(this IEnumerable<string> items) {
@@ -196,6 +200,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         public static string JoinWithComma(this IEnumerable<string> items) {
             return items.JoinWith(",");
         }
+
         public static string JoinWith(this IEnumerable<string> items, string delimiter) {
             return items.SafeAggregate((current, each) => current + delimiter + each);
         }
@@ -208,22 +213,21 @@ namespace Microsoft.OneGet.Utility.Extensions {
             return default(TSource);
         }
 
-
         /// <summary>
-        ///     encrypts the given collection of bytes with the machine key and salt 
+        ///     encrypts the given collection of bytes with the machine key and salt
         /// </summary>
         /// <param name="binaryData"> The binary data. </param>
         /// <param name="salt"> The salt. </param>
         /// <returns> </returns>
         /// <remarks>
         /// </remarks>
-        public static IEnumerable<byte> ProtectBinaryForMachine(this IEnumerable<byte> binaryData, string salt ) {
+        public static IEnumerable<byte> ProtectBinaryForMachine(this IEnumerable<byte> binaryData, string salt) {
             var data = binaryData.ToArray();
             var s = salt.ToByteArray();
             try {
                 return ProtectedData.Protect(data, s, DataProtectionScope.LocalMachine);
             } finally {
-                Array.Clear(data,0,data.Length);
+                Array.Clear(data, 0, data.Length);
                 Array.Clear(s, 0, s.Length);
             }
         }
@@ -241,8 +245,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
             var s = salt.ToByteArray();
             try {
                 return ProtectedData.Protect(data, s, DataProtectionScope.CurrentUser);
-            }
-            finally {
+            } finally {
                 Array.Clear(data, 0, data.Length);
                 Array.Clear(s, 0, s.Length);
             }
@@ -256,7 +259,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         /// <returns> </returns>
         /// <remarks>
         /// </remarks>
-        public static IEnumerable<byte> ProtectForMachine(this string text, string salt ) {
+        public static IEnumerable<byte> ProtectForMachine(this string text, string salt) {
             var data = (text ?? String.Empty).ToByteArray();
             try {
                 return ProtectBinaryForMachine(data, salt);
@@ -273,12 +276,11 @@ namespace Microsoft.OneGet.Utility.Extensions {
         /// <returns> </returns>
         /// <remarks>
         /// </remarks>
-        public static IEnumerable<byte> ProtectForUser(this string text, string salt ) {
+        public static IEnumerable<byte> ProtectForUser(this string text, string salt) {
             var data = (text ?? String.Empty).ToByteArray();
             try {
                 return ProtectBinaryForUser(data, salt);
-            }
-            finally {
+            } finally {
                 Array.Clear(data, 0, data.Length);
             }
         }
@@ -291,79 +293,79 @@ namespace Microsoft.OneGet.Utility.Extensions {
         /// <returns> </returns>
         /// <remarks>
         /// </remarks>
-        public static IEnumerable<byte> UnprotectBinaryForUser(this IEnumerable<byte> binaryData, string salt ) {
-            if(binaryData == null) {
+        public static IEnumerable<byte> UnprotectBinaryForUser(this IEnumerable<byte> binaryData, string salt) {
+            if (binaryData == null) {
                 return Enumerable.Empty<byte>();
             }
 
             try {
                 return ProtectedData.Unprotect(binaryData.ToArray(), salt.ToByteArray(), DataProtectionScope.CurrentUser);
-            }
-            catch {
+            } catch {
                 /* suppress */
             }
             return Enumerable.Empty<byte>();
         }
 
         /// <summary>
-        ///     decrypts the given collection of bytes with the machine key and salt returns an empty collection of bytes on failure
+        ///     decrypts the given collection of bytes with the machine key and salt returns an empty collection of bytes on
+        ///     failure
         /// </summary>
         /// <param name="binaryData"> The binary data. </param>
         /// <param name="salt"> The salt. </param>
         /// <returns> </returns>
         /// <remarks>
         /// </remarks>
-        public static IEnumerable<byte> UnprotectBinaryForMachine(this IEnumerable<byte> binaryData, string salt ) {
+        public static IEnumerable<byte> UnprotectBinaryForMachine(this IEnumerable<byte> binaryData, string salt) {
             if (binaryData == null) {
                 return Enumerable.Empty<byte>();
             }
 
             try {
                 return ProtectedData.Unprotect(binaryData.ToArray(), salt.ToByteArray(), DataProtectionScope.LocalMachine);
-            }
-            catch {
+            } catch {
                 /* suppress */
             }
             return Enumerable.Empty<byte>();
         }
 
         /// <summary>
-        ///     decrypts the given collection of bytes with the user key and salt and returns a string from the UTF8 representation of the bytes. returns an empty string on failure
+        ///     decrypts the given collection of bytes with the user key and salt and returns a string from the UTF8 representation
+        ///     of the bytes. returns an empty string on failure
         /// </summary>
         /// <param name="binaryData"> The binary data. </param>
         /// <param name="salt"> The salt. </param>
         /// <returns> </returns>
         /// <remarks>
         /// </remarks>
-        public static string UnprotectForUser(this IEnumerable<byte> binaryData, string salt ) {
+        public static string UnprotectForUser(this IEnumerable<byte> binaryData, string salt) {
             var data = binaryData.UnprotectBinaryForUser(salt).ReEnumerable();
             return data.Any() ? data.ToUtf8String() : String.Empty;
         }
 
         /// <summary>
-        ///     decrypts the given collection of bytes with the machine key and salt and returns a string from the UTF8 representation of the bytes. returns an empty string on failure
+        ///     decrypts the given collection of bytes with the machine key and salt and returns a string from the UTF8
+        ///     representation of the bytes. returns an empty string on failure
         /// </summary>
         /// <param name="binaryData"> The binary data. </param>
         /// <param name="salt"> The salt. </param>
         /// <returns> </returns>
         /// <remarks>
         /// </remarks>
-        public static string UnprotectForMachine(this IEnumerable<byte> binaryData, string salt ) {
+        public static string UnprotectForMachine(this IEnumerable<byte> binaryData, string salt) {
             var data = binaryData.UnprotectBinaryForMachine(salt).ReEnumerable();
             return data.Any() ? data.ToUtf8String() : String.Empty;
         }
 
         public static string ToUnsecureString(this SecureString securePassword) {
-            if (securePassword == null)
+            if (securePassword == null) {
                 throw new ArgumentNullException("securePassword");
+            }
 
-            IntPtr unmanagedString = IntPtr.Zero;
+            var unmanagedString = IntPtr.Zero;
             try {
-                
                 unmanagedString = Marshal.SecureStringToGlobalAllocUnicode(securePassword);
                 return Marshal.PtrToStringUni(unmanagedString);
-            }
-            finally {
+            } finally {
                 Marshal.ZeroFreeGlobalAllocUnicode(unmanagedString);
             }
         }
@@ -390,12 +392,13 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static IEnumerable<byte> ToBytes(this SecureString securePassword) {
-            if (securePassword == null)
+            if (securePassword == null) {
                 throw new ArgumentNullException("securePassword");
+            }
 
             var unmanagedString = Marshal.SecureStringToGlobalAllocUnicode(securePassword);
             var ofs = 0;
-            
+
             do {
                 var x = Marshal.ReadByte(unmanagedString, ofs++);
                 var y = Marshal.ReadByte(unmanagedString, ofs++);
@@ -418,7 +421,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static bool ContainsAnyOfIgnoreCase(this IEnumerable<string> collection, params object[] values) {
-            return collection.ContainsAnyOfIgnoreCase(values.Select(value =>value == null ? null : value.ToString()));
+            return collection.ContainsAnyOfIgnoreCase(values.Select(value => value == null ? null : value.ToString()));
         }
 
         public static bool ContainsAnyOfIgnoreCase(this IEnumerable<string> collection, IEnumerable<string> values) {
@@ -430,16 +433,12 @@ namespace Microsoft.OneGet.Utility.Extensions {
             return collection.Any(set.ContainsIgnoreCase);
         }
 
-        private static readonly char[] _wildcardCharacters = new[] {
-            '*', '?'
-        };
-        private static readonly Regex _escapeFilepathCharacters = new Regex(@"([\\|\$|\^|\{|\[|\||\)|\+|\.|\]|\}|\/])");
         private static Regex WildcardToRegex(string wildcard, string noEscapePrefix = "^") {
             return new Regex(noEscapePrefix + _escapeFilepathCharacters.Replace(wildcard, "\\$1")
-                                                                      .Replace("?", @".")
-                                                                      .Replace("**", @"?")
-                                                                      .Replace("*", @"[^\\\/\<\>\|]*")
-                                                                      .Replace("?", @".*") + '$', RegexOptions.IgnoreCase);
+                .Replace("?", @".")
+                .Replace("**", @"?")
+                .Replace("*", @"[^\\\/\<\>\|]*")
+                .Replace("?", @".*") + '$', RegexOptions.IgnoreCase);
         }
 
         /// <summary>
@@ -457,9 +456,40 @@ namespace Microsoft.OneGet.Utility.Extensions {
 
         public static bool IsWildcardMatch(this string input, string wildcardMask) {
             if (input == null || string.IsNullOrEmpty(wildcardMask)) {
-                return false; 
+                return false;
             }
             return WildcardToRegex(wildcardMask).IsMatch(input);
+        }
+
+        private static byte FromHexChar(this char c) {
+            if ((c >= 'a') && (c <= 'f')) {
+                return (byte)(c - 'a' + 10);
+            }
+            if ((c >= 'A') && (c <= 'F')) {
+                return (byte)(c - 'A' + 10);
+            }
+            if ((c >= '0') && (c <= '9')) {
+                return (byte)(c - '0');
+            }
+            throw new ArgumentException("invalid hex char");
+        }
+
+        public static byte[] FromHex(this string hex) {
+            if (string.IsNullOrEmpty(hex)) {
+                return new byte[0];
+            }
+
+            if ((hex.Length & 0x1) == 0x1) {
+                throw new ArgumentException("Length must be a multiple of 2");
+            }
+            var input = hex.ToCharArray();
+            var result = new byte[hex.Length >> 1];
+
+            for (var i = 0; i < input.Length; i += 2) {
+                result[i >> 1] = (byte)(((byte)(FromHexChar(input[i]) << 4)) | FromHexChar(input[i + 1]));
+            }
+
+            return result;
         }
     }
 }

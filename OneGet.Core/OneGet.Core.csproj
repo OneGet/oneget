@@ -41,13 +41,13 @@
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Builtin\ArpProvider.cs" />
+    <Compile Include="Builtin\BoostrapRequest.cs" />
     <Compile Include="Builtin\BootstrapProvider.cs" />
     <Compile Include="Builtin\CabArchiver.cs" />
-    <Compile Include="Builtin\HttpDownloader.cs" />
+    <Compile Include="Builtin\WebDownloader.cs" />
     <Compile Include="Builtin\MsiProvider.cs" />
     <Compile Include="Builtin\MsuProvider.cs" />
     <Compile Include="Builtin\SwidProvider.cs" />
@@ -56,8 +56,16 @@
     <Compile Include="Builtin\WindowsUpdateProvider.cs" />
     <Compile Include="Builtin\ZipArchiver.cs" />
     <Compile Include="ErrorCategory.cs" />
+    <Compile Include="Implementation\ActionRequestObject.cs" />
+    <Compile Include="Implementation\EnumerableRequestObject.cs" />
     <Compile Include="Implementation\Delegates.cs" />
+    <Compile Include="Implementation\DictionaryRequestObject.cs" />
+    <Compile Include="Implementation\DynamicOptionRequestObject.cs" />
+    <Compile Include="Implementation\FuncRequestObject.cs" />
+    <Compile Include="Implementation\RequestObject.cs" />
+    <Compile Include="Implementation\PackageSourceRequestObject.cs" />
     <Compile Include="Implementation\RemotableHostApi.cs" />
+    <Compile Include="Implementation\SoftwareIdentityRequestObject.cs" />
     <Compile Include="Packaging\DynamicOption.cs" />
     <Compile Include="Packaging\OptionCategory.cs" />
     <Compile Include="Packaging\OptionType.cs" />
@@ -73,11 +81,9 @@
     <Compile Include="Providers\IPackageProvider.cs" />
     <Compile Include="Api\IRequest.cs" />
     <Compile Include="Implementation\ProviderBase.cs" />
-    <Compile Include="Implementation\Response.cs" />
     <Compile Include="Implementation\Archiver.cs" />
-    <Compile Include="Implementation\ProviderServices.cs" />
     <Compile Include="Api\IResponseApi.cs" />
-    <Compile Include="IProviderServices.cs" />
+    <Compile Include="Api\IProviderServices.cs" />
     <Compile Include="Api\IHostAPI.cs" />
     <Compile Include="Packaging\Entity.cs" />
     <Compile Include="Packaging\Evidence.cs" />
@@ -123,7 +129,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ZipBinaries.ps1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

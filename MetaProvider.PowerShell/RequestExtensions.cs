@@ -21,7 +21,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.RegularExpressions;
-    using RequestImpl = System.MarshalByRefObject;
+    using IRequestObject = System.MarshalByRefObject;
     #region copy requestextension-implementation
 public static class RequestExtensions {
         private static dynamic _remoteDynamicInterface;

@@ -13,6 +13,6 @@
 //  
 
 namespace Microsoft.OneGet.Api {
-    public interface IRequest : IHostApi, ICoreApi, IResponseApi {
+    public interface IRequest : IHostApi, ICoreApi, IResponseApi, IProviderServices {
     }
 }

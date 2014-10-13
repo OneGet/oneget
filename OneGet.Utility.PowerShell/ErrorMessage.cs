@@ -18,7 +18,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     public class ErrorMessage {
         public readonly ErrorCategory Category;
         public readonly string Resource;
-        
+
         public ErrorMessage(string resource, ErrorCategory category) {
             Resource = resource;
             Category = category;

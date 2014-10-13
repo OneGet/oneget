@@ -21,6 +21,7 @@ namespace Microsoft.OneGet.Packaging {
     ///     Represents a package source (repository)
     /// </summary>
     public class PackageSource : MarshalByRefObject {
+        internal Dictionary<string, string> DetailsCollection = new Dictionary<string, string>();
         public string Name {get; internal set;}
         public string Location {get; internal set;}
 
@@ -31,7 +32,6 @@ namespace Microsoft.OneGet.Packaging {
         }
 
         // todo: make this dictionary read only! (.net 4.0 doesn't have that!)
-        internal Dictionary<string,string> DetailsCollection = new Dictionary<string, string>();
 
         public string ProviderName {
             get {
@@ -43,19 +43,18 @@ namespace Microsoft.OneGet.Packaging {
 
         public bool IsTrusted {get; internal set;}
 
-        public bool IsRegistered { get; internal set; }
+        public bool IsRegistered {get; internal set;}
 
         public bool IsValidated {get; internal set;}
-
-
-        public override object InitializeLifetimeService() {
-            return null;
-        }
 
         public IDictionary<string, string> Details {
             get {
                 return DetailsCollection;
             }
+        }
+
+        public override object InitializeLifetimeService() {
+            return null;
         }
     }
 }

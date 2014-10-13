@@ -49,6 +49,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             _dynamicOptions = new Hashtable();
         }
 
+        protected abstract IEnumerable<string> ParameterSets {get;}
+
         protected bool IsPackageBySearch {
             get {
                 return ParameterSetName == Constants.PackageBySearchSet;
@@ -70,7 +72,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         protected internal IPackageManagementService PackageManagementService {
             get {
                 lock (_lockObject) {
-                    if (!IsCancelled() && !IsInitialized) {
+                    if (!IsCanceled && !IsInitialized) {
                         try {
                             IsInitialized = _packageManagementService.Initialize(this);
                         } catch (Exception e) {
@@ -105,7 +107,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
             if (names.IsNullOrEmpty()) {
-                return PackageManagementService.SelectProviders(null, this).Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature));
+                return PackageManagementService.SelectProviders(null, this).Where(each => !each.Features.ContainsKey(Constants.Features.AutomationOnly));
             }
             // you can manually ask for any provider by name, if it is for automation only.
             return names.SelectMany(each => PackageManagementService.SelectProviders(each, this)); // .Where(each => !each.Features.ContainsKey(Constants.AutomationOnlyFeature));
@@ -148,48 +150,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     _dynamicOptions[rdp.Name] = rdp.Value;
                 }
             }
-            return true;
-        }
-
-        public virtual bool ShouldProcessPackageInstall(string packageName, string version, string source) {
-#if DEBUG
-            Message(Constants.NotImplemented, packageName);
-#endif
-            return false;
-        }
-
-        public virtual bool ShouldProcessPackageUninstall(string packageName, string version) {
-#if DEBUG
-            Message(Constants.NotImplemented, packageName);
-#endif
-            return false;
-        }
-
-        public virtual bool ShouldContinueAfterPackageInstallFailure(string packageName, string version, string source) {
-#if DEBUG
-            Message(Constants.NotImplemented, packageName);
-#endif
-            return false;
-        }
-
-        public virtual bool ShouldContinueAfterPackageUninstallFailure(string packageName, string version, string source) {
-#if DEBUG
-            Message(Constants.NotImplemented, packageName);
-#endif
-            return false;
-        }
-
-        public virtual bool ShouldContinueRunningInstallScript(string packageName, string version, string source, string scriptLocation) {
-#if DEBUG
-            Message(Constants.NotImplemented, packageName);
-#endif
-            return false;
-        }
-
-        public virtual bool ShouldContinueRunningUninstallScript(string packageName, string version, string source, string scriptLocation) {
-#if DEBUG
-            Message(Constants.NotImplemented, packageName);
-#endif
             return true;
         }
 

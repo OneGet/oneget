@@ -13,13 +13,13 @@
 //  
 
 namespace OneGet.ProviderSDK {
-    using RequestImpl = System.MarshalByRefObject;
+    using IRequestObject = System.MarshalByRefObject;
 
     public interface IPackageManagementService {
         object ProviderServices {get;}
 
-        bool Initialize(RequestImpl requestImpl);
+        bool Initialize(IRequestObject requestObject);
 
-        bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, RequestImpl requestImpl);
+        bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject);
     }
 }
