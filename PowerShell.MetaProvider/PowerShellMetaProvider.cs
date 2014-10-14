@@ -249,7 +249,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             paths = paths.Distinct().ToArray();
 
-            return paths.Where( each => each.DirectoryExists() ).SelectMany(Directory.EnumerateDirectories, (p, child) => Path.Combine(child, Path.GetFileName(child) + ".psd1")).Where(moduleName => File.Exists(moduleName) && File.ReadAllText(moduleName).IndexOf("OneGetProviders") > -1);
+            return paths.Where( each => each.DirectoryExists() ).SelectMany(Directory.EnumerateDirectories, (p, child) => Path.Combine(child, Path.GetFileName(child) + ".psd1")).Where(moduleName => File.Exists(moduleName) && File.ReadAllText(moduleName).IndexOf("OneGetProviders",StringComparison.OrdinalIgnoreCase) > -1);
         }
 
         public object CreateProvider(string name) {

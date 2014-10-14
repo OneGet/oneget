@@ -51,12 +51,12 @@ namespace Microsoft.PowerShell.OneGet.Utility {
             }
             var strB = element.ToString();
 
-            if (this._validValues.Any(t => string.Compare(t, strB, this.ignoreCase, CultureInfo.InvariantCulture) == 0)) {
+            if (this._validValues.Any(t => string.Compare(t, strB, StringComparison.OrdinalIgnoreCase)== 0)) {
                 return;
             }
             throw new ValidationMetadataException("ValidateSetFailure");
         }
-
+#if NOT_NEEDED
         private string SetAsString() {
             var validateSetSeparator = ",";
             var stringBuilder = new StringBuilder();
@@ -71,5 +71,7 @@ namespace Microsoft.PowerShell.OneGet.Utility {
         }
 
         //,ValidateList("One","Two", "Three")
+    
+#endif
     }
 }

@@ -13,6 +13,7 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller.Package
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.IO;
     using System.Text.RegularExpressions;
     using Compression;
@@ -134,6 +135,9 @@ public class InstallPackage : Database
     [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase")]
     public string[] FindFiles(string longFileName)
     {
+        if (longFileName == null) {
+            throw new ArgumentNullException("longFileName");
+        }
         longFileName = longFileName.ToLowerInvariant();
         ArrayList fileList = new ArrayList();
         foreach(KeyValuePair<string, InstallPath> entry in this.Files)
@@ -155,6 +159,9 @@ public class InstallPackage : Database
     /// <returns>Array of file keys, or a 0-length array if none are found</returns>
     public string[] FindFiles(Regex pattern)
     {
+        if (pattern== null) {
+            throw new ArgumentNullException("pattern");
+        }
         ArrayList fileList = new ArrayList();
         foreach (KeyValuePair<string, InstallPath> entry in this.Files)
         {
@@ -532,7 +539,7 @@ public class InstallPackage : Database
             {
                 Record streamRec = new Record(1);
                 streamRec.SetStream(1, cabFile);
-                this.Execute(String.Format(
+                this.Execute(String.Format(CultureInfo.InvariantCulture,
                     "UPDATE `_Streams` SET `Data` = ? WHERE `Name` = '{0}'", mediaCab),
                     streamRec);
             }
@@ -634,6 +641,10 @@ public class InstallPackage : Database
                 fileRec[3] = files.Count;
                 fileView.Update(fileRec);
             }
+        }
+
+        if (mediaCabinet== null) {
+            throw new ArgumentNullException("mediaCabinet");
         }
 
         bool internalCab = false;
@@ -1033,7 +1044,7 @@ public class InstallPackage : Database
 
             // Since the patch cab is now embedded in the MSI, it shouldn't have a separate disk prompt/source
             this.LogMessage("Renaming the patch media record");
-            int lastSeq = Convert.ToInt32(this.ExecuteScalar("SELECT `LastSequence` FROM `Media` WHERE `DiskId` = {0}", patchMediaDiskId));
+            int lastSeq = Convert.ToInt32(this.ExecuteScalar("SELECT `LastSequence` FROM `Media` WHERE `DiskId` = {0}", patchMediaDiskId),CultureInfo.InvariantCulture);
             this.Execute("DELETE FROM `Media` WHERE `DiskId` = {0}", patchMediaDiskId);
             this.Execute("INSERT INTO `Media` (`DiskId`, `LastSequence`, `Cabinet`) VALUES ({0}, '{1}', '#{2}')",
                 renamePatchMediaDiskId, lastSeq, renamePatchCabinet);

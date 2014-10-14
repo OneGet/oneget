@@ -87,7 +87,7 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller
         {
             if (culture == null)
             {
-                culture = CultureInfo.CurrentCulture;
+                culture = CultureInfo.CurrentUICulture;
             }
 
             string msg = Installer.ErrorResources.GetString(

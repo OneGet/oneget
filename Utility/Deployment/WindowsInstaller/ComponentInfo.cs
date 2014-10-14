@@ -72,6 +72,9 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller
         /// <param name="arrayIndex">offset into the array</param>
         public void CopyTo(ComponentInfo[] array, int arrayIndex)
         {
+            if (array == null) {
+                throw new ArgumentNullException("array");
+            }
             foreach (ComponentInfo component in this)
             {
                 array[arrayIndex++] = component;

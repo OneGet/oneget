@@ -121,7 +121,7 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression.Cab
                         this.Erf.Clear();
                         this.CabNumbers[this.NextCabinetName] = cabNumber;
                         
-                        NativeMethods.FDI.Copy(
+                        var result = NativeMethods.FDI.Copy(
                             this.fdiHandle,
                             this.NextCabinetName,
                             String.Empty,
@@ -197,7 +197,7 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression.Cab
                         this.Erf.Clear();
                         this.CabNumbers[this.NextCabinetName] = cabNumber;
 
-                        NativeMethods.FDI.Copy(
+                        var result =NativeMethods.FDI.Copy(
                             this.fdiHandle,
                             this.NextCabinetName,
                             String.Empty,

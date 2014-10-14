@@ -203,7 +203,7 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller.Package
         /// are prefixed with &quot;#&quot; If a transform is valid, then its corresponding
         /// special transform is assumed to be valid as well.
         /// </remarks>
-        public string[] GetValidTransforms(InstallPackage installPackage)
+        public string[] GetValidTransforms(Database installPackage)
         {
             ArrayList transformArray = new ArrayList();
             string transformList = this.SummaryInfo.LastSavedBy;

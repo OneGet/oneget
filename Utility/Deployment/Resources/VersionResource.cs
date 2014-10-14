@@ -382,6 +382,9 @@ namespace Microsoft.OneGet.Utility.Deployment.Resources
         /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
         public void CopyTo(VersionStringTable[] array, int arrayIndex)
         {
+            if (array == null) {
+                throw new ArgumentNullException("array");
+            }
             VersionInfo svi = this.rawVersionInfo["StringFileInfo"];
             if (svi != null)
             {

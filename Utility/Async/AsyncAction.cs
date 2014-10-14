@@ -1,22 +1,23 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 namespace Microsoft.OneGet.Utility.Async {
     using System;
     using System.Threading;
 
     public abstract class AsyncAction : MarshalByRefObject, IAsyncAction {
+        private object _lock = new Object();
         private static readonly TimeSpan DefaultCallTimeout = TimeSpan.FromMinutes(60);
         private static readonly TimeSpan DefaultResponsiveness = TimeSpan.FromMinutes(1);
         protected readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
@@ -71,7 +72,7 @@ namespace Microsoft.OneGet.Utility.Async {
 
         public virtual void Cancel() {
             // if it's already done, this is a no-op
-            lock (this) {
+            lock (_lock) {
                 if (_actionState >= ActionState.Cancelling) {
                     return;
                 }
@@ -93,7 +94,7 @@ namespace Microsoft.OneGet.Utility.Async {
 #if DEEP_DEBUG
             Console.WriteLine("Waiting to complete cancellation for {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
 #endif
-            lock (this) {
+            lock (_lock) {
 #if DEEP_DEBUG
                 Console.WriteLine("CANCELLED {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
 #endif
@@ -108,7 +109,7 @@ namespace Microsoft.OneGet.Utility.Async {
             Cancel();
 
             // if it's already done, this is a no-op
-            lock (this) {
+            lock (_lock) {
                 if (_actionState >= ActionState.Aborting) {
                     return;
                 }
@@ -128,7 +129,7 @@ namespace Microsoft.OneGet.Utility.Async {
                 _invocationThread.Abort();
             }
 
-            lock (this) {
+            lock (_lock) {
                 if (_actionState < ActionState.Aborted) {
                     _actionState = ActionState.Aborted;
                 }
@@ -187,7 +188,7 @@ namespace Microsoft.OneGet.Utility.Async {
             Console.WriteLine("START DISPOSING OF TASK {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
 #endif
 
-            lock (this) {
+            lock (_lock) {
                 // make sure this kind of thing doesn't happen twice.
                 if (_disposalState > DisposalState.None) {
                     return;
@@ -214,6 +215,11 @@ namespace Microsoft.OneGet.Utility.Async {
                 // for all intents, we're completed...even if the abort will run after this.
                 _completed.Set();
                 _disposalState = DisposalState.Disposed;
+                if (_actionState >= ActionState.Completed)
+                {
+                    _completed.Dispose();
+                    _cancellationTokenSource.Dispose();
+                }
             }
 #if DEEP_DEBUG
             Console.WriteLine("DONE TASK {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
@@ -221,7 +227,7 @@ namespace Microsoft.OneGet.Utility.Async {
         }
 
         private void DisposeTimer() {
-            lock (this) {
+            lock (_lock) {
                 if (_timer != null) {
                     _timer.Change(-1, -1);
                     _timer.Dispose();
@@ -231,8 +237,7 @@ namespace Microsoft.OneGet.Utility.Async {
         }
 
         protected virtual void Complete() {
-            var performCompletion = false;
-            lock (this) {
+            lock (_lock) {
                 if (_actionState == ActionState.Completed) {
                     return;
                 }
@@ -289,7 +294,7 @@ namespace Microsoft.OneGet.Utility.Async {
         }
 
         private void ResetTimer() {
-            lock (this) {
+            lock (_lock) {
                 if (_actionState <= ActionState.Canceled && _timer != null) {
                     _timer.Change(TimeLeft, TimeSpan.FromMilliseconds(-1));
                 }

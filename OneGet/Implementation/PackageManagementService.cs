@@ -75,7 +75,7 @@ namespace Microsoft.OneGet.Implementation {
             "Microsoft.OneGet.MetaProvider.PowerShell.dll"
         };
 
-        private static readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase) {
+        private static readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location), // already in autload list
             "CSharpTest.Net.RpcLibrary", // doesn't have any 
             "Microsoft.OneGet.Test", // doesn't have any 

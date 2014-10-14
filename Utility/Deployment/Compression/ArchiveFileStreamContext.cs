@@ -278,6 +278,10 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression
 
             if (this.enableOffsetOpen)
             {
+                if (compressionEngine == null) {
+                    throw new ArgumentNullException("compressionEngine");
+                }
+
                 long offset = compressionEngine.FindArchiveOffset(
                     new DuplicateStream(stream));
 
@@ -458,6 +462,9 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression
 
             if (this.enableOffsetOpen)
             {
+                if (compressionEngine == null) {
+                    throw new ArgumentNullException("compressionEngine");
+                }
                 long offset = compressionEngine.FindArchiveOffset(
                     new DuplicateStream(stream));
                 if (offset > 0)

@@ -7,7 +7,7 @@ TARGETNAME          = Microsoft.OneGet
 TARGETTYPE          = DYNLINK
 TARGET_DESTINATION  = monad
 MANAGED_CODE        = 1
-URT_VER=4.5
+URT_VER=4.0
 # this will make AssemblyVersion = 1.0.0.0
 ASSEMBLY_IDENTITY_VERSION_NAME=monadv1
 
@@ -37,53 +37,76 @@ LANGUAGE_SPECIFIC_MANAGED_RESOURCES=$(RESOURCES)
 NTTARGETFILE0=$(NTTARGETFILE0) $(RESOURCES:;=)
 
 REFERENCES=\
-	$(OBJ_PATH)\..\OneGet.Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll; \
+	$(OBJ_PATH)\..\Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll; \
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
+    $(CLR_REF_PATH)\System.Runtime.Remoting.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
-	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll; \
-    $(CLR_REF_PATH)\WindowsBase.metadata_dll; \
-	$(CLR_REF_PATH)\System.IO.Compression.metadata_dll;
+	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll;
 
 #region sourcefiles
 SOURCES=\
 	Api\ICoreApi.cs \
  	Api\IHostAPI.cs \
+ 	Api\IProviderServices.cs \
  	Api\IRequest.cs \
  	Api\IResponseApi.cs \
- 	Api\IServiceApi.cs \
+ 	Builtin\ArpProvider.cs \
+ 	Builtin\BoostrapRequest.cs \
+ 	Builtin\BootstrapProvider.cs \
+ 	Builtin\CabArchiver.cs \
+ 	Builtin\MsiProvider.cs \
+ 	Builtin\MsuProvider.cs \
+ 	Builtin\SwidProvider.cs \
+ 	Builtin\VSixProvider.cs \
+ 	Builtin\WebDownloader.cs \
+ 	Builtin\WindowsFeaturesProvider.cs \
+ 	Builtin\WindowsUpdateProvider.cs \
+ 	Builtin\ZipArchiver.cs \
+ 	Implementation\ActionRequestObject.cs \
+ 	Implementation\Archiver.cs \
+ 	Implementation\Delegates.cs \
+ 	Implementation\DictionaryRequestObject.cs \
+ 	Implementation\Downloader.cs \
+ 	Implementation\DynamicOptionRequestObject.cs \
+ 	Implementation\EnumerableRequestObject.cs \
+ 	Implementation\Extensions.cs \
+ 	Implementation\FuncRequestObject.cs \
+ 	Implementation\Loader.cs \
+ 	Implementation\PackageManagementService.cs \
+ 	Implementation\PackageProvider.cs \
+ 	Implementation\PackageSourceRequestObject.cs \
+ 	Implementation\ProviderBase.cs \
+ 	Implementation\RemotableHostApi.cs \
+ 	Implementation\Request.cs \
+ 	Implementation\RequestObject.cs \
+ 	Implementation\SoftwareIdentityRequestObject.cs \
+ 	Packaging\DynamicOption.cs \
  	Packaging\Entity.cs \
  	Packaging\Evidence.cs \
  	Packaging\InstallationOptions.cs \
  	Packaging\Iso19770_2.cs \
  	Packaging\Link.cs \
  	Packaging\Meta.cs \
+ 	Packaging\OptionCategory.cs \
+ 	Packaging\OptionType.cs \
  	Packaging\PackageSource.cs \
  	Packaging\Payload.cs \
  	Packaging\SoftwareIdentity.cs \
+ 	Packaging\SoftwareIdentityVersionComparer.cs \
  	Packaging\SoftwareMetadata.cs \
- 	$(RESOURCES_SOURCES) \
- 	Providers\Meta\MetaProvider.cs \
- 	Providers\Package\IPackageProvider.cs \
- 	Providers\Package\PackageProvider.cs \
- 	Providers\Package\ProviderBase.cs \
- 	Providers\Package\Response.cs \
- 	Providers\Service\AggregateServicesProvider.cs \
- 	Providers\Service\Instance.cs \
- 	Providers\Service\IServicesProvider.cs \
- 	Providers\Service\ServiceProvider.cs \
- 	Providers\Loader.cs \
- 	 \
+ 	Providers\IArchiver.cs \
+ 	Providers\IDownloader.cs \
+ 	Providers\IMetaProvider.cs \
+ 	Providers\IPackageProvider.cs \
+ 	Providers\IProvider.cs \
  	Constants.cs \
+ 	ErrorCategory.cs \
  	IPackageManagementService.cs \
- 	PackageManagementService.cs \
- 	PackageManagementServiceImplementation.cs \
-
+ 	PackageManager.cs \
+	$(RESOURCES_SOURCES)
 
 #endregion
-
-
-
 
 INTERNALS_VISIBLE_TO=\
 	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \

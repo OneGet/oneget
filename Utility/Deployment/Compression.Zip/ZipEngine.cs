@@ -198,6 +198,10 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression.Zip
         /// <remarks>The archive must begin on a 4-byte boundary.</remarks>
         public override long FindArchiveOffset(Stream stream)
         {
+            if (stream == null) {
+                throw new ArgumentNullException("stream");
+            }
+
             long offset = base.FindArchiveOffset(stream);
             if (offset > 0)
             {

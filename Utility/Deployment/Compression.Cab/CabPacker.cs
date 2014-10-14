@@ -504,7 +504,7 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression.Cab
                 Marshal.WriteByte(namePtr, nameBytes.Length, 0);
 
                 this.Erf.Clear();
-                NativeMethods.FCI.AddFile(
+                var result = NativeMethods.FCI.AddFile(
                     this.fciHandle,
                     String.Empty,
                     namePtr,
@@ -530,14 +530,14 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression.Cab
         private void FlushFolder()
         {
             this.Erf.Clear();
-            NativeMethods.FCI.FlushFolder(this.fciHandle, this.fciGetNextCabinet, this.fciCreateStatus);
+            var result = NativeMethods.FCI.FlushFolder(this.fciHandle, this.fciGetNextCabinet, this.fciCreateStatus);
             this.CheckError(false);
         }
 
         private void FlushCabinet()
         {
             this.Erf.Clear();
-            NativeMethods.FCI.FlushCabinet(this.fciHandle, false, this.fciGetNextCabinet, this.fciCreateStatus);
+            var resut = NativeMethods.FCI.FlushCabinet(this.fciHandle, false, this.fciGetNextCabinet, this.fciCreateStatus);
             this.CheckError(false);
         }
 

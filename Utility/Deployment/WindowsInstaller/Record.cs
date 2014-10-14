@@ -76,6 +76,10 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller
         public Record(params object[] fields)
             : this(fields.Length)
         {
+            if (fields== null) {
+                throw new ArgumentNullException("fields");
+            }
+
             for (int i = 0; i < fields.Length; i++)
             {
                 this[i + 1] = fields[i];

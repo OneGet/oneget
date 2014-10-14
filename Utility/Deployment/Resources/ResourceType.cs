@@ -65,7 +65,7 @@ namespace Microsoft.OneGet.Utility.Deployment.Resources
 
             if (this.IsInteger && this.IntegerValue < 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid integer resource type value.");
+                throw new ArgumentOutOfRangeException("resourceType");
             }
         }
 

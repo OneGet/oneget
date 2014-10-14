@@ -35,7 +35,7 @@ namespace Microsoft.OneGet.Implementation {
 
     public abstract class ProviderBase<T> : ProviderBase where T : IProvider {
         private static Regex _canonicalPackageRegex = new Regex("(.*?):(.*?)/(.*)");
-        private object _context;
+
         private List<DynamicOption> _dynamicOptions;
         private Dictionary<string, List<string>> _features;
         private bool _initialized;
@@ -120,6 +120,9 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         public virtual bool IsSupportedFile(string filename) {
+            if (filename == null) {
+                throw new ArgumentNullException("filename");
+            }
             if (filename.FileExists()) {
                 var buffer = new byte[1024];
                 var sz = 0;
@@ -178,6 +181,8 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         public IAsyncEnumerable<DynamicOption> GetDynamicOptions(OptionCategory category, IRequestObject requestObject) {
+            requestObject = requestObject ?? new object();
+
             return new DynamicOptionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetDynamicOptions(category.ToString(), request), category);
         }
     }

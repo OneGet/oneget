@@ -1,13 +1,20 @@
-$x = dir -recurse *.cs | ForEach-Object { Resolve-Path -Relative $_ } | ForEach-Object { echo $_.Replace( ".\", "	").Replace(".cs", ".cs \`n") }
+# Find all files
+$x = dir -recurse *.cs | ForEach-Object { Resolve-Path -Relative $_ } | ForEach-Object { echo $_.Replace( ".\", "`t").Replace(".cs",".cs \`n") }
 
+# Load sources script
 $sources = [System.IO.File]::ReadAllText(".\sources");
 
-$x = "#region sourcefiles`nSOURCES=\`n$x `n`n#endregion`n"
+# set source files
+$x = "#region sourcefiles`nSOURCES=\`n$x	`$(RESOURCES_SOURCES)`n`n#endregion"
 
+# Replace the region
 $newSources = [System.Text.RegularExpressions.Regex]::Replace($sources, "#region\s*sourcefiles.*?#endregion", $x  ,[System.Text.RegularExpressions.RegexOptions]::SingleLine )
 
-$newSources = $newSources.Replace("Properties\AssemblyInfo.cs \","`$(RESOURCES_SOURCES) \")
-$newSources = $newSources.Replace("Resources\Resources.Designer.cs \","` \")
+#Skip files:
+$newSources = $newSources.Replace("`n 	Resources\Messages.Designer.cs \","")
+$newSources = $newSources.Replace("`n 	Properties\AssemblyInfo.cs \","")
+$newSources = $newSources.Replace("`n	Resources\Messages.Designer.cs \","")
+$newSources = $newSources.Replace("`n	Properties\AssemblyInfo.cs \","")
 
-
+# Write out file
 [System.IO.File]::WriteAllText(".\sources", $newSources );

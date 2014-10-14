@@ -52,10 +52,6 @@ namespace Microsoft.OneGet.Builtin {
         /// <summary>
         ///     Performs one-time initialization of the PROVIDER.
         /// </summary>
-        /// <param name="dynamicInterface">
-        ///     a <c>System.Type</c> that represents a remote interface for that a request needs to
-        ///     implement when passing the request back to methods in the CORE. (Advanced Usage)
-        /// </param>
         /// <param name="requestObject">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
@@ -200,7 +196,7 @@ namespace Microsoft.OneGet.Builtin {
                     request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", ProviderName, name);
                     var products = ProductInstallation.AllProducts;
                     var installed = string.IsNullOrWhiteSpace(name)
-                        ? products.Where(each => each.IsInstalled).ReEnumerable() : products.Where(each => each.IsInstalled && each.ProductName.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) > -1).ReEnumerable();
+                        ? products.Where(each => each.IsInstalled).ReEnumerable() : products.Where(each => each.IsInstalled && each.ProductName.IndexOf(name, StringComparison.OrdinalIgnoreCase) > -1).ReEnumerable();
 
                     // dump out results.
                     if (installed.Any(p => !YieldPackage(p, name, request))) {

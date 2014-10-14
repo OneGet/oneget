@@ -372,7 +372,7 @@ namespace Microsoft.OneGet.Implementation {
 
             using (var request = requestObject.As<Request>()) {
                 foreach (var downloader in PackageManager._instance.Downloaders.Values) {
-                    if (downloader.SupportedUriSchemes.Contains(remoteLocation.Scheme, StringComparer.InvariantCultureIgnoreCase)) {
+                    if (downloader.SupportedUriSchemes.Contains(remoteLocation.Scheme, StringComparer.OrdinalIgnoreCase)) {
                         downloader.DownloadFile(remoteLocation, localFilename, request);
                         return;
                     }
@@ -446,6 +446,10 @@ namespace Microsoft.OneGet.Implementation {
         public void SetEnvironmentVariable(string variable, string value, string context, IRequestObject requestObject) {
             Activity();
 
+            if (context == null) {
+                throw new ArgumentNullException("context");
+            }
+
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
             }
@@ -477,6 +481,10 @@ namespace Microsoft.OneGet.Implementation {
 
         public void RemoveEnvironmentVariable(string variable, string context, IRequestObject requestObject) {
             Activity();
+
+            if (context == null) {
+                throw new ArgumentNullException("context");
+            }
 
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
@@ -646,18 +654,28 @@ namespace Microsoft.OneGet.Implementation {
         public string CanonicalizePath(string path, string currentDirectory) {
             Activity();
 
+            if (string.IsNullOrEmpty(path)) {
+                return null;
+            }
+
             return path.CanonicalizePath(!string.IsNullOrEmpty(currentDirectory));
         }
 
         public bool FileExists(string path) {
             Activity();
 
+            if (string.IsNullOrEmpty(path)) {
+                return false;
+            }
+
             return path.FileExists();
         }
 
         public bool DirectoryExists(string path) {
             Activity();
-
+            if (string.IsNullOrEmpty(path)) {
+                return false;
+            }
             return path.DirectoryExists();
         }
 
@@ -724,6 +742,11 @@ namespace Microsoft.OneGet.Implementation {
         public bool ExecuteElevatedAction(string provider, string payload, IRequestObject requestObject) {
             Activity();
 
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
+                    
+            }
+
             // launches a new elevated host that 
             // talks back to this (unelevated) host for everything in HostApi
             // everything else should be handled in the new process.
@@ -751,7 +774,7 @@ namespace Microsoft.OneGet.Implementation {
             try {
                 var process = AsyncProcess.Start(new ProcessStartInfo {
                     FileName = Assembly.GetExecutingAssembly().Location,
-                    Arguments = string.Format("{0} {1} {2}", uri, provider, (string.IsNullOrWhiteSpace(payload) ? "null" : payload).ToBase64()),
+                    Arguments = "{0} {1} {2}".format( uri, provider, (string.IsNullOrWhiteSpace(payload) ? "null" : payload).ToBase64()),
 #if !DEBUG                    
                     WindowStyle = ProcessWindowStyle.Hidden,
 #endif

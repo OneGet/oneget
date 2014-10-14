@@ -46,10 +46,6 @@ namespace Microsoft.OneGet.Builtin {
         /// <summary>
         ///     Performs one-time initialization of the PROVIDER.
         /// </summary>
-        /// <param name="dynamicInterface">
-        ///     a <c>System.Type</c> that represents a remote interface for that a request needs to
-        ///     implement when passing the request back to methods in the CORE. (Advanced Usage)
-        /// </param>
         /// <param name="requestObject">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST

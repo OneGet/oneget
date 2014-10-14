@@ -72,6 +72,9 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller
         /// <param name="arrayIndex">offset into the array</param>
         public void CopyTo(FeatureInfo[] array, int arrayIndex)
         {
+            if (array == null) {
+                throw new ArgumentNullException("array");
+            }
             foreach (FeatureInfo feature in this)
             {
                 array[arrayIndex++] = feature;

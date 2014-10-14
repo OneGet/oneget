@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Utility.Collections {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
 
     public class PathEqualityComparer : IEqualityComparer<string> {
@@ -24,6 +25,7 @@ namespace Microsoft.OneGet.Utility.Collections {
             _option = option;
         }
 
+        [SuppressMessage("Microsoft.Globalization", "CA1309:UseOrginalStringComparison")]
         public bool Equals(string x, string y) {
             return string.Compare(ComparePath(x), ComparePath(y), StringComparison.InvariantCultureIgnoreCase) == 0;
         }

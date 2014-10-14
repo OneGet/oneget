@@ -24,14 +24,33 @@ namespace Microsoft.OneGet.Utility.Async {
         private static readonly ManualResetEventSlim _completed = new ManualResetEventSlim(true);
 
         public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public virtual void Dispose(bool disposing) {
+            if (disposing) {
+                if (OnComplete != null) {
+                    OnComplete();
+                    OnComplete = null;
+                }
+                _completed .Dispose();
+            }
         }
 
         public void Cancel() {
             // no-effect
+            if (OnCancel != null) {
+                OnCancel();
+                OnCancel = null;
+            }
         }
 
         public void Abort() {
-            // no-effect
+            if (OnAbort!= null) {
+                OnAbort();
+                OnAbort = null;
+            }
         }
 
         public WaitHandle CompleteEvent {

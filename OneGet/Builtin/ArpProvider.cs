@@ -46,10 +46,6 @@ namespace Microsoft.OneGet.Builtin {
         /// <summary>
         ///     Performs one-time initialization of the PROVIDER.
         /// </summary>
-        /// <param name="dynamicInterface">
-        ///     a <c>System.Type</c> that represents a remote interface for that a request needs to
-        ///     implement when passing the request back to methods in the CORE. (Advanced Usage)
-        /// </param>
         /// <param name="requestObject">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
@@ -191,7 +187,7 @@ namespace Microsoft.OneGet.Builtin {
                 foreach (var key in regkey.GetSubKeyNames()) {
                     var subkey = regkey.OpenSubKey(key);
                     if (subkey != null) {
-                        var properties = subkey.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (subkey.GetValue(each) ?? string.Empty).ToString(), StringComparer.InvariantCultureIgnoreCase);
+                        var properties = subkey.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (subkey.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
 
                         if (includeWindowsInstaller || (!properties.ContainsKey("WindowsInstaller") || properties["WindowsInstaller"] != "1")) {
                             var productName = "";
@@ -201,7 +197,7 @@ namespace Microsoft.OneGet.Builtin {
                                 continue;
                             }
 
-                            if (string.IsNullOrEmpty(name) || productName.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) > -1) {
+                            if (string.IsNullOrEmpty(name) || productName.IndexOf(name, StringComparison.OrdinalIgnoreCase) > -1) {
                                 var productVersion = properties.Get("DisplayVersion") ?? "";
                                 var publisher = properties.Get("Publisher") ?? "";
                                 var uninstallString = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
@@ -259,25 +255,25 @@ namespace Microsoft.OneGet.Builtin {
                         switch (path[0].ToLowerInvariant()) {
                             case "hklm64":
                                 using (var product = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(path[2], RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
-                                    properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.InvariantCultureIgnoreCase);
+                                    properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
                                     uninstallCommand = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
                                 }
                                 break;
                             case "hkcu64":
                                 using (var product = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(path[2], RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
-                                    properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.InvariantCultureIgnoreCase);
+                                    properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
                                     uninstallCommand = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
                                 }
                                 break;
                             case "hklm32":
                                 using (var product = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(path[2], RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
-                                    properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.InvariantCultureIgnoreCase);
+                                    properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
                                     uninstallCommand = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
                                 }
                                 break;
                             case "hkcu32":
                                 using (var product = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32).OpenSubKey(path[2], RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
-                                    properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.InvariantCultureIgnoreCase);
+                                    properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
                                     uninstallCommand = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
                                 }
                                 break;
@@ -298,22 +294,22 @@ namespace Microsoft.OneGet.Builtin {
                                     break;
                                 }
 
-                                if (uninstallCommand.IndexOf("msiexec", StringComparison.InvariantCultureIgnoreCase) > -1) {
+                                if (uninstallCommand.IndexOf("msiexec", StringComparison.OrdinalIgnoreCase) > -1) {
                                     MsiUninstall(uninstallCommand);
                                     break;
                                 }
 
-                                if (uninstallCommand.IndexOf("rundll32", StringComparison.InvariantCultureIgnoreCase) > -1) {
+                                if (uninstallCommand.IndexOf("rundll32", StringComparison.OrdinalIgnoreCase) > -1) {
                                     RunDll32(uninstallCommand);
                                     break;
                                 }
 
-                                if (uninstallCommand.IndexOf("cmd.exe", StringComparison.InvariantCultureIgnoreCase) == 0) {
+                                if (uninstallCommand.IndexOf("cmd.exe", StringComparison.OrdinalIgnoreCase) == 0) {
                                     CmdCommand(uninstallCommand);
                                     continue;
                                 }
 
-                                if (uninstallCommand.IndexOf("cmd ", StringComparison.InvariantCultureIgnoreCase) == 0) {
+                                if (uninstallCommand.IndexOf("cmd ", StringComparison.OrdinalIgnoreCase) == 0) {
                                     CmdCommand(uninstallCommand);
                                     continue;
                                 }

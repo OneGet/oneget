@@ -35,7 +35,7 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller.Package
         {
             if(name == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("name");
             }
             this.parentPath = null;
             ParseName(name, useShortNames);
@@ -112,7 +112,7 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller.Package
             {
                 if(value == null)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentNullException("value");
                 }
                 sourceName = value;
                 ResetSourcePath();
@@ -133,7 +133,7 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller.Package
             {
                 if(value == null)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentNullException("value");
                 }
                 targetName = value;
                 ResetTargetPath();

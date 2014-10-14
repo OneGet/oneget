@@ -9,6 +9,7 @@
 
 namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller
 {
+    using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Text;
@@ -130,6 +131,9 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller
         /// <param name="arrayIndex">offset into the destination array where copying begins</param>
         public void CopyTo(MediaDisk[] array, int arrayIndex)
         {
+            if (array == null) {
+                throw new ArgumentNullException("array");
+            }
             foreach (MediaDisk mediaDisk in this)
             {
                 array[arrayIndex++] = mediaDisk;

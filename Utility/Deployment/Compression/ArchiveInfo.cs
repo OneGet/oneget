@@ -684,7 +684,7 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression
                 delegate(string match)
                 {
                     return String.Compare(
-                        match, path, true, CultureInfo.InvariantCulture) == 0;
+                        match, path, StringComparison.OrdinalIgnoreCase) == 0;
                 });
             return (files != null && files.Count > 0 ? files[0] : null);
         }

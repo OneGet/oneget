@@ -13,6 +13,7 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller
     using System.Collections;
     using System.Configuration;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.IO;
     using System.Reflection;
     using System.Runtime.InteropServices;
@@ -116,7 +117,7 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller
                 object[] args = new object[] { session };
                 if (DebugBreakEnabled(new string[] { entryPoint, methodName }))
                 {
-                    string message = String.Format(
+                    string message = String.Format(CultureInfo.InvariantCulture,
                         "To debug your custom action, attach to process ID {0} (0x{0:x}) and click OK; otherwise, click Cancel to fail the custom action.",
                         System.Diagnostics.Process.GetCurrentProcess().Id
                         );

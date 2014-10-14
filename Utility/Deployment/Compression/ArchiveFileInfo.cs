@@ -292,6 +292,10 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression
         public override void GetObjectData(
             SerializationInfo info, StreamingContext context)
         {
+            if (info == null)
+            {
+                throw new ArgumentNullException("info");
+            }
             base.GetObjectData(info, context);
             info.AddValue("archiveInfo", this.archiveInfo);
             info.AddValue("name", this.name);

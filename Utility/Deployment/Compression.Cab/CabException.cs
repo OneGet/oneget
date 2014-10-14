@@ -10,6 +10,7 @@
 namespace Microsoft.OneGet.Utility.Deployment.Compression.Cab
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Resources;
     using System.Runtime.Serialization;
@@ -141,19 +142,19 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression.Cab
 
             string msg = CabException.ErrorResources.GetString(
                 (resourceOffset + error).ToString(CultureInfo.InvariantCulture.NumberFormat),
-                CultureInfo.CurrentCulture);
+                CultureInfo.CurrentUICulture);
 
             if (msg == null)
             {
                 msg = CabException.ErrorResources.GetString(
                     resourceOffset.ToString(CultureInfo.InvariantCulture.NumberFormat),
-                    CultureInfo.CurrentCulture);
+                    CultureInfo.CurrentUICulture);
             }
 
             if (errorCode != 0)
             {
                 const string GENERIC_ERROR_RESOURCE = "1";
-                string msg2 = CabException.ErrorResources.GetString(GENERIC_ERROR_RESOURCE, CultureInfo.CurrentCulture);
+                string msg2 = CabException.ErrorResources.GetString(GENERIC_ERROR_RESOURCE, CultureInfo.CurrentUICulture);
                 msg = String.Format(CultureInfo.InvariantCulture, "{0} " + msg2, msg, errorCode);
             }
             return msg;

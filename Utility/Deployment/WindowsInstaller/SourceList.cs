@@ -219,6 +219,9 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller
         /// <param name="arrayIndex">offset into the destination array where copying begins</param>
         public void CopyTo(string[] array, int arrayIndex)
         {
+            if (array == null) {
+                throw new ArgumentNullException("array");
+            }
             foreach (string source in this)
             {
                 array[arrayIndex++] = source;

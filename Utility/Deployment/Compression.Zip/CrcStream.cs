@@ -39,7 +39,6 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression.Zip
         /// since this instance was created.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Crc")]
-        [CLSCompliant(false)]
         public uint Crc
         {
             get

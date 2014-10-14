@@ -38,9 +38,9 @@ NTTARGETFILE0=$(NTTARGETFILE0) $(RESOURCES:;=)
 
 
 REFERENCES=\
-	$(OBJ_PATH)\..\OneGet.Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll; \
-    $(OBJ_PATH)\..\OneGet.Utility.PowerShell\$(O)\Microsoft.OneGet.Utility.PowerShell.metadata_dll; \
-	$(OBJ_PATH)\..\OneGet.Core\$(O)\Microsoft.OneGet.metadata_dll; \
+	$(OBJ_PATH)\..\Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll; \
+	$(OBJ_PATH)\..\Utility.PowerShell\$(O)\Microsoft.OneGet.Utility.PowerShell.metadata_dll; \
+	$(OBJ_PATH)\..\OneGet\$(O)\Microsoft.OneGet.metadata_dll; \
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
 	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll;
@@ -62,9 +62,10 @@ SOURCES=\
  	CmdLets\SetPackageSource.cs \
  	CmdLets\UninstallPackage.cs \
  	CmdLets\UnregisterPackageSource.cs \
- 	Constants.cs \
  	Utility\CustomRuntimeDefinedParameter.cs \
-        $(RESOURCES_SOURCES)
+ 	Utility\ValidateListAttribute.cs \
+ 	Constants.cs \
+	$(RESOURCES_SOURCES)
 
 #endregion
 

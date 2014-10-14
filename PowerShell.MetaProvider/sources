@@ -38,23 +38,24 @@ NTTARGETFILE0=$(NTTARGETFILE0) $(RESOURCES:;=)
 
 
 REFERENCES=\
-    $(OBJ_PATH)\..\OneGet.Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll; \
-    $(OBJ_PATH)\..\OneGet.Utility.PowerShell\$(O)\Microsoft.OneGet.Utility.PowerShell.metadata_dll; \
-    $(OBJ_PATH)\..\OneGet.Core\$(O)\Microsoft.OneGet.metadata_dll; \
+	$(OBJ_PATH)\..\Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll; \
+	$(OBJ_PATH)\..\Utility.PowerShell\$(O)\Microsoft.OneGet.Utility.PowerShell.metadata_dll; \
+	$(OBJ_PATH)\..\OneGet\$(O)\Microsoft.OneGet.metadata_dll; \
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
 	$(CLR_REF_PATH)\System.Data.metadata_dll; \
-    $(CLR_REF_PATH)\System.Security.metadata_dll; \
-    $(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
-    $(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll;
+	$(CLR_REF_PATH)\System.Security.metadata_dll; \
+	$(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
+	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll;
 
 
 #region sourcefiles
 SOURCES=\
-	Constants.cs \
+ 	Constants.cs \
  	DynamicOption.cs \
  	Entity.cs \
  	Enums.cs \
+ 	Feature.cs \
  	Link.cs \
  	PackageSource.cs \
  	PowerShellMetaProvider.cs \
@@ -64,15 +65,12 @@ SOURCES=\
  	RequestExtensions.cs \
  	SoftwareIdentity.cs \
  	Yieldable.cs \
-     $(RESOURCES_SOURCES)
-
+	$(RESOURCES_SOURCES)
 
 #endregion
 
 PASS0_BINPLACE=\
 	etc\PackageProviderFunctions.psm1
-
-
 
 INTERNALS_VISIBLE_TO=\
 	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);

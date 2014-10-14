@@ -96,7 +96,7 @@ namespace Microsoft.OneGet.Utility.Collections {
                 if (ItemExists(index)) {
                     return List[index];
                 }
-                throw new IndexOutOfRangeException();
+                throw new ArgumentOutOfRangeException("index");
             }
             set {
                 throw new NotImplementedException();
@@ -143,8 +143,11 @@ namespace Microsoft.OneGet.Utility.Collections {
             }
         }
 
-        public void Wait(int milliseconds = -1) {
+        public void Wait(int milliseconds) {
             _completed.WaitOne(milliseconds);
+        }
+        public void Wait() {
+            _completed.WaitOne(-1);
         }
     }
 }

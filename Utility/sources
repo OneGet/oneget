@@ -7,7 +7,7 @@ TARGETNAME          = Microsoft.OneGet.Utility
 TARGETTYPE          = DYNLINK
 TARGET_DESTINATION  = monad
 MANAGED_CODE        = 1
-URT_VER=4.5
+URT_VER=4.0
 # this will make AssemblyVersion = 1.0.0.0
 ASSEMBLY_IDENTITY_VERSION_NAME=monadv1
 
@@ -41,33 +41,143 @@ REFERENCES=\
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
 	$(CLR_REF_PATH)\System.Data.metadata_dll; \
+    $(CLR_REF_PATH)\System.Configuration.metadata_dll; \
 	$(CLR_REF_PATH)\System.Data.DataSetExtensions.metadata_dll; \
-    $(CLR_REF_PATH)\System.Security.metadata_dll; \
+	$(CLR_REF_PATH)\System.Security.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll;
 
 #region sourcefiles
 SOURCES=\
-	Collections\AbstractDictionary.cs \
+	Async\AsyncAction.cs \
+ 	Async\AsyncActionExtensions.cs \
+ 	Async\EmptyAsyncEnumerable.cs \
+ 	Async\IAsyncAction.cs \
+ 	Async\IAsyncEnumerable.cs \
+ 	Async\IAsyncValue.cs \
+ 	Collections\AbstractDictionary.cs \
+ 	Collections\BlockingCollection.cs \
  	Collections\ByRefCancellationToken.cs \
  	Collections\ByRefCancellationTokenSource.cs \
+ 	Collections\ByRefCollection.cs \
  	Collections\ByRefEnumerable.cs \
  	Collections\ByRefEnumerator.cs \
- 	Collections\CachingEnumerable.cs \
- 	Collections\CancellableBlockingCollection.cs \
- 	Collections\CancellableEnumerable.cs \
  	Collections\CancellableEnumerator.cs \
  	Collections\DelegateDictionary.cs \
+ 	Collections\EnumerableExtensions.cs \
+ 	Collections\FilenameEqualityComparer.cs \
  	Collections\HashSet.cs \
  	Collections\ICancellable.cs \
  	Collections\ICancellableEnumerable.cs \
+ 	Collections\ICancellableEnumerator.cs \
  	Collections\List.cs \
+ 	Collections\MutableEnumerable.cs \
  	Collections\OrderedDictionary.cs \
+ 	Collections\PathEqualityComparer.cs \
  	Collections\ReadOnlyDelegateDictionary.cs \
+ 	Collections\ReEnumerable.cs \
+ 	Collections\SerializableCollection.cs \
  	Collections\SerializableEnumerable.cs \
  	Collections\SerializableEnumerator.cs \
  	Collections\VirtualEnumerator.cs \
- 	Extensions\CancellationTokenSourceExtensions.cs \
+ 	Deployment\Compression\ArchiveException.cs \
+ 	Deployment\Compression\ArchiveFileInfo.cs \
+ 	Deployment\Compression\ArchiveFileStreamContext.cs \
+ 	Deployment\Compression\ArchiveInfo.cs \
+ 	Deployment\Compression\ArchiveProgressEventArgs.cs \
+ 	Deployment\Compression\ArchiveProgressType.cs \
+ 	Deployment\Compression\BasicUnpackStreamContext.cs \
+ 	Deployment\Compression\CargoStream.cs \
+ 	Deployment\Compression\CompressionEngine.cs \
+ 	Deployment\Compression\CompressionLevel.cs \
+ 	Deployment\Compression\DuplicateStream.cs \
+ 	Deployment\Compression\IPackStreamContext.cs \
+ 	Deployment\Compression\IUnpackStreamContext.cs \
+ 	Deployment\Compression\OffsetStream.cs \
+ 	Deployment\Compression\SafeNativeMethods.cs \
+ 	Deployment\Compression.Cab\CabEngine.cs \
+ 	Deployment\Compression.Cab\CabException.cs \
+ 	Deployment\Compression.Cab\CabFileInfo.cs \
+ 	Deployment\Compression.Cab\CabInfo.cs \
+ 	Deployment\Compression.Cab\CabPacker.cs \
+ 	Deployment\Compression.Cab\CabUnpacker.cs \
+ 	Deployment\Compression.Cab\CabWorker.cs \
+ 	Deployment\Compression.Cab\HandleManager.cs \
+ 	Deployment\Compression.Cab\NativeMethods.cs \
+ 	Deployment\Compression.Zip\ConcatStream.cs \
+ 	Deployment\Compression.Zip\CrcStream.cs \
+ 	Deployment\Compression.Zip\ZipCompressionMethod.cs \
+ 	Deployment\Compression.Zip\ZipEngine.cs \
+ 	Deployment\Compression.Zip\ZipException.cs \
+ 	Deployment\Compression.Zip\ZipFileInfo.cs \
+ 	Deployment\Compression.Zip\ZipFormat.cs \
+ 	Deployment\Compression.Zip\ZipInfo.cs \
+ 	Deployment\Compression.Zip\ZipPacker.cs \
+ 	Deployment\Compression.Zip\ZipUnpacker.cs \
+ 	Deployment\Resources\BitmapResource.cs \
+ 	Deployment\Resources\FixedFileVersionInfo.cs \
+ 	Deployment\Resources\GroupIconInfo.cs \
+ 	Deployment\Resources\GroupIconResource.cs \
+ 	Deployment\Resources\NativeMethods.cs \
+ 	Deployment\Resources\Resource.cs \
+ 	Deployment\Resources\ResourceCollection.cs \
+ 	Deployment\Resources\ResourceType.cs \
+ 	Deployment\Resources\VersionEnums.cs \
+ 	Deployment\Resources\VersionInfo.cs \
+ 	Deployment\Resources\VersionResource.cs \
+ 	Deployment\Resources\VersionStringTable.cs \
+ 	Deployment\WindowsInstaller\ColumnCollection.cs \
+ 	Deployment\WindowsInstaller\ColumnEnums.cs \
+ 	Deployment\WindowsInstaller\ColumnInfo.cs \
+ 	Deployment\WindowsInstaller\ComponentInfo.cs \
+ 	Deployment\WindowsInstaller\ComponentInstallation.cs \
+ 	Deployment\WindowsInstaller\CustomActionAttribute.cs \
+ 	Deployment\WindowsInstaller\customactiondata.cs \
+ 	Deployment\WindowsInstaller\CustomActionProxy.cs \
+ 	Deployment\WindowsInstaller\Database.cs \
+ 	Deployment\WindowsInstaller\DatabaseQuery.cs \
+ 	Deployment\WindowsInstaller\DatabaseTransform.cs \
+ 	Deployment\WindowsInstaller\EmbeddedUIProxy.cs \
+ 	Deployment\WindowsInstaller\Enums.cs \
+ 	Deployment\WindowsInstaller\Exceptions.cs \
+ 	Deployment\WindowsInstaller\ExternalUIHandler.cs \
+ 	Deployment\WindowsInstaller\FeatureInfo.cs \
+ 	Deployment\WindowsInstaller\FeatureInstallation.cs \
+ 	Deployment\WindowsInstaller\Handle.cs \
+ 	Deployment\WindowsInstaller\IEmbeddedUI.cs \
+ 	Deployment\WindowsInstaller\Installation.cs \
+ 	Deployment\WindowsInstaller\InstallationPart.cs \
+ 	Deployment\WindowsInstaller\InstallCost.cs \
+ 	Deployment\WindowsInstaller\Installer.cs \
+ 	Deployment\WindowsInstaller\InstallerAdvertise.cs \
+ 	Deployment\WindowsInstaller\InstallerUtils.cs \
+ 	Deployment\WindowsInstaller\MediaDisk.cs \
+ 	Deployment\WindowsInstaller\NativeMethods.cs \
+ 	Deployment\WindowsInstaller\PatchInstallation.cs \
+ 	Deployment\WindowsInstaller\ProductInstallation.cs \
+ 	Deployment\WindowsInstaller\Record.cs \
+ 	Deployment\WindowsInstaller\RecordStream.cs \
+ 	Deployment\WindowsInstaller\RemotableNativeMethods.cs \
+ 	Deployment\WindowsInstaller\Session.cs \
+ 	Deployment\WindowsInstaller\ShortcutTarget.cs \
+ 	Deployment\WindowsInstaller\SourceList.cs \
+ 	Deployment\WindowsInstaller\SourceMediaList.cs \
+ 	Deployment\WindowsInstaller\SummaryInfo.cs \
+ 	Deployment\WindowsInstaller\TableCollection.cs \
+ 	Deployment\WindowsInstaller\TableInfo.cs \
+ 	Deployment\WindowsInstaller\Transaction.cs \
+ 	Deployment\WindowsInstaller\ValidationErrorInfo.cs \
+ 	Deployment\WindowsInstaller\View.cs \
+ 	Deployment\WindowsInstaller.Linq\Attributes.cs \
+ 	Deployment\WindowsInstaller.Linq\Entities.cs \
+ 	Deployment\WindowsInstaller.Linq\QDatabase.cs \
+ 	Deployment\WindowsInstaller.Linq\QRecord.cs \
+ 	Deployment\WindowsInstaller.Linq\QTable.cs \
+ 	Deployment\WindowsInstaller.Linq\Query.cs \
+ 	Deployment\WindowsInstaller.Package\InstallPackage.cs \
+ 	Deployment\WindowsInstaller.Package\InstallPath.cs \
+ 	Deployment\WindowsInstaller.Package\PatchPackage.cs \
+ 	Deployment\WindowsInstaller.Package\TransformInfo.cs \
  	Extensions\CollectionExtensions.cs \
  	Extensions\DelegateExtensions.cs \
  	Extensions\DictionaryExtensions.cs \
@@ -75,7 +185,11 @@ SOURCES=\
  	Extensions\FilesystemExtensions.cs \
  	Extensions\HashtableExtensions.cs \
  	Extensions\StringExtensions.cs \
+ 	Extensions\TaskExtensions.cs \
+ 	Extensions\ThreadPerTaskScheduler.cs \
+ 	Extensions\TwoTypes.cs \
  	Extensions\TypeExtensions.cs \
+ 	Extensions\Types.cs \
  	Extensions\XmlExtensions.cs \
  	Platform\AdminPrivilege.cs \
  	Platform\AsyncProcess.cs \
@@ -89,9 +203,12 @@ SOURCES=\
  	Platform\NativeMethods.cs \
  	Platform\ShellApplication.cs \
  	Platform\ShellLink.cs \
+ 	Platform\ShellLinkClass.cs \
  	Platform\SLGP.cs \
  	Platform\STGM.cs \
  	Platform\Win32FindData.cs \
+ 	Platform\WinTrustData.cs \
+ 	Platform\WinTrustFileInfo.cs \
  	Plugin\AssignableTypeComparer.cs \
  	Plugin\DynamicInterface.cs \
  	Plugin\DynamicInterfaceExtensions.cs \
@@ -106,19 +223,16 @@ SOURCES=\
  	Plugin\WrappedAction.cs \
  	Plugin\WrappedDelegate.cs \
  	Plugin\WrappedFunc.cs \
- 	$(RESOURCES_SOURCES) \
  	Versions\FourPartVersion.cs \
+ 	Versions\TwoPartVersion.cs \
  	Xml\DynamicAttributes.cs \
  	Xml\DynamicElement.cs \
  	Xml\DynamicElementEnumerable.cs \
- 	Constants.cs \
- 
+	$(RESOURCES_SOURCES)
 
 #endregion
-
 
 INTERNALS_VISIBLE_TO=\
 	Microsoft.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
 	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
-        Microsoft.OneGet.PackageProvider.Bootstrap, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
 	Microsoft.OneGet.Utility.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);

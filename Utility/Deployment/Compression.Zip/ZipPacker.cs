@@ -285,7 +285,7 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression.Zip
             {
                 // TODO: call GetOption to get compression method for the specific file
                 ZipCompressionMethod compressionMethod = ZipCompressionMethod.Deflate;
-                if (this.CompressionLevel == CompressionLevel.None)
+                if (this.CompressionLevel == Microsoft.OneGet.Utility.Deployment.Compression.CompressionLevel.None)
                 {
                     compressionMethod = ZipCompressionMethod.Store;
                 }

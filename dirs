@@ -1,19 +1,13 @@
 ## garretts - disabling all the dirs until the refactoring/moving is complete.
 
 DIRS=\
-    OneGet.Utility \
-    OneGet.Utility.PowerShell \
-    OneGet.Core \
-    MetaProvider.PowerShell \
-    OneGet.PowerShell.Module \
-    ServiceProvider.Common \
-    PackageProvider.Bootstrap
+	Utility \
+	Utility.PowerShell \
+	OneGet \
+	PowerShell.MetaProvider \
+	PowerShell.Module \
 
 # Unit test directories should be placed in the OPTIONAL_DIRS section
 OPTIONAL_DIRS=\
 
- 	# OneGet.Test
-    # PackageProvider.Test.PowerShell
-    # PackageProvider.Test
-    # ServiceProvider.Common
-    # ServiceProvider.Test
+	# OneGet.Test

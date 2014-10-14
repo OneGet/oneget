@@ -346,6 +346,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                         Id = _nextProgressId++,
                         Parent = parent
                     };
+                    _activeProgressId = p;
+
                     if (parent != null) {
                         parent.Children.Add(p);
                     }

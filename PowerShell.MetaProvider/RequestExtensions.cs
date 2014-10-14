@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Security;
@@ -40,7 +41,7 @@ public static class RequestExtensions {
         }
 
         public static string format(this string messageFormat, params object[] args) {
-            return string.Format(messageFormat, args);
+            return string.Format(CultureInfo.CurrentCulture, messageFormat, args);
         }
 
         public static bool EqualsIgnoreCase(this string str, string str2) {
