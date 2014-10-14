@@ -1,46 +1,53 @@
 # Copyright (C) 2014 Microsoft Corporation
 
-#CLSCompliant        = true
+###
+### OneGet/OneGet/sources
+###
+
+!include ..\common.inc
 
 TARGETNAME          = Microsoft.OneGet
-
-TARGETTYPE          = DYNLINK
-TARGET_DESTINATION  = monad
-MANAGED_CODE        = 1
-URT_VER=4.0
-# this will make AssemblyVersion = 1.0.0.0
-ASSEMBLY_IDENTITY_VERSION_NAME=monadv1
+TARGETTYPE          = PROGRAM
+GENERATE_METADATA_EXE=1
 
 ## !include $(PROJECT_ROOT)\monad\nttargets\build\sources.inc
-OBJDIR=$(OBJ_PATH)\$(O)
+OUTPUT_PATH=$(OBJ_PATH)\$(O)
 
-ASSEMBLY_IDENTITY_PUBLIC_KEY_NAME   = windows
 SOURCES_PATH = .\
 
-#PASS1_PUBLISH = {$(OBJ_PATH)\$(O)\$(TARGETNAME).metadata_dll=$(PROJECT_REF_PATH)\$(TARGETNAME).metadata_dll}
-
+###
+### Note: This really only works if you have a single .resx file.
+###       if an additional .resx file is added at some point in the future
+###       you have to either *always* pre-gen the .cs files or figure another
+###       way.
+###
 RESOURCES_NAMESPACE=Microsoft.OneGet.Resources
+GENERATED_RESOURCES_SOURCE=$(OUTPUT_PATH)\Messages.cs
+RESGEN_FLAGS = /str:cs,$(RESOURCES_NAMESPACE),Messages,$(OUTPUT_PATH)\Messages.cs
 
-# Target for building resources
-NTTARGETFILE1=$(NTTARGETFILE1) resources
+### The resources that we want to include in the project
+RESGEN_SOURCES=\
+    Resources\Messages.resx,$(OUTPUT_PATH)\$(RESOURCES_NAMESPACE).Messages.resources
 
-MESSAGES_RESOURCES=$(OBJDIR)\$(RESOURCES_NAMESPACE).Messages.resources
+### Note: I'm not entirely sure if the base resources are supposed to be
+###       LANGUAGE_SPECIFIC_MANAGED_RESOURCES =
+###       or
+###       LANGUAGE_NEUTRAL_MANAGED_RESOURCES =
+###       so I've left it as SPECIFIC..
 
-RESOURCES= \
-	$(MESSAGES_RESOURCES)
+LANGUAGE_SPECIFIC_MANAGED_RESOURCES =\
+    $(OUTPUT_PATH)\$(RESOURCES_NAMESPACE).Messages.resources,$(RESOURCES_NAMESPACE).Messages.resources
 
-RESOURCES_SOURCES= \
-	$(OBJDIR)\Messages.cs
+PASS2_BINPLACE=\
+    #(OUTPUT_PATH)\$(TARGETNAME).resources.dll
 
-LANGUAGE_SPECIFIC_MANAGED_RESOURCES=$(RESOURCES)
-
-NTTARGETFILE0=$(NTTARGETFILE0) $(RESOURCES:;=)
+### Referenced assemblies
 
 REFERENCES=\
-	$(OBJ_PATH)\..\Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll; \
+	$(ONEGET_UTILITY) \
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
-    $(CLR_REF_PATH)\System.Runtime.Remoting.metadata_dll; \
+	$(CLR_REF_PATH)\System.Runtime.Remoting.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll;
 
@@ -104,11 +111,12 @@ SOURCES=\
  	ErrorCategory.cs \
  	IPackageManagementService.cs \
  	PackageManager.cs \
-	$(RESOURCES_SOURCES)
+ 	$(GENERATED_RESOURCES_SOURCE)
 
 #endregion
 
 INTERNALS_VISIBLE_TO=\
 	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
 	Microsoft.PowerShell.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
+
 

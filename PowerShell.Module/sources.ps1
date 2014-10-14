@@ -5,7 +5,7 @@ $x = dir -recurse *.cs | ForEach-Object { Resolve-Path -Relative $_ } | ForEach-
 $sources = [System.IO.File]::ReadAllText(".\sources");
 
 # set source files
-$x = "#region sourcefiles`nSOURCES=\`n$x	`$(RESOURCES_SOURCES)`n`n#endregion"
+$x = "#region sourcefiles`nSOURCES=\`n$x	`$(GENERATED_RESOURCES_SOURCE)`n`n#endregion"
 
 # Replace the region
 $newSources = [System.Text.RegularExpressions.Regex]::Replace($sources, "#region\s*sourcefiles.*?#endregion", $x  ,[System.Text.RegularExpressions.RegexOptions]::SingleLine )

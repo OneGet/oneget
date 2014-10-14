@@ -1,25 +1,19 @@
 # Copyright (C) 2014 Microsoft Corporation
 
-#CLSCompliant        = true
+###
+### OneGet/Utility.PowerShell/sources
+###
+
+!include ..\common.inc
 
 TARGETNAME          = Microsoft.OneGet.Utility.PowerShell
-
 TARGETTYPE          = DYNLINK
-TARGET_DESTINATION  = monad
-MANAGED_CODE        = 1
-URT_VER=4.0
-# this will make AssemblyVersion = 1.0.0.0
-ASSEMBLY_IDENTITY_VERSION_NAME=monadv1
-
-ASSEMBLY_IDENTITY_PUBLIC_KEY_NAME   = windows
-
-#PASS1_PUBLISH = {$(OBJ_PATH)\$(O)\$(TARGETNAME).metadata_dll=$(PROJECT_REF_PATH)\$(TARGETNAME).metadata_dll}
 
 REFERENCES=\
-    $(OBJ_PATH)\..\Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll; \
+	$(ONEGET_UTILITY) \
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
-    $(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll;
+	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll;
 
 
 #region sourcefiles
