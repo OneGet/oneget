@@ -175,8 +175,6 @@
     <Compile Include="Collections\ByRefEnumerator.cs" />
     <Compile Include="Collections\CancellableEnumerator.cs" />
     <Compile Include="Collections\DelegateDictionary.cs" />
-    <Compile Include="Collections\ICancellable.cs" />
-    <Compile Include="Collections\ICancellableEnumerable.cs" />
     <Compile Include="Collections\List.cs" />
     <Compile Include="Collections\OrderedDictionary.cs" />
     <Compile Include="Collections\ReadOnlyDelegateDictionary.cs" />

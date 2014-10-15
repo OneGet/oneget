@@ -44,7 +44,7 @@ namespace Microsoft.OneGet.Utility.Collections {
             }
             var enumerator = GetEnumerator();
 
-            while (arrayIndex <= array.Length) {
+            while (arrayIndex < array.Length) {
                 if (enumerator.MoveNext()) {
                     array[arrayIndex++] = enumerator.Current;
                 } else {

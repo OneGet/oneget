@@ -25,7 +25,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
     using Platform;
 
     public static class FilesystemExtensions {
-        private static readonly char[] _filenameCharacters = "/\\".ToCharArray();
+        private static readonly char[] _pathCharacters = "/\\".ToCharArray();
 
         private static int _counter = Process.GetCurrentProcess().Id << 16;
         public static string OriginalTempFolder;
@@ -56,7 +56,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static bool LooksLikeAFilename(this string text) {
-            return text.IndexOfAny(_filenameCharacters) > -1;
+            return text.IndexOfAny(_pathCharacters) > -1;
         }
 
         /// <summary>

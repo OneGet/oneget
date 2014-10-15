@@ -175,7 +175,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 // I think we're just talking about IDisposable here. maybe we shouldn't try to ducktype IDisposable at all.
 
                 //  try option2 :
-                /*
+#if DEEP_DEBUG
                 var ifaces = type.GetInterfaces().ToArray();
                 if (ifaces.Any()) {
                     Console.WriteLine("Interface: {0}",ifaces.Select(each=>each.Name).JoinWithComma());
@@ -183,7 +183,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                         Debugger.Break();
                     }
                 }
-                 */
+#endif
 
                 var interfaceMethods = type.GetInterfaces().Where(each => each != typeof (IDisposable)).SelectMany(GetVirtualMethods);
 

@@ -34,13 +34,13 @@ namespace Microsoft.OneGet.Utility.Async {
         private Timer _timer;
 
         protected AsyncAction() {
-            _timer = new Timer(Signalled, this, -1, -1);
+            _timer = new Timer(Signalled, this, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
         }
 
         private TimeSpan TimeLeft {
             get {
                 if (_actionState >= ActionState.Aborting) {
-                    return TimeSpan.FromMilliseconds(-1);
+                    return TimeSpan.FromMilliseconds(System.Threading.Timeout.Infinite);
                 }
 
                 if (_actionState >= ActionState.Cancelling) {
@@ -206,7 +206,7 @@ namespace Microsoft.OneGet.Utility.Async {
 #if DEEP_DEBUG
                     Console.WriteLine("GIVING 5 seconds to die for TASK {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
 #endif
-                    _timer.Change(5000, -1);
+                    _timer.Change(5000, System.Threading.Timeout.Infinite);
                 } else {
                     // stop timer activity
                     DisposeTimer();
@@ -229,7 +229,7 @@ namespace Microsoft.OneGet.Utility.Async {
         private void DisposeTimer() {
             lock (_lock) {
                 if (_timer != null) {
-                    _timer.Change(-1, -1);
+                    _timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     _timer.Dispose();
                     _timer = null;
                 }
@@ -296,7 +296,7 @@ namespace Microsoft.OneGet.Utility.Async {
         private void ResetTimer() {
             lock (_lock) {
                 if (_actionState <= ActionState.Canceled && _timer != null) {
-                    _timer.Change(TimeLeft, TimeSpan.FromMilliseconds(-1));
+                    _timer.Change(TimeLeft, TimeSpan.FromMilliseconds(System.Threading.Timeout.Infinite));
                 }
             }
         }
