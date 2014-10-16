@@ -380,16 +380,16 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     string[] val = null;
 
                     if (obj is string) {
-                        val = new [] {obj as string};
-                    }
-
-                    // otherwise, try to cast it to a collection of string-like-things
-                    var collection = obj as IEnumerable;
-                    if (collection != null) {
-                        val = collection.Cast<object>().Select(each => each.ToString()).ToArray();
+                        val = new[] {obj as string};
                     } else {
-                        // meh. ToString, and goodnight.
-                        val = new[] {obj.ToString()};
+                        // otherwise, try to cast it to a collection of string-like-things
+                        var collection = obj as IEnumerable;
+                        if (collection != null) {
+                            val = collection.Cast<object>().Select(each => each.ToString()).ToArray();
+                        } else {
+                            // meh. ToString, and goodnight.
+                            val = new[] {obj.ToString()};
+                        }
                     }
 
                     lst.Add(k.ToString(),val );    
