@@ -129,6 +129,10 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression.Cab
                             this.CabListNotify,
                             IntPtr.Zero,
                             IntPtr.Zero);
+                        if (result == 0) {
+                            // stop compiler from complaining
+                            this.CheckError(true);
+                        }
                         this.CheckError(true);
                     }
 
@@ -205,6 +209,10 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression.Cab
                             this.CabExtractNotify,
                             IntPtr.Zero,
                             IntPtr.Zero);
+                        if (result == 0) {
+                            // stop compiler from complaining
+                            this.CheckError(true);
+                        }
                         this.CheckError(true);
                     }
                 }

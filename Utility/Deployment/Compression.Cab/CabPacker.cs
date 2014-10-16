@@ -513,6 +513,13 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression.Cab
                     this.fciCreateStatus,
                     this.fciGetOpenInfo,
                     tcomp);
+                if (result == 0) {
+                    // Stop compiler from complaining
+                    this.CheckError(false);
+                    this.FileStream = null;
+                    this.currentFileName = null;
+                    return;
+                }
             }
             finally
             {
@@ -531,13 +538,23 @@ namespace Microsoft.OneGet.Utility.Deployment.Compression.Cab
         {
             this.Erf.Clear();
             var result = NativeMethods.FCI.FlushFolder(this.fciHandle, this.fciGetNextCabinet, this.fciCreateStatus);
+            if (result == 0) {
+                // Stop compiler from complaining
+                this.CheckError(false);
+                return;
+            }
             this.CheckError(false);
         }
 
         private void FlushCabinet()
         {
             this.Erf.Clear();
-            var resut = NativeMethods.FCI.FlushCabinet(this.fciHandle, false, this.fciGetNextCabinet, this.fciCreateStatus);
+            var result = NativeMethods.FCI.FlushCabinet(this.fciHandle, false, this.fciGetNextCabinet, this.fciCreateStatus);
+            if (result == 0) {
+                // Stop compiler from complaining
+                this.CheckError(false);
+                return;
+            }
             this.CheckError(false);
         }
 

@@ -177,34 +177,33 @@ namespace Microsoft.OneGet.Utility.Deployment.WindowsInstaller
         {
             get
             {
-                if (field == 0)
+                if (field <= 0)
                 {
                     return this.GetString(0);
                 }
+                
+                Type valueType = null;
+                if (this.view != null)
+                {
+                    this.CheckRange(field);
+
+                    valueType = this.view.Columns[field - 1].Type;
+                }
+
+                if (valueType == null || valueType == typeof(String))
+                {
+                    return this.GetString(field);
+                }
+                else if (valueType == typeof(Stream))
+                {
+                    return this.IsNull(field) ? null : new RecordStream(this, field);
+                }
                 else
                 {
-                    Type valueType = null;
-                    if (this.view != null)
-                    {
-                        this.CheckRange(field);
-
-                        valueType = this.view.Columns[field - 1].Type;
-                    }
-
-                    if (valueType == null || valueType == typeof(String))
-                    {
-                        return this.GetString(field);
-                    }
-                    else if (valueType == typeof(Stream))
-                    {
-                        return this.IsNull(field) ? null : new RecordStream(this, field);
-                    }
-                    else
-                    {
-                        int? value = this.GetNullableInteger(field);
-                        return value.HasValue ? (object) value.Value : null;
-                    }
+                    int? value = this.GetNullableInteger(field);
+                    return value.HasValue ? (object) value.Value : null;
                 }
+                
             }
 
             set

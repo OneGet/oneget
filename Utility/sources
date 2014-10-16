@@ -73,8 +73,6 @@ SOURCES=\
  	Collections\EnumerableExtensions.cs \
  	Collections\FilenameEqualityComparer.cs \
  	Collections\HashSet.cs \
- 	Collections\ICancellable.cs \
- 	Collections\ICancellableEnumerable.cs \
  	Collections\ICancellableEnumerator.cs \
  	Collections\List.cs \
  	Collections\MutableEnumerable.cs \
@@ -87,8 +85,8 @@ SOURCES=\
  	Collections\SerializableEnumerator.cs \
  	Collections\VirtualEnumerator.cs \
  	Deployment\Compression\ArchiveException.cs \
- 	Deployment\Compression\ArchiveFileInfo.cs \
- 	Deployment\Compression\ArchiveFileStreamContext.cs \
+ 	Deployment\Compression\archivefileinfo.cs \
+ 	Deployment\Compression\archivefilestreamcontext.cs \
  	Deployment\Compression\ArchiveInfo.cs \
  	Deployment\Compression\ArchiveProgressEventArgs.cs \
  	Deployment\Compression\ArchiveProgressType.cs \
