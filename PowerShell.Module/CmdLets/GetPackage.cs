@@ -23,7 +23,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
 
-    [Cmdlet(VerbsCommon.Get, Constants.PackageNoun)]
+    [Cmdlet(VerbsCommon.Get, Constants.PackageNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517135")]
     public class GetPackage : CmdletWithSearch {
         private readonly Dictionary<string, bool> _namesProcessed = new Dictionary<string, bool>();
         private readonly Dictionary<string, bool> _providersProcessed = new Dictionary<string, bool>();

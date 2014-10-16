@@ -16,7 +16,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Management.Automation;
 
-    [Cmdlet(VerbsCommon.Get, Constants.PackageProviderNoun)]
+    [Cmdlet(VerbsCommon.Get, Constants.PackageProviderNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517136")]
     public sealed class GetPackageProvider : CmdletBase {
         protected override IEnumerable<string> ParameterSets {
             get {

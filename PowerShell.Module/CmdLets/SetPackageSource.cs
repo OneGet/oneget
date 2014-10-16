@@ -19,7 +19,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Extensions;
 
-    [Cmdlet(VerbsCommon.Set, Constants.PackageSourceNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.SourceBySearchSet)]
+    [Cmdlet(VerbsCommon.Set, Constants.PackageSourceNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.SourceBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517141")]
     public sealed class SetPackageSource : CmdletWithProvider {
         [Parameter(ValueFromPipeline = true, ParameterSetName = Constants.SourceByInputObjectSet, Mandatory = true)]
         public PackageSource InputObject;

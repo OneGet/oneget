@@ -23,7 +23,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
-    [Cmdlet(VerbsLifecycle.Register, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsLifecycle.Register, Constants.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517139")]
     public sealed class RegisterPackageSource : CmdletWithProvider {
         public RegisterPackageSource()
             : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {

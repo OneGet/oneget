@@ -20,7 +20,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
 
-    [Cmdlet(VerbsData.Save, Constants.PackageNoun, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsData.Save, Constants.PackageNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517140")]
     public sealed class SavePackage : CmdletWithSearchAndSource {
         public SavePackage()
             : base(new[] {

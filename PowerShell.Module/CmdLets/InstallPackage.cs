@@ -24,7 +24,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
-    [Cmdlet(VerbsLifecycle.Install, Constants.PackageNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.PackageBySearchSet)]
+    [Cmdlet(VerbsLifecycle.Install, Constants.PackageNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.PackageBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517138")]
     public sealed class InstallPackage : CmdletWithSearchAndSource {
         private readonly HashSet<string> _sourcesTrusted = new HashSet<string>();
 

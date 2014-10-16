@@ -21,7 +21,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
 
-    [Cmdlet(VerbsLifecycle.Unregister, Constants.PackageSourceNoun, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsLifecycle.Unregister, Constants.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517143")]
     public sealed class UnregisterPackageSource : CmdletWithSource {
         public UnregisterPackageSource()
             : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {

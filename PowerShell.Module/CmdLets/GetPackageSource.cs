@@ -21,7 +21,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
 
-    [Cmdlet(VerbsCommon.Get, Constants.PackageSourceNoun)]
+    [Cmdlet(VerbsCommon.Get, Constants.PackageSourceNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517137")]
     public sealed class GetPackageSource : CmdletWithProvider {
         private readonly List<PackageSource> _unregistered = new List<PackageSource>();
         private bool _found;
