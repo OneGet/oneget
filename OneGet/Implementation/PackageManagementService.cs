@@ -428,6 +428,10 @@ namespace Microsoft.OneGet.Implementation {
                     return null;
                 }
                 var path = Path.Combine(basepath, "OneGet", "ProviderAssemblies");
+#if NEED_ACLS_ON_PLUGINS
+                // it appears that the general consensus is that we really don't need
+                // to purposefully ACL the plugin folder.
+                // Although, I still think we're gonna be back here one day.
                 if (AdminPrivilege.IsElevated && !Directory.Exists(path)) {
                     var ds = new DirectorySecurity();
 
@@ -438,7 +442,7 @@ namespace Microsoft.OneGet.Implementation {
 
                     Directory.CreateDirectory(path, ds);
                 }
-
+#endif 
                 return path;
             }
         }
