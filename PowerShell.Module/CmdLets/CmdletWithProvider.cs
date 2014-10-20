@@ -20,6 +20,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Collections;
+    using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
     public abstract class CmdletWithProvider : CmdletBase {
@@ -34,16 +35,32 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public virtual string[] ProviderName {get; set;}
 
+
         protected virtual IEnumerable<PackageProvider> SelectedProviders {
             get {
                 // filter on provider names  - if they specify a provider name, narrow to only those provider names.
-                var providers = SelectProviders(ProviderName);
+                var providers = SelectProviders(ProviderName).ReEnumerable();
 
+                var userSpecifiedSources = Sources.ReEnumerable().ToArray();
+
+
+                // filter out providers that don't have the sources that have been specified (only if we have specified a source!)
+                if (userSpecifiedSources.Length > 0) {
+                    // sources must actually match a name or location. Keeps providers from being a bit dishonest
+
+                    var potentialSources = providers.SelectMany(each => each.ResolvePackageSources(SuppressErrorsAndWarnings).Where(source => userSpecifiedSources.ContainsAnyOfIgnoreCase(source.Name, source.Location))).ReEnumerable();
+
+                    // prefer registered sources
+                    var registeredSources = potentialSources.Where(source => source.IsRegistered).ReEnumerable();
+
+                    providers = registeredSources.Any() ? registeredSources.Select(source => source.Provider).Distinct().ReEnumerable() : potentialSources.Select(source => source.Provider).Distinct().ReEnumerable();
+                }
                 // filter on: dynamic options - if they specify any dynamic options, limit the provider set to providers with those options.
                 return FilterProvidersUsingDynamicParameters(providers).ToArray();
             }
         }
 
+       
         protected IEnumerable<PackageProvider> FilterProvidersUsingDynamicParameters(IEnumerable<PackageProvider> providers) {
             var excluded = new HashSet<string, string>();
 
