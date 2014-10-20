@@ -19,6 +19,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Async;
 
     [Cmdlet(VerbsData.Save, Constants.PackageNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517140")]
     public sealed class SavePackage : CmdletWithSearchAndSource {
@@ -118,7 +119,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             // if we have a valid path, make a local copy of the file.
             if (!string.IsNullOrEmpty(savePath)) {
                 if (ShouldProcess(savePath, Constants.SavePackage).Result) {
-                    provider.DownloadPackage(package, SaveFileName(savePath), this);
+                    provider.DownloadPackage(package, SaveFileName(savePath), this).Wait();
+
                     if (File.Exists(savePath)) {
                         package.FullPath = savePath;
                     }
