@@ -15,7 +15,6 @@
 namespace Microsoft.OneGet.Utility.Platform {
     using System;
     using System.Collections;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Diagnostics;
@@ -31,8 +30,8 @@ namespace Microsoft.OneGet.Utility.Platform {
     public class AsyncProcess : IDisposable {
         protected Process _process;
         private ManualResetEvent _stdErrStarted = new ManualResetEvent(false);
-        private BlockingCollection<string> _stdError = new BlockingCollection<string>();
-        private BlockingCollection<string> _stdOut = new BlockingCollection<string>();
+        private Collections.BlockingCollection<string> _stdError = new Collections.BlockingCollection<string>();
+        private Collections.BlockingCollection<string> _stdOut = new Collections.BlockingCollection<string>();
         private ManualResetEvent _stdOutStarted = new ManualResetEvent(false);
 
         protected AsyncProcess(Process process) {
@@ -306,8 +305,8 @@ namespace Microsoft.OneGet.Utility.Platform {
 
         private void ProcessExited(object sender, EventArgs args) {
             WaitForExit();
-            _stdError.CompleteAdding();
-            _stdOut.CompleteAdding();
+            _stdError.Complete();
+            _stdOut.Complete();
             _stdErrStarted.Set();
             _stdOutStarted.Set();
         }

@@ -176,7 +176,7 @@ namespace OneGet.PowerShell.Module.Test {
                         foreach (string maxVersion in _workingMaximumVersions) {
                             i++;
                             Console.WriteLine("{0}: Saving {1} {2}", i, packageName, "");
-                            DynamicPowershellResult result = ps.SavePackage(Name: packageName, Provider: "Nuget", MaximumVersion: maxVersion, minimumversion: minVersion, DestinationPath: testFolder, Force: true, isTesting: true);
+                            DynamicPowershellResult result = ps.SavePackage(Name: packageName, Provider: "Nuget", MaximumVersion: maxVersion, minimumversion: minVersion, DestinationPath: testFolder, source: @"http://nuget.org/api/v2", Force: true, isTesting: true);
                             result.WaitForCompletion();
 
                             foreach (var pkg in result) {
