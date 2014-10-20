@@ -52,8 +52,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
-
-
         protected override IEnumerable<PackageProvider> SelectedProviders {
             get {
                 // filter on provider names  - if they specify a provider name, narrow to only those provider names.
