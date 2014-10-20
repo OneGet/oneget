@@ -34,6 +34,28 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
+        [Parameter(Position = 0, ParameterSetName = Constants.PackageBySearchSet)]
+        public override string[] Name { get; set; }
+
+        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        public override string RequiredVersion { get; set; }
+
+        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        public override string MinimumVersion { get; set; }
+
+        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        public override string MaximumVersion { get; set; }
+
+        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
+        public override string[] Source { get; set; }
+
+        [Alias("Provider")]
+        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
+        public override string[] ProviderName { get; set; }
+
+
+
+
         [Parameter]
         public SwitchParameter IncludeDependencies {get; set;}
 
@@ -45,9 +67,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = Constants.PackageByInputObjectSet)]
         public SoftwareIdentity InputObject {get; set;}
-
-        [Parameter(ValueFromPipelineByPropertyName = true)]
-        public override string[] Source {get; set;}
 
         private string SaveFileName(string packageName) {
             string path = null;
