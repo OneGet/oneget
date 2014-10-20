@@ -1,16 +1,16 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 namespace Microsoft.OneGet.Implementation {
     using System;
@@ -71,26 +71,26 @@ namespace Microsoft.OneGet.Implementation {
 
         // well known, built in provider assemblies.
         private readonly string[] _defaultProviders = {
-            Path.GetFullPath(Assembly.GetExecutingAssembly().Location), // load the providers from this assembly 
+            Path.GetFullPath(Assembly.GetExecutingAssembly().Location), // load the providers from this assembly
             "Microsoft.OneGet.MetaProvider.PowerShell.dll"
         };
 
         private static readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location), // already in autload list
-            "CSharpTest.Net.RpcLibrary", // doesn't have any 
-            "Microsoft.OneGet.Test", // doesn't have any 
-            "Microsoft.OneGet.Utility", // doesn't have any 
-            "Microsoft.OneGet.Utility.PowerShell", // doesn't have any 
-            "Microsoft.PowerShell.OneGet", // doesn't have any 
-            "Microsoft.Web.XmlTransform", // doesn't have any 
-            "NuGet.Core", // doesn't have any 
-            "OneGet.PowerShell.Module.Test", // doesn't have any 
-            "OneGet.ProviderSDK", // doesn't have any 
-            "System.Management.Automation", // doesn't have any 
-            "xunit", // doesn't have any 
-            "xunit.extensions", // doesn't have any 
-            "CustomCodeGenerator", // doesn't have any 
-            "NuGet", // doesn't have any 
+            "CSharpTest.Net.RpcLibrary", // doesn't have any
+            "Microsoft.OneGet.Test", // doesn't have any
+            "Microsoft.OneGet.Utility", // doesn't have any
+            "Microsoft.OneGet.Utility.PowerShell", // doesn't have any
+            "Microsoft.PowerShell.OneGet", // doesn't have any
+            "Microsoft.Web.XmlTransform", // doesn't have any
+            "NuGet.Core", // doesn't have any
+            "OneGet.PowerShell.Module.Test", // doesn't have any
+            "OneGet.ProviderSDK", // doesn't have any
+            "System.Management.Automation", // doesn't have any
+            "xunit", // doesn't have any
+            "xunit.extensions", // doesn't have any
+            "CustomCodeGenerator", // doesn't have any
+            "NuGet", // doesn't have any
         };
 
         private bool IsExcluded(string assemblyPath) {
@@ -442,7 +442,10 @@ namespace Microsoft.OneGet.Implementation {
 
                     Directory.CreateDirectory(path, ds);
                 }
-#endif 
+#endif
+                if( !Directory.Exists(path)) {
+                    Directory.CreateDirectory(path);
+                }
                 return path;
             }
         }
@@ -508,7 +511,7 @@ namespace Microsoft.OneGet.Implementation {
                     location = link.HRef;
                 }
 
-                // what can't find an installationmedia link? 
+                // what can't find an installationmedia link?
                 // todo: what should we say here?
                 if (request.ShouldBootstrapProvider(requestor, pkg[0].Name, pkg[0].Version, providerType, location, destination)) {
                     var newRequest = requestObject.Extend<IRequest>(new {
