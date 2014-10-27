@@ -52,6 +52,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PerformanceTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="NugetProviderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
