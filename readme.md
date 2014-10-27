@@ -2,9 +2,19 @@
 # OneGet
 <hr><hr>
 
-### NOTE: You are looking at the master branch.
+### Get Started!
 
-### It is nearing stable. It should build and run (at least with the NuGet provider)
+Download the latest 'experimental' release [here](http://oneget.org/oneget.zip) -- you can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notified of every new build.
+
+Download the latest 'official' release [here](http://www.microsoft.com/en-us/download/details.aspx?id=44070) -- currently it's in the WMF 5.0 CTP (WMF is where you get PowerShell!). This build does not currently contain the Chocolatey Provider.
+
+* Learn how to [use the powershell cmdlets](https://github.com/OneGet/oneget/wiki/cmdlets) 
+* Read our [General Q and A](https://github.com/OneGet/oneget/wiki/Q-and-A)
+* Learn about the [8 Laws of Software Installation](https://github.com/OneGet/oneget/wiki/8-Laws-of-Software-Installation)
+* See the [documentation](https://github.com/OneGet/oneget/wiki) tab for more info.
+
+OneGet should be shipping inside future versions of PowerShell, and by extension, would ship in future versions of Windows.
+
 
 ## Building the code
 
@@ -52,7 +62,7 @@ There are currently three branches in the git repository:
 
 | Branch | Purpose |
 | ------- | ---------------------------|
-|`master`|  The `master` branch is where the daily builds of OneGet will be made from. At this moment, `master` is empty; I've been making huge sweeping changes since the CTP all over the code base, and it's not stable enough to even build and run quite yet. Before the end of May, this will be build-able and should be the code you're looking for. |
+|`master`|  The `master` branch is where the daily builds of OneGet will be made from.  |
 |`ctp`|  The `ctp` branch is a snapshot of the code that was released as the WMF 5.0 CTP back in April. This branch is frozen and here only for completion sake. No pull requests/patches will be taken for this, as it's a dead end. The new `master` branch is where all the new action is taking place. Fun to read, but a bit hacky in places. |
 |`wip`|  The `wip` branch is where the current **unstable** and **not-likely-working** coding is taking place. This lets you see where I'm at before stuff actually hits the master branch. Fun to read, but really, the wild-west of code branches. |
 
@@ -64,9 +74,9 @@ In the immediate time frame, we won't be taking pull requests to the core itself
 
 There are some exceptions to the where I can take Pull Requests immediately: 
 
-> Pull Requests to the not-in-core Package Providers (Chocolatey, NuGet, etc) are instantly welcome (uh, as soon as the `master` branch opens up--before the end of May)
+> Pull Requests to the not-in-core Package Providers (Chocolatey, NuGet, etc) are instantly welcome 
 
-> Any unit tests, BVT tests or -Edge only features, we can take pull requests for as well (again, just as soon as the `master` branch opens up--before the end of May)
+> Any unit tests, BVT tests or -Edge only features, we can take pull requests for as well
 
 > Docs, Wiki, content, designs, bugs -- everything gleefully accepted :D
   
@@ -77,7 +87,7 @@ I'm eager to work with anyone who wants to help shape the future of Package Mana
 
 ### Weekly Online Meeeting 
 
-We have an online weekly meeting Friday mornings @ 10:00PDT [via Lync](https://join.microsoft.com/meet/garretts/HZ96LF57)* (everyone welcome!)
+We have an online weekly meeting Friday mornings @ 10:00PDT [via Lync](http://oneget.org/weekly/meeting.html)* (everyone welcome!)
 
 You can see archives of the previous meetings available on [YouTube](https://www.youtube.com/playlist?list=PLeKWr5Ekac1SEEvHqIh3g051OyioFwOXN&feature=c4-feed-u)
 
@@ -92,16 +102,6 @@ With OneGet, you can
 * Seamlessly install and uninstall packages from one or more repositories with a single PowerShell command
 
 
-### Get Started!
-
-Download  [here](http://www.microsoft.com/en-us/download/details.aspx?id=44070) -- currently it's in the WMF 5.0 CTP (WMF is where you get PowerShell!)  -- once the source is up, we'll post a build of just the OneGet bits.
-
-* Learn how to [use the powershell cmdlets](https://github.com/OneGet/oneget/wiki/cmdlets) 
-* Read our [General Q and A](https://github.com/OneGet/oneget/wiki/Q-and-A)
-* Learn about the [8 Laws of Software Installation](https://github.com/OneGet/oneget/wiki/8-Laws-of-Software-Installation)
-* See the [documentation](https://github.com/OneGet/oneget/wiki) tab for more info.
-
-OneGet should be shipping inside future versions of PowerShell, and by extension, would ship in future versions of Windows.
 
 We'll also be publishing standalone builds, once the source code is published.
 
