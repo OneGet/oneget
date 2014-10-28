@@ -54,14 +54,14 @@ namespace OneGet.PowerShell.Module.Test {
         };
 
         private readonly string[] _workingNames = {
-            //"BlackBirdPie",
             "AzureContrib",
-            "AWSSDK"
+            "AWSSDK",
         };
 
         private readonly string[] _workingSourceNames = {
             "NUGETTEST101.org",
-            "NUGETTEST202.org"
+            "NUGETTEST202.org",
+            "NUGETTEST303.org"
         };
 
         /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
@@ -136,11 +136,21 @@ namespace OneGet.PowerShell.Module.Test {
                 result3.WaitForCompletion();
                 List<dynamic> x = (from dynamic source in result3 select source.Name).ToList();
                 Assert.True(x.Contains("nugettest3.org"));
-            } finally {
-                DynamicPowershellResult result4 = ps.UnregisterPackageSource(Name: "nugettest.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+
+                DynamicPowershellResult result4 = ps.RegisterPackageSource(Name: "nugettest10.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
                 result4.WaitForCompletion();
-                DynamicPowershellResult result5 = ps.UnregisterPackageSource(Name: "nugettest3.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+                DynamicPowershellResult result5 = ps.SetPackageSource(Name: "nugettest10.org", NewName: "nugettest20.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", NewLocation: "https://www.nuget.org/api/v2/", IsTesting: true);
                 result5.WaitForCompletion();
+                DynamicPowershellResult result6 = ps.GetPackageSource(isTesting: true);
+                result6.WaitForCompletion();
+                List<dynamic> y = (from dynamic source in result6 select source.Name).ToList();
+                Assert.True(y.Contains("nugettest20.org"));
+
+            } finally {
+                DynamicPowershellResult result7 = ps.UnregisterPackageSource(Name: "nugettest.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+                result7.WaitForCompletion();
+                DynamicPowershellResult result8 = ps.UnregisterPackageSource(Name: "nugettest3.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+                result8.WaitForCompletion();
             }
         }
 
@@ -416,7 +426,7 @@ namespace OneGet.PowerShell.Module.Test {
             }
         }
 
-        [Fact(Timeout = 60000, Priority = 21), Trait("Test", "Primary")]
+        [Fact(Timeout = 60000), Trait("Test", "Primary")]
         public void TestFindPackage() {
             dynamic ps = NewPowerShellSession;
 
@@ -425,6 +435,8 @@ namespace OneGet.PowerShell.Module.Test {
             var x = (from dynamic source in result select source.Name).ToList();
             Assert.True(x.Contains("Adept.NuGetRunner"));
         }
+
+        
         [Fact(Timeout = 60000, Priority = 10), Trait("Test", "Primary")]
         public void TestSavePackagePipeName() {
             dynamic ps = NewPowerShellSession;
