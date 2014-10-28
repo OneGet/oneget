@@ -115,7 +115,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         public object GetDynamicParameters() {
             if (DynamicParameterDictionary.IsNullOrEmpty()) {
-                if (IsOverridden(Constants.GenerateDynamicParametersMethod)) {
+                if (IsOverridden(Constants.Methods.GenerateDynamicParametersMethod)) {
                     AsyncRun(GenerateDynamicParameters);
                 }
             }
@@ -173,13 +173,13 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         protected bool Confirm {
             get {
-                return MyInvocation.BoundParameters.ContainsKey(Constants.ConfirmParameter) && (SwitchParameter)MyInvocation.BoundParameters[Constants.ConfirmParameter];
+                return MyInvocation.BoundParameters.ContainsKey(Constants.Parameters.ConfirmParameter) && (SwitchParameter)MyInvocation.BoundParameters[Constants.Parameters.ConfirmParameter];
             }
         }
 
         public bool WhatIf {
             get {
-                return MyInvocation.BoundParameters.ContainsKey(Constants.WhatIfParameter) && (SwitchParameter)MyInvocation.BoundParameters[Constants.WhatIfParameter];
+                return MyInvocation.BoundParameters.ContainsKey(Constants.Parameters.WhatIfParameter) && (SwitchParameter)MyInvocation.BoundParameters[Constants.Parameters.WhatIfParameter];
             }
         }
 
@@ -591,7 +591,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
                 // let's not even bother doing all this if they didn't even
                 // override the method.
-                if (IsOverridden(Constants.BeginProcessingAsyncMethod)) {
+                if (IsOverridden(Constants.Methods.BeginProcessingAsyncMethod)) {
                     // just before we kick stuff off, let's make sure we consume the dynamicaparmeters
                     if (!_consumedDynamicParameters) {
                         ConsumeDynamicParameters();
@@ -615,7 +615,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
                 // let's not even bother doing all this if they didn't even
                 // override the method.
-                if (IsOverridden(Constants.ProcessRecordAsyncMethod)) {
+                if (IsOverridden(Constants.Methods.ProcessRecordAsyncMethod)) {
                     // just before we kick stuff off, let's make sure we consume the dynamicaparmeters
                     if (!_consumedDynamicParameters) {
                         ConsumeDynamicParameters();
@@ -639,7 +639,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 _asyncCmdletState = AsyncCmdletState.EndProcess;
                 // let's not even bother doing all this if they didn't even
                 // override the method.
-                if (IsOverridden(Constants.EndProcessingAsyncMethod)) {
+                if (IsOverridden(Constants.Methods.EndProcessingAsyncMethod)) {
                     // just before we kick stuff off, let's make sure we consume the dynamicaparmeters
                     if (!_consumedDynamicParameters) {
                         ConsumeDynamicParameters();
@@ -668,7 +668,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 Cancel();
                 // let's not even bother doing all this if they didn't even
                 // override the method.
-                if (IsOverridden(Constants.StopProcessingAsyncMethod)) {
+                if (IsOverridden(Constants.Methods.StopProcessingAsyncMethod)) {
                     // just use our async/message pump to handle this activity
                     AsyncRun(StopProcessingAsync);
                 }

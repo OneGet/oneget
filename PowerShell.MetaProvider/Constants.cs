@@ -14,33 +14,7 @@
 
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     internal static class Constants {
-        #region copy constants-implementation
-public const string MSGPrefix = "MSG:";
-        public const string TerminatingError = "MSG:TerminatingError";
-        public const string SourceLocationNotValid = "MSG:SourceLocationNotValid_Location";
-        public const string UriSchemeNotSupported = "MSG:UriSchemeNotSupported_Scheme";
-        public const string UnableToResolveSource = "MSG:UnableToResolveSource_NameOrLocation";
-        public const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
-        public const string DependencyResolutionError = "MSG:UnableToResolveDependency_dependencyPackage";
-        public const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependencyPackage";
-        public const string PackageProviderExists = "MSG:PackageProviderExists";
-        public const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
-
-        public const string IsUpdateParameter = "IsUpdatePackageSource";
-
-        public const string NameParameter = "Name";
-        public const string LocationParameter = "Location";
-
-        #endregion
-
-        internal const string PowershellScriptFunctionFailed = "MSG:PowershellScriptFunctionFailed";
         internal const string ScriptStackTrace = "MSG:ScriptStackTrace";
-
         internal const string ProviderNameUnknown = "(unknown)";
     }
-
-    #region copy errorcategory-implementation
-
-    #endregion
-
 }

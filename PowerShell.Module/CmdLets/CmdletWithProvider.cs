@@ -59,7 +59,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
                     if (IsInvocation) {
                         // and we're in an actual cmdlet invocaton.
-                        QueueHeldMessage(() => Error(Errors.UnknownProviders, ProviderName.JoinWithComma()));
+                        QueueHeldMessage(() => Error(Constants.Errors.UnknownProviders, ProviderName.JoinWithComma()));
                     }
                     // return the empty collection, for all the good it's doing.
                     return providers;
@@ -86,7 +86,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         if (!didUserSpecifyProviders) {
                             if (IsInvocation) {
                                 // user didn't actually specify provider(s), the sources can't be tied to any particular provider
-                                QueueHeldMessage(() => Error(Errors.SourceNotFound, userSpecifiedSources.JoinWithComma()));
+                                QueueHeldMessage(() => Error(Constants.Errors.SourceNotFound, userSpecifiedSources.JoinWithComma()));
                             }
                             // return the empty set.
                             return filteredproviders;
@@ -97,7 +97,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
                         if (IsInvocation) {
                             var providerNames = providers.Select(each => each.Name).JoinWithComma();
-                            QueueHeldMessage(() => Error(Errors.NoMatchForProvidersAndSources, providerNames, userSpecifiedSources.JoinWithComma()));
+                            QueueHeldMessage(() => Error(Constants.Errors.NoMatchForProvidersAndSources, providerNames, userSpecifiedSources.JoinWithComma()));
                         }
 
                         return filteredproviders;
@@ -229,7 +229,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             // these warnings only show for providers that would have otherwise be selected.
             // if not for the missing requrired parameter.
             foreach (var mp in excluded.OrderBy(each => each.Key)) {
-                Verbose(Constants.SkippedProviderMissingRequiredOption, mp.Key, mp.Value);
+                Verbose(Constants.Messages.SkippedProviderMissingRequiredOption, mp.Key, mp.Value);
             }
         }
 

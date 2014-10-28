@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
 
-    [Cmdlet(VerbsLifecycle.Unregister, Constants.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517143")]
+    [Cmdlet(VerbsLifecycle.Unregister, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517143")]
     public sealed class UnregisterPackageSource : CmdletWithSource {
         public UnregisterPackageSource()
             : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
@@ -30,7 +30,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected override IEnumerable<string> ParameterSets {
             get {
-                return new[] {Constants.SourceByInputObjectSet, Constants.SourceBySearchSet};
+                return new[] {Constants.ParameterSets.SourceByInputObjectSet, Constants.ParameterSets.SourceBySearchSet};
             }
         }
 
@@ -65,7 +65,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true,
-                        ParameterSetName = Constants.SourceBySearchSet
+                        ParameterSetName = Constants.ParameterSets.SourceBySearchSet
                     },
                     new AliasAttribute("Provider"),
                     new ValidateSetAttribute(providerNames.ToArray())
@@ -75,7 +75,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true,
-                        ParameterSetName = Constants.SourceBySearchSet
+                        ParameterSetName = Constants.ParameterSets.SourceBySearchSet
                     },
                     new AliasAttribute("Provider")
                 }));
@@ -83,10 +83,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         [Alias("Name")]
-        [Parameter(Position = 0, Mandatory = true, ParameterSetName = Constants.SourceBySearchSet)]
+        [Parameter(Position = 0, Mandatory = true, ParameterSetName = Constants.ParameterSets.SourceBySearchSet)]
         public string Source {get; set;}
 
-        [Parameter(ParameterSetName = Constants.SourceBySearchSet)]
+        [Parameter(ParameterSetName = Constants.ParameterSets.SourceBySearchSet)]
         public string Location {get; set;}
 
         public override IEnumerable<string> Sources {
@@ -110,9 +110,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     var provider = SelectProviders(source.ProviderName).FirstOrDefault();
                     if (provider == null) {
                         if (string.IsNullOrEmpty(source.ProviderName)) {
-                            return Error(Errors.UnableToFindProviderForSource, source.Name);
+                            return Error(Constants.Errors.UnableToFindProviderForSource, source.Name);
                         }
-                        return Error(Errors.UnknownProvider, source.ProviderName);
+                        return Error(Constants.Errors.UnknownProvider, source.ProviderName);
                     }
                     Unregister(source);
                 }
@@ -128,20 +128,20 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             if (prov.Length == 0) {
                 if (ProviderName.IsNullOrEmpty() || string.IsNullOrEmpty(ProviderName[0])) {
-                    return Error(Errors.UnableToFindProviderForSource, Source ?? Location);
+                    return Error(Constants.Errors.UnableToFindProviderForSource, Source ?? Location);
                 }
-                return Error(Errors.UnknownProvider, ProviderName[0]);
+                return Error(Constants.Errors.UnknownProvider, ProviderName[0]);
             }
 
             if (prov.Length > 0) {
                 var sources = prov.SelectMany(each => each.ResolvePackageSources(SuppressErrorsAndWarnings).Where(source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source))).ToArray()).ToArray();
 
                 if (sources.Length == 0) {
-                    return Error(Errors.SourceNotFound, Source);
+                    return Error(Constants.Errors.SourceNotFound, Source);
                 }
 
                 if (sources.Length > 1) {
-                    return Error(Errors.SourceFoundInMultipleProviders, Source, prov.Select(each => each.ProviderName).JoinWithComma());
+                    return Error(Constants.Errors.SourceFoundInMultipleProviders, Source, prov.Select(each => each.ProviderName).JoinWithComma());
                 }
 
                 return Unregister(sources[0]);
@@ -154,7 +154,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             if (source == null) {
                 throw new ArgumentNullException("source");
             }
-            if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource, source.Name, source.Location, source.ProviderName), FormatMessageString(Constants.ActionUnregisterPackageSource)).Result) {
+            if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, source.Name, source.Location, source.ProviderName), FormatMessageString(Constants.Messages.ActionUnregisterPackageSource)).Result) {
                 source.Provider.RemovePackageSource(source.Name, this).Wait();
                 return true;
             }

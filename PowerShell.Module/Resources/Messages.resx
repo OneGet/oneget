@@ -292,4 +292,33 @@
     <value>Unable to find package provider for package source '{0}'.</value>
     <comment>{0} - package source name</comment>
   </data>
+  <data name="DestinationOrLiteralPathRequired" xml:space="preserve">
+    <value>Saving a packge requires either a -DestinationPath or -LiteralPath parameter</value>
+  </data>
+  <data name="MatchesMultipleProviders" xml:space="preserve">
+    <value>Specified ProviderName parameter matches multiple providers: {0}</value>
+    <comment>{0} - comma seperated list of providers matched</comment>
+  </data>
+  <data name="NameOrLocationRequired" xml:space="preserve">
+    <value>Either -Name or -Location must be specified to select a package source.</value>
+  </data>
+  <data name="NoMatchesForWildcard" xml:space="preserve">
+    <value>No package found matching '{0}' .</value>
+    <comment>{0} wildcard match string</comment>
+  </data>
+  <data name="NoMatchForProvidersAndSources" xml:space="preserve">
+    <value>No providers specified ({0}) match sources specified ({1})</value>
+    <comment>0 provider names, 1- source names</comment>
+  </data>
+  <data name="SavePackage" xml:space="preserve">
+    <value>Save Package</value>
+    <comment>action 'save package'</comment>
+  </data>
+  <data name="ShouldContinueWithUntrustedPackageSource" xml:space="preserve">
+    <value>??? not used ???</value>
+  </data>
+  <data name="UnknownProviders" xml:space="preserve">
+    <value>Unable to find package providers ({0}.</value>
+    <comment>provider names</comment>
+  </data>
 </root>

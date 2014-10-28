@@ -24,7 +24,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
 
-    [Cmdlet(VerbsData.Save, Constants.PackageNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517140")]
+    [Cmdlet(VerbsData.Save, Constants.Nouns.PackageNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517140")]
     public sealed class SavePackage : CmdletWithSearchAndSource {
         public SavePackage()
             : base(new[] {
@@ -34,23 +34,23 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected override IEnumerable<string> ParameterSets {
             get {
-                return new[] {Constants.PackageByInputObjectSet, ""};
+                return new[] {Constants.ParameterSets.PackageByInputObjectSet, ""};
             }
         }
 
-        [Parameter(Position = 0, ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(Position = 0, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Name { get; set; }
 
-        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string RequiredVersion { get; set; }
 
-        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string MinimumVersion { get; set; }
 
-        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string MaximumVersion { get; set; }
 
-        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Source { get; set; }
 
         /*
@@ -71,7 +71,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true,
-                        ParameterSetName = Constants.PackageBySearchSet
+                        ParameterSetName = Constants.ParameterSets.PackageBySearchSet
                     },
                     new AliasAttribute("Provider"),
                     new ValidateSetAttribute(providerNames.ToArray())
@@ -81,7 +81,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true,
-                        ParameterSetName = Constants.PackageBySearchSet
+                        ParameterSetName = Constants.ParameterSets.PackageBySearchSet
                     },
                     new AliasAttribute("Provider")
                 }));
@@ -98,7 +98,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter]
         public string LiteralPath {get; set;}
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = Constants.PackageByInputObjectSet)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = Constants.ParameterSets.PackageByInputObjectSet)]
         public SoftwareIdentity InputObject {get; set;}
 
         private string SaveFileName(string packageName) {
@@ -126,13 +126,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             // so I guess we're returning null, because I dunno what
             // to do.
 
-            Warning(Constants.DestinationPathInvalid, DestinationPath, packageName);
+            Warning(Constants.Messages.DestinationPathInvalid, DestinationPath, packageName);
             return null;
         }
 
         public override bool ProcessRecordAsync() {
             if (string.IsNullOrEmpty(DestinationPath) && string.IsNullOrEmpty(LiteralPath)) {
-                Error(Errors.DestinationOrLiteralPathNotSpecified);
+                Error(Constants.Errors.DestinationOrLiteralPathNotSpecified);
                 return false;
             }
 
@@ -150,7 +150,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             // if we have a valid path, make a local copy of the file.
             if (!string.IsNullOrEmpty(savePath)) {
-                if (ShouldProcess(savePath, Constants.SavePackage).Result) {
+                if (ShouldProcess(savePath, Constants.Messages.SavePackage).Result) {
                     provider.DownloadPackage(package, SaveFileName(savePath), this).Wait();
 
                     if (File.Exists(savePath)) {

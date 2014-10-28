@@ -117,16 +117,113 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CreatefolderFailed" xml:space="preserve">
+    <value>Unable to create specified folder '{0}'.</value>
+    <comment>0 - folder location</comment>
+  </data>
+  <data name="DependentPackageFailedInstall_dependency" xml:space="preserve">
+    <value>Dependent Package '{0}' failed to install.</value>
+    <comment>0 - package that failed install.</comment>
+  </data>
+  <data name="DestinationPathNotSet" xml:space="preserve">
+    <value>Destination Path not set.</value>
+  </data>
   <data name="FailedProviderBootstrap" xml:space="preserve">
     <value>Failed to bootstrap provider '{0}'.</value>
     <comment>0 - the provider name</comment>
   </data>
+  <data name="FileFailedVerification" xml:space="preserve">
+    <value>File from '{0}' failed signature validation. </value>
+    <comment>0 href to file location</comment>
+  </data>
+  <data name="InvalidFilename" xml:space="preserve">
+    <value>The filename specified is not valid.</value>
+  </data>
+  <data name="MissingRequiredParameter" xml:space="preserve">
+    <value>The parameter '{0}' is required for this operation</value>
+    <comment>0 parameter name</comment>
+  </data>
+  <data name="PackageSourceExists" xml:space="preserve">
+    <value>The package source '{0}' already exists with that provider.</value>
+    <comment>0 - package source name or location</comment>
+  </data>
+  <data name="ProtocolNotSupported" xml:space="preserve">
+    <value>A protocol handler for scheme '{0}' is not available.</value>
+    <comment>0 protocol scheme</comment>
+  </data>
   <data name="ProviderPluginLoadFailure" xml:space="preserve">
     <value>Provider '{0}' failed to load.</value>
+  </data>
+  <data name="ProviderSwidtagUnavailable" xml:space="preserve">
+    <value>Unable to download the list of available providers.</value>
+  </data>
+  <data name="RemoveEnvironmentVariableRequiresElevation" xml:space="preserve">
+    <value>Removal of the environment variable '{0}' requires elevation</value>
+    <comment>0 - environment variable name</comment>
+  </data>
+  <data name="SchemeNotSupported" xml:space="preserve">
+    <value>A protocol handler for scheme '{0}' is not available.</value>
+    <comment>0 protocol scheme</comment>
   </data>
   <data name="SourceLocationNotValid_Location" xml:space="preserve">
     <value>Source location '{0}' is not valid for this provider.</value>
     <comment>Indicates the user has passed in a location (url, path, etc) that the provider can not resolve.</comment>
+  </data>
+  <data name="UnableToCopyFileTo" xml:space="preserve">
+    <value>Unable to copy file to destination '{0}'.</value>
+    <comment>0 - destination path</comment>
+  </data>
+  <data name="UnableToCreateShortcutTargetDoesNotExist" xml:space="preserve">
+    <value>Unable to create shortcut for file '{0}' that does not exist </value>
+    <comment>0 file that is missing</comment>
+  </data>
+  <data name="UnableToDownload" xml:space="preserve">
+    <value>Unable to download from URI '{0}' to '{1}'.</value>
+    <comment>0 source uri, 1 destination file name</comment>
+  </data>
+  <data name="UnableToInstallPackage_package_reason" xml:space="preserve">
+    <value>The package '{0}' failed to install.</value>
+    <comment>0 package id</comment>
+  </data>
+  <data name="UnableToOverwriteExistingFile" xml:space="preserve">
+    <value>Unable to overwrite existing file '{0}'.</value>
+    <comment>0 filename </comment>
+  </data>
+  <data name="UnableToRemoveFile" xml:space="preserve">
+    <value>Unable to remove existing file '{0}'.</value>
+    <comment>0 filename</comment>
+  </data>
+  <data name="UnableToResolveDependency_dependencyPackage" xml:space="preserve">
+    <value>Unable to resolve package dependency -- package '{0}' not found.</value>
+    <comment>0 - package that can't be resolved.</comment>
+  </data>
+  <data name="UnableToResolvePackage" xml:space="preserve">
+    <value>Unable to resolve package reference '{0}'.</value>
+    <comment>0 encoded package reference.</comment>
+  </data>
+  <data name="UnableToResolveSource_NameOrLocation" xml:space="preserve">
+    <value>Unable to resolve package source '{0}'.</value>
+    <comment>0 package source or location</comment>
+  </data>
+  <data name="UnableToUninstallPackage" xml:space="preserve">
+    <value>Unable to uninstall package.</value>
+  </data>
+  <data name="UnknownFolderId" xml:space="preserve">
+    <value>Unknown Folder Id '{0}'.</value>
+    <comment>0 - folder id</comment>
+  </data>
+  <data name="UnknownProvider" xml:space="preserve">
+    <value>Unable to find package provider '{0}'.</value>
+    <comment>{0} -provider name</comment>
+  </data>
+  <data name="UnsupportedArchive" xml:space="preserve">
+    <value>The archive file type is not supported.</value>
+  </data>
+  <data name="UnsupportedProviderType" xml:space="preserve">
+    <value>The provider type is not supported.</value>
+  </data>
+  <data name="UriSchemeNotSupported_Scheme" xml:space="preserve">
+    <value>??? not used ???</value>
   </data>
   <data name="UserDeclinedUntrustedPackageInstall" xml:space="preserve">
     <value>User declined to install untrusted package '{0}'.</value>

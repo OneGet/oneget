@@ -23,30 +23,30 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
 
-    [Cmdlet(VerbsLifecycle.Uninstall, Constants.PackageNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517142")]
+    [Cmdlet(VerbsLifecycle.Uninstall, Constants.Nouns.PackageNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517142")]
     public sealed class UninstallPackage : GetPackage {
         private Dictionary<string, List<SoftwareIdentity>> _resultsPerName;
 
         protected override IEnumerable<string> ParameterSets {
             get {
-                return new[] {Constants.PackageByInputObjectSet, Constants.PackageBySearchSet};
+                return new[] {Constants.ParameterSets.PackageByInputObjectSet, Constants.ParameterSets.PackageBySearchSet};
             }
         }
 
-        [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.PackageByInputObjectSet)]
+        [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.ParameterSets.PackageByInputObjectSet)]
         public SoftwareIdentity[] InputObject {get; set;}
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Name {get; set;}
 
-        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string RequiredVersion {get; set;}
 
         [Alias("Version")]
-        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string MinimumVersion {get; set;}
 
-        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string MaximumVersion {get; set;}
 
         /*
@@ -66,7 +66,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true,
-                        ParameterSetName = Constants.PackageBySearchSet
+                        ParameterSetName = Constants.ParameterSets.PackageBySearchSet
                     },
                     new AliasAttribute("Provider"),
                     new ValidateSetAttribute(providerNames.ToArray())
@@ -76,7 +76,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true,
-                        ParameterSetName = Constants.PackageBySearchSet
+                        ParameterSetName = Constants.ParameterSets.PackageBySearchSet
                     },
                     new AliasAttribute("Provider")
                 }));
@@ -112,7 +112,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
             // Show errors before?
             foreach (var name in UnprocessedNames) {
-                Error(Errors.NoMatchFound, name);
+                Error(Constants.Errors.NoMatchFound, name);
             }
 
             if (Stopping) {
@@ -122,7 +122,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             foreach (var n in _resultsPerName.Keys) {
                 // check if we have a 1 package per name 
                 if (_resultsPerName[n].Count > 1) {
-                    Error(Errors.DisambiguateForUninstall, n, _resultsPerName[n]);
+                    Error(Constants.Errors.DisambiguateForUninstall, n, _resultsPerName[n]);
                     return false;
                 }
 
@@ -142,7 +142,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
 
                 if (provider == null) {
-                    Error(Errors.UnknownProvider, pkg.ProviderName);
+                    Error(Constants.Errors.UnknownProvider, pkg.ProviderName);
                     return false;
                 }
 
@@ -155,7 +155,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     }
                 } catch (Exception e) {
                     e.Dump();
-                    Error(Errors.UninstallationFailure, pkg.Name);
+                    Error(Constants.Errors.UninstallationFailure, pkg.Name);
                     return false;
                 }
             }
@@ -163,7 +163,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public bool ShouldProcessPackageUninstall(string packageName, string version) {
-            return Force || ShouldProcess(FormatMessageString(Constants.TargetPackage, packageName), FormatMessageString(Constants.ActionUninstallPackage)).Result;
+            return Force || ShouldProcess(FormatMessageString(Constants.Messages.TargetPackage, packageName), FormatMessageString(Constants.Messages.ActionUninstallPackage)).Result;
         }
     }
 }

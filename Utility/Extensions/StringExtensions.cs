@@ -64,7 +64,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 }));
 
                 // if it looks like it doesn't take parameters, (and yet we have args!)
-                // let's return a fixmeformat string.
+                // let's return a fix-me-format string.
                 if (!replacedByName && formatString.IndexOf('{') < 0) {
                     return FixMeFormat(formatString, args);
                 }

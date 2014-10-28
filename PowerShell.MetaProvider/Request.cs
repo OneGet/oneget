@@ -21,16 +21,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
-    using System.Threading;
     using Implementation;
     using Resources;
     using Utility.Async;
-    using Utility.Collections;
-    using Utility.Extensions;
     using IRequestObject = System.MarshalByRefObject;
 
     public abstract class Request : IDisposable {
-
         internal CommandInfo CommandInfo;
         private PowerShellProviderBase _provider;
 
@@ -55,9 +51,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         /* Synced/Generated code =================================================== */
 
-
-        public abstract bool IsCanceled { get; }
-
+        public abstract bool IsCanceled {get;}
 
         /// <summary>
         ///     Returns the interface type for a Request that the OneGet Core is expecting
@@ -69,10 +63,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract Type GetIRequestInterface();
 
         /// <summary>
-        /// Returns the internal version of the OneGet core.
-        /// 
-        /// This will usually only be updated if there is a breaking API or Interface change that might 
-        /// require other code to know which version is running.
+        ///     Returns the internal version of the OneGet core.
+        ///     This will usually only be updated if there is a breaking API or Interface change that might
+        ///     require other code to know which version is running.
         /// </summary>
         /// <returns>Internal Version of OneGet</returns>
         public abstract int CoreVersion();
@@ -85,9 +78,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
 
-        public abstract IEnumerable<string> ProviderNames { get; }
+        public abstract IEnumerable<string> ProviderNames {get;}
 
-        public abstract IEnumerable<PackageProvider> PackageProviders { get; }
+        public abstract IEnumerable<PackageProvider> PackageProviders {get;}
 
         public abstract IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName);
 
@@ -104,6 +97,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract string ParsePackageName(string canonicalPackageId);
 
         public abstract string ParsePackageVersion(string canonicalPackageId);
+
         #endregion
 
         #region copy host-apis
@@ -134,7 +128,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract IEnumerable<string> GetOptionKeys();
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -155,6 +148,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract bool IsInteractive();
 
         public abstract int CallCount();
+
         #endregion
 
         #region copy response-apis
@@ -182,12 +176,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public abstract bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
 
-        #if M2
+#if M2
         public abstract bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
 
         public abstract bool YieldMetadata(string fieldId, string @namespace, string name, string value);
 
-        #endif 
+        #endif
 
         /// <summary>
         ///     Used by a provider to return fields for a package source (repository)
@@ -198,7 +192,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// <param name="isRegistered"></param>
         /// <param name="isValidated"></param>
         /// <returns></returns>
-        public abstract bool YieldPackageSource(string name, string location, bool isTrusted,bool isRegistered, bool isValidated);
+        public abstract bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
 
         /// <summary>
         ///     Used by a provider to return the fields for a Metadata Definition
@@ -213,10 +207,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract bool YieldKeyValuePair(string key, string value);
 
         public abstract bool YieldValue(string value);
+
         #endregion
 
         #region copy Request-implementation
-         public void Dispose() {
+
+        public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -267,9 +263,18 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         private static string FixMeFormat(string formatString, object[] args) {
             if (args == null || args.Length == 0) {
                 // not really any args, and not really expectng any
-                return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
+                if (formatString.IndexOf("{") > -1 || formatString.IndexOf("}") > -1) {
+                    return string.Format("/* BRACES PRESENT -- NO FORMAT ARGS */ {0}", formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'));
+                }
+                // no args, none expected, return the string unmodified.
+                return formatString;
             }
-            return args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
+
+            if (formatString.IndexOf("{") > -1 || formatString.IndexOf("}") > -1) {
+                return string.Format("/* BRACES PRESENT -- ARGUMENT COUNT MISMATCH */ {0}", args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg)));
+            }
+
+            return string.Format("/* BRACES NOT PRESENT -- ARGUMENT COUNT MISMATCH */ {0}", args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg)));
         }
 
         public SecureString Password {
@@ -311,14 +316,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 return string.Empty;
             }
 
-            if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
+            if (messageText.StartsWith(OneGet.Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
                 // check with the caller first, then with the local resources, and fallback to using the messageText itself.
-                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length), GetMessageStringInternal(messageText) ?? messageText ) ?? GetMessageStringInternal(messageText) ?? messageText;    
+                messageText = GetMessageString(messageText.Substring(OneGet.Constants.MSGPrefix.Length), GetMessageStringInternal(messageText) ?? messageText) ?? GetMessageStringInternal(messageText) ?? messageText;
             }
 
             // if it doesn't look like we have the correct number of parameters
-            // let's return a fixmeformat string.
-            var c = System.Linq.Enumerable.Count( System.Linq.Enumerable.Where(messageText.ToCharArray(), each => each == '{'));
+            // let's return a fix-me-format string.
+            var c = Enumerable.Count(Enumerable.Where(messageText.ToCharArray(), each => each == '{'));
             if (c < args.Length) {
                 return FixMeFormat(messageText, args);
             }
@@ -329,7 +334,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             get {
                 var u = GetCredentialUsername();
                 var p = GetCredentialPassword();
-                if( string.IsNullOrEmpty(u) && string.IsNullOrEmpty(p) ) {
+                if (string.IsNullOrEmpty(u) && string.IsNullOrEmpty(p)) {
                     return null;
                 }
                 return new PSCredential(u, p.FromProtectedString("salt"));
@@ -337,6 +342,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         private Hashtable _options;
+
         public Hashtable Options {
             get {
                 if (_options == null) {
@@ -392,31 +398,22 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                         }
                     }
 
-                    lst.Add(k.ToString(),val );    
+                    lst.Add(k.ToString(), val);
                 }
             }
 
             return Extend(new {
-                GetOptionKeys = new Func< IEnumerable<string>>(() => {
-                    return lst.Keys.ToArray();
-                }),
-
-                GetOptionValues = new Func< string, IEnumerable<string>>((key) => {
+                GetOptionKeys = new Func<IEnumerable<string>>(() => {return lst.Keys.ToArray();}),
+                GetOptionValues = new Func<string, IEnumerable<string>>((key) => {
                     if (lst.ContainsKey(key)) {
-                        return lst[key];    
+                        return lst[key];
                     }
                     return new string[0];
                 }),
-
-                GetSources = new Func<IEnumerable<string>>(() => {
-                    return srcs;
-                }),
-
+                GetSources = new Func<IEnumerable<string>>(() => {return srcs;}),
                 GetCredentialUsername = new Func<string>(() => {return name;}),
-
                 GetCredentialPassword = new Func<string>(() => {return pass;}),
-
-                ShouldContinueWithUntrustedPackageSource = new Func<string,string,bool>((pkgName, pkgSource) => {
+                ShouldContinueWithUntrustedPackageSource = new Func<string, string, bool>((pkgName, pkgSource) => {
                     // chained providers provide locations, and don't rely on 'trusted' flags from the upstream provider.
                     return true;
                 })
@@ -434,7 +431,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             if (requestObject is IAsyncAction) {
                 ((IAsyncAction)(requestObject)).OnCancel += provider.CancelRequest;
             }
-            var req =requestObject.As<Request>();
+            var req = requestObject.As<Request>();
 
             req.CommandInfo = provider.GetMethod(methodName);
             if (req.CommandInfo == null) {
@@ -445,7 +442,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         public object SelectProvider(string providerName) {
-            return SelectProviders(providerName,Extend()).FirstOrDefault(each => each.Name.EqualsIgnoreCase(providerName));
+            return SelectProviders(providerName, Extend()).FirstOrDefault(each => each.Name.EqualsIgnoreCase(providerName));
         }
 
         public IEnumerable<object> SelectProviders(string providerName) {
@@ -454,8 +451,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public bool RequirePackageProvider(string packageProviderName, string minimumVersion) {
             var pp = (_provider as PowerShellPackageProvider);
-            return RequirePackageProvider(  pp == null ? Constants.ProviderNameUnknown : pp.GetPackageProviderName() ,packageProviderName, minimumVersion, Extend());
+            return RequirePackageProvider(pp == null ? Constants.ProviderNameUnknown : pp.GetPackageProviderName(), packageProviderName, minimumVersion, Extend());
         }
-
     }
 }

@@ -338,13 +338,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     if (name == string.Empty) {
                         // no name 
                         result = false;
-                        Error(Errors.NoPackagesFoundForProvider, _providersNotFindingAnything.Select(each => each.ProviderName).JoinWithComma());
+                        Error(Constants.Errors.NoPackagesFoundForProvider, _providersNotFindingAnything.Select(each => each.ProviderName).JoinWithComma());
                     } else {
                         if (WildcardPattern.ContainsWildcardCharacters(name)) {
-                            Verbose(Constants.NoMatchesForWildcard, name);
+                            Verbose(Constants.Messages.NoMatchesForWildcard, name);
                         } else {
                             result = false;
-                            Error(Errors.NoMatchFound, name);
+                            Error(Constants.Errors.NoMatchFound, name);
                         }
                     }
                 }
@@ -365,10 +365,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     string searchKey = null;
 
                     foreach (var pkg in set) {
-                        Warning(Constants.MatchesMultiplePackages, pkg.SearchKey, pkg.Name, pkg.Version, pkg.ProviderName);
+                        Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, pkg.Name, pkg.Version, pkg.ProviderName);
                         searchKey = pkg.SearchKey;
                     }
-                    Error(Errors.DisambiguateForInstall, searchKey);
+                    Error(Constants.Errors.DisambiguateForInstall, searchKey);
                 }
                 return false;
             }

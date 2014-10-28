@@ -55,19 +55,19 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected bool IsPackageBySearch {
             get {
-                return ParameterSetName == Constants.PackageBySearchSet;
+                return ParameterSetName == Constants.ParameterSets.PackageBySearchSet;
             }
         }
 
         protected bool IsPackageByObject {
             get {
-                return ParameterSetName == Constants.PackageByInputObjectSet;
+                return ParameterSetName == Constants.ParameterSets.PackageByInputObjectSet;
             }
         }
 
         protected bool IsSourceByObject {
             get {
-                return ParameterSetName == Constants.SourceByInputObjectSet;
+                return ParameterSetName == Constants.ParameterSets.SourceByInputObjectSet;
             }
         }
 
@@ -210,7 +210,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public virtual bool AskPermission(string permission) {
 #if DEBUG
-            Message(Constants.NotImplemented, permission);
+            Message(Constants.Messages.NotImplemented, permission);
 #endif
             return true;
         }
@@ -248,7 +248,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
 #if DEBUG
-            Message(Constants.NotImplemented, packageSource);
+            Message(Constants.Messages.NotImplemented, packageSource);
 #endif
             return true;
         }
@@ -259,14 +259,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     return true;
                 }
 
-                return ShouldContinue(FormatMessageString(Constants.QueryBootstrap, providerName),
-                    FormatMessageString(Constants.BootstrapProvider,
+                return ShouldContinue(FormatMessageString(Constants.Messages.QueryBootstrap, providerName),
+                    FormatMessageString(Constants.Messages.BootstrapProvider,
                         requestor.Is() ?
-                            FormatMessageString(Constants.BootstrapProviderProviderRequested, requestor, providerName, providerVersion) :
-                            FormatMessageString(Constants.BootstrapProviderUserRequested, providerName, providerVersion),
+                            FormatMessageString(Constants.Messages.BootstrapProviderProviderRequested, requestor, providerName, providerVersion) :
+                            FormatMessageString(Constants.Messages.BootstrapProviderUserRequested, providerName, providerVersion),
                         providerType.Is() && providerType.Equals(Constants.AssemblyProviderType) ?
-                            FormatMessageString(Constants.BootstrapManualAssembly, providerName, location, destination) :
-                            FormatMessageString(Constants.BootstrapManualInstall, providerName, location))).Result;
+                            FormatMessageString(Constants.Messages.BootstrapManualAssembly, providerName, location, destination) :
+                            FormatMessageString(Constants.Messages.BootstrapManualInstall, providerName, location))).Result;
             } catch (Exception e) {
                 e.Dump();
             }
@@ -292,7 +292,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
             if (names.IsNullOrEmpty()) {
-                return PackageManagementService.SelectProviders(null, SuppressErrorsAndWarnings).Where(each => !each.Features.ContainsKey(Constants.Features.AutomationOnly));
+                return PackageManagementService.SelectProviders(null, SuppressErrorsAndWarnings).Where(each => !each.Features.ContainsKey(Microsoft.OneGet.Constants.Features.AutomationOnly ));
             }
             // you can manually ask for any provider by name, if it is for automation only.
             return names.SelectMany(each => PackageManagementService.SelectProviders(each, SuppressErrorsAndWarnings));
@@ -302,7 +302,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             // you can manually ask for any provider by name, if it is for automation only.
             var result = PackageManagementService.SelectProviders(name, SuppressErrorsAndWarnings).ToArray();
             if (result.Length == 0) {
-                Warning(Errors.UnknownProvider, name);
+                Warning(Constants.Errors.UnknownProvider, name);
             }
             return result;
         }
