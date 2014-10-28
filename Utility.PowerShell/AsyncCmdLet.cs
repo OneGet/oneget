@@ -14,6 +14,7 @@
 
 namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
@@ -21,6 +22,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
+    using System.Reflection;
+    using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
     using Collections;
@@ -28,42 +31,159 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
     public delegate bool OnMainThread(Func<bool> onMainThreadDelegate);
 
+    internal enum AsyncCmdletState {
+        Unknown,
+        GenerateParameters,
+        BeginProcess,
+        BeginProcessCompleted,
+        ProcessRecord,
+        ProcessRecordCompleted,
+        EndProcess,
+        EndProcessCompleted,
+        StopProcess,
+        StopProcessCompleted
+    }
+
+    
+
     public abstract class AsyncCmdlet : PSCmdlet, IDynamicParameters, IDisposable {
-        private readonly HashSet<string> _errors = new HashSet<string>();
-        private readonly HashSet<string> _warnings = new HashSet<string>();
-        // private List<ICancellable> _cancelWhenStopped = new List<ICancellable>();
-        private bool _consumed;
+        private const BindingFlags BindingFlags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public;
+        private readonly List<ProgressTracker> _progressTrackers = new List<ProgressTracker>();
+
+        private ProgressTracker _activeProgressId;
+        private int _nextProgressId = 1;
+
+        private readonly SortedSet<string> _errors = new SortedSet<string>();
+        private readonly SortedSet<string> _warnings = new SortedSet<string>();
+
+        private bool _consumedDynamicParameters;
         private RuntimeDefinedParameterDictionary _dynamicParameters;
-        // private ManualResetEvent _cancellationEvent = new ManualResetEvent(false);
+
         protected CancellationTokenSource _cancellationEvent = new CancellationTokenSource();
         private BlockingCollection<TaskCompletionSource<bool>> _messages;
+        private List<TaskCompletionSource<bool>> _heldMessages;
 
         private Stopwatch _stopwatch;
+        protected bool _errorState;
+
+        private AsyncCmdletState _asyncCmdletState = AsyncCmdletState.Unknown;
 
 #if DEBUG
         [Parameter()]
         public SwitchParameter IsTesting;
 #endif
 
-        protected bool Confirm {
+        private ManualResetEvent ReentrantLock {
             get {
-                return MyInvocation.BoundParameters.ContainsKey(Constants.ConfirmParameter) && (SwitchParameter)MyInvocation.BoundParameters[Constants.ConfirmParameter];
+                //     ...
+                //     In the future, I suspect that 
+                //     we need to make this 'RunSpace-static' (or 'host-static'?) too
+                //     if the same set of cmdlets ends up loaded in another
+                //     runspace, and we don't want a lock in one to affect
+                //     another.
+
+                return GetType().GetOrAdd(() => new ManualResetEvent(false),"ReentrancyLock");
             }
         }
 
-        public bool WhatIf {
+        /// <summary>
+        ///     Manages the re-entrancy lock for cmdlets
+        ///     This is abstracted here because (at this point)
+        ///     we need this to be static, but per-cmdlet class.
+        /// </summary>
+        protected bool IsReentrantLocked {
             get {
-                return MyInvocation.BoundParameters.ContainsKey(Constants.WhatIfParameter) && (SwitchParameter)MyInvocation.BoundParameters[Constants.WhatIfParameter];
+                return ReentrantLock.WaitOne(0);
+            }
+            set {
+                if (value) {
+                    ReentrantLock.Set();
+                }
+                else {
+                    ReentrantLock.Reset();
+                }
             }
         }
 
-        protected static bool IsInitialized {get; set;}
+        #region Dynamic Paramters
 
         public virtual RuntimeDefinedParameterDictionary DynamicParameterDictionary {
             get {
                 return _dynamicParameters ?? (_dynamicParameters = new RuntimeDefinedParameterDictionary());
             }
         }
+
+        public object GetDynamicParameters() {
+            if (DynamicParameterDictionary.IsNullOrEmpty()) {
+                if (IsOverridden(Constants.Methods.GenerateDynamicParametersMethod)) {
+                    AsyncRun(GenerateDynamicParameters);
+                }
+            }
+
+            return DynamicParameterDictionary;
+        }
+
+        protected T GetDynamicParameterValue<T>(string parameterName) {
+            if (DynamicParameterDictionary.ContainsKey(parameterName)) {
+                var p = DynamicParameterDictionary[parameterName];
+                if (p.IsSet) {
+                    if (typeof (T) == typeof (string[])) {
+                        if (p.Value == null) {
+                            return default(T);
+                        }
+
+                        if (p.Value is string[]) {
+                            return (T)p.Value;
+                        }
+
+                        if (p.Value is string) {
+                            return (T)(object)new string[1] {p.Value.ToString()};
+                        }
+
+                        if (p.Value is IEnumerable) {
+                            return (T)(object)((IEnumerable)p.Value).Cast<object>().Select(each => each.ToString()).ToArray();
+                        }
+
+                        // weird, can't get a collection from whatever is here.
+                        return (T)(object)new string[1] {p.Value.ToString()};
+                    }
+
+                    if (typeof (T) == typeof (string)) {
+                        if (p.Value == null) {
+                            return default(T);
+                        }
+                        return (T)(object)p.Value.ToString();
+                    }
+
+                    return (T)p.Value;
+                }
+            }
+            return default(T);
+        }
+
+        public virtual bool GenerateDynamicParameters() {
+            return true;
+        }
+
+        public virtual bool ConsumeDynamicParameters() {
+            return true;
+        }
+
+        #endregion
+
+        protected bool Confirm {
+            get {
+                return MyInvocation.BoundParameters.ContainsKey(Constants.Parameters.ConfirmParameter) && (SwitchParameter)MyInvocation.BoundParameters[Constants.Parameters.ConfirmParameter];
+            }
+        }
+
+        public bool WhatIf {
+            get {
+                return MyInvocation.BoundParameters.ContainsKey(Constants.Parameters.WhatIfParameter) && (SwitchParameter)MyInvocation.BoundParameters[Constants.Parameters.WhatIfParameter];
+            }
+        }
+
+        protected static bool IsInitialized {get; set;}
 
         protected bool IsInvocation {
             get {
@@ -72,25 +192,14 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     return true;
                 }
 #endif
-                return MyInvocation.Line.Is();
+
+                return MyInvocation != null && MyInvocation.Line.Is();
             }
         }
 
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        public object GetDynamicParameters() {
-            // CompletionCompleters.
-            // CommandCompletion.
-            if (DynamicParameterDictionary.IsNullOrEmpty()) {
-                if (IsOverridden(Constants.GenerateDynamicParametersMethod)) {
-                    AsyncRun(GenerateDynamicParameters);
-                }
-            }
-
-            return DynamicParameterDictionary;
         }
 
         public virtual bool BeginProcessingAsync() {
@@ -159,42 +268,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             return GetUnresolvedProviderPathFromPSPath(path);
         }
 
-        private void InvokeMessage(TaskCompletionSource<bool> message) {
-            var func = message.Task.AsyncState as Func<bool>;
-            if (func != null) {
-                try {
-                    message.SetResult(func());
-                } catch (Exception e) {
-                    message.SetException(e);
-                }
-            } else {
-                // this should have been a Func<bool>.
-                // cancel it.
-                message.SetCanceled();
+        public string DropMsgPrefix(string messageText) {
+            if (string.IsNullOrEmpty(messageText)) {
+                return messageText;
             }
-        }
-
-        private Task<bool> QueueMessage(TaskCompletionSource<bool> message) {
-            if (_messages == null || _messages.IsCompleted) {
-                // message queue isn't active. Just run the message now.
-                InvokeMessage(message);
-            } else {
-                if (!_messages.IsCompleted) {
-                    _messages.Add(message);
-                }
-            }
-            return message.Task;
-        }
-
-        private Task<bool> QueueMessage(Func<bool> action) {
-            return QueueMessage(new TaskCompletionSource<bool>(action));
-        }
-
-        private Task<bool> QueueMessage(Action action) {
-            return QueueMessage(() => {
-                action();
-                return true;
-            });
+            return messageText.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase) ? messageText.Substring(4) : messageText;
         }
 
         public bool Warning(string messageText) {
@@ -237,19 +315,15 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             return Error(id, category, targetObjectValue, messageText, Constants.NoParameters);
         }
 
-        public string DropMsgPrefix(string messageText) {
-            if (string.IsNullOrEmpty(messageText)) {
-                return messageText;
-            }
-            return messageText.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase) ? messageText.Substring(4) : messageText;
-        }
-
         public bool Error(string id, string category, string targetObjectValue, string messageText, params object[] args) {
             if (IsInvocation) {
                 var errorMessage = FormatMessageString(messageText, args);
 
                 if (!_errors.Contains(errorMessage)) {
-                    if (!_errors.Any()) {
+                    if (!HasErrors) {
+                        // we only *show* the very first error we get.
+                        // any more, we just toss them in the collection and 
+                        // maybe we'll worry about them later.
                         ErrorCategory errorCategory;
                         if (!Enum.TryParse(category, true, out errorCategory)) {
                             errorCategory = ErrorCategory.NotSpecified;
@@ -323,11 +397,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         public int StartProgress(int parentActivityId, string message) {
             return StartProgress(parentActivityId, message, Constants.NoParameters);
         }
-
-        private List<ProgressTracker> _progressTrackers = new List<ProgressTracker>();
-
-        private ProgressTracker _activeProgressId;
-        private int _nextProgressId = 1;
 
         public int StartProgress(int parentActivityId, string message, params object[] args) {
             if (IsInvocation) {
@@ -440,7 +509,13 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
         }
 
-        public virtual string GetMessageString(string messageText) {
+        protected bool HasErrors {
+            get {
+                return _errors.Any();
+            }
+        }
+
+        public virtual string GetMessageString(string messageText, string defaultText) {
             return null;
         }
 
@@ -450,40 +525,54 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
 
             if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
-                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ?? messageText;
+                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length), messageText) ?? messageText;
             }
 
             return args == null || args.Length == 0 ? messageText : messageText.format(args);
         }
 
-        private void AsyncRun(Func<bool> asyncAction) {
-            using (_messages = new BlockingCollection<TaskCompletionSource<bool>>()) {
-                // spawn the activity off in another thread.
-                var task = IsInitialized ?
-                    Task.Factory.StartNew(asyncAction, TaskCreationOptions.LongRunning) :
-                    Task.Factory.StartNew(Init, TaskCreationOptions.LongRunning).ContinueWith(antecedent => {
-                        try {
-                            asyncAction();
-                        } catch (Exception e) {
-                            e.Dump();
-                        }
-                    })
-                    ;
+        #region cmdlet processing 
 
-                // when the task is done, mark the msg queue as complete
-                task.ContinueWith(antecedent => {
-                    if (_messages != null) {
-                        _messages.Complete();
-                    }
-                });
-
-                // process the queue of messages back in the main thread so that they
-                // can properly access the non-thread-safe-things in cmdlet
-                foreach (var message in _messages) {
-                    InvokeMessage(message);
+        private void ProcessHeldMessages() {
+            if (_heldMessages != null && _heldMessages.Any()) {
+                foreach (var msg in _heldMessages) {
+                    InvokeMessage(msg);
                 }
             }
-            _messages = null;
+            _heldMessages = null;
+        }
+
+        private void AsyncRun(Func<bool> asyncAction) {
+            try {
+                using (_messages = new BlockingCollection<TaskCompletionSource<bool>>()) {
+                    // spawn the activity off in another thread.
+                    var task = IsInitialized ?
+                        Task.Factory.StartNew(asyncAction, TaskCreationOptions.LongRunning) :
+                        Task.Factory.StartNew(Init, TaskCreationOptions.LongRunning).ContinueWith(antecedent => {
+                            try {
+                                asyncAction();
+                            } catch (Exception e) {
+                                e.Dump();
+                            }
+                        })
+                        ;
+
+                    // when the task is done, mark the msg queue as complete
+                    task.ContinueWith(antecedent => {
+                        if (_messages != null) {
+                            _messages.Complete();
+                        }
+                    });
+
+                    // process the queue of messages back in the main thread so that they
+                    // can properly access the non-thread-safe-things in cmdlet
+                    foreach (var message in _messages) {
+                        InvokeMessage(message);
+                    }
+                }
+            } finally {
+                _messages = null;
+            }
         }
 
         private bool IsOverridden(string functionName) {
@@ -491,116 +580,115 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         protected override sealed void BeginProcessing() {
-            // let's not even bother doing all this if they didn't even
-            // override the method.
-            if (IsOverridden(Constants.BeginProcessingAsyncMethod)) {
-                // just before we kick stuff off, let's make sure we consume the dynamicaparmeters
-                if (!_consumed) {
-                    ConsumeDynamicParameters();
-                    _consumed = true;
+            try {
+                _asyncCmdletState = AsyncCmdletState.BeginProcess;
+
+                ProcessHeldMessages();
+
+                if (IsCanceled) {
+                    return;
                 }
-                // just use our async/message pump to handle this activity
-                AsyncRun(BeginProcessingAsync);
+
+                // let's not even bother doing all this if they didn't even
+                // override the method.
+                if (IsOverridden(Constants.Methods.BeginProcessingAsyncMethod)) {
+                    // just before we kick stuff off, let's make sure we consume the dynamicaparmeters
+                    if (!_consumedDynamicParameters) {
+                        ConsumeDynamicParameters();
+                        _consumedDynamicParameters = true;
+                    }
+                    // just use our async/message pump to handle this activity
+                    AsyncRun(BeginProcessingAsync);
+                }
+            } finally {
+                if (_asyncCmdletState == AsyncCmdletState.BeginProcess) {
+                    // If the state was changed elsewhere, don't assume that we're in the next state
+                    _asyncCmdletState = AsyncCmdletState.BeginProcessCompleted;
+                }
             }
         }
+
+
+        protected override sealed void ProcessRecord() {
+            try {
+                _asyncCmdletState = AsyncCmdletState.ProcessRecord;
+
+                // let's not even bother doing all this if they didn't even
+                // override the method.
+                if (IsOverridden(Constants.Methods.ProcessRecordAsyncMethod)) {
+                    // just before we kick stuff off, let's make sure we consume the dynamicaparmeters
+                    if (!_consumedDynamicParameters) {
+                        ConsumeDynamicParameters();
+                        _consumedDynamicParameters = true;
+                    }
+
+                    // just use our async/message pump to handle this activity
+                    AsyncRun(ProcessRecordAsync);
+                }
+            } finally {
+                if (_asyncCmdletState == AsyncCmdletState.ProcessRecord) {
+                    // If the state was changed elsewhere, don't assume that we're in the next state
+                    _asyncCmdletState = AsyncCmdletState.ProcessRecordCompleted;
+                }
+            }
+        }
+
 
         protected override sealed void EndProcessing() {
-            // let's not even bother doing all this if they didn't even
-            // override the method.
-            if (IsOverridden(Constants.EndProcessingAsyncMethod)) {
-                // just before we kick stuff off, let's make sure we consume the dynamicaparmeters
-                if (!_consumed) {
-                    ConsumeDynamicParameters();
-                    _consumed = true;
+            try {
+                _asyncCmdletState = AsyncCmdletState.EndProcess;
+                // let's not even bother doing all this if they didn't even
+                // override the method.
+                if (IsOverridden(Constants.Methods.EndProcessingAsyncMethod)) {
+                    // just before we kick stuff off, let's make sure we consume the dynamicaparmeters
+                    if (!_consumedDynamicParameters) {
+                        ConsumeDynamicParameters();
+                        _consumedDynamicParameters = true;
+                    }
+
+                    // just use our async/message pump to handle this activity
+                    AsyncRun(EndProcessingAsync);
                 }
 
-                // just use our async/message pump to handle this activity
-                AsyncRun(EndProcessingAsync);
-            }
-
-            // make sure that we mark progress complete.
-            if (_progressTrackers.Any()) {
-                AllProgressComplete();
+                // make sure that we mark progress complete.
+                if (_progressTrackers.Any()) {
+                    AllProgressComplete();
+                }
+            } finally {
+                if (_asyncCmdletState == AsyncCmdletState.EndProcess) {
+                    // If the state was changed elsewhere, don't assume that we're in the next state
+                    _asyncCmdletState = AsyncCmdletState.EndProcessCompleted;
+                }
             }
         }
 
-        /*
-        protected T CancelWhenStopped<T>(T cancellable) where T : ICancellable {
-            if (IsCanceled) {
-                cancellable.Cancel();
-                return cancellable;
+        protected override sealed void StopProcessing() {
+            try {
+                _asyncCmdletState = AsyncCmdletState.StopProcess;
+                Cancel();
+                // let's not even bother doing all this if they didn't even
+                // override the method.
+                if (IsOverridden(Constants.Methods.StopProcessingAsyncMethod)) {
+                    // just use our async/message pump to handle this activity
+                    AsyncRun(StopProcessingAsync);
+                }
+                if (_progressTrackers.Any()) {
+                    AllProgressComplete();
+                }
+            } finally {
+                if (_asyncCmdletState == AsyncCmdletState.StopProcess) {
+                    _asyncCmdletState = AsyncCmdletState.StopProcessCompleted;
+                }
             }
-
-            lock (_cancelWhenStopped) {
-                _cancelWhenStopped.Add(cancellable);
-            }
-
-            return cancellable;
         }
-        */
 
         public void Cancel() {
             // notify anyone listening that we're stopping this call.
             _cancellationEvent.Cancel();
-
-            /*
-            // actively cancel any calls in progress
-            foreach (var i in _cancelWhenStopped.Where(i => i != null)) {
-                i.Cancel();
-            }
-            _cancelWhenStopped.Clear();
-            _cancelWhenStopped = null;
-             * */
         }
+        #endregion
 
-        protected override sealed void StopProcessing() {
-            // Console.WriteLine("===============================================================CTRL-C PRESSED");
-            Cancel();
-            // let's not even bother doing all this if they didn't even
-            // override the method.
-            if (IsOverridden(Constants.StopProcessingAsyncMethod)) {
-                // just use our async/message pump to handle this activity
-                AsyncRun(StopProcessingAsync);
-            }
-            if (_progressTrackers.Any()) {
-                AllProgressComplete();
-            }
-        }
-
-        protected override sealed void ProcessRecord() {
-            // let's not even bother doing all this if they didn't even
-            // override the method.
-            if (IsOverridden(Constants.ProcessRecordAsyncMethod)) {
-                // just before we kick stuff off, let's make sure we consume the dynamicaparmeters
-                if (!_consumed) {
-                    ConsumeDynamicParameters();
-                    _consumed = true;
-                }
-
-                // just use our async/message pump to handle this activity
-                AsyncRun(ProcessRecordAsync);
-            }
-        }
-
-        public Task<bool> ExecuteOnMainThread(Func<bool> onMainThreadDelegate) {
-            return QueueMessage(onMainThreadDelegate);
-        }
-
-        public new Task<bool> WriteObject(object obj) {
-            return QueueMessage(() => {
-                if (!IsCanceled) {
-                    base.WriteObject(obj);
-                }
-            });
-        }
-
-        public new Task<bool> WriteObject(object sendToPipeline, bool enumerateCollection) {
-            return QueueMessage(() => {
-                if (!IsCanceled) {
-                    base.WriteObject(sendToPipeline, enumerateCollection);
-                }
-            });
-        }
+        #region progress 
 
         public new Task<bool> WriteProgress(ProgressRecord progressRecord) {
             return QueueMessage(() => {
@@ -617,6 +705,114 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 }
             }
             return IsCanceled.AsResultTask();
+        }
+
+        #endregion
+
+        #region Async/Messaging
+
+        protected bool IsProcessing {
+            get {
+                return _asyncCmdletState == AsyncCmdletState.BeginProcess || _asyncCmdletState == AsyncCmdletState.ProcessRecord || _asyncCmdletState == AsyncCmdletState.EndProcess;
+            }
+        }
+
+        protected bool IsBeforeProcessing {
+            get {
+                return _asyncCmdletState < AsyncCmdletState.BeginProcess;
+            }
+        }
+
+        protected bool IsAfterProcessing {
+            get {
+                return _asyncCmdletState > AsyncCmdletState.EndProcess;
+            }
+        }
+
+        private void InvokeMessage(TaskCompletionSource<bool> message) {
+            var func = message.Task.AsyncState as Func<bool>;
+            if (func != null) {
+                try {
+                    message.SetResult(func());
+                } catch (Exception e) {
+                    message.SetException(e);
+                }
+            } else {
+                // this should have been a Func<bool>.
+                // cancel it.
+                message.SetCanceled();
+            }
+        }
+
+        private void QueueHeldMessage(TaskCompletionSource<bool> message) {
+            _heldMessages = _heldMessages ?? new List<TaskCompletionSource<bool>>();
+            _heldMessages.Add(message);
+        }
+
+        protected void QueueHeldMessage(Func<bool> action) {
+            if (IsProcessing) {
+                // run it now...
+                action();
+            } else {
+                QueueHeldMessage(new TaskCompletionSource<bool>(action));
+            }
+        }
+
+
+        private Task<bool> QueueMessage(TaskCompletionSource<bool> message) {
+            
+            // if we're not actually into the processing step yet, we're gonna store this message
+            // until later. It is possible that it never gets played...
+
+            if (IsBeforeProcessing || IsAfterProcessing ) {
+                QueueHeldMessage(message);
+                return message.Task;
+            }
+
+            if (_messages == null || _messages.IsCompleted) {
+                // message queue isn't active. Just run the message now.
+                InvokeMessage(message);
+            } else {
+                if (!_messages.IsCompleted) {
+                    _messages.Add(message);
+                }
+            }
+            return message.Task;
+        }
+
+        private Task<bool> QueueMessage(Func<bool> action) {
+            return QueueMessage(new TaskCompletionSource<bool>(action));
+        }
+
+        private Task<bool> QueueMessage(Action action) {
+            return QueueMessage(() => {
+                action();
+                return true;
+            });
+        }
+
+        public Task<bool> ExecuteOnMainThread(Func<bool> onMainThreadDelegate) {
+            return QueueMessage(onMainThreadDelegate);
+        }
+
+        #endregion
+
+        #region PowerShell response streams
+
+        public new Task<bool> WriteObject(object obj) {
+            return QueueMessage(() => {
+                if (!IsCanceled) {
+                    base.WriteObject(obj);
+                }
+            });
+        }
+
+        public new Task<bool> WriteObject(object sendToPipeline, bool enumerateCollection) {
+            return QueueMessage(() => {
+                if (!IsCanceled) {
+                    base.WriteObject(sendToPipeline, enumerateCollection);
+                }
+            });
         }
 
         public new Task<bool> WriteWarning(string text) {
@@ -651,6 +847,10 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
             return QueueMessage(() => base.WriteVerbose(text));
         }
+
+        #endregion
+
+        #region CmdLet Interactivity
 
         public new Task<bool> ShouldContinue(string query, string caption) {
             if (IsCanceled || !IsInvocation) {
@@ -704,25 +904,124 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             return QueueMessage(() => base.ShouldProcess(verboseDescription, verboseWarning, caption));
         }
 
+        #endregion
+
         protected virtual void Init() {
         }
 
-        public virtual bool GenerateDynamicParameters() {
-            return true;
+        #region Direct Property Access
+
+        protected object TryGetProperty(object instance, string fieldName) {
+            // any access of a null object returns null. 
+            if (instance == null || string.IsNullOrEmpty(fieldName)) {
+                return null;
+            }
+
+            var propertyInfo = instance.GetType().GetProperty(fieldName, BindingFlags);
+
+            if (propertyInfo != null) {
+                try {
+                    return propertyInfo.GetValue(instance, null);
+                } catch {
+                }
+            }
+
+            // maybe it's a field
+            var fieldInfo = instance.GetType().GetField(fieldName, BindingFlags);
+
+            if (fieldInfo != null) {
+                try {
+                    return fieldInfo.GetValue(instance);
+                } catch {
+                }
+            }
+
+            // no match, return null.
+            return null;
         }
 
-        public virtual bool ConsumeDynamicParameters() {
-            return true;
+        protected bool TrySetProperty(object instance, string fieldName, object value) {
+            // any access of a null object returns null. 
+            if (instance == null || string.IsNullOrEmpty(fieldName)) {
+                return false;
+            }
+
+            var propertyInfo = instance.GetType().GetProperty(fieldName, BindingFlags);
+
+            if (propertyInfo != null) {
+                try {
+                    propertyInfo.SetValue(instance, value, null);
+                    return true;
+                } catch {
+                }
+            }
+
+            // maybe it's a field
+            var fieldInfo = instance.GetType().GetField(fieldName, BindingFlags);
+
+            if (fieldInfo != null) {
+                try {
+                    fieldInfo.SetValue(instance, value);
+                    return true;
+                } catch {
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
+
+        private Dictionary<string, object> _unboundArguments;
+        protected Dictionary<string, object> UnboundArguments {
+            get {
+                if (_unboundArguments == null && IsReentrantLocked) {
+                    var context = TryGetProperty(this, "Context");
+                    var processor = TryGetProperty(context, "CurrentCommandProcessor");
+                    var parameterBinder = TryGetProperty(processor, "CmdletParameterBinderController");
+                    var args = TryGetProperty(parameterBinder, "UnboundArguments") as IEnumerable;
+
+                    _unboundArguments = new Dictionary<string, object>();
+                    if (args != null) {
+                        var currentParameterName = string.Empty;
+                        int i = 0;
+                        foreach (var arg in args) {
+                            var isParameterName = TryGetProperty(arg, "ParameterNameSpecified");
+                            if (isParameterName != null && true.Equals(isParameterName)) {
+                                var parameterName = TryGetProperty(arg, "ParameterName");
+
+                                if (parameterName != null) {
+                                    currentParameterName = parameterName.ToString();
+
+                                    // add it now, just in case it's value isn't set (or it's a switch)
+                                    _unboundArguments.AddOrSet(currentParameterName, (object) null);
+                                    continue;
+                                }
+                            }
+
+                            // not a parameter name.
+                            // treat as a value
+                            var parameterValue = TryGetProperty(arg, "ArgumentValue");
+
+                            if (string.IsNullOrEmpty(currentParameterName)) {
+                                _unboundArguments.AddOrSet("unbound_" + (i++), parameterValue);
+                            } else {
+                                _unboundArguments.AddOrSet(currentParameterName, parameterValue);
+                            }
+
+                            // clear the current parameter name
+                            currentParameterName = null;
+                        }
+
+                    }
+                }
+                return _unboundArguments;
+            }
         }
 
         protected virtual void Dispose(bool disposing) {
             if (disposing) {
-                /*
-                if (_cancelWhenStopped != null) {
-                    _cancelWhenStopped.Clear();
-                    _cancelWhenStopped = null;
-                }
-*/
                 if (_cancellationEvent != null) {
                     _cancellationEvent.Dispose();
                     _cancellationEvent = null;

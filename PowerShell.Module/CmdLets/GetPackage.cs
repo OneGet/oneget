@@ -23,7 +23,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
 
-    [Cmdlet(VerbsCommon.Get, Constants.PackageNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517135")]
+    [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517135")]
     public class GetPackage : CmdletWithSearch {
         private readonly Dictionary<string, bool> _namesProcessed = new Dictionary<string, bool>();
         private readonly Dictionary<string, bool> _providersProcessed = new Dictionary<string, bool>();
@@ -117,11 +117,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override bool EndProcessingAsync() {
             foreach (var name in UnprocessedNames) {
-                Error(Errors.NoMatchFound, name);
+                Error(Constants.Errors.NoMatchFound, name);
             }
             if (!Stopping) {
                 foreach (var provider in UnprocessedProviders) {
-                    Debug(Constants.NoPackagesFoundForProvider, provider);
+                    Debug(Constants.Messages.NoPackagesFoundForProvider, provider);
                 }
             }
             return true;

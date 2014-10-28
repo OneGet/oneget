@@ -22,44 +22,46 @@ namespace OneGet.ProviderSDK {
 
         public static class Features {
             public const string AutomationOnly = "automation-only";
-            public const string SupportedExtensions = "file-extensions";
             public const string MagicSignatures = "magic-signatures";
+            public const string SupportedExtensions = "file-extensions";
             public const string SupportedSchemes = "uri-schemes";
             public const string SupportsPowerShellModules = "supports-powershell-modules";
+            public const string SupportsRegexSearch = "supports-regex-search";
+            public const string SupportsSubstringSearch = "supports-substring-search";
+            public const string SupportsWildcardSearch = "supports-wildcard-search";
         }
 
         public static class Messages {
-            public const string UnableToDownload = "MSG:UnableToDownload";
-            public const string FailedProviderBootstrap = "MSG:FailedProviderBootstrap";
-            public const string UnknownProvider = "MSG:UnknownProvider";
-            public const string UserDeclinedUntrustedPackageInstall = "MSG:UserDeclinedUntrustedPackageInstall";
-            public const string ProviderPluginLoadFailure = "MSG:ProviderPluginLoadFailure";
-            public const string ProviderSwidtagUnavailable = "MSG:ProviderSwidtagUnavailable";
-            public const string UnableToResolvePackage = "MSG:UnableToResolvePackage";
-            public const string UnsupportedProviderType = "MSG:UnsupportedProviderType";
-            public const string DestinationPathNotSet = "MSG:DestinationPathNotSet";
-            public const string InvalidFilename = "MSG:InvalidFilename";
-            public const string UnableToRemoveFile = "MSG:UnableToRemoveFile";
-            public const string FileFailedVerification = "MSG:FileFailedVerification";
-            public const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
-            public const string SchemeNotSupported = "MSG:SchemeNotSupported";
-            public const string PackageProviderExists = "MSG:PackageProviderExists";
-            public const string UnableToResolveSource = "MSG:UnableToResolveSource_NameOrLocation";
-            public const string UnsupportedArchive = "MSG:UnsupportedArchive";
             public const string CreatefolderFailed = "MSG:CreatefolderFailed";
-            public const string UnableToOverwriteExistingFile = "MSG:UnableToOverwriteExistingFile";
-            public const string UnableToCopyFileTo = "MSG:UnableToCopyFileTo";
-            public const string UnableToCreateShortcutTargetDoesNotExist = "MSG:UnableToCreateShortcutTargetDoesNotExist";
-            public const string RemoveEnvironmentVariableRequiresElevation = "MSG:RemoveEnvironmentVariableRequiresElevation";
-            public const string UnknownFolderId = "MSG:UnknownFolderId";
-            public const string ProtocolNotSupported = "MSG:ProtocolNotSupported";
-            public const string UnableToUninstallPackage = "MSG:UnableToUninstallPackage";
-
-            public const string SourceLocationNotValid = "MSG:SourceLocationNotValid_Location";
-            public const string UriSchemeNotSupported = "MSG:UriSchemeNotSupported_Scheme";
-            public const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
             public const string DependencyResolutionError = "MSG:UnableToResolveDependency_dependencyPackage";
             public const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependency";
+            public const string DestinationPathNotSet = "MSG:DestinationPathNotSet";
+            public const string FailedProviderBootstrap = "MSG:FailedProviderBootstrap";
+            public const string FileFailedVerification = "MSG:FileFailedVerification";
+            public const string InvalidFilename = "MSG:InvalidFilename";
+            public const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
+            public const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
+            public const string PackageProviderExists = "MSG:PackageProviderExists";
+            public const string ProtocolNotSupported = "MSG:ProtocolNotSupported";
+            public const string ProviderPluginLoadFailure = "MSG:ProviderPluginLoadFailure";
+            public const string ProviderSwidtagUnavailable = "MSG:ProviderSwidtagUnavailable";
+            public const string RemoveEnvironmentVariableRequiresElevation = "MSG:RemoveEnvironmentVariableRequiresElevation";
+            public const string SchemeNotSupported = "MSG:SchemeNotSupported";
+            public const string SourceLocationNotValid = "MSG:SourceLocationNotValid_Location";
+            public const string UnableToCopyFileTo = "MSG:UnableToCopyFileTo";
+            public const string UnableToCreateShortcutTargetDoesNotExist = "MSG:UnableToCreateShortcutTargetDoesNotExist";
+            public const string UnableToDownload = "MSG:UnableToDownload";
+            public const string UnableToOverwriteExistingFile = "MSG:UnableToOverwriteExistingFile";
+            public const string UnableToRemoveFile = "MSG:UnableToRemoveFile";
+            public const string UnableToResolvePackage = "MSG:UnableToResolvePackage";
+            public const string UnableToResolveSource = "MSG:UnableToResolveSource_NameOrLocation";
+            public const string UnableToUninstallPackage = "MSG:UnableToUninstallPackage";
+            public const string UnknownFolderId = "MSG:UnknownFolderId";
+            public const string UnknownProvider = "MSG:UnknownProvider";
+            public const string UnsupportedArchive = "MSG:UnsupportedArchive";
+            public const string UnsupportedProviderType = "MSG:UnsupportedProviderType";
+            public const string UriSchemeNotSupported = "MSG:UriSchemeNotSupported_Scheme";
+            public const string UserDeclinedUntrustedPackageInstall = "MSG:UserDeclinedUntrustedPackageInstall";
         }
 
         public static class OptionType {
@@ -75,6 +77,8 @@ namespace OneGet.ProviderSDK {
         }
 
         public static class PackageStatus {
+            public const string Available = "Available";
+            public const string Dependency = "Dependency";
             public const string Installed = "Installed";
             public const string Uninstalled = "Uninstalled";
         }
@@ -86,9 +90,9 @@ namespace OneGet.ProviderSDK {
         }
 
         public static class Signatures {
-            public const string Zip = "504b0304";
             public const string Cab = "4D534346";
             public const string OleCompoundDocument = "D0CF11E0A1B11AE1";
+            public const string Zip = "504b0304";
             public static string[] ZipVariants = new[] {Zip, /* should have EXEs? */};
         }
 
@@ -97,27 +101,5 @@ namespace OneGet.ProviderSDK {
         }
 
         #endregion
-
-        /*
-        #region declare constants-implementation
-
-        public const string MSGPrefix = "MSG:";
-        public const string TerminatingError = "MSG:TerminatingError";
-        public const string SourceLocationNotValid = "MSG:SourceLocationNotValid_Location";
-        public const string UriSchemeNotSupported = "MSG:UriSchemeNotSupported_Scheme";
-        public const string UnableToResolveSource = "MSG:UnableToResolveSource_NameOrLocation";
-        public const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
-        public const string DependencyResolutionError = "MSG:UnableToResolveDependency_dependencyPackage";
-        public const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependencyPackage";
-        public const string PackageProviderExists = "MSG:PackageProviderExists";
-        public const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
-
-        public const string IsUpdateParameter = "IsUpdatePackageSource";
-
-        public const string NameParameter = "Name";
-        public const string LocationParameter = "Location";
-        
-        #endregion
-        */
     }
 }

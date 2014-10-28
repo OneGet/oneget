@@ -24,17 +24,7 @@
     PowerShellVersion = "2.0"
     ClrVersion = "4.0"
     RootModule = "Microsoft.PowerShell.OneGet.dll"
-	
-	##
-	## Hard-coded dependency on Chocolatey Module
-	## This is required only so that the Chocolatey Module can expose it's own cmdlets.
-	## If it wasn't shipped with OneGet, it would have been it's own module, and this
-	## wouldn't be neccessary.
-	##
-    # NestedModules = @('chocolatey.psd1')
 
-    # TypesToProcess = ""
-    # FormatsToProcess = ""
     CmdletsToExport = @(
         'Find-Package',
         'Get-Package',

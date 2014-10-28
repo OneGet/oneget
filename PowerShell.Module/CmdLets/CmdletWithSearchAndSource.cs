@@ -18,12 +18,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
+    using Utility;
     using Constants = OneGet.Constants;
 
     public abstract class CmdletWithSearchAndSource : CmdletWithSearch {
@@ -39,7 +39,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public virtual string[] Source {get; set;}
-
+            
         [Parameter]
         public virtual PSCredential Credential {get; set;}
 
@@ -52,6 +52,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
+        /*
         protected override IEnumerable<PackageProvider> SelectedProviders {
             get {
                 // filter on provider names  - if they specify a provider name, narrow to only those provider names.
@@ -72,6 +73,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return FilterProvidersUsingDynamicParameters(providers).ToArray();
             }
         }
+        */
+
 
         public override string GetCredentialUsername() {
             if (Credential != null) {
@@ -335,13 +338,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     if (name == string.Empty) {
                         // no name 
                         result = false;
-                        Error(Errors.NoPackagesFoundForProvider, _providersNotFindingAnything.Select(each => each.ProviderName).JoinWithComma());
+                        Error(Constants.Errors.NoPackagesFoundForProvider, _providersNotFindingAnything.Select(each => each.ProviderName).JoinWithComma());
                     } else {
                         if (WildcardPattern.ContainsWildcardCharacters(name)) {
-                            Verbose(Constants.NoMatchesForWildcard, name);
+                            Verbose(Constants.Messages.NoMatchesForWildcard, name);
                         } else {
                             result = false;
-                            Error(Errors.NoMatchFound, name);
+                            Error(Constants.Errors.NoMatchFound, name);
                         }
                     }
                 }
@@ -362,10 +365,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     string searchKey = null;
 
                     foreach (var pkg in set) {
-                        Warning(Constants.MatchesMultiplePackages, pkg.SearchKey, pkg.Name, pkg.Version, pkg.ProviderName);
+                        Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, pkg.Name, pkg.Version, pkg.ProviderName);
                         searchKey = pkg.SearchKey;
                     }
-                    Error(Errors.DisambiguateForInstall, searchKey);
+                    Error(Constants.Errors.DisambiguateForInstall, searchKey);
                 }
                 return false;
             }

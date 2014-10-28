@@ -14,21 +14,27 @@
 
 namespace Microsoft.OneGet.Utility.PowerShell {
     internal static class Constants {
-        public const string MSGPrefix = "MSG:";
-
-        public const string ConfirmParameter = "Confirm";
-        public const string WhatIfParameter = "WhatIf";
-
-        public const string MoreThanOneFileMatched = "MSG:MoreThanOneFileMatched";
-        public const string FileNotFound = "MSG:FileNotFound";
-        public const string FolderNotFound = "MSG:FolderNotFound";
-        public const string MoreThanOneFolderMatched = "MSG:MoreThanOneFolderMatched";
-
-        public const string StopProcessingAsyncMethod = "StopProcessingAsync";
-        public const string ProcessRecordAsyncMethod = "ProcessRecordAsync";
-        public const string GenerateDynamicParametersMethod = "GenerateDynamicParameters";
-        public const string BeginProcessingAsyncMethod = "BeginProcessingAsync";
-        public const string EndProcessingAsyncMethod = "EndProcessingAsync";
+        internal const string MSGPrefix = "MSG:";
         internal static object[] NoParameters = new object[0];
+
+        internal static class Messages {
+            internal const string MoreThanOneFileMatched = "MSG:MoreThanOneFileMatched";
+            internal const string FileNotFound = "MSG:FileNotFound";
+            internal const string FolderNotFound = "MSG:FolderNotFound";
+            internal const string MoreThanOneFolderMatched = "MSG:MoreThanOneFolderMatched";
+        }
+
+        internal static class Methods {
+            internal const string StopProcessingAsyncMethod = "StopProcessingAsync";
+            internal const string ProcessRecordAsyncMethod = "ProcessRecordAsync";
+            internal const string GenerateDynamicParametersMethod = "GenerateDynamicParameters";
+            internal const string BeginProcessingAsyncMethod = "BeginProcessingAsync";
+            internal const string EndProcessingAsyncMethod = "EndProcessingAsync";
+        }
+
+        internal static class Parameters {
+            internal const string ConfirmParameter = "Confirm";
+            internal const string WhatIfParameter = "WhatIf";
+        }
     }
 }

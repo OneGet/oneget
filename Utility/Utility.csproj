@@ -154,6 +154,7 @@
     <Compile Include="Extensions\ThreadPerTaskScheduler.cs" />
     <Compile Include="Extensions\TwoTypes.cs" />
     <Compile Include="Extensions\Types.cs" />
+    <Compile Include="Extensions\Singleon.cs" />
     <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="Platform\ShellLinkClass.cs" />
     <Compile Include="Platform\WinTrustData.cs" />

@@ -23,7 +23,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
-    [Cmdlet(VerbsLifecycle.Register, Constants.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517139")]
+    [Cmdlet(VerbsLifecycle.Register, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517139")]
     public sealed class RegisterPackageSource : CmdletWithProvider {
         public RegisterPackageSource()
             : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
@@ -50,31 +50,67 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter]
         public SwitchParameter Trusted {get; set;}
 
+#if OLD_WAY
         public override bool GenerateDynamicParameters() {
-            var packageProvider = SelectProviders(ProviderName).ReEnumerable();
+            if (_reentrancyLock.WaitOne(0)) {
+                // we're in here already.
+                // this happens because we're asking for the parameters below, and it creates a new instance to get them.
+                // we don't want dynamic parameters for that call, so let's get out.
+                return true;
+            }
+            _reentrancyLock.Set();
+
+            // generate the common parameters for our cmdlets (timeout, messagehandler, etc) 
+            GenerateCommonDynamicParameters();
+
+            var providers = SelectProviders(ProviderName).ReEnumerable();
 
             // if more than one provider is selected, this will never work
-            if (packageProvider.Count() != 1) {
+            if (providers.Count() != 1) {
                 return false;
             }
 
-            // if the provider is selected, we can get package metadata keys from the provider
-            foreach (var md in packageProvider.First().GetDynamicOptions(OptionCategory.Source, this)) {
-                if (DynamicParameterDictionary.ContainsKey(md.Name)) {
-                    // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
-                    // (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
-                    if (IsInvocation) {
-                        (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
-                    } else {
-                        (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).IncludeInParameterSet(md, IsInvocation, ParameterSets);
+            var provider = providers.First();
+
+            try {
+
+                // if the provider is selected, we can get package metadata keys from the provider
+                foreach (var md in provider.GetDynamicOptions(OptionCategory.Source, this)) {
+
+                    if (MyInvocation.MyCommand.Parameters.ContainsKey(md.Name)) {
+                        // don't add it.
+                        continue;
                     }
-                } else {
-                    // DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md));
-                    DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
+
+                    if (DynamicParameterDictionary.ContainsKey(md.Name)) {
+
+                        // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
+                        var crdp = DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter;
+                        if (crdp == null) {
+                            // the provider is trying to overwrite a parameter that is already dynamically defined by the BaseCmdlet. 
+                            // just ignore it.
+                            continue;
+                        }
+
+                        if (IsInvocation) {
+                            crdp.Options.Add(md);
+                        }
+                        else {
+                            crdp.IncludeInParameterSet(md, IsInvocation, ParameterSets);
+                        }
+
+                    }
+                    else {
+                        DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
+                    }
                 }
+            }
+            finally {
+                _reentrancyLock.Reset();
             }
             return true;
         }
+#endif 
 
         public override bool ProcessRecordAsync() {
             if (Stopping) {
@@ -85,14 +121,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             switch (packageProvider.Count()) {
                 case 0:
-                    Error(Errors.UnknownProvider, ProviderName);
+                    Error(Constants.Errors.UnknownProvider, ProviderName);
                     return false;
 
                 case 1:
                     break;
 
                 default:
-                    Error(Errors.MatchesMultipleProviders, packageProvider.Select(provider => provider.ProviderName).JoinWithComma());
+                    Error(Constants.Errors.MatchesMultipleProviders, packageProvider.Select(provider => provider.ProviderName).JoinWithComma());
                     return false;
             }
 
@@ -104,21 +140,21 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     // if there is, and the user has said -Force, then let's remove it.
                     foreach (var existingSource in existingSources) {
                         if (Force) {
-                            if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource, existingSource.Name, existingSource.Location, existingSource.ProviderName), Constants.ActionReplacePackageSource).Result) {
+                            if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, existingSource.Name, existingSource.Location, existingSource.ProviderName), Constants.Messages.ActionReplacePackageSource).Result) {
                                 var removedSources = packageProvider.First().RemovePackageSource(existingSource.Name, this).CancelWhen(_cancellationEvent.Token);
                                 foreach (var removedSource in removedSources) {
-                                    Verbose(Constants.OverwritingPackageSource, removedSource.Name);
+                                    Verbose(Constants.Messages.OverwritingPackageSource, removedSource.Name);
                                 }
                             }
                         } else {
-                            Error(Errors.PackageSourceExists, existingSource.Name);
+                            Error(Constants.Errors.PackageSourceExists, existingSource.Name);
                             return false;
                         }
                     }
                 }
             }
 
-            if (ShouldProcess(FormatMessageString(Constants.TargetPackageSource, Name, Location, ProviderName), FormatMessageString(Constants.ActionRegisterPackageSource)).Result) {
+            if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, Name, Location, ProviderName), FormatMessageString(Constants.Messages.ActionRegisterPackageSource)).Result) {
                 using (var added = packageProvider.First().AddPackageSource(Name, Location, Trusted, this).CancelWhen(_cancellationEvent.Token)) {
                     foreach (var addedSource in added) {
                         WriteObject(addedSource);

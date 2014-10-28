@@ -282,7 +282,7 @@ namespace Microsoft.OneGet.Builtin {
                         if (!string.IsNullOrWhiteSpace(uninstallCommand)) {
                             do {
                                 if (File.Exists(uninstallCommand)) {
-                                    ExecStandalone(uninstallCommand);
+                                    ExecStandalone(request,uninstallCommand);
                                     break;
                                 }
 
@@ -290,27 +290,27 @@ namespace Microsoft.OneGet.Builtin {
                                 // check if it's just quoted.
                                 var c = uninstallCommand.Trim('\"');
                                 if (File.Exists(c)) {
-                                    ExecStandalone(c);
+                                    ExecStandalone(request,c);
                                     break;
                                 }
 
                                 if (uninstallCommand.IndexOf("msiexec", StringComparison.OrdinalIgnoreCase) > -1) {
-                                    MsiUninstall(uninstallCommand);
+                                    MsiUninstall(request,uninstallCommand);
                                     break;
                                 }
 
                                 if (uninstallCommand.IndexOf("rundll32", StringComparison.OrdinalIgnoreCase) > -1) {
-                                    RunDll32(uninstallCommand);
+                                    RunDll32(request, uninstallCommand);
                                     break;
                                 }
 
                                 if (uninstallCommand.IndexOf("cmd.exe", StringComparison.OrdinalIgnoreCase) == 0) {
-                                    CmdCommand(uninstallCommand);
+                                    CmdCommand(request, uninstallCommand);
                                     continue;
                                 }
 
                                 if (uninstallCommand.IndexOf("cmd ", StringComparison.OrdinalIgnoreCase) == 0) {
-                                    CmdCommand(uninstallCommand);
+                                    CmdCommand(request, uninstallCommand);
                                     continue;
                                 }
 
@@ -320,7 +320,7 @@ namespace Microsoft.OneGet.Builtin {
                                         var file = uninstallCommand.Substring(1, p - 1);
                                         var args = uninstallCommand.Substring(p + 1);
                                         if (File.Exists(file)) {
-                                            CommandWithParameters(file, args);
+                                            CommandWithParameters(request, file, args);
                                         }
                                     }
                                 } else {
@@ -329,7 +329,7 @@ namespace Microsoft.OneGet.Builtin {
                                         var file = uninstallCommand.Substring(0, p);
                                         var args = uninstallCommand.Substring(p + 1);
                                         if (File.Exists(file)) {
-                                            CommandWithParameters(file, args);
+                                            CommandWithParameters(request, file, args);
                                             continue;
                                         }
 
@@ -342,7 +342,7 @@ namespace Microsoft.OneGet.Builtin {
                                             file = uninstallCommand.Substring(0, s);
                                             if (File.Exists(file)) {
                                                 args = uninstallCommand.Substring(s + 1);
-                                                CommandWithParameters(file, args);
+                                                CommandWithParameters(request, file, args);
                                                 break;
                                             }
                                         } while (s > -1);
@@ -369,19 +369,20 @@ namespace Microsoft.OneGet.Builtin {
             }
         }
 
-        private void RunDll32(string uninstallCommand) {
+        private void RunDll32(Request request,string uninstallCommand) {
+            
         }
 
-        private void MsiUninstall(string uninstallCommand) {
+        private void MsiUninstall(Request request, string uninstallCommand) {
         }
 
-        private void CommandWithParameters(string file, string args) {
+        private void CommandWithParameters(Request request, string file, string args) {
         }
 
-        private void CmdCommand(string args) {
+        private void CmdCommand(Request request, string args) {
         }
 
-        private void ExecStandalone(string uninstallCommand) {
+        private void ExecStandalone(Request request, string uninstallCommand) {
             // we could examine the EXE a bit here to see if it's a NSIS installer and if it is, tack on a /S to get it to go silently.
 
             // uninstall via standalone EXE

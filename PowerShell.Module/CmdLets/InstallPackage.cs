@@ -15,6 +15,7 @@
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Implementation;
@@ -24,7 +25,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
-    [Cmdlet(VerbsLifecycle.Install, Constants.PackageNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.PackageBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517138")]
+    [Cmdlet(VerbsLifecycle.Install, Constants.Nouns.PackageNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.ParameterSets.PackageBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517138")]
     public sealed class InstallPackage : CmdletWithSearchAndSource {
         private readonly HashSet<string> _sourcesTrusted = new HashSet<string>();
 
@@ -36,31 +37,63 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected override IEnumerable<string> ParameterSets {
             get {
-                return new[] {Constants.PackageBySearchSet, Constants.PackageByInputObjectSet};
+                return new[] {Constants.ParameterSets.PackageBySearchSet, Constants.ParameterSets.PackageByInputObjectSet};
             }
         }
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = Constants.PackageByInputObjectSet),]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = Constants.ParameterSets.PackageByInputObjectSet),]
         public SoftwareIdentity[] InputObject {get; set;}
 
-        [Parameter(Position = 0, ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(Position = 0, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Name {get; set;}
 
-        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string RequiredVersion {get; set;}
 
-        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string MinimumVersion {get; set;}
 
-        [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string MaximumVersion {get; set;}
 
-        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
+        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Source {get; set;}
 
+        /*
         [Alias("Provider")]
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
         public override string[] ProviderName {get; set;}
+        */
+
+        protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
+            if (!IsInvocation) {
+                var providerNames = PackageManagementService.ProviderNames;
+                var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
+                if (whatsOnCmdline != null) {
+                    providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
+                }
+
+                DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
+                    new ParameterAttribute {
+                        ValueFromPipelineByPropertyName = true,
+                        ParameterSetName = Constants.ParameterSets.PackageBySearchSet
+                    },
+                    new AliasAttribute("Provider"),
+                    new ValidateSetAttribute(providerNames.ToArray())
+                }));
+            }
+            else {
+                DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
+                    new ParameterAttribute {
+                        ValueFromPipelineByPropertyName = true,
+                        ParameterSetName = Constants.ParameterSets.PackageBySearchSet
+                    },
+                    new AliasAttribute("Provider")
+                }));
+            }
+        }
+
+
 
         public override bool BeginProcessingAsync() {
             return true;
@@ -117,7 +150,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     // this is not good. there is a required parameter for the package 
                     // and the user didn't specify it. We should return the error to the user
                     // and they can try again.
-                    Error(Errors.PackageInstallRequiresOption, package.Name, package.ProviderName, parameter.Name);
+                    Error(Constants.Errors.PackageInstallRequiresOption, package.Name, package.ProviderName, parameter.Name);
                     Cancel();
                 }
             }
@@ -137,7 +170,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
                 var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
                 if (provider == null) {
-                    Error(Errors.UnknownProvider, pkg.ProviderName);
+                    Error(Constants.Errors.UnknownProvider, pkg.ProviderName);
                     return false;
                 }
                 try {
@@ -159,7 +192,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     //}
                 } catch (Exception e) {
                     e.Dump();
-                    Error(Errors.InstallationFailure, pkg.Name);
+                    Error(Constants.Errors.InstallationFailure, pkg.Name);
                     return false;
                 }
                 if (packagesToInstall.Length > 1) {
@@ -172,7 +205,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public bool ShouldProcessPackageInstall(string packageName, string version, string source) {
             try {
-                return Force || ShouldProcess(FormatMessageString(Constants.TargetPackage, packageName, version, source), FormatMessageString(Constants.ActionInstallPackage)).Result;
+                return Force || ShouldProcess(FormatMessageString(Constants.Messages.TargetPackage, packageName, version, source), FormatMessageString(Constants.Messages.ActionInstallPackage)).Result;
             } catch {
             }
             return false;
@@ -183,7 +216,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (_sourcesTrusted.Contains(packageSource) || Force || WhatIf) {
                     return true;
                 }
-                if (ShouldContinue(FormatMessageString(Constants.QueryInstallUntrustedPackage, package, packageSource), FormatMessageString(Constants.CaptionPackageNotTrusted, package)).Result) {
+                if (ShouldContinue(FormatMessageString(Constants.Messages.QueryInstallUntrustedPackage, package, packageSource), FormatMessageString(Constants.Messages.CaptionPackageNotTrusted, package)).Result) {
                     _sourcesTrusted.Add(packageSource);
                     return true;
                 }

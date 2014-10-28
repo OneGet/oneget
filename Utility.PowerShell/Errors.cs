@@ -16,9 +16,9 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using System.Management.Automation;
 
     internal static class Errors {
-        public static ErrorMessage FileNotFound = new ErrorMessage(Constants.FileNotFound, ErrorCategory.ObjectNotFound);
-        public static ErrorMessage FolderNotFound = new ErrorMessage(Constants.FolderNotFound, ErrorCategory.ObjectNotFound);
-        public static ErrorMessage MoreThanOneFolderMatched = new ErrorMessage(Constants.MoreThanOneFolderMatched, ErrorCategory.ObjectNotFound);
-        public static ErrorMessage MoreThanOneFileMatched = new ErrorMessage(Constants.MoreThanOneFileMatched, ErrorCategory.ObjectNotFound);
+        public static ErrorMessage FileNotFound = new ErrorMessage(Constants.Messages.FileNotFound, ErrorCategory.ObjectNotFound);
+        public static ErrorMessage FolderNotFound = new ErrorMessage(Constants.Messages.FolderNotFound, ErrorCategory.ObjectNotFound);
+        public static ErrorMessage MoreThanOneFolderMatched = new ErrorMessage(Constants.Messages.MoreThanOneFolderMatched, ErrorCategory.ObjectNotFound);
+        public static ErrorMessage MoreThanOneFileMatched = new ErrorMessage(Constants.Messages.MoreThanOneFileMatched, ErrorCategory.ObjectNotFound);
     }
 }

@@ -79,7 +79,7 @@ namespace Microsoft.OneGet.Implementation {
         #region copy host-apis
 
         /* Synced/Generated code =================================================== */
-        public abstract string GetMessageString(string messageText);
+        public abstract string GetMessageString(string messageText, string defaultText);
 
         public abstract bool Warning(string messageText);
 
@@ -286,9 +286,18 @@ namespace Microsoft.OneGet.Implementation {
         private static string FixMeFormat(string formatString, object[] args) {
             if (args == null || args.Length == 0) {
                 // not really any args, and not really expectng any
-                return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
+                if (formatString.IndexOf("{") > -1 || formatString.IndexOf("}") > -1) {
+                    return string.Format("/* BRACES PRESENT -- NO FORMAT ARGS */ {0}", formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'));
+                }
+                // no args, none expected, return the string unmodified.
+                return formatString;
             }
-            return args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
+
+            if (formatString.IndexOf("{") > -1 || formatString.IndexOf("}") > -1) {
+                return string.Format("/* BRACES PRESENT -- ARGUMENT COUNT MISMATCH */ {0}", args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg)));
+            }
+
+            return string.Format("/* BRACES NOT PRESENT -- ARGUMENT COUNT MISMATCH */ {0}", args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg)));
         }
 
         public SecureString Password {
@@ -316,11 +325,11 @@ namespace Microsoft.OneGet.Implementation {
 
             if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
                 // check with the caller first, then with the local resources, and fallback to using the messageText itself.
-                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ?? messageText;
+                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length),messageText) ?? messageText;
             }
 
             // if it doesn't look like we have the correct number of parameters
-            // let's return a fixmeformat string.
+            // let's return a fix-me-format string.
             var c = messageText.ToCharArray().Where(each => each == '{').Count();
             if (c < args.Length) {
                 return FixMeFormat(messageText, args);
