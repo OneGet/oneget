@@ -13,13 +13,16 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
+    using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
+    using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsData.Save, Constants.PackageNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517140")]
     public sealed class SavePackage : CmdletWithSearchAndSource {
@@ -50,11 +53,40 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
         public override string[] Source { get; set; }
 
+        /*
         [Alias("Provider")]
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
         public override string[] ProviderName { get; set; }
 
+        */
 
+        protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
+            if (!IsInvocation) {
+                var providerNames = PackageManagementService.ProviderNames;
+                var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
+                if (whatsOnCmdline != null) {
+                    providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
+                }
+
+                DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
+                    new ParameterAttribute {
+                        ValueFromPipelineByPropertyName = true,
+                        ParameterSetName = Constants.PackageBySearchSet
+                    },
+                    new AliasAttribute("Provider"),
+                    new ValidateSetAttribute(providerNames.ToArray())
+                }));
+            }
+            else {
+                DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
+                    new ParameterAttribute {
+                        ValueFromPipelineByPropertyName = true,
+                        ParameterSetName = Constants.PackageBySearchSet
+                    },
+                    new AliasAttribute("Provider")
+                }));
+            }
+        }
 
 
         [Parameter]

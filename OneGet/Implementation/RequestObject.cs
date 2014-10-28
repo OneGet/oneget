@@ -76,9 +76,9 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        public string GetMessageString(string messageText) {
+        public string GetMessageString(string messageText, string defaultText) {
             if (CanCallHost) {
-                return _hostApi.GetMessageString(messageText);
+                return _hostApi.GetMessageString(messageText,defaultText);
             }
             return null;
         }

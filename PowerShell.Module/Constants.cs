@@ -13,11 +13,15 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet {
+    using System;
     using System.Management.Automation;
     using Microsoft.OneGet.Utility.PowerShell;
 
     internal static class Constants {
         internal static object[] NoParameters = new object[0];
+
+        internal const int DefaultTimeout = 60*60;      // 60 minutes
+        internal const int DefaultResponsiveness = 30;  // 30 seconds
 
         // cmdlet naming/etc
         internal const string PackageNoun = "Package";
@@ -56,6 +60,7 @@ namespace Microsoft.PowerShell.OneGet {
         internal const string DisambiguateForInstall = "MSG:DisambiguateForInstall";
         internal const string DisambiguateForUninstall = "MSG:DisambiguateForUninstall";
         internal const string UnknownProvider = "MSG:UnknownProvider";
+        internal const string UnknownProviders = "MSG:UnknownProviders";
         internal const string UnableToFindProviderForSource = "MSG:UnableToFindProviderForSource";
         internal const string SourceNotFound = "MSG:SourceNotFound";
         internal const string SourceFoundInMultipleProviders = "MSG:SourceFoundInMultipleProviders";
@@ -106,6 +111,8 @@ namespace Microsoft.PowerShell.OneGet {
         internal const string DestinationOrLiteralPathRequired = "MSG:DestinationOrLiteralPathRequired";
 
         internal const string SavePackage = "MSG:SavePackage";
+
+        internal const string NoMatchForProvidersAndSources = "MSG:NoMatchForProvidersAndSources";
 
         #region copy common-constants-implementation
 
@@ -208,6 +215,8 @@ namespace Microsoft.PowerShell.OneGet {
         public static ErrorMessage DestinationOrLiteralPathNotSpecified = new ErrorMessage(Constants.DestinationOrLiteralPathRequired, ErrorCategory.InvalidArgument);
         public static ErrorMessage MatchesMultipleProviders = new ErrorMessage(Constants.MatchesMultipleProviders, ErrorCategory.InvalidArgument);
 
+        public static ErrorMessage UnknownProviders = new ErrorMessage(Constants.UnknownProviders, ErrorCategory.InvalidArgument);
+        public static ErrorMessage NoMatchForProvidersAndSources = new ErrorMessage(Constants.NoMatchForProvidersAndSources, ErrorCategory.InvalidArgument);
         // ReSharper restore InconsistentNaming
     }
 }

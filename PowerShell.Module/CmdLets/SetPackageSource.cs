@@ -13,7 +13,9 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
+    using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Packaging;
@@ -33,6 +35,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
+        /*
         [Alias("ProviderName")]
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.SourceBySearchSet, Mandatory = true)]
         public string Provider {get; set;}
@@ -46,6 +49,36 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
             set {
                 // nothing
+            }
+        }
+        */
+
+
+        protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
+            if (!IsInvocation) {
+                var providerNames = PackageManagementService.ProviderNames;
+                var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
+                if (whatsOnCmdline != null) {
+                    providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
+                }
+
+                DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string), new Collection<Attribute> {
+                    new ParameterAttribute {
+                        ValueFromPipelineByPropertyName = true,
+                        ParameterSetName = Constants.SourceBySearchSet
+                    },
+                    new AliasAttribute("Provider"),
+                    new ValidateSetAttribute(providerNames.ToArray())
+                }));
+            }
+            else {
+                DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string), new Collection<Attribute> {
+                    new ParameterAttribute {
+                        ValueFromPipelineByPropertyName = true,
+                        ParameterSetName = Constants.SourceBySearchSet
+                    },
+                    new AliasAttribute("Provider")
+                }));
             }
         }
 
@@ -114,10 +147,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length == 0) {
-                if (string.IsNullOrEmpty(Provider)) {
+                if (ProviderName.IsNullOrEmpty() || string.IsNullOrEmpty(ProviderName[0])) {
                     return Error(Errors.UnableToFindProviderForSource, Name ?? Location);
                 }
-                return Error(Errors.UnknownProvider, Provider);
+                return Error(Errors.UnknownProvider, ProviderName[0]);
             }
 
             if (prov.Length > 0) {

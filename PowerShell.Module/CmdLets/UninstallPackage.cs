@@ -15,6 +15,7 @@
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Packaging;
@@ -48,9 +49,39 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter(ParameterSetName = Constants.PackageBySearchSet)]
         public override string MaximumVersion {get; set;}
 
+        /*
         [Alias("Provider")]
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
         public override string[] ProviderName {get; set;}
+        */
+
+        protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
+            if (!IsInvocation) {
+                var providerNames = PackageManagementService.ProviderNames;
+                var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
+                if (whatsOnCmdline != null) {
+                    providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
+                }
+
+                DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
+                    new ParameterAttribute {
+                        ValueFromPipelineByPropertyName = true,
+                        ParameterSetName = Constants.PackageBySearchSet
+                    },
+                    new AliasAttribute("Provider"),
+                    new ValidateSetAttribute(providerNames.ToArray())
+                }));
+            }
+            else {
+                DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
+                    new ParameterAttribute {
+                        ValueFromPipelineByPropertyName = true,
+                        ParameterSetName = Constants.PackageBySearchSet
+                    },
+                    new AliasAttribute("Provider")
+                }));
+            }
+        }
 
         public override bool ProcessRecordAsync() {
             if (IsPackageByObject) {

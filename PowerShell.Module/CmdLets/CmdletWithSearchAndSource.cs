@@ -18,12 +18,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
+    using Utility;
     using Constants = OneGet.Constants;
 
     public abstract class CmdletWithSearchAndSource : CmdletWithSearch {
@@ -39,7 +39,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public virtual string[] Source {get; set;}
-
+            
         [Parameter]
         public virtual PSCredential Credential {get; set;}
 
@@ -52,6 +52,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
+        /*
         protected override IEnumerable<PackageProvider> SelectedProviders {
             get {
                 // filter on provider names  - if they specify a provider name, narrow to only those provider names.
@@ -72,6 +73,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return FilterProvidersUsingDynamicParameters(providers).ToArray();
             }
         }
+        */
+
 
         public override string GetCredentialUsername() {
             if (Credential != null) {

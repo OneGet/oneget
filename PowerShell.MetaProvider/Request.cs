@@ -109,7 +109,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         #region copy host-apis
 
         /* Synced/Generated code =================================================== */
-        public abstract string GetMessageString(string messageText);
+        public abstract string GetMessageString(string messageText, string defaultText);
 
         public abstract bool Warning(string messageText);
 
@@ -313,7 +313,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
                 // check with the caller first, then with the local resources, and fallback to using the messageText itself.
-                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ?? GetMessageStringInternal(messageText) ?? messageText;    
+                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length), GetMessageStringInternal(messageText) ?? messageText ) ?? GetMessageStringInternal(messageText) ?? messageText;    
             }
 
             // if it doesn't look like we have the correct number of parameters

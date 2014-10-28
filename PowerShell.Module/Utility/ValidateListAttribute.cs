@@ -39,10 +39,16 @@ namespace Microsoft.PowerShell.OneGet.Utility {
             }
         }
 
-        public List<string> ValidValues {
+        public IList<string> ValidValues {
             get {
-                return _validValues;
+                return new List<string> {
+                    "green"
+                };
             }
+        }
+
+        public static implicit operator ValidateSetAttribute(ValidateListAttribute vla) {
+            return new ValidateSetAttribute(vla._validValues.ToArray());
         }
 
         protected override void ValidateElement(object element) {

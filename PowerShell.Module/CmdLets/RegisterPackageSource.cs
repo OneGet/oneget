@@ -50,31 +50,67 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter]
         public SwitchParameter Trusted {get; set;}
 
+#if OLD_WAY
         public override bool GenerateDynamicParameters() {
-            var packageProvider = SelectProviders(ProviderName).ReEnumerable();
+            if (_reentrancyLock.WaitOne(0)) {
+                // we're in here already.
+                // this happens because we're asking for the parameters below, and it creates a new instance to get them.
+                // we don't want dynamic parameters for that call, so let's get out.
+                return true;
+            }
+            _reentrancyLock.Set();
+
+            // generate the common parameters for our cmdlets (timeout, messagehandler, etc) 
+            GenerateCommonDynamicParameters();
+
+            var providers = SelectProviders(ProviderName).ReEnumerable();
 
             // if more than one provider is selected, this will never work
-            if (packageProvider.Count() != 1) {
+            if (providers.Count() != 1) {
                 return false;
             }
 
-            // if the provider is selected, we can get package metadata keys from the provider
-            foreach (var md in packageProvider.First().GetDynamicOptions(OptionCategory.Source, this)) {
-                if (DynamicParameterDictionary.ContainsKey(md.Name)) {
-                    // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
-                    // (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
-                    if (IsInvocation) {
-                        (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).Options.Add(md);
-                    } else {
-                        (DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter).IncludeInParameterSet(md, IsInvocation, ParameterSets);
+            var provider = providers.First();
+
+            try {
+
+                // if the provider is selected, we can get package metadata keys from the provider
+                foreach (var md in provider.GetDynamicOptions(OptionCategory.Source, this)) {
+
+                    if (MyInvocation.MyCommand.Parameters.ContainsKey(md.Name)) {
+                        // don't add it.
+                        continue;
                     }
-                } else {
-                    // DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md));
-                    DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
+
+                    if (DynamicParameterDictionary.ContainsKey(md.Name)) {
+
+                        // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
+                        var crdp = DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter;
+                        if (crdp == null) {
+                            // the provider is trying to overwrite a parameter that is already dynamically defined by the BaseCmdlet. 
+                            // just ignore it.
+                            continue;
+                        }
+
+                        if (IsInvocation) {
+                            crdp.Options.Add(md);
+                        }
+                        else {
+                            crdp.IncludeInParameterSet(md, IsInvocation, ParameterSets);
+                        }
+
+                    }
+                    else {
+                        DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
+                    }
                 }
+            }
+            finally {
+                _reentrancyLock.Reset();
             }
             return true;
         }
+#endif 
 
         public override bool ProcessRecordAsync() {
             if (Stopping) {
