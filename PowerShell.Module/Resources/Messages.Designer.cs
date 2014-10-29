@@ -215,7 +215,7 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to install, multiple packages matched &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Unable to install, multiple packages matched &apos;{0}&apos;. {1}.
         /// </summary>
         internal static string DisambiguateForInstall {
             get {
@@ -251,7 +251,7 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; matches multiple packages: &apos;{3}:{1}/{2}&apos;.
+        ///   Looks up a localized string similar to &apos;{0}&apos; matches package: &apos;{1}&apos;.
         /// </summary>
         internal static string MatchesMultiplePackages {
             get {

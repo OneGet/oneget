@@ -34,25 +34,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
-        /*
-        [Alias("ProviderName")]
-        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.SourceBySearchSet)]
-        public string Provider {get; set;}
-
-        public override string[] ProviderName {
-            get {
-                if (string.IsNullOrEmpty(Provider)) {
-                    return null;
-                }
-                return new[] {
-                    Provider
-                };
-            }
-            set {
-                // nothing
-            }
-        }
-        */
 
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
             if (!IsInvocation) {

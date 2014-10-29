@@ -53,13 +53,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Source { get; set; }
 
-        /*
-        [Alias("Provider")]
-        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
-        public override string[] ProviderName { get; set; }
-
-        */
-
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
             if (!IsInvocation) {
                 var providerNames = PackageManagementService.ProviderNames;
