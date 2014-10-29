@@ -110,7 +110,7 @@ namespace OneGet.PowerShell.Module.Test {
             Assert.False(IsNuGetInstalled, "NuGet is still installed at :".format(NuGetPath));
 
             dynamic ps = NewPowerShellSession;
-            // ask onget for the nuget package provider, bootstrapping if necessary
+            // ask oneget for the nuget package provider, bootstrapping if necessary
             DynamicPowershellResult result = ps.GetPackageProvider(Name: "NuGet", ForceBootstrap: true, Source: Source, IsTesting: true);
             Assert.False(result.ContainsErrors);
 
@@ -123,34 +123,38 @@ namespace OneGet.PowerShell.Module.Test {
             UnloadOneGet();
         }
 
-        [Fact(Timeout = 120000, Priority = 1, Skip = "Disabled. SetPackageSource does not work right now."), Trait("Test", "Primary")]
+        [Fact(Timeout = 120000, Priority = 1), Trait("Test", "Primary")]
         public void TestSetPackageSourceSuccessfulCombinations() {
             dynamic ps = NewPowerShellSession;
 
             try {
                 DynamicPowershellResult result = ps.RegisterPackageSource(Name: "nugettest.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
                 result.WaitForCompletion();
-                DynamicPowershellResult result2 = ps.SetPackageSource(Name: "nugettest.org", NewName: "nugettest3.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", NewLocation: "https://www.nuget.org/api/v2/", IsTesting: true);
+                DynamicPowershellResult result2 = ps.SetPackageSource(Name: "nugettest.org", NewName: "nugettest2.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", NewLocation: "https://www.nuget.org/api/v2/", IsTesting: true);
                 result2.WaitForCompletion();
                 DynamicPowershellResult result3 = ps.GetPackageSource(isTesting: true);
                 result3.WaitForCompletion();
                 List<dynamic> x = (from dynamic source in result3 select source.Name).ToList();
-                Assert.True(x.Contains("nugettest3.org"));
+                Assert.True(x.Contains("nugettest2.org"));
 
-                DynamicPowershellResult result4 = ps.RegisterPackageSource(Name: "nugettest10.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+                DynamicPowershellResult result4 = ps.RegisterPackageSource(Name: "nugettest3.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
                 result4.WaitForCompletion();
-                DynamicPowershellResult result5 = ps.SetPackageSource(Name: "nugettest10.org", NewName: "nugettest20.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", NewLocation: "https://www.nuget.org/api/v2/", IsTesting: true);
+                DynamicPowershellResult result5 = ps.SetPackageSource(Name: "nugettest3.org", NewName: "nugettest4.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", NewLocation: "https://www.nuget.org/api/v2/", IsTesting: true);
                 result5.WaitForCompletion();
                 DynamicPowershellResult result6 = ps.GetPackageSource(isTesting: true);
                 result6.WaitForCompletion();
                 List<dynamic> y = (from dynamic source in result6 select source.Name).ToList();
-                Assert.True(y.Contains("nugettest20.org"));
+                Assert.True(y.Contains("nugettest4.org"));
 
             } finally {
                 DynamicPowershellResult result7 = ps.UnregisterPackageSource(Name: "nugettest.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
                 result7.WaitForCompletion();
-                DynamicPowershellResult result8 = ps.UnregisterPackageSource(Name: "nugettest3.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+                DynamicPowershellResult result8 = ps.UnregisterPackageSource(Name: "nugettest2.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
                 result8.WaitForCompletion();
+                DynamicPowershellResult result9 = ps.UnregisterPackageSource(Name: "nugettest3.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+                result9.WaitForCompletion();
+                DynamicPowershellResult result10 = ps.UnregisterPackageSource(Name: "nugettest4.org", Provider: "nuget", Location: "https://www.nuget.org/api/v2/", IsTesting: true);
+                result10.WaitForCompletion();
             }
         }
 
@@ -551,24 +555,8 @@ namespace OneGet.PowerShell.Module.Test {
             }
         }
 
-        //[Fact(Timeout = 60000, Priority = 16), Trait("Test", "Primary")]
-        public void TestSetPackageSourcePipe() {
-            dynamic ps = NewPowerShellSession;
-
-            DynamicPowershellResult result = ps.RegisterPackageSource(Name: "nugettest.org", Location: "https://www.nuget.org/api/v2/", Provider: "nuget", Force: true, Source: Source, IsTesting: true);
-            result.WaitForCompletion();
-            DynamicPowershellResult result2 = ps.GetPackageSource(Provider: "Nuget", Name: "nugettest.org", Location: "https://www.nuget.org/api/v2", Source: Source, IsTesting: true);
-            result2.WaitForCompletion();
-            DynamicPowershellResult result3 = ps.SetPackageSource(result2, Provider: "nuget", NewName: "nugettest3.org", NewLocation: "https://www.nuget.org/api/v2/", Force: true, Source: Source, IsTesting: true);
-            result3.WaitForCompletion();
-            Assert.False(result3.ContainsErrors);
-            DynamicPowershellResult result4 = ps.UnregisterPackageSource(Name: "nugettest.org", Source: Source, IsTesting: true);
-            result4.WaitForCompletion();
-            DynamicPowershellResult result5 = ps.UnregisterPackageSource(Name: "nugettest3.org", Source: Source, IsTesting: true);
-            result5.WaitForCompletion();
-        }
-
-        [Fact(Timeout = 60000, Priority = 17), Trait("Test", "Primary")]
+        [
+            Fact(Timeout = 60000, Priority = 17), Trait("Test", "Primary")]
         public void TestGetPackageSourcePipe() {
             dynamic ps = NewPowerShellSession;
 
