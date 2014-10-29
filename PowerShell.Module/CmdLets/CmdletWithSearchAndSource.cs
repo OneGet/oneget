@@ -18,12 +18,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
+    using Utility;
     using Constants = OneGet.Constants;
 
     public abstract class CmdletWithSearchAndSource : CmdletWithSearch {
@@ -39,7 +39,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public virtual string[] Source {get; set;}
-
+            
         [Parameter]
         public virtual PSCredential Credential {get; set;}
 
@@ -52,6 +52,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
+        /*
         protected override IEnumerable<PackageProvider> SelectedProviders {
             get {
                 // filter on provider names  - if they specify a provider name, narrow to only those provider names.
@@ -72,6 +73,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return FilterProvidersUsingDynamicParameters(providers).ToArray();
             }
         }
+        */
+
 
         public override string GetCredentialUsername() {
             if (Credential != null) {
@@ -335,13 +338,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     if (name == string.Empty) {
                         // no name 
                         result = false;
-                        Error(Errors.NoPackagesFoundForProvider, _providersNotFindingAnything.Select(each => each.ProviderName).JoinWithComma());
+                        Error(Constants.Errors.NoPackagesFoundForProvider, _providersNotFindingAnything.Select(each => each.ProviderName).JoinWithComma());
                     } else {
                         if (WildcardPattern.ContainsWildcardCharacters(name)) {
-                            Verbose(Constants.NoMatchesForWildcard, name);
+                            Verbose(Constants.Messages.NoMatchesForWildcard, name);
                         } else {
                             result = false;
-                            Error(Errors.NoMatchFound, name);
+                            Error(Constants.Errors.NoMatchFound, name);
                         }
                     }
                 }
@@ -357,15 +360,47 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             var overMatched = _resultsPerName.Keys.Select(each => _resultsPerName[each])
                 .Where(each => each != null && each.Count > 1).ReEnumerable();
 
+            // todo: we should think this thru one more time. I'm not convinced we're doing the exact right thing.
+            // if there are overmatched packages we need to know why:
+            // are they found across multiple providers?
+            // are they found accross multiple sources?
+            // are they all from the same source?
+
             if (overMatched.Any()) {
+
                 foreach (var set in overMatched) {
+                    var suggestion = "";
+
+                    var providers = set.Select(each => each.ProviderName).Distinct().ToArray();
+                    var sources = set.Select(each => each.Source ).Distinct().ToArray();
+                    if (providers.Length == 1) {
+                        // it's matching this package multiple times in the same provider.
+                        if (sources.Length == 1) {
+                            // matching it from a single source.
+                            // be more exact on matching name? or version?
+                            // todo: make a resource for this
+                            suggestion = "Please specify an exact -Name and -RequiredVersion.";
+                        } else {
+                            // it's matching the same package from multiple sources
+                            // tell them to use -source
+                            // todo: make a resource for this
+                            suggestion = "Please specify a single -Source.";
+                        }
+                    } else {
+                        // found across multiple providers
+                        // must specify -provider 
+                        // todo: make a resource for this
+                        suggestion = "Please specify a single -ProviderName.";
+                    }
+                        
+
                     string searchKey = null;
 
                     foreach (var pkg in set) {
-                        Warning(Constants.MatchesMultiplePackages, pkg.SearchKey, pkg.Name, pkg.Version, pkg.ProviderName);
+                        Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, pkg.CanonicalId);
                         searchKey = pkg.SearchKey;
                     }
-                    Error(Errors.DisambiguateForInstall, searchKey);
+                    Error(Constants.Errors.DisambiguateForInstall, searchKey, suggestion);
                 }
                 return false;
             }

@@ -30,8 +30,8 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        public string GetMessageString(string messageText) {
-            return _hostApi.GetMessageString(messageText);
+        public string GetMessageString(string messageText, string defaultText) {
+            return _hostApi.GetMessageString(messageText,defaultText);
         }
 
         public bool Warning(string messageText) {

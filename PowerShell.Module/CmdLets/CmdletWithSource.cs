@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             : base(categories) {
         }
 
-        [Parameter(ParameterSetName = Constants.SourceByInputObjectSet, Mandatory = true, ValueFromPipeline = true)]
+        [Parameter(ParameterSetName = Constants.ParameterSets.SourceByInputObjectSet, Mandatory = true, ValueFromPipeline = true)]
         public PackageSource[] InputObject {get; set;}
 
         [Parameter]

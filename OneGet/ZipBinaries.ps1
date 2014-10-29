@@ -24,7 +24,7 @@ copy Microsoft.PowerShell.OneGet.dll .\tmpfiles
 copy OneGet.psd1 .\tmpfiles
 copy etc\PackageProviderFunctions.psm1 .\tmpfiles
 copy OneGet.format.ps1xml .\tmpfiles
-copy c:\root\bin\streams.exe .\tmpfiles
+copy c:\root\bin\sysinternals\streams.exe .\tmpfiles
 copy RunToUnBlock.cmd .\tmpfiles
 copy ReadMe.txt .\tmpfiles
 
@@ -43,6 +43,7 @@ ZipFiles $n .\tmpFiles
 rmdir -Recurse -Force  .\tmpfiles
 
 copy-itemex -force $n oneget:providers\
-copy-itemex -force $n oneget:providers\oneget.zip 
+#copy-itemex -force $n oneget:providers\oneget.zip 
 
-send-tweet -Message "Posted new #OneGet Experimental build https://oneget.org/$n"
+# send-tweet -Message "Posted new #OneGet Experimental build https://oneget.org/$n"
+echo build at https://oneget.org/$n

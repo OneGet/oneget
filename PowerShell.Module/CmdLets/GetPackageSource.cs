@@ -21,7 +21,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
 
-    [Cmdlet(VerbsCommon.Get, Constants.PackageSourceNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517137")]
+    [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageSourceNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517137")]
     public sealed class GetPackageSource : CmdletWithProvider {
         private readonly List<PackageSource> _unregistered = new List<PackageSource>();
         private bool _found;
@@ -123,7 +123,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     if (WriteSources(_unregistered)) {
                         return true;
                     }
-                    Warning(Constants.SourceNotFoundNoCriteria);
+                    Warning(Constants.Messages.SourceNotFoundNoCriteria);
                     return true;
                 }
 
@@ -132,7 +132,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     if (WriteSources(_unregistered.Where(each => each.Location.EqualsIgnoreCase(Location)))) {
                         return true;
                     }
-                    Warning(Constants.SourceNotFoundForLocation, Location);
+                    Warning(Constants.Messages.SourceNotFoundForLocation, Location);
                     return true;
                 }
 
@@ -140,7 +140,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (WriteSources(_unregistered.Where(each => each.Name.EqualsIgnoreCase(Name) || each.Location.EqualsIgnoreCase(Name)))) {
                     return true;
                 }
-                Warning(Constants.SourceNotFound, Name);
+                Warning(Constants.Messages.SourceNotFound, Name);
                 return true;
             }
             return true;

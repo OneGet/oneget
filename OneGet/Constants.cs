@@ -40,55 +40,53 @@ namespace Microsoft.OneGet {
 
         internal static class Features {
             internal const string AutomationOnly = "automation-only";
-            internal const string SupportedExtensions = "file-extensions";
             internal const string MagicSignatures = "magic-signatures";
+            internal const string SupportedExtensions = "file-extensions";
             internal const string SupportedSchemes = "uri-schemes";
             internal const string SupportsPowerShellModules = "supports-powershell-modules";
-
-            internal const string SupportsWildcardSearch = "supports-wildcard-search";
             internal const string SupportsRegexSearch = "supports-regex-search";
             internal const string SupportsSubstringSearch = "supports-substring-search";
+            internal const string SupportsWildcardSearch = "supports-wildcard-search";
         }
 
         internal static class Messages {
-            internal const string UnableToDownload = "MSG:UnableToDownload";
+            internal const string CreatefolderFailed = "MSG:CreatefolderFailed";
+            internal const string DependencyResolutionError = "MSG:UnableToResolveDependency_dependencyPackage";
+            internal const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependency";
+            internal const string DestinationPathNotSet = "MSG:DestinationPathNotSet";
             internal const string FailedProviderBootstrap = "MSG:FailedProviderBootstrap";
-            internal const string UnknownProvider = "MSG:UnknownProvider";
-            internal const string UserDeclinedUntrustedPackageInstall = "MSG:UserDeclinedUntrustedPackageInstall";
+            internal const string FileFailedVerification = "MSG:FileFailedVerification";
+            internal const string InvalidFilename = "MSG:InvalidFilename";
+            internal const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
+            internal const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
+            internal const string PackageSourceExists = "MSG:PackageSourceExists";
+            internal const string ProtocolNotSupported = "MSG:ProtocolNotSupported";
             internal const string ProviderPluginLoadFailure = "MSG:ProviderPluginLoadFailure";
             internal const string ProviderSwidtagUnavailable = "MSG:ProviderSwidtagUnavailable";
-            internal const string UnableToResolvePackage = "MSG:UnableToResolvePackage";
-            internal const string UnsupportedProviderType = "MSG:UnsupportedProviderType";
-            internal const string DestinationPathNotSet = "MSG:DestinationPathNotSet";
-            internal const string InvalidFilename = "MSG:InvalidFilename";
-            internal const string UnableToRemoveFile = "MSG:UnableToRemoveFile";
-            internal const string FileFailedVerification = "MSG:FileFailedVerification";
-            internal const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
+            internal const string RemoveEnvironmentVariableRequiresElevation = "MSG:RemoveEnvironmentVariableRequiresElevation";
             internal const string SchemeNotSupported = "MSG:SchemeNotSupported";
-            internal const string PackageProviderExists = "MSG:PackageProviderExists";
-            internal const string UnableToResolveSource = "MSG:UnableToResolveSource_NameOrLocation";
-            internal const string UnsupportedArchive = "MSG:UnsupportedArchive";
-            internal const string CreatefolderFailed = "MSG:CreatefolderFailed";
-            internal const string UnableToOverwriteExistingFile = "MSG:UnableToOverwriteExistingFile";
+            internal const string SourceLocationNotValid = "MSG:SourceLocationNotValid_Location";
             internal const string UnableToCopyFileTo = "MSG:UnableToCopyFileTo";
             internal const string UnableToCreateShortcutTargetDoesNotExist = "MSG:UnableToCreateShortcutTargetDoesNotExist";
-            internal const string RemoveEnvironmentVariableRequiresElevation = "MSG:RemoveEnvironmentVariableRequiresElevation";
-            internal const string UnknownFolderId = "MSG:UnknownFolderId";
-            internal const string ProtocolNotSupported = "MSG:ProtocolNotSupported";
+            internal const string UnableToDownload = "MSG:UnableToDownload";
+            internal const string UnableToOverwriteExistingFile = "MSG:UnableToOverwriteExistingFile";
+            internal const string UnableToRemoveFile = "MSG:UnableToRemoveFile";
+            internal const string UnableToResolvePackage = "MSG:UnableToResolvePackage";
+            internal const string UnableToResolveSource = "MSG:UnableToResolveSource_NameOrLocation";
             internal const string UnableToUninstallPackage = "MSG:UnableToUninstallPackage";
-
-            public const string SourceLocationNotValid = "MSG:SourceLocationNotValid_Location";
-            public const string UriSchemeNotSupported = "MSG:UriSchemeNotSupported_Scheme";
-            public const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
-            public const string DependencyResolutionError = "MSG:UnableToResolveDependency_dependencyPackage";
-            public const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependency";
+            internal const string UnknownFolderId = "MSG:UnknownFolderId";
+            internal const string UnknownProvider = "MSG:UnknownProvider";
+            internal const string UnsupportedArchive = "MSG:UnsupportedArchive";
+            internal const string UnsupportedProviderType = "MSG:UnsupportedProviderType";
+            internal const string UriSchemeNotSupported = "MSG:UriSchemeNotSupported_Scheme";
+            internal const string UserDeclinedUntrustedPackageInstall = "MSG:UserDeclinedUntrustedPackageInstall";
         }
 
         internal static class PackageStatus {
-            internal const string Installed = "Installed";
-            internal const string Uninstalled = "Uninstalled";
             internal const string Available = "Available";
             internal const string Dependency = "Dependency";
+            internal const string Installed = "Installed";
+            internal const string Uninstalled = "Uninstalled";
         }
 
         internal static class Parameters {
@@ -98,9 +96,9 @@ namespace Microsoft.OneGet {
         }
 
         internal static class Signatures {
-            internal const string Zip = "504b0304";
             internal const string Cab = "4D534346";
             internal const string OleCompoundDocument = "D0CF11E0A1B11AE1";
+            internal const string Zip = "504b0304";
             internal static string[] ZipVariants = new[] {Zip, /* should have EXEs? */};
         }
 

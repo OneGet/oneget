@@ -18,7 +18,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
 
-    [Cmdlet(VerbsCommon.Find, Constants.PackageNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517132"), OutputType(typeof(SoftwareIdentity))]
+    [Cmdlet(VerbsCommon.Find, Constants.Nouns.PackageNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517132"), OutputType(typeof(SoftwareIdentity))]
     public sealed class FindPackage : CmdletWithSearchAndSource {
         public FindPackage()
             : base(new[] {

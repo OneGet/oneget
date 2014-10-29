@@ -95,7 +95,7 @@ namespace Microsoft.OneGet.Test {
             return true;
         }
 
-        public string GetMessageString(string messageText) {
+        public string GetMessageString(string messageText, string defaultText) {
             return null;
         }
 

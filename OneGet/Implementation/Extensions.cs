@@ -24,7 +24,7 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
-                messageText = request.GetMessageString(messageText.Substring(Constants.MSGPrefix.Length)) ?? messageText;
+                messageText = request.GetMessageString(messageText.Substring(Constants.MSGPrefix.Length),messageText) ?? messageText;
             }
 
             return args == null || args.Length == 0 ? messageText : messageText.format(args);

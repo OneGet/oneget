@@ -22,7 +22,7 @@ namespace Microsoft.OneGet.Api {
         #region declare host-apis
 
         /* Synced/Generated code =================================================== */
-        string GetMessageString(string messageText);
+        string GetMessageString(string messageText, string defaultText);
 
         bool Warning(string messageText);
 

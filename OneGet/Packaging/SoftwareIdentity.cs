@@ -56,6 +56,12 @@ namespace Microsoft.OneGet.Packaging {
             }
         }
 
+        public string CanonicalId {
+            get {
+                return string.Format("{0}:{1}/{2}#{3}", ProviderName, Name, Version, Source);
+            }
+        }
+
         #endregion
 
         #region ISO-19770-2-2014 metadata
