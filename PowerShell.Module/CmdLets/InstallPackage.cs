@@ -59,12 +59,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Source {get; set;}
 
-        /*
-        [Alias("Provider")]
-        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.PackageBySearchSet)]
-        public override string[] ProviderName {get; set;}
-        */
-
+      
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
             if (!IsInvocation) {
                 var providerNames = PackageManagementService.ProviderNames;
@@ -164,6 +159,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 progressId = StartProgress(0, "Installing {0} packages", packagesToInstall.Length);
             }
             var n = 0;
+
             foreach (var pkg in packagesToInstall) {
                 if (packagesToInstall.Length > 1) {
                     Progress(progressId, (n*100/packagesToInstall.Length) + 1, "Installing Package '{0}' ({1} of {2})", pkg.Name, ++n, packagesToInstall.Length);
@@ -173,6 +169,26 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     Error(Constants.Errors.UnknownProvider, pkg.ProviderName);
                     return false;
                 }
+
+                // quickly check to see if this package is already installed.
+                var installedPkgs = provider.GetInstalledPackages(pkg.Name, this).CancelWhen(_cancellationEvent.Token).ToArray();
+                if (IsCanceled) {
+                    // if we're stopping, just get out asap.
+                    return false;
+                }
+
+                // todo: this is a terribly simplistic way to do this, we'd better rethink this soon
+                if (installedPkgs.Any(each => each.Name.EqualsIgnoreCase(pkg.Name) && each.Version.EqualsIgnoreCase(pkg.Version))) {
+                    // it looks like it's already installed.
+                    // skip it.
+                    Verbose("Skipping installed package {0} {1}", pkg.Name,pkg.Version);
+
+                    if (packagesToInstall.Length > 1) {
+                        Progress(progressId, (n * 100 / packagesToInstall.Length) + 1, "Skipping Installed Package '{0}' ({1} of {2})", pkg.Name, n, packagesToInstall.Length);
+                    }
+                    continue;
+                }
+
                 try {
                     // if (WhatIf) {
                     // we should just tell it which packages will be installed.
@@ -202,6 +218,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             return true;
         }
+
+       
 
         public bool ShouldProcessPackageInstall(string packageName, string version, string source) {
             try {

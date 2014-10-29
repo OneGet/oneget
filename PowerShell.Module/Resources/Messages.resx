@@ -131,8 +131,8 @@
 {1} - package name</comment>
   </data>
   <data name="DisambiguateForInstall" xml:space="preserve">
-    <value>Unable to install, multiple packages matched '{0}'.</value>
-    <comment>{0} - search criteria</comment>
+    <value>Unable to install, multiple packages matched '{0}'. {1}</value>
+    <comment>{0} - search criteria, {1} - suggestion</comment>
   </data>
   <data name="DisambiguateForUninstall" xml:space="preserve">
     <value>Unable to uninstall, multiple packages matched '{0}'.</value>
@@ -159,8 +159,8 @@
     <comment>action 'install package'</comment>
   </data>
   <data name="MatchesMultiplePackages" xml:space="preserve">
-    <value>'{0}' matches multiple packages: '{3}:{1}/{2}'</value>
-    <comment>{0} search criteria {1} package name {2} package version {3} package provider</comment>
+    <value>'{0}' matches package: '{1}'</value>
+    <comment>{0} search criteria {1} canonical package name </comment>
   </data>
   <data name="TargetPackageSource" xml:space="preserve">
     <value>Package Source '{0}' ({1}) in provider '{2}'</value>

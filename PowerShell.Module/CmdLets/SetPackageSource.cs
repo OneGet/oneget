@@ -19,6 +19,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Set, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.ParameterSets.SourceBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517141")]
@@ -35,25 +36,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
-        /*
-        [Alias("ProviderName")]
-        [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.SourceBySearchSet, Mandatory = true)]
-        public string Provider {get; set;}
-
-        public override string[] ProviderName {
-            get {
-                if (string.IsNullOrEmpty(Provider)) {
-                    return null;
-                }
-                return new[] {Provider};
-            }
-            set {
-                // nothing
-            }
-        }
-        */
-
-
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
             if (!IsInvocation) {
                 var providerNames = PackageManagementService.ProviderNames;
@@ -65,7 +47,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true,
-                        ParameterSetName = Constants.ParameterSets.SourceBySearchSet
+                        ParameterSetName = Constants.ParameterSets.SourceBySearchSet,
                     },
                     new AliasAttribute("Provider"),
                     new ValidateSetAttribute(providerNames.ToArray())
@@ -75,7 +57,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true,
-                        ParameterSetName = Constants.ParameterSets.SourceBySearchSet
+                        ParameterSetName = Constants.ParameterSets.SourceBySearchSet,
                     },
                     new AliasAttribute("Provider")
                 }));
@@ -110,20 +92,54 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
-        public override IEnumerable<string> GetOptionKeys() {
-            return base.GetOptionKeys().ConcatSingleItem("IsUpdatePackageSource").ByRef();
-        }
+        /// <summary>
+        ///     This can be used when we want to override some of the functions that are passed
+        ///     in as the implementation of the IHostApi (ie, 'request object').
+        ///     Because the DynamicInterface DuckTyper will use all the objects passed in in order
+        ///     to implement a given API, if we put in delegates to handle some of the functions
+        ///     they will get called instead of the implementation in the current class. ('this')
+        /// </summary>
+        private object WithUpdatePackageSource {
+            get {
+                return new object[] {
+                    new {
+                        // override the GetOptionKeys and the GetOptionValues on the fly.
 
-        public override IEnumerable<string> GetOptionValues(string key) {
-            if (key != null && key.EqualsIgnoreCase("IsUpdatePackageSource")) {
-                return "true".SingleItemAsEnumerable().ByRef();
+                        GetOptionKeys = new Func<IEnumerable<string>>(() => {
+                            return GetOptionKeys().ConcatSingleItem("IsUpdatePackageSource").ByRef();
+                        }),
+
+                        GetOptionValues = new Func<string, IEnumerable<string>>((key) => {
+                            if (key != null && key.EqualsIgnoreCase("IsUpdatePackageSource")) {
+                                return "true".SingleItemAsEnumerable().ByRef();
+                            }
+                            return GetOptionValues(key);                        
+                        })
+                    },
+                    this,
+                };
             }
-            return base.GetOptionValues(key);
         }
 
         private void UpdatePackageSource(PackageSource source) {
-            foreach (var src in source.Provider.AddPackageSource(string.IsNullOrEmpty(NewName) ? source.Name : NewName, string.IsNullOrEmpty(NewLocation) ? source.Location : NewLocation, Trusted, this)) {
-                WriteObject(src);
+            if (string.IsNullOrEmpty(NewName)) {
+                // this is a replacement of an existing package source, we're *not* changing the name. (easy)
+
+                foreach (var src in source.Provider.AddPackageSource(string.IsNullOrEmpty(NewName) ? source.Name : NewName, string.IsNullOrEmpty(NewLocation) ? source.Location : NewLocation, Trusted, WithUpdatePackageSource)) {
+                    WriteObject(src);
+                }
+
+            } else {
+                // we're renaming a source. 
+                // a bit more messy at this point
+                // create a new package source first
+                
+                foreach (var src in source.Provider.AddPackageSource(NewName, string.IsNullOrEmpty(NewLocation) ? source.Location : NewLocation, Trusted.IsPresent ? Trusted.ToBool() : source.IsTrusted, this)) {
+                    WriteObject(src);
+                }
+
+                // remove the old one.
+                source.Provider.RemovePackageSource(source.Name, this).Wait();
             }
         }
 

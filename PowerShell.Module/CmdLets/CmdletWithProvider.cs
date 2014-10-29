@@ -34,7 +34,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         private string[] _providerName;
-        public virtual string[] ProviderName {
+        public string[] ProviderName {
             get {
                 return _providerName ?? (_providerName = GetDynamicParameterValue<string[]>("ProviderName"));
             }
