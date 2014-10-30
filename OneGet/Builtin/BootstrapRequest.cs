@@ -26,7 +26,7 @@ namespace Microsoft.OneGet.Builtin {
     using Utility.Versions;
     using Utility.Xml;
 
-    public abstract class BoostrapRequest : Request {
+    public abstract class BootstrapRequest : Request {
         private static XmlNamespaceManager _namespaceManager;
 
         internal static XmlNamespaceManager NamespaceManager {
@@ -43,7 +43,15 @@ namespace Microsoft.OneGet.Builtin {
 
         internal string DestinationPath {
             get {
-                return Path.GetFullPath(GetValue("DestinationPath"));
+                var v = GetValue("DestinationPath");
+                if (string.IsNullOrEmpty(v)) {
+                    // use a well-known path.
+                    v = GetKnownFolder("ProviderAssemblyLocation", this);
+                    if (string.IsNullOrEmpty(v)) {
+                        return null;
+                    }
+                }
+                return Path.GetFullPath(v);
             }
         }
 

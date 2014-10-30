@@ -28,6 +28,8 @@ namespace Microsoft.OneGet {
     public interface IPackageManagementService {
         IEnumerable<string> ProviderNames {get;}
 
+        IEnumerable<string> AllProviderNames { get; }
+
         IEnumerable<PackageProvider> PackageProviders {get;}
         bool Initialize(IRequestObject requestObject);
 

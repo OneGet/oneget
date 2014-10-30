@@ -108,7 +108,46 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             Verbose("Suppressed Warning", messageText);
 #endif
                             return true;
-                        })
+                        }),
+                    },
+                    this,
+                };
+            }
+        }
+
+        /// <summary>
+        ///     This can be used when we want to override some of the functions that are passed
+        ///     in as the implementation of the IHostApi (ie, 'request object').
+        ///     Because the DynamicInterface DuckTyper will use all the objects passed in in order
+        ///     to implement a given API, if we put in delegates to handle some of the functions
+        ///     they will get called instead of the implementation in the current class. ('this')
+        /// </summary>
+        protected object SuppressErrorsAndWarningsAndBootstrapping {
+            get {
+                return new object[] {
+                    new {
+                        Error = new Func<string, string, string, string, bool>((id, cat, targetobjectvalue, messageText) => {
+#if DEBUG
+                            Verbose("Suppressed Error", messageText);
+#endif
+                            return false;
+                        }),
+                        Warning = new Func<string, bool>((messageText) => {
+#if DEBUG
+                            Verbose("Suppressed Warning", messageText);
+#endif
+                            return true;
+                        }),
+                        IsInvocation = new Func<bool>(() => {
+                            return false;
+                        }),
+                        ShouldBootstrapProvider = new Func<string,string,string,string,string,string,bool>((s1,s2,s3,s4,s5,s6) => {
+                            return false;
+                        }),
+                        IsInteractive = new Func<bool>(() => {
+                            return false;
+                        }),
+
                     },
                     this,
                 };

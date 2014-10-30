@@ -856,6 +856,12 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             if (IsCanceled || !IsInvocation) {
                 return false.AsResultTask();
             }
+
+            // it is apparently OK to have this called during dynamic parameter generation 
+            if (IsBeforeProcessing) {
+                return base.ShouldContinue(query, caption).AsResultTask();
+            }
+
             return QueueMessage(() => base.ShouldContinue(query, caption));
         }
 

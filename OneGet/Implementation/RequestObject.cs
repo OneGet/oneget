@@ -640,6 +640,19 @@ namespace Microsoft.OneGet.Implementation {
                     if (knownFolder.Equals("tmp", StringComparison.OrdinalIgnoreCase) || knownFolder.Equals("temp", StringComparison.OrdinalIgnoreCase)) {
                         return FilesystemExtensions.TempPath;
                     }
+
+                    if (knownFolder.Equals("SystemAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
+                        return PackageManager._instance.SystemAssemblyLocation;
+                    }
+
+                    if (knownFolder.Equals("UserAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
+                        return PackageManager._instance.UserAssemblyLocation;
+                    }
+
+                    if (knownFolder.Equals("ProviderAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
+                        return AdminPrivilege.IsElevated ? PackageManager._instance.SystemAssemblyLocation : PackageManager._instance.UserAssemblyLocation;
+                    }
+
                     KnownFolder folder;
                     if (Enum.TryParse(knownFolder, true, out folder)) {
                         return KnownFolders.GetFolderPath(folder);

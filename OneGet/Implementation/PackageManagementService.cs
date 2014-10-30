@@ -102,7 +102,7 @@ namespace Microsoft.OneGet.Implementation {
         ///     (currently a hardcoded list, soon, registry driven)
         /// </summary>
         /// <param name="request"></param>
-        private void LoadProviders(IRequest request) {
+        internal void LoadProviders(IRequest request) {
             var providerAssemblies = (_initialized ? Enumerable.Empty<string>() : _defaultProviders)
                 .Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET"))
                 .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"))
@@ -152,6 +152,18 @@ namespace Microsoft.OneGet.Implementation {
         public IEnumerable<string> ProviderNames {
             get {
                 return _packageProviders.Keys.ByRef();
+            }
+        }
+
+        internal string[] BootstrappableProviderNames;
+
+        public IEnumerable<string> AllProviderNames {
+            get {
+                if (BootstrappableProviderNames.IsNullOrEmpty()) {
+                    return _packageProviders.Keys.ByRef();
+                }
+
+                return _packageProviders.Keys.Union(BootstrappableProviderNames).ByRef();
             }
         }
 

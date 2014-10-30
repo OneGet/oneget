@@ -236,7 +236,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected virtual void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
             if (!IsInvocation) {
-                var providerNames = PackageManagementService.ProviderNames;
+                var providerNames = PackageManagementService.AllProviderNames;
                 var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
                 if (whatsOnCmdline != null) {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
@@ -334,7 +334,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected DynamicOption[] CachedDynamicOptions {
             get {
-                return GetType().GetOrAdd(() => CachedSelectedProviders.SelectMany(provider => _optionCategories.SelectMany(category => provider.GetDynamicOptions(category, this))).ToArray(), "CachedDynamicOptions");
+                return GetType().GetOrAdd(() => CachedSelectedProviders.SelectMany(provider => _optionCategories.SelectMany(category => provider.GetDynamicOptions(category, SuppressErrorsAndWarnings))).ToArray(), "CachedDynamicOptions");
             } 
         }
 
