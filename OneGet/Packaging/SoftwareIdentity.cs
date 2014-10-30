@@ -58,7 +58,7 @@ namespace Microsoft.OneGet.Packaging {
 
         public string CanonicalId {
             get {
-                return string.Format("{0}:{1}/{2}#{3}", ProviderName, Name, Version, Source);
+                return "{0}:{1}/{2}#{3}".format( ProviderName, Name, Version, Source);
             }
         }
 

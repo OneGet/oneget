@@ -17,6 +17,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Implementation;
@@ -34,6 +35,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         private string[] _providerName;
+
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "Used in a powershell parameter.")]
         public string[] ProviderName {
             get {
                 return _providerName ?? (_providerName = GetDynamicParameterValue<string[]>("ProviderName"));
@@ -167,7 +170,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         protected IEnumerable<PackageProvider> FilterProvidersUsingDynamicParameters(MutableEnumerable<PackageProvider> providers, bool didUserSpecifyProviders, bool didUserSpecifySources) {
             var excluded = new Dictionary<string, IEnumerable<string>>();
 
-            var found = false;
             var setparameters = DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).ReEnumerable();
 
             var matchedProviders = (setparameters.Any() ? providers.Where(p => setparameters.All(each => each.Options.Any(opt => opt.ProviderName == p.ProviderName))) : providers).ReEnumerable();
@@ -177,7 +179,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 // we'll collect these for warnings at the end of the filter.
                 var missingRequiredParameters = DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => !each.IsSet && each.IsRequiredForProvider(provider.ProviderName)).ReEnumerable();
                 if (!missingRequiredParameters.Any()) {
-                    found = true;
                     yield return provider;
                 } else {
                     // remember these so we can warn later.
@@ -326,12 +327,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return true;
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "It's a performance thing.")]
         protected PackageProvider[] CachedSelectedProviders {
             get {
                 return GetType().GetOrAdd(() => SelectedProviders.ToArray(), "CachedSelectedProviders");
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "It's a performance thing.")]
         protected DynamicOption[] CachedDynamicOptions {
             get {
                 return GetType().GetOrAdd(() => CachedSelectedProviders.SelectMany(provider => _optionCategories.SelectMany(category => provider.GetDynamicOptions(category, SuppressErrorsAndWarnings))).ToArray(), "CachedDynamicOptions");
@@ -413,7 +416,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     GetType().Remove<DynamicOption[]>("CachedDynamicOptions");
                 }
             }
-            return true;
+            // return true;
         }
     }
 }

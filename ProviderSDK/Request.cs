@@ -283,18 +283,9 @@ namespace OneGet.ProviderSDK {
         private static string FixMeFormat(string formatString, object[] args) {
             if (args == null || args.Length == 0) {
                 // not really any args, and not really expectng any
-                if (formatString.IndexOf("{") > -1 || formatString.IndexOf("}") > -1) {
-                    return string.Format("/* BRACES PRESENT -- NO FORMAT ARGS */ {0}", formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'));
-                }
-                // no args, none expected, return the string unmodified.
-                return formatString;
+                return formatString.Replace('{', '\u00ab').Replace('}', '\u00bb');
             }
-
-            if (formatString.IndexOf("{") > -1 || formatString.IndexOf("}") > -1) {
-                return string.Format("/* BRACES PRESENT -- ARGUMENT COUNT MISMATCH */ {0}", args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg)));
-            }
-
-            return string.Format("/* BRACES NOT PRESENT -- ARGUMENT COUNT MISMATCH */ {0}", args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg)));
+            return args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
         }
 
         public SecureString Password {
