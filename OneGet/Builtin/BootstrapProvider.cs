@@ -27,9 +27,9 @@ namespace Microsoft.OneGet.Builtin {
 
     public class BootstrapProvider {
         private static readonly string[] _urls = {
-// #if LOCAL_DEBUG
+#if LOCAL_DEBUG
             "http://localhost:81/providers.swidtag",
-// #endif 
+#endif 
             "http://go.microsoft.com/fwlink/?LinkID=517832",
             "https://oneget.org/providers.swidtag"
         };
