@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Implementation {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -27,6 +28,7 @@ namespace Microsoft.OneGet.Implementation {
     using Utility.Extensions;
     using Utility.Platform;
     using Utility.Plugin;
+    using Utility.Versions;
     using Win32;
     using IRequestObject = System.Object;
 
@@ -113,6 +115,15 @@ namespace Microsoft.OneGet.Implementation {
                     return Enumerable.Empty<string>();
                 }));
 
+            providerAssemblies = providerAssemblies.OrderByDescending(each => {
+                try {
+                    // try to get a version from the file first
+                    return (ulong)(FourPartVersion)FileVersionInfo.GetVersionInfo(each);
+                } catch {
+                    // otherwise we can't make a distinction.
+                    return (ulong)0;
+                }
+            });
             providerAssemblies = providerAssemblies.Distinct(new PathEqualityComparer(PathCompareOption.FileWithoutExtension));
 
             // there is no trouble with loading providers concurrently.
