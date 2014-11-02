@@ -13,6 +13,7 @@
 //
 
 namespace Microsoft.OneGet {
+    using System.Diagnostics;
     using System.Linq;
     using System.Runtime.Remoting;
     using System.Runtime.Remoting.Channels;

@@ -371,11 +371,21 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         // var all_parameters = MyInvocation.MyCommand.Parameters;
 
                         // ask for the unbound arguments.
-                        var unbound = UnboundArguments;
+                          var unbound = UnboundArguments;
 
                         if (unbound.ContainsKey("ProviderName")) {
-                            ProviderName = unbound["ProviderName"] as string[];
+                            var pName = unbound["ProviderName"];
+                            if (pName != null) {
+                                ProviderName = pName as string[] ?? new[] { pName.ToString() };
+                            }
+                            
+                        } else if( unbound.ContainsKey("Provider") ) {
+                            var pName = unbound["Provider"];
+                            if (pName != null) {
+                                ProviderName = pName as string[] ?? new[] { pName.ToString() };
+                            }
                         }
+
                         // we've now got a copy of the arguments that aren't bound 
                         // and we can potentially narrow the provider selection based 
                         // on arguments the user specified.

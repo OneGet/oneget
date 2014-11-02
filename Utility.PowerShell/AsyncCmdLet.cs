@@ -988,7 +988,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     var parameterBinder = TryGetProperty(processor, "CmdletParameterBinderController");
                     var args = TryGetProperty(parameterBinder, "UnboundArguments") as IEnumerable;
 
-                    _unboundArguments = new Dictionary<string, object>();
+                    _unboundArguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
                     if (args != null) {
                         var currentParameterName = string.Empty;
                         int i = 0;
