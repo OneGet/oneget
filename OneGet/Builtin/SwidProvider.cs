@@ -37,6 +37,7 @@ namespace Microsoft.OneGet.Builtin {
     ///     todo: Give this class a proper name
     /// </summary>
     public class SwidProvider {
+#if DISABLE_FOR_THIS_MILESTONE
         /// <summary>
         ///     The name of this Package Provider
         ///     todo: Change this to the common name for your package provider.
@@ -558,5 +559,6 @@ namespace Microsoft.OneGet.Builtin {
                 Debug.WriteLine("Unexpected Exception thrown in '{0}::CompleteFind' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
+#endif
     }
 }
