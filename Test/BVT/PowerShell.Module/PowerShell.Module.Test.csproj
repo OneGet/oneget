@@ -52,7 +52,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChocolateyProviderTest.cs" />
     <Compile Include="PerformanceTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="NugetProviderTest.cs" />

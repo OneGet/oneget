@@ -43,7 +43,7 @@ ZipFiles $n .\tmpFiles
 rmdir -Recurse -Force  .\tmpfiles
 
 copy-itemex -force $n oneget:providers\
-#copy-itemex -force $n oneget:providers\oneget.zip 
+copy-itemex -force $n oneget:providers\oneget.zip 
 
-# send-tweet -Message "Posted new #OneGet Experimental build https://oneget.org/$n"
+send-tweet -Message "Posted new #OneGet *Experimental* build https://oneget.org/$n"
 echo build at https://oneget.org/$n

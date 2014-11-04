@@ -26,7 +26,9 @@ namespace Microsoft.OneGet {
         internal const int TimeoutAfterCancel = 60;
         internal const int ResponsivenessAfterCancel = 1;
         internal static TimeSpan DefaultCallTimeout = TimeSpan.FromMinutes(60);
-        internal static TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(15);
+        // TODO: Setting responsiveness to 15 minutes until we know that 
+        // we're handling it all right.
+        internal static TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(15 * 60); 
 
         internal static TimeSpan Zero = new TimeSpan(0);
 

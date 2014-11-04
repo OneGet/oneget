@@ -62,7 +62,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
       
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
             if (!IsInvocation) {
-                var providerNames = PackageManagementService.ProviderNames;
+                var providerNames = PackageManagementService.AllProviderNames;
                 var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
                 if (whatsOnCmdline != null) {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
@@ -178,15 +178,17 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }
 
                 // todo: this is a terribly simplistic way to do this, we'd better rethink this soon
-                if (installedPkgs.Any(each => each.Name.EqualsIgnoreCase(pkg.Name) && each.Version.EqualsIgnoreCase(pkg.Version))) {
-                    // it looks like it's already installed.
-                    // skip it.
-                    Verbose("Skipping installed package {0} {1}", pkg.Name,pkg.Version);
+                if (!Force) {
+                    if (installedPkgs.Any(each => each.Name.EqualsIgnoreCase(pkg.Name) && each.Version.EqualsIgnoreCase(pkg.Version))) {
+                        // it looks like it's already installed.
+                        // skip it.
+                        Verbose("Skipping installed package {0} {1}", pkg.Name, pkg.Version);
 
-                    if (packagesToInstall.Length > 1) {
-                        Progress(progressId, (n * 100 / packagesToInstall.Length) + 1, "Skipping Installed Package '{0}' ({1} of {2})", pkg.Name, n, packagesToInstall.Length);
+                        if (packagesToInstall.Length > 1) {
+                            Progress(progressId, (n*100/packagesToInstall.Length) + 1, "Skipping Installed Package '{0}' ({1} of {2})", pkg.Name, n, packagesToInstall.Length);
+                        }
+                        continue;
                     }
-                    continue;
                 }
 
                 try {

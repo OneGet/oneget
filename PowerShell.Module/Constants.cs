@@ -18,7 +18,10 @@ namespace Microsoft.PowerShell.OneGet {
 
     internal static class Constants {
         internal const int DefaultTimeout = 60*60; // 60 minutes
-        internal const int DefaultResponsiveness = 30; // 30 seconds
+        // todo: setting responsiveness to 15 minutes until we're sure 
+        // that it works right
+        internal const int DefaultResponsiveness = 15 * 60 ; // 30 seconds
+        // internal const int DefaultResponsiveness = 30; // 30 seconds
 
         // cmdlet naming/etc
 

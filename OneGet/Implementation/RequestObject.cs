@@ -27,6 +27,7 @@ namespace Microsoft.OneGet.Implementation {
     using System.Threading;
     using System.Threading.Tasks;
     using Api;
+    using Resources;
     using Utility.Async;
     using Utility.Collections;
     using Utility.Extensions;
@@ -76,8 +77,19 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
+        public string DropMsgPrefix(string messageText) {
+            if (string.IsNullOrEmpty(messageText)) {
+                return messageText;
+            }
+            return messageText.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase) ? messageText.Substring(4) : messageText;
+        }
+
         public string GetMessageString(string messageText, string defaultText) {
             if (CanCallHost) {
+                if (string.IsNullOrWhiteSpace(defaultText) || defaultText.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase)) {
+                    defaultText = Messages.ResourceManager.GetString(DropMsgPrefix(messageText));
+                }
+
                 return _hostApi.GetMessageString(messageText,defaultText);
             }
             return null;
@@ -640,6 +652,19 @@ namespace Microsoft.OneGet.Implementation {
                     if (knownFolder.Equals("tmp", StringComparison.OrdinalIgnoreCase) || knownFolder.Equals("temp", StringComparison.OrdinalIgnoreCase)) {
                         return FilesystemExtensions.TempPath;
                     }
+
+                    if (knownFolder.Equals("SystemAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
+                        return PackageManager._instance.SystemAssemblyLocation;
+                    }
+
+                    if (knownFolder.Equals("UserAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
+                        return PackageManager._instance.UserAssemblyLocation;
+                    }
+
+                    if (knownFolder.Equals("ProviderAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
+                        return AdminPrivilege.IsElevated ? PackageManager._instance.SystemAssemblyLocation : PackageManager._instance.UserAssemblyLocation;
+                    }
+
                     KnownFolder folder;
                     if (Enum.TryParse(knownFolder, true, out folder)) {
                         return KnownFolders.GetFolderPath(folder);

@@ -15,23 +15,25 @@
 namespace Microsoft.OneGet.Builtin {
     using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using System.IO;
     using System.Linq;
     using Implementation;
     using Packaging;
+    using Utility.Async;
     using Utility.Extensions;
     using Utility.Platform;
     using Utility.Plugin;
+    using Utility.Xml;
     using IRequestObject = System.Object;
 
     public class BootstrapProvider {
         private static readonly string[] _urls = {
 #if LOCAL_DEBUG
-            "http://localhost:81/OneGet-Bootstrap.swidtag",
+            "http://localhost:81/providers.swidtag",
 #endif 
-            "https://go.microsoft.com/fwlink/?LinkId=404337",
-            "https://go.microsoft.com/fwlink/?LinkId=404338",
-            "https://oneget.org/oneget-providers.swidtag"
+            "http://go.microsoft.com/fwlink/?LinkID=517832",
+            "https://oneget.org/providers.swidtag"
         };
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
@@ -57,6 +59,13 @@ namespace Microsoft.OneGet.Builtin {
         }
 
         public void InitializeProvider(IRequestObject requestObject) {
+            // we should go find out what's available once here just to make sure that 
+            // we have a list 
+            try {
+                PackageManager._instance.BootstrappableProviderNames = GetProviders(requestObject.As<BootstrapRequest>()).Select(provider => provider.Attributes["name"]).ToArray();
+            } catch {
+                
+            }
         }
 
         public void GetFeatures(IRequestObject requestObject) {
@@ -77,7 +86,7 @@ namespace Microsoft.OneGet.Builtin {
                 throw new ArgumentNullException("requestObject");
             }
 
-            using (var request = requestObject.As<BoostrapRequest>()) {
+            using (var request = requestObject.As<BootstrapRequest>()) {
                 try {
                     request.Debug("Calling 'Bootstrap::GetDynamicOptions ({0})'", category);
 
@@ -100,6 +109,18 @@ namespace Microsoft.OneGet.Builtin {
             }
         }
 
+        private IEnumerable<DynamicElement> GetProviders(BootstrapRequest request) {
+            var master = request.DownloadSwidtag(_urls);
+            if (master == null) {
+                request.Warning(Constants.Messages.ProviderSwidtagUnavailable);
+                return Enumerable.Empty<DynamicElement>();
+            }
+
+            // they are looking for a provider 
+            // return all providers 
+            return request.GetProviders(master);
+        }
+
         // --- Finds packages ---------------------------------------------------------------------------------------------------
         /// <summary>
         /// </summary>
@@ -114,7 +135,7 @@ namespace Microsoft.OneGet.Builtin {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
             }
-            using (var request = requestObject.As<BoostrapRequest>()) {
+            using (var request = requestObject.As<BootstrapRequest>()) {
                 request.Debug("Calling 'Bootstrap::FindPackage'");
 
                 var master = request.DownloadSwidtag(_urls);
@@ -153,7 +174,7 @@ namespace Microsoft.OneGet.Builtin {
                 throw new ArgumentNullException("requestObject");
             }
 
-            using (var request = requestObject.As<BoostrapRequest>()) {
+            using (var request = requestObject.As<BootstrapRequest>()) {
                 request.Debug("Calling 'Bootstrap::GetInstalledPackages'");
                 // return all the package providers as packages
             }
@@ -164,8 +185,249 @@ namespace Microsoft.OneGet.Builtin {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
             }
-            using (var request = requestObject.As<BoostrapRequest>()) {
+            using (var request = requestObject.As<BootstrapRequest>()) {
                 request.Debug("Calling 'Bootstrap::DownloadPackage'");
+            }
+        }
+
+        private void InstallProviderFromInstaller(DynamicElement provider, string fastPath, BootstrapRequest request) {
+            string tmpFile = null;
+            var failedBecauseInvalid = false;
+            // download the file
+            foreach (var link in provider.XPath("/swid:SoftwareIdentity/swid:Link[@rel = 'installationmedia']")) {
+                var href = link.Attributes["href"];
+                if (string.IsNullOrEmpty(href) || !Uri.IsWellFormedUriString(href, UriKind.Absolute)) {
+                    request.Debug("Bad or missing uri: {0}", href);
+                    continue;
+                }
+
+                var artifact = link.Attributes["artifact"];
+
+
+                try {
+                    tmpFile = artifact.GenerateTemporaryFilename();
+
+                    request.Debug("Downloading '{0}' to '{1}'", href, tmpFile);
+
+                    if (!request.DownloadFileToLocation(new Uri(href), tmpFile)) {
+                        request.Debug("Failed download of '{0}'", href);
+                        continue;
+                    }
+
+                    request.Debug("Verifying the package");
+
+                    var valid = request.IsSignedAndTrusted(tmpFile, request);
+
+                    if (!valid) {
+                        request.Debug("Not Valid file '{0}' => '{1}'", href, tmpFile);
+                        failedBecauseInvalid = true;
+                        request.Warning(Constants.Messages.FileFailedVerification, href);
+#if !DEBUG
+                                tmpFile.TryHardToDelete();
+                                continue;
+#endif
+                    }
+
+
+                    // we have a valid file.
+                    // run the installer
+                    if (request.Install(tmpFile, "", request)) {
+                        // it installed ok!
+                        request.YieldFromSwidtag(provider, null, null, null, fastPath);
+                        PackageManager._instance.LoadProviders(request);
+                    } else {
+                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.FailedProviderBootstrap, fastPath);
+                    }
+
+                } catch (Exception e) {
+                    e.Dump();
+                }
+                finally {
+                    if (!string.IsNullOrEmpty(tmpFile)) {
+                        tmpFile.TryHardToDelete();
+                    }
+                }
+            }
+            if (failedBecauseInvalid) {
+                request.Error(ErrorCategory.InvalidData, fastPath, Constants.Messages.FileFailedVerification, fastPath);
+            }
+        }
+
+        private void InstallModuleProvider(DynamicElement provider, string fastPath, BootstrapRequest request) {
+            // This is a prototype for a general provider installer
+            // really, this is going away as soon as we have a real swidtag provider.
+
+            // 'package' may not be the best rel= type.
+            foreach (var link in provider.XPath("/swid:SoftwareIdentity/swid:Link[@rel = 'package']")) {
+                var href = link.Attributes["href"];
+
+                // NOT THIS -> at this point href should either be url to a location (that a provider will recognize) 
+                // JUST THIS -> or more likely should be a prototype canonical id: <provider>:<packagename>[/version][#source]
+                // 
+                if (string.IsNullOrEmpty(href) || !Uri.IsWellFormedUriString(href, UriKind.Absolute)) {
+                    request.Debug("Bad or missing uri: {0}", href);
+                    continue;
+                }
+
+                var artifact = link.Attributes["artifact"];
+
+                try {
+                    var uri = new Uri(href);
+                    var providers = request.SelectProviders(uri.Scheme, request).ToArray();
+                    if (providers.Length == 0) {
+                        // no known provider by that name right now.
+                        continue;
+                    }
+
+                    var packageId = uri.Host;
+                    var packageVersion = uri.PathAndQuery;
+                    var source = uri.Fragment;
+
+                    if (string.IsNullOrEmpty(packageId)) {
+                        continue;
+                    }
+
+                    var customRequest = request.Extend<Request>(new {
+                        GetSources = new Func<IEnumerable<string>>(() => {
+                            if (string.IsNullOrWhiteSpace(source)) {
+                                return new string[0];
+                            }
+                            return new string[] {
+                                source
+                            };
+                        })
+                    });
+
+                    var packages = providers[0].FindPackage(packageId, packageVersion, null, null, 0,customRequest).Wait(60);
+
+                    var pkgs = packages.ToArray();
+                    if (pkgs.Length < 1) {
+                        if (string.IsNullOrWhiteSpace(packageVersion)) {
+                            request.Warning("Unable to find package '{0}' to bootstrap", packageId);
+                        } else {
+                            request.Warning("Unable to find package '{0}/{1}' to bootstrap", packageId, packageVersion);
+                        }
+                        continue;
+                    }
+                    if (pkgs.Length > 1) {
+                        if (string.IsNullOrWhiteSpace(packageVersion)) {
+                            request.Warning("Package '{0}' matched more than one package", packageId);
+                        }
+                        else {
+                            request.Warning("Package '{0}/{1}' matched more than one package", packageId, packageVersion);
+                        }
+                        continue;
+                    }
+                    var installedPackages = providers[0].InstallPackage(pkgs[0], customRequest).Wait(120).ToArray();
+                    if (request.IsCanceled) {
+                        return;
+                    }
+
+                    bool installed = false;
+
+                    foreach (var pkg in installedPackages) {
+                        installed = true;
+                        request.YieldSoftwareIdentity(pkg.FastPackageReference, pkg.Name, pkg.Version, pkg.VersionScheme, pkg.Summary, pkg.Source, pkg.SearchKey, pkg.FullPath, pkg.PackageFilename);
+                    }
+                    if (request.IsCanceled) {
+                        return;
+                    }
+                    
+                    if (installed) {
+                        // it installed ok!
+                        PackageManager._instance.LoadProviders(request);
+                    }
+                    else {
+                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.FailedProviderBootstrap, fastPath);
+                    }
+                }
+                catch (Exception e) {
+                    e.Dump();
+                }
+            }
+        }
+
+        private void InstallAssemblyProvider(DynamicElement provider, string fastPath, BootstrapRequest request) {
+            if (!Directory.Exists(request.DestinationPath)) {
+                request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.DestinationPathNotSet);
+                return;
+            }
+
+            var targetFilename = provider.XPath("/swid:SoftwareIdentity/swid:Meta[@targetFilename]").GetAttribute("targetFilename");
+            if (string.IsNullOrEmpty(targetFilename)) {
+                request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.InvalidFilename);
+                return;
+            }
+            targetFilename = Path.GetFileName(targetFilename);
+            var targetFile = Path.Combine(request.DestinationPath, targetFilename);
+
+            string tmpFile = null;
+            var failedBecauseInvalid = false;
+            // download the file
+            foreach (var link in provider.XPath("/swid:SoftwareIdentity/swid:Link[@rel = 'installationmedia']")) {
+                var href = link.Attributes["href"];
+                if (string.IsNullOrEmpty(href) || !Uri.IsWellFormedUriString(href, UriKind.Absolute)) {
+                    request.Debug("Bad or missing uri: {0}", href);
+                    continue;
+                }
+
+                try {
+                    tmpFile = targetFilename.GenerateTemporaryFilename();
+
+                    request.Debug("Downloading '{0}' to '{1}'", href, tmpFile);
+
+                    if (!request.DownloadFileToLocation(new Uri(href), tmpFile)) {
+                        request.Debug("Failed download of '{0}'", href);
+                        continue;
+                    }
+
+                    request.Debug("Verifying the package");
+
+                    var valid = request.IsSignedAndTrusted(tmpFile, request);
+
+                    if (!valid) {
+                        request.Debug("Not Valid file '{0}' => '{1}'", href, tmpFile);
+                        failedBecauseInvalid = true;
+                        request.Warning(Constants.Messages.FileFailedVerification, href);
+#if !DEBUG
+                                tmpFile.TryHardToDelete();
+                                continue;
+#endif
+                    }
+
+
+                    // looks good! let's keep it
+                    if (File.Exists(targetFile)) {
+                        request.Debug("Removing old file '{0}'", targetFile);
+                        targetFile.TryHardToDelete();
+                    }
+
+                    // is that file still there? 
+                    if (File.Exists(targetFile)) {
+                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.UnableToRemoveFile, targetFile);
+                        return;
+                    }
+
+                    request.Debug("Copying file '{0}' to '{1}'", tmpFile, targetFile);
+                    File.Copy(tmpFile, targetFile);
+                    if (File.Exists(targetFile)) {
+                        // looks good to me.
+                        request.YieldFromSwidtag(provider, null, null, null, fastPath);
+                        PackageManager._instance.LoadProviders(request);
+                        return;
+                    }
+                }
+                catch (Exception e) {
+                    e.Dump();
+                }
+                finally {
+                    if (!string.IsNullOrEmpty(tmpFile)) {
+                        tmpFile.TryHardToDelete();
+                    }
+                }
+            }
+            if (failedBecauseInvalid) {
+                request.Error(ErrorCategory.InvalidData, fastPath, Constants.Messages.FileFailedVerification, fastPath);
             }
         }
 
@@ -174,7 +436,7 @@ namespace Microsoft.OneGet.Builtin {
                 throw new ArgumentNullException("requestObject");
             }
             // ensure that mandatory parameters are present.
-            using (var request = requestObject.As<BoostrapRequest>()) {
+            using (var request = requestObject.As<BootstrapRequest>()) {
                 request.Debug("Calling 'Bootstrap::InstallPackage'");
 
                 // verify the package integrity (ie, check if it's digitally signed before installing)
@@ -189,87 +451,19 @@ namespace Microsoft.OneGet.Builtin {
                 if (provider != null) {
                     // install the 'package'
 
-                    if (!provider.XPath("/swid:SoftwareIdentity/swid:Meta[@providerType = 'assembly']").Any()) {
-                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.UnsupportedProviderType, fastPath);
-                        return;
-                    }
-                    if (!Directory.Exists(request.DestinationPath)) {
-                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.DestinationPathNotSet);
+                    if (provider.XPath("/swid:SoftwareIdentity/swid:Meta[@providerType = 'assembly']").Any()) {
+                        InstallAssemblyProvider(provider,fastPath, request);
                         return;
                     }
 
-                    var targetFilename = provider.XPath("/swid:SoftwareIdentity/swid:Meta[@targetFilename]").GetAttribute("targetFilename");
-                    if (string.IsNullOrEmpty(targetFilename)) {
-                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.InvalidFilename);
+                    if (provider.XPath("/swid:SoftwareIdentity/swid:Meta[@providerType = 'psmodule']").Any()) {
+                        InstallModuleProvider(provider, fastPath, request);
                         return;
                     }
-                    targetFilename = Path.GetFileName(targetFilename);
-                    var targetFile = Path.Combine(request.DestinationPath, targetFilename);
 
-                    string tmpFile = null;
-                    var failedBecauseInvalid = false;
-                    // download the file
-                    foreach (var link in provider.XPath("/swid:SoftwareIdentity/swid:Link[@rel = 'installationmedia']")) {
-                        var href = link.Attributes["href"];
-                        if (string.IsNullOrEmpty(href) || !Uri.IsWellFormedUriString(href, UriKind.Absolute)) {
-                            request.Debug("Bad or missing uri: {0}", href);
-                            continue;
-                        }
+                    
+                    InstallProviderFromInstaller(provider,fastPath,request);
 
-                        try {
-                            tmpFile = targetFilename.GenerateTemporaryFilename();
-
-                            request.Debug("Downloading '{0}' to '{1}'", href, tmpFile);
-
-                            if (!request.DownloadFileToLocation(new Uri(href), tmpFile)) {
-                                request.Debug("Failed download of '{0}'", href);
-                                continue;
-                            }
-
-                            request.Debug("Verifying the package");
-                            // verify the package
-                            var wtd = new WinTrustData(tmpFile);
-                            var result = NativeMethods.WinVerifyTrust(new IntPtr(-1), new Guid("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}"), wtd);
-                            if (result != WinVerifyTrustResult.Success) {
-                                request.Debug("Not Valid file '{0}' => '{1}'", href, tmpFile);
-                                failedBecauseInvalid = true;
-                                request.Warning(Constants.Messages.FileFailedVerification, href);
-#if !DEBUG
-                                tmpFile.TryHardToDelete();
-                                continue;
-#endif
-                            }
-
-                            // looks good! let's keep it
-                            if (File.Exists(targetFile)) {
-                                request.Debug("Removing old file '{0}'", targetFile);
-                                targetFile.TryHardToDelete();
-                            }
-
-                            // is that file still there? 
-                            if (File.Exists(targetFile)) {
-                                request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.UnableToRemoveFile, targetFile);
-                                return;
-                            }
-
-                            request.Debug("Copying file '{0}' to '{1}'", tmpFile, targetFile);
-                            File.Copy(tmpFile, targetFile);
-                            if (File.Exists(targetFile)) {
-                                // looks good to me.
-                                request.YieldFromSwidtag(provider, null, null, null, fastPath);
-                                return;
-                            }
-                        } catch (Exception e) {
-                            e.Dump();
-                        } finally {
-                            if (!string.IsNullOrEmpty(tmpFile)) {
-                                tmpFile.TryHardToDelete();
-                            }
-                        }
-                    }
-                    if (failedBecauseInvalid) {
-                        request.Error(ErrorCategory.InvalidData, fastPath, Constants.Messages.FileFailedVerification, fastPath);
-                    }
                 } else {
                     request.Error(ErrorCategory.InvalidData, fastPath, Constants.Messages.UnableToResolvePackage, fastPath);
                 }

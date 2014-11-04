@@ -21,6 +21,7 @@ namespace Microsoft.OneGet.Builtin {
     using IRequestObject = System.Object;
 
     public class VsixProvider {
+#if DISABLE_FOR_THIS_MILESTONE
         /// <summary>
         ///     The name of this Package Provider
         /// </summary>
@@ -227,5 +228,7 @@ namespace Microsoft.OneGet.Builtin {
                 Debug.WriteLine("Unexpected Exception thrown in '{0}::UninstallPackage' -- {1}\\{2}\r\n{3}", ProviderName, e.GetType().Name, e.Message, e.StackTrace);
             }
         }
+#endif
     }
+
 }

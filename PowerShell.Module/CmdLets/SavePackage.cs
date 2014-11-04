@@ -55,7 +55,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
             if (!IsInvocation) {
-                var providerNames = PackageManagementService.ProviderNames;
+                var providerNames = PackageManagementService.AllProviderNames;
                 var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
                 if (whatsOnCmdline != null) {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();

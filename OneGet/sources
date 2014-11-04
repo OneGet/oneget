@@ -59,7 +59,7 @@ SOURCES=\
  	Api\IRequest.cs \
  	Api\IResponseApi.cs \
  	Builtin\ArpProvider.cs \
- 	Builtin\BoostrapRequest.cs \
+ 	Builtin\BootstrapRequest.cs \
  	Builtin\BootstrapProvider.cs \
  	Builtin\CabArchiver.cs \
  	Builtin\MsiProvider.cs \
@@ -117,6 +117,7 @@ SOURCES=\
 
 INTERNALS_VISIBLE_TO=\
 	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
-	Microsoft.PowerShell.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
+	Microsoft.PowerShell.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+	Microsoft.OneGet.MetaProvider.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
 
 

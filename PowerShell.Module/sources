@@ -47,6 +47,8 @@ REFERENCES=\
 	$(ONEGET_UTILITY) \
 	$(ONEGET_UTILITY_POWERSHELL) \
 	$(CLR_REF_PATH)\System.metadata_dll; \
+	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
+    $(CLR_REF_PATH)\System.Xml.Linq.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
 	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll;
 
@@ -68,7 +70,6 @@ SOURCES=\
  	CmdLets\UninstallPackage.cs \
  	CmdLets\UnregisterPackageSource.cs \
  	Utility\CustomRuntimeDefinedParameter.cs \
- 	Utility\ValidateListAttribute.cs \
  	Constants.cs \
 	$(GENERATED_RESOURCES_SOURCE)
 

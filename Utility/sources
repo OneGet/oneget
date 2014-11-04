@@ -182,7 +182,8 @@ SOURCES=\
  	Deployment\WindowsInstaller.Package\InstallPath.cs \
  	Deployment\WindowsInstaller.Package\PatchPackage.cs \
  	Deployment\WindowsInstaller.Package\TransformInfo.cs \
- 	Extensions\CollectionExtensions.cs \
+ 	Extensions\Singleon.cs \
+    Extensions\CollectionExtensions.cs \
  	Extensions\DelegateExtensions.cs \
  	Extensions\DictionaryExtensions.cs \
  	Extensions\ExceptionExtensions.cs \

@@ -19,7 +19,8 @@ namespace Microsoft.OneGet.Utility.Async {
     public abstract class AsyncAction : MarshalByRefObject, IAsyncAction {
         private object _lock = new Object();
         private static readonly TimeSpan DefaultCallTimeout = TimeSpan.FromMinutes(60);
-        private static readonly TimeSpan DefaultResponsiveness = TimeSpan.FromMinutes(1);
+        // todo: setting responsiveness to 15 minutes until we're sure we're good with it.
+        private static readonly TimeSpan DefaultResponsiveness = TimeSpan.FromMinutes(15);
         protected readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         private readonly ManualResetEventSlim _completed = new ManualResetEventSlim(false);

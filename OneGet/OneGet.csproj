@@ -44,7 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Builtin\ArpProvider.cs" />
-    <Compile Include="Builtin\BoostrapRequest.cs" />
+    <Compile Include="Builtin\BootstrapRequest.cs" />
     <Compile Include="Builtin\BootstrapProvider.cs" />
     <Compile Include="Builtin\CabArchiver.cs" />
     <Compile Include="Builtin\WebDownloader.cs" />
