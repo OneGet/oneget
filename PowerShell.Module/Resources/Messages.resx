@@ -126,7 +126,7 @@
     <comment>query</comment>
   </data>
   <data name="DestinationPathInvalid" xml:space="preserve">
-    <value>The desintation path  '{0}' for packaage '{1}' is invalid.</value>
+    <value>The desintation path  '{0}' for package '{1}' is invalid.</value>
     <comment>{0} - path 
 {1} - package name</comment>
   </data>
@@ -307,7 +307,7 @@
     <comment>{0} wildcard match string</comment>
   </data>
   <data name="NoMatchForProvidersAndSources" xml:space="preserve">
-    <value>No providers specified ({0}) match sources specified ({1})</value>
+    <value>No combination of providers ({0}) match sources specified ({1})</value>
     <comment>0 provider names, 1- source names</comment>
   </data>
   <data name="SavePackage" xml:space="preserve">
