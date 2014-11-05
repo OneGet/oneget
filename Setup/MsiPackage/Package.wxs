@@ -1,0 +1,121 @@
+<?xml version="1.0" ?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="OneGet" Manufacturer="Microsoft Corporation" Language="1033"
+           Version="!(bind.FileVersion.Microsoft.OneGet.exe)"
+           UpgradeCode="0298D025-D727-485A-8691-5ECCCA27F424">
+    <Package InstallScope="perMachine" Compressed="yes" />
+
+    <MediaTemplate CompressionLevel="low" CabinetTemplate="og{0}.cab" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="WindwosPowerShellFolder" Name="WindowsPowerShell">
+          <Directory Id="ModulesFolder" Name="Modules">
+            <Directory Id="OneGetFolder" Name="OneGet">
+              <Directory Id="EtcFolder" Name="etc" />
+              <Directory Id="ProvidersFolder" Name="Providers" />
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <Feature Id="OneGetFeature">
+      <ComponentGroupRef Id="OneGetComponents" />
+      <ComponentGroupRef Id="EtcComponents" />
+      <!--
+      <ComponentGroupRef Id="ProviderComponents" />
+      <ComponentGroupRef Id="PdbComponents" />
+      -->
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <ComponentGroup Id="OneGetComponents" Directory="OneGetFolder">
+      <Component>
+        <File Source="readme.md" />
+      </Component>
+
+      <Component>
+        <File Source="release-notes.md" />
+      </Component>
+
+      <Component>
+        <File Id="Microsoft.OneGet.exe" Source="Microsoft.OneGet.exe" />
+        <Environment Id="UpdatePsModulePath" Action="set" Name="PSModulePath" Value="[ModulesFolder]" Part="first" System="yes" />
+      </Component>
+
+      <Component>
+        <File Source="Microsoft.OneGet.MetaProvider.PowerShell.dll" />
+      </Component>
+
+      <Component>
+        <File Source="Microsoft.OneGet.Utility.dll" />
+      </Component>
+
+      <Component>
+        <File Source="Microsoft.OneGet.Utility.PowerShell.dll" />
+      </Component>
+
+      <Component>
+        <File Source="Microsoft.PowerShell.OneGet.dll" />
+      </Component>
+
+      <Component>
+        <File Source="OneGet.format.ps1xml" />
+      </Component>
+
+      <Component>
+        <File Source="OneGet.psd1" />
+      </Component>
+
+      <Component>
+        <File Source="nuget.exe" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="EtcComponents" Directory="EtcFolder">
+      <Component>
+        <File Source="etc\PackageProviderFunctions.psm1" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProviderComponents" Directory="ProvidersFolder">
+      <Component>
+        <File Source="Providers\TestChainingPackageProvider.psm1" />
+      </Component>
+
+      <Component>
+        <File Source="Providers\TestPackageProvider.psm1" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="PdbComponents" Directory="OneGetFolder">
+      <Component>
+        <File Source="Microsoft.OneGet.pdb" />
+      </Component>
+
+      <Component>
+        <File Source="Microsoft.OneGet.MetaProvider.PowerShell.pdb" />
+      </Component>
+
+      <Component>
+        <File Source="Microsoft.OneGet.Utility.pdb" />
+      </Component>
+
+      <Component>
+        <File Source="Microsoft.OneGet.Utility.PowerShell.pdb" />
+      </Component>
+
+      <Component>
+        <File Source="Microsoft.PowerShell.OneGet.pdb" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
