@@ -162,11 +162,22 @@ namespace Microsoft.OneGet.Implementation {
 
         public IEnumerable<string> ProviderNames {
             get {
-                return _packageProviders.Keys.ByRef();
+                return  _packageProviders.Keys.ByRef();
             }
         }
 
-        internal string[] BootstrappableProviderNames;
+        private string[] _bootstrappableProviderNames;
+
+        internal string[] BootstrappableProviderNames {
+            get {
+                return _bootstrappableProviderNames ?? new string[0];
+            }
+            set {
+                if (_bootstrappableProviderNames.IsNullOrEmpty()) {
+                    _bootstrappableProviderNames = value;
+                }
+            }
+        }
 
         public IEnumerable<string> AllProviderNames {
             get {

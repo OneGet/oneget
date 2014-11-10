@@ -735,6 +735,9 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 try {
                     message.SetResult(func());
                 } catch (Exception e) {
+                    if (e is PipelineStoppedException) {
+                        Cancel();
+                    }
                     message.SetException(e);
                 }
             } else {
@@ -983,43 +986,49 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         protected Dictionary<string, object> UnboundArguments {
             get {
                 if (_unboundArguments == null && IsReentrantLocked) {
-                    var context = TryGetProperty(this, "Context");
-                    var processor = TryGetProperty(context, "CurrentCommandProcessor");
-                    var parameterBinder = TryGetProperty(processor, "CmdletParameterBinderController");
-                    var args = TryGetProperty(parameterBinder, "UnboundArguments") as IEnumerable;
-
                     _unboundArguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-                    if (args != null) {
-                        var currentParameterName = string.Empty;
-                        int i = 0;
-                        foreach (var arg in args) {
-                            var isParameterName = TryGetProperty(arg, "ParameterNameSpecified");
-                            if (isParameterName != null && true.Equals(isParameterName)) {
-                                var parameterName = TryGetProperty(arg, "ParameterName");
 
-                                if (parameterName != null) {
-                                    currentParameterName = parameterName.ToString();
+                    try {
+                        var context = TryGetProperty(this, "Context");
+                        var processor = TryGetProperty(context, "CurrentCommandProcessor");
+                        var parameterBinder = TryGetProperty(processor, "CmdletParameterBinderController");
+                        var args = TryGetProperty(parameterBinder, "UnboundArguments") as IEnumerable;
 
-                                    // add it now, just in case it's value isn't set (or it's a switch)
-                                    _unboundArguments.AddOrSet(currentParameterName, (object) null);
-                                    continue;
+
+                        if (args != null) {
+                            var currentParameterName = string.Empty;
+                            int i = 0;
+                            foreach (var arg in args) {
+                                var isParameterName = TryGetProperty(arg, "ParameterNameSpecified");
+                                if (isParameterName != null && true.Equals(isParameterName)) {
+                                    var parameterName = TryGetProperty(arg, "ParameterName");
+
+                                    if (parameterName != null) {
+                                        currentParameterName = parameterName.ToString();
+
+                                        // add it now, just in case it's value isn't set (or it's a switch)
+                                        _unboundArguments.AddOrSet(currentParameterName, (object)null);
+                                        continue;
+                                    }
                                 }
+
+                                // not a parameter name.
+                                // treat as a value
+                                var parameterValue = TryGetProperty(arg, "ArgumentValue");
+
+                                if (string.IsNullOrEmpty(currentParameterName)) {
+                                    _unboundArguments.AddOrSet("unbound_" + (i++), parameterValue);
+                                } else {
+                                    _unboundArguments.AddOrSet(currentParameterName, parameterValue);
+                                }
+
+                                // clear the current parameter name
+                                currentParameterName = null;
                             }
 
-                            // not a parameter name.
-                            // treat as a value
-                            var parameterValue = TryGetProperty(arg, "ArgumentValue");
-
-                            if (string.IsNullOrEmpty(currentParameterName)) {
-                                _unboundArguments.AddOrSet("unbound_" + (i++), parameterValue);
-                            } else {
-                                _unboundArguments.AddOrSet(currentParameterName, parameterValue);
-                            }
-
-                            // clear the current parameter name
-                            currentParameterName = null;
                         }
-
+                    } catch (Exception e) {
+                        e.Dump();
                     }
                 }
                 return _unboundArguments;

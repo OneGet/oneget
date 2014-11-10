@@ -22,6 +22,9 @@ namespace Microsoft.OneGet.Utility.Extensions {
             var text = string.Format(CultureInfo.CurrentCulture, "{0}//{1}/{2}\r\n{3}", AppDomain.CurrentDomain.FriendlyName, e.GetType().Name, e.Message, e.StackTrace);
             // for now, this is the only way we'll see exceptions in the wild.
             NativeMethods.OutputDebugString(text);
+#if DEEP_DEBUG
+            Console.WriteLine("»»»DUMPED UNEXPECTED EXCEPTION: {0}", text);
+#endif
         }
 
 #if DETAILED_DEBUG

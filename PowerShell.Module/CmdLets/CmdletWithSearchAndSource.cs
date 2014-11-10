@@ -392,12 +392,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         // todo: make a resource for this
                         suggestion = "Please specify a single -ProviderName.";
                     }
-                        
 
                     string searchKey = null;
 
                     foreach (var pkg in set) {
-                        Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, pkg.CanonicalId);
+                        // todo : this is a temporary message
+                        // Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, pkg.CanonicalId);
+                        Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, "provider: {0}, package: {1}/{2} from source: {3}", pkg.ProviderName, pkg.Name, pkg.Version, pkg.Source);
                         searchKey = pkg.SearchKey;
                     }
                     Error(Constants.Errors.DisambiguateForInstall, searchKey, suggestion);
