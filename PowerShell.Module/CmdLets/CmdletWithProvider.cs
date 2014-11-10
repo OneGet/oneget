@@ -267,62 +267,65 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return true;
             }
 
-            unboundArguments = unboundArguments ?? new Dictionary<string, object>();
+            try {
 
-            // if there are unbound arguments that are owned by a provider, we can narrow the rest of the 
-            // arguments to just ones that are connected with that provider
-            var dynamicOptions = CachedDynamicOptions;
+                unboundArguments = unboundArguments ?? new Dictionary<string, object>();
 
-            var keys = unboundArguments.Keys.ToArray();
-            if (keys.Length > 0) {
-                var acceptableProviders = CachedDynamicOptions.Where(option => keys.ContainsAnyOfIgnoreCase(option.Name)).Select(option => option.ProviderName).Distinct().ToArray();
-                if (acceptableProviders.Length > 0) {
-                    dynamicOptions = dynamicOptions.Where(option => acceptableProviders.Contains(option.ProviderName)).ToArray();
-                }
-            }
-            // generate the common parameters for our cmdlets (timeout, messagehandler, etc) 
-            GenerateCommonDynamicParameters();
+                // if there are unbound arguments that are owned by a provider, we can narrow the rest of the 
+                // arguments to just ones that are connected with that provider
+                var dynamicOptions = CachedDynamicOptions;
 
-            // generate parameters that are specific to the cmdlet being implemented.
-            GenerateCmdletSpecificParameters(unboundArguments);
-
-            var staticParameters =GetType().Get<Dictionary<string, ParameterMetadata>>("MyInvocation.MyCommand.Parameters");
-
-            foreach (var md in dynamicOptions ) {
-                if (DynamicParameterDictionary.ContainsKey(md.Name)) {
-                    // todo: if the dynamic parameters from two providers aren't compatible, then what? 
-
-                    // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
-                    var crdp = DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter;
-
-                    if (crdp == null) {
-                        // the package provider is trying to overwrite a parameter that is already dynamically defined by the BaseCmdlet. 
-                        // just ignore it.
-                        continue;
-                    }
-
-                    if (IsInvocation) {
-                        // this is during an actual execution
-                        crdp.Options.Add(md);
-                    }
-                    else {
-                        // this is for metadata sake. (get-help, etc)
-                        crdp.IncludeInParameterSet(md, IsInvocation, ParameterSets);
+                var keys = unboundArguments.Keys.ToArray();
+                if (keys.Length > 0) {
+                    var acceptableProviders = CachedDynamicOptions.Where(option => keys.ContainsAnyOfIgnoreCase(option.Name)).Select(option => option.ProviderName).Distinct().ToArray();
+                    if (acceptableProviders.Length > 0) {
+                        dynamicOptions = dynamicOptions.Where(option => acceptableProviders.Contains(option.ProviderName)).ToArray();
                     }
                 }
-                else {
-                    // check if the dynamic parameter is a static parameter first.
+                // generate the common parameters for our cmdlets (timeout, messagehandler, etc) 
+                GenerateCommonDynamicParameters();
 
-                    // this can happen if we make a common dynamic parameter into a proper static one 
-                    // and a provider didn't know that yet.
+                // generate parameters that are specific to the cmdlet being implemented.
+                GenerateCmdletSpecificParameters(unboundArguments);
 
-                    if (staticParameters != null && staticParameters.ContainsKey(md.Name)) {
-                        // don't add it.
-                        continue;
+                var staticParameters = GetType().Get<Dictionary<string, ParameterMetadata>>("MyInvocation.MyCommand.Parameters");
+
+                foreach (var md in dynamicOptions) {
+                    if (DynamicParameterDictionary.ContainsKey(md.Name)) {
+                        // todo: if the dynamic parameters from two providers aren't compatible, then what? 
+
+                        // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
+                        var crdp = DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter;
+
+                        if (crdp == null) {
+                            // the package provider is trying to overwrite a parameter that is already dynamically defined by the BaseCmdlet. 
+                            // just ignore it.
+                            continue;
+                        }
+
+                        if (IsInvocation) {
+                            // this is during an actual execution
+                            crdp.Options.Add(md);
+                        } else {
+                            // this is for metadata sake. (get-help, etc)
+                            crdp.IncludeInParameterSet(md, IsInvocation, ParameterSets);
+                        }
+                    } else {
+                        // check if the dynamic parameter is a static parameter first.
+
+                        // this can happen if we make a common dynamic parameter into a proper static one 
+                        // and a provider didn't know that yet.
+
+                        if (staticParameters != null && staticParameters.ContainsKey(md.Name)) {
+                            // don't add it.
+                            continue;
+                        }
+
+                        DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
                     }
-
-                    DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
                 }
+            } catch (Exception e) {
+                e.Dump();
             }
             return true;
         }
@@ -363,7 +366,23 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         //      any access to MyInvocation.MyCommand.*
                         //      modifying parameter validation sets
                         // 
-                        GetType().AddOrSet(MyInvocation.MyCommand.Parameters, "MyInvocation.MyCommand.Parameters");
+
+                        if (MyInvocation != null && MyInvocation.MyCommand != null && MyInvocation.MyCommand.Parameters != null) {
+                            GetType().AddOrSet(MyInvocation.MyCommand.Parameters, "MyInvocation.MyCommand.Parameters");
+                        } 
+#if DEEP_DEBUG
+                        else {
+                            if (MyInvocation == null) {
+                                Console.WriteLine("»»» Attempt to get parameters MyInvocation == NULL");
+                            } else {
+                                if (MyInvocation.MyCommand == null) {
+                                    Console.WriteLine("»»» Attempt to get parameters MyCommand == NULL");
+                                } else {
+                                    Console.WriteLine("»»» Attempt to get parameters Parameters == NULL");
+                                }
+                            }
+                        }
+#endif                         
                         
 
                         // the second time, it will generate all the parameters, including the dynamic ones.
@@ -391,6 +410,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         // on arguments the user specified.
 
                         if (IsCanceled ) {
+#if DEEP_DEBUG
+                            Console.WriteLine("»»» Cancelled before we got finished doing dynamic parameters");
+#endif
                             // this happens if there is a serious failure early in the cmdlet
                             // i.e. - if the SelectedProviders comes back empty (due to agressive filtering)
                             

@@ -61,7 +61,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
       
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
+#if DEEP_DEBUG
+            Console.WriteLine("»» Entering GCSP ");
+#endif
             if (!IsInvocation) {
+#if DEEP_DEBUG
+                Console.WriteLine("»»» Does not appear to be Invocation (locked:{0})", IsReentrantLocked);
+#endif 
                 var providerNames = PackageManagementService.AllProviderNames;
                 var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
                 if (whatsOnCmdline != null) {
@@ -78,6 +84,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 }));
             }
             else {
+#if DEEP_DEBUG
+                Console.WriteLine("»»» Does appear to be Invocation (locked:{0})", IsReentrantLocked);
+#endif
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true,
