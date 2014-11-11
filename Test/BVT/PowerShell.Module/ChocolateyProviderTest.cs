@@ -54,7 +54,7 @@ namespace OneGet.PowerShell.Module.Test {
         };
 
         /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
-        /* -----------------------------------------------------------------------------     PRIMARY TESTS     ----------------------------------------------------------------------------------- */
+        /* ---------------------------------------------------------------------------------     TESTS     --------------------------------------------------------------------------------------- */
         /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 
         [Fact(Timeout = 60000, Priority = 500), Trait("Test", "Chocolatey")]
@@ -62,7 +62,7 @@ namespace OneGet.PowerShell.Module.Test {
             dynamic ps = NewPowerShellSession;
 
             try {
-                DynamicPowershellResult result = ps.SavePackage(Name: "python", Provider: "Chocolatey", MinimumVersion: "1.0", MaximumVersion: "2.0", DestinationPath: ChocoDirectory, Source: Source, IsTesting: true);
+                DynamicPowershellResult result = ps.SavePackage(Name: "python", Provider: "Chocolatey", MinimumVersion: "1.0", MaximumVersion: "4.0", DestinationPath: ChocoDirectory, Source: Source, IsTesting: true);
                 result.WaitForCompletion();
                 Assert.False(IsDirectoryEmpty(ChocoDirectory));
             } finally {
@@ -443,10 +443,6 @@ namespace OneGet.PowerShell.Module.Test {
             Assert.True(result.Any());
         }
 
-        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
-        /* ----------------------------------------------------------------------------     PIPELINE TESTS     ----------------------------------------------------------------------------------- */
-        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
-
         [Fact(Timeout = 120000, Priority = 511), Trait("Test", "Chocolatey")]
         public void TestFindPackagePipeProvider()
         {
@@ -637,10 +633,6 @@ namespace OneGet.PowerShell.Module.Test {
             List<dynamic> y = (from dynamic source in result3 select source.Name).ToList();
             Assert.Equal(x, y);
         }
-
-        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
-        /* ---------------------------------------------------------------------------     SECONDARY TESTS     ----------------------------------------------------------------------------------- */
-        /* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 
         [Fact(Timeout = 60000), Trait("Test", "Chocolatey")]
         public void TestFindPackageLongName()
@@ -1173,6 +1165,75 @@ namespace OneGet.PowerShell.Module.Test {
             {
                 DynamicPowershellResult result4 = ps.UnregisterPackageSource(Name: "ChocolateyTest.org", Provider: "Chocolatey", Location: "https://www.Chocolatey.org/api/v2/", IsTesting: true);
                 result4.WaitForCompletion();
+            }
+        }
+
+        [Fact(Timeout = 180000, Priority = 540), Trait("Test", "Chocolatey")]
+
+        public void TestScenarioOne()
+        {
+            dynamic ps = NewPowerShellSession;
+
+            try
+            {
+                DynamicPowershellResult register = ps.RegisterPackageSource(Name: "ChocolateyTest.org", Location: "https://www.chocolatey.org/api/v2/", Provider: "Chocolatey", Force: true, IsTesting: true);
+                register.WaitForCompletion();
+                DynamicPowershellResult getP = ps.GetPackageSource(register, Force: true, IsTesting: true);
+                getP.WaitForCompletion();
+                var registerx = (from dynamic source in getP select source.Name).ToList();
+                Assert.True(registerx.Contains("ChocolateyTest.org"));
+
+                DynamicPowershellResult set = ps.SetPackageSource(Name: "ChocolateyTest.org", NewName: "RenamedChocolateyTest.org", Provider: "Chocolatey", IsTesting: true);
+                set.WaitForCompletion();
+                var setx = (from dynamic source in set select source.Name).ToList();
+                Assert.True(setx.Contains("RenamedChocolateyTest.org"));
+                foreach (dynamic source in set)
+                {
+                    Console.WriteLine("Name: " + source.Name + " Location: " + source.Location);
+                }
+
+                DynamicPowershellResult getPp = ps.GetPackageProvider(Name: "chocolatey", IsTesting: true);
+                getPp.WaitForCompletion();
+                var getPpx = (from dynamic source in getPp select source.Name).ToList();
+                Assert.True(getPpx.Contains("Chocolatey"));
+                foreach (dynamic source in getPp)
+                {
+                    Console.WriteLine("GetPP Provider Name: " + source.Name);
+                }
+                DynamicPowershellResult find = ps.FindPackage(Name: "ResolveAlias", Provider: "chocolatey", MaximumVersion: "4.0", IsTesting: true);
+                find.WaitForCompletion();
+                var findx = (from dynamic source in find select source.Name).ToList();
+                Assert.True(findx.Contains("ResolveAlias"));
+
+
+                DynamicPowershellResult install = ps.InstallPackage(find, Force: true, IsTesting: true);
+                install.WaitForCompletion();
+                Assert.False(IsDirectoryEmpty(ChocoDirectory));
+
+                DynamicPowershellResult get = ps.GetPackage(IsTesting: true);
+                get.WaitForCompletion();
+                var getx = (from dynamic source in get select source.Name).ToList();
+                Assert.True(getx.Contains("ResolveAlias"));
+
+
+                DynamicPowershellResult uninstall = ps.UninstallPackage(Name: "ResolveAlias", IsTesting: true);
+                uninstall.WaitForCompletion();
+                Assert.True(IsDirectoryEmpty(ChocoDirectory));
+
+                DynamicPowershellResult unregister = ps.UnregisterPackageSource(Name: "RenamedChocolateyTest.org", Location: "https://www.chocolatey.org/api/v2", Provider: "Chocolatey", IsTesting: true);
+                unregister.WaitForCompletion();
+                DynamicPowershellResult test = ps.GetPackageSource(IsTesting: true);
+                var testx = (from dynamic source in test select source.Name);
+                Assert.False(testx.Contains("RenamedChocolateyTest.org"));
+
+            }
+            finally
+            {
+                DynamicPowershellResult cleanup = ps.UnregisterPackageSource(Name: "ChocolateyTest.org", IsTesting: true);
+                cleanup.WaitForCompletion();
+                DynamicPowershellResult cleanup2 = ps.UnregisterPackageSource(Name: "RenamedChocolateyTest.org", IsTesting: true);
+                cleanup2.WaitForCompletion();
+                CleanFolder(ChocoDirectory);
             }
         }
 
