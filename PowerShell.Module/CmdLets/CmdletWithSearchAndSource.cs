@@ -398,10 +398,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     foreach (var pkg in set) {
                         // todo : this is a temporary message
                         // Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, pkg.CanonicalId);
-                        Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, "provider: {0}, package: {1}/{2} from source: {3}", pkg.ProviderName, pkg.Name, pkg.Version, pkg.Source);
+                        Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, pkg.ProviderName, pkg.Name, pkg.Version, pkg.Source);
                         searchKey = pkg.SearchKey;
                     }
-                    Error(Constants.Errors.DisambiguateForInstall, searchKey, suggestion);
+                    Error(Constants.Errors.DisambiguateForInstall, searchKey, GetMessageString(suggestion,suggestion));
                 }
                 return false;
             }
