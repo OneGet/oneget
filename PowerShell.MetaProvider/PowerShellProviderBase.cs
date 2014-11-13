@@ -163,7 +163,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             if (!_reentrancyLock.WaitOne(0)) {
                 // it's running right now.
                 _powershell.Stop();
-                _powershell["request"] = null;
             }
         }
 
