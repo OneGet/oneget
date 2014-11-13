@@ -457,7 +457,7 @@ namespace Microsoft.OneGet.Implementation {
 
         internal string SystemAssemblyLocation {
             get {
-                var basepath = KnownFolders.GetFolderPath(KnownFolder.CommonApplicationData);
+                var basepath = KnownFolders.GetFolderPath(KnownFolder.ProgramFiles);
                 if (string.IsNullOrEmpty(basepath)) {
                     return null;
                 }

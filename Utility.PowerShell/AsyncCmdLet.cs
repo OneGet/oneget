@@ -795,7 +795,18 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public Task<bool> ExecuteOnMainThread(Func<bool> onMainThreadDelegate) {
-            return QueueMessage(onMainThreadDelegate);
+            var message= new TaskCompletionSource<bool>(onMainThreadDelegate);
+
+            if (_messages == null || _messages.IsCompleted) {
+                // message queue isn't active. Just run the message now.
+                InvokeMessage(message);
+            }
+            else {
+                if (!_messages.IsCompleted) {
+                    _messages.Add(message);
+                }
+            }
+            return message.Task;
         }
 
         #endregion
@@ -859,13 +870,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             if (IsCanceled || !IsInvocation) {
                 return false.AsResultTask();
             }
-
+            return ExecuteOnMainThread(() => base.ShouldContinue(query, caption));
             // it is apparently OK to have this called during dynamic parameter generation 
-            if (IsBeforeProcessing) {
-                return base.ShouldContinue(query, caption).AsResultTask();
-            }
-
-            return QueueMessage(() => base.ShouldContinue(query, caption));
         }
 
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", Justification = "MYOB.")]

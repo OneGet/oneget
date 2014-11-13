@@ -251,7 +251,7 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; matches package: &apos;{1}&apos;.
+        ///   Looks up a localized string similar to &apos;{0}&apos; matched package &apos;{2}/{3}&apos; from provider: &apos;{1}&apos;, source &apos;{4}&apos;.
         /// </summary>
         internal static string MatchesMultiplePackages {
             get {

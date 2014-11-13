@@ -334,16 +334,27 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return PackageManagementService.SelectProviders(null, SuppressErrorsAndWarnings).Where(each => !each.Features.ContainsKey(Microsoft.OneGet.Constants.Features.AutomationOnly ));
             }
             // you can manually ask for any provider by name, if it is for automation only.
+            if (IsInvocation) {
+                return names.SelectMany(each => PackageManagementService.SelectProviders(each, this));
+            }
             return names.SelectMany(each => PackageManagementService.SelectProviders(each, SuppressErrorsAndWarnings));
         }
 
         protected IEnumerable<PackageProvider> SelectProviders(string name) {
             // you can manually ask for any provider by name, if it is for automation only.
-            var result = PackageManagementService.SelectProviders(name, SuppressErrorsAndWarnings).ToArray();
-            if (result.Length == 0) {
+            if (IsInvocation) {
+                var result = PackageManagementService.SelectProviders(name, this).ToArray();
+                if (result.Length == 0) {
+                    Warning(Constants.Errors.UnknownProvider, name);
+                }
+                return result;
+            }
+
+            var r = PackageManagementService.SelectProviders(name, SuppressErrorsAndWarnings).ToArray();
+            if (r.Length == 0) {
                 Warning(Constants.Errors.UnknownProvider, name);
             }
-            return result;
+            return r;
         }
 
         public override bool ConsumeDynamicParameters() {
