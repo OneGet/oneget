@@ -126,6 +126,22 @@ namespace Microsoft.OneGet.Implementation {
             });
             providerAssemblies = providerAssemblies.Distinct(new PathEqualityComparer(PathCompareOption.FileWithoutExtension));
 
+            // hack to make sure we don't load the old version of the nuget provider
+            // when we have the ability to examine a plugin without dragging it into the
+            // primary appdomain, this won't be needed.
+            FourPartVersion minimumnugetversion = "2.8.3.6";
+
+            providerAssemblies = providerAssemblies.Where(assemblyFile => {
+                try {
+                    if ("nuget-anycpu".EqualsIgnoreCase(Path.GetFileNameWithoutExtension(assemblyFile)) && ((FourPartVersion)FileVersionInfo.GetVersionInfo(assemblyFile)) < minimumnugetversion) {
+                        return false;
+                    }
+                }
+                catch {
+                }
+                return true;
+            });
+
             // there is no trouble with loading providers concurrently.
             providerAssemblies.ParallelForEach(providerAssemblyName => {
                 try {
@@ -477,8 +493,13 @@ namespace Microsoft.OneGet.Implementation {
                     Directory.CreateDirectory(path, ds);
                 }
 #endif
-                if( !Directory.Exists(path)) {
-                    Directory.CreateDirectory(path);
+                try {
+                    if (!Directory.Exists(path)) {
+                        Directory.CreateDirectory(path);
+                    }
+                }
+                catch {
+                    // ignore non-existant directory for now.
                 }
                 return path;
             }
