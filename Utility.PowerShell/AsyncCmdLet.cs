@@ -192,8 +192,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     return true;
                 }
 #endif
-
-                return MyInvocation != null && MyInvocation.Line.Is();
+                // this seems to be more reliable than checking the Invocation Line.
+                return MyInvocation != null && MyInvocation.PipelineLength > 0;
             }
         }
 
@@ -842,9 +842,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public new Task<bool> WriteDebug(string text) {
-            if (!IsInvocation) {
-                return false.AsResultTask();
-            }
             return QueueMessage(() => base.WriteDebug(text));
         }
 
@@ -1013,7 +1010,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                                         currentParameterName = parameterName.ToString();
 
                                         // add it now, just in case it's value isn't set (or it's a switch)
-                                        _unboundArguments.AddOrSet(currentParameterName, (object)null);
+                                        _unboundArguments.AddOrSet(currentParameterName, (object)TryGetProperty(arg, "ArgumentValue"));
                                         continue;
                                     }
                                 }

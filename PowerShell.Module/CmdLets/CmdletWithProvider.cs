@@ -353,7 +353,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public override bool GenerateDynamicParameters() {
             var thisIsFirstObject = false;
             try {
-                
                 if (!IsReentrantLocked) {
                     // we're not locked at this point. Let's turn on the lock.
                     IsReentrantLocked = true;

@@ -64,7 +64,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         [Alias("Name")]
-        [Parameter(Position = 0, Mandatory = true, ParameterSetName = Constants.ParameterSets.SourceBySearchSet)]
+        [Parameter(Position = 0, ParameterSetName = Constants.ParameterSets.SourceBySearchSet)]
         public string Source {get; set;}
 
         [Parameter(ParameterSetName = Constants.ParameterSets.SourceBySearchSet)]
@@ -100,6 +100,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return true;
             }
 
+
+            if (string.IsNullOrEmpty(Source) && string.IsNullOrEmpty(Location)) {
+                Error(Constants.Errors.NameOrLocationRequired);
+                return false;
+            }
+
             // otherwise, we're just deleting a source by name
             var prov = SelectedProviders.ToArray();
 
@@ -115,14 +121,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length > 0) {
-                var sources = prov.SelectMany(each => each.ResolvePackageSources(SuppressErrorsAndWarnings).Where(source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source))).ToArray()).ToArray();
+                var sources = prov.SelectMany(each => each.ResolvePackageSources(SuppressErrorsAndWarnings).Where(source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Location))).ToArray()).ToArray();
 
                 if (sources.Length == 0) {
-                    return Error(Constants.Errors.SourceNotFound, Source);
+                    return Error(Constants.Errors.SourceNotFound, Source ?? Location);
                 }
 
                 if (sources.Length > 1) {
-                    return Error(Constants.Errors.SourceFoundInMultipleProviders, Source, prov.Select(each => each.ProviderName).JoinWithComma());
+                    return Error(Constants.Errors.SourceFoundInMultipleProviders, Source ?? Location, prov.Select(each => each.ProviderName).JoinWithComma());
                 }
 
                 return Unregister(sources[0]);

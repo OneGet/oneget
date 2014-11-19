@@ -30,6 +30,9 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         public SetPackageSource() : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
         }
 
+        [Parameter]
+        public PSCredential Credential { get; set; }
+
         protected override IEnumerable<string> ParameterSets {
             get {
                 return new[] {Constants.ParameterSets.SourceByInputObjectSet, Constants.ParameterSets.SourceBySearchSet};
@@ -122,6 +125,28 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         private void UpdatePackageSource(PackageSource source) {
+            if (WhatIf) {
+                
+                var p = new PSObject(source);
+
+                if (!string.IsNullOrEmpty(NewName)) {
+                    p.Properties.Remove("Name");
+                    p.Properties.Add( new PSNoteProperty("Name",NewName));
+                }
+
+                if (!string.IsNullOrEmpty(NewLocation)) {
+                    p.Properties.Remove("Location");
+                    p.Properties.Add(new PSNoteProperty("Location", NewLocation));
+                }
+
+                if (Trusted.IsPresent) {
+                    p.Properties.Remove("Trusted");
+                    p.Properties.Add(new PSNoteProperty("Trusted", Trusted.ToBool()));
+                }
+
+                WriteObject(p);
+                return;
+            }
             if (string.IsNullOrEmpty(NewName)) {
                 // this is a replacement of an existing package source, we're *not* changing the name. (easy)
 
