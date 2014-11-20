@@ -69,6 +69,8 @@ namespace Microsoft.PowerShell.OneGet {
             public static ErrorMessage UninstallationFailure = new ErrorMessage(Messages.UninstallationFailure, ErrorCategory.InvalidOperation);
             public static ErrorMessage UnknownProvider = new ErrorMessage(Microsoft.OneGet.Constants.Messages.UnknownProvider, ErrorCategory.ObjectNotFound);
             public static ErrorMessage UnknownProviders = new ErrorMessage(Messages.UnknownProviders, ErrorCategory.InvalidArgument);
+            public static ErrorMessage PackageFileExists = new ErrorMessage(Messages.PackageFileExists, ErrorCategory.InvalidArgument);
+            public static ErrorMessage UnableToOverwrite = new ErrorMessage(Messages.UnableToOverwrite, ErrorCategory.InvalidResult);
             // ReSharper restore InconsistentNaming
         }
 
@@ -126,6 +128,8 @@ namespace Microsoft.PowerShell.OneGet {
             internal const string UnableToFindProviderForSource = "MSG:UnableToFindProviderForSource";
             internal const string UninstallationFailure = "MSG:UninstallationFailure";
             internal const string UnknownProviders = "MSG:UnknownProviders";
+            internal const string PackageFileExists = "MSG:PackageFileExists";
+            internal const string UnableToOverwrite = "MSG:UnableToOverwrite";
         }
 
         internal static class Nouns {

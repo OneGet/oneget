@@ -81,10 +81,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
-
-        [Parameter]
-        public SwitchParameter IncludeDependencies {get; set;}
-
         [Parameter]
         public string DestinationPath {get; set;}
 
@@ -141,6 +137,19 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
             var savePath = SaveFileName(package.PackageFilename);
 
+            if (savePath.FileExists()) {
+                if (Force) {
+                    savePath.TryHardToDelete();
+                    if (savePath.FileExists()) {
+                        Error(Constants.Errors.UnableToOverwrite, savePath);
+                        return;
+                    }
+                } else {
+                    Error(Constants.Errors.PackageFileExists, savePath);
+                    return;
+                }
+            }
+
             // if we have a valid path, make a local copy of the file.
             if (!string.IsNullOrEmpty(savePath)) {
                 if (ShouldProcess(savePath, Constants.Messages.SavePackage).Result) {
@@ -154,11 +163,6 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 WriteObject(package);
             }
 
-            if (IncludeDependencies) {
-                foreach (var dep in provider.GetPackageDependencies(package, this)) {
-                    ProcessPackage(provider, searchKey, dep);
-                }
-            }
         }
 
         public override bool EndProcessingAsync() {

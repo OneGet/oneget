@@ -99,16 +99,29 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     new {
                         Error = new Func<string, string, string, string, bool>((id, cat, targetobjectvalue, messageText) => {
 #if DEBUG
-                            Verbose("Suppressed Error", messageText);
+                            Verbose("Suppressed Error {0}", messageText);
 #endif
                             return false;
                         }),
                         Warning = new Func<string, bool>((messageText) => {
 #if DEBUG
-                            Verbose("Suppressed Warning", messageText);
+                            Verbose("Suppressed Warning {0}", messageText);
 #endif
                             return true;
                         }),
+                        Verbose = new Func<string,bool>((messageText) => {
+                            if (IsProcessing) {
+                                Verbose(messageText);
+                            }
+#if DEBUG 
+                            else {
+                                Verbose("Suppressed Verbose {0}", messageText);
+                            }
+#endif
+
+                            return true;
+                        }),
+
                     },
                     this,
                 };
