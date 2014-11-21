@@ -321,4 +321,12 @@
     <value>Unable to find package providers ({0}.</value>
     <comment>provider names</comment>
   </data>
+  <data name="PackageFileExists" xml:space="preserve">
+    <value>Package file '{0}' exists. Remove the file first or use -Force to overwrite</value>
+    <comment>{0} - package filename </comment>
+  </data>
+  <data name="UnableToOverwrite" xml:space="preserve">
+    <value>Unable to remove package file '{0}'. </value>
+    <comment>{0} - package filename</comment>
+  </data>
 </root>
