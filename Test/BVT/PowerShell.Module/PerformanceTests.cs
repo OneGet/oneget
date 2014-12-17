@@ -21,8 +21,8 @@ namespace OneGet.PowerShell.Module.Test {
     using Microsoft.OneGet.Utility.PowerShell;
     using Xunit;
     public class PerformanceTests : TestBase {
-        
-        [Fact(Timeout = 60000), Trait("Test", "Performance")]
+
+        [Fact(Timeout = 60000, Priority = 1002), Trait("Test", "Performance")]
         public void TestPerformanceFindPackageSelectObjectPipePsModule()
         {
             dynamic ps = NewPowerShellSession;
@@ -40,7 +40,7 @@ namespace OneGet.PowerShell.Module.Test {
             Assert.False(result2.ContainsErrors);
         }
 
-        [Fact(Timeout = 60000, Skip = "Disabled. AppDomainConfig does not exist at the moment."), Trait("Test", "Performance")]
+        [Fact(Timeout = 60000, Priority = 1003, Skip = "Disabled. AppDomainConfig does not exist at the moment."), Trait("Test", "Performance")]
         public void TestPerformanceFindPackagePsModule()
         {
             dynamic ps = NewPowerShellSession;
@@ -56,7 +56,7 @@ namespace OneGet.PowerShell.Module.Test {
             Assert.False(result.ContainsErrors);
         }
 
-        [Fact(Timeout = 60000), Trait("Test", "Performance")]
+        [Fact(Timeout = 60000, Priority = 1004), Trait("Test", "Performance")]
         public void TestPerformanceFindPackageSelectObjectRepositoryPsGalleryPipe()
         {
             dynamic ps = NewPowerShellSession;
@@ -74,7 +74,7 @@ namespace OneGet.PowerShell.Module.Test {
             Assert.False(result2.ContainsErrors);
         }
 
-        [Fact(Timeout = 60000, Skip = "Disabled. AppDomainConfig does not exist at the moment."), Trait("Test", "Performance")]
+        [Fact(Timeout = 60000, Priority = 1005, Skip = "Disabled. AppDomainConfig does not exist at the moment."), Trait("Test", "Performance")]
         public void TestPerformanceFindPackageRepositoryPsGallery()
         {
             dynamic ps = NewPowerShellSession;
