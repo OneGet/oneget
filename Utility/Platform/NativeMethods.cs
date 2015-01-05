@@ -84,7 +84,7 @@ namespace Microsoft.OneGet.Utility.Platform {
 
         public void Free() {
             if (!IsInvalid) {
-                NativeMethods.FreeLibrary(handle);
+                NativeMethods.FreeLibrary(this);
             }
 
             handle = IntPtr.Zero;
@@ -275,7 +275,7 @@ namespace Microsoft.OneGet.Utility.Platform {
         internal static extern int LoadString(Module module, uint stringId, StringBuilder buffer, int bufferSize);
 
         [DllImport("kernel32")]
-        internal static extern bool FreeLibrary(IntPtr instance);
+        internal static extern bool FreeLibrary(Module instance);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern void OutputDebugString(string debugMessageText);

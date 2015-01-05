@@ -4,3 +4,6 @@
 [submodule "provider-sdk-cs"]
 	path = provider-sdk-cs
 	url = ../provider-sdk-cs
+[submodule "NuGetProvider"]
+	path = NuGetProvider
+	url = https://github.com/OneGet/NuGetProvider.git
