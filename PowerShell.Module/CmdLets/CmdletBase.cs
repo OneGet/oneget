@@ -215,7 +215,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public virtual IEnumerable<string> GetOptionKeys() {
-            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys).ByRef();
+            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys);
         }
 
         protected bool GenerateCommonDynamicParameters() {
@@ -273,21 +273,21 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (value is string || value is int) {
                     return new[] {
                         MyInvocation.BoundParameters[key].ToString()
-                    }.ByRef();
+                    };
                 }
                 if (value is SwitchParameter) {
                     return new[] {
                         ((SwitchParameter)MyInvocation.BoundParameters[key]).IsPresent.ToString()
-                    }.ByRef();
+                    };
                 }
                 if (value is string[]) {
-                    return ((string[])value).ByRef();
+                    return ((string[])value);
                 }
                 return new[] {
                     MyInvocation.BoundParameters[key].ToString()
-                }.ByRef();
+                };
             }
-            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Name == key).SelectMany(each => each.GetValues(this)).ByRef();
+            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Name == key).SelectMany(each => each.GetValues(this));
         }
 
         public virtual string GetCredentialUsername() {

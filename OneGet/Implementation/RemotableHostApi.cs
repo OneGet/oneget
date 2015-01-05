@@ -17,7 +17,7 @@ namespace Microsoft.OneGet.Implementation {
     using System.Collections.Generic;
     using Api;
 
-    public class RemotableHostApi : MarshalByRefObject, IHostApi {
+    public class RemotableHostApi: IHostApi {
         private IHostApi _hostApi;
 
         internal RemotableHostApi(IHostApi host) {
@@ -106,8 +106,5 @@ namespace Microsoft.OneGet.Implementation {
             return _hostApi.CallCount();
         }
 
-        public override object InitializeLifetimeService() {
-            return null;
-        }
     }
 }

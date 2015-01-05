@@ -28,7 +28,7 @@ namespace Microsoft.OneGet.Utility.Platform {
         public static IEnumerable<string> SystemPath {
             get {
                 var path = GetSystemEnvironmentVariable("PATH");
-                return string.IsNullOrEmpty(path) ? new string[] {} : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                return string.IsNullOrWhiteSpace(path) ? new string[] {} : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             }
             set {
                 var newValue = value.ToPathString();
@@ -41,7 +41,7 @@ namespace Microsoft.OneGet.Utility.Platform {
         public static IEnumerable<string> UserPath {
             get {
                 var path = GetUserEnvironmentVariable("PATH");
-                return string.IsNullOrEmpty(path) ? new string[] {} : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                return string.IsNullOrWhiteSpace(path) ? new string[] {} : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             }
             set {
                 var newValue = value.ToPathString();
@@ -54,7 +54,7 @@ namespace Microsoft.OneGet.Utility.Platform {
         public static IEnumerable<string> Path {
             get {
                 var path = GetEnvironmentVariable("PATH");
-                return string.IsNullOrEmpty(path) ? new string[] {} : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                return string.IsNullOrWhiteSpace(path) ? new string[] {} : path.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             }
             set {
                 var newValue = value.ToPathString();
@@ -130,7 +130,7 @@ namespace Microsoft.OneGet.Utility.Platform {
             // do system/shared variables first
             foreach (var key in system.Keys) {
                 var value = system[key].ToString();
-                if (string.IsNullOrEmpty(value)) {
+                if (string.IsNullOrWhiteSpace(value)) {
                     continue;
                 }
 
@@ -146,7 +146,7 @@ namespace Microsoft.OneGet.Utility.Platform {
             // do user variables next
             foreach (var key in user.Keys) {
                 var value = user[key].ToString();
-                if (string.IsNullOrEmpty(value)) {
+                if (string.IsNullOrWhiteSpace(value)) {
                     continue;
                 }
 

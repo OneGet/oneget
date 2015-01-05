@@ -36,40 +36,6 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         /// <summary>
-        ///     Ensures that the IEnumerable implements MarshalByRefObject so that the whole
-        ///     collection is not forced to serialize.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="enumerable"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> ByRef<T>(this IEnumerable<T> enumerable) {
-            if (enumerable == null) {
-                return null;
-            }
-
-            return enumerable as SerializableEnumerable<T> ?? new SerializableEnumerable<T>(enumerable);
-            // enumerable as ByRefEnumerable<T> ?? new ByRefEnumerable<T>(enumerable);
-        }
-
-        public static IEnumerable<T> ByRefEnumerable<T>(this IEnumerable<T> enumerable) {
-            if (enumerable == null) {
-                return null;
-            }
-
-            // return enumerable as ByRefEnumerable<T> ?? new ByRefEnumerable<T>(enumerable);
-            return enumerable as SerializableEnumerable<T> ?? new SerializableEnumerable<T>(enumerable);
-        }
-
-        public static IEnumerator<T> ByRef<T>(this IEnumerator<T> enumerator) {
-            if (enumerator == null) {
-                return null;
-            }
-
-            // return enumerator as ByRefEnumerator<T> ?? new ByRefEnumerator<T>(enumerator);
-            return enumerator as SerializableEnumerator<T> ?? new SerializableEnumerator<T>(enumerator);
-        }
-
-        /// <summary>
         ///     Concatenates a single item to an IEnumerable
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -204,6 +170,22 @@ namespace Microsoft.OneGet.Utility.Extensions {
                         TaskScheduler = new ThreadPerTaskScheduler()
                     }, action);
                 } else {
+                    action(items.FirstOrDefault());
+                }
+            }
+        }
+
+        public static void SerialForEach<T>(this IEnumerable<T> enumerable, Action<T> action) {
+            var items = enumerable.ReEnumerable();
+            object first = items.FirstOrDefault();
+            if (first != null) {
+                object second = items.Skip(1).FirstOrDefault();
+                if (second != null) {
+                    foreach (var item in items) {
+                        action(item);
+                    } 
+                }
+                else {
                     action(items.FirstOrDefault());
                 }
             }

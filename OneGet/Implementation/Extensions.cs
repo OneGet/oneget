@@ -19,7 +19,7 @@ namespace Microsoft.OneGet.Implementation {
 
     internal static class Extensions {
         internal static string FormatMessageString(this IHostApi request, string messageText, params object[] args) {
-            if (string.IsNullOrEmpty(messageText)) {
+            if (string.IsNullOrWhiteSpace(messageText)) {
                 return string.Empty;
             }
 

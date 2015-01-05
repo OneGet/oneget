@@ -14,6 +14,7 @@
 
 namespace Microsoft.OneGet.Implementation {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
@@ -40,7 +41,7 @@ namespace Microsoft.OneGet.Implementation {
     ///     - WiX's Burn
     ///     The Client API provides high-level consumer functions to support SDII functionality.
     /// </summary>
-    internal class PackageManagementService : MarshalByRefObject, IPackageManagementService {
+    internal class PackageManagementService : IPackageManagementService {
         private readonly IDictionary<string, IMetaProvider> _metaProviders = new Dictionary<string, IMetaProvider>(StringComparer.OrdinalIgnoreCase);
         private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>(StringComparer.OrdinalIgnoreCase);
 
@@ -51,7 +52,7 @@ namespace Microsoft.OneGet.Implementation {
 
         public IEnumerable<PackageProvider> PackageProviders {
             get {
-                return _packageProviders.Values.ByRef();
+                return _packageProviders.Values;
             }
         }
 
@@ -65,10 +66,6 @@ namespace Microsoft.OneGet.Implementation {
                 }
             }
             return _initialized;
-        }
-
-        public override object InitializeLifetimeService() {
-            return null;
         }
 
         // well known, built in provider assemblies.
@@ -115,6 +112,10 @@ namespace Microsoft.OneGet.Implementation {
                     return Enumerable.Empty<string>();
                 }));
 
+            // find modules that have manifests 
+            // todo: expand this out to validate the assembly is ok for this instance of OneGet.
+            providerAssemblies = providerAssemblies.Where(each => Manifest.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
+
             providerAssemblies = providerAssemblies.OrderByDescending(each => {
                 try {
                     // try to get a version from the file first
@@ -143,11 +144,17 @@ namespace Microsoft.OneGet.Implementation {
             });
 
             // there is no trouble with loading providers concurrently.
+#if DEBUG
+            providerAssemblies.SerialForEach(providerAssemblyName => {
+#else
             providerAssemblies.ParallelForEach(providerAssemblyName => {
+#endif
                 try {
                     request.Debug(request.FormatMessageString("Trying provider assembly: {0}", providerAssemblyName));
                     if (TryToLoadProviderAssembly(providerAssemblyName, request)) {
                         request.Debug(request.FormatMessageString("SUCCESS provider assembly: {0}", providerAssemblyName));
+                    } else {
+                        request.Debug(request.FormatMessageString("FAILED provider assembly: {0}", providerAssemblyName));
                     }
                 } catch {
                     request.Error(Constants.Messages.ProviderPluginLoadFailure, ErrorCategory.InvalidOperation.ToString(), providerAssemblyName, request.FormatMessageString(Constants.Messages.ProviderPluginLoadFailure, providerAssemblyName));
@@ -173,12 +180,12 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         public IEnumerable<PackageSource> GetAllSourceNames(IRequestObject requestObject) {
-            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(requestObject)).ByRef();
+            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(requestObject));
         }
 
         public IEnumerable<string> ProviderNames {
             get {
-                return  _packageProviders.Keys.ByRef();
+                return  _packageProviders.Keys;
             }
         }
 
@@ -198,19 +205,19 @@ namespace Microsoft.OneGet.Implementation {
         public IEnumerable<string> AllProviderNames {
             get {
                 if (BootstrappableProviderNames.IsNullOrEmpty()) {
-                    return _packageProviders.Keys.ByRef();
+                    return _packageProviders.Keys;
                 }
 
-                return _packageProviders.Keys.Union(BootstrappableProviderNames).ByRef();
+                return _packageProviders.Keys.Union(BootstrappableProviderNames);
             }
         }
 
         public IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName) {
-            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName)).ByRef();
+            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName));
         }
 
         public IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value) {
-            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName) && each.Features[featureName].Contains(value)).ByRef();
+            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName) && each.Features[featureName].Contains(value));
         }
 
         public IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject) {
@@ -218,14 +225,14 @@ namespace Microsoft.OneGet.Implementation {
                 // match with wildcards
                 var results = _packageProviders.Values.Where(each => each.ProviderName.IsWildcardMatch(providerName)).ReEnumerable();
                 if (results.Any()) {
-                    return results.ByRef();
+                    return results;
                 }
                 if (requestObject != null && !providerName.ContainsWildcards()) {
                     // if the end user requested a provider that's not there. perhaps the bootstrap provider can find it.
                     if (RequirePackageProvider(null, providerName, Constants.MinVersion, requestObject)) {
                         // seems to think we found it.
                         if (_packageProviders.ContainsKey(providerName)) {
-                            return _packageProviders[providerName].SingleItemAsEnumerable().ByRef();
+                            return _packageProviders[providerName].SingleItemAsEnumerable();
                         }
                     }
                     var hostApi = requestObject.As<IHostApi>();
@@ -233,10 +240,10 @@ namespace Microsoft.OneGet.Implementation {
                     // warn the user that that provider wasn't found.
                     hostApi.Warning(hostApi.FormatMessageString(Constants.Messages.UnknownProvider, providerName));
                 }
-                return Enumerable.Empty<PackageProvider>().ByRef();
+                return Enumerable.Empty<PackageProvider>();
             }
 
-            return PackageProviders.ByRef();
+            return PackageProviders;
         }
 
         private bool AddMetaProvider(string name, IMetaProvider provider, ulong version, IRequest request) {
@@ -331,65 +338,13 @@ namespace Microsoft.OneGet.Implementation {
                 return false;
             }
 
-#if USE_APPDOMAINS
-            var pluginDomain = CreatePluginDomain(assemblyPath);
 
-            if (!pluginDomain.InvokeFunc(Loader.AcquireProviders, assemblyPath, request, (YieldMetaProvider)AddMetaProvider, (YieldPackageProvider)AddPackageProvider, (YieldArchiver)AddArchvier, (YieldDownloader)AddDownloader)) {
-                // no plugins loaded. Drop the domain
-                pluginDomain.Dispose();
-                pluginDomain = null;
-                return false;
-            }
-#else
             if (!Loader.AcquireProviders(assemblyPath, request, AddMetaProvider, AddPackageProvider, AddArchvier, AddDownloader)) {
                 return false;
             }
-#endif
 
             return true;
         }
-
-#if AFTER_CTP
-        private  void UnloadAssembly(Assembly assembly) {
-            PluginDomain pd = null;
-            try {
-                lock (_domains) {
-                    pd = _domains[assembly];
-                    _domains.Remove(assembly);
-                }
-            } catch (Exception e) {
-                e.Dump();
-            }
-            if (pd != null) {
-                ((IDisposable)pd).Dispose();
-            }
-            pd = null;
-        }
-#endif
-
-#if USE_APPDOMAINS
-    /// <summary>
-    ///     PROTOTYPE - assembly/provider loader.
-    /// </summary>
-    /// <param name="primaryAssemblyPath"></param>
-    /// <returns></returns>
-        private PluginDomain CreatePluginDomain(string primaryAssemblyPath) {
-            try {
-                // this needs to load the assembly in it's own domain
-                // so that we can drop them when necessary.
-                var name = Path.GetFileNameWithoutExtension(primaryAssemblyPath) ?? primaryAssemblyPath;
-                var pd = new PluginDomain(string.Format(CultureInfo.CurrentCulture, "PluginDomain [{0}]", name.Substring(name.LastIndexOf('.') + 1)));
-
-                // inject this assembly into the target appdomain.
-                pd.LoadFileWithReferences(Assembly.GetExecutingAssembly().Location);
-
-                return pd;
-            } catch (Exception e) {
-                e.Dump();
-            }
-            return null;
-        }
-#endif
 
         /// <summary>
         ///     PROTOTYPE -- extremely simplified assembly locator.
@@ -460,7 +415,7 @@ namespace Microsoft.OneGet.Implementation {
         internal string UserAssemblyLocation {
             get {
                 var basepath = KnownFolders.GetFolderPath(KnownFolder.LocalApplicationData);
-                if (string.IsNullOrEmpty(basepath)) {
+                if (string.IsNullOrWhiteSpace(basepath)) {
                     return null;
                 }
                 var path = Path.Combine(basepath, "OneGet", "ProviderAssemblies");
@@ -474,7 +429,7 @@ namespace Microsoft.OneGet.Implementation {
         internal string SystemAssemblyLocation {
             get {
                 var basepath = KnownFolders.GetFolderPath(KnownFolder.ProgramFiles);
-                if (string.IsNullOrEmpty(basepath)) {
+                if (string.IsNullOrWhiteSpace(basepath)) {
                     return null;
                 }
                 var path = Path.Combine(basepath, "OneGet", "ProviderAssemblies");

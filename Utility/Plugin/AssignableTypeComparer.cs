@@ -23,7 +23,8 @@ namespace Microsoft.OneGet.Utility.Plugin {
             if (x == null) {
                 return y == null;
             }
-            return x == y || x.IsAssignableFrom(y);
+            // adding support to see if we can duck-type the target type to the correct type.
+            return x == y || x.IsAssignableFrom(y) || DynamicInterface.IsTypeCompatible(x, y);
         }
 
         public int GetHashCode(Type obj) {
@@ -31,4 +32,5 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return -1;
         }
     }
+
 }

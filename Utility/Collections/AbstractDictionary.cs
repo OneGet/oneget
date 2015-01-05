@@ -18,7 +18,7 @@ namespace Microsoft.OneGet.Utility.Collections {
     using System.Collections.Generic;
     using System.Linq;
 
-    public abstract class AbstractDictionary<TKey, TVal> : MarshalByRefObject, IDictionary<TKey, TVal> {
+    public abstract class AbstractDictionary<TKey, TVal> : IDictionary<TKey, TVal> {
         // we don't want these objects being gc's out because they remain unused...
 
         public virtual IEnumerator<KeyValuePair<TKey, TVal>> GetEnumerator() {
@@ -100,9 +100,5 @@ namespace Microsoft.OneGet.Utility.Collections {
         public abstract TVal this[TKey key] {get; set;}
         public abstract ICollection<TKey> Keys {get;}
         public abstract bool Remove(TKey key);
-
-        public override object InitializeLifetimeService() {
-            return null;
-        }
     }
 }

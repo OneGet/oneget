@@ -24,7 +24,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using Implementation;
     using Resources;
     using Utility.Async;
-    using IRequestObject = System.MarshalByRefObject;
+    using Utility.Plugin;
+    using IRequestObject = System.Object;
 
     public abstract class Request : IDisposable {
         internal CommandInfo CommandInfo;
@@ -286,15 +287,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         #endregion
 
-        public static implicit operator MarshalByRefObject(Request req) {
-            return req.Extend();
-        }
 
-        public static MarshalByRefObject ToMarshalByRefObject(Request request) {
-            return request.Extend();
-        }
-
-        internal MarshalByRefObject Extend(params object[] objects) {
+        internal object Extend(params object[] objects) {
             return RequestExtensions.Extend(this, GetIRequestInterface(), objects);
         }
 
@@ -303,7 +297,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         internal string FormatMessageString(string messageText, params object[] args) {
-            if (string.IsNullOrEmpty(messageText)) {
+            if (string.IsNullOrWhiteSpace(messageText)) {
                 return string.Empty;
             }
 
@@ -325,7 +319,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             get {
                 var u = GetCredentialUsername();
                 var p = GetCredentialPassword();
-                if (string.IsNullOrEmpty(u) && string.IsNullOrEmpty(p)) {
+                if (string.IsNullOrWhiteSpace(u) && string.IsNullOrWhiteSpace(p)) {
                     return null;
                 }
                 return new PSCredential(u, p.FromProtectedString("salt"));
@@ -363,7 +357,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed", Justification = "This is required for the PowerShell Providers.")]
-        public MarshalByRefObject CloneRequest(Hashtable options = null, ArrayList sources = null, PSCredential credential = null) {
+        public object CloneRequest(Hashtable options = null, ArrayList sources = null, PSCredential credential = null) {
             var srcs = (sources ?? new ArrayList()).ToArray().Select(each => each.ToString()).ToArray();
             var name = credential == null ? null : credential.UserName;
             var pass = credential == null ? null : credential.Password.ToProtectedString("salt");

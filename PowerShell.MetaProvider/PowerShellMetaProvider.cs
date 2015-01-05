@@ -24,6 +24,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Reflection;
     using System.Threading.Tasks;
     using Utility.Extensions;
+    using Utility.Plugin;
     using Utility.PowerShell;
     using IRequestObject = System.Object;
 
@@ -243,7 +244,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             paths = paths.ConcatSingleItem( Path.Combine(sysRoot, @"system32\WindowsPowerShell\v1.0\Modules"));
             paths = paths.ConcatSingleItem(Path.Combine(userProfile, @"Documents\WindowsPowerShell\Modules"));
 
-            if (!string.IsNullOrEmpty(BaseFolder) && BaseFolder.DirectoryExists()) {
+            if (!string.IsNullOrWhiteSpace(BaseFolder) && BaseFolder.DirectoryExists()) {
                 paths = paths.ConcatSingleItem(BaseFolder);
             }
 

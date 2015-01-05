@@ -46,15 +46,9 @@
     <Compile Include="Builtin\ArpProvider.cs" />
     <Compile Include="Builtin\BootstrapRequest.cs" />
     <Compile Include="Builtin\BootstrapProvider.cs" />
-    <Compile Include="Builtin\CabArchiver.cs" />
     <Compile Include="Builtin\WebDownloader.cs" />
-    <Compile Include="Builtin\MsiProvider.cs" />
-    <Compile Include="Builtin\MsuProvider.cs" />
     <Compile Include="Builtin\SwidProvider.cs" />
     <Compile Include="Builtin\VSixProvider.cs" />
-    <Compile Include="Builtin\WindowsFeaturesProvider.cs" />
-    <Compile Include="Builtin\WindowsUpdateProvider.cs" />
-    <Compile Include="Builtin\ZipArchiver.cs" />
     <Compile Include="ErrorCategory.cs" />
     <Compile Include="Implementation\ActionRequestObject.cs" />
     <Compile Include="Implementation\EnumerableRequestObject.cs" />
@@ -107,6 +101,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Messages.resx</DependentUpon>
     </Compile>
+    <Compile Include="Packaging\Swidtag.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

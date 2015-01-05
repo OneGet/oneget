@@ -171,7 +171,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public string GetProviderVersion() {
             var result= (string)CallPowerShellWithoutRequest("GetProviderVersion");
-            if (string.IsNullOrEmpty(result)) {
+            if (string.IsNullOrWhiteSpace(result)) {
 
                 if (_module.Version != new Version(0, 0, 0, 0)) {
                     result = _module.Version.ToString();

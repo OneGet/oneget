@@ -105,7 +105,7 @@ namespace Microsoft.OneGet.Packaging {
                 return null;
             }
 
-            if (string.IsNullOrEmpty(value)) {
+            if (string.IsNullOrWhiteSpace(value)) {
                 return element;
             }
 

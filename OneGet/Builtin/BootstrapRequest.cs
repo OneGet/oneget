@@ -44,10 +44,10 @@ namespace Microsoft.OneGet.Builtin {
         internal string DestinationPath {
             get {
                 var v = GetValue("DestinationPath");
-                if (string.IsNullOrEmpty(v)) {
+                if (string.IsNullOrWhiteSpace(v)) {
                     // use a well-known path.
                     v = GetKnownFolder("ProviderAssemblyLocation", this);
-                    if (string.IsNullOrEmpty(v)) {
+                    if (string.IsNullOrWhiteSpace(v)) {
                         return null;
                     }
                 }
@@ -66,7 +66,7 @@ namespace Microsoft.OneGet.Builtin {
                     var uri = new Uri(location);
                     var content = DownloadContent(uri);
                     XDocument document;
-                    if (!String.IsNullOrEmpty(content)) {
+                    if (!string.IsNullOrWhiteSpace(content)) {
                         try {
                             document = XDocument.Parse(content);
                             if (document.Root != null && document.Root.Name.LocalName == Constants.SwidTag.SoftwareIdentity) {
@@ -138,15 +138,15 @@ namespace Microsoft.OneGet.Builtin {
                 return true;
             }
 
-            if (!string.IsNullOrEmpty(requiredVersion) && version != requiredVersion) {
+            if (!string.IsNullOrWhiteSpace(requiredVersion) && version != requiredVersion) {
                 return true;
             }
 
-            if (!string.IsNullOrEmpty(minimumVersion) && version < minimumVersion) {
+            if (!string.IsNullOrWhiteSpace(minimumVersion) && version < minimumVersion) {
                 return true;
             }
 
-            if (!string.IsNullOrEmpty(maximumVersion) && version > maximumVersion) {
+            if (!string.IsNullOrWhiteSpace(maximumVersion) && version > maximumVersion) {
                 return true;
             }
 
@@ -178,7 +178,7 @@ namespace Microsoft.OneGet.Builtin {
         }
 
         private static bool AnyNullOrEmpty(params string[] args) {
-            return args.Any(string.IsNullOrEmpty);
+            return args.Any(string.IsNullOrWhiteSpace);
         }
 
         public bool DownloadFileToLocation(Uri uri, string targetFile) {

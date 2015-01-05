@@ -152,7 +152,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         internal void ReportErrors(Request request, IEnumerable<ErrorRecord> errors) {
             foreach (var error in errors) {
                 request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject == null ? null : error.TargetObject.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
-                if (!string.IsNullOrEmpty(error.ScriptStackTrace)) {
+                if (!string.IsNullOrWhiteSpace(error.ScriptStackTrace)) {
                     // give a debug hint if we have a script stack trace. How nice of us.
                     request.Debug(Constants.ScriptStackTrace, error.ScriptStackTrace);
                 }

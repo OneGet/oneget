@@ -18,7 +18,7 @@ namespace Microsoft.OneGet.Packaging {
     using System.Linq;
     using Utility.Extensions;
 
-    public class DynamicOption : MarshalByRefObject {
+    public class DynamicOption  {
         private IEnumerable<string> _values;
         public string ProviderName {get; set;}
         public OptionCategory Category {get; internal set;}
@@ -32,12 +32,8 @@ namespace Microsoft.OneGet.Packaging {
                 return _values ?? Enumerable.Empty<string>();
             }
             internal set {
-                _values = value.ByRef();
+                _values = value;
             }
-        }
-
-        public override object InitializeLifetimeService() {
-            return null;
         }
     }
 }

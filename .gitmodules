@@ -1,3 +1,6 @@
 [submodule "nuget"]
 	path = nuget
 	url = ../nuget
+[submodule "provider-sdk-cs"]
+	path = provider-sdk-cs
+	url = ../provider-sdk-cs

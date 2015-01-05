@@ -310,7 +310,7 @@ namespace Microsoft.OneGet.Implementation {
         #endregion
 
         private string FormatMessageString(string messageText, params object[] args) {
-            if (string.IsNullOrEmpty(messageText)) {
+            if (string.IsNullOrWhiteSpace(messageText)) {
                 return string.Empty;
             }
 

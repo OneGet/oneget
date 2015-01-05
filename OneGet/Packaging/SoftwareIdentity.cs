@@ -26,10 +26,7 @@ namespace Microsoft.OneGet.Packaging {
     ///     Will eventually also represent a swidtag.
     ///     todo: Should this be serializable instead?
     /// </summary>
-    public class SoftwareIdentity : MarshalByRefObject {
-        public override object InitializeLifetimeService() {
-            return null;
-        }
+    public class SoftwareIdentity  {
 
         #region OneGet specific data
 
@@ -141,7 +138,7 @@ namespace Microsoft.OneGet.Packaging {
         // shortcut for Meta values 
         public IEnumerable<string> this[string index] {
             get {
-                return Meta.Where(each => each.ContainsKey(index)).Select(each => each[index]).ByRef();
+                return Meta.Where(each => each.ContainsKey(index)).Select(each => each[index]);
             }
         }
 
@@ -160,13 +157,13 @@ namespace Microsoft.OneGet.Packaging {
 
         public IEnumerable<SoftwareMetadata> Meta {
             get {
-                return Swid.Root().Elements(Iso19770_2.Meta).Select(each => new SoftwareMetadata(each)).ByRef();
+                return Swid.Root().Elements(Iso19770_2.Meta).Select(each => new SoftwareMetadata(each));
             }
         }
 
         public IEnumerable<Entity> Entities {
             get {
-                return Swid.Root().Elements(Iso19770_2.Entity).Select(each => new Entity(each)).ByRef();
+                return Swid.Root().Elements(Iso19770_2.Entity).Select(each => new Entity(each));
             }
         }
 
@@ -183,7 +180,7 @@ namespace Microsoft.OneGet.Packaging {
 
         public IEnumerable<Link> Links {
             get {
-                return Swid.Root().Elements(Iso19770_2.Link).Select(each => new Link(each)).ByRef();
+                return Swid.Root().Elements(Iso19770_2.Link).Select(each => new Link(each));
             }
         }
 

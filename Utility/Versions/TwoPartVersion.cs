@@ -84,7 +84,7 @@ namespace Microsoft.OneGet.Utility.Versions {
         }
 
         private static uint StringToUInt(string version) {
-            if (String.IsNullOrEmpty(version)) {
+            if (string.IsNullOrWhiteSpace(version)) {
                 return 0;
             }
 

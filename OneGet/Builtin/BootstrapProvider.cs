@@ -151,7 +151,7 @@ namespace Microsoft.OneGet.Builtin {
                 }
 
                 // they are looking for a provider 
-                if (string.IsNullOrEmpty(name)) {
+                if (string.IsNullOrWhiteSpace(name)) {
                     // return all providers 
                     var providers = request.GetProviders(master);
                     foreach (var p in providers) {
@@ -196,7 +196,7 @@ namespace Microsoft.OneGet.Builtin {
             // download the file
             foreach (var link in provider.XPath("/swid:SoftwareIdentity/swid:Link[@rel = 'installationmedia']")) {
                 var href = link.Attributes["href"];
-                if (string.IsNullOrEmpty(href) || !Uri.IsWellFormedUriString(href, UriKind.Absolute)) {
+                if (string.IsNullOrWhiteSpace(href) || !Uri.IsWellFormedUriString(href, UriKind.Absolute)) {
                     request.Debug("Bad or missing uri: {0}", href);
                     continue;
                 }
@@ -243,7 +243,7 @@ namespace Microsoft.OneGet.Builtin {
                     e.Dump();
                 }
                 finally {
-                    if (!string.IsNullOrEmpty(tmpFile)) {
+                    if (!string.IsNullOrWhiteSpace(tmpFile)) {
                         tmpFile.TryHardToDelete();
                     }
                 }
@@ -264,7 +264,7 @@ namespace Microsoft.OneGet.Builtin {
                 // NOT THIS -> at this point href should either be url to a location (that a provider will recognize) 
                 // JUST THIS -> or more likely should be a prototype canonical id: <provider>:<packagename>[/version][#source]
                 // 
-                if (string.IsNullOrEmpty(href) || !Uri.IsWellFormedUriString(href, UriKind.Absolute)) {
+                if (string.IsNullOrWhiteSpace(href) || !Uri.IsWellFormedUriString(href, UriKind.Absolute)) {
                     request.Debug("Bad or missing uri: {0}", href);
                     continue;
                 }
@@ -283,7 +283,7 @@ namespace Microsoft.OneGet.Builtin {
                     var packageVersion = uri.PathAndQuery;
                     var source = uri.Fragment;
 
-                    if (string.IsNullOrEmpty(packageId)) {
+                    if (string.IsNullOrWhiteSpace(packageId)) {
                         continue;
                     }
 
@@ -354,7 +354,7 @@ namespace Microsoft.OneGet.Builtin {
             }
 
             var targetFilename = provider.XPath("/swid:SoftwareIdentity/swid:Meta[@targetFilename]").GetAttribute("targetFilename");
-            if (string.IsNullOrEmpty(targetFilename)) {
+            if (string.IsNullOrWhiteSpace(targetFilename)) {
                 request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.InvalidFilename);
                 return;
             }
@@ -366,7 +366,7 @@ namespace Microsoft.OneGet.Builtin {
             // download the file
             foreach (var link in provider.XPath("/swid:SoftwareIdentity/swid:Link[@rel = 'installationmedia']")) {
                 var href = link.Attributes["href"];
-                if (string.IsNullOrEmpty(href) || !Uri.IsWellFormedUriString(href, UriKind.Absolute)) {
+                if (string.IsNullOrWhiteSpace(href) || !Uri.IsWellFormedUriString(href, UriKind.Absolute)) {
                     request.Debug("Bad or missing uri: {0}", href);
                     continue;
                 }
@@ -421,7 +421,7 @@ namespace Microsoft.OneGet.Builtin {
                     e.Dump();
                 }
                 finally {
-                    if (!string.IsNullOrEmpty(tmpFile)) {
+                    if (!string.IsNullOrWhiteSpace(tmpFile)) {
                         tmpFile.TryHardToDelete();
                     }
                 }

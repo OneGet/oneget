@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Utility.Plugin {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
@@ -22,17 +23,15 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using Collections;
     using Extensions;
 
-    public class DynamicInterface {
-        public static readonly DynamicInterface Instance = new DynamicInterface();
-
+    public static class DynamicInterface {
         private static readonly Dictionary<Types, bool> _isCompatibleCache = new Dictionary<Types, bool>();
         private static readonly Dictionary<string, ProxyClass> _proxyClassDefinitions = new Dictionary<string, ProxyClass>();
 
-        public TInterface Create<TInterface>(params Type[] types) {
+        public static TInterface Create<TInterface>(params Type[] types) {
             return (TInterface)Create(typeof (TInterface), types);
         }
 
-        public object Create(Type tInterface, params Type[] types) {
+        public static object Create(Type tInterface, params Type[] types) {
             if (tInterface == null) {
                 throw new ArgumentNullException("tInterface");
             }
@@ -63,7 +62,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return CreateProxy(tInterface, types.Select(Activator.CreateInstance).ToArray());
         }
 
-        public object Create(Type tInterface, params string[] typeNames) {
+        public static object Create(Type tInterface, params string[] typeNames) {
             if (tInterface == null) {
                 throw new ArgumentNullException("tInterface");
             }
@@ -72,11 +71,11 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return Create(tInterface, (Type[])typeNames.Select(Type.GetType));
         }
 
-        public TInterface Create<TInterface>(params string[] typeNames) {
+        public static TInterface Create<TInterface>(params string[] typeNames) {
             return (TInterface)Create(typeof (TInterface), typeNames);
         }
 
-        private IEnumerable<object> Flatten(IEnumerable<object> items) {
+        private static IEnumerable<object> Flatten(IEnumerable<object> items) {
             if (items == null) {
                 yield break;
             }
@@ -99,15 +98,15 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
         }
 
-        private IEnumerable<object> Flatten(params object[] items) {
+        private static IEnumerable<object> Flatten(params object[] items) {
             return Flatten(items as IEnumerable<object>);
         }
 
-        public TInterface Create<TInterface>(params object[] instances) {
+        public static  TInterface Create<TInterface>(params object[] instances) {
             return (TInterface)Create(typeof (TInterface), instances);
         }
 
-        public object Create(Type tInterface, params object[] instances) {
+        public static  object Create(Type tInterface, params object[] instances) {
             if (tInterface == null) {
                 throw new ArgumentNullException("tInterface");
             }
@@ -142,16 +141,17 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return CreateProxy(tInterface, instances);
         }
 
-        public bool IsTypeCompatible(Type tInterface, params Type[] types) {
+        public static bool IsTypeCompatible(Type tInterface, params Type[] types) {
             return _isCompatibleCache.GetOrAdd(new Types(tInterface, types), () => {
 #if DEEPDEBUG
-                Debug.WriteLine(String.Format("IsTypeCompatible {0} for {1}",typeof(TInterface).Name , types[0].Name));
+                Debug.WriteLine(String.Format("IsTypeCompatible {0} for {1}",tInterface.Name , types[0].Name));
 
                 foreach (var s in types.Where(each => each.GetDefaultConstructor() == null).Select(each => string.Format("{0} has no default constructor", each.Name))) {
                     Debug.WriteLine(s);
                 }
 #endif
                 try {
+                    // if there isn't a default constructor, we can't use the type to create instances 
                     if (types.Any(actualType => actualType.GetDefaultConstructor() == null)) {
                         return false;
                     }
@@ -163,7 +163,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 foreach (var s in types) {
                     Debug.WriteLine(string.Format("»»»{0}",s.Name));
 
-                    var mm = GetMissingMethods<TInterface>(types);
+                    var mm = GetMissingMethods(tInterface,types);
                     foreach (var method in mm) {
                         Debug.WriteLine(string.Format("»»»    MISSING {0}", method.Name));
                     }
@@ -174,29 +174,29 @@ namespace Microsoft.OneGet.Utility.Plugin {
             });
         }
 
-        public bool IsTypeCompatible<TInterface>(params Type[] types) {
+        public static bool IsTypeCompatible<TInterface>(params Type[] types) {
             return IsTypeCompatible(typeof (TInterface), types);
         }
 
-        private IEnumerable<Type> FilterOnMissingDefaultConstructors(params Type[] types) {
+        private static IEnumerable<Type> FilterOnMissingDefaultConstructors(params Type[] types) {
             return types.Where(actualType => actualType.GetDefaultConstructor() == null);
         }
 
-        private IEnumerable<MethodInfo> GetMissingMethods(Type tInterface, params Type[] types) {
+        private static IEnumerable<MethodInfo> GetMissingMethods(Type tInterface, params Type[] types) {
             var publicMethods = types.GetPublicMethods();
             return tInterface.GetRequiredMethods().Where(method => publicMethods.FindMethod(method) == null);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
-        private IEnumerable<MethodInfo> GetMissingMethods<TInterface>(params Type[] types) {
+        private static IEnumerable<MethodInfo> GetMissingMethods<TInterface>(params Type[] types) {
             return GetMissingMethods(typeof (TInterface), types);
         }
 
-        public bool IsInstanceCompatible<TInterface>(params object[] instances) {
+        public static bool IsInstanceCompatible<TInterface>(params object[] instances) {
             return IsInstanceCompatible(typeof (TInterface), instances);
         }
 
-        public bool IsInstanceCompatible(Type tInterface, params object[] instances) {
+        public static bool IsInstanceCompatible(Type tInterface, params object[] instances) {
             if (tInterface == null) {
                 throw new ArgumentNullException("tInterface");
             }
@@ -219,11 +219,11 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
 
 #if DEEPDEBUG
-            var missing = GetMethodsMissingFromInstances<TInterface>(instances).ToArray();
+            var missing = GetMethodsMissingFromInstances(tInterface,instances).ToArray();
 
             if (missing.Length > 0 ) {
                 var msg = "\r\nObjects are missing the following methods from interface ('{0}'):\r\n  {1}".format(
-                    typeof (TInterface).FullNiceName(),
+                    tInterface.FullNiceName(),
                     missing.Select(each => each.ToSignatureString()).Quote().JoinWith("\r\n  "));
                 Debug.WriteLine(msg);
             }
@@ -234,15 +234,15 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
-        private IEnumerable<MethodInfo> GetMethodsMissingFromInstances<TInterface>(params object[] instances) {
+        private static IEnumerable<MethodInfo> GetMethodsMissingFromInstances<TInterface>(params object[] instances) {
             return GetMethodsMissingFromInstances(typeof (TInterface), instances);
         }
 
-        private IEnumerable<MethodInfo> GetMethodsMissingFromInstances(Type tInterface, params object[] instances) {
+        private static IEnumerable<MethodInfo> GetMethodsMissingFromInstances(Type tInterface, params object[] instances) {
             return instances.Aggregate((IEnumerable<MethodInfo>)tInterface.GetRequiredMethods(), GetMethodsMissingFromInstance);
         }
 
-        private IEnumerable<MethodInfo> GetMethodsMissingFromInstance(IEnumerable<MethodInfo> methods, object instance) {
+        private static IEnumerable<MethodInfo> GetMethodsMissingFromInstance(IEnumerable<MethodInfo> methods, object instance) {
             var instanceSupportsMethod = DynamicInterfaceExtensions.GenerateInstanceSupportsMethod(instance);
             var instanceType = instance.GetType();
 
@@ -262,11 +262,13 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
-        private TInterface CreateProxy<TInterface>(params object[] instances) {
+        private static TInterface CreateProxy<TInterface>(params object[] instances) {
             return (TInterface)CreateProxy(typeof (TInterface), instances);
         }
 
-        private object CreateProxy(Type tInterface, params object[] instances) {
+        internal delegate void OnUnhandledException(string method, Exception exception);
+
+        private static object CreateProxy(Type tInterface, params object[] instances) {
             var matrix = instances.SelectMany(instance => {
                 var instanceType = instance.GetType();
                 // get all the public interfaces for the instances and place them at the top
@@ -292,7 +294,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             var delegateMethods = new List<Delegate, MethodInfo>();
             var stubMethods = new List<MethodInfo>();
             var usedInstances = new List<Type, object>();
-
+            
             foreach (var method in tInterface.GetVirtualMethods()) {
                 // figure out where it's going to get implemented
                 var found = false;
@@ -323,7 +325,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                     }
                 }
                 if (!found && (tInterface.IsInterface || method.IsAbstract)) {
-#if DEEPDEBUG
+#if xDEEPDEBUG
                     Console.WriteLine(" Generating stub method for {0} -> {1}".format(tInterface.NiceName(), method.ToSignatureString()));
 #endif
                     stubMethods.Add(method);
@@ -334,13 +336,14 @@ namespace Microsoft.OneGet.Utility.Plugin {
             var key = tInterface.FullName + ":::" + instanceMethods.Keys.Select(each => each.FullName + "." + instanceMethods[each].Select(mi => mi.Value.ToSignatureString()).JoinWithComma()).JoinWith(";\r\n") +
                       "::" + delegateMethods.Select(each => each.GetType().FullName).JoinWith(";\r\n") +
                       "::" + stubMethods.Select(mi => mi.ToSignatureString()).JoinWithComma();
+                      // + "!->" + (onUnhandledExceptionMethod == null ? (onUnhandledExceptionDelegate == null ? "GenerateOnUnhandledException" : onUnhandledExceptionDelegate.ToString()) : onUnhandledExceptionMethod.ToSignatureString());
 
             var proxyClass = _proxyClassDefinitions.GetOrAdd(key, () => new ProxyClass(tInterface, instanceMethods, delegateMethods, stubMethods));
 
             return proxyClass.CreateInstance(usedInstances, delegateMethods);
         }
 
-        public IEnumerable<Type> FilterTypesCompatibleTo<TInterface>(IEnumerable<Type> types) {
+        public static IEnumerable<Type> FilterTypesCompatibleTo<TInterface>(IEnumerable<Type> types) {
             if (types == null) {
                 return Enumerable.Empty<Type>();
             }
@@ -348,7 +351,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return types.Where(each => IsTypeCompatible<TInterface>(each));
         }
 
-        public IEnumerable<Type> FilterTypesCompatibleTo<TInterface>(Assembly assembly) {
+        public static IEnumerable<Type> FilterTypesCompatibleTo<TInterface>(Assembly assembly) {
             if (assembly == null) {
                 return Enumerable.Empty<Type>();
             }

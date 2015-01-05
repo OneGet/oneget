@@ -20,7 +20,7 @@ namespace Microsoft.OneGet.Packaging {
     using System.Xml.Linq;
     using Utility.Collections;
 
-    public class Meta : MarshalByRefObject, IDictionary<string, string> {
+    public class Meta :  IDictionary<string, string> {
         private XElement _element;
 
         protected internal Meta(XElement element) {
@@ -28,7 +28,7 @@ namespace Microsoft.OneGet.Packaging {
         }
 
         public IEnumerator<KeyValuePair<string, string>> GetEnumerator() {
-            return new SerializableEnumerator<KeyValuePair<string, string>>(_element.Attributes().Select(each => new KeyValuePair<string, string>(each.Name.LocalName, each.Value)).GetEnumerator());
+            return _element.Attributes().Select(each => new KeyValuePair<string, string>(each.Name.LocalName, each.Value)).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() {
@@ -95,18 +95,14 @@ namespace Microsoft.OneGet.Packaging {
 
         public ICollection<string> Keys {
             get {
-                return new SerializableCollection<string>(_element.Attributes().Select(each => each.Name.LocalName).ToList());
+                return _element.Attributes().Select(each => each.Name.LocalName).ToArray();
             }
         }
 
         public ICollection<string> Values {
             get {
-                return new SerializableCollection<string>(_element.Attributes().Select(each => each.Value).ToList());
+                return _element.Attributes().Select(each => each.Value).ToArray();
             }
-        }
-
-        public override object InitializeLifetimeService() {
-            return null;
         }
     }
 }

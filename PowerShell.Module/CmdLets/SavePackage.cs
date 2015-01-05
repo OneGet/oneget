@@ -93,7 +93,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         private string SaveFileName(string packageName) {
             string path = null;
 
-            if (string.IsNullOrEmpty(DestinationPath)) {
+            if (string.IsNullOrWhiteSpace(DestinationPath)) {
                 path = Path.GetFullPath(LiteralPath);
             } else {
                 path = GetUnresolvedProviderPathFromPSPath(DestinationPath);
@@ -120,7 +120,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool ProcessRecordAsync() {
-            if (string.IsNullOrEmpty(DestinationPath) && string.IsNullOrEmpty(LiteralPath)) {
+            if (string.IsNullOrWhiteSpace(DestinationPath) && string.IsNullOrWhiteSpace(LiteralPath)) {
                 Error(Constants.Errors.DestinationOrLiteralPathNotSpecified);
                 return false;
             }
@@ -151,7 +151,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             // if we have a valid path, make a local copy of the file.
-            if (!string.IsNullOrEmpty(savePath)) {
+            if (!string.IsNullOrWhiteSpace(savePath)) {
                 if (ShouldProcess(savePath, Constants.Messages.SavePackage).Result) {
                     provider.DownloadPackage(package, SaveFileName(savePath), this).Wait();
 

@@ -74,6 +74,10 @@ namespace Microsoft.OneGet.Utility.Plugin {
             il.Emit(OpCodes.Call, constructorInfo);
         }
 
+        public static void Call(this ILGenerator il, MethodInfo methodInfo) {
+            il.EmitCall(OpCodes.Call,methodInfo,null);
+        }
+
         public static void StoreField(this ILGenerator il, FieldInfo field) {
             il.Emit(OpCodes.Stfld, field);
         }
@@ -150,6 +154,10 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         public static void ConvertToInt64(this ILGenerator il) {
             il.Emit(OpCodes.Conv_I8);
+        }
+
+        public static void Box(this ILGenerator il, Type type) {
+            il.Emit(OpCodes.Box, type);
         }
     }
 }

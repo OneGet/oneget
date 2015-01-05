@@ -109,12 +109,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         // override the GetOptionKeys and the GetOptionValues on the fly.
 
                         GetOptionKeys = new Func<IEnumerable<string>>(() => {
-                            return GetOptionKeys().ConcatSingleItem("IsUpdatePackageSource").ByRef();
+                            return GetOptionKeys().ConcatSingleItem("IsUpdatePackageSource");
                         }),
 
                         GetOptionValues = new Func<string, IEnumerable<string>>((key) => {
                             if (key != null && key.EqualsIgnoreCase("IsUpdatePackageSource")) {
-                                return "true".SingleItemAsEnumerable().ByRef();
+                                return "true".SingleItemAsEnumerable();
                             }
                             return GetOptionValues(key);                        
                         })
@@ -129,12 +129,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 
                 var p = new PSObject(source);
 
-                if (!string.IsNullOrEmpty(NewName)) {
+                if (!string.IsNullOrWhiteSpace(NewName)) {
                     p.Properties.Remove("Name");
                     p.Properties.Add( new PSNoteProperty("Name",NewName));
                 }
 
-                if (!string.IsNullOrEmpty(NewLocation)) {
+                if (!string.IsNullOrWhiteSpace(NewLocation)) {
                     p.Properties.Remove("Location");
                     p.Properties.Add(new PSNoteProperty("Location", NewLocation));
                 }
@@ -147,10 +147,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 WriteObject(p);
                 return;
             }
-            if (string.IsNullOrEmpty(NewName)) {
+            if (string.IsNullOrWhiteSpace(NewName)) {
                 // this is a replacement of an existing package source, we're *not* changing the name. (easy)
 
-                foreach (var src in source.Provider.AddPackageSource(string.IsNullOrEmpty(NewName) ? source.Name : NewName, string.IsNullOrEmpty(NewLocation) ? source.Location : NewLocation, Trusted, WithUpdatePackageSource)) {
+                foreach (var src in source.Provider.AddPackageSource(string.IsNullOrWhiteSpace(NewName) ? source.Name : NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted, WithUpdatePackageSource)) {
                     WriteObject(src);
                 }
 
@@ -159,7 +159,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 // a bit more messy at this point
                 // create a new package source first
                 
-                foreach (var src in source.Provider.AddPackageSource(NewName, string.IsNullOrEmpty(NewLocation) ? source.Location : NewLocation, Trusted.IsPresent ? Trusted.ToBool() : source.IsTrusted, this)) {
+                foreach (var src in source.Provider.AddPackageSource(NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted.IsPresent ? Trusted.ToBool() : source.IsTrusted, this)) {
                     WriteObject(src);
                 }
 
@@ -175,7 +175,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return true;
             }
 
-            if (string.IsNullOrEmpty(Name) && string.IsNullOrEmpty(Location)) {
+            if (string.IsNullOrWhiteSpace(Name) && string.IsNullOrWhiteSpace(Location)) {
                 Error(Constants.Errors.NameOrLocationRequired);
                 return false;
             }
@@ -188,7 +188,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length == 0) {
-                if (ProviderName.IsNullOrEmpty() || string.IsNullOrEmpty(ProviderName[0])) {
+                if (ProviderName.IsNullOrEmpty() || string.IsNullOrWhiteSpace(ProviderName[0])) {
                     return Error(Constants.Errors.UnableToFindProviderForSource, Name ?? Location);
                 }
                 return Error(Constants.Errors.UnknownProvider, ProviderName[0]);

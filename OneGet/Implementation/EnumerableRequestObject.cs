@@ -16,6 +16,7 @@ namespace Microsoft.OneGet.Implementation {
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Threading;
     using Api;
     using Utility.Async;
     using Utility.Collections;
@@ -30,7 +31,7 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         public IEnumerator<T> GetEnumerator() {
-            return new CancellableEnumerator<T>(new ByRefCancellationTokenSource(_cancellationTokenSource), Results.GetEnumerator());
+            return new CancellableEnumerator<T>(_cancellationTokenSource, Results.GetEnumerator());
         }
 
         IEnumerator IEnumerable.GetEnumerator() {

@@ -29,7 +29,7 @@ namespace Microsoft.OneGet.Implementation {
     using Utility.Versions;
     using IRequestObject = System.Object;
 
-    public abstract class ProviderBase : MarshalByRefObject {
+    public abstract class ProviderBase  {
         public abstract string ProviderName {get;}
     }
 
@@ -71,13 +71,13 @@ namespace Microsoft.OneGet.Implementation {
 
         public IEnumerable<string> SupportedFileExtensions {
             get {
-                return (_supportedFileExtensions ?? (_supportedFileExtensions = Features.ContainsKey(Constants.Features.SupportedExtensions) ? Features[Constants.Features.SupportedExtensions].ToArray() : Constants.Empty)).ByRef();
+                return (_supportedFileExtensions ?? (_supportedFileExtensions = Features.ContainsKey(Constants.Features.SupportedExtensions) ? Features[Constants.Features.SupportedExtensions].ToArray() : Constants.Empty));
             }
         }
 
         public IEnumerable<string> SupportedUriSchemes {
             get {
-                return (_supportedSchemes ?? (_supportedSchemes = Features.ContainsKey(Constants.Features.SupportedSchemes) ? Features[Constants.Features.SupportedSchemes].ToArray() : Constants.Empty)).ByRef();
+                return (_supportedSchemes ?? (_supportedSchemes = Features.ContainsKey(Constants.Features.SupportedSchemes) ? Features[Constants.Features.SupportedSchemes].ToArray() : Constants.Empty));
             }
         }
 
@@ -111,7 +111,7 @@ namespace Microsoft.OneGet.Implementation {
         public virtual bool IsSupportedFileName(string filename) {
             try {
                 var extension = Path.GetExtension(filename);
-                if (!string.IsNullOrEmpty(extension)) {
+                if (!string.IsNullOrWhiteSpace(extension)) {
                     return SupportedFileExtensions.ContainsIgnoreCase(extension);
                 }
             } catch {
@@ -157,10 +157,7 @@ namespace Microsoft.OneGet.Implementation {
             return false;
         }
 
-        public override object InitializeLifetimeService() {
-            return null;
-        }
-
+        
         public bool IsMethodImplemented(string methodName) {
             return Provider.IsMethodImplemented(methodName);
         }

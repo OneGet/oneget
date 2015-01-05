@@ -137,16 +137,16 @@ namespace Microsoft.OneGet.Builtin {
                     request.Debug("Calling '{0}::AddPackageSource' '{1}','{2}','{3}'", ProviderName, name, location, trusted);
 
                     // if they didn't pass in a name, use the location as a name. (if you support that kind of thing)
-                    name = string.IsNullOrEmpty(name) ? location : name;
+                    name = string.IsNullOrWhiteSpace(name) ? location : name;
 
                     // let's make sure that they've given us everything we need.
-                    if (string.IsNullOrEmpty(name)) {
+                    if (string.IsNullOrWhiteSpace(name)) {
                         request.Error(ErrorCategory.InvalidArgument, Constants.Parameters.Name, Constants.Messages.MissingRequiredParameter, Constants.Parameters.Name);
                         // we're done here.
                         return;
                     }
 
-                    if (string.IsNullOrEmpty(location)) {
+                    if (string.IsNullOrWhiteSpace(location)) {
                         request.Error(ErrorCategory.InvalidArgument, Constants.Parameters.Location, Constants.Messages.MissingRequiredParameter, Constants.Parameters.Location);
                         // we're done here.
                         return;

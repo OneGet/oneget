@@ -14,22 +14,15 @@
 
 namespace Microsoft.OneGet.Implementation {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
-    using System.Runtime.Remoting;
-    using System.Runtime.Remoting.Channels;
-    using System.Runtime.Remoting.Channels.Ipc;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using Api;
     using Resources;
     using Utility.Async;
-    using Utility.Collections;
     using Utility.Extensions;
     using Utility.Platform;
     using Utility.Plugin;
@@ -38,12 +31,10 @@ namespace Microsoft.OneGet.Implementation {
     public abstract class RequestObject : AsyncAction, IRequest {
         private static readonly Regex _canonicalPackageRegex = new Regex("(.*?):(.*?)/(.*)");
         private static int _c;
-
-        protected readonly ProviderBase Provider;
         protected Action<RequestObject> _action;
-
         private IHostApi _hostApi;
         protected Task _invocationTask;
+        protected readonly ProviderBase Provider;
 
         internal RequestObject(ProviderBase provider, IHostApi hostApi, Action<RequestObject> action) {
             // construct request object
@@ -68,6 +59,26 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
+        protected void InvokeImpl() {
+            _invocationTask = Task.Factory.StartNew(() => {
+                _invocationThread = Thread.CurrentThread;
+                _invocationThread.Name = Provider.ProviderName + ":" + _c++;
+                try {
+                    _action(this);
+                } catch (ThreadAbortException) {
+#if DEEP_DEBUG
+                    Console.WriteLine("Thread Aborted for {0} : {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
+#endif
+                    Thread.ResetAbort();
+                } catch (Exception e) {
+                    e.Dump();
+                }
+            }, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default).ContinueWith(antecedent => Complete());
+
+            // start thread, call function
+            StartCall();
+        }
+
         #region HostApi Wrapper
 
         public bool IsElevated {
@@ -78,7 +89,7 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         public string DropMsgPrefix(string messageText) {
-            if (string.IsNullOrEmpty(messageText)) {
+            if (string.IsNullOrWhiteSpace(messageText)) {
                 return messageText;
             }
             return messageText.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase) ? messageText.Substring(4) : messageText;
@@ -90,7 +101,7 @@ namespace Microsoft.OneGet.Implementation {
                     defaultText = Messages.ResourceManager.GetString(DropMsgPrefix(messageText));
                 }
 
-                return _hostApi.GetMessageString(messageText,defaultText);
+                return _hostApi.GetMessageString(messageText, defaultText);
             }
             return null;
         }
@@ -405,7 +416,7 @@ namespace Microsoft.OneGet.Implementation {
             using (var request = requestObject.As<Request>()) {
                 foreach (var archiver in PackageManager._instance.Archivers.Values) {
                     if (archiver.IsSupportedFile(localFilename)) {
-                        return archiver.UnpackArchive(localFilename, destinationFolder, request).ByRefEnumerable();
+                        return archiver.UnpackArchive(localFilename, destinationFolder, request);
                     }
                 }
                 request.Error(ErrorCategory.NotImplemented, localFilename, Constants.Messages.UnsupportedArchive);
@@ -468,7 +479,7 @@ namespace Microsoft.OneGet.Implementation {
 
             using (var request = requestObject.As<Request>()) {
                 request.Debug("Calling 'ProviderService::SetEnvironmentVariable'");
-                if (string.IsNullOrEmpty(value)) {
+                if (string.IsNullOrWhiteSpace(value)) {
                     RemoveEnvironmentVariable(variable, context, requestObject);
                 }
 
@@ -505,7 +516,7 @@ namespace Microsoft.OneGet.Implementation {
             using (var request = requestObject.As<Request>()) {
                 request.Debug("Calling 'ProviderService::RemoveEnvironmentVariable'");
 
-                if (string.IsNullOrEmpty(variable)) {
+                if (string.IsNullOrWhiteSpace(variable)) {
                     return;
                 }
                 switch (context.ToLowerInvariant()) {
@@ -570,7 +581,7 @@ namespace Microsoft.OneGet.Implementation {
 
             using (var request = requestObject.As<Request>()) {
                 request.Debug("Calling 'ProviderService::Delete'");
-                if (string.IsNullOrEmpty(path)) {
+                if (string.IsNullOrWhiteSpace(path)) {
                     return;
                 }
 
@@ -587,7 +598,7 @@ namespace Microsoft.OneGet.Implementation {
 
             using (var request = requestObject.As<Request>()) {
                 request.Debug("Calling 'ProviderService::DeleteFolder' {0}".format(folder));
-                if (string.IsNullOrEmpty(folder)) {
+                if (string.IsNullOrWhiteSpace(folder)) {
                     return;
                 }
                 if (Directory.Exists(folder)) {
@@ -629,7 +640,7 @@ namespace Microsoft.OneGet.Implementation {
 
             using (var request = requestObject.As<Request>()) {
                 request.Debug("Calling 'ProviderService::DeleteFile'");
-                if (string.IsNullOrEmpty(filename)) {
+                if (string.IsNullOrWhiteSpace(filename)) {
                     return;
                 }
 
@@ -648,7 +659,7 @@ namespace Microsoft.OneGet.Implementation {
 
             using (var request = requestObject.As<Request>()) {
                 request.Debug("Calling 'ProviderService::GetKnownFolder'");
-                if (!string.IsNullOrEmpty(knownFolder)) {
+                if (!string.IsNullOrWhiteSpace(knownFolder)) {
                     if (knownFolder.Equals("tmp", StringComparison.OrdinalIgnoreCase) || knownFolder.Equals("temp", StringComparison.OrdinalIgnoreCase)) {
                         return FilesystemExtensions.TempPath;
                     }
@@ -679,17 +690,17 @@ namespace Microsoft.OneGet.Implementation {
         public string CanonicalizePath(string path, string currentDirectory) {
             Activity();
 
-            if (string.IsNullOrEmpty(path)) {
+            if (string.IsNullOrWhiteSpace(path)) {
                 return null;
             }
 
-            return path.CanonicalizePath(!string.IsNullOrEmpty(currentDirectory));
+            return path.CanonicalizePath(!string.IsNullOrWhiteSpace(currentDirectory));
         }
 
         public bool FileExists(string path) {
             Activity();
 
-            if (string.IsNullOrEmpty(path)) {
+            if (string.IsNullOrWhiteSpace(path)) {
                 return false;
             }
 
@@ -698,7 +709,7 @@ namespace Microsoft.OneGet.Implementation {
 
         public bool DirectoryExists(string path) {
             Activity();
-            if (string.IsNullOrEmpty(path)) {
+            if (string.IsNullOrWhiteSpace(path)) {
                 return false;
             }
             return path.DirectoryExists();
@@ -711,7 +722,7 @@ namespace Microsoft.OneGet.Implementation {
                 throw new ArgumentNullException("requestObject");
             }
 
-            if (string.IsNullOrEmpty(fileName)) {
+            if (string.IsNullOrWhiteSpace(fileName)) {
                 return false;
             }
 
@@ -751,7 +762,7 @@ namespace Microsoft.OneGet.Implementation {
                 throw new ArgumentNullException("requestObject");
             }
 
-            if (string.IsNullOrEmpty(filename) || !FileExists(filename)) {
+            if (string.IsNullOrWhiteSpace(filename) || !FileExists(filename)) {
                 return false;
             }
 
@@ -766,7 +777,7 @@ namespace Microsoft.OneGet.Implementation {
 
         public bool ExecuteElevatedAction(string provider, string payload, IRequestObject requestObject) {
             Activity();
-
+#if WHAT_DO_WE_DO_TO_REMOTE_BETWEEN_PROCESSES_WITHOUT_REMOTING_HUH
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
                     
@@ -818,32 +829,10 @@ namespace Microsoft.OneGet.Implementation {
                 ChannelServices.UnregisterChannel(serverChannel);
             }
             return true;
+#endif
+            return false;
         }
 
         #endregion
-
-        public override object InitializeLifetimeService() {
-            return null;
-        }
-
-        protected void InvokeImpl() {
-            _invocationTask = Task.Factory.StartNew(() => {
-                _invocationThread = Thread.CurrentThread;
-                _invocationThread.Name = Provider.ProviderName + ":" + _c++;
-                try {
-                    _action(this);
-                } catch (ThreadAbortException) {
-#if DEEP_DEBUG
-                    Console.WriteLine("Thread Aborted for {0} : {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif
-                    Thread.ResetAbort();
-                } catch (Exception e) {
-                    e.Dump();
-                }
-            }, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default).ContinueWith(antecedent => Complete());
-
-            // start thread, call function
-            StartCall();
-        }
     }
 }

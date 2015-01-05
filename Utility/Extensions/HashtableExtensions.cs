@@ -73,7 +73,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
                     // otherwise, try to cast it to a collection of string-like-things
                     var collection = obj as IEnumerable;
                     if (collection != null) {
-                        return collection.Cast<object>().Select(each => each.ToString()).ByRef();
+                        return collection.Cast<object>().Select(each => each.ToString());
                     }
 
                     // meh. ToString, and goodnight.
@@ -84,7 +84,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static IEnumerable<string> GetStringCollection(this Hashtable hashtable, string path) {
-            if (hashtable.IsNullOrEmpty() || string.IsNullOrEmpty(path)) {
+            if (hashtable.IsNullOrEmpty() || string.IsNullOrWhiteSpace(path)) {
                 return Enumerable.Empty<string>();
             }
             return hashtable.GetStringCollection(path.Split('/').Select(each => each.Trim()).ToArray());

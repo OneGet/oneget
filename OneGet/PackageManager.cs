@@ -15,9 +15,7 @@
 namespace Microsoft.OneGet {
     using System.Diagnostics;
     using System.Linq;
-    using System.Runtime.Remoting;
-    using System.Runtime.Remoting.Channels;
-    using System.Runtime.Remoting.Channels.Ipc;
+    
     using Api;
     using Implementation;
     using Utility.Extensions;
@@ -61,16 +59,9 @@ namespace Microsoft.OneGet {
             }
         }
 
-        /// <summary>
-        ///     Provides Access to the PackageManagementService instance
-        /// </summary>
-        /// <typeparam name="T">An caller-supplied interface type to dynamically generate a an implementation for.</typeparam>
-        /// <returns>The PackageManagementService as an instance of the supplied interface type.</returns>
-        public T GetTypedInstance<T>() {
-            return new DynamicInterface().Create<T>(Instance);
-        }
-
+ 
         public static int Main(string[] args) {
+#if WHAT_DO_WE_DO_TO_REMOTE_BETWEEN_PROCESSES_WITHOUT_REMOTING_HUH
             // this entrypoint is only for use when inter-process remoting to get an elevated host.
             if (args.Length != 3 || !AdminPrivilege.IsElevated) {
                 return 1;
@@ -89,6 +80,7 @@ namespace Microsoft.OneGet {
             pms.Initialize(localRequest);
             var pro = pms.SelectProviders(provider, localRequest).FirstOrDefault();
             pro.ExecuteElevatedAction(payload.FromBase64(), localRequest);
+#endif
             return 0;
         }
     }

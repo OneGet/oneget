@@ -38,7 +38,7 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject) {
-            return new FuncRequestObject<IEnumerable<string>>(this, requestObject.As<IHostApi>(), (request) => Provider.UnpackArchive(localFilename, destinationFolder, request).ByRefEnumerable()).Value;
+            return new FuncRequestObject<IEnumerable<string>>(this, requestObject.As<IHostApi>(), (request) => Provider.UnpackArchive(localFilename, destinationFolder, request)).Value;
         }
     }
 }

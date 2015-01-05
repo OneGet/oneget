@@ -25,21 +25,22 @@ namespace Microsoft.OneGet.Utility.Platform {
         private static readonly string _unpin;
 
         static ShellApplication() {
-            var instance = IntPtr.Zero;
             try {
-                var buffer = new StringBuilder(0x100);
-                instance = NativeMethods.LoadLibrary("shell32.dll");
-                if (NativeMethods.LoadString(instance, 0x150a, buffer, buffer.Capacity) > 0) {
-                    _pin = buffer.ToString();
-                }
-                if (NativeMethods.LoadString(instance, 0x150b, buffer, buffer.Capacity) > 0) {
-                    _unpin = buffer.ToString();
+                using (DisposableModule instance = NativeMethods.LoadLibrary("shell32.dll")) {
+                    if (!instance.IsInvalid) {
+
+                        var buffer = new StringBuilder(0x100);
+
+                        if (NativeMethods.LoadString(instance, 0x150a, buffer, buffer.Capacity) > 0) {
+                            _pin = buffer.ToString();
+                        }
+                        if (NativeMethods.LoadString(instance, 0x150b, buffer, buffer.Capacity) > 0) {
+                            _unpin = buffer.ToString();
+                        }
+                    }
                 }
             } catch {
                 // whoa, something went wrong. Let it be.
-            }
-            if (instance != IntPtr.Zero) {
-                NativeMethods.FreeLibrary(instance);
             }
         }
 
@@ -56,10 +57,10 @@ namespace Microsoft.OneGet.Utility.Platform {
         }
 
         private static void DoVerbOnPath(string lnkPath, string vName) {
-            if (string.IsNullOrEmpty(lnkPath)) {
+            if (string.IsNullOrWhiteSpace(lnkPath)) {
                 throw new ArgumentNullException("lnkPath");
             }
-            if (string.IsNullOrEmpty(vName)) {
+            if (string.IsNullOrWhiteSpace(vName)) {
                 throw new ArgumentNullException("vName");
             }
             if (!File.Exists(lnkPath)) {

@@ -20,7 +20,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using Collections;
     using Extensions;
 
-    internal static class DynamicInterfaceExtensions {
+    public static class DynamicInterfaceExtensions {
         private static readonly Type[] _emptyTypes = {};
 
         private static readonly Dictionary<Type, MethodInfo[]> _methodCache = new Dictionary<Type, MethodInfo[]>();
@@ -32,6 +32,11 @@ namespace Microsoft.OneGet.Utility.Plugin {
         private static readonly Dictionary<Assembly, Type[]> _creatableTypesCache = new Dictionary<Assembly, Type[]>();
 
         public static MethodInfo FindMethod(this MethodInfo[] methods, MethodInfo methodSignature) {
+            // this currently returns the first thing that matches acceptably. 
+
+            // we'd really like to find the *best* match, but still be able to have the earlier ones override the later ones.
+            // which is 
+
             return methods.FirstOrDefault(candidate => DoNamesMatchAcceptably(methodSignature.Name, candidate.Name) && DoSignaturesMatchAcceptably(methodSignature, candidate));
         }
 
@@ -68,31 +73,29 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         private static bool DoNamesMatchAcceptably(string originalName, string candidateName) {
+            if (string.IsNullOrWhiteSpace(originalName) || string.IsNullOrWhiteSpace(candidateName) || originalName[0] == '_' || candidateName[0] == '_' ) {
+                // names that start with underscores are considered to be private and not supported.
+                return false;
+            }
+
             if (originalName.EqualsIgnoreCase(candidateName)) {
                 return true;
             }
 
             // transform non-leading underscores to nothing.
-            if (!candidateName.StartsWith("_", StringComparison.OrdinalIgnoreCase)) {
-                candidateName = candidateName.Replace("_", "");
-            }
-
+            candidateName = candidateName.Replace("_", "");
+            originalName = originalName.Replace("_", "");
+            
+            // this allows GetSomething to be the same as Get_Some_thing() or get_Something ...
             if (originalName.EqualsIgnoreCase(candidateName)) {
                 return true;
-            }
-
-            // get_ => get
-            if (candidateName.StartsWith("get_", StringComparison.OrdinalIgnoreCase)) {
-                if (originalName.EqualsIgnoreCase("get" + candidateName.Substring(4))) {
-                    return true;
-                }
             }
 
             return false;
         }
 
         private static bool DoSignaturesMatchAcceptably(MethodInfo member, MethodInfo candidate) {
-            return candidate.GetParameterTypes().SequenceEqual(member.GetParameterTypes(), AssignableTypeComparer.Instance) && (member.ReturnType == candidate.ReturnType || member.ReturnType.IsAssignableFrom(candidate.ReturnType));
+            return candidate.GetParameterTypes().SequenceEqual(member.GetParameterTypes(), AssignableTypeComparer.Instance) && (member.ReturnType == candidate.ReturnType || member.ReturnType.IsAssignableFrom(candidate.ReturnType) || member.ReturnType == typeof(void) );
         }
 
 #if THINKING_OUTLOUD
@@ -276,11 +279,11 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 return (TInterface)(object)typeof (TInterface).CreateEmptyDelegate();
                 // throw new Exception("Delegate '{0}' not matched in object.".format(typeof (TInterface).NiceName()));
             }
-            return DynamicInterface.Instance.Create<TInterface>(instance);
+            return DynamicInterface.Create<TInterface>(instance);
         }
 
         public static TInterface Extend<TInterface>(this object obj, params object[] objects) {
-            return DynamicInterface.Instance.Create<TInterface>(objects, obj);
+            return DynamicInterface.Create<TInterface>(objects, obj);
         }
 
         public static bool IsDelegate(this Type t) {

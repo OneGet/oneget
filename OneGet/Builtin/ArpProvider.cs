@@ -197,7 +197,7 @@ namespace Microsoft.OneGet.Builtin {
                                 continue;
                             }
 
-                            if (string.IsNullOrEmpty(name) || productName.IndexOf(name, StringComparison.OrdinalIgnoreCase) > -1) {
+                            if (string.IsNullOrWhiteSpace(name) || productName.IndexOf(name, StringComparison.OrdinalIgnoreCase) > -1) {
                                 var productVersion = properties.Get("DisplayVersion") ?? "";
                                 var publisher = properties.Get("Publisher") ?? "";
                                 var uninstallString = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";

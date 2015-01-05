@@ -269,7 +269,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public string DropMsgPrefix(string messageText) {
-            if (string.IsNullOrEmpty(messageText)) {
+            if (string.IsNullOrWhiteSpace(messageText)) {
                 return messageText;
             }
             return messageText.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase) ? messageText.Substring(4) : messageText;
@@ -329,7 +329,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                             errorCategory = ErrorCategory.NotSpecified;
                         }
                         try {
-                            WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrEmpty(targetObjectValue) ? (object)this : targetObjectValue)).Wait();
+                            WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrWhiteSpace(targetObjectValue) ? (object)this : targetObjectValue)).Wait();
                         } catch {
                             // this will throw if the provider thread abends before we get back our result.
                         }
@@ -520,7 +520,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public string FormatMessageString(string messageText, params object[] args) {
-            if (string.IsNullOrEmpty(messageText)) {
+            if (string.IsNullOrWhiteSpace(messageText)) {
                 return string.Empty;
             }
 
@@ -925,7 +925,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         protected object TryGetProperty(object instance, string fieldName) {
             // any access of a null object returns null. 
-            if (instance == null || string.IsNullOrEmpty(fieldName)) {
+            if (instance == null || string.IsNullOrWhiteSpace(fieldName)) {
                 return null;
             }
 
@@ -954,7 +954,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         protected bool TrySetProperty(object instance, string fieldName, object value) {
             // any access of a null object returns null. 
-            if (instance == null || string.IsNullOrEmpty(fieldName)) {
+            if (instance == null || string.IsNullOrWhiteSpace(fieldName)) {
                 return false;
             }
 
@@ -1019,7 +1019,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                                 // treat as a value
                                 var parameterValue = TryGetProperty(arg, "ArgumentValue");
 
-                                if (string.IsNullOrEmpty(currentParameterName)) {
+                                if (string.IsNullOrWhiteSpace(currentParameterName)) {
                                     _unboundArguments.AddOrSet("unbound_" + (i++), parameterValue);
                                 } else {
                                     _unboundArguments.AddOrSet(currentParameterName, parameterValue);

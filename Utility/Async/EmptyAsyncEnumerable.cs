@@ -85,7 +85,7 @@ namespace Microsoft.OneGet.Utility.Async {
         public event Action OnAbort;
 
         public IEnumerator<T> GetEnumerator() {
-            return Enumerable.Empty<T>().GetEnumerator().ByRef();
+            return Enumerable.Empty<T>().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() {
