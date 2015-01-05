@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+  <Bundle Name="OneGet v!(bind.packageVersion.OneGetPackage.msi)" Manufacturer="Microsoft Corporation"
+          Version="!(bind.packageVersion.OneGetPackage.msi)" UpgradeCode="0FCE07AA-AC5F-4CB4-AEE5-C2CC74E060AE"
+          Compressed="yes">
+
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
+      <bal:WixStandardBootstrapperApplication
+          LicenseUrl=""
+          LogoFile="logo.png"
+          SuppressOptionsUI="yes" />
+    </BootstrapperApplicationRef>
+
+    <Chain>
+      <MsiPackage SourceFile="OneGetPackage.msi" />
+    </Chain>
+  </Bundle>
+</Wix>
