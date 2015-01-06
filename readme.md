@@ -4,8 +4,6 @@
 
 ### Get Started!
 
-(this is a bit outdated, I'm working to clean this up!)
-
 Download the latest 'experimental' release [here](http://oneget.org/oneget.zip) -- you can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notified of every new build.
 
 Download the latest 'official' release [here](http://www.microsoft.com/en-us/download/details.aspx?id=44070) -- currently it's in the WMF 5.0 CTP (WMF is where you get PowerShell!). This build does not currently contain the Chocolatey Provider.
@@ -28,6 +26,7 @@ OneGet should be shipping inside future versions of PowerShell, and by extension
 #### Optional Tools
 - Resharper - http://www.jetbrains.com/resharper/
 - Resharper xUnit test runner - http://resharper-plugins.jetbrains.com/packages/xunitcontrib/1.6.2
+- Wix 3.9 : http://wixtoolset.org (only if you want to build the MSI and Installer)
 
 check out the source code 
 ``` powershell 
@@ -44,7 +43,17 @@ check out the source code
 # get the submodules for this branch
 > git submodule update --init
 
-# BUILD FROM VISUAL STUDIO FOR NOW.
+# fix the detached HEADs
+> cd NuGetProvider 
+> git checkout master
+> cd ..
+> cd ProviderSdk
+> git checkout master
+> cd ..
+
+# BUILD using Visual Studio, or from the command line:
+
+> msbuild OneGet.sln /p:Configuration=Release "/p:Platform:Any CPU"
     
 ```
 
