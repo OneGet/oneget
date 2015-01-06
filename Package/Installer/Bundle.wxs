@@ -1,15 +1,21 @@
 <?xml version="1.0" ?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
+      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
   <Bundle Name="OneGet v!(bind.packageVersion.OneGet.msi)" Manufacturer="OneGet Project"
           Version="!(bind.packageVersion.OneGet.msi)" UpgradeCode="0FCE07AA-AC5F-4CB4-AEE5-C2CC74E060AE"
           Compressed="yes">
 
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
       <bal:WixStandardBootstrapperApplication
-          LicenseUrl="https://raw.githubusercontent.com/OneGet/oneget/master/LICENSE"
+          LicenseUrl="http://j.mp/onegetlicense"
           LogoFile="logo.png"
           SuppressOptionsUI="yes" />
     </BootstrapperApplicationRef>
+
+    <util:RegistrySearch Variable="PowerShellVersion" Root="HKLM" Key="SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine"
+                         Value="PowerShellVersion" />
+
+    <bal:Condition Message="[WixBundleName] requires PowerShell v3.0 or newer. To install a newer version of PowerShell see:  http://j.mp/psinstall" >PowerShellVersion>=v3.0</bal:Condition>
 
     <Chain>
       <MsiPackage SourceFile="OneGet.msi" />
