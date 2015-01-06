@@ -4,3 +4,6 @@
 [submodule "ProviderSdk"]
 	path = ProviderSdk
 	url = https://github.com/OneGet/ProviderSdk
+[submodule "cmdlet-testsuite"]
+	path = cmdlet-testsuite
+	url = https://github.com/OneGet/cmdlet-testsuite.git
