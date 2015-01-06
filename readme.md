@@ -56,7 +56,18 @@ check out the source code
 
 # BUILD using Visual Studio, or from the command line:
 
-> msbuild OneGet.sln /p:Configuration=Release "/p:Platform:Any CPU"
+> msbuild OneGet.sln /p:Configuration=Release "/p:Platform=Any CPU"
+    
+# If you want to send me changes, you should fork the project into your own 
+# account first, and use that URL to clone it.
+# If you fork it later you can just change the origin by:
+
+# move the old origin out of the way. You could delete it if you want.
+> git remote rename origin original
+
+# add your repo url as the origin:
+# e.g. git@github.com:fearthecowboy/OneGet.git 
+> git remote add origin <your-repo-url> 
     
 ```
 
