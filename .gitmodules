@@ -1,9 +1,6 @@
-[submodule "nuget"]
-	path = nuget
-	url = ../nuget
-[submodule "provider-sdk-cs"]
-	path = provider-sdk-cs
-	url = ../provider-sdk-cs
 [submodule "NuGetProvider"]
 	path = NuGetProvider
 	url = https://github.com/OneGet/NuGetProvider.git
+[submodule "ProviderSdk"]
+	path = ProviderSdk
+	url = https://github.com/OneGet/ProviderSdk
