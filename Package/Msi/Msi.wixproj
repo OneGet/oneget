@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DefineSolutionProperties>false</DefineSolutionProperties>
+    <ProductVersion>3.9</ProductVersion>
+    <ProjectGuid>0298d025-d727-485a-8691-5eccca27f424</ProjectGuid>
+    <OutputName>OneGet</OutputName>
+    <OutputType>Package</OutputType>
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), OneGet.sln))\</SolutionDir>
+    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)OneGet.sln</SolutionPath>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+    <Name>Msi</Name>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props')" />
+  <ItemGroup>
+    <Compile Include="Package.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <BindInputPaths Include="$(OutputPath)">
+      <InProject>false</InProject>
+    </BindInputPaths>
+    <BindInputPaths Include="$(SolutionDir)">
+      <InProject>false</InProject>
+    </BindInputPaths>
+  </ItemGroup>
+  <Import Project="$(WixTargetsPath)" />
+</Project>

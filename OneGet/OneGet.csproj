@@ -10,14 +10,14 @@
     <RootNamespace>Microsoft.OneGet</RootNamespace>
     <AssemblyName>Microsoft.OneGet</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), OneGet.sln))\</SolutionDir>
     <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Microsoft.OneGet.PackageManager</StartupObject>
   </PropertyGroup>
-  <Import Project="$(SolutionPath).props" Condition="Exists('$(SolutionPath).props')" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props')" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -96,6 +96,7 @@
     <Compile Include="PackageManager.cs" />
     <Compile Include="Implementation\Loader.cs" />
     <Compile Include="Providers\IProvider.cs" />
+    <Compile Include="$(SolutionDir)assembly-version.cs" />
     <Compile Include="Resources\Messages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -9,10 +9,9 @@
 
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
-        <Directory Id="WindwosPowerShellFolder" Name="WindowsPowerShell">
+        <Directory Id="WindowsPowerShellFolder" Name="WindowsPowerShell">
           <Directory Id="ModulesFolder" Name="Modules">
             <Directory Id="OneGetFolder" Name="OneGet">
-              <Directory Id="EtcFolder" Name="etc" />
               <Directory Id="ProvidersFolder" Name="Providers" />
             </Directory>
           </Directory>
@@ -22,7 +21,6 @@
 
     <Feature Id="OneGetFeature">
       <ComponentGroupRef Id="OneGetComponents" />
-      <ComponentGroupRef Id="EtcComponents" />
       <!--
       <ComponentGroupRef Id="ProviderComponents" />
       <ComponentGroupRef Id="PdbComponents" />
@@ -70,27 +68,11 @@
       </Component>
 
       <Component>
+        <File Source="PackageProviderFunctions.psm1" />
+      </Component>
+
+      <Component>
         <File Source="nuget.exe" />
-      </Component>
-    </ComponentGroup>
-  </Fragment>
-
-  <Fragment>
-    <ComponentGroup Id="EtcComponents" Directory="EtcFolder">
-      <Component>
-        <File Source="etc\PackageProviderFunctions.psm1" />
-      </Component>
-    </ComponentGroup>
-  </Fragment>
-
-  <Fragment>
-    <ComponentGroup Id="ProviderComponents" Directory="ProvidersFolder">
-      <Component>
-        <File Source="Providers\TestChainingPackageProvider.psm1" />
-      </Component>
-
-      <Component>
-        <File Source="Providers\TestPackageProvider.psm1" />
       </Component>
     </ComponentGroup>
   </Fragment>

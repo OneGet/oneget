@@ -10,11 +10,11 @@
     <RootNamespace>Microsoft.OneGet.PackageProvider.Test</RootNamespace>
     <AssemblyName>Microsoft.OneGet.PackageProvider.Test</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), OneGet.sln))\</SolutionDir>
     <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
-  <Import Project="$(SolutionPath).props" Condition="Exists('$(SolutionPath).props')" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props')" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -64,7 +64,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
