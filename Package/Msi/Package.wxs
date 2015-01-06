@@ -43,37 +43,21 @@
         <Environment Id="UpdatePsModulePath" Action="set" Name="PSModulePath" Value="[ModulesFolder]" Part="first" System="yes" />
       </Component>
 
-      <Component>
-        <File Source="Microsoft.OneGet.MetaProvider.PowerShell.dll" />
-      </Component>
 
-      <Component>
-        <File Source="Microsoft.OneGet.Utility.dll" />
-      </Component>
+      <Component><File Source="Microsoft.OneGet.MetaProvider.PowerShell.dll" /></Component>
+      <Component><File Source="Microsoft.OneGet.Archivers.dll" /></Component>
+      <Component><File Source="Microsoft.OneGet.Msi.dll" /></Component>
+      <Component><File Source="Microsoft.OneGet.Msu.dll" /></Component>
+      <Component><File Source="Microsoft.OneGet.NuGetProvider.dll" /></Component>
+      
 
-      <Component>
-        <File Source="Microsoft.OneGet.Utility.PowerShell.dll" />
-      </Component>
-
-      <Component>
-        <File Source="Microsoft.PowerShell.OneGet.dll" />
-      </Component>
-
-      <Component>
-        <File Source="OneGet.format.ps1xml" />
-      </Component>
-
-      <Component>
-        <File Source="OneGet.psd1" />
-      </Component>
-
-      <Component>
-        <File Source="PackageProviderFunctions.psm1" />
-      </Component>
-
-      <Component>
-        <File Source="nuget.exe" />
-      </Component>
+      <Component><File Source="Microsoft.OneGet.Utility.dll" /></Component>
+      <Component><File Source="Microsoft.OneGet.Utility.PowerShell.dll" /></Component>
+      <Component><File Source="Microsoft.PowerShell.OneGet.dll" /></Component>
+      <Component><File Source="OneGet.format.ps1xml" /></Component>
+      <Component><File Source="OneGet.psd1" /></Component>
+      <Component><File Source="PackageProviderFunctions.psm1" /></Component>
+      <Component><File Source="nuget.exe" /></Component>
     </ComponentGroup>
   </Fragment>
 

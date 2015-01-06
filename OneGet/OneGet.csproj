@@ -133,11 +133,30 @@
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  
+  <PropertyGroup>
+    <PowershellPostBuildEvent>
+    echo hello world
+    
+    echo this is a test
+    </PowershellPostBuildEvent>
+  </PropertyGroup>
+  
+  <UsingTask TaskName="PowerShell" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup><ScriptBlock ParameterType="System.String" Required="true" /></ParameterGroup>
+    <Task><Reference Include="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll"/><Code Type="Class" Language="cs"><![CDATA[
+    public class PowerShell : Microsoft.Build.Tasks.Exec {
+        public string ScriptBlock {set { Command = string.Format( "powershell \"Invoke-Command -ScriptBlock {{ $errorActionPreference='Stop'; {0} ; exit $LASTEXITCODE }} \"",  value.Replace("\r\n",";").Replace("\n",";").Replace("\r",";")); } }
+    }]]></Code></Task>
+  </UsingTask>
+
+  <Target Name="AfterBuild">
+    <PowerShell  ScriptBlock="$(PowershellPostBuildEvent)" />
+  </Target>
+  
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
   </Target>
   -->
 </Project>
