@@ -50,6 +50,9 @@ check out the source code
 > cd ProviderSdk
 > git checkout master
 > cd ..
+> cd cmdlet-testsuite
+> git checkout master
+> cd ..
 
 # BUILD using Visual Studio, or from the command line:
 
