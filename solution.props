@@ -3,11 +3,11 @@
   <PropertyGroup>
     <SolutionRootDir Condition=" '$(SolutionRootDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), solution.props))\</SolutionRootDir>
     <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), OneGet.sln))\</SolutionDir>
-  
+
     <!-- Defaults to .Net 4.0 -->
     <TargetFrameworkVersion Condition="$(TargetFrameworkVersion) == '' Or $(TargetFrameworkVersion) == '*Undefined*'">v4.5</TargetFrameworkVersion>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    
+
     <OutputPath>$(SolutionRootDir)output\$(TargetFrameworkVersion.Replace(".",""))\$(Configuration)\bin\</OutputPath>
     <BaseIntermediateOutputPath>$(SolutionRootDir)intermediate\$(TargetFrameworkVersion.Replace(".",""))\$(Configuration)\$(AssemblyName)\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
