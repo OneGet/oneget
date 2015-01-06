@@ -4,6 +4,8 @@
 
 ### Get Started!
 
+(this is a bit outdated, I'm working to clean this up!)
+
 Download the latest 'experimental' release [here](http://oneget.org/oneget.zip) -- you can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notified of every new build.
 
 Download the latest 'official' release [here](http://www.microsoft.com/en-us/download/details.aspx?id=44070) -- currently it's in the WMF 5.0 CTP (WMF is where you get PowerShell!). This build does not currently contain the Chocolatey Provider.
