@@ -136,7 +136,7 @@
   
   <PropertyGroup>
     <PowershellPostBuildEvent>
-    
+    echo testing
     </PowershellPostBuildEvent>
   </PropertyGroup>
   
