@@ -43,7 +43,7 @@ namespace Microsoft.PowerShell.OneGet.Utility {
 
         public void IncludeInParameterSet(DynamicOption option, bool isInvocation, IEnumerable<string> parameterSets) {
             foreach (var ps in parameterSets) {
-                var parameterSetName = ps.Is() ? option.ProviderName + ":" + ps : option.ProviderName;
+                var parameterSetName = !string.IsNullOrWhiteSpace(ps) ? option.ProviderName + ":" + ps : option.ProviderName;
                 if (Attributes.Select(each => each as ParameterAttribute).WhereNotNull().Any(each => each.ParameterSetName == parameterSetName)) {
                     continue;
                 }

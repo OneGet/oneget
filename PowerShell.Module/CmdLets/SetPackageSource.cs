@@ -85,7 +85,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override IEnumerable<string> Sources {
             get {
-                if (Name.IsEmptyOrNull() && Location.IsEmptyOrNull()) {
+                if (string.IsNullOrWhiteSpace(Name) && string.IsNullOrWhiteSpace(Location)) {
                     return Microsoft.OneGet.Constants.Empty;
                 }
 

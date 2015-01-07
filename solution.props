@@ -8,6 +8,7 @@
     <TargetFrameworkVersion Condition="$(TargetFrameworkVersion) == '' Or $(TargetFrameworkVersion) == '*Undefined*'">v4.5</TargetFrameworkVersion>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
 
+    <Prefer32Bit>false</Prefer32Bit>
     <OutputPath>$(SolutionRootDir)output\$(TargetFrameworkVersion.Replace(".",""))\$(Configuration)\bin\</OutputPath>
     <BaseIntermediateOutputPath>$(SolutionRootDir)intermediate\$(TargetFrameworkVersion.Replace(".",""))\$(Configuration)\$(AssemblyName)\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>

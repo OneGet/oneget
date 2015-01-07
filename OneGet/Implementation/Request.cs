@@ -22,21 +22,12 @@ namespace Microsoft.OneGet.Implementation {
     using Utility.Extensions;
     using IRequestObject = System.Object;
 
-    public abstract class Request : IRequest, IDisposable {
+    public abstract class Request : IRequest {
         #region copy core-apis
 
         public abstract bool IsCanceled {get;}
 
         /* Synced/Generated code =================================================== */
-
-        /// <summary>
-        ///     Returns the interface type for a Request that the OneGet Core is expecting
-        ///     This is (currently) neccessary to provide an appropriately-typed version
-        ///     of the Request to the core when a Plugin is calling back into the core
-        ///     and has to pass a request object.
-        /// </summary>
-        /// <returns></returns>
-        public abstract Type GetIRequestInterface();
 
         /// <summary>
         ///     Returns the internal version of the OneGet core.
@@ -234,14 +225,6 @@ namespace Microsoft.OneGet.Implementation {
         #endregion
 
         #region declare Request-implementation
-
-        public virtual void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public virtual void Dispose(bool disposing) {
-        }
 
         public bool Yield(KeyValuePair<string, string[]> pair) {
             if (pair.Value.Length == 0) {

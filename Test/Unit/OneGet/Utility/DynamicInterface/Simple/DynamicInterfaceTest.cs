@@ -97,7 +97,7 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
         [Fact]
         public void TestDynamicInterfaceAgainstClass() {
             using (CaptureConsole) {
-                var idyn = DynamicInterface.Create<IDynTest>(typeof (DynInst));
+                var idyn = typeof (DynInst).Create<IDynTest>();
 
                 idyn.One();
                 Assert.True(idyn.Two());
@@ -118,7 +118,7 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
             using (CaptureConsole) {
                 // proves that it reuses generated ProxyClasses.
                 for (int i = 0; i < 10; i++) {
-                    var idyn2 = DynamicInterface.Create<IDynTest>(new {
+                    var idyn2 = DynamicInterface.DynamicCast<IDynTest>(new {
                         One = new Action(() => {}),
                         Two = new Func<bool>(() => {return true;})
                     });
@@ -140,7 +140,7 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
         [Fact]
         public void TestDynamicInterfaceAgainstAnonymousObjects() {
             using (CaptureConsole) {
-                var dynamicInstance = DynamicInterface.Create<IDynTest>(new {
+                var dynamicInstance = DynamicInterface.DynamicCast<IDynTest>(new {
                     One = new Action(() => {}),
                 }, new {
                     Two = new Func<bool>(() => {return true;})
@@ -206,7 +206,7 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
         [Fact]
         public void TestClassImplementation() {
             using (CaptureConsole) {
-                var dynamicInstance = DynamicInterface.Create<AbstractDynTest>(new {
+                var dynamicInstance = DynamicInterface.DynamicCast<AbstractDynTest>(new {
                     One = new Action(() => {}),
                 }, new {
                     Two = new Func<bool>(() => {return true;})
@@ -232,7 +232,7 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
         [Fact]
         public void TestDynamicInterfaceAgainstAnonymousObjectsInDifferentOrder() {
             using (CaptureConsole) {
-                var dynamicInstance = DynamicInterface.Create<IDynTest>(new {
+                var dynamicInstance = DynamicInterface.DynamicCast<IDynTest>(new {
                     Two = new Func<bool>(() => {return true;})
                 }, new {
                     Four = new Func<int, string>((i) => "::" + i)
@@ -273,7 +273,7 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
         [Fact]
         public void TestChaining() {
             using (CaptureConsole) {
-                var instance = DynamicInterface.Create<IDynTest>(
+                var instance = DynamicInterface.DynamicCast<IDynTest>(
                     new {
                         One = new Action(() => {Console.WriteLine("Instance1::One");}),
                     }, new {
@@ -287,14 +287,14 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
                 instance.One();
 
                 // override 1:one
-                var instance2 = DynamicInterface.Create<IDynTest>(
+                var instance2 = DynamicInterface.DynamicCast<IDynTest>(
                     new {
                         One = new Action(() => {Console.WriteLine("Instance3::One");}),
                         Two = new Func<bool>(() => {return instance.Two();})
                     }
                     , instance);
 
-                var instance3 = DynamicInterface.Create<IDynTest>(
+                var instance3 = DynamicInterface.DynamicCast<IDynTest>(
                     new {
                         Four = new Func<int, string>((i) => {
                             Console.WriteLine("Instance3::Four");
@@ -314,7 +314,7 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
         public void TestDynamicInterfaceRequired() {
             using (CaptureConsole) {
                 Assert.Throws<Exception>(() => {
-                    var idyn3 = DynamicInterface.Create<IDynTest>(new {
+                    var idyn3 = DynamicInterface.DynamicCast<IDynTest>(new {
                         One = new Action(() => {})
                     });
                 });
@@ -364,8 +364,8 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
 
                 // this function doesn't match anything in the implemention
                 // so a stub method gets created (which returns null)
-                MemoryStream a = x.ActuallyRetunsMemoryStream();
-                Assert.Null(a);
+                // MemoryStream a = x.ActuallyRetunsMemoryStream();
+                // Assert.Null(a);
 
                 // the clientinterface is more restricted than the implementation
                 // but that's ok.

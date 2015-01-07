@@ -163,7 +163,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             foreach (var item in cmdsOrAliases) {
                 var cmdName = GetPropertyValue(item, "Name").ToLower(CultureInfo.CurrentCulture);
                 var name = cmdName.Replace("-", "");
-                if (name.Is()) {
+                if (!string.IsNullOrWhiteSpace(name)) {
                     _commands.AddOrSet(name, item);
                 }
             }

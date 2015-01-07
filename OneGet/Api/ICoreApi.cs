@@ -13,7 +13,6 @@
 //  
 
 namespace Microsoft.OneGet.Api {
-    using System;
     using System.Collections.Generic;
     using Implementation;
     using IRequestObject = System.Object;
@@ -27,15 +26,6 @@ namespace Microsoft.OneGet.Api {
         IEnumerable<string> ProviderNames {get;}
 
         IEnumerable<PackageProvider> PackageProviders {get;}
-
-        /// <summary>
-        ///     Returns the interface type for a Request that the OneGet Core is expecting
-        ///     This is (currently) neccessary to provide an appropriately-typed version
-        ///     of the Request to the core when a Plugin is calling back into the core
-        ///     and has to pass a request object.
-        /// </summary>
-        /// <returns></returns>
-        Type GetIRequestInterface();
 
         /// <summary>
         ///     Returns the internal version of the OneGet core.

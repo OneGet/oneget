@@ -188,8 +188,8 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.ParameterCoercion {
 
         [Fact]
         public void testx() {
-            // Assert.True(DynamicInterface.IsTypeCompatible(typeof(int), typeof(string)));
-            // Assert.True( DynamicInterface.IsTypeCompatible(typeof (string), typeof (int)));
+            // Assert.True(DynamicInterface.CanCreateFrom(typeof(int), typeof(string)));
+            // Assert.True( DynamicInterface.CanCreateFrom(typeof (string), typeof (int)));
         
         }
 

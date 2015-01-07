@@ -28,7 +28,7 @@ namespace Microsoft.OneGet.Implementation {
     using Utility.Plugin;
     using IRequestObject = System.Object;
 
-    public abstract class RequestObject : AsyncAction, IRequest {
+    public abstract class RequestObject : AsyncAction {
         private static readonly Regex _canonicalPackageRegex = new Regex("(.*?):(.*?)/(.*)");
         private static int _c;
         protected Action<RequestObject> _action;
@@ -236,11 +236,6 @@ namespace Microsoft.OneGet.Implementation {
 
         #region CoreApi implementation
 
-        public Type GetIRequestInterface() {
-            Activity();
-            return typeof (IRequest);
-        }
-
         public int CoreVersion() {
             Activity();
             return Constants.CoreVersion;
@@ -290,14 +285,14 @@ namespace Microsoft.OneGet.Implementation {
             return PackageManager._instance.SelectProvidersWithFeature(featureName, value);
         }
 
-        public IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject) {
+        public IEnumerable<PackageProvider> SelectProviders(string providerName, Request request) {
             Activity();
-            return PackageManager._instance.SelectProviders(providerName, requestObject);
+            return PackageManager._instance.SelectProviders(providerName, request);
         }
 
-        public bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject) {
+        public bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, Request request) {
             Activity();
-            return PackageManager._instance.RequirePackageProvider(requestor, packageProviderName, minimumVersion, requestObject);
+            return PackageManager._instance.RequirePackageProvider(requestor, packageProviderName, minimumVersion, request);
         }
 
         public string GetCanonicalPackageId(string providerName, string packageName, string version) {
@@ -376,12 +371,12 @@ namespace Microsoft.OneGet.Implementation {
 
         #region IProviderServices implementation 
 
-        public bool IsSupportedArchive(string localFilename, IRequestObject requestObject) {
+        public bool IsSupportedArchive(string localFilename, Request request) {
             Activity();
             return PackageManager._instance.Archivers.Values.Any(archiver => archiver.IsSupportedFile(localFilename));
         }
 
-        public void DownloadFile(Uri remoteLocation, string localFilename, IRequestObject requestObject) {
+        public void DownloadFile(Uri remoteLocation, string localFilename, Request request) {
             Activity();
 
             // check the Uri type, see if we have anyone who can handle that 
@@ -389,301 +384,289 @@ namespace Microsoft.OneGet.Implementation {
             if (remoteLocation == null) {
                 throw new ArgumentNullException("remoteLocation");
             }
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
-            using (var request = requestObject.As<Request>()) {
-                foreach (var downloader in PackageManager._instance.Downloaders.Values) {
-                    if (downloader.SupportedUriSchemes.Contains(remoteLocation.Scheme, StringComparer.OrdinalIgnoreCase)) {
-                        downloader.DownloadFile(remoteLocation, localFilename, request);
-                        return;
-                    }
+            foreach (var downloader in PackageManager._instance.Downloaders.Values) {
+                if (downloader.SupportedUriSchemes.Contains(remoteLocation.Scheme, StringComparer.OrdinalIgnoreCase)) {
+                    downloader.DownloadFile(remoteLocation, localFilename, request);
+                    return;
                 }
-                request.Error(ErrorCategory.NotImplemented, Constants.Messages.ProtocolNotSupported, remoteLocation.Scheme, Constants.Messages.ProtocolNotSupported, remoteLocation.Scheme);
             }
+            request.Error(ErrorCategory.NotImplemented, Constants.Messages.ProtocolNotSupported, remoteLocation.Scheme, Constants.Messages.ProtocolNotSupported, remoteLocation.Scheme);
         }
 
-        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject) {
+        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Request request) {
             Activity();
 
             // check who supports the archive type
             // and call that provider.
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
-            using (var request = requestObject.As<Request>()) {
-                foreach (var archiver in PackageManager._instance.Archivers.Values) {
-                    if (archiver.IsSupportedFile(localFilename)) {
-                        return archiver.UnpackArchive(localFilename, destinationFolder, request);
-                    }
+            foreach (var archiver in PackageManager._instance.Archivers.Values) {
+                if (archiver.IsSupportedFile(localFilename)) {
+                    return archiver.UnpackArchive(localFilename, destinationFolder, request);
                 }
-                request.Error(ErrorCategory.NotImplemented, localFilename, Constants.Messages.UnsupportedArchive);
             }
+            request.Error(ErrorCategory.NotImplemented, localFilename, Constants.Messages.UnsupportedArchive);
+
             return Enumerable.Empty<string>();
         }
 
-        public void AddPinnedItemToTaskbar(string item, IRequestObject requestObject) {
+        public void AddPinnedItemToTaskbar(string item, Request request) {
             Activity();
 
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'ProviderService::AddPinnedItemToTaskbar'");
-                ShellApplication.Pin(item);
-            }
+
+            request.Debug("Calling 'ProviderService::AddPinnedItemToTaskbar'");
+            ShellApplication.Pin(item);
         }
 
-        public void RemovePinnedItemFromTaskbar(string item, IRequestObject requestObject) {
+        public void RemovePinnedItemFromTaskbar(string item, Request request) {
             Activity();
 
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'ProviderService::RemovePinnedItemFromTaskbar'");
-                ShellApplication.Unpin(item);
-            }
+
+            request.Debug("Calling 'ProviderService::RemovePinnedItemFromTaskbar'");
+            ShellApplication.Unpin(item);
         }
 
-        public void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, IRequestObject requestObject) {
+        public void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, Request request) {
             Activity();
 
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
+            
+            request.Debug("Calling 'ProviderService::CreateShortcutLink'");
 
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'ProviderService::CreateShortcutLink'");
-
-                if (File.Exists(linkPath)) {
-                    request.Verbose("Creating Shortcut '{0}' => '{1}'", linkPath, targetPath);
-                    ShellLink.CreateShortcut(linkPath, targetPath, description, workingDirectory, arguments);
-                }
-                request.Error(ErrorCategory.InvalidData, targetPath, Constants.Messages.UnableToCreateShortcutTargetDoesNotExist, targetPath);
+            if (File.Exists(linkPath)) {
+                request.Verbose("Creating Shortcut '{0}' => '{1}'", linkPath, targetPath);
+                ShellLink.CreateShortcut(linkPath, targetPath, description, workingDirectory, arguments);
             }
+            request.Error(ErrorCategory.InvalidData, targetPath, Constants.Messages.UnableToCreateShortcutTargetDoesNotExist, targetPath);
+         
         }
 
-        public void SetEnvironmentVariable(string variable, string value, string context, IRequestObject requestObject) {
+        public void SetEnvironmentVariable(string variable, string value, string context, Request request) {
             Activity();
 
             if (context == null) {
                 throw new ArgumentNullException("context");
             }
 
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'ProviderService::SetEnvironmentVariable'");
-                if (string.IsNullOrWhiteSpace(value)) {
-                    RemoveEnvironmentVariable(variable, context, requestObject);
-                }
-
-                switch (context.ToLowerInvariant()) {
-                    case "system":
-                        if (!IsElevated) {
-                            request.Warning("SetEnvironmentVariable Failed - Admin Elevation required to set variable '{0}' in machine context", variable);
-                            return;
-                        }
-                        request.Verbose("SetEnvironmentVariable (machine) '{0}' = '{1}'", variable, value);
-                        Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.Machine);
-                        break;
-
-                    default:
-                        request.Verbose("SetEnvironmentVariable (user) '{0}' = '{1}'", variable, value);
-                        Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User);
-                        break;
-                }
-                Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Process);
+            request.Debug("Calling 'ProviderService::SetEnvironmentVariable'");
+            if (string.IsNullOrWhiteSpace(value)) {
+                RemoveEnvironmentVariable(variable, context, request);
             }
+
+            switch (context.ToLowerInvariant()) {
+                case "system":
+                    if (!IsElevated) {
+                        request.Warning("SetEnvironmentVariable Failed - Admin Elevation required to set variable '{0}' in machine context", variable);
+                        return;
+                    }
+                    request.Verbose("SetEnvironmentVariable (machine) '{0}' = '{1}'", variable, value);
+                    Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.Machine);
+                    break;
+
+                default:
+                    request.Verbose("SetEnvironmentVariable (user) '{0}' = '{1}'", variable, value);
+                    Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User);
+                    break;
+            }
+            Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Process);
+
         }
 
-        public void RemoveEnvironmentVariable(string variable, string context, IRequestObject requestObject) {
+        public void RemoveEnvironmentVariable(string variable, string context, Request request) {
             Activity();
 
             if (context == null) {
                 throw new ArgumentNullException("context");
             }
 
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'ProviderService::RemoveEnvironmentVariable'");
+            request.Debug("Calling 'ProviderService::RemoveEnvironmentVariable'");
 
-                if (string.IsNullOrWhiteSpace(variable)) {
-                    return;
-                }
-                switch (context.ToLowerInvariant()) {
-                    case "user":
-                        request.Verbose("RemoveEnvironmentVariable (user)--'{0}'", variable);
-                        Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
-                        break;
-
-                    case "system":
-                        if (!IsElevated) {
-                            request.Warning(Constants.Messages.RemoveEnvironmentVariableRequiresElevation, variable);
-                            return;
-                        }
-                        request.Verbose("RemoveEnvironmentVariable (machine)", "'{0}'", variable);
-                        Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Machine);
-                        break;
-
-                    default:
-                        request.Verbose("RemoveEnvironmentVariable (all) '{0}'", variable);
-                        Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
-                        Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Machine);
-                        break;
-                }
-                Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Process);
+            if (string.IsNullOrWhiteSpace(variable)) {
+                return;
             }
+
+            switch (context.ToLowerInvariant()) {
+                case "user":
+                    request.Verbose("RemoveEnvironmentVariable (user)--'{0}'", variable);
+                    Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
+                    break;
+
+                case "system":
+                    if (!IsElevated) {
+                        request.Warning(Constants.Messages.RemoveEnvironmentVariableRequiresElevation, variable);
+                        return;
+                    }
+                    request.Verbose("RemoveEnvironmentVariable (machine)", "'{0}'", variable);
+                    Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Machine);
+                    break;
+
+                default:
+                    request.Verbose("RemoveEnvironmentVariable (all) '{0}'", variable);
+                    Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
+                    Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Machine);
+                    break;
+            }
+            Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Process);
         }
 
-        public void CopyFile(string sourcePath, string destinationPath, IRequestObject requestObject) {
+        public void CopyFile(string sourcePath, string destinationPath, Request request) {
             Activity();
 
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'ProviderService::CopyFile'");
-                if (sourcePath == null) {
-                    throw new ArgumentNullException("sourcePath");
-                }
-                if (destinationPath == null) {
-                    throw new ArgumentNullException("destinationPath");
-                }
+            request.Debug("Calling 'ProviderService::CopyFile'");
+            if (sourcePath == null) {
+                throw new ArgumentNullException("sourcePath");
+            }
+            if (destinationPath == null) {
+                throw new ArgumentNullException("destinationPath");
+            }
+            if (File.Exists(destinationPath)) {
+                destinationPath.TryHardToDelete();
                 if (File.Exists(destinationPath)) {
-                    destinationPath.TryHardToDelete();
-                    if (File.Exists(destinationPath)) {
-                        request.Error(ErrorCategory.OpenError, destinationPath, Constants.Messages.UnableToOverwriteExistingFile, destinationPath);
-                    }
+                    request.Error(ErrorCategory.OpenError, destinationPath, Constants.Messages.UnableToOverwriteExistingFile, destinationPath);
                 }
-                File.Copy(sourcePath, destinationPath);
-                if (!File.Exists(destinationPath)) {
-                    request.Error(ErrorCategory.InvalidResult, destinationPath, Constants.Messages.UnableToCopyFileTo, destinationPath);
-                }
+            }
+            File.Copy(sourcePath, destinationPath);
+            if (!File.Exists(destinationPath)) {
+                request.Error(ErrorCategory.InvalidResult, destinationPath, Constants.Messages.UnableToCopyFileTo, destinationPath);
             }
         }
 
-        public void Delete(string path, IRequestObject requestObject) {
+        public void Delete(string path, Request request) {
             Activity();
 
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'ProviderService::Delete'");
-                if (string.IsNullOrWhiteSpace(path)) {
+            request.Debug("Calling 'ProviderService::Delete'");
+            if (string.IsNullOrWhiteSpace(path)) {
+                return;
+            }
+
+            path.TryHardToDelete();
+        }
+
+        public void DeleteFolder(string folder, Request request) {
+            Activity();
+
+            if (request == null) {
+                throw new ArgumentNullException("request");
+            }
+
+
+            request.Debug("Calling 'ProviderService::DeleteFolder' {0}".format(folder));
+            if (string.IsNullOrWhiteSpace(folder)) {
+                return;
+            }
+            if (Directory.Exists(folder)) {
+                folder.TryHardToDelete();
+            }
+
+        }
+
+        public void CreateFolder(string folder, Request request) {
+            Activity();
+
+            if (request == null) {
+                throw new ArgumentNullException("request");
+            }
+
+
+            request.Debug("Calling 'ProviderService::CreateFolder'");
+
+            if (!Directory.Exists(folder)) {
+                try {
+                    Directory.CreateDirectory(folder);
+                    request.Verbose("CreateFolder Success {0}", folder);
+                    return;
+                } catch (Exception e) {
+                    request.Error(ErrorCategory.InvalidResult, folder, Constants.Messages.CreatefolderFailed, folder, e.Message);
                     return;
                 }
-
-                path.TryHardToDelete();
             }
+            request.Verbose("CreateFolder -- Already Exists {0}", folder);
+
         }
 
-        public void DeleteFolder(string folder, IRequestObject requestObject) {
+        public void DeleteFile(string filename, Request request) {
             Activity();
 
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'ProviderService::DeleteFolder' {0}".format(folder));
-                if (string.IsNullOrWhiteSpace(folder)) {
-                    return;
-                }
-                if (Directory.Exists(folder)) {
-                    folder.TryHardToDelete();
-                }
+
+            request.Debug("Calling 'ProviderService::DeleteFile'");
+            if (string.IsNullOrWhiteSpace(filename)) {
+                return;
             }
+
+            if (File.Exists(filename)) {
+                filename.TryHardToDelete();
+            }
+
         }
 
-        public void CreateFolder(string folder, IRequestObject requestObject) {
+        public string GetKnownFolder(string knownFolder, Request request) {
             Activity();
 
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'ProviderService::CreateFolder'");
 
-                if (!Directory.Exists(folder)) {
-                    try {
-                        Directory.CreateDirectory(folder);
-                        request.Verbose("CreateFolder Success {0}", folder);
-                        return;
-                    } catch (Exception e) {
-                        request.Error(ErrorCategory.InvalidResult, folder, Constants.Messages.CreatefolderFailed, folder, e.Message);
-                        return;
-                    }
-                }
-                request.Verbose("CreateFolder -- Already Exists {0}", folder);
-            }
-        }
-
-        public void DeleteFile(string filename, IRequestObject requestObject) {
-            Activity();
-
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
-            }
-
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'ProviderService::DeleteFile'");
-                if (string.IsNullOrWhiteSpace(filename)) {
-                    return;
+            request.Debug("Calling 'ProviderService::GetKnownFolder'");
+            if (!string.IsNullOrWhiteSpace(knownFolder)) {
+                if (knownFolder.Equals("tmp", StringComparison.OrdinalIgnoreCase) || knownFolder.Equals("temp", StringComparison.OrdinalIgnoreCase)) {
+                    return FilesystemExtensions.TempPath;
                 }
 
-                if (File.Exists(filename)) {
-                    filename.TryHardToDelete();
-                }
-            }
-        }
-
-        public string GetKnownFolder(string knownFolder, IRequestObject requestObject) {
-            Activity();
-
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
-            }
-
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'ProviderService::GetKnownFolder'");
-                if (!string.IsNullOrWhiteSpace(knownFolder)) {
-                    if (knownFolder.Equals("tmp", StringComparison.OrdinalIgnoreCase) || knownFolder.Equals("temp", StringComparison.OrdinalIgnoreCase)) {
-                        return FilesystemExtensions.TempPath;
-                    }
-
-                    if (knownFolder.Equals("SystemAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
-                        return PackageManager._instance.SystemAssemblyLocation;
-                    }
-
-                    if (knownFolder.Equals("UserAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
-                        return PackageManager._instance.UserAssemblyLocation;
-                    }
-
-                    if (knownFolder.Equals("ProviderAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
-                        return AdminPrivilege.IsElevated ? PackageManager._instance.SystemAssemblyLocation : PackageManager._instance.UserAssemblyLocation;
-                    }
-
-                    KnownFolder folder;
-                    if (Enum.TryParse(knownFolder, true, out folder)) {
-                        return KnownFolders.GetFolderPath(folder);
-                    }
+                if (knownFolder.Equals("SystemAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
+                    return PackageManager._instance.SystemAssemblyLocation;
                 }
 
-                request.Error(ErrorCategory.InvalidArgument, knownFolder, Constants.Messages.UnknownFolderId, knownFolder);
+                if (knownFolder.Equals("UserAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
+                    return PackageManager._instance.UserAssemblyLocation;
+                }
+
+                if (knownFolder.Equals("ProviderAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
+                    return AdminPrivilege.IsElevated ? PackageManager._instance.SystemAssemblyLocation : PackageManager._instance.UserAssemblyLocation;
+                }
+
+                KnownFolder folder;
+                if (Enum.TryParse(knownFolder, true, out folder)) {
+                    return KnownFolders.GetFolderPath(folder);
+                }
             }
+
+            request.Error(ErrorCategory.InvalidArgument, knownFolder, Constants.Messages.UnknownFolderId, knownFolder);
+
             return null;
         }
 
@@ -715,71 +698,70 @@ namespace Microsoft.OneGet.Implementation {
             return path.DirectoryExists();
         }
 
-        public bool Install(string fileName, string additionalArgs, IRequestObject requestObject) {
+        public bool Install(string fileName, string additionalArgs, Request request) {
             Activity();
 
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
             if (string.IsNullOrWhiteSpace(fileName)) {
                 return false;
             }
 
-            using (var request = requestObject.As<Request>()) {
-                // high-level api for simply installing a file 
-                // returns false if unsuccessful.
-                foreach (var provider in PackageManager._instance.PackageProviders) {
-                    var packages = provider.FindPackageByFile(fileName, 0, request).ToArray();
-                    if (packages.Length > 0) {
-                        // found a provider that can handle this package.
-                        // install with this provider
-                        // ToDo: @FutureGarrett -- we need to be able to handle priorities and who wins...
-                        foreach (var package in packages) {
-                            foreach (var installedPackage in provider.InstallPackage(package, request.Extend<IRequest>(new {
-                                GetOptionValues = new Func<string, IEnumerable<string>>(key => {
-                                    if (key.EqualsIgnoreCase("additionalArguments")) {
-                                        return new[] {additionalArgs};
-                                    }
-                                    return request.GetOptionValues(key);
-                                })
-                            }))) {
-                                request.Debug("Installed internal package {0}", installedPackage.Name);
-                            }
+            // high-level api for simply installing a file 
+            // returns false if unsuccessful.
+            foreach (var provider in PackageManager._instance.PackageProviders) {
+                var packages = provider.FindPackageByFile(fileName, 0, request).ToArray();
+                if (packages.Length > 0) {
+                    // found a provider that can handle this package.
+                    // install with this provider
+                    // ToDo: @FutureGarrett -- we need to be able to handle priorities and who wins...
+                    foreach (var package in packages) {
+                        foreach (var installedPackage in provider.InstallPackage(package, request.Extend<IRequest>(new {
+                            GetOptionValues = new Func<string, IEnumerable<string>>(key => {
+                                if (key.EqualsIgnoreCase("additionalArguments")) {
+                                    return new[] {additionalArgs};
+                                }
+                                return request.GetOptionValues(key);
+                            })
+                        }))) {
+                            request.Debug("Installed internal package {0}", installedPackage.Name);
                         }
-                        return true;
                     }
+                    return true;
                 }
             }
+
 
             return false;
         }
 
-        public bool IsSignedAndTrusted(string filename, IRequestObject requestObject) {
+        public bool IsSignedAndTrusted(string filename, Request request) {
             Activity();
 
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
             if (string.IsNullOrWhiteSpace(filename) || !FileExists(filename)) {
                 return false;
             }
 
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'ProviderService::IsSignedAndTrusted, '{0}'", filename);
 
-                var wtd = new WinTrustData(filename);
-                var result = NativeMethods.WinVerifyTrust(new IntPtr(-1), new Guid("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}"), wtd);
-                return result == WinVerifyTrustResult.Success;
-            }
+            request.Debug("Calling 'ProviderService::IsSignedAndTrusted, '{0}'", filename);
+
+            var wtd = new WinTrustData(filename);
+            var result = NativeMethods.WinVerifyTrust(new IntPtr(-1), new Guid("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}"), wtd);
+            return result == WinVerifyTrustResult.Success;
+
         }
 
-        public bool ExecuteElevatedAction(string provider, string payload, IRequestObject requestObject) {
+        public bool ExecuteElevatedAction(string provider, string payload, Request request) {
             Activity();
 #if WHAT_DO_WE_DO_TO_REMOTE_BETWEEN_PROCESSES_WITHOUT_REMOTING_HUH
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+            if (request == null) {
+                throw new ArgumentNullException("request");
                     
             }
 

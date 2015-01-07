@@ -55,15 +55,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public abstract bool IsCanceled {get;}
 
         /// <summary>
-        ///     Returns the interface type for a Request that the OneGet Core is expecting
-        ///     This is (currently) neccessary to provide an appropriately-typed version
-        ///     of the Request to the core when a Plugin is calling back into the core
-        ///     and has to pass a request object.
-        /// </summary>
-        /// <returns></returns>
-        public abstract Type GetIRequestInterface();
-
-        /// <summary>
         ///     Returns the internal version of the OneGet core.
         ///     This will usually only be updated if there is a breaking API or Interface change that might
         ///     require other code to know which version is running.
@@ -289,7 +280,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
 
         internal object Extend(params object[] objects) {
-            return RequestExtensions.Extend(this, GetIRequestInterface(), objects);
+            throw new NotImplementedException("If this is used, fix it. if not, delete it.");
+            // return RequestExtensions.Extend(this, GetIRequestInterface(), objects);
         }
 
         internal string GetMessageStringInternal(string messageText) {

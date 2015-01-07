@@ -12,14 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Builtin {
-    using System;
-    using System.Diagnostics;
-    using Implementation;
-    using Utility.Extensions;
-    using Utility.Plugin;
-    using IRequestObject = System.Object;
-
+namespace Microsoft.OneGet.Providers {
     /// <summary>
     ///     A Package provider for OneGet.
     ///     Important notes:

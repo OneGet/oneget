@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Builtin {
+namespace Microsoft.OneGet.Providers {
     using System;
     using System.Collections.Generic;
     using System.IO;

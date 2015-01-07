@@ -72,7 +72,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override IEnumerable<string> Sources {
             get {
-                if (Source.IsEmptyOrNull()) {
+                if (string.IsNullOrWhiteSpace(Source)) {
                     return new string[0];
                 }
                 return new[] {

@@ -1,27 +1,28 @@
-//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.OneGet.Implementation {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Security.AccessControl;
-    using System.Security.Principal;
+    using System.Threading.Tasks;
     using Api;
     using Packaging;
     using Providers;
@@ -42,38 +43,6 @@ namespace Microsoft.OneGet.Implementation {
     ///     The Client API provides high-level consumer functions to support SDII functionality.
     /// </summary>
     internal class PackageManagementService : IPackageManagementService {
-        private readonly IDictionary<string, IMetaProvider> _metaProviders = new Dictionary<string, IMetaProvider>(StringComparer.OrdinalIgnoreCase);
-        private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>(StringComparer.OrdinalIgnoreCase);
-
-        internal readonly IDictionary<string, Archiver> Archivers = new Dictionary<string, Archiver>(StringComparer.OrdinalIgnoreCase);
-        internal readonly IDictionary<string, Downloader> Downloaders = new Dictionary<string, Downloader>(StringComparer.OrdinalIgnoreCase);
-
-        private readonly object _lockObject = new object();
-
-        public IEnumerable<PackageProvider> PackageProviders {
-            get {
-                return _packageProviders.Values;
-            }
-        }
-
-        private bool _initialized;
-
-        public bool Initialize(Object request) {
-            lock (_lockObject) {
-                if (!_initialized) {
-                    LoadProviders(request.As<IRequest>());
-                    _initialized = true;
-                }
-            }
-            return _initialized;
-        }
-
-        // well known, built in provider assemblies.
-        private readonly string[] _defaultProviders = {
-            Path.GetFullPath(Assembly.GetExecutingAssembly().Location), // load the providers from this assembly
-            "Microsoft.OneGet.MetaProvider.PowerShell.dll"
-        };
-
         private static readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location), // already in autload list
             "CSharpTest.Net.RpcLibrary", // doesn't have any
@@ -92,104 +61,21 @@ namespace Microsoft.OneGet.Implementation {
             "NuGet", // doesn't have any
         };
 
-        private bool IsExcluded(string assemblyPath) {
-            return _excludes.Contains(Path.GetFileNameWithoutExtension(assemblyPath));
-        }
-
-        /// <summary>
-        ///     This initializes the provider registry with the list of package providers.
-        ///     (currently a hardcoded list, soon, registry driven)
-        /// </summary>
-        /// <param name="request"></param>
-        internal void LoadProviders(IRequest request) {
-            var providerAssemblies = (_initialized ? Enumerable.Empty<string>() : _defaultProviders)
-                .Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET"))
-                .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"))
-                .Concat(AutoloadedAssemblyLocations.SelectMany(location => {
-                    if (Directory.Exists(location)) {
-                        return Directory.EnumerateFiles(location).Where(each => !IsExcluded(each) && (each.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase) || each.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase)));
-                    }
-                    return Enumerable.Empty<string>();
-                }));
-
-            // find modules that have manifests 
-            // todo: expand this out to validate the assembly is ok for this instance of OneGet.
-            providerAssemblies = providerAssemblies.Where(each => Manifest.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
-
-            providerAssemblies = providerAssemblies.OrderByDescending(each => {
-                try {
-                    // try to get a version from the file first
-                    return (ulong)(FourPartVersion)FileVersionInfo.GetVersionInfo(each);
-                } catch {
-                    // otherwise we can't make a distinction.
-                    return (ulong)0;
-                }
-            });
-            providerAssemblies = providerAssemblies.Distinct(new PathEqualityComparer(PathCompareOption.FileWithoutExtension));
-
-            // hack to make sure we don't load the old version of the nuget provider
-            // when we have the ability to examine a plugin without dragging it into the
-            // primary appdomain, this won't be needed.
-            FourPartVersion minimumnugetversion = "2.8.3.6";
-
-            providerAssemblies = providerAssemblies.Where(assemblyFile => {
-                try {
-                    if ("nuget-anycpu".EqualsIgnoreCase(Path.GetFileNameWithoutExtension(assemblyFile)) && ((FourPartVersion)FileVersionInfo.GetVersionInfo(assemblyFile)) < minimumnugetversion) {
-                        return false;
-                    }
-                }
-                catch {
-                }
-                return true;
-            });
-
-            // there is no trouble with loading providers concurrently.
-#if DEBUG
-            providerAssemblies.SerialForEach(providerAssemblyName => {
-#else
-            providerAssemblies.ParallelForEach(providerAssemblyName => {
-#endif
-                try {
-                    request.Debug(request.FormatMessageString("Trying provider assembly: {0}", providerAssemblyName));
-                    if (TryToLoadProviderAssembly(providerAssemblyName, request)) {
-                        request.Debug(request.FormatMessageString("SUCCESS provider assembly: {0}", providerAssemblyName));
-                    } else {
-                        request.Debug(request.FormatMessageString("FAILED provider assembly: {0}", providerAssemblyName));
-                    }
-                } catch {
-                    request.Error(Constants.Messages.ProviderPluginLoadFailure, ErrorCategory.InvalidOperation.ToString(), providerAssemblyName, request.FormatMessageString(Constants.Messages.ProviderPluginLoadFailure, providerAssemblyName));
-                }
-            });
-        }
-
-        private static IEnumerator<string> GetProvidersFromRegistry(RegistryKey registryKey, string p) {
-            RegistryKey key;
-            try {
-                key = registryKey.OpenSubKey(p, RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey);
-            } catch {
-                yield break;
-            }
-
-            if (key == null) {
-                yield break;
-            }
-
-            foreach (var name in key.GetValueNames()) {
-                yield return key.GetValue(name).ToString();
-            }
-        }
-
-        public IEnumerable<PackageSource> GetAllSourceNames(IRequestObject requestObject) {
-            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(requestObject));
-        }
-
-        public IEnumerable<string> ProviderNames {
-            get {
-                return  _packageProviders.Keys;
-            }
-        }
-
+        private static int _lastCallCount;
+        private static HashSet<string> _providersTriedThisCall;
         private string[] _bootstrappableProviderNames;
+        private bool _initialized;
+        // well known, built in provider assemblies.
+        private readonly string[] _defaultProviders = {
+            Path.GetFullPath(Assembly.GetExecutingAssembly().Location), // load the providers from this assembly
+            "Microsoft.OneGet.MetaProvider.PowerShell.dll"
+        };
+
+        private readonly object _lockObject = new object();
+        private readonly IDictionary<string, IMetaProvider> _metaProviders = new Dictionary<string, IMetaProvider>(StringComparer.OrdinalIgnoreCase);
+        private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>(StringComparer.OrdinalIgnoreCase);
+        internal readonly IDictionary<string, Archiver> Archivers = new Dictionary<string, Archiver>(StringComparer.OrdinalIgnoreCase);
+        internal readonly IDictionary<string, Downloader> Downloaders = new Dictionary<string, Downloader>(StringComparer.OrdinalIgnoreCase);
 
         internal string[] BootstrappableProviderNames {
             get {
@@ -200,208 +86,6 @@ namespace Microsoft.OneGet.Implementation {
                     _bootstrappableProviderNames = value;
                 }
             }
-        }
-
-        public IEnumerable<string> AllProviderNames {
-            get {
-                if (BootstrappableProviderNames.IsNullOrEmpty()) {
-                    return _packageProviders.Keys;
-                }
-
-                return _packageProviders.Keys.Union(BootstrappableProviderNames);
-            }
-        }
-
-        public IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName) {
-            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName));
-        }
-
-        public IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value) {
-            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName) && each.Features[featureName].Contains(value));
-        }
-
-        public IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject) {
-            if (providerName.Is()) {
-                // match with wildcards
-                var results = _packageProviders.Values.Where(each => each.ProviderName.IsWildcardMatch(providerName)).ReEnumerable();
-                if (results.Any()) {
-                    return results;
-                }
-                if (requestObject != null && !providerName.ContainsWildcards()) {
-                    // if the end user requested a provider that's not there. perhaps the bootstrap provider can find it.
-                    if (RequirePackageProvider(null, providerName, Constants.MinVersion, requestObject)) {
-                        // seems to think we found it.
-                        if (_packageProviders.ContainsKey(providerName)) {
-                            return _packageProviders[providerName].SingleItemAsEnumerable();
-                        }
-                    }
-                    var hostApi = requestObject.As<IHostApi>();
-
-                    // warn the user that that provider wasn't found.
-                    hostApi.Warning(hostApi.FormatMessageString(Constants.Messages.UnknownProvider, providerName));
-                }
-                return Enumerable.Empty<PackageProvider>();
-            }
-
-            return PackageProviders;
-        }
-
-        private bool AddMetaProvider(string name, IMetaProvider provider, ulong version, IRequest request) {
-            // wrap this in a caller-friendly wrapper
-            if (_metaProviders.ContainsKey(name)) {
-                // Meta Providers can't be replaced at this point
-                return false;
-            }
-            _metaProviders.AddOrSet(name, provider);
-            return true;
-        }
-
-        private bool AddPackageProvider(string name, IPackageProvider provider, ulong version, IRequest request) {
-            // wrap this in a caller-friendly wrapper
-            lock (_packageProviders) {
-                if (_packageProviders.ContainsKey(name)) {
-                    if (version > _packageProviders[name].Version) {
-                        // remove the old provider first.
-                        // todo: this won't remove the plugin domain and unload the code yet
-                        // we'll have to do that later.
-
-                        _packageProviders.Remove(name);
-                    } else {
-                        return false;
-                    }
-                }
-                request.Debug("Loading provider {0}".format(name, provider.GetPackageProviderName()));
-                provider.InitializeProvider(request);
-                _packageProviders.AddOrSet(name, new PackageProvider(provider) {
-                    Version = version
-                }).Initialize(request);
-            }
-            return true;
-        }
-
-        private bool AddArchvier(string name, IArchiver provider, ulong version, IRequest request) {
-            lock (Archivers) {
-                if (Archivers.ContainsKey(name)) {
-                    if (version > Archivers[name].Version) {
-                        // remove the old provider first.
-                        // todo: this won't remove the plugin domain and unload the code yet
-                        // we'll have to do that later.
-
-                        Archivers.Remove(name);
-                    } else {
-                        return false;
-                    }
-                }
-                request.Debug("Loading Archiver {0}".format(name, provider.GetArchiverName()));
-                provider.InitializeProvider(request);
-                Archivers.AddOrSet(name, new Archiver(provider) {
-                    Version = version
-                }).Initialize(request);
-            }
-            return true;
-        }
-
-        private bool AddDownloader(string name, IDownloader provider, ulong version, IRequest request) {
-            lock (Downloaders) {
-                if (Downloaders.ContainsKey(name)) {
-                    if (version > Downloaders[name].Version) {
-                        // remove the old provider first.
-                        // todo: this won't remove the plugin domain and unload the code yet
-                        // we'll have to do that later.
-
-                        Downloaders.Remove(name);
-                    } else {
-                        return false;
-                    }
-                }
-                request.Debug("Loading Downloader {0}".format(name, provider.GetDownloaderName()));
-                provider.InitializeProvider(request);
-                Downloaders.AddOrSet(name, new Downloader(provider) {
-                    Version = version
-                }).Initialize(request);
-            }
-            return true;
-        }
-
-        /// <summary>
-        ///     Searches for the assembly, interrogates it for it's providers and then proceeds to load
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="providerAssemblyName"></param>
-        /// <returns></returns>
-        private bool TryToLoadProviderAssembly(string providerAssemblyName, IRequest request) {
-            // find all the matches for the assembly specified, order by version (descending)
-
-            var assemblyPath = FindAssembly(providerAssemblyName);
-
-            if (assemblyPath == null) {
-                return false;
-            }
-
-
-            if (!Loader.AcquireProviders(assemblyPath, request, AddMetaProvider, AddPackageProvider, AddArchvier, AddDownloader)) {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        ///     PROTOTYPE -- extremely simplified assembly locator.
-        /// </summary>
-        /// <param name="assemblyName"></param>
-        /// <returns></returns>
-        private string FindAssembly(string assemblyName) {
-            try {
-                string fullPath;
-                // is the name given a strong name?
-                if (assemblyName.Contains(',')) {
-                    // looks like a strong name
-                    // todo: not there yet...
-                    return null;
-                }
-
-                // is it a path?
-                if (assemblyName.Contains('\\') || assemblyName.Contains('/') || assemblyName.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase) || assemblyName.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase)) {
-                    fullPath = Path.GetFullPath(assemblyName);
-                    if (File.Exists(fullPath)) {
-                        return fullPath;
-                    }
-                    if (File.Exists(fullPath + ".dll")) {
-                        return fullPath;
-                    }
-
-                    // lets see if the assembly name is in the same directory as the current assembly...
-                    try {
-                        fullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), assemblyName);
-                        if (File.Exists(fullPath)) {
-                            return fullPath;
-                        }
-                        if (File.Exists(fullPath + ".dll")) {
-                            return fullPath;
-                        }
-                    } catch {
-                    }
-                }
-                // must be just just a plain name.
-
-                // todo: search the GAC too?
-
-                // search the local folder.
-                fullPath = Path.GetFullPath(assemblyName + ".dll");
-                if (File.Exists(fullPath)) {
-                    return fullPath;
-                }
-
-                // try next to where we are.
-                fullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), assemblyName + ".dll");
-                if (File.Exists(fullPath)) {
-                    return fullPath;
-                }
-            } catch (Exception e) {
-                e.Dump();
-            }
-            return null;
         }
 
         internal IEnumerable<string> AutoloadedAssemblyLocations {
@@ -433,35 +117,83 @@ namespace Microsoft.OneGet.Implementation {
                     return null;
                 }
                 var path = Path.Combine(basepath, "OneGet", "ProviderAssemblies");
-#if NEED_ACLS_ON_PLUGINS
-                // it appears that the general consensus is that we really don't need
-                // to purposefully ACL the plugin folder.
-                // Although, I still think we're gonna be back here one day.
-                if (AdminPrivilege.IsElevated && !Directory.Exists(path)) {
-                    var ds = new DirectorySecurity();
 
-                    var everyone = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
-                    var admins = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
-                    ds.AddAccessRule(new FileSystemAccessRule(everyone, FileSystemRights.ReadAndExecute, AccessControlType.Allow));
-                    ds.AddAccessRule(new FileSystemAccessRule(admins, FileSystemRights.Write, AccessControlType.Allow));
-
-                    Directory.CreateDirectory(path, ds);
-                }
-#endif
                 try {
                     if (!Directory.Exists(path)) {
                         Directory.CreateDirectory(path);
                     }
-                }
-                catch {
+                } catch {
                     // ignore non-existant directory for now.
                 }
                 return path;
             }
         }
 
-        private static int _lastCallCount;
-        private static HashSet<string> _providersTriedThisCall;
+        public IEnumerable<PackageProvider> PackageProviders {
+            get {
+                return _packageProviders.Values;
+            }
+        }
+
+        public bool Initialize(Object request) {
+            lock (_lockObject) {
+                if (!_initialized) {
+                    LoadProviders(request.As<IRequest>());
+                    _initialized = true;
+                }
+            }
+            return _initialized;
+        }
+
+        public IEnumerable<string> ProviderNames {
+            get {
+                return _packageProviders.Keys;
+            }
+        }
+
+        public IEnumerable<string> AllProviderNames {
+            get {
+                if (BootstrappableProviderNames.IsNullOrEmpty()) {
+                    return _packageProviders.Keys;
+                }
+
+                return _packageProviders.Keys.Union(BootstrappableProviderNames);
+            }
+        }
+
+        public IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName) {
+            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName));
+        }
+
+        public IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value) {
+            return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName) && each.Features[featureName].Contains(value));
+        }
+
+        public IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject) {
+            if (!string.IsNullOrWhiteSpace(providerName)) {
+                // match with wildcards
+                var results = _packageProviders.Values.Where(each => each.ProviderName.IsWildcardMatch(providerName)).ReEnumerable();
+                if (results.Any()) {
+                    return results;
+                }
+                if (requestObject != null && !providerName.ContainsWildcards()) {
+                    // if the end user requested a provider that's not there. perhaps the bootstrap provider can find it.
+                    if (RequirePackageProvider(null, providerName, Constants.MinVersion, requestObject)) {
+                        // seems to think we found it.
+                        if (_packageProviders.ContainsKey(providerName)) {
+                            return _packageProviders[providerName].SingleItemAsEnumerable();
+                        }
+                    }
+                    var hostApi = requestObject.As<IHostApi>();
+
+                    // warn the user that that provider wasn't found.
+                    hostApi.Warning(hostApi.FormatMessageString(Constants.Messages.UnknownProvider, providerName));
+                }
+                return Enumerable.Empty<PackageProvider>();
+            }
+
+            return PackageProviders;
+        }
 
         public bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject) {
             // check if the package provider is already installed
@@ -548,6 +280,421 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             return false;
+        }
+
+        private bool IsExcluded(string assemblyPath) {
+            return _excludes.Contains(Path.GetFileNameWithoutExtension(assemblyPath));
+        }
+
+        /// <summary>
+        ///     This initializes the provider registry with the list of package providers.
+        ///     (currently a hardcoded list, soon, registry driven)
+        /// </summary>
+        /// <param name="request"></param>
+        internal void LoadProviders(IRequest request) {
+            var providerAssemblies = (_initialized ? Enumerable.Empty<string>() : _defaultProviders)
+                .Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET"))
+                .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"))
+                .Concat(AutoloadedAssemblyLocations.SelectMany(location => {
+                    if (Directory.Exists(location)) {
+                        return Directory.EnumerateFiles(location).Where(each => !IsExcluded(each) && (each.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase) || each.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase)));
+                    }
+                    return Enumerable.Empty<string>();
+                }));
+
+            // find modules that have manifests 
+            // todo: expand this out to validate the assembly is ok for this instance of OneGet.
+            providerAssemblies = providerAssemblies.Where(each => Manifest.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
+
+            providerAssemblies = providerAssemblies.OrderByDescending(each => {
+                try {
+                    // try to get a version from the file first
+                    return (ulong)(FourPartVersion)FileVersionInfo.GetVersionInfo(each);
+                } catch {
+                    // otherwise we can't make a distinction.
+                    return (ulong)0;
+                }
+            });
+            providerAssemblies = providerAssemblies.Distinct(new PathEqualityComparer(PathCompareOption.FileWithoutExtension));
+
+            // hack to make sure we don't load the old version of the nuget provider
+            // when we have the ability to examine a plugin without dragging it into the
+            // primary appdomain, this won't be needed.
+            FourPartVersion minimumnugetversion = "2.8.3.6";
+
+            providerAssemblies = providerAssemblies.Where(assemblyFile => {
+                try {
+                    if ("nuget-anycpu".EqualsIgnoreCase(Path.GetFileNameWithoutExtension(assemblyFile)) && ((FourPartVersion)FileVersionInfo.GetVersionInfo(assemblyFile)) < minimumnugetversion) {
+                        return false;
+                    }
+                } catch {
+                }
+                return true;
+            });
+
+            // there is no trouble with loading providers concurrently.
+#if DEBUG
+            providerAssemblies.SerialForEach(providerAssemblyName => {
+#else
+            providerAssemblies.ParallelForEach(providerAssemblyName => {
+#endif
+                try {
+                    request.Debug(request.FormatMessageString("Trying provider assembly: {0}", providerAssemblyName));
+                    if (TryToLoadProviderAssembly(providerAssemblyName, request)) {
+                        request.Debug(request.FormatMessageString("SUCCESS provider assembly: {0}", providerAssemblyName));
+                    } else {
+                        request.Debug(request.FormatMessageString("FAILED provider assembly: {0}", providerAssemblyName));
+                    }
+                } catch {
+                    request.Error(Constants.Messages.ProviderPluginLoadFailure, ErrorCategory.InvalidOperation.ToString(), providerAssemblyName, request.FormatMessageString(Constants.Messages.ProviderPluginLoadFailure, providerAssemblyName));
+                }
+            });
+        }
+
+        private static IEnumerator<string> GetProvidersFromRegistry(RegistryKey registryKey, string p) {
+            RegistryKey key;
+            try {
+                key = registryKey.OpenSubKey(p, RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey);
+            } catch {
+                yield break;
+            }
+
+            if (key == null) {
+                yield break;
+            }
+
+            foreach (var name in key.GetValueNames()) {
+                yield return key.GetValue(name).ToString();
+            }
+        }
+
+        public IEnumerable<PackageSource> GetAllSourceNames(IRequestObject requestObject) {
+            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(requestObject));
+        }
+
+        /// <summary>
+        ///     Searches for the assembly, interrogates it for it's providers and then proceeds to load
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="providerAssemblyName"></param>
+        /// <returns></returns>
+        private bool TryToLoadProviderAssembly(string providerAssemblyName, IRequest request) {
+            // find all the matches for the assembly specified, order by version (descending)
+
+            var assemblyPath = FindAssembly(providerAssemblyName);
+
+            if (assemblyPath == null) {
+                return false;
+            }
+
+            if (!AcquireProviders(assemblyPath, request)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        ///     PROTOTYPE -- extremely simplified assembly locator.
+        /// </summary>
+        /// <param name="assemblyName"></param>
+        /// <returns></returns>
+        private string FindAssembly(string assemblyName) {
+            try {
+                string fullPath;
+                // is the name given a strong name?
+                if (assemblyName.Contains(',')) {
+                    // looks like a strong name
+                    // todo: not there yet...
+                    return null;
+                }
+
+                // is it a path?
+                if (assemblyName.Contains('\\') || assemblyName.Contains('/') || assemblyName.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase) || assemblyName.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase)) {
+                    fullPath = Path.GetFullPath(assemblyName);
+                    if (File.Exists(fullPath)) {
+                        return fullPath;
+                    }
+                    if (File.Exists(fullPath + ".dll")) {
+                        return fullPath;
+                    }
+
+                    // lets see if the assembly name is in the same directory as the current assembly...
+                    try {
+                        fullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), assemblyName);
+                        if (File.Exists(fullPath)) {
+                            return fullPath;
+                        }
+                        if (File.Exists(fullPath + ".dll")) {
+                            return fullPath;
+                        }
+                    } catch {
+                    }
+                }
+                // must be just just a plain name.
+
+                // todo: search the GAC too?
+
+                // search the local folder.
+                fullPath = Path.GetFullPath(assemblyName + ".dll");
+                if (File.Exists(fullPath)) {
+                    return fullPath;
+                }
+
+                // try next to where we are.
+                fullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), assemblyName + ".dll");
+                if (File.Exists(fullPath)) {
+                    return fullPath;
+                }
+            } catch (Exception e) {
+                e.Dump();
+            }
+            return null;
+        }
+
+        [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFile", Justification = "This is a plugin loader. It *needs* to do that.")]
+        internal bool AcquireProviders(string assemblyPath, IRequest request) {
+            var found = false;
+            try {
+                var assembly = Assembly.LoadFrom(assemblyPath);
+
+                if (assembly == null) {
+                    return false;
+                }
+
+                var asmVersion = GetAssemblyVersion(assembly);
+
+                var t1 = Task.Factory.StartNew(() => {
+                    // process Meta Providers
+                    foreach (var metaProviderClass in assembly.FindCompatibleTypes<IMetaProvider>()) {
+                        try {
+                            found = found | RegisterProvidersViaMetaProvider(metaProviderClass.Create<IMetaProvider>(), asmVersion, request);
+                        } catch {
+                            // ignore stuff that doesn't load.
+                        }
+                    }
+                }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
+
+                var t2 = Task.Factory.StartNew(() => {
+                    // process Package Providers
+                    foreach (var packageProviderClass in assembly.FindCompatibleTypes<IPackageProvider>()) {
+                        try {
+                            found = found | RegisterPackageProvider(packageProviderClass.Create<IPackageProvider>(), asmVersion, request);
+                        } catch {
+                            // ignore stuff that doesn't load.
+                        }
+                    }
+                }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
+
+                var t3 = Task.Factory.StartNew(() => {
+                    // Process archiver Providers
+                    foreach (var serviceProviderClass in assembly.FindCompatibleTypes<IArchiver>()) {
+                        try {
+                            found = found | RegisterArchiver(serviceProviderClass.Create<IArchiver>(), asmVersion, request);
+                        } catch {
+                            // ignore stuff that doesn't load.
+                        }
+                    }
+                }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
+
+                var t4 = Task.Factory.StartNew(() => {
+                    // Process downloader Providers
+                    foreach (var serviceProviderClass in assembly.FindCompatibleTypes<IDownloader>()) {
+                        try {
+                            found = found | RegisterDownloader(serviceProviderClass.Create<IDownloader>(), asmVersion, request);
+                        } catch {
+                            // ignore stuff that doesn't load`
+                        }
+                    }
+                }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
+
+                t1.Wait();
+                t2.Wait();
+                t3.Wait();
+                t4.Wait();
+            } catch (Exception e) {
+                e.Dump();
+            }
+            return found;
+        }
+
+        private static FourPartVersion GetAssemblyVersion(Assembly asm) {
+            FourPartVersion result = 0;
+
+            var attribute = asm.GetCustomAttributes(typeof (AssemblyVersionAttribute), true).FirstOrDefault() as AssemblyVersionAttribute;
+            if (attribute != null) {
+                result = attribute.Version;
+            }
+
+            if (result == 0) {
+                // what? No assembly version?
+                // fallback to the file version of the assembly
+                var assemblyLocation = asm.Location;
+                if (!string.IsNullOrWhiteSpace(assemblyLocation) && File.Exists(assemblyLocation)) {
+                    result = FileVersionInfo.GetVersionInfo(assemblyLocation);
+                    if (result == 0) {
+                        // no file version either?
+                        // use the date I guess.
+                        try {
+                            result = new FileInfo(assemblyLocation).LastWriteTime;
+                        } catch {
+                        }
+                    }
+                }
+
+                if (result == 0) {
+                    // still no version? 
+                    // I give up. call it 0.0.0.1
+                    result = "0.0.0.1";
+                }
+            }
+            return result;
+        }
+
+        private bool RegisterPackageProvider(IPackageProvider provider, FourPartVersion asmVersion, IRequest request) {
+            try {
+                FourPartVersion ver = provider.GetProviderVersion();
+                var version = ver == 0 ? asmVersion : ver;
+                var name = provider.GetPackageProviderName();
+
+                lock (_packageProviders) {
+                    if (_packageProviders.ContainsKey(name)) {
+                        if (version > _packageProviders[name].Version) {
+                            // remove the old provider first.
+                            // todo: this won't remove the plugin domain and unload the code yet
+                            // we'll have to do that later.
+
+                            _packageProviders.Remove(name);
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    request.Debug("Loading provider {0}".format(name, provider.GetPackageProviderName()));
+                    provider.InitializeProvider(request);
+                    _packageProviders.AddOrSet(name, new PackageProvider(provider) {
+                        Version = version
+                    }).Initialize(request);
+                }
+                return true;
+            } catch (Exception e) {
+                e.Dump();
+            }
+            return false;
+        }
+
+        private bool RegisterArchiver(IArchiver provider, FourPartVersion asmVersion, IRequest request) {
+            try {
+                FourPartVersion ver = provider.GetProviderVersion();
+                var version = ver == 0 ? asmVersion : ver;
+                var name = provider.GetArchiverName();
+
+                lock (Archivers) {
+                    if (Archivers.ContainsKey(name)) {
+                        if (version > Archivers[name].Version) {
+                            // remove the old provider first.
+                            // todo: this won't remove the plugin domain and unload the code yet
+                            // we'll have to do that later.
+
+                            Archivers.Remove(name);
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    request.Debug("Loading Archiver {0}".format(name, provider.GetArchiverName()));
+                    provider.InitializeProvider(request);
+                    Archivers.AddOrSet(name, new Archiver(provider) {
+                        Version = version
+                    }).Initialize(request);
+                }
+                return true;
+            } catch (Exception e) {
+                e.Dump();
+            }
+            return false;
+        }
+
+        private bool RegisterDownloader(IDownloader provider, FourPartVersion asmVersion, IRequest request) {
+            try {
+                FourPartVersion ver = provider.GetProviderVersion();
+                var version = ver == 0 ? asmVersion : ver;
+                var name = provider.GetDownloaderName();
+
+                lock (Downloaders) {
+                    if (Downloaders.ContainsKey(name)) {
+                        if (version > Downloaders[name].Version) {
+                            // remove the old provider first.
+                            // todo: this won't remove the plugin domain and unload the code yet
+                            // we'll have to do that later.
+
+                            Downloaders.Remove(name);
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    request.Debug("Loading Downloader {0}".format(name, provider.GetDownloaderName()));
+                    provider.InitializeProvider(request);
+                    Downloaders.AddOrSet(name, new Downloader(provider) {
+                        Version = version
+                    }).Initialize(request);
+                }
+                return true;
+            } catch (Exception e) {
+                e.Dump();
+            }
+            return false;
+        }
+
+        internal bool RegisterProvidersViaMetaProvider(IMetaProvider provider, FourPartVersion asmVersion, IRequest request) {
+            var found = false;
+            var metaProviderName = provider.GetMetaProviderName();
+            FourPartVersion metaProviderVersion = provider.GetProviderVersion();
+
+            if (!_metaProviders.ContainsKey(metaProviderName)) {
+                // Meta Providers can't be replaced at this point
+                _metaProviders.AddOrSet(metaProviderName, provider);
+            }
+
+            try {
+                provider.InitializeProvider(request);
+                var metaProvider = provider;
+                provider.GetProviderNames().ParallelForEach(name => {
+                    // foreach (var name in provider.GetProviderNames()) {
+                    var instance = metaProvider.CreateProvider(name);
+                    if (instance != null) {
+                        // check if it's a Package Provider
+                        if (typeof (IPackageProvider).CanDynamicCastFrom(instance)) {
+                            try {
+                                found = found | RegisterPackageProvider(instance.As<IPackageProvider>(), asmVersion, request);
+                            } catch (Exception e) {
+                                e.Dump();
+                            }
+                        }
+
+                        // check if it's a Services Provider
+                        if (typeof (IArchiver).CanDynamicCastFrom(instance)) {
+                            try {
+                                found = found | RegisterArchiver(instance.As<IArchiver>(), asmVersion, request);
+                            } catch (Exception e) {
+                                e.Dump();
+                            }
+                        }
+
+                        if (typeof (IDownloader).CanDynamicCastFrom(instance)) {
+                            try {
+                                found = found | RegisterDownloader(instance.As<IDownloader>(), asmVersion, request);
+                            } catch (Exception e) {
+                                e.Dump();
+                            }
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                e.Dump();
+            }
+            return found;
         }
     }
 }

@@ -95,32 +95,12 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         private static bool DoSignaturesMatchAcceptably(MethodInfo member, MethodInfo candidate) {
-            return candidate.GetParameterTypes().SequenceEqual(member.GetParameterTypes(), AssignableTypeComparer.Instance) && (member.ReturnType == candidate.ReturnType || member.ReturnType.IsAssignableFrom(candidate.ReturnType) || member.ReturnType == typeof(void) );
+            return candidate.GetParameterTypes().SequenceEqual(member.GetParameterTypes(), AssignableTypeComparer.Instance) && (AssignableTypeComparer.IsAssignableOrCompatible(member.ReturnType, candidate.ReturnType) || member.ReturnType == typeof(void));
         }
 
-#if THINKING_OUTLOUD
-        original function:
-
-        IAsyncEnumerable<string>  UnpackArchive(string filename, string folder, IRequestObject request) ;
-
-        ok for client representation:
-            object UnpackArchive(string filename, string folder, IRequestObject request);
-            
-        IMyAsyncEnumerable<string> UnpackArchive(string filename, string folder, IRequestObject request);
-        
-        is( NEW_RETURN_TYPE assignable?) -> No
-        is( NEW_RETURN_TYPE not sealed/static ) -> YES
-            is( NEW_RETURN_TYPE duckable to ORIGINAL_RETURN_TYPE ) -> YES
-
-#endif
 
         internal static MethodInfo[] GetPublicMethods(this Type type) {
-            return _methodCache.GetOrAdd(type, () => {
-                if (type != null) {
-                    return type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
-                }
-                return new MethodInfo[0];
-            });
+            return _methodCache.GetOrAdd(type, () => type != null ? type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance) : new MethodInfo[0]);
         }
 
         internal static MethodInfo[] GetPublicMethods(this Type[] types) {
@@ -128,10 +108,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         internal static IEnumerable<FieldInfo> GetPublicFields(this Type type) {
-            if (type != null) {
-                return type.GetFields(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public);
-            }
-            return Enumerable.Empty<FieldInfo>();
+            return type != null ? type.GetFields(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public) : Enumerable.Empty<FieldInfo>();
         }
 
         internal static FieldInfo[] GetPublicDelegateFields(this Type type) {
@@ -143,10 +120,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         internal static IEnumerable<PropertyInfo> GetPublicProperties(this Type type) {
-            if (type != null) {
-                return type.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public);
-            }
-            return Enumerable.Empty<PropertyInfo>();
+            return type != null ? type.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public) : Enumerable.Empty<PropertyInfo>();
         }
 
         private static IEnumerable<MethodInfo> DisambiguateMethodsBySignature(params IEnumerable<MethodInfo>[] setsOfMethods) {
@@ -202,7 +176,11 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         internal static ConstructorInfo GetDefaultConstructor(this Type t) {
-            return t.GetConstructor(_emptyTypes);
+            try {
+                return t.GetConstructor(_emptyTypes);
+            } catch {
+            }
+            return null;
         }
 
         internal static string ToSignatureString(this MethodInfo method) {
@@ -243,6 +221,12 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return imiMethodInfo == null ? (s) => true : actualInstance.CreateProxiedDelegate<Func<string, bool>>(imiMethodInfo);
         }
 
+        /// <summary>
+        /// This extension uses the DuckTyper to transform an object into a given interface or type.
+        /// </summary>
+        /// <typeparam name="TInterface"></typeparam>
+        /// <param name="instance"></param>
+        /// <returns></returns>
         public static TInterface As<TInterface>(this object instance) {
             if (typeof (TInterface).IsDelegate()) {
                 // find a function in this object that matches the delegate that we are given
@@ -279,15 +263,19 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 return (TInterface)(object)typeof (TInterface).CreateEmptyDelegate();
                 // throw new Exception("Delegate '{0}' not matched in object.".format(typeof (TInterface).NiceName()));
             }
-            return DynamicInterface.Create<TInterface>(instance);
+            return DynamicInterface.DynamicCast<TInterface>(instance);
         }
 
         public static TInterface Extend<TInterface>(this object obj, params object[] objects) {
-            return DynamicInterface.Create<TInterface>(objects, obj);
+            return DynamicInterface.DynamicCast<TInterface>(objects, obj);
         }
 
         public static bool IsDelegate(this Type t) {
             return t.BaseType == typeof (MulticastDelegate);
+        }
+
+        public static bool IsIEnumerableT(this Type t) {
+            return t.IsConstructedGenericType && t.GetGenericTypeDefinition() == typeof (IEnumerable<>);
         }
 
         public static IEnumerable<Type> CreatableTypes(this Assembly assembly) {

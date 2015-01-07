@@ -65,7 +65,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         /// <param name="objects">the overriding objects (may be anonymous objects with Delegates, or an object with methods)</param>
         /// <returns></returns>
         public static Object Extend(this object obj, Type tInterface, params object[] objects) {
-            return DynamicInterface.Create(tInterface, objects, obj);
+            throw new NotImplementedException("If this is used, fix it. if not, delete it.");
         }
 
         // more extensions

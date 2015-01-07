@@ -89,7 +89,7 @@
     <Compile Include="Plugin\DynamicTypeExtensions.cs" />
     <Compile Include="Plugin\FluentIlExtensions.cs" />
     <Compile Include="Plugin\PrivateProxy.cs" />
-    <Compile Include="Plugin\ProxyClass.cs" />
+    <Compile Include="Plugin\DynamicType.cs" />
     <Compile Include="Plugin\RequiredAttribute.cs" />
     <Compile Include="Extensions\DelegateExtensions.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />

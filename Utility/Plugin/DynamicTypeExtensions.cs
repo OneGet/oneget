@@ -19,6 +19,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
+    using System.Security.Cryptography;
     using Extensions;
 
     internal static class DynamicTypeExtensions {
@@ -58,18 +59,15 @@ namespace Microsoft.OneGet.Utility.Plugin {
             var il = dynamicType.CreateMethod(method);
             // the target object has a method that matches.
             // let's use that.
-            
-            LocalBuilder ret;
-            LocalBuilder exc;
+
             var hasReturn = method.ReturnType != typeof (void);
             var hasOue = onUnhandledException != null;
 
-            Label exit = il.DefineLabel();
-            Label setDefaultReturn = il.DefineLabel();
+            var exit = il.DefineLabel();
+            var setDefaultReturn = il.DefineLabel();
 
-            
-            ret = hasReturn ? il.DeclareLocal(method.ReturnType) : null;
-            exc = hasOue ? il.DeclareLocal(typeof (Exception)) : null;
+            var ret = hasReturn ? il.DeclareLocal(method.ReturnType) : null;
+            var exc = hasOue ? il.DeclareLocal(typeof (Exception)) : null;
         
 
             il.BeginExceptionBlock();
@@ -96,13 +94,28 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 }
             }
 
-
+            // call the actual method implementation
             il.CallVirutal(instanceMethod);
+
             if (hasReturn) {
-                il.StoreLocation(ret.LocalIndex);
+                // copy the return value in the return 
+                // check to see if we need to ducktype the return value here.
+                if (method.ReturnType.IsAssignableFrom(instanceMethod.ReturnType)) {
+                    // it can store it directly.
+                } else {
+                    // it doesn't assign directly, let's ducktype it.
+                    if (instanceMethod.ReturnType.IsPrimitive) {
+                        il.Emit(OpCodes.Box,instanceMethod.ReturnType);
+                    } 
+                    il.Call(AsMethod.MakeGenericMethod(method.ReturnType));
+                }
+                il.StoreLocation(ret);
             } else {
+
+                // this method isn't returning anything.
                 if (instanceMethod.ReturnType != typeof (void)) {
-                    // pop the return value beacuse the generated method is void
+                    // pop the return value beacuse the generated method is void and the 
+                    // method we called actually gave us a result.
                     il.Emit(OpCodes.Pop);
                 }
             }
@@ -124,10 +137,12 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
             il.EndExceptionBlock();
 
+            // if we can't return the appropriate value, we're returning default(T)
             il.MarkLabel(setDefaultReturn);
             SetDefaultReturnValue(il, method.ReturnType);
             il.Return();
 
+            // looks like we're returning the value that we got back from the implementation.
             il.MarkLabel(exit);
             if (hasReturn) {
                 il.LoadLocation(ret.LocalIndex);

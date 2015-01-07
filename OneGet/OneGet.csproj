@@ -43,12 +43,6 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Builtin\ArpProvider.cs" />
-    <Compile Include="Builtin\BootstrapRequest.cs" />
-    <Compile Include="Builtin\BootstrapProvider.cs" />
-    <Compile Include="Builtin\WebDownloader.cs" />
-    <Compile Include="Builtin\SwidProvider.cs" />
-    <Compile Include="Builtin\VSixProvider.cs" />
     <Compile Include="ErrorCategory.cs" />
     <Compile Include="Implementation\ActionRequestObject.cs" />
     <Compile Include="Implementation\EnumerableRequestObject.cs" />
@@ -94,7 +88,6 @@
     <Compile Include="Implementation\Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PackageManager.cs" />
-    <Compile Include="Implementation\Loader.cs" />
     <Compile Include="Providers\IProvider.cs" />
     <Compile Include="$(SolutionDir)assembly-version.cs" />
     <Compile Include="Resources\Messages.Designer.cs">
@@ -132,26 +125,28 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  
   <PropertyGroup>
     <PowershellPostBuildEvent>
     echo testing
     </PowershellPostBuildEvent>
   </PropertyGroup>
-  
   <UsingTask TaskName="PowerShell" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
-    <ParameterGroup><ScriptBlock ParameterType="System.String" Required="true" /></ParameterGroup>
-    <Task><Reference Include="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll"/><Code Type="Class" Language="cs"><![CDATA[
+    <ParameterGroup>
+      <ScriptBlock ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll" />
+      <Code Type="Class" Language="cs"><![CDATA[
     public class PowerShell : Microsoft.Build.Tasks.Exec {
         public string ScriptBlock {set { Command = string.Format( "powershell \"Invoke-Command -ScriptBlock {{ $errorActionPreference='Stop'; {0} ; exit $LASTEXITCODE }} \"",  value.Replace("\r\n",";").Replace("\n",";").Replace("\r",";")); } }
-    }]]></Code></Task>
+    }]]></Code>
+    </Task>
   </UsingTask>
-
   <Target Name="AfterBuild">
-    <PowerShell  ScriptBlock="$(PowershellPostBuildEvent)" />
+    <PowerShell ScriptBlock="$(PowershellPostBuildEvent)" />
   </Target>
-  
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

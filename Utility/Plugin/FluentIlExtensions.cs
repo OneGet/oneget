@@ -58,8 +58,16 @@ namespace Microsoft.OneGet.Utility.Plugin {
             il.EmitLoadLocation(location);
         }
 
+        public static void LoadLocation(this ILGenerator il, LocalBuilder local) {
+            il.EmitLoadLocation(local.LocalIndex);
+        }
+
         public static void StoreLocation(this ILGenerator il, int location) {
             il.EmitStoreLocation(location);
+        }
+
+        public static void StoreLocation(this ILGenerator il, LocalBuilder local) {
+            il.EmitStoreLocation(local.LocalIndex);
         }
 
         public static void LoadArgument(this ILGenerator il, int location) {

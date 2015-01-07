@@ -55,6 +55,7 @@
     <Compile Include="Utility\DynamicInterface\ParameterCoercion\AdvancedDynamicInterfaceTests.cs" />
     <Compile Include="Core\BootstrapTests.cs" />
     <Compile Include="Support\Console.cs" />
+    <Compile Include="Utility\DynamicInterface\ReturnTypeCoercion\RtTests.cs" />
     <Compile Include="Utility\DynamicInterface\Simple\DynamicInterfaceTest.cs" />
     <Compile Include="PowerShell\DynamicPowerShellTests.cs" />
     <Compile Include="Utility\Misc\DynamicTests.cs" />

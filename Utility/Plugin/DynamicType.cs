@@ -22,8 +22,9 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using Collections;
     using Extensions;
 
-    internal class ProxyClass {
+    internal class DynamicType {
         private static int _typeCounter = 1;
+        private static readonly Dictionary<string, DynamicType> _proxyClassDefinitions = new Dictionary<string, DynamicType>();
 
         private readonly TypeBuilder _dynamicType;
         private readonly HashSet<string> _implementedMethods = new HashSet<string>();
@@ -34,10 +35,19 @@ namespace Microsoft.OneGet.Utility.Plugin {
         private string _fullpath;
         private string _proxyName;
         private Type _type;
-
         private MethodInfo OnUnhandledException;
 
-        internal ProxyClass(Type interfaceType, OrderedDictionary<Type, List<MethodInfo, MethodInfo>> methods, List<Delegate, MethodInfo> delegates, List<MethodInfo> stubs ) {
+        internal static object Create(Type tInterface, OrderedDictionary<Type, List<MethodInfo, MethodInfo>> instanceMethods, List<Delegate, MethodInfo> delegateMethods, List<MethodInfo> stubMethods, List<Type, object> usedInstances) {
+            // now we can calculate the key based on the content of the *Methods collections
+            var key = tInterface.FullName + ":::" + instanceMethods.Keys.Select(each => each.FullName + "." + instanceMethods[each].Select(mi => mi.Value.ToSignatureString()).JoinWithComma()).JoinWith(";\r\n") +
+                      "::" + delegateMethods.Select(each => each.GetType().FullName).JoinWith(";\r\n") +
+                      "::" + stubMethods.Select(mi => mi.ToSignatureString()).JoinWithComma();
+            // + "!->" + (onUnhandledExceptionMethod == null ? (onUnhandledExceptionDelegate == null ? "GenerateOnUnhandledException" : onUnhandledExceptionDelegate.ToString()) : onUnhandledExceptionMethod.ToSignatureString());
+
+            return _proxyClassDefinitions.GetOrAdd(key, () => new DynamicType(tInterface, instanceMethods, delegateMethods, stubMethods)).CreateInstance(usedInstances,delegateMethods);
+        }
+
+        private DynamicType(Type interfaceType, OrderedDictionary<Type, List<MethodInfo, MethodInfo>> methods, List<Delegate, MethodInfo> delegates, List<MethodInfo> stubs ) {
             var counter = 0;
         
             _dynamicType = DefineDynamicType(interfaceType);

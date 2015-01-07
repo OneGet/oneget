@@ -12,17 +12,15 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Builtin {
+namespace Microsoft.OneGet.Providers {
     using System;
     using System.Collections.Generic;
-    using System.Configuration;
     using System.IO;
     using System.Linq;
+    using Api;
     using Implementation;
-    using Packaging;
     using Utility.Async;
     using Utility.Extensions;
-    using Utility.Platform;
     using Utility.Plugin;
     using Utility.Xml;
     using IRequestObject = System.Object;
@@ -58,55 +56,48 @@ namespace Microsoft.OneGet.Builtin {
             return "Bootstrap";
         }
 
-        public void InitializeProvider(IRequestObject requestObject) {
+        public void InitializeProvider(BootstrapRequest request) {
             // we should go find out what's available once here just to make sure that 
             // we have a list 
             try {
-                PackageManager._instance.BootstrappableProviderNames = GetProviders(requestObject.As<BootstrapRequest>()).Select(provider => provider.Attributes["name"]).ToArray();
+                PackageManager._instance.BootstrappableProviderNames = GetProviders(request).Select(provider => provider.Attributes["name"]).ToArray();
             } catch {
                 
             }
         }
 
-        public void GetFeatures(IRequestObject requestObject) {
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+        public void GetFeatures(BootstrapRequest request) {
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
-            using (var request = requestObject.As<Request>()) {
-                request.Debug("Calling 'Bootstrap::GetFeatures'");
-                foreach (var feature in _features) {
-                    request.Yield(feature);
-                }
+            request.Debug("Calling 'Bootstrap::GetFeatures'");
+            foreach (var feature in _features) {
+                request.Yield(feature);
             }
         }
 
-        public void GetDynamicOptions(string category, IRequestObject requestObject) {
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+        public void GetDynamicOptions(string category, BootstrapRequest request) {
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
-            using (var request = requestObject.As<BootstrapRequest>()) {
-                try {
-                    request.Debug("Calling 'Bootstrap::GetDynamicOptions ({0})'", category);
+            request.Debug("Calling 'Bootstrap::GetDynamicOptions ({0})'", category);
 
-                    switch ((category ?? string.Empty).ToLowerInvariant()) {
-                        case "package":
-                            // request.YieldDynamicOption( "ForceCheck", OptionType.Switch, false);
+            switch ((category ?? string.Empty).ToLowerInvariant()) {
+                case "package":
+                    // request.YieldDynamicOption( "ForceCheck", OptionType.Switch, false);
 
-                            break;
+                    break;
 
-                        case "source":
-                            break;
+                case "source":
+                    break;
 
-                        case "install":
-                            request.YieldDynamicOption("DestinationPath", OptionType.Folder.ToString(), true);
-                            break;
-                    }
-                } catch {
-                    // this makes it ignore new OptionCategories that it doesn't know about.
-                }
+                case "install":
+                    request.YieldDynamicOption("DestinationPath", "Folder", true);
+                    break;
             }
+
         }
 
         private IEnumerable<DynamicElement> GetProviders(BootstrapRequest request) {
@@ -129,65 +120,61 @@ namespace Microsoft.OneGet.Builtin {
         /// <param name="minimumVersion"></param>
         /// <param name="maximumVersion"></param>
         /// <param name="id"></param>
-        /// <param name="requestObject"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
-        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequestObject requestObject) {
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, BootstrapRequest request) {
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
-            using (var request = requestObject.As<BootstrapRequest>()) {
-                request.Debug("Calling 'Bootstrap::FindPackage'");
 
-                var master = request.DownloadSwidtag(_urls);
-                if (master == null) {
-                    request.Warning(Constants.Messages.ProviderSwidtagUnavailable);
-                    return;
-                }
+            request.Debug("Calling 'Bootstrap::FindPackage'");
 
-                if (name != null && name.EqualsIgnoreCase("oneget")) {
-                    // they are looking for OneGet itself.
-                    // future todo: let oneget update itself.
-                    return;
-                }
-
-                // they are looking for a provider 
-                if (string.IsNullOrWhiteSpace(name)) {
-                    // return all providers 
-                    var providers = request.GetProviders(master);
-                    foreach (var p in providers) {
-                        request.YieldFromSwidtag(p, requiredVersion, minimumVersion, maximumVersion, name);
-                    }
-                } else {
-                    // return just the one.
-                    var provider = request.GetProvider(master, name);
-                    if (provider != null) {
-                        request.YieldFromSwidtag(provider, requiredVersion, minimumVersion, maximumVersion, name);
-                    }
-                }
-
-                // return any matches in the name
+            var master = request.DownloadSwidtag(_urls);
+            if (master == null) {
+                request.Warning(Constants.Messages.ProviderSwidtagUnavailable);
+                return;
             }
+
+            if (name != null && name.EqualsIgnoreCase("oneget")) {
+                // they are looking for OneGet itself.
+                // future todo: let oneget update itself.
+                return;
+            }
+
+            // they are looking for a provider 
+            if (string.IsNullOrWhiteSpace(name)) {
+                // return all providers 
+                var providers = request.GetProviders(master);
+                foreach (var p in providers) {
+                    request.YieldFromSwidtag(p, requiredVersion, minimumVersion, maximumVersion, name);
+                }
+            } else {
+                // return just the one.
+                var provider = request.GetProvider(master, name);
+                if (provider != null) {
+                    request.YieldFromSwidtag(provider, requiredVersion, minimumVersion, maximumVersion, name);
+                }
+            }
+
+            // return any matches in the name
+
         }
 
-        public void GetInstalledPackages(string name, IRequestObject requestObject) {
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+        public void GetInstalledPackages(string name, BootstrapRequest request) {
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
 
-            using (var request = requestObject.As<BootstrapRequest>()) {
-                request.Debug("Calling 'Bootstrap::GetInstalledPackages'");
-                // return all the package providers as packages
-            }
+            request.Debug("Calling 'Bootstrap::GetInstalledPackages'");
+            // return all the dynamic package providers as packages
         }
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        public void DownloadPackage(string fastPath, string location, IRequestObject requestObject) {
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+        public void DownloadPackage(string fastPath, string location, BootstrapRequest request) {
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
-            using (var request = requestObject.As<BootstrapRequest>()) {
-                request.Debug("Calling 'Bootstrap::DownloadPackage'");
-            }
+            request.Debug("Calling 'Bootstrap::DownloadPackage'");
         }
 
         private void InstallProviderFromInstaller(DynamicElement provider, string fastPath, BootstrapRequest request) {
@@ -234,7 +221,7 @@ namespace Microsoft.OneGet.Builtin {
                     if (request.Install(tmpFile, "", request)) {
                         // it installed ok!
                         request.YieldFromSwidtag(provider, null, null, null, fastPath);
-                        PackageManager._instance.LoadProviders(request);
+                        PackageManager._instance.LoadProviders(request.As<IRequest>());
                     } else {
                         request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.FailedProviderBootstrap, fastPath);
                     }
@@ -273,6 +260,8 @@ namespace Microsoft.OneGet.Builtin {
 
                 try {
                     var uri = new Uri(href);
+                    // @futuregarrett this may die?
+                    // todo make sure this works.
                     var providers = request.SelectProviders(uri.Scheme, request).ToArray();
                     if (providers.Length == 0) {
                         // no known provider by that name right now.
@@ -431,43 +420,42 @@ namespace Microsoft.OneGet.Builtin {
             }
         }
 
-        public void InstallPackage(string fastPath, IRequestObject requestObject) {
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+        public void InstallPackage(string fastPath, BootstrapRequest request) {
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
             // ensure that mandatory parameters are present.
-            using (var request = requestObject.As<BootstrapRequest>()) {
-                request.Debug("Calling 'Bootstrap::InstallPackage'");
+            request.Debug("Calling 'Bootstrap::InstallPackage'");
 
-                // verify the package integrity (ie, check if it's digitally signed before installing)
+            // verify the package integrity (ie, check if it's digitally signed before installing)
 
-                var master = request.DownloadSwidtag(_urls);
-                if (master == null) {
-                    request.Warning(Constants.Messages.ProviderSwidtagUnavailable);
+            var master = request.DownloadSwidtag(_urls);
+            if (master == null) {
+                request.Warning(Constants.Messages.ProviderSwidtagUnavailable);
+                return;
+            }
+
+            var provider = request.GetProvider(master, fastPath);
+            if (provider != null) {
+                // install the 'package'
+
+                if (provider.XPath("/swid:SoftwareIdentity/swid:Meta[@providerType = 'assembly']").Any()) {
+                    InstallAssemblyProvider(provider, fastPath, request);
                     return;
                 }
 
-                var provider = request.GetProvider(master, fastPath);
-                if (provider != null) {
-                    // install the 'package'
-
-                    if (provider.XPath("/swid:SoftwareIdentity/swid:Meta[@providerType = 'assembly']").Any()) {
-                        InstallAssemblyProvider(provider,fastPath, request);
-                        return;
-                    }
-
-                    if (provider.XPath("/swid:SoftwareIdentity/swid:Meta[@providerType = 'psmodule']").Any()) {
-                        InstallModuleProvider(provider, fastPath, request);
-                        return;
-                    }
-
-                    
-                    InstallProviderFromInstaller(provider,fastPath,request);
-
-                } else {
-                    request.Error(ErrorCategory.InvalidData, fastPath, Constants.Messages.UnableToResolvePackage, fastPath);
+                if (provider.XPath("/swid:SoftwareIdentity/swid:Meta[@providerType = 'psmodule']").Any()) {
+                    InstallModuleProvider(provider, fastPath, request);
+                    return;
                 }
+
+
+                InstallProviderFromInstaller(provider, fastPath, request);
+
+            } else {
+                request.Error(ErrorCategory.InvalidData, fastPath, Constants.Messages.UnableToResolvePackage, fastPath);
             }
+
         }
     }
 }

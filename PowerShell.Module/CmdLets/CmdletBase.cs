@@ -313,10 +313,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
                 return ShouldContinue(FormatMessageString(Constants.Messages.QueryBootstrap, providerName),
                     FormatMessageString(Constants.Messages.BootstrapProvider,
-                        requestor.Is() ?
+                        !string.IsNullOrWhiteSpace(requestor) ?
                             FormatMessageString(Constants.Messages.BootstrapProviderProviderRequested, requestor, providerName, providerVersion) :
                             FormatMessageString(Constants.Messages.BootstrapProviderUserRequested, providerName, providerVersion),
-                        providerType.Is() && providerType.Equals(Constants.AssemblyProviderType) ?
+                        !string.IsNullOrWhiteSpace(providerType) && providerType.Equals(Constants.AssemblyProviderType) ?
                             FormatMessageString(Constants.Messages.BootstrapManualAssembly, providerName, location, destination) :
                             FormatMessageString(Constants.Messages.BootstrapManualInstall, providerName, location))).Result;
             } catch (Exception e) {

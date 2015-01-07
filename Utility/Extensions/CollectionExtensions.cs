@@ -17,6 +17,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using System.Threading.Tasks;
     using Collections;
 
@@ -189,6 +190,20 @@ namespace Microsoft.OneGet.Utility.Extensions {
                     action(items.FirstOrDefault());
                 }
             }
+        }
+
+        private static readonly MethodInfo _castMethod = typeof(Enumerable).GetMethod("Cast");
+        private static readonly MethodInfo _toArrayMethod = typeof(Enumerable).GetMethod("ToArray");
+        
+        private static readonly IDictionary<Type, MethodInfo> _castMethods = new Dictionary<Type, MethodInfo>();
+        private static readonly IDictionary<Type, MethodInfo> _toArrayMethods = new Dictionary<Type, MethodInfo>();
+        public static object ToIEnumerableT(this IEnumerable<object> enumerable, Type elementType) {
+            lock (elementType) {
+                return _castMethods.GetOrAdd(elementType, () => _castMethod.MakeGenericMethod(elementType)).Invoke(null, new object[] {enumerable});
+            }
+        }
+        public static object ToArrayT(this IEnumerable<object> enumerable, Type elementType) {
+            return _toArrayMethods.GetOrAdd(elementType, () => _toArrayMethod.MakeGenericMethod(elementType)).Invoke(null, new[] { enumerable.ToIEnumerableT(elementType) });
         }
     }
 
