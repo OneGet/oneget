@@ -29,9 +29,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
         }
 
-        public abstract bool YieldResult(Request r);
+        public abstract bool YieldResult(PsRequest r);
 
-        protected virtual bool YieldDetails(Request r) {
+        protected virtual bool YieldDetails(PsRequest r) {
             if (_details != null && _details.Count > 0) {
                 // we need to send this back as a set of key/path & value  pairs.
                 return _details.Flatten().All(kvp => r.YieldKeyValuePair(kvp.Key, kvp.Value));

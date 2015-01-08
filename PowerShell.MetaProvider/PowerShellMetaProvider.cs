@@ -23,11 +23,11 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System.Management.Automation;
     using System.Reflection;
     using System.Threading.Tasks;
+    using Api;
     using Utility.Extensions;
     using Utility.Plugin;
     using Utility.PowerShell;
-    using IRequestObject = System.Object;
-
+    
     /// <summary>
     ///     A OneGet MetaProvider class that loads Providers implemented as a PowerShell Module.
     ///     It connects the functions in the PowerShell module to the expected functions that the
@@ -192,7 +192,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             return Enumerable.Empty<string>();
         }
 
-        internal IEnumerable<string> ScanForModules(Request request) {
+        internal IEnumerable<string> ScanForModules(PsRequest request) {
             // two places we search for modules 
             // 1. in this assembly's folder, look for all psd1 and psm1 files. 
             // 
@@ -232,7 +232,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
         }
 
-        private IEnumerable<string> AlternativeModuleScan(Request request) {
+        private IEnumerable<string> AlternativeModuleScan(PsRequest request) {
             var psModulePath = Environment.GetEnvironmentVariable("PSModulePath") ?? "";
               
             IEnumerable<string> paths = psModulePath.Split(new char[]{';'} , StringSplitOptions.RemoveEmptyEntries);
@@ -275,7 +275,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
         }
 
-        private PowerShellPackageProvider Create(Request req, string psModule) {
+        private PowerShellPackageProvider Create(PsRequest req, string psModule) {
             req.Debug("Creating dynamic ps object for [{0}]", psModule);
             dynamic ps = new DynamicPowershell();
             req.Debug("Done Creating dynamic ps object for [{0}]", psModule);
@@ -313,28 +313,27 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             return null;
         }
 
-        public void InitializeProvider(IRequestObject requestObject) {
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
+        public void InitializeProvider(PsRequest request) {
+            if (request == null) {
+                throw new ArgumentNullException("request");
             }
-
-            var req =requestObject.As<Request>();
-            req.Debug("Initializing PowerShell MetaProvider");
+            
+            request.Debug("Initializing PowerShell MetaProvider");
 
             // to do : get modules to load (from configuration ?)
-            var modules = ScanForModules(req).ToArray();
+            var modules = ScanForModules(request).ToArray();
 
-            req.Debug("Scanned for PowerShell Provider Modules [Count: {0}]",modules.Length);
+            request.Debug("Scanned for PowerShell Provider Modules [Count: {0}]",modules.Length);
 
             // try to create each module at least once.
             modules.ParallelForEach(modulePath => {
-                req.Debug("Attempting to load PowerShell Provider Module [{0}]", modulePath);
-                var provider = Create(req,modulePath);
-                req.Debug("Created object for PowerShell Provider Module [{0}]", modulePath);
+                request.Debug("Attempting to load PowerShell Provider Module [{0}]", modulePath);
+                var provider = Create(request,modulePath);
+                request.Debug("Created object for PowerShell Provider Module [{0}]", modulePath);
                 if (provider != null) {
                     
                     if (provider.GetPackageProviderName() != null) {
-                        req.Debug("Actual object for PowerShell Provider Module [{0}]", modulePath);
+                        request.Debug("Actual object for PowerShell Provider Module [{0}]", modulePath);
                         // looks good to me, let's add this to the list of moduels this meta provider can create.
                         _packageProviders.AddOrSet(provider.GetPackageProviderName(), provider);
                     } else {
@@ -342,9 +341,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                         provider = null;
                     }
                 }
-                req.Debug("Done That one [{0}]", modulePath);
+                request.Debug("Done That one [{0}]", modulePath);
             });
-            req.Debug("Loaded PowerShell Provider Modules ");
+            request.Debug("Loaded PowerShell Provider Modules ");
         }
     }
 }

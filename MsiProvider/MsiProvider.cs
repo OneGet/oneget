@@ -19,7 +19,7 @@ namespace Microsoft.OneGet.Msi {
     using System.Linq;
     using Deployment.WindowsInstaller;
     using Deployment.WindowsInstaller.Package;
-    using Sdk;
+    using Implementation;
     using Utility.Collections;
     using Utility.Extensions;
 
@@ -87,7 +87,7 @@ namespace Microsoft.OneGet.Msi {
             switch ((category ?? string.Empty).ToLowerInvariant()) {
                 case "install":
                     // options required for install/uninstall/getinstalledpackages
-                    request.YieldDynamicOption("AdditionalArguments", Constants.OptionType.StringArray.ToString(), false);
+                    request.YieldDynamicOption("AdditionalArguments", "StringArray", false);
                     break;
 
                 case "provider":
@@ -314,7 +314,7 @@ namespace Microsoft.OneGet.Msi {
                        }
                        */
             if (request.YieldSoftwareIdentity(filename, package.Property["ProductName"], package.Property["ProductVersion"], "multipartnumeric", package.Property["Summary"], filename, filename, filename, Path.GetFileName(filename))) {
-                var trusted = request.IsSignedAndTrusted(filename, request);
+                var trusted = request.ProviderServices.IsSignedAndTrusted(filename, request);
 
                 if (!request.YieldSoftwareMetadata(filename, "FromTrustedSource", trusted.ToString())) {
                     return false;

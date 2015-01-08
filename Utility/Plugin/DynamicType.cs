@@ -49,7 +49,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         private DynamicType(Type interfaceType, OrderedDictionary<Type, List<MethodInfo, MethodInfo>> methods, List<Delegate, MethodInfo> delegates, List<MethodInfo> stubs ) {
             var counter = 0;
-        
+
             _dynamicType = DefineDynamicType(interfaceType);
 
             OnUnhandledException = interfaceType.GetPublicMethods().FirstOrDefault(each => each.Name == "OnUnhandledException" && each.GetParameterTypes().SequenceEqual(new Type[] {typeof (string), typeof (Exception)}));

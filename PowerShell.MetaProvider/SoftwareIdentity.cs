@@ -56,7 +56,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public bool FromTrustedSource {get; set;}
 
-        public override bool YieldResult(Request r) {
+        public override bool YieldResult(PsRequest r) {
             if (r == null) {
                 throw new ArgumentNullException("r");
             }
@@ -67,7 +67,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         private ArrayList _links;
         private ArrayList _entities;
 
-        protected override bool YieldDetails(Request r) {
+        protected override bool YieldDetails(PsRequest r) {
             if (_details != null && _details.Count > 0) {
                 // we need to send this back as a set of key/path & value  pairs.
                 return _details.Flatten().All(kvp => r.YieldSoftwareMetadata(FastPackageReference,kvp.Key, kvp.Value));
@@ -75,14 +75,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             return true;
         }
 
-        protected virtual bool YieldLinks(Request r) {
+        protected virtual bool YieldLinks(PsRequest r) {
             if( _links != null ) {
                 return _links.OfType<Link>().All(link => r.YieldLink(FastPackageReference, link.HRef, link.Relationship, link.MediaType, link.Ownership, link.Use, link.AppliesToMedia, link.Artifact));
             }
             return true;
         }
 
-        protected virtual bool YieldEntities(Request r) {
+        protected virtual bool YieldEntities(PsRequest r) {
             if (_links != null) {
                 return _entities.OfType<Entity>().All(entity => r.YieldEntity(FastPackageReference, entity.Name, entity.RegId, entity.Role, entity.Thumbprint));
             }

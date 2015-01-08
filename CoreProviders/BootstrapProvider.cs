@@ -23,7 +23,6 @@ namespace Microsoft.OneGet.Providers {
     using Utility.Extensions;
     using Utility.Plugin;
     using Utility.Xml;
-    using IRequestObject = System.Object;
 
     public class BootstrapProvider {
         private static readonly string[] _urls = {
@@ -203,7 +202,7 @@ namespace Microsoft.OneGet.Providers {
 
                     request.Debug("Verifying the package");
 
-                    var valid = request.IsSignedAndTrusted(tmpFile, request);
+                    var valid = request.ProviderServices.IsSignedAndTrusted(tmpFile, request);
 
                     if (!valid) {
                         request.Debug("Not Valid file '{0}' => '{1}'", href, tmpFile);
@@ -218,7 +217,7 @@ namespace Microsoft.OneGet.Providers {
 
                     // we have a valid file.
                     // run the installer
-                    if (request.Install(tmpFile, "", request)) {
+                    if (request.ProviderServices.Install(tmpFile, "", request)) {
                         // it installed ok!
                         request.YieldFromSwidtag(provider, null, null, null, fastPath);
                         PackageManager._instance.LoadProviders(request.As<IRequest>());
@@ -262,7 +261,7 @@ namespace Microsoft.OneGet.Providers {
                     var uri = new Uri(href);
                     // @futuregarrett this may die?
                     // todo make sure this works.
-                    var providers = request.SelectProviders(uri.Scheme, request).ToArray();
+                    var providers = request.PackageManagementService.SelectProviders(uri.Scheme, request).ToArray();
                     if (providers.Length == 0) {
                         // no known provider by that name right now.
                         continue;
@@ -372,7 +371,7 @@ namespace Microsoft.OneGet.Providers {
 
                     request.Debug("Verifying the package");
 
-                    var valid = request.IsSignedAndTrusted(tmpFile, request);
+                    var valid = request.ProviderServices.IsSignedAndTrusted(tmpFile, request);
 
                     if (!valid) {
                         request.Debug("Not Valid file '{0}' => '{1}'", href, tmpFile);

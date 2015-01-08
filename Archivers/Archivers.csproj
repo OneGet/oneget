@@ -74,10 +74,7 @@
     <Compile Include="Compression\IUnpackStreamContext.cs" />
     <Compile Include="Compression\OffsetStream.cs" />
     <Compile Include="Compression\SafeNativeMethods.cs" />
-    <Compile Include="Sdk\Constants.cs" />
-    <Compile Include="Sdk\ErrorCategory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Sdk\Request.cs" />
     <Compile Include="Resources\Messages.Designer.cs" />
     <Compile Include="ZipArchiver.cs" />
     <Compile Include="$(SolutionDir)assembly-version.cs" />
@@ -89,6 +86,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Compression\Cab\Errors.resources" />
     <EmbeddedResource Include="Resources\Messages.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OneGet\OneGet.csproj">
+      <Project>{7044b856-6d51-498f-90f9-01f219909f79}</Project>
+      <Name>OneGet</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

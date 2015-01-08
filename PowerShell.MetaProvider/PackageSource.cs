@@ -42,7 +42,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public bool IsRegistered { get; set; }
 
         public bool IsValidated {get; set;}
-        public override bool YieldResult(Request r) {
+        public override bool YieldResult(PsRequest r) {
             if (r == null) {
                 throw new ArgumentNullException("r");
             }

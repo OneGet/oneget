@@ -19,7 +19,7 @@ namespace Microsoft.OneGet.Archivers {
     using System.IO;
     using Compression;
     using Compression.Zip;
-    using Sdk;
+    using Implementation;
 
     public class ZipArchiver {
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {

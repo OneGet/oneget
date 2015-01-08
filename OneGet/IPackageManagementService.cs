@@ -14,8 +14,8 @@
 
 namespace Microsoft.OneGet {
     using System.Collections.Generic;
+    using Api;
     using Implementation;
-    using IRequestObject = System.Object;
 
     /// <summary>
     ///     The current Package Management Service Interface
@@ -26,19 +26,22 @@ namespace Microsoft.OneGet {
     ///     method to dynamically generate a matching implementation at load time.
     /// </summary>
     public interface IPackageManagementService {
+        int Version {get;}
+
         IEnumerable<string> ProviderNames {get;}
 
         IEnumerable<string> AllProviderNames { get; }
 
         IEnumerable<PackageProvider> PackageProviders {get;}
-        bool Initialize(IRequestObject requestObject);
+
+        bool Initialize(IHostApi requestObject);
 
         IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName);
 
         IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
 
-        IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject);
+        IEnumerable<PackageProvider> SelectProviders(string providerName, IHostApi requestObject);
 
-        bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject);
+        bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IHostApi requestObject);
     }
 }

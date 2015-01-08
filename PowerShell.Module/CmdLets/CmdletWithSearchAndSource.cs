@@ -18,6 +18,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
+    using System.Security;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
@@ -75,19 +76,16 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
         */
 
-
-        public override string GetCredentialUsername() {
-            if (Credential != null) {
-                return Credential.UserName;
+        public override string CredentialUsername {
+            get {
+                return Credential != null ? Credential.UserName : null;
             }
-            return null;
         }
 
-        public override string GetCredentialPassword() {
-            if (Credential != null) {
-                return Credential.Password.ToProtectedString("salt");
+        public override  SecureString CredentialPassword {
+            get {
+                return Credential != null ? Credential.Password : null;
             }
-            return null;
         }
 
         public override bool ProcessRecordAsync() {

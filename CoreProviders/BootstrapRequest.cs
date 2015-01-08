@@ -46,7 +46,7 @@ namespace Microsoft.OneGet.Providers {
                 var v = GetValue("DestinationPath");
                 if (string.IsNullOrWhiteSpace(v)) {
                     // use a well-known path.
-                    v = GetKnownFolder("ProviderAssemblyLocation", this);
+                    v = ProviderServices.GetKnownFolder("ProviderAssemblyLocation", this);
                     if (string.IsNullOrWhiteSpace(v)) {
                         return null;
                     }

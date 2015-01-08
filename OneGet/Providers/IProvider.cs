@@ -13,8 +13,8 @@
 //  
 
 namespace Microsoft.OneGet.Providers {
+    using Api;
     using Utility.Plugin;
-    using IRequestObject = System.Object;
 
     public interface IProvider {
         #region declare Provider-interface
@@ -27,20 +27,20 @@ namespace Microsoft.OneGet.Providers {
         /// </summary>
         /// <param name="requestObject">Object implementing some or all IRequest methods</param>
         [Required]
-        void InitializeProvider(IRequestObject requestObject);
+        void InitializeProvider(IRequest requestObject);
 
         /// <summary>
         ///     Gets the features advertized from the provider
         /// </summary>
         /// <param name="requestObject"></param>
-        void GetFeatures(IRequestObject requestObject);
+        void GetFeatures(IRequest requestObject);
 
         /// <summary>
         ///     Gets dynamically defined options from the provider
         /// </summary>
         /// <param name="category"></param>
         /// <param name="requestObject"></param>
-        void GetDynamicOptions(string category, IRequestObject requestObject);
+        void GetDynamicOptions(string category, IRequest requestObject);
 
         /// <summary>
         ///     Allows runtime examination of the implementing class to check if a given method is implemented.

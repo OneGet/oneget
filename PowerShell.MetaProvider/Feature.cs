@@ -30,7 +30,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             _pair = new KeyValuePair<string, string[]>(name, values);
         }
 
-        public override bool YieldResult(Request r) {
+        public override bool YieldResult(PsRequest r) {
             if (r == null) {
                 throw new ArgumentNullException("r");
             }

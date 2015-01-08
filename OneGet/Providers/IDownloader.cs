@@ -14,8 +14,8 @@
 
 namespace Microsoft.OneGet.Providers {
     using System;
+    using Api;
     using Utility.Plugin;
-    using IRequestObject = System.Object;
 
     public interface IDownloader : IProvider {
         /// <summary>
@@ -26,6 +26,6 @@ namespace Microsoft.OneGet.Providers {
         string GetDownloaderName();
 
         [Required]
-        void DownloadFile(Uri remoteLocation, string localFilename, IRequestObject requestObject);
+        void DownloadFile(Uri remoteLocation, string localFilename, IHostApi requestObject);
     }
 }

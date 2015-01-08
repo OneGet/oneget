@@ -149,7 +149,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         // lock is on this instance only
 
-        internal void ReportErrors(Request request, IEnumerable<ErrorRecord> errors) {
+        internal void ReportErrors(PsRequest request, IEnumerable<ErrorRecord> errors) {
             foreach (var error in errors) {
                 request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject == null ? null : error.TargetObject.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
                 if (!string.IsNullOrWhiteSpace(error.ScriptStackTrace)) {
@@ -166,7 +166,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
         }
 
-        internal object CallPowerShell(Request request, params object[] args) {
+        internal object CallPowerShell(PsRequest request, params object[] args) {
             // the lock ensures that we're not re-entrant into the same powershell runspace 
             lock (_lock) {
                 if (!_reentrancyLock.WaitOne(0)) {

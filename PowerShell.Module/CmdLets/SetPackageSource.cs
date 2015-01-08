@@ -18,9 +18,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
+    using Microsoft.OneGet.Api;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.OneGet.Utility.Plugin;
 
     [Cmdlet(VerbsCommon.Set, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.ParameterSets.SourceBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517141")]
     public sealed class SetPackageSource : CmdletWithProvider {
@@ -102,14 +104,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         ///     to implement a given API, if we put in delegates to handle some of the functions
         ///     they will get called instead of the implementation in the current class. ('this')
         /// </summary>
-        private object WithUpdatePackageSource {
+        private IHostApi WithUpdatePackageSource {
             get {
                 return new object[] {
                     new {
                         // override the GetOptionKeys and the GetOptionValues on the fly.
 
                         GetOptionKeys = new Func<IEnumerable<string>>(() => {
-                            return GetOptionKeys().ConcatSingleItem("IsUpdatePackageSource");
+                            return OptionKeys.ConcatSingleItem("IsUpdatePackageSource");
                         }),
 
                         GetOptionValues = new Func<string, IEnumerable<string>>((key) => {
@@ -120,7 +122,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         })
                     },
                     this,
-                };
+                }.As<IHostApi>();
             }
         }
 

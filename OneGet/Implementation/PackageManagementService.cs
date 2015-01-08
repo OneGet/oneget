@@ -32,8 +32,7 @@ namespace Microsoft.OneGet.Implementation {
     using Utility.Plugin;
     using Utility.Versions;
     using Win32;
-    using IRequestObject = System.Object;
-
+    
     /// <summary>
     ///     The Client API is designed for use by installation hosts:
     ///     - OneGet Powershell Cmdlets
@@ -135,14 +134,20 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        public bool Initialize(Object request) {
+        public bool Initialize(IHostApi request) {
             lock (_lockObject) {
                 if (!_initialized) {
-                    LoadProviders(request.As<IRequest>());
+                    LoadProviders(request);
                     _initialized = true;
                 }
             }
             return _initialized;
+        }
+
+        public int Version {
+            get {
+                return Constants.OneGetVersion;
+            }
         }
 
         public IEnumerable<string> ProviderNames {
@@ -169,22 +174,21 @@ namespace Microsoft.OneGet.Implementation {
             return _packageProviders.Values.Where(each => each.Features.ContainsKey(featureName) && each.Features[featureName].Contains(value));
         }
 
-        public IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject) {
+        public IEnumerable<PackageProvider> SelectProviders(string providerName, IHostApi hostApi) {
             if (!string.IsNullOrWhiteSpace(providerName)) {
                 // match with wildcards
                 var results = _packageProviders.Values.Where(each => each.ProviderName.IsWildcardMatch(providerName)).ReEnumerable();
                 if (results.Any()) {
                     return results;
                 }
-                if (requestObject != null && !providerName.ContainsWildcards()) {
+                if (hostApi != null && !providerName.ContainsWildcards()) {
                     // if the end user requested a provider that's not there. perhaps the bootstrap provider can find it.
-                    if (RequirePackageProvider(null, providerName, Constants.MinVersion, requestObject)) {
+                    if (RequirePackageProvider(null, providerName, Constants.MinVersion, hostApi)) {
                         // seems to think we found it.
                         if (_packageProviders.ContainsKey(providerName)) {
                             return _packageProviders[providerName].SingleItemAsEnumerable();
                         }
                     }
-                    var hostApi = requestObject.As<IHostApi>();
 
                     // warn the user that that provider wasn't found.
                     hostApi.Warning(hostApi.FormatMessageString(Constants.Messages.UnknownProvider, providerName));
@@ -195,7 +199,7 @@ namespace Microsoft.OneGet.Implementation {
             return PackageProviders;
         }
 
-        public bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject) {
+        public bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IHostApi hostApi) {
             // check if the package provider is already installed
             if (_packageProviders.ContainsKey(packageProviderName)) {
                 var current = _packageProviders[packageProviderName].Version;
@@ -204,16 +208,16 @@ namespace Microsoft.OneGet.Implementation {
                 }
             }
 
-            var request = requestObject.As<IRequest>();
 
-            var currentCallCount = request.CallCount();
+
+            var currentCallCount = hostApi.CallCount;
 
             if (_lastCallCount >= currentCallCount) {
                 // we've already been here this call.
 
                 // are they asking for the same provider again?
                 if (_providersTriedThisCall.Contains(packageProviderName)) {
-                    request.Debug("Skipping RequirePackageProvider -- tried once this call previously.");
+                    hostApi.Debug("Skipping RequirePackageProvider -- tried once this call previously.");
                     return false;
                 }
                 // remember this in case we come back again.
@@ -225,8 +229,8 @@ namespace Microsoft.OneGet.Implementation {
                 };
             }
 
-            if (!request.IsInteractive()) {
-                request.Debug("Skipping RequirePackageProvider due to not interactive");
+            if (!hostApi.IsInteractive) {
+                hostApi.Debug("Skipping RequirePackageProvider due to not interactive");
                 // interactive indicates that the host can respond to queries -- this doesn't happen
                 // in powershell during tab-completion.
                 return false;
@@ -236,11 +240,11 @@ namespace Microsoft.OneGet.Implementation {
             // ask the bootstrap provider if there is a package provider with that name available.
             var bootstrap = _packageProviders["Bootstrap"];
             if (bootstrap == null) {
-                request.Debug("Skipping RequirePackageProvider due to missing bootstrap provider");
+                hostApi.Debug("Skipping RequirePackageProvider due to missing bootstrap provider");
                 return false;
             }
 
-            var pkg = bootstrap.FindPackage(packageProviderName, null, minimumVersion, null, 0, requestObject).ToArray();
+            var pkg = bootstrap.FindPackage(packageProviderName, null, minimumVersion, null, 0, hostApi).ToArray();
             if (pkg.Length == 1) {
                 // Yeah? Install it.
                 var package = pkg[0];
@@ -255,8 +259,8 @@ namespace Microsoft.OneGet.Implementation {
 
                 // what can't find an installationmedia link?
                 // todo: what should we say here?
-                if (request.ShouldBootstrapProvider(requestor, pkg[0].Name, pkg[0].Version, providerType, location, destination)) {
-                    var newRequest = requestObject.Extend<IRequest>(new {
+                if (hostApi.ShouldBootstrapProvider(requestor, pkg[0].Name, pkg[0].Version, providerType, location, destination)) {
+                    var newRequest = hostApi.Extend<IHostApi>(new {
                         GetOptionValues = new Func<string, IEnumerable<string>>(key => {
                             if (key == "DestinationPath") {
                                 return new[] {
@@ -269,12 +273,12 @@ namespace Microsoft.OneGet.Implementation {
                     var packagesInstalled = bootstrap.InstallPackage(pkg[0], newRequest).LastOrDefault();
                     if (packagesInstalled == null) {
                         // that's sad.
-                        request.Error(Constants.Messages.FailedProviderBootstrap, ErrorCategory.InvalidOperation.ToString(), package.Name, request.FormatMessageString(Constants.Messages.FailedProviderBootstrap, package.Name));
+                        hostApi.Error(Constants.Messages.FailedProviderBootstrap, ErrorCategory.InvalidOperation.ToString(), package.Name, hostApi.FormatMessageString(Constants.Messages.FailedProviderBootstrap, package.Name));
                         return false;
                     }
                     // so it installed something
                     // we must tell the plugin loader to reload the plugins again.
-                    LoadProviders(request);
+                    LoadProviders(hostApi);
                     return true;
                 }
             }
@@ -291,7 +295,7 @@ namespace Microsoft.OneGet.Implementation {
         ///     (currently a hardcoded list, soon, registry driven)
         /// </summary>
         /// <param name="request"></param>
-        internal void LoadProviders(IRequest request) {
+        internal void LoadProviders(IHostApi request) {
             var providerAssemblies = (_initialized ? Enumerable.Empty<string>() : _defaultProviders)
                 .Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET"))
                 .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"))
@@ -368,8 +372,8 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        public IEnumerable<PackageSource> GetAllSourceNames(IRequestObject requestObject) {
-            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(requestObject));
+        public IEnumerable<PackageSource> GetAllSourceNames(IHostApi request) {
+            return _packageProviders.Values.SelectMany(each => each.ResolvePackageSources(request));
         }
 
         /// <summary>
@@ -378,7 +382,7 @@ namespace Microsoft.OneGet.Implementation {
         /// <param name="request"></param>
         /// <param name="providerAssemblyName"></param>
         /// <returns></returns>
-        private bool TryToLoadProviderAssembly(string providerAssemblyName, IRequest request) {
+        private bool TryToLoadProviderAssembly(string providerAssemblyName, IHostApi request) {
             // find all the matches for the assembly specified, order by version (descending)
 
             var assemblyPath = FindAssembly(providerAssemblyName);
@@ -453,7 +457,7 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFile", Justification = "This is a plugin loader. It *needs* to do that.")]
-        internal bool AcquireProviders(string assemblyPath, IRequest request) {
+        internal bool AcquireProviders(string assemblyPath, IHostApi request) {
             var found = false;
             try {
                 var assembly = Assembly.LoadFrom(assemblyPath);
@@ -551,7 +555,7 @@ namespace Microsoft.OneGet.Implementation {
             return result;
         }
 
-        private bool RegisterPackageProvider(IPackageProvider provider, FourPartVersion asmVersion, IRequest request) {
+        private bool RegisterPackageProvider(IPackageProvider provider, FourPartVersion asmVersion, IHostApi request) {
             try {
                 FourPartVersion ver = provider.GetProviderVersion();
                 var version = ver == 0 ? asmVersion : ver;
@@ -571,7 +575,7 @@ namespace Microsoft.OneGet.Implementation {
                         }
                     }
                     request.Debug("Loading provider {0}".format(name, provider.GetPackageProviderName()));
-                    provider.InitializeProvider(request);
+                    provider.InitializeProvider(request.As<IRequest>());
                     _packageProviders.AddOrSet(name, new PackageProvider(provider) {
                         Version = version
                     }).Initialize(request);
@@ -583,7 +587,7 @@ namespace Microsoft.OneGet.Implementation {
             return false;
         }
 
-        private bool RegisterArchiver(IArchiver provider, FourPartVersion asmVersion, IRequest request) {
+        private bool RegisterArchiver(IArchiver provider, FourPartVersion asmVersion, IHostApi request) {
             try {
                 FourPartVersion ver = provider.GetProviderVersion();
                 var version = ver == 0 ? asmVersion : ver;
@@ -603,7 +607,7 @@ namespace Microsoft.OneGet.Implementation {
                         }
                     }
                     request.Debug("Loading Archiver {0}".format(name, provider.GetArchiverName()));
-                    provider.InitializeProvider(request);
+                    provider.InitializeProvider(request.As<IRequest>());
                     Archivers.AddOrSet(name, new Archiver(provider) {
                         Version = version
                     }).Initialize(request);
@@ -615,7 +619,7 @@ namespace Microsoft.OneGet.Implementation {
             return false;
         }
 
-        private bool RegisterDownloader(IDownloader provider, FourPartVersion asmVersion, IRequest request) {
+        private bool RegisterDownloader(IDownloader provider, FourPartVersion asmVersion, IHostApi request) {
             try {
                 FourPartVersion ver = provider.GetProviderVersion();
                 var version = ver == 0 ? asmVersion : ver;
@@ -635,7 +639,7 @@ namespace Microsoft.OneGet.Implementation {
                         }
                     }
                     request.Debug("Loading Downloader {0}".format(name, provider.GetDownloaderName()));
-                    provider.InitializeProvider(request);
+                    provider.InitializeProvider(request.As<IRequest>());
                     Downloaders.AddOrSet(name, new Downloader(provider) {
                         Version = version
                     }).Initialize(request);
@@ -647,7 +651,7 @@ namespace Microsoft.OneGet.Implementation {
             return false;
         }
 
-        internal bool RegisterProvidersViaMetaProvider(IMetaProvider provider, FourPartVersion asmVersion, IRequest request) {
+        internal bool RegisterProvidersViaMetaProvider(IMetaProvider provider, FourPartVersion asmVersion, IHostApi request) {
             var found = false;
             var metaProviderName = provider.GetMetaProviderName();
             FourPartVersion metaProviderVersion = provider.GetProviderVersion();
@@ -658,7 +662,7 @@ namespace Microsoft.OneGet.Implementation {
             }
 
             try {
-                provider.InitializeProvider(request);
+                provider.InitializeProvider(request.As<IRequest>());
                 var metaProvider = provider;
                 provider.GetProviderNames().ParallelForEach(name => {
                     // foreach (var name in provider.GetProviderNames()) {

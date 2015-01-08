@@ -27,7 +27,6 @@ namespace Microsoft.OneGet.Implementation {
     using Utility.Extensions;
     using Utility.Plugin;
     using Utility.Versions;
-    using IRequestObject = System.Object;
 
     public abstract class ProviderBase  {
         public abstract string ProviderName {get;}
@@ -91,12 +90,12 @@ namespace Microsoft.OneGet.Implementation {
         public List<DynamicOption> DynamicOptions {
             get {
                 if (_dynamicOptions == null) {
-                    var o = new object();
+                    var nullHostApi = new object().As<IHostApi>();
                     var result = new List<DynamicOption>();
-                    result.AddRange(GetDynamicOptions(OptionCategory.Install, o));
-                    result.AddRange(GetDynamicOptions(OptionCategory.Package, o));
-                    result.AddRange(GetDynamicOptions(OptionCategory.Provider, o));
-                    result.AddRange(GetDynamicOptions(OptionCategory.Source, o));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Install, nullHostApi));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Package, nullHostApi));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Provider, nullHostApi));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Source, nullHostApi));
                     if (Features.ContainsKey("IsChainingProvider")) {
                         // chaining package providers should not cache results
                         return result;
@@ -162,25 +161,25 @@ namespace Microsoft.OneGet.Implementation {
             return Provider.IsMethodImplemented(methodName);
         }
 
-        internal void Initialize(IRequest request) {
+        internal void Initialize(IHostApi request) {
             if (!_initialized) {
                 _features = GetFeatures(request).Value;
                 _initialized = true;
             }
         }
 
-        public IAsyncValue<Dictionary<string, List<string>>> GetFeatures(IRequestObject requestObject) {
+        public IAsyncValue<Dictionary<string, List<string>>> GetFeatures(IHostApi requestObject) {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
             }
 
-            return new DictionaryRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetFeatures(request));
+            return new DictionaryRequestObject(this, requestObject, request => Provider.GetFeatures(request));
         }
 
-        public IAsyncEnumerable<DynamicOption> GetDynamicOptions(OptionCategory category, IRequestObject requestObject) {
-            requestObject = requestObject ?? new object();
+        public IAsyncEnumerable<DynamicOption> GetDynamicOptions(OptionCategory category, IHostApi requestObject) {
+            requestObject = requestObject ?? new object().As<IHostApi>();
 
-            return new DynamicOptionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetDynamicOptions(category.ToString(), request), category);
+            return new DynamicOptionRequestObject(this, requestObject, request => Provider.GetDynamicOptions(category.ToString(), request), category);
         }
     }
 }

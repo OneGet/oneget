@@ -46,7 +46,6 @@
     <Compile Include="Resources\Messages.Designer.cs" />
     <Compile Include="$(SolutionDir)assembly-version.cs" />
     <Compile Include="SwidProvider.cs" />
-    <Compile Include="VSixProvider.cs" />
     <Compile Include="WebDownloader.cs" />
   </ItemGroup>
   <ItemGroup>

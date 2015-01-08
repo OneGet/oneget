@@ -14,6 +14,7 @@
 
 namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
+    using System.Security;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Extensions;
 
@@ -28,18 +29,17 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter]
         public PSCredential Credential {get; set;}
 
-        public override string GetCredentialUsername() {
-            if (Credential != null) {
-                return Credential.UserName;
+        public override string CredentialUsername {
+            get {
+                return Credential != null ? Credential.UserName : null;
             }
-            return null;
         }
 
-        public override string GetCredentialPassword() {
-            if (Credential != null) {
-                return Credential.Password.ToProtectedString("salt");
+        public override SecureString CredentialPassword {
+            get {
+                return Credential != null ? Credential.Password : null;
             }
-            return null;
         }
+
     }
 }

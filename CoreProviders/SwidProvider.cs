@@ -20,7 +20,7 @@ namespace Microsoft.OneGet.Providers {
     ///     methods isn't used or implemented it should be removed (or commented out)
     ///     - Error Handling: Avoid throwing exceptions from these methods. To properly return errors to the user, use the
     ///     request.Error(...) method to notify the user of an error conditionm and then return.
-    ///     - Communicating with the HOST and CORE: each method takes a IRequestObject (in reality, an alias for
+    ///     - Communicating with the HOST and CORE: each method takes a IRequest (in reality, an alias for
     ///     System.Object),
     ///     which can be used in one of two ways:
     ///     - use the c# 'dynamic' keyword, and call functions on the object directly.
@@ -44,7 +44,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void InitializeProvider(IRequestObject requestObject) {
+        public void InitializeProvider(IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -69,7 +69,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetDynamicOptions(string category, IRequestObject requestObject) {
+        public void GetDynamicOptions(string category, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -122,7 +122,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void AddPackageSource(string name, string location, bool trusted, IRequestObject requestObject) {
+        public void AddPackageSource(string name, string location, bool trusted, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -217,7 +217,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequestObject requestObject) {
+        public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequest requestObject) {
             try {
                 using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
@@ -245,7 +245,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void FindPackageByFile(string file, int id, IRequestObject requestObject) {
+        public void FindPackageByFile(string file, int id, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -275,7 +275,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void FindPackageByUri(Uri uri, int id, IRequestObject requestObject) {
+        public void FindPackageByUri(Uri uri, int id, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -297,7 +297,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetInstalledPackages(string name, IRequestObject requestObject) {
+        public void GetInstalledPackages(string name, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -329,7 +329,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void ResolvePackageSources(IRequestObject requestObject) {
+        public void ResolvePackageSources(IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -352,7 +352,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void InstallPackage(string fastPackageReference, IRequestObject requestObject) {
+        public void InstallPackage(string fastPackageReference, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -375,7 +375,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void RemovePackageSource(string name, IRequestObject requestObject) {
+        public void RemovePackageSource(string name, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -398,7 +398,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void UninstallPackage(string fastPackageReference, IRequestObject requestObject) {
+        public void UninstallPackage(string fastPackageReference, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -420,7 +420,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetFeatures(IRequestObject requestObject) {
+        public void GetFeatures(IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -444,7 +444,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void DownloadPackage(string fastPackageReference, string location, IRequestObject requestObject) {
+        public void DownloadPackage(string fastPackageReference, string location, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -467,7 +467,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetPackageDependencies(string fastPackageReference, IRequestObject requestObject) {
+        public void GetPackageDependencies(string fastPackageReference, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -489,7 +489,7 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetPackageDetails(string fastPackageReference, IRequestObject requestObject) {
+        public void GetPackageDetails(string fastPackageReference, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -512,7 +512,7 @@ namespace Microsoft.OneGet.Providers {
         ///     the CORE and HOST
         /// </param>
         /// <returns></returns>
-        public int StartFind(IRequestObject requestObject) {
+        public int StartFind(IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
@@ -538,7 +538,7 @@ namespace Microsoft.OneGet.Providers {
         ///     the CORE and HOST
         /// </param>
         /// <returns></returns>
-        public void CompleteFind(int id, IRequestObject requestObject) {
+        public void CompleteFind(int id, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {

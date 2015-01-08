@@ -13,46 +13,9 @@
 //  
 
 namespace Microsoft.OneGet.Api {
-    using System.Collections.Generic;
-    using Implementation;
-    using IRequestObject = System.Object;
-
     public interface ICoreApi {
-        #region declare core-apis
+        IPackageManagementService PackageManagementService { get; }
 
-        /* Synced/Generated code =================================================== */
-
-        bool IsCanceled {get;}
-        IEnumerable<string> ProviderNames {get;}
-
-        IEnumerable<PackageProvider> PackageProviders {get;}
-
-        /// <summary>
-        ///     Returns the internal version of the OneGet core.
-        ///     This will usually only be updated if there is a breaking API or Interface change that might
-        ///     require other code to know which version is running.
-        /// </summary>
-        /// <returns>Internal Version of OneGet</returns>
-        int CoreVersion();
-
-        bool NotifyBeforePackageInstall(string packageName, string version, string source, string destination);
-        bool NotifyPackageInstalled(string packageName, string version, string source, string destination);
-        bool NotifyBeforePackageUninstall(string packageName, string version, string source, string destination);
-        bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
-
-        IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName);
-
-        IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
-
-        IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject);
-
-        bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject);
-
-        string GetCanonicalPackageId(string providerName, string packageName, string version);
-        string ParseProviderName(string canonicalPackageId);
-        string ParsePackageName(string canonicalPackageId);
-        string ParsePackageVersion(string canonicalPackageId);
-
-        #endregion
+        IProviderServices ProviderServices { get; }
     }
 }

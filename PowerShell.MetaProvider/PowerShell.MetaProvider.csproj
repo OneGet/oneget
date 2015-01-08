@@ -46,7 +46,6 @@
     <Compile Include="Entity.cs" />
     <Compile Include="Feature.cs" />
     <Compile Include="Link.cs" />
-    <Compile Include="RequestExtensions.cs" />
     <Compile Include="DynamicOption.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="PackageSource.cs" />

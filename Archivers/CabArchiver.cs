@@ -13,11 +13,8 @@
 //  
 
 namespace Microsoft.OneGet.Archivers {
-    using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
-    using Sdk;
-    using IRequestObject = System.Object;
+    using Implementation;
 
     public class CabArchiver {
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
@@ -28,7 +25,7 @@ namespace Microsoft.OneGet.Archivers {
         /// <summary>
         ///     Returns a collection of strings to the client advertizing features this provider supports.
         /// </summary>
-        /// <param name="requestObject">
+        /// <param name="request">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
