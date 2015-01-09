@@ -88,7 +88,7 @@
     <EmbeddedResource Include="Resources\Messages.resx" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OneGet\OneGet.csproj">
+    <ProjectReference Include="..\..\..\OneGet\OneGet.csproj">
       <Project>{7044b856-6d51-498f-90f9-01f219909f79}</Project>
       <Name>OneGet</Name>
     </ProjectReference>

@@ -121,11 +121,11 @@
       <Project>{b4ed8e4c-01b6-4440-afc7-dc73d08201b5}</Project>
       <Name>Archivers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OneGet\OneGet.csproj">
+    <ProjectReference Include="..\..\..\OneGet\OneGet.csproj">
       <Project>{7044B856-6D51-498F-90F9-01F219909F79}</Project>
       <Name>OneGet</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Utility\Utility.csproj">
+    <ProjectReference Include="..\..\..\Utility\Utility.csproj">
       <Project>{7044b856-6d51-498f-8192-01f219908192}</Project>
       <Name>Utility</Name>
     </ProjectReference>
