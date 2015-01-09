@@ -20,7 +20,7 @@ namespace Microsoft.OneGet.Test.PowerShell {
 
     public class DynamicPowerShellTests : Tests {
         public DynamicPowerShellTests(ITestOutputHelper output) : base(output) {
-            
+             
         }
 
         [Fact]
