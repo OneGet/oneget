@@ -231,7 +231,7 @@ namespace Microsoft.OneGet.Implementation {
         public IPackageManagementService PackageManagementService {
             get {
                 Activity();
-                return PackageManager._instance;
+                return PackageManager.Instance;
             }
         }
 

@@ -35,7 +35,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     public abstract class CmdletBase : AsyncCmdlet, IHostApi {
         private static int _globalCallCount = 1;
         private static readonly object _lockObject = new object();
-        private static readonly IPackageManagementService _packageManagementService = new PackageManager().Instance;
+        
         private readonly int _callCount;
         private readonly Hashtable _dynamicOptions = new Hashtable();
 
@@ -78,13 +78,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 lock (_lockObject) {
                     if (!IsCanceled && !IsInitialized) {
                         try {
-                            IsInitialized = _packageManagementService.Initialize(this);
+                            IsInitialized = PackageManager.Instance.Initialize(this);
                         } catch (Exception e) {
                             e.Dump();
                         }
                     }
                 }
-                return _packageManagementService;
+                return PackageManager.Instance;
             }
         }
 

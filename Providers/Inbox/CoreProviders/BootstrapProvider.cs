@@ -25,6 +25,13 @@ namespace Microsoft.OneGet.Providers {
     using Utility.Xml;
 
     public class BootstrapProvider {
+
+        private PackageManagementService PackageManagementService {
+            get {
+                return PackageManager.Instance as PackageManagementService;
+            }
+        }
+
         private static readonly string[] _urls = {
 #if LOCAL_DEBUG
             "http://localhost:81/providers.swidtag",
@@ -59,7 +66,7 @@ namespace Microsoft.OneGet.Providers {
             // we should go find out what's available once here just to make sure that 
             // we have a list 
             try {
-                PackageManager._instance.BootstrappableProviderNames = GetProviders(request).Select(provider => provider.Attributes["name"]).ToArray();
+                PackageManagementService.BootstrappableProviderNames = GetProviders(request).Select(provider => provider.Attributes["name"]).ToArray();
             } catch {
                 
             }
@@ -220,7 +227,7 @@ namespace Microsoft.OneGet.Providers {
                     if (request.ProviderServices.Install(tmpFile, "", request)) {
                         // it installed ok!
                         request.YieldFromSwidtag(provider, null, null, null, fastPath);
-                        PackageManager._instance.LoadProviders(request.As<IRequest>());
+                        PackageManagementService.LoadProviders(request.As<IRequest>());
                     } else {
                         request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.FailedProviderBootstrap, fastPath);
                     }
@@ -323,7 +330,7 @@ namespace Microsoft.OneGet.Providers {
                     
                     if (installed) {
                         // it installed ok!
-                        PackageManager._instance.LoadProviders(request);
+                        PackageManagementService.LoadProviders(request);
                     }
                     else {
                         request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.FailedProviderBootstrap, fastPath);
@@ -401,7 +408,7 @@ namespace Microsoft.OneGet.Providers {
                     if (File.Exists(targetFile)) {
                         // looks good to me.
                         request.YieldFromSwidtag(provider, null, null, null, fastPath);
-                        PackageManager._instance.LoadProviders(request);
+                        PackageManagementService.LoadProviders(request);
                         return;
                     }
                 }

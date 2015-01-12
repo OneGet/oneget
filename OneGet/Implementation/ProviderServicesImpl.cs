@@ -29,7 +29,7 @@ namespace Microsoft.OneGet.Implementation {
 
         private PackageManagementService PackageManagementService {
             get {
-                return PackageManager._instance;
+                return PackageManager.Instance as PackageManagementService;
             }
         }
 
@@ -81,7 +81,7 @@ namespace Microsoft.OneGet.Implementation {
                     throw new ArgumentNullException("request");
                 }
 
-                foreach (var downloader in PackageManager._instance.Downloaders.Values) {
+                foreach (var downloader in PackageManagementService.Downloaders.Values) {
                     if (downloader.SupportedUriSchemes.Contains(remoteLocation.Scheme, StringComparer.OrdinalIgnoreCase)) {
                         downloader.DownloadFile(remoteLocation, localFilename, request);
                         return;
@@ -104,7 +104,7 @@ namespace Microsoft.OneGet.Implementation {
                     throw new ArgumentNullException("request");
                 }
 
-                foreach (var archiver in PackageManager._instance.Archivers.Values) {
+                foreach (var archiver in PackageManagementService.Archivers.Values) {
                     if (archiver.IsSupportedFile(localFilename)) {
                         return archiver.UnpackArchive(localFilename, destinationFolder, request);
                     }
@@ -359,15 +359,15 @@ namespace Microsoft.OneGet.Implementation {
                     }
 
                     if (knownFolder.Equals("SystemAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
-                        return PackageManager._instance.SystemAssemblyLocation;
+                        return PackageManagementService.SystemAssemblyLocation;
                     }
 
                     if (knownFolder.Equals("UserAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
-                        return PackageManager._instance.UserAssemblyLocation;
+                        return PackageManagementService.UserAssemblyLocation;
                     }
 
                     if (knownFolder.Equals("ProviderAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
-                        return AdminPrivilege.IsElevated ? PackageManager._instance.SystemAssemblyLocation : PackageManager._instance.UserAssemblyLocation;
+                        return AdminPrivilege.IsElevated ? PackageManagementService.SystemAssemblyLocation : PackageManagementService.UserAssemblyLocation;
                     }
 
                     KnownFolder folder;
@@ -419,7 +419,7 @@ namespace Microsoft.OneGet.Implementation {
 
                 // high-level api for simply installing a file 
                 // returns false if unsuccessful.
-                foreach (var provider in PackageManager._instance.PackageProviders) {
+                foreach (var provider in PackageManager.Instance.PackageProviders) {
                     var packages = provider.FindPackageByFile(fileName, 0, request).ToArray();
                     if (packages.Length > 0) {
                         // found a provider that can handle this package.

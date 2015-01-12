@@ -32,23 +32,14 @@ namespace Microsoft.OneGet {
     ///     <example><![CDATA[
     ///    // Manually load the assembly
     ///    var asm = Assembly.Load("Microsoft.OneGet.Core.dll" )
-    ///
-    ///    // instantiate this object
-    ///    dynamic pms = Assembly.CreateInstance( "Microsoft.OneGet.PackageManager" );
-    ///
-    ///    // ask this object to genetrate a dynamic implementation of my own interface.
-    ///    pms.GetInstance<IMyPackageManagementService>();
+            // todo: insert reflection-based loading code.
     /// ]]>
     ///     </example>
     /// </summary>
     public class PackageManager {
-        internal static PackageManagementService _instance;
         private static readonly object _lockObject = new object();
-
-        /// <summary>
-        ///     Provides access to the PackageManagenmentService instance
-        /// </summary>
-        public IPackageManagementService Instance {
+        private static IPackageManagementService _instance;
+        internal static IPackageManagementService Instance {
             get {
                 lock (_lockObject) {
                     if (_instance == null) {
@@ -58,7 +49,7 @@ namespace Microsoft.OneGet {
                 return _instance;
             }
         }
-
+        
  
         public static int Main(string[] args) {
 #if WHAT_DO_WE_DO_TO_REMOTE_BETWEEN_PROCESSES_WITHOUT_REMOTING_HUH

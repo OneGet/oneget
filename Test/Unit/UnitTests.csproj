@@ -51,7 +51,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\Conceptual\ProofOfConceptTests.cs" />
+    <Compile Include="Core\Host\HostTests.cs" />
+    <Compile Include="Core\Service\PackageManagementServiceTests.cs" />
     <Compile Include="Utility\DynamicInterface\NameMatching\NameTests.cs" />
     <Compile Include="Utility\DynamicInterface\ParameterCoercion\AdvancedDynamicInterfaceTests.cs" />
     <Compile Include="Core\BootstrapTests.cs" />
