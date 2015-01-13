@@ -18,39 +18,46 @@ namespace Microsoft.OneGet.Test.Utility.Concpetual {
     using System.Security;
     using OneGet.Utility.Extensions;
     using Xunit;
+    using Xunit.Abstractions;
     using Console = Support.Console;
 
-    public class MiscTests {
+    public class MiscTests : Tests {
         [Fact]
         public void TestSecureString() {
-            var password = "applesauce";
-            var p = password.ToCharArray();
-            var s = new SecureString();
-            foreach (char c in p) {
-                s.AppendChar(c);
+            using (CaptureConsole) {
+                var password = "applesauce";
+                var p = password.ToCharArray();
+                var s = new SecureString();
+                foreach (char c in p) {
+                    s.AppendChar(c);
+                }
+                UseSecretData(s);
+
+                var ps = s.ToProtectedString("garrett");
+                Console.WriteLine("PS: {0}", ps);
+
+                var ss = ps.FromProtectedString("garret");
+                //Console.WriteLine("ss: {0}", ss);
+                UseSecretData(ss);
             }
-            UseSecretData(s);
-
-            var ps = s.ToProtectedString("garrett");
-            Console.WriteLine("PS: {0}", ps);
-
-            var ss = ps.FromProtectedString("garret");
-            //Console.WriteLine("ss: {0}", ss);
-            UseSecretData(ss);
         }
 
         internal void UseSecretData(SecureString secret) {
-            IntPtr bstr = Marshal.SecureStringToBSTR(secret);
-            try {
-                // Use the bstr here
-                string plainPass = Marshal.PtrToStringUni(bstr);
-                Console.WriteLine("Plain {0}", plainPass);
-            } finally {
-                // Make sure that the clear text data is zeroed out
-                Marshal.ZeroFreeBSTR(bstr);
+            using (CaptureConsole) {
+                IntPtr bstr = Marshal.SecureStringToBSTR(secret);
+                try {
+                    // Use the bstr here
+                    string plainPass = Marshal.PtrToStringUni(bstr);
+                    Console.WriteLine("Plain {0}", plainPass);
+                } finally {
+                    // Make sure that the clear text data is zeroed out
+                    Marshal.ZeroFreeBSTR(bstr);
+                }
             }
         }
 
+        public MiscTests(ITestOutputHelper outputHelper) : base(outputHelper) {
+        }
     }
 
     public class Item {

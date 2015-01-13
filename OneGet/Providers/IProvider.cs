@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.OneGet.Providers {
+    using System;
     using Api;
     using Utility.Plugin;
 
@@ -55,6 +56,8 @@ namespace Microsoft.OneGet.Providers {
         /// </summary>
         /// <returns>The version of the provider</returns>
         string GetProviderVersion();
+
+        void OnUnhandledException(string methodName, Exception exception);
 
         #endregion
     }

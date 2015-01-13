@@ -205,7 +205,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 // load the powershell functions into this runspace in case something needed it on module load.
                 var psf = ps.ImportModule(Name: PowerShellProviderFunctions, PassThru: true);
 
-#if DEBUG 
+#if INCLUDE_RAW_PSM1_FILES 
                 var testProviders = Directory.EnumerateFiles(BaseFolder, "*.psm1", SearchOption.AllDirectories);
                 foreach (var provider in testProviders) {
                     yield return provider;

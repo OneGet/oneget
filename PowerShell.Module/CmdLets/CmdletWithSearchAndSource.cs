@@ -202,7 +202,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     // not openable. whatever.
                 }
                 foreach (var p in providers) {
-                    if (p.IsFileSupported(buffer)) {
+                    if (p.IsSupportedFile(buffer)) {
                         yield return p;
                     }
                 }

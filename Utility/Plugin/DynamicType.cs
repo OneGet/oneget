@@ -52,7 +52,8 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
             _dynamicType = DefineDynamicType(interfaceType);
 
-            OnUnhandledException = interfaceType.GetPublicMethods().FirstOrDefault(each => each.Name == "OnUnhandledException" && each.GetParameterTypes().SequenceEqual(new Type[] {typeof (string), typeof (Exception)}));
+            // if the declaring type contains an OUE method declaration, then the host is permitting the plugin to see their oewn unhandled exceptions for debugging purposes.
+            OnUnhandledException = interfaceType.GetVirtualMethods().FirstOrDefault(each => each.Name == "OnUnhandledException" && each.GetParameterTypes().SequenceEqual(new Type[] { typeof(string), typeof(Exception) }));
 
             foreach (var instanceType in methods.Keys) {
                 // generate storage for object

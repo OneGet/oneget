@@ -38,8 +38,8 @@ namespace Microsoft.OneGet {
     /// </summary>
     public class PackageManager {
         private static readonly object _lockObject = new object();
-        private static IPackageManagementService _instance;
-        internal static IPackageManagementService Instance {
+        internal static IPackageManagementService _instance;
+        public static IPackageManagementService Instance {
             get {
                 lock (_lockObject) {
                     if (_instance == null) {

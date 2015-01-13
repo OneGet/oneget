@@ -45,14 +45,12 @@ namespace Microsoft.OneGet.Implementation {
         private static readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location), // already in autload list
             "CSharpTest.Net.RpcLibrary", // doesn't have any
-            "Microsoft.OneGet.Test", // doesn't have any
             "Microsoft.OneGet.Utility", // doesn't have any
             "Microsoft.OneGet.Utility.PowerShell", // doesn't have any
             "Microsoft.PowerShell.OneGet", // doesn't have any
             "Microsoft.Web.XmlTransform", // doesn't have any
             "NuGet.Core", // doesn't have any
             "OneGet.PowerShell.Module.Test", // doesn't have any
-            "OneGet.ProviderSDK", // doesn't have any
             "System.Management.Automation", // doesn't have any
             "xunit", // doesn't have any
             "xunit.extensions", // doesn't have any
@@ -296,6 +294,10 @@ namespace Microsoft.OneGet.Implementation {
         /// </summary>
         /// <param name="request"></param>
         internal void LoadProviders(IHostApi request) {
+            if (request == null) {
+                throw new ArgumentNullException("request");
+            }
+
             var providerAssemblies = (_initialized ? Enumerable.Empty<string>() : _defaultProviders)
                 .Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET"))
                 .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"))
@@ -306,9 +308,26 @@ namespace Microsoft.OneGet.Implementation {
                     return Enumerable.Empty<string>();
                 }));
 
+#if DEEP_DEBUG
+            providerAssemblies = providerAssemblies.ToArray();
+
+            foreach (var each in providerAssemblies) {
+                request.Debug("possible assembly: {0}".format(each));
+            }
+#endif
+
             // find modules that have manifests 
             // todo: expand this out to validate the assembly is ok for this instance of OneGet.
             providerAssemblies = providerAssemblies.Where(each => Manifest.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
+
+#if DEEP_DEBUG
+            providerAssemblies = providerAssemblies.ToArray();
+
+            foreach (var each in providerAssemblies) {
+                request.Debug("possible assembly with manifest: {0}".format(each));
+            }
+#endif
+
 
             providerAssemblies = providerAssemblies.OrderByDescending(each => {
                 try {

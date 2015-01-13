@@ -88,7 +88,9 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             if (disposing) {
                 _runspace.AvailabilityChanged -= CheckIfRunspaceIsAvailable;
                 _runspace.StateChanged -= CheckIfRunspaceIsOpening;
-                WaitForAvailable();
+                
+                // note: WHY WOULD THIS HAVE BEEN HERE?
+                // WaitForAvailable();
 
                 if (_currentCommand != null) {
                     _currentCommand.Dispose();

@@ -13,17 +13,60 @@
 //  
 
 namespace Microsoft.OneGet.Test.Support {
+    using System.Collections.Generic;
+    using OneGet.Utility.Collections;
+    using OneGet.Utility.Extensions;
+
     public delegate void WriteLine(string format, params object[] args);
 
     public static class Console {
+        private static List<string> _queue = new List<string>();
         public static void WriteLine(string format, params object[] args) {
-            // System.Console.Beep(3000, 26);
-            Event<WriteLine>.Raise(format, args);
+            try {
+                // System.Console.Beep(3000, 26);
+                // Event<WriteLine>.Raise(format, args);
+                if (Tests.CurrentOut != null) {
+                    // first Flush queue
+                    Flush();
+                    Tests.CurrentOut.WriteLine(format, args);
+                } else {
+                    // Event<WriteLine>.Raise(format, args);
+                    lock (_queue) {
+                        _queue.Add(format.format(args));
+                    }
+                }
+            } catch {
+                
+            }
+        }
+
+        public static void Flush() {
+            lock (_queue) {
+                if (Tests.CurrentOut != null) {
+                    foreach (var i in _queue) {
+                        Tests.CurrentOut.WriteLine(i);
+                    }
+                    _queue.Clear();
+                }
+            }
         }
 
         public static void WriteLine(object output) {
-            // System.Console.Beep(3000, 26);
-            Event<WriteLine>.Raise((output ?? "«null»").ToString());
+            try {
+                // System.Console.Beep(3000, 26);
+                if (Tests.CurrentOut != null) {
+                    Flush();
+                    Tests.CurrentOut.WriteLine((output ?? "«null»").ToString());
+                }
+                else {
+                    lock (_queue) {
+                        _queue.Add((output ?? "«null»").ToString());
+                    }
+                }
+                // Event<WriteLine>.Raise((output ?? "«null»").ToString());
+            } catch {
+                // Event<WriteLine>.Raise((output ?? "«null»").ToString());
+            }
         }
     }
-}
+} 

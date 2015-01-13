@@ -137,7 +137,7 @@ namespace Microsoft.OneGet.Implementation {
             return false;
         }
 
-        public virtual bool IsFileSupported(byte[] header) {
+        public virtual bool IsSupportedFile(byte[] header) {
             return MagicSignatures.Any(magic => BufferMatchesMagicBytes(magic, header, header.Length));
         }
 

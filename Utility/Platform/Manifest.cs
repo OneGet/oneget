@@ -26,7 +26,6 @@ namespace Microsoft.OneGet.Utility.Platform {
             var manifests = new List<XElement>();
 
             using (DisposableModule dll = NativeMethods.LoadLibraryEx(filename, Unused.Nothing, LoadLibraryFlags.AsImageResource | LoadLibraryFlags.AsDatafile)) {
-
                 // if we get back a valid module handle 
                 if (!dll.IsInvalid) {
                     // search all the 'manifest' resources 
