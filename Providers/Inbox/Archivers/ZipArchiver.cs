@@ -39,6 +39,10 @@ namespace Microsoft.OneGet.Archivers {
         /// </param>
         public void GetFeatures(Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
+            if( request == null ) {
+              throw new ArgumentNullException("request");
+            }
+            
             request.Debug("Calling '{0}::GetFeatures' ", ArchiverName );
 
             foreach (var feature in _features) {
@@ -70,7 +74,9 @@ namespace Microsoft.OneGet.Archivers {
         /// At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
         /// </summary>
         public void OnUnhandledException(string methodName, Exception exception) {
-            Debug.WriteLine("Unexpected Exception thrown in '{0}::{1}' -- {2}\\{3}\r\n{4}", ArchiverName, methodName, exception.GetType().Name, exception.Message, exception.StackTrace);
+            if( exception != null ) {
+                Debug.WriteLine("Unexpected Exception thrown in '{0}::{1}' -- {2}\\{3}\r\n{4}", ArchiverName, methodName, exception.GetType().Name, exception.Message, exception.StackTrace);
+            }
         }
 
         public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Request request) {

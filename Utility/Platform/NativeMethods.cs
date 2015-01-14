@@ -1,21 +1,22 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 namespace Microsoft.OneGet.Utility.Platform {
     using System;
     using System.Runtime.InteropServices;
     using System.Text;
+    using System.Diagnostics.CodeAnalysis;
 
     internal enum WinVerifyTrustResult : uint {
         Success = 0,
@@ -23,7 +24,7 @@ namespace Microsoft.OneGet.Utility.Platform {
         ActionUnknown = 0x800b0002, // The trust provider does not support the specified action
         SubjectFormUnknown = 0x800b0003, // The trust provider does not support the form specified for the subject
         SubjectNotTrusted = 0x800b0004, // The subject failed the specified verification action
-        UntrustedRootCert = 0x800B0109 //A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider. 
+        UntrustedRootCert = 0x800B0109 //A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.
     }
 
     [Flags]
@@ -53,13 +54,22 @@ namespace Microsoft.OneGet.Utility.Platform {
         }
 
         public void Dispose() {
-            _module.Free();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
+        public void Dispose(bool disposing) {
+            if( disposing ) {
+                _module.Free();
+            }
+        }
+
+        [SuppressMessage("Microsoft.Usage", "CA2225:OperatorOverloadsHaveNamedAlternates", Justification = "There is no need for such.")]
         public static implicit operator Module(DisposableModule instance) {
             return instance._module;
         }
 
+        [SuppressMessage("Microsoft.Usage", "CA2225:OperatorOverloadsHaveNamedAlternates", Justification = "There is no need for such.")]
         public static implicit operator DisposableModule(Module module) {
             return new DisposableModule {
                 _module = module

@@ -52,6 +52,9 @@ namespace Microsoft.OneGet.Msi {
         ///     the CORE and HOST
         /// </param>
         public void InitializeProvider(Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InitializeProvider'", ProviderName);
         }
@@ -64,6 +67,9 @@ namespace Microsoft.OneGet.Msi {
         ///     the CORE and HOST
         /// </param>
         public void GetFeatures(Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }        
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
 
@@ -81,6 +87,9 @@ namespace Microsoft.OneGet.Msi {
         ///     the CORE and HOST
         /// </param>
         public void GetDynamicOptions(string category, Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }        
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetDynamicOptions' '{1}'", ProviderName, category);
 
@@ -119,6 +128,13 @@ namespace Microsoft.OneGet.Msi {
         ///     the CORE and HOST
         /// </param>
         public void FindPackageByFile(string file, int id, Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }        
+            if( string.IsNullOrWhiteSpace(file) ) {
+                throw new ArgumentNullException("file");
+            }        
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::FindPackageByFile' '{1}','{2}'", ProviderName, file, id);
 
@@ -145,6 +161,10 @@ namespace Microsoft.OneGet.Msi {
         ///     the CORE and HOST
         /// </param>
         public void GetInstalledPackages(string name, Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }
+                    
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", ProviderName, name);
             var products = ProductInstallation.AllProducts;
@@ -165,6 +185,12 @@ namespace Microsoft.OneGet.Msi {
         ///     the CORE and HOST
         /// </param>
         public void InstallPackage(string fastPackageReference, Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }
+            if( string.IsNullOrWhiteSpace(fastPackageReference) ) {
+                throw new ArgumentNullException("fastPackageReference");
+            }
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InstallPackage' '{1}'", ProviderName, fastPackageReference);
             var file = fastPackageReference.CanonicalizePath(false);
@@ -208,6 +234,12 @@ namespace Microsoft.OneGet.Msi {
         ///     the CORE and HOST
         /// </param>
         public void UninstallPackage(string fastPackageReference, Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }  
+            if( string.IsNullOrWhiteSpace(fastPackageReference) ) {
+                throw new ArgumentNullException("fastPackageReference");
+            }      
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::UninstallPackage' '{1}'", ProviderName, fastPackageReference);
 

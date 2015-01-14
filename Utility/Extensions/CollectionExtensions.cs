@@ -1,16 +1,16 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 namespace Microsoft.OneGet.Utility.Extensions {
     using System;
@@ -184,7 +184,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 if (second != null) {
                     foreach (var item in items) {
                         action(item);
-                    } 
+                    }
                 }
                 else {
                     action(items.FirstOrDefault());
@@ -194,18 +194,16 @@ namespace Microsoft.OneGet.Utility.Extensions {
 
         private static readonly MethodInfo _castMethod = typeof(Enumerable).GetMethod("Cast");
         private static readonly MethodInfo _toArrayMethod = typeof(Enumerable).GetMethod("ToArray");
-        
+
         private static readonly IDictionary<Type, MethodInfo> _castMethods = new Dictionary<Type, MethodInfo>();
         private static readonly IDictionary<Type, MethodInfo> _toArrayMethods = new Dictionary<Type, MethodInfo>();
         public static object ToIEnumerableT(this IEnumerable<object> enumerable, Type elementType) {
-            lock (elementType) {
-                return _castMethods.GetOrAdd(elementType, () => _castMethod.MakeGenericMethod(elementType)).Invoke(null, new object[] {enumerable});
-            }
+            return _castMethods.GetOrAdd(elementType, () => _castMethod.MakeGenericMethod(elementType)).Invoke(null, new object[] {enumerable});
         }
         public static object ToArrayT(this IEnumerable<object> enumerable, Type elementType) {
             return _toArrayMethods.GetOrAdd(elementType, () => _toArrayMethod.MakeGenericMethod(elementType)).Invoke(null, new[] { enumerable.ToIEnumerableT(elementType) });
         }
     }
 
-    // <summary>Provides a task scheduler that dedicates a thread per task.</summary> 
+    // <summary>Provides a task scheduler that dedicates a thread per task.</summary>
 }

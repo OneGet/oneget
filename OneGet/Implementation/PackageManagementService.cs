@@ -475,7 +475,7 @@ namespace Microsoft.OneGet.Implementation {
             return null;
         }
 
-        [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFile", Justification = "This is a plugin loader. It *needs* to do that.")]
+        [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom", Justification = "This is a plugin loader. It *needs* to do that.")]
         internal bool AcquireProviders(string assemblyPath, IHostApi request) {
             var found = false;
             try {

@@ -1,0 +1,4 @@
+## garretts - disabling all the dirs until the refactoring/moving is complete.
+
+DIRS=\
+    Inbox

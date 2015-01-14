@@ -23,6 +23,8 @@ namespace Microsoft.OneGet.Providers {
     using Utility.Extensions;
     using Utility.Plugin;
     using Utility.Xml;
+    using System.Diagnostics.CodeAnalysis;
+
 
     public class BootstrapProvider {
 
@@ -47,7 +49,7 @@ namespace Microsoft.OneGet.Providers {
             {Constants.Features.AutomationOnly, Constants.Empty}
         };
 
-        internal static IEnumerable<string> SupportedSchemes {
+        public static IEnumerable<string> SupportedSchemes {
             get {
                 return _features[Constants.Features.SupportedSchemes];
             }
@@ -62,6 +64,7 @@ namespace Microsoft.OneGet.Providers {
             return "Bootstrap";
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Plugin requirement.")]
         public void InitializeProvider(BootstrapRequest request) {
             // we should go find out what's available once here just to make sure that 
             // we have a list 
@@ -72,6 +75,7 @@ namespace Microsoft.OneGet.Providers {
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Plugin requirement.")]
         public void GetFeatures(BootstrapRequest request) {
             if (request == null) {
                 throw new ArgumentNullException("request");
@@ -83,6 +87,7 @@ namespace Microsoft.OneGet.Providers {
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Plugin requirement.")]
         public void GetDynamicOptions(string category, BootstrapRequest request) {
             if (request == null) {
                 throw new ArgumentNullException("request");
@@ -166,6 +171,7 @@ namespace Microsoft.OneGet.Providers {
 
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Plugin requirement.")]
         public void GetInstalledPackages(string name, BootstrapRequest request) {
             if (request == null) {
                 throw new ArgumentNullException("request");
@@ -176,6 +182,7 @@ namespace Microsoft.OneGet.Providers {
         }
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Plugin requirement.")]
         public void DownloadPackage(string fastPath, string location, BootstrapRequest request) {
             if (request == null) {
                 throw new ArgumentNullException("request");

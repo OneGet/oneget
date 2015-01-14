@@ -58,18 +58,6 @@ SOURCES=\
  	Api\IProviderServices.cs \
  	Api\IRequest.cs \
  	Api\IResponseApi.cs \
- 	Builtin\ArpProvider.cs \
- 	Builtin\BootstrapRequest.cs \
- 	Builtin\BootstrapProvider.cs \
- 	Builtin\CabArchiver.cs \
- 	Builtin\MsiProvider.cs \
- 	Builtin\MsuProvider.cs \
- 	Builtin\SwidProvider.cs \
- 	Builtin\VSixProvider.cs \
- 	Builtin\WebDownloader.cs \
- 	Builtin\WindowsFeaturesProvider.cs \
- 	Builtin\WindowsUpdateProvider.cs \
- 	Builtin\ZipArchiver.cs \
  	Implementation\ActionRequestObject.cs \
  	Implementation\Archiver.cs \
  	Implementation\Delegates.cs \
@@ -79,11 +67,11 @@ SOURCES=\
  	Implementation\EnumerableRequestObject.cs \
  	Implementation\Extensions.cs \
  	Implementation\FuncRequestObject.cs \
- 	Implementation\Loader.cs \
  	Implementation\PackageManagementService.cs \
  	Implementation\PackageProvider.cs \
  	Implementation\PackageSourceRequestObject.cs \
  	Implementation\ProviderBase.cs \
+ 	Implementation\ProviderServicesImpl.cs \
  	Implementation\RemotableHostApi.cs \
  	Implementation\Request.cs \
  	Implementation\RequestObject.cs \
@@ -102,6 +90,7 @@ SOURCES=\
  	Packaging\SoftwareIdentity.cs \
  	Packaging\SoftwareIdentityVersionComparer.cs \
  	Packaging\SoftwareMetadata.cs \
+ 	Packaging\Swidtag.cs \
  	Providers\IArchiver.cs \
  	Providers\IDownloader.cs \
  	Providers\IMetaProvider.cs \
@@ -111,13 +100,16 @@ SOURCES=\
  	ErrorCategory.cs \
  	IPackageManagementService.cs \
  	PackageManager.cs \
- 	$(GENERATED_RESOURCES_SOURCE)
+	$(GENERATED_RESOURCES_SOURCE)
 
 #endregion
 
 INTERNALS_VISIBLE_TO=\
-	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
-	Microsoft.PowerShell.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
-	Microsoft.OneGet.MetaProvider.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
-
+    Microsoft.PowerShell.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
+    Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
+    Microsoft.OneGet.MetaProvider.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
+    Microsoft.OneGet.CoreProviders, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
+    Microsoft.OneGet.ArchiverProviders, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
+    Microsoft.OneGet.MsiProvider, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
+    Microsoft.OneGet.MsuProvider, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
 

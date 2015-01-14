@@ -22,6 +22,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         private static IEmbeddedUI uiInstance;
         private static string uiClass;
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private static bool DebugBreakEnabled(string method)
         {
             return CustomActionProxy.DebugBreakEnabled(new string[] { method, EmbeddedUIProxy.uiClass + "." + method } );

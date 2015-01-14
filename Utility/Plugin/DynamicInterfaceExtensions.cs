@@ -1,16 +1,16 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 namespace Microsoft.OneGet.Utility.Plugin {
     using System;
@@ -32,10 +32,10 @@ namespace Microsoft.OneGet.Utility.Plugin {
         private static readonly Dictionary<Assembly, Type[]> _creatableTypesCache = new Dictionary<Assembly, Type[]>();
 
         public static MethodInfo FindMethod(this MethodInfo[] methods, MethodInfo methodSignature) {
-            // this currently returns the first thing that matches acceptably. 
+            // this currently returns the first thing that matches acceptably.
 
             // we'd really like to find the *best* match, but still be able to have the earlier ones override the later ones.
-            // which is 
+            // which is
 
             return methods.FirstOrDefault(candidate => DoNamesMatchAcceptably(methodSignature.Name, candidate.Name) && DoSignaturesMatchAcceptably(methodSignature, candidate));
         }
@@ -85,7 +85,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             // transform non-leading underscores to nothing.
             candidateName = candidateName.Replace("_", "");
             originalName = originalName.Replace("_", "");
-            
+
             // this allows GetSomething to be the same as Get_Some_thing() or get_Something ...
             if (originalName.EqualsIgnoreCase(candidateName)) {
                 return true;
@@ -144,11 +144,11 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
                 methods = methods.Where(each => each.Name != "Dispose");
 
-                // option 1: 
+                // option 1:
                 // if the target type is a class, and implements an interface -- and the implementation of that interface is already present (ie, abstract class Foo : IDisposable { public void Dispose() {} }  ) then
-                // the generated type should not try to create a method for that interface 
+                // the generated type should not try to create a method for that interface
 
-                // option 2: 
+                // option 2:
                 // I think we're just talking about IDisposable here. maybe we shouldn't try to ducktype IDisposable at all.
 
                 //  try option2 :
@@ -211,7 +211,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         internal static Func<string, bool> GenerateInstanceSupportsMethod(object actualInstance) {
-            // if the object implements an IsMethodImplemented Method, we'll be using that 
+            // if the object implements an IsMethodImplemented Method, we'll be using that
             // to see if the method is actually supposed to be used.
             // this enables an implementor to physically implement the function in the class
             // yet treat it as if it didn't. (see the PowerShellPackageProvider)
@@ -275,7 +275,15 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         public static bool IsIEnumerableT(this Type t) {
+#if FRAMEWORKv45
             return t.IsConstructedGenericType && t.GetGenericTypeDefinition() == typeof (IEnumerable<>);
+#else
+            try {
+                return t.GetGenericTypeDefinition() == typeof (IEnumerable<>);
+            } catch {
+            }
+            return false;
+#endif
         }
 
         public static IEnumerable<Type> CreatableTypes(this Assembly assembly) {

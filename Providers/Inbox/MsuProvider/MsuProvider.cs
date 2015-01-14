@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.OneGet.Msu {
+    using System;
     using System.Collections.Generic;
     using Archivers.Compression.Cab;
     using Implementation;
@@ -45,6 +46,10 @@ namespace Microsoft.OneGet.Msu {
         ///     the CORE and HOST
         /// </param>
         public void InitializeProvider(Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }        
+        
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InitializeProvider'", ProviderName);
         }
@@ -57,6 +62,10 @@ namespace Microsoft.OneGet.Msu {
         ///     the CORE and HOST
         /// </param>
         public void GetFeatures(Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }        
+        
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
             foreach (var feature in _features) {
@@ -73,6 +82,10 @@ namespace Microsoft.OneGet.Msu {
         ///     the CORE and HOST
         /// </param>
         public void GetDynamicOptions(string category, Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }        
+        
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetDynamicOptions' '{1}'", ProviderName, category);
 
@@ -110,6 +123,13 @@ namespace Microsoft.OneGet.Msu {
         ///     the CORE and HOST
         /// </param>
         public void FindPackageByFile(string file, int id, Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }        
+            if( string.IsNullOrWhiteSpace(file) ) {
+                throw new ArgumentNullException("file");
+            }        
+        
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::FindPackageByFile' '{1}','{2}'", ProviderName, file, id);
             if (file.FileExists()) {
@@ -129,6 +149,10 @@ namespace Microsoft.OneGet.Msu {
         ///     the CORE and HOST
         /// </param>
         public void GetInstalledPackages(string name, Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }        
+        
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", ProviderName, name);
         }
@@ -142,6 +166,13 @@ namespace Microsoft.OneGet.Msu {
         ///     the CORE and HOST
         /// </param>
         public void InstallPackage(string fastPackageReference, Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }        
+            if( string.IsNullOrWhiteSpace(fastPackageReference) ) {
+                throw new ArgumentNullException("fastPackageReference");
+            }        
+        
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InstallPackage' '{1}'", ProviderName, fastPackageReference);
         }
@@ -155,6 +186,13 @@ namespace Microsoft.OneGet.Msu {
         ///     the CORE and HOST
         /// </param>
         public void UninstallPackage(string fastPackageReference, Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }        
+            if( string.IsNullOrWhiteSpace(fastPackageReference) ) {
+                throw new ArgumentNullException("fastPackageReference");
+            }        
+        
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::UninstallPackage' '{1}'", ProviderName, fastPackageReference);
         }

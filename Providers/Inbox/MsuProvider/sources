@@ -1,12 +1,12 @@
 # Copyright (C) 2014 Microsoft Corporation
 
 ###
-### OneGet/PowerShell.MetaProvider/sources
+### OneGet/Providers/Inbox/MsuProvider
 ###
 
 !include ..\..\..\common.inc
 
-TARGETNAME          = Microsoft.OneGet.MetaProvider.PowerShell
+TARGETNAME          = Microsoft.OneGet.MsuProvider
 TARGETTYPE          = DYNLINK
 
 ## !include $(PROJECT_ROOT)\monad\nttargets\build\sources.inc
@@ -16,7 +16,7 @@ SOURCES_PATH = .\
 
 ONEGET_CORE=$(OBJ_PATH)\..\..\..\OneGet\$(O)\Microsoft.OneGet.metadata_exe;
 ONEGET_UTILITY=$(OBJ_PATH)\..\..\..\Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll;
-ONEGET_UTILITY_POWERSHELL=$(OBJ_PATH)\..\..\..\Utility.PowerShell\$(O)\Microsoft.OneGet.Utility.PowerShell.metadata_dll;
+ONEGET_ARCHIVERS=$(OBJ_PATH)\..\Archivers\$(O)\Microsoft.OneGet.ArchiverProviders.metadata_dll;
 
 ###
 ### Note: This really only works if you have a single .resx file.
@@ -24,7 +24,7 @@ ONEGET_UTILITY_POWERSHELL=$(OBJ_PATH)\..\..\..\Utility.PowerShell\$(O)\Microsoft
 ###       you have to either *always* pre-gen the .cs files or figure another
 ###       way.
 ###
-RESOURCES_NAMESPACE= Microsoft.OneGet.MetaProvider.PowerShell.Resources
+RESOURCES_NAMESPACE=Microsoft.OneGet.MsuProvider.Resources
 GENERATED_RESOURCES_SOURCE=$(OUTPUT_PATH)\Messages.cs
 RESGEN_FLAGS = /str:cs,$(RESOURCES_NAMESPACE),Messages,$(OUTPUT_PATH)\Messages.cs
 
@@ -46,41 +46,22 @@ PASS2_BINPLACE=\
 
 ### Referenced assemblies
 
-
 REFERENCES=\
-	$(ONEGET_CORE) \
-	$(ONEGET_UTILITY) \
-	$(ONEGET_UTILITY_POWERSHELL) \
+    $(ONEGET_CORE) \
+    $(ONEGET_UTILITY) \
+    $(ONEGET_ARCHIVERS) \
+    $(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
 	$(CLR_REF_PATH)\System.metadata_dll; \
+    $(CLR_REF_PATH)\System.Configuration.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
 	$(CLR_REF_PATH)\System.Data.metadata_dll; \
-	$(CLR_REF_PATH)\System.Security.metadata_dll; \
-	$(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
-	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll;
-
+	$(CLR_REF_PATH)\System.Data.DataSetExtensions.metadata_dll; \
+	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
+	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll;
 
 #region sourcefiles
 SOURCES=\
- 	Constants.cs \
- 	DynamicOption.cs \
- 	Entity.cs \
- 	Enums.cs \
- 	Feature.cs \
- 	Link.cs \
- 	PackageSource.cs \
- 	PowerShellMetaProvider.cs \
- 	PowerShellPackageProvider.cs \
- 	PowerShellProviderBase.cs \
- 	Request.cs \
- 	SoftwareIdentity.cs \
- 	Yieldable.cs \
+ 	MsuProvider.cs \
 	$(GENERATED_RESOURCES_SOURCE)
 
 #endregion
-
-PASS0_BINPLACE=\
-	PackageProviderFunctions.psm1
-
-INTERNALS_VISIBLE_TO=\
-	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
-

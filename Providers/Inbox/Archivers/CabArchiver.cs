@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.OneGet.Archivers {
+    using System;
     using System.Collections.Generic;
     using Implementation;
 
@@ -29,7 +30,10 @@ namespace Microsoft.OneGet.Archivers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetFeatures(Request request) {
+        public void GetFeatures(Request request) {	
+            if( request == null ) {
+              throw new ArgumentNullException("request");
+            }
             
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ArchiverName);
@@ -65,3 +69,4 @@ namespace Microsoft.OneGet.Archivers {
         }
     }
 }
+    

@@ -36,6 +36,10 @@ namespace Microsoft.OneGet.Providers {
         ///     the CORE and HOST
         /// </param>
         public void GetFeatures(Request request) {
+            if( request == null ) {
+                throw new ArgumentNullException("request");
+            }        
+        
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
             foreach (var feature in _features) {
