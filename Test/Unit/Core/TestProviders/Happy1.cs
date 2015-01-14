@@ -15,8 +15,15 @@
 namespace Microsoft.OneGet.Test.Core.TestProviders {
     using System;
     using System.Collections.Generic;
-    
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Resources;
+    using System.Runtime.InteropServices;
+    using System.Runtime.InteropServices.WindowsRuntime;
+    using OneGet.Utility.Extensions;
     using Sdk;
+    using Constants = Sdk.Constants;
+    using ErrorCategory = OneGet.ErrorCategory;
 
     /// <summary>
     /// A Package provider for OneGet.
@@ -27,7 +34,57 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
     /// 
     /// todo: Give this class a proper name
     /// </summary>
-    public class Bad1 {
+    public class Happy1 {
+        private class PkgSource {
+            internal string name;
+            internal string location;
+            internal bool isTrusted;
+            internal bool isValidated;
+        }
+
+        private class Pkg {
+            internal string fastPath;
+            internal string name;
+            internal string version;
+            internal string versionScheme;
+            internal string summary;
+            internal string source;
+            internal string fullPath;
+            internal string packageFileName;
+
+            internal void Yield(Request request, string searchKey ) {
+                request.YieldSoftwareIdentity(fastPath, name, version, versionScheme, summary, source, searchKey, fullPath, packageFileName);
+            }
+        }
+
+        // used to control this instance directly for testing purposes.
+        internal static Happy1 TestInstance;
+        private PkgSource[] packageSources = {};
+        private Pkg[] availablePackages = { };
+        private Pkg[] installedPackages = { };
+        
+
+        internal void Reset() {
+            packageSources = new[] {
+                new PkgSource{ name = "source1", location = "location1", isTrusted = true, isValidated = false, },
+                new PkgSource{ name = "source2", location = "location2", isTrusted = true, isValidated = false, }
+            };
+
+            availablePackages = new[] {
+                new Pkg{ fastPath = "pkg1", name ="package1", source = "source1", summary = "this is package 1", version = "1.0", packageFileName = "pkg1.mypkg", fullPath="", versionScheme = "numeric" },
+                new Pkg{ fastPath = "pkg1-11", name ="package1", source = "source1", summary = "this is package 1 (v1.1)", version = "1.1", packageFileName = "pkg1.mypkg", fullPath="", versionScheme = "numeric" },
+                new Pkg{ fastPath = "pkg1-12", name ="package1", source = "source1", summary = "this is package 1 (v1.2)", version = "1.2", packageFileName = "pkg1.mypkg", fullPath="", versionScheme = "numeric" },
+                new Pkg{ fastPath = "pkg2", name ="package2", source = "source1", summary = "this is package 2", version = "1.0", packageFileName = "pkg2.mypkg", fullPath="", versionScheme = "numeric" },
+                new Pkg{ fastPath = "pkg3", name ="package3", source = "source2", summary = "this is package 3", version = "1.0", packageFileName = "pkg3.mypkg", fullPath="", versionScheme = "numeric" },
+            };
+
+            installedPackages = new[] {
+                new Pkg{ fastPath = "pkg4", name ="package4", source = "source3", summary = "this is package 4", version = "4.0", packageFileName = "pkg4.mypkg", fullPath="", versionScheme = "numeric" },
+            };
+        }
+
+        
+
         /// <summary>
         /// The features that this package supports.
         /// todo: fill in the feature strings for this provider
@@ -68,7 +125,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <returns>The version of this provider </returns>
         public string ProviderVersion {
             get {
-                throw new Exception("Misbehaving - ProviderVersion");
+                return "1.0.0.0";
             }
         }
 
@@ -90,6 +147,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InitializeProvider'", PackageProviderName);
             Initialized = true;
+            TestInstance = this;
         }
 
         /// <summary>
@@ -97,7 +155,12 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// </summary>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void GetFeatures(Request request) {
-            throw new Exception("Misbehaving - GetFeatures");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::GetFeatures' ", PackageProviderName);
+
+            foreach (var feature in Features) {
+                request.Yield(feature);
+            }
         }
 
         /// <summary>
@@ -110,7 +173,39 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="category">The category of dynamic options that the HOST is interested in</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void GetDynamicOptions(string category, Request request) {
-            throw new Exception("Misbehaving - GetDynamicOptions");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::GetDynamicOptions' {1}", PackageProviderName, category);
+
+            switch ((category ?? string.Empty).ToLowerInvariant()) {
+                case "install":
+                    // todo: put any options required for install/uninstall/getinstalledpackages
+                    request.YieldDynamicOption("install_1", Constants.OptionType.File, false);
+                    request.YieldDynamicOption("install_2", Constants.OptionType.Folder, false);
+                    request.YieldDynamicOption("install_3", Constants.OptionType.Int, false);
+                    request.YieldDynamicOption("install_4", Constants.OptionType.Path, false);
+                    request.YieldDynamicOption("install_5", Constants.OptionType.SecureString, false);
+                    request.YieldDynamicOption("install_6", Constants.OptionType.String, false);
+                    request.YieldDynamicOption("install_7", Constants.OptionType.StringArray, false);
+                    request.YieldDynamicOption("install_8", Constants.OptionType.Switch, false);
+                    request.YieldDynamicOption("install_9", Constants.OptionType.Uri, false);
+                    
+                    break;
+
+                case "provider":
+                    // todo: put any options used with this provider. Not currently used.
+                    request.YieldDynamicOption("provider_1", Constants.OptionType.String, false, new[] {"one", "two", "three"});
+                    break;
+
+                case "source":
+                    // todo: put any options for package sources
+                    request.YieldDynamicOption("source_1", Constants.OptionType.String, true, new[] { "one", "two", "three" });
+                    break;
+
+                case "package":
+                    // todo: put any options used when searching for packages 
+
+                    break;
+            }
         }
 
         /// <summary>
@@ -122,7 +217,25 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// </summary>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void ResolvePackageSources(Request request) {
-            throw new Exception("Misbehaving - ResolvePackageSources");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::ResolvePackageSources'", PackageProviderName);
+
+            // todo: resolve package sources
+            if (request.PackageSources.Any()) {
+                // the system is requesting sources that match the values passed.
+                // if the value passed can be a legitimate source, but is not registered, return a package source marked unregistered.
+                packageSources.SerialForEach((each) => {
+                    if (request.PackageSources.Any(s => each.name.EqualsIgnoreCase(s) || each.location.EqualsIgnoreCase(s))) {
+                        request.YieldPackageSource(each.name, each.location, each.isTrusted, true, each.isValidated);
+                    }
+                } );
+            }
+            else {
+                // the system is requesting all the registered sources
+                packageSources.SerialForEach((each) => {
+                    request.YieldPackageSource(each.name, each.location, each.isTrusted, true, each.isValidated);
+                });
+            }
         }
 
 
@@ -136,7 +249,34 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="trusted">A boolean indicating that the user trusts this package source. Packages returned from this source should be marked as 'trusted'</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void AddPackageSource(string name, string location, bool trusted, Request request) {
-            throw new Exception("Misbehaving - AddPackageSource");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::AddPackageSource' '{1}','{2}','{3}'", PackageProviderName, name, location, trusted);
+
+            var pkgSource =packageSources.FirstOrDefault(each => each.name.EqualsIgnoreCase(name));
+            if (pkgSource != null && !request.GetOptionValue(Constants.Parameters.IsUpdate).IsTrue() ) {
+                // pkgSource already exists. 
+                // this is an error.
+                request.Error(Sdk.ErrorCategory.ResourceExists, name, Constants.Messages.PackageSourceExists, name);
+                return;
+            }
+
+            if (pkgSource != null) {
+                //update 
+                pkgSource.location = location;
+                pkgSource.isTrusted = trusted;
+            } else {
+                // add new
+                pkgSource = new PkgSource {
+                    name = name,
+                    location = location,
+                    isTrusted = trusted,
+                    isValidated = true
+                };
+                // add to the array.
+                packageSources = packageSources.ConcatSingleItem(pkgSource).ToArray();
+            }
+
+            request.YieldPackageSource(pkgSource.name, pkgSource.location, pkgSource.isTrusted, true, pkgSource.isValidated);
         }
 
         /// <summary>
@@ -145,7 +285,21 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="name">The name or location of a package source to remove.</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void RemovePackageSource(string name, Request request) {
-            throw new Exception("Misbehaving - RemovePackageSource");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::RemovePackageSource' '{1}'", PackageProviderName, name);
+            var pkgSource = packageSources.FirstOrDefault(each => each.name.EqualsIgnoreCase(name));
+            if (pkgSource == null) {
+                pkgSource = packageSources.FirstOrDefault(each => each.location.EqualsIgnoreCase(name));
+            }
+            if (pkgSource == null) {
+                request.Error(Sdk.ErrorCategory.ObjectNotFound, name, Sdk.Constants.Messages.UnableToResolveSource, name);
+                return;
+            }
+            // tell the user what we removed.
+            request.YieldPackageSource(pkgSource.name, pkgSource.location, pkgSource.isTrusted, true, pkgSource.isValidated);
+
+            //remove it from the list.
+            packageSources = packageSources.Where(each => each != pkgSource).ToArray();
         }
 
 
@@ -161,7 +315,35 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="id">if this is greater than zero (and the number should have been generated using <c>StartFind(...)</c>, the core is calling this multiple times to do a batch search request. The operation can be delayed until <c>CompleteFind(...)</c> is called</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Request request) {
-            throw new Exception("Misbehaving - FindPackage");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::FindPackage' '{1}','{2}','{3}','{4}'", PackageProviderName, requiredVersion, minimumVersion, maximumVersion, id);
+
+            availablePackages.Where(each => {
+
+                // filter out by name 
+                if (!string.IsNullOrWhiteSpace(name) && !name.EqualsIgnoreCase(each.name)) {
+                    return false;
+                }
+
+                // filter out by minimum
+                if (!string.IsNullOrWhiteSpace(minimumVersion) && Int32.Parse(minimumVersion) > Int32.Parse(each.version)) {
+                    return false;
+                }
+
+                // filter out by maximum
+                if (!string.IsNullOrWhiteSpace(maximumVersion) && Int32.Parse(maximumVersion) < Int32.Parse(each.version)) {
+                    return false;
+                }
+
+                // filter out by required
+                if (!string.IsNullOrWhiteSpace(requiredVersion) && Int32.Parse(requiredVersion) != Int32.Parse(each.version)) {
+                    return false;
+                }
+                return true;
+
+            }).SerialForEach(each => {
+                each.Yield(request, name);
+            });
         }
 
         /// <summary>
@@ -173,7 +355,10 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="id">if this is greater than zero (and the number should have been generated using <c>StartFind(...)</c>, the core is calling this multiple times to do a batch search request. The operation can be delayed until <c>CompleteFind(...)</c> is called</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void FindPackageByFile(string file, int id, Request request) {
-            throw new Exception("Misbehaving - FindPackageByFile");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::FindPackageByFile' '{1}','{2}'", PackageProviderName, file, id);
+
+            // todo: find a package by file
         }
 
         /// <summary>
@@ -187,7 +372,10 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="id">if this is greater than zero (and the number should have been generated using <c>StartFind(...)</c>, the core is calling this multiple times to do a batch search request. The operation can be delayed until <c>CompleteFind(...)</c> is called</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void FindPackageByUri(Uri uri, int id, Request request) {
-            throw new Exception("Misbehaving - FindPackageByUri");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::FindPackageByUri' '{1}','{2}'", PackageProviderName, uri, id);
+
+            // todo: find a package by uri
         }
 
         /// <summary>
@@ -197,7 +385,8 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="location"></param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void DownloadPackage(string fastPackageReference, string location, Request request) {
-            throw new Exception("Misbehaving - DownloadPackage");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::DownloadPackage' '{1}','{2}'", PackageProviderName, fastPackageReference, location);
 
         }
 
@@ -207,7 +396,8 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="fastPackageReference"></param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void GetPackageDependencies(string fastPackageReference, Request request) {
-            throw new Exception("Misbehaving - GetPackageDependencies");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::GetPackageDependencies' '{1}'", PackageProviderName, fastPackageReference);
 
         }
 
@@ -219,7 +409,10 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="fastPackageReference">A provider supplied identifier that specifies an exact package</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void InstallPackage(string fastPackageReference, Request request) {
-            throw new Exception("Misbehaving - InstallPackage");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::InstallPackage' '{1}'", PackageProviderName, fastPackageReference);
+
+            // todo: Install a package 
         }
 
         /// <summary>
@@ -228,7 +421,10 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="fastPackageReference"></param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void UninstallPackage(string fastPackageReference, Request request) {
-            throw new Exception("Misbehaving - UninstallPackage");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::UninstallPackage' '{1}'", PackageProviderName, fastPackageReference);
+
+            // todo: Uninstall a package 
         }
 
         /// <summary>
@@ -237,7 +433,10 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="name"></param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void GetInstalledPackages(string name, Request request) {
-            throw new Exception("Misbehaving - GetInstalledPackage");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", PackageProviderName, name);
+
+            // todo: get installed packages
         }
 
         /// <summary>
@@ -246,7 +445,10 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="fastPackageReference"></param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         public void GetPackageDetails(string fastPackageReference, Request request) {
-            throw new Exception("Misbehaving - GetPackageDetails");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::GetPackageDetails' '{1}'", PackageProviderName, fastPackageReference);
+
+            // todo: GetPackageDetails that are more expensive than FindPackage* can deliver
         }
 
         /// <summary>
@@ -255,7 +457,10 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         /// <returns></returns>
         public int StartFind(Request request) {
-            throw new Exception("Misbehaving - StartFind");
+            // Nice-to-have put a debug message in that tells what's going on.
+            request.Debug("Calling '{0}::StartFind'", PackageProviderName);
+
+            return default(int);
         }
 
         /// <summary>
@@ -266,7 +471,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <returns></returns>
         public void CompleteFind(int id, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
-            throw new Exception("Misbehaving - CompleteFind");
+            request.Debug("Calling '{0}::CompleteFind' '{1}'", PackageProviderName, id);
 
         }
 

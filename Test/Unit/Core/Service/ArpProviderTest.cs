@@ -1,6 +1,4 @@
-﻿
-
-// 
+﻿// 
 //  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -21,7 +19,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
     using Xunit.Abstractions;
     using Console = Support.Console;
 
-    public class ArpProviderTest : BasePMSServiceTests {
+    public class ArpProviderTest : BasePmsServiceTests {
         public ArpProviderTest(ITestOutputHelper outputHelper)
             : base(outputHelper) {
         }

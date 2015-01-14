@@ -82,7 +82,7 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         public IAsyncEnumerable<SoftwareIdentity> CompleteFind(int i, IHostApi requestObject) {
-            return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.CompleteFind(i, request), "Available");
+            return new SoftwareIdentityRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.CompleteFind(i, request), Constants.PackageStatus.Available);
         }
 
         public IAsyncEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, IHostApi requestObject) {

@@ -51,15 +51,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Service\BasePmsServiceTests.cs" />
+    <Compile Include="Core\Service\BasicHostImpl.cs" />
     <Compile Include="Core\Service\MsuProviderTest.cs" />
     <Compile Include="Core\Service\MsiProviderTest.cs" />
     <Compile Include="Core\Service\ArpProviderTest.cs" />
     <Compile Include="Core\Service\ProviderTestTemplate.cs" />
-    <Compile Include="Core\Service\Provider1.cs" />
-    <Compile Include="Core\TestProviders\Bad1.cs" />
+    <Compile Include="Core\Service\Happy1ProviderTests.cs" />
+    <Compile Include="Core\Service\UsingOneProvider.cs" />
     <Compile Include="Core\TestProviders\Happy1.cs" />
+    <Compile Include="Core\TestProviders\Bad1.cs" />
     <Compile Include="Core\TestProviders\BlankProvider.cs" />
-    <Compile Include="Core\TestProviders\FileProvider.cs" />
+    <Compile Include="Core\TestProviders\TestFileProvider.cs" />
     <Compile Include="Core\Host\HostTests.cs" />
     <Compile Include="Core\Service\PackageManagementServiceTests.cs" />
     <Compile Include="Sdk\Constants.cs" />

@@ -19,7 +19,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
     using Xunit.Abstractions;
     using Console = Support.Console;
 
-    public class ProviderTestTemplate : BasePMSServiceTests {
+    public class ProviderTestTemplate : BasePmsServiceTests {
         public ProviderTestTemplate(ITestOutputHelper outputHelper)
             : base(outputHelper) {
         }
