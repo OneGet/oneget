@@ -14,6 +14,7 @@
 
 namespace Microsoft.OneGet.Api {
     using System.Collections.Generic;
+    using System.Security;
 
     public interface IHostApi {
 
@@ -44,7 +45,7 @@ namespace Microsoft.OneGet.Api {
         ///     Used by a provider to request what metadata keys were passed from the user
         /// </summary>
         /// <returns></returns>
-        IEnumerable<string> GetOptionKeys();
+        IEnumerable<string> OptionKeys {get;}
 
         /// <summary>
         /// </summary>
@@ -52,11 +53,11 @@ namespace Microsoft.OneGet.Api {
         /// <returns></returns>
         IEnumerable<string> GetOptionValues(string key);
 
-        IEnumerable<string> GetSources();
+        IEnumerable<string> Sources {get;}
 
-        string GetCredentialUsername();
+        string CredentialUsername {get;}
 
-        string GetCredentialPassword();
+        SecureString CredentialPassword {get;}
 
         bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination);
 
@@ -64,9 +65,9 @@ namespace Microsoft.OneGet.Api {
 
         bool AskPermission(string permission);
 
-        bool IsInteractive();
+        bool IsInteractive { get; }
 
-        int CallCount();
+        int CallCount {get;}
 
         #endregion
     }

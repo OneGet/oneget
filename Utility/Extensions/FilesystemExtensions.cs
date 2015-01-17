@@ -68,11 +68,11 @@ namespace Microsoft.OneGet.Utility.Extensions {
         /// <remarks>
         /// </remarks>
         public static string RelativePathTo(this string currentDirectory, string pathToMakeRelative) {
-            if (string.IsNullOrEmpty(currentDirectory)) {
+            if (string.IsNullOrWhiteSpace(currentDirectory)) {
                 throw new ArgumentNullException("currentDirectory");
             }
 
-            if (string.IsNullOrEmpty(pathToMakeRelative)) {
+            if (string.IsNullOrWhiteSpace(pathToMakeRelative)) {
                 throw new ArgumentNullException("pathToMakeRelative");
             }
 
@@ -176,20 +176,20 @@ namespace Microsoft.OneGet.Utility.Extensions {
             string name = null;
             string folder = null;
 
-            if (!string.IsNullOrEmpty(filename)) {
+            if (!string.IsNullOrWhiteSpace(filename)) {
                 ext = Path.GetExtension(filename);
                 name = Path.GetFileNameWithoutExtension(filename);
                 folder = Path.GetDirectoryName(filename);
             }
 
-            if (string.IsNullOrEmpty(ext)) {
+            if (string.IsNullOrWhiteSpace(ext)) {
                 ext = ".tmp";
             }
-            if (string.IsNullOrEmpty(folder)) {
+            if (string.IsNullOrWhiteSpace(folder)) {
                 folder = TempPath;
             }
 
-            name = Path.Combine(folder, "tmpFile." + CounterHex + (string.IsNullOrEmpty(name) ? ext : "." + name + ext));
+            name = Path.Combine(folder, "tmpFile." + CounterHex + (string.IsNullOrWhiteSpace(name) ? ext : "." + name + ext));
 
             if (File.Exists(name)) {
                 name.TryHardToDelete();
@@ -241,7 +241,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 }
 
                 // is this a unc path?
-                if (string.IsNullOrEmpty(pathUri.Host)) {
+                if (string.IsNullOrWhiteSpace(pathUri.Host)) {
                     // no, this is a drive:\path path
                     // use API to resolve out the drive letter to see if it is a remote 
                     var drive = pathUri.Segments[1].Replace('/', '\\'); // the zero segment is always just '/' 
@@ -269,7 +269,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static bool FileExists(this string path) {
-            if (!string.IsNullOrEmpty(path)) {
+            if (!string.IsNullOrWhiteSpace(path)) {
                 try {
                     return File.Exists(CanonicalizePath(path, true));
                 } catch {
@@ -279,7 +279,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static bool DirectoryExists(this string path) {
-            if (!string.IsNullOrEmpty(path)) {
+            if (!string.IsNullOrWhiteSpace(path)) {
                 try {
                     return Directory.Exists(CanonicalizePath(path, true));
                 } catch {
@@ -289,7 +289,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static bool DirectoryHasDriveLetter(this string input) {
-            return !string.IsNullOrEmpty(input) && Path.IsPathRooted(input) && input.Length >= 2 && input[1] == ':';
+            return !string.IsNullOrWhiteSpace(input) && Path.IsPathRooted(input) && input.Length >= 2 && input[1] == ':';
         }
 
         public static string MakeSafeFileName(this string input) {

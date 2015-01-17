@@ -19,10 +19,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
-    using System.Threading;
+    using System.Security;
     using Microsoft.OneGet;
+    using Microsoft.OneGet.Api;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.OneGet.Utility.Plugin;
     using Microsoft.OneGet.Utility.PowerShell;
     using Resources;
     using Utility;
@@ -30,10 +32,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
     public delegate string GetMessageString(string messageId, string defaultText);
 
-    public abstract class CmdletBase : AsyncCmdlet {
+    public abstract class CmdletBase : AsyncCmdlet, IHostApi {
         private static int _globalCallCount = 1;
         private static readonly object _lockObject = new object();
-        private static readonly IPackageManagementService _packageManagementService = new PackageManager().Instance;
+        
         private readonly int _callCount;
         private readonly Hashtable _dynamicOptions = new Hashtable();
 
@@ -76,13 +78,13 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 lock (_lockObject) {
                     if (!IsCanceled && !IsInitialized) {
                         try {
-                            IsInitialized = _packageManagementService.Initialize(this);
+                            IsInitialized = PackageManager.Instance.Initialize(this);
                         } catch (Exception e) {
                             e.Dump();
                         }
                     }
                 }
-                return _packageManagementService;
+                return PackageManager.Instance;
             }
         }
 
@@ -93,7 +95,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         ///     to implement a given API, if we put in delegates to handle some of the functions
         ///     they will get called instead of the implementation in the current class. ('this')
         /// </summary>
-        protected object SuppressErrorsAndWarnings {
+        protected IHostApi SuppressErrorsAndWarnings {
             get {
                 return new object[] {
                     new {
@@ -124,7 +126,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
                     },
                     this,
-                };
+                }.As<IHostApi>();
             }
         }
 
@@ -214,8 +216,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
-        public virtual IEnumerable<string> GetOptionKeys() {
-            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys).ByRef();
+        public virtual IEnumerable<string> OptionKeys {
+            get {
+                return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys);
+            }
         }
 
         protected bool GenerateCommonDynamicParameters() {
@@ -273,29 +277,33 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 if (value is string || value is int) {
                     return new[] {
                         MyInvocation.BoundParameters[key].ToString()
-                    }.ByRef();
+                    };
                 }
                 if (value is SwitchParameter) {
                     return new[] {
                         ((SwitchParameter)MyInvocation.BoundParameters[key]).IsPresent.ToString()
-                    }.ByRef();
+                    };
                 }
                 if (value is string[]) {
-                    return ((string[])value).ByRef();
+                    return ((string[])value);
                 }
                 return new[] {
                     MyInvocation.BoundParameters[key].ToString()
-                }.ByRef();
+                };
             }
-            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Name == key).SelectMany(each => each.GetValues(this)).ByRef();
+            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Name == key).SelectMany(each => each.GetValues(this));
         }
 
-        public virtual string GetCredentialUsername() {
-            return null;
+        public virtual string CredentialUsername {
+            get {
+                return null;
+            }
         }
 
-        public virtual string GetCredentialPassword() {
-            return null;
+        public virtual SecureString CredentialPassword {
+            get {
+                return null;
+            }
         }
 
         public virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
@@ -313,10 +321,10 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
                 return ShouldContinue(FormatMessageString(Constants.Messages.QueryBootstrap, providerName),
                     FormatMessageString(Constants.Messages.BootstrapProvider,
-                        requestor.Is() ?
+                        !string.IsNullOrWhiteSpace(requestor) ?
                             FormatMessageString(Constants.Messages.BootstrapProviderProviderRequested, requestor, providerName, providerVersion) :
                             FormatMessageString(Constants.Messages.BootstrapProviderUserRequested, providerName, providerVersion),
-                        providerType.Is() && providerType.Equals(Constants.AssemblyProviderType) ?
+                        !string.IsNullOrWhiteSpace(providerType) && providerType.Equals(Constants.AssemblyProviderType) ?
                             FormatMessageString(Constants.Messages.BootstrapManualAssembly, providerName, location, destination) :
                             FormatMessageString(Constants.Messages.BootstrapManualInstall, providerName, location))).Result;
             } catch (Exception e) {
@@ -325,12 +333,16 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             return false;
         }
 
-        public virtual bool IsInteractive() {
-            return IsInvocation;
+        public virtual bool IsInteractive {
+            get {
+                return IsInvocation;
+            }
         }
 
-        public virtual int CallCount() {
-            return _callCount;
+        public virtual int CallCount {
+            get {
+                return _callCount;
+            }
         }
 
         #endregion
@@ -344,7 +356,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
             if (names.IsNullOrEmpty()) {
-                return PackageManagementService.SelectProviders(null, SuppressErrorsAndWarnings).Where(each => !each.Features.ContainsKey(Microsoft.OneGet.Constants.Features.AutomationOnly ));
+                return PackageManagementService.SelectProviders(null, SuppressErrorsAndWarnings).Where(each => !each.Features.ContainsKey(Microsoft.OneGet.Constants.Features.AutomationOnly));
             }
             // you can manually ask for any provider by name, if it is for automation only.
             if (IsInvocation) {

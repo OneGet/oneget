@@ -21,7 +21,7 @@
     Copyright = "(C) Microsoft Corporation. All rights reserved."
     HelpInfoUri = "http://go.microsoft.com/fwlink/?linkid=392040"
     ModuleVersion = "1.0.0.0"
-    PowerShellVersion = "2.0"
+    PowerShellVersion = "3.0"
     ClrVersion = "4.0"
     RootModule = "Microsoft.PowerShell.OneGet.dll"
 

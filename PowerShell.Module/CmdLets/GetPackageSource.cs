@@ -16,10 +16,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
+    using Microsoft.OneGet.Api;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.OneGet.Utility.Plugin;
 
     [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageSourceNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517137")]
     public sealed class GetPackageSource : CmdletWithProvider {
@@ -48,11 +50,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         private IEnumerable<string> _sources {
             get {
-                if (!string.IsNullOrEmpty(Name)) {
+                if (!string.IsNullOrWhiteSpace(Name)) {
                     yield return Name;
                 }
 
-                if (!string.IsNullOrEmpty(Location)) {
+                if (!string.IsNullOrWhiteSpace(Location)) {
                     yield return Location;
                 }
             }
@@ -60,7 +62,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override IEnumerable<string> Sources {
             get {
-                return _sources.ByRef();
+                return _sources;
             }
         }
 
@@ -73,8 +75,8 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         }
 
         public override bool ProcessRecordAsync() {
-            var noName = string.IsNullOrEmpty(Name);
-            var noLocation = string.IsNullOrEmpty(Location);
+            var noName = string.IsNullOrWhiteSpace(Name);
+            var noLocation = string.IsNullOrWhiteSpace(Location);
             var noCriteria = noName && noLocation;
 
             // store the information if we've ever had a name or location

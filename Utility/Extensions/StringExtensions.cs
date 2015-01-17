@@ -84,14 +84,6 @@ namespace Microsoft.OneGet.Utility.Extensions {
             return string.Format(CultureInfo.CurrentCulture, formatString, arguments.ToArray());
         }
 
-        public static bool Is(this string str) {
-            return !string.IsNullOrEmpty(str);
-        }
-
-        public static bool IsEmptyOrNull(this string str) {
-            return string.IsNullOrEmpty(str);
-        }
-
         public static string DashedToCamelCase(this string dashedText, char separator) {
             return dashedText.IndexOf('-') == -1 ? dashedText : new string(dashedToCamelCase(dashedText, separator).ToArray());
         }
@@ -163,7 +155,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static bool IsTrue(this string text) {
-            return text.Is() && text.Equals("true", StringComparison.CurrentCultureIgnoreCase);
+            return !string.IsNullOrWhiteSpace(text) && text.Equals("true", StringComparison.CurrentCultureIgnoreCase);
         }
 
         /// <summary>
@@ -455,7 +447,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static bool IsWildcardMatch(this string input, string wildcardMask) {
-            if (input == null || string.IsNullOrEmpty(wildcardMask)) {
+            if (input == null || string.IsNullOrWhiteSpace(wildcardMask)) {
                 return false;
             }
             return WildcardToRegex(wildcardMask).IsMatch(input);
@@ -475,7 +467,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static byte[] FromHex(this string hex) {
-            if (string.IsNullOrEmpty(hex)) {
+            if (string.IsNullOrWhiteSpace(hex)) {
                 return new byte[0];
             }
 

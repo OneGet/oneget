@@ -27,9 +27,8 @@ namespace Microsoft.OneGet.Implementation {
     using Utility.Extensions;
     using Utility.Plugin;
     using Utility.Versions;
-    using IRequestObject = System.Object;
 
-    public abstract class ProviderBase : MarshalByRefObject {
+    public abstract class ProviderBase  {
         public abstract string ProviderName {get;}
     }
 
@@ -71,13 +70,13 @@ namespace Microsoft.OneGet.Implementation {
 
         public IEnumerable<string> SupportedFileExtensions {
             get {
-                return (_supportedFileExtensions ?? (_supportedFileExtensions = Features.ContainsKey(Constants.Features.SupportedExtensions) ? Features[Constants.Features.SupportedExtensions].ToArray() : Constants.Empty)).ByRef();
+                return (_supportedFileExtensions ?? (_supportedFileExtensions = Features.ContainsKey(Constants.Features.SupportedExtensions) ? Features[Constants.Features.SupportedExtensions].ToArray() : Constants.Empty));
             }
         }
 
         public IEnumerable<string> SupportedUriSchemes {
             get {
-                return (_supportedSchemes ?? (_supportedSchemes = Features.ContainsKey(Constants.Features.SupportedSchemes) ? Features[Constants.Features.SupportedSchemes].ToArray() : Constants.Empty)).ByRef();
+                return (_supportedSchemes ?? (_supportedSchemes = Features.ContainsKey(Constants.Features.SupportedSchemes) ? Features[Constants.Features.SupportedSchemes].ToArray() : Constants.Empty));
             }
         }
 
@@ -91,12 +90,12 @@ namespace Microsoft.OneGet.Implementation {
         public List<DynamicOption> DynamicOptions {
             get {
                 if (_dynamicOptions == null) {
-                    var o = new object();
+                    var nullHostApi = new object().As<IHostApi>();
                     var result = new List<DynamicOption>();
-                    result.AddRange(GetDynamicOptions(OptionCategory.Install, o));
-                    result.AddRange(GetDynamicOptions(OptionCategory.Package, o));
-                    result.AddRange(GetDynamicOptions(OptionCategory.Provider, o));
-                    result.AddRange(GetDynamicOptions(OptionCategory.Source, o));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Install, nullHostApi));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Package, nullHostApi));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Provider, nullHostApi));
+                    result.AddRange(GetDynamicOptions(OptionCategory.Source, nullHostApi));
                     if (Features.ContainsKey("IsChainingProvider")) {
                         // chaining package providers should not cache results
                         return result;
@@ -111,7 +110,7 @@ namespace Microsoft.OneGet.Implementation {
         public virtual bool IsSupportedFileName(string filename) {
             try {
                 var extension = Path.GetExtension(filename);
-                if (!string.IsNullOrEmpty(extension)) {
+                if (!string.IsNullOrWhiteSpace(extension)) {
                     return SupportedFileExtensions.ContainsIgnoreCase(extension);
                 }
             } catch {
@@ -138,7 +137,7 @@ namespace Microsoft.OneGet.Implementation {
             return false;
         }
 
-        public virtual bool IsFileSupported(byte[] header) {
+        public virtual bool IsSupportedFile(byte[] header) {
             return MagicSignatures.Any(magic => BufferMatchesMagicBytes(magic, header, header.Length));
         }
 
@@ -157,33 +156,30 @@ namespace Microsoft.OneGet.Implementation {
             return false;
         }
 
-        public override object InitializeLifetimeService() {
-            return null;
-        }
-
+        
         public bool IsMethodImplemented(string methodName) {
             return Provider.IsMethodImplemented(methodName);
         }
 
-        internal void Initialize(IRequest request) {
+        internal void Initialize(IHostApi request) {
             if (!_initialized) {
                 _features = GetFeatures(request).Value;
                 _initialized = true;
             }
         }
 
-        public IAsyncValue<Dictionary<string, List<string>>> GetFeatures(IRequestObject requestObject) {
+        public IAsyncValue<Dictionary<string, List<string>>> GetFeatures(IHostApi requestObject) {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
             }
 
-            return new DictionaryRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetFeatures(request));
+            return new DictionaryRequestObject(this, requestObject, request => Provider.GetFeatures(request));
         }
 
-        public IAsyncEnumerable<DynamicOption> GetDynamicOptions(OptionCategory category, IRequestObject requestObject) {
-            requestObject = requestObject ?? new object();
+        public IAsyncEnumerable<DynamicOption> GetDynamicOptions(OptionCategory category, IHostApi requestObject) {
+            requestObject = requestObject ?? new object().As<IHostApi>();
 
-            return new DynamicOptionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetDynamicOptions(category.ToString(), request), category);
+            return new DynamicOptionRequestObject(this, requestObject, request => Provider.GetDynamicOptions(category.ToString(), request), category);
         }
     }
 }

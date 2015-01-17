@@ -88,7 +88,9 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             if (disposing) {
                 _runspace.AvailabilityChanged -= CheckIfRunspaceIsAvailable;
                 _runspace.StateChanged -= CheckIfRunspaceIsOpening;
-                WaitForAvailable();
+                
+                // note: WHY WOULD THIS HAVE BEEN HERE?
+                // WaitForAvailable();
 
                 if (_currentCommand != null) {
                     _currentCommand.Dispose();
@@ -163,7 +165,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             foreach (var item in cmdsOrAliases) {
                 var cmdName = GetPropertyValue(item, "Name").ToLower(CultureInfo.CurrentCulture);
                 var name = cmdName.Replace("-", "");
-                if (name.Is()) {
+                if (!string.IsNullOrWhiteSpace(name)) {
                     _commands.AddOrSet(name, item);
                 }
             }

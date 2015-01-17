@@ -23,7 +23,7 @@ namespace Microsoft.OneGet.Implementation {
     using Utility.Async;
     using Utility.Collections;
     using Utility.Plugin;
-    using IRequestObject = System.Object;
+    
 
     public class PackageProvider : ProviderBase<IPackageProvider> {
         private string _name;
@@ -45,57 +45,47 @@ namespace Microsoft.OneGet.Implementation {
 
         // Friendly APIs
 
-        public IAsyncEnumerable<PackageSource> AddPackageSource(string name, string location, bool trusted, IRequestObject requestObject) {
-            requestObject = requestObject ?? new object();
-            return new PackageSourceRequestObject(this, requestObject.As<IHostApi>(), request => Provider.AddPackageSource(name, location, trusted, request));
+        public IAsyncEnumerable<PackageSource> AddPackageSource(string name, string location, bool trusted, IHostApi requestObject) {
+            return new PackageSourceRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.AddPackageSource(name, location, trusted, request));
         }
 
-        public IAsyncEnumerable<PackageSource> RemovePackageSource(string name, IRequestObject requestObject) {
-            requestObject = requestObject ?? new object();
-            return new PackageSourceRequestObject(this, requestObject.As<IHostApi>(), request => Provider.RemovePackageSource(name, request));
+        public IAsyncEnumerable<PackageSource> RemovePackageSource(string name, IHostApi requestObject) {
+            return new PackageSourceRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.RemovePackageSource(name, request));
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> FindPackageByUri(Uri uri, int id, IRequestObject requestObject) {
-            requestObject = requestObject ?? new object();
-
+        public IAsyncEnumerable<SoftwareIdentity> FindPackageByUri(Uri uri, int id, IHostApi requestObject) {
             if (!IsSupportedScheme(uri)) {
                 return new EmptyAsyncEnumerable<SoftwareIdentity>();
             }
 
-            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.FindPackageByUri(uri, id, request), Constants.PackageStatus.Available);
+            return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackageByUri(uri, id, request), Constants.PackageStatus.Available);
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> GetPackageDependencies(SoftwareIdentity package, IRequestObject requestObject) {
-            requestObject = requestObject ?? new object();
-
-            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetPackageDependencies(package.FastPackageReference, request), Constants.PackageStatus.Dependency);
+        public IAsyncEnumerable<SoftwareIdentity> GetPackageDependencies(SoftwareIdentity package, IHostApi requestObject) {
+            return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.GetPackageDependencies(package.FastPackageReference, request), Constants.PackageStatus.Dependency);
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> FindPackageByFile(string filename, int id, IRequestObject requestObject) {
-            requestObject = requestObject ?? new object();
-
+        public IAsyncEnumerable<SoftwareIdentity> FindPackageByFile(string filename, int id, IHostApi requestObject) {
             if (!IsSupportedFile(filename)) {
                 return new EmptyAsyncEnumerable<SoftwareIdentity>();
             }
 
-            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.FindPackageByFile(filename, id, request), Constants.PackageStatus.Available);
+            return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackageByFile(filename, id, request), Constants.PackageStatus.Available);
         }
 
-        public IAsyncValue<int> StartFind(IRequestObject requestObject) {
+        public IAsyncValue<int> StartFind(IHostApi requestObject) {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
             }
 
-            return new FuncRequestObject<int>(this, requestObject.As<IHostApi>(), request => Provider.StartFind(request));
+            return new FuncRequestObject<int>(this,  requestObject, request => Provider.StartFind(request));
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> CompleteFind(int i, IRequestObject requestObject) {
-            requestObject = requestObject ?? new object();
-
-            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.CompleteFind(i, request), "Available");
+        public IAsyncEnumerable<SoftwareIdentity> CompleteFind(int i, IHostApi requestObject) {
+            return new SoftwareIdentityRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.CompleteFind(i, request), Constants.PackageStatus.Available);
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, IRequestObject requestObject) {
+        public IAsyncEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, IHostApi requestObject) {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
             }
@@ -112,7 +102,7 @@ namespace Microsoft.OneGet.Implementation {
                 return FindPackage(names[0], requiredVersion, minimumVersion, maximumVersion, 0, requestObject);
             }
 
-            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => {
+            return new SoftwareIdentityRequestObject(this,  requestObject, request => {
                 var id = StartFind(request);
                 foreach (var name in names) {
                     Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id.Value, request);
@@ -122,7 +112,7 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         /*
-        private IEnumerable<SoftwareIdentity> FindPackagesImpl(CancellationTokenSource cancellationTokenSource, string[] names, string requiredVersion, string minimumVersion, string maximumVersion, IRequestObject requestObject) {
+        private IEnumerable<SoftwareIdentity> FindPackagesImpl(CancellationTokenSource cancellationTokenSource, string[] names, string requiredVersion, string minimumVersion, string maximumVersion, IHostApi requestObject) {
             var id = StartFind(requestObject);
             foreach (var name in names) {
                 foreach (var pkg in FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
@@ -135,7 +125,7 @@ namespace Microsoft.OneGet.Implementation {
         }
 */
 
-        public IAsyncEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, IRequestObject requestObject) {
+        public IAsyncEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, IHostApi requestObject) {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
             }
@@ -152,7 +142,7 @@ namespace Microsoft.OneGet.Implementation {
                 return FindPackageByUri(uris[0], 0, requestObject);
             }
 
-            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => {
+            return new SoftwareIdentityRequestObject(this,  requestObject , request => {
                 var id = StartFind(request);
                 foreach (var uri in uris) {
                     Provider.FindPackageByUri(uri, id.Value, request);
@@ -162,7 +152,7 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         /*
-        private IEnumerable<SoftwareIdentity> FindPackagesByUrisImpl(CancellationTokenSource cancellationTokenSource, Uri[] uris, IRequestObject requestObject) {
+        private IEnumerable<SoftwareIdentity> FindPackagesByUrisImpl(CancellationTokenSource cancellationTokenSource, Uri[] uris, IHostApi requestObject) {
             var id = StartFind(requestObject);
             foreach (var uri in uris) {
                 foreach (var pkg in FindPackageByUri(uri, id.Value, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
@@ -175,7 +165,7 @@ namespace Microsoft.OneGet.Implementation {
         }
 */
 
-        public IAsyncEnumerable<SoftwareIdentity> FindPackagesByFiles(string[] filenames, IRequestObject requestObject) {
+        public IAsyncEnumerable<SoftwareIdentity> FindPackagesByFiles(string[] filenames, IHostApi requestObject) {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
             }
@@ -192,7 +182,7 @@ namespace Microsoft.OneGet.Implementation {
                 return FindPackageByFile(filenames[0], 0, requestObject);
             }
 
-            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => {
+            return new SoftwareIdentityRequestObject(this,  requestObject , request => {
                 var id = StartFind(request);
                 foreach (var file in filenames) {
                     Provider.FindPackageByFile(file, id.Value, request);
@@ -201,7 +191,7 @@ namespace Microsoft.OneGet.Implementation {
             }, Constants.PackageStatus.Available);
         }
 
-        private IEnumerable<SoftwareIdentity> FindPackagesByFilesImpl(CancellationTokenSource cancellationTokenSource, string[] filenames, IRequestObject requestObject) {
+        private IEnumerable<SoftwareIdentity> FindPackagesByFilesImpl(CancellationTokenSource cancellationTokenSource, string[] filenames, IHostApi requestObject) {
             var id = StartFind(requestObject);
             foreach (var file in filenames) {
                 foreach (var pkg in FindPackageByFile(file, id.Value, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
@@ -213,19 +203,15 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequestObject requestObject) {
-            requestObject = requestObject ?? new object();
-
-            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, request), Constants.PackageStatus.Available);
+        public IAsyncEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IHostApi requestObject) {
+            return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, request), Constants.PackageStatus.Available);
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> GetInstalledPackages(string name, IRequestObject requestObject) {
-            requestObject = requestObject ?? new object();
-
-            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.GetInstalledPackages(name, request), Constants.PackageStatus.Installed);
+        public IAsyncEnumerable<SoftwareIdentity> GetInstalledPackages(string name, IHostApi requestObject) {
+            return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.GetInstalledPackages(name, request), Constants.PackageStatus.Installed);
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, IRequestObject requestObject) {
+        public IAsyncEnumerable<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, IHostApi requestObject) {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
             }
@@ -233,13 +219,12 @@ namespace Microsoft.OneGet.Implementation {
             if (softwareIdentity == null) {
                 throw new ArgumentNullException("softwareIdentity");
             }
-            var hostApi = requestObject.As<IHostApi>();
-
+            
             // if the provider didn't say this was trusted, we should ask the user if it's ok.
             if (!softwareIdentity.FromTrustedSource) {
                 try {
-                    if (!hostApi.ShouldContinueWithUntrustedPackageSource(softwareIdentity.Name, softwareIdentity.Source)) {
-                        hostApi.Warning(hostApi.FormatMessageString(Constants.Messages.UserDeclinedUntrustedPackageInstall, softwareIdentity.Name));
+                    if (!requestObject.ShouldContinueWithUntrustedPackageSource(softwareIdentity.Name, softwareIdentity.Source)) {
+                        requestObject.Warning(requestObject.FormatMessageString(Constants.Messages.UserDeclinedUntrustedPackageInstall, softwareIdentity.Name));
                         return new EmptyAsyncEnumerable<SoftwareIdentity>();
                     }
                 } catch {
@@ -247,22 +232,18 @@ namespace Microsoft.OneGet.Implementation {
                 }
             }
 
-            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.InstallPackage(softwareIdentity.FastPackageReference, request), Constants.PackageStatus.Installed);
+            return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.InstallPackage(softwareIdentity.FastPackageReference, request), Constants.PackageStatus.Installed);
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, IRequestObject requestObject) {
-            requestObject = requestObject ?? new object();
-
-            return new SoftwareIdentityRequestObject(this, requestObject.As<IHostApi>(), request => Provider.UninstallPackage(softwareIdentity.FastPackageReference, request), Constants.PackageStatus.Uninstalled);
+        public IAsyncEnumerable<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, IHostApi requestObject) {
+            return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.UninstallPackage(softwareIdentity.FastPackageReference, request), Constants.PackageStatus.Uninstalled);
         }
 
-        public IAsyncEnumerable<PackageSource> ResolvePackageSources(IRequestObject requestObject) {
-            requestObject = requestObject ?? new object();
-
-            return new PackageSourceRequestObject(this, requestObject.As<IHostApi>(), request => Provider.ResolvePackageSources(request));
+        public IAsyncEnumerable<PackageSource> ResolvePackageSources(IHostApi requestObject) {
+            return new PackageSourceRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.ResolvePackageSources(request));
         }
 
-        public IAsyncAction DownloadPackage(SoftwareIdentity softwareIdentity, string destinationFilename, IRequestObject requestObject) {
+        public IAsyncAction DownloadPackage(SoftwareIdentity softwareIdentity, string destinationFilename, IHostApi requestObject) {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
             }
@@ -271,11 +252,11 @@ namespace Microsoft.OneGet.Implementation {
                 throw new ArgumentNullException("softwareIdentity");
             }
 
-            return new ActionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, request));
+            return new ActionRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, request));
         }
 
-        internal void ExecuteElevatedAction(string payload, IRequestObject requestObject) {
-            new ActionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.ExecuteElevatedAction(payload, request)).Wait();
+        internal void ExecuteElevatedAction(string payload, IHostApi requestObject) {
+            new ActionRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.ExecuteElevatedAction(payload, request)).Wait();
         }
     }
 }

@@ -84,25 +84,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 		}
     }
 <# } #>
-#if USE_APPDOMAINS
-      internal partial class PluginDomain {
-        public void Invoke(Action action) {
-            ((WrappedAction)new Proxy<WrappedAction>(this, new WrappedAction(action))).Invoke();
-        }
-      <# for( var i = 1; i< 17; i++ ) {
-        var types = getTypes(i);
-        var paramDecl = getParamDecl(i);
-        var param = getParams(i);
-		 #>
-        public void Invoke<<#=types#>>(Action<<#=types#>> action, <#=paramDecl#> ) {
-            try {
-                ((WrappedAction<<#=types#>>)new Proxy<WrappedAction<<#=types#>>>(this, action)).Invoke(<#=param#>);
-            } catch (Exception e) {
-                throw new Exception( string.Format(CultureInfo.InvariantCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace));
-            }
-        }<# } #>
-    }
-	#endif
+
 }
 <#+
     public string getTypes(int count) {

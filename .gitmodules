@@ -1,3 +1,9 @@
-[submodule "nuget"]
-	path = nuget
-	url = ../nuget
+[submodule "NuGetProvider"]
+	path = Providers/Dynamic/NuGetProvider
+	url = https://github.com/OneGet/NuGetProvider.git
+[submodule "ProviderSdk"]
+	path = Providers/Sdk/ProviderSdk
+	url = https://github.com/OneGet/ProviderSdk
+[submodule "cmdlet-testsuite"]
+	path = Test/BVT/cmdlet-testsuite
+	url = https://github.com/OneGet/cmdlet-testsuite.git

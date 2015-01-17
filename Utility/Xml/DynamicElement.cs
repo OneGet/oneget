@@ -115,7 +115,7 @@ namespace Microsoft.OneGet.Utility.Xml {
         /// <param name="elementName">The new XElement node name to use as the actual XML node for this DynamicXmlNode</param>
         /// <param name="namespaceManager"></param>
         public DynamicElement(string elementName, XmlNamespaceManager namespaceManager) {
-            if (string.IsNullOrEmpty(elementName)) {
+            if (string.IsNullOrWhiteSpace(elementName)) {
                 throw new ArgumentNullException("elementName");
             }
             _namespaceManager = namespaceManager;
@@ -124,10 +124,10 @@ namespace Microsoft.OneGet.Utility.Xml {
         }
 
         public DynamicElement(string elementName, string defaultNamespace, XmlNamespaceManager namespaceManager) {
-            if (string.IsNullOrEmpty(elementName)) {
+            if (string.IsNullOrWhiteSpace(elementName)) {
                 throw new ArgumentNullException("elementName");
             }
-            if (string.IsNullOrEmpty(defaultNamespace)) {
+            if (string.IsNullOrWhiteSpace(defaultNamespace)) {
                 throw new ArgumentNullException("defaultNamespace");
             }
             _namespaceManager = namespaceManager;

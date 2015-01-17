@@ -15,9 +15,10 @@
 namespace Microsoft.OneGet.Implementation {
     using System;
     using System.Collections.Generic;
+    using System.Security;
     using Api;
 
-    public class RemotableHostApi : MarshalByRefObject, IHostApi {
+    public class RemotableHostApi: IHostApi {
         private IHostApi _hostApi;
 
         internal RemotableHostApi(IHostApi host) {
@@ -66,24 +67,32 @@ namespace Microsoft.OneGet.Implementation {
             return _hostApi.CompleteProgress(activityId, isSuccessful);
         }
 
-        public IEnumerable<string> GetOptionKeys() {
-            return _hostApi.GetOptionKeys();
+        public IEnumerable<string> OptionKeys {
+            get {
+                return _hostApi.OptionKeys;
+            }
         }
 
         public IEnumerable<string> GetOptionValues(string key) {
             return _hostApi.GetOptionValues(key);
         }
 
-        public IEnumerable<string> GetSources() {
-            return _hostApi.GetSources();
+        public IEnumerable<string> Sources {
+            get {
+                return _hostApi.Sources;
+            }
         }
 
-        public string GetCredentialUsername() {
-            return _hostApi.GetCredentialUsername();
+        public string CredentialUsername {
+            get {
+                return _hostApi.CredentialUsername;
+            }
         }
 
-        public string GetCredentialPassword() {
-            return _hostApi.GetCredentialPassword();
+        public SecureString CredentialPassword {
+            get {
+                return _hostApi.CredentialPassword;
+            }
         }
 
         public bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination) {
@@ -98,16 +107,17 @@ namespace Microsoft.OneGet.Implementation {
             return _hostApi.AskPermission(permission);
         }
 
-        public bool IsInteractive() {
-            return _hostApi.IsInteractive();
+        public bool IsInteractive {
+            get {
+                return _hostApi.IsInteractive;
+            }
         }
 
-        public int CallCount() {
-            return _hostApi.CallCount();
+        public int CallCount {
+            get {
+                return _hostApi.CallCount;
+            }
         }
 
-        public override object InitializeLifetimeService() {
-            return null;
-        }
     }
 }

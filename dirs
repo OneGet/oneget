@@ -4,7 +4,7 @@ DIRS=\
 	Utility \
 	Utility.PowerShell \
 	OneGet \
-	PowerShell.MetaProvider \
+    Providers \
 	PowerShell.Module \
 
 # Unit test directories should be placed in the OPTIONAL_DIRS section

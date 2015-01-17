@@ -1,22 +1,23 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 namespace Microsoft.OneGet.Utility.Extensions {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using System.Threading.Tasks;
     using Collections;
 
@@ -33,40 +34,6 @@ namespace Microsoft.OneGet.Utility.Extensions {
         /// </remarks>
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> collection) {
             return collection == null || !collection.Any();
-        }
-
-        /// <summary>
-        ///     Ensures that the IEnumerable implements MarshalByRefObject so that the whole
-        ///     collection is not forced to serialize.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="enumerable"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> ByRef<T>(this IEnumerable<T> enumerable) {
-            if (enumerable == null) {
-                return null;
-            }
-
-            return enumerable as SerializableEnumerable<T> ?? new SerializableEnumerable<T>(enumerable);
-            // enumerable as ByRefEnumerable<T> ?? new ByRefEnumerable<T>(enumerable);
-        }
-
-        public static IEnumerable<T> ByRefEnumerable<T>(this IEnumerable<T> enumerable) {
-            if (enumerable == null) {
-                return null;
-            }
-
-            // return enumerable as ByRefEnumerable<T> ?? new ByRefEnumerable<T>(enumerable);
-            return enumerable as SerializableEnumerable<T> ?? new SerializableEnumerable<T>(enumerable);
-        }
-
-        public static IEnumerator<T> ByRef<T>(this IEnumerator<T> enumerator) {
-            if (enumerator == null) {
-                return null;
-            }
-
-            // return enumerator as ByRefEnumerator<T> ?? new ByRefEnumerator<T>(enumerator);
-            return enumerator as SerializableEnumerator<T> ?? new SerializableEnumerator<T>(enumerator);
         }
 
         /// <summary>
@@ -208,7 +175,35 @@ namespace Microsoft.OneGet.Utility.Extensions {
                 }
             }
         }
+
+        public static void SerialForEach<T>(this IEnumerable<T> enumerable, Action<T> action) {
+            var items = enumerable.ReEnumerable();
+            object first = items.FirstOrDefault();
+            if (first != null) {
+                object second = items.Skip(1).FirstOrDefault();
+                if (second != null) {
+                    foreach (var item in items) {
+                        action(item);
+                    }
+                }
+                else {
+                    action(items.FirstOrDefault());
+                }
+            }
+        }
+
+        private static readonly MethodInfo _castMethod = typeof(Enumerable).GetMethod("Cast");
+        private static readonly MethodInfo _toArrayMethod = typeof(Enumerable).GetMethod("ToArray");
+
+        private static readonly IDictionary<Type, MethodInfo> _castMethods = new Dictionary<Type, MethodInfo>();
+        private static readonly IDictionary<Type, MethodInfo> _toArrayMethods = new Dictionary<Type, MethodInfo>();
+        public static object ToIEnumerableT(this IEnumerable<object> enumerable, Type elementType) {
+            return _castMethods.GetOrAdd(elementType, () => _castMethod.MakeGenericMethod(elementType)).Invoke(null, new object[] {enumerable});
+        }
+        public static object ToArrayT(this IEnumerable<object> enumerable, Type elementType) {
+            return _toArrayMethods.GetOrAdd(elementType, () => _toArrayMethod.MakeGenericMethod(elementType)).Invoke(null, new[] { enumerable.ToIEnumerableT(elementType) });
+        }
     }
 
-    // <summary>Provides a task scheduler that dedicates a thread per task.</summary> 
+    // <summary>Provides a task scheduler that dedicates a thread per task.</summary>
 }

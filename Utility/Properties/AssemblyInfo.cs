@@ -36,6 +36,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("Microsoft.OneGet")]
 [assembly: InternalsVisibleTo("Microsoft.OneGet.Utility.PowerShell")]
 [assembly: InternalsVisibleTo("Microsoft.OneGet.Test")]
+[assembly: InternalsVisibleTo("Microsoft.OneGet.Test.Ri")]
 [assembly: InternalsVisibleTo("OneGet.PowerShell.Module.Test")]
 [assembly: InternalsVisibleTo("Microsoft.OneGet.PackageProvider.Bootstrap")]
 
@@ -48,17 +49,3 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 
 [assembly: Guid("2335ef65-8af7-4923-8d8b-a9e6943e4ff9")]
-
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]

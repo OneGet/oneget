@@ -20,7 +20,7 @@ namespace Microsoft.OneGet.Packaging {
     /// <summary>
     ///     Represents a package source (repository)
     /// </summary>
-    public class PackageSource : MarshalByRefObject {
+    public class PackageSource  {
         internal Dictionary<string, string> DetailsCollection = new Dictionary<string, string>();
         public string Name {get; internal set;}
         public string Location {get; internal set;}
@@ -51,10 +51,6 @@ namespace Microsoft.OneGet.Packaging {
             get {
                 return DetailsCollection;
             }
-        }
-
-        public override object InitializeLifetimeService() {
-            return null;
         }
     }
 }

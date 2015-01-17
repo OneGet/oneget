@@ -20,10 +20,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Management.Automation;
+    using Microsoft.OneGet.Api;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.OneGet.Utility.Plugin;
     using Microsoft.OneGet.Utility.PowerShell;
     using Utility;
 
@@ -46,10 +48,12 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
         }
 
+        protected bool IsFailingEarly;
+
         protected virtual IEnumerable<PackageProvider> SelectedProviders {
             get {
 
-                var didUserSpecifyProviders = ProviderName.IsNullOrEmpty();
+                var didUserSpecifyProviders = !ProviderName.IsNullOrEmpty();
 
 
                 // filter on provider names  - if they specify a provider name, narrow to only those provider names.
@@ -63,6 +67,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     if (IsInvocation) {
                         // and we're in an actual cmdlet invocaton.
                         QueueHeldMessage(() => Error(Constants.Errors.UnknownProviders, ProviderName.JoinWithComma()));
+                        IsFailingEarly = true;
                     }
                     // return the empty collection, for all the good it's doing.
                     return providers;
@@ -90,6 +95,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                             if (IsInvocation) {
                                 // user didn't actually specify provider(s), the sources can't be tied to any particular provider
                                 QueueHeldMessage(() => Error(Constants.Errors.SourceNotFound, userSpecifiedSources.JoinWithComma()));
+                                IsFailingEarly = true;
                             }
                             // return the empty set.
                             return filteredproviders;
@@ -99,8 +105,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         // and the source(s) aren't found in the providers they listed
 
                         if (IsInvocation) {
-                            var providerNames = providers.Select(each => each.Name).JoinWithComma();
-                            QueueHeldMessage(() => Error(Constants.Errors.NoMatchForProvidersAndSources, providerNames, userSpecifiedSources.JoinWithComma()));
+                            if (providers.Count() < 2) {
+                                QueueHeldMessage(() => Error(Constants.Errors.SourceNotFound, userSpecifiedSources.JoinWithComma()));
+                                IsFailingEarly = true;
+                            } else {
+                                var providerNames = providers.Select(each => each.Name).JoinWithComma();
+                                QueueHeldMessage(() => Error(Constants.Errors.NoMatchForProvidersAndSources, providerNames, userSpecifiedSources.JoinWithComma()));
+                                IsFailingEarly = true;
+                            }
                         }
 
                         return filteredproviders;
@@ -408,7 +420,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                         // and we can potentially narrow the provider selection based 
                         // on arguments the user specified.
 
-                        if (IsCanceled ) {
+                        if (null== CachedSelectedProviders || IsFailingEarly || IsCanceled ) {
 #if DEEP_DEBUG
                             Console.WriteLine("»»» Cancelled before we got finished doing dynamic parameters");
 #endif

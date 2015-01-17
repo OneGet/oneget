@@ -116,7 +116,7 @@ namespace Microsoft.OneGet.Utility.Versions {
         }
 
         private static ulong StringToULong(string version) {
-            if (String.IsNullOrEmpty(version)) {
+            if (string.IsNullOrWhiteSpace(version)) {
                 return 0L;
             }
 

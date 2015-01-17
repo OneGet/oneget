@@ -17,9 +17,6 @@ namespace Microsoft.OneGet.Implementation {
     using Api;
     using Providers;
     using Utility.Async;
-    using Utility.Collections;
-    using Utility.Plugin;
-    using IRequestObject = System.Object;
 
     internal class Downloader : ProviderBase<IDownloader> {
         private string _name;
@@ -34,8 +31,8 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        public void DownloadFile(Uri remoteLocation, string localFilename, IRequestObject requestObject) {
-            new ActionRequestObject(this, requestObject.As<IHostApi>(), request => Provider.DownloadFile(remoteLocation, localFilename, request)).Wait();
+        public void DownloadFile(Uri remoteLocation, string localFilename, IHostApi requestObject) {
+            new ActionRequestObject(this, requestObject, request => Provider.DownloadFile(remoteLocation, localFilename, request)).Wait();
         }
     }
 }

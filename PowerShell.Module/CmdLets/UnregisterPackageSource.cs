@@ -18,9 +18,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
+    using Microsoft.OneGet.Api;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.OneGet.Utility.Plugin;
 
     [Cmdlet(VerbsLifecycle.Unregister, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517143")]
     public sealed class UnregisterPackageSource : CmdletWithSource {
@@ -72,7 +74,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
         public override IEnumerable<string> Sources {
             get {
-                if (Source.IsEmptyOrNull()) {
+                if (string.IsNullOrWhiteSpace(Source)) {
                     return new string[0];
                 }
                 return new[] {
@@ -90,7 +92,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
 
                     var provider = SelectProviders(source.ProviderName).FirstOrDefault();
                     if (provider == null) {
-                        if (string.IsNullOrEmpty(source.ProviderName)) {
+                        if (string.IsNullOrWhiteSpace(source.ProviderName)) {
                             return Error(Constants.Errors.UnableToFindProviderForSource, source.Name);
                         }
                         return Error(Constants.Errors.UnknownProvider, source.ProviderName);
@@ -101,7 +103,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
 
-            if (string.IsNullOrEmpty(Source) && string.IsNullOrEmpty(Location)) {
+            if (string.IsNullOrWhiteSpace(Source) && string.IsNullOrWhiteSpace(Location)) {
                 Error(Constants.Errors.NameOrLocationRequired);
                 return false;
             }
@@ -114,7 +116,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
             }
 
             if (prov.Length == 0) {
-                if (ProviderName.IsNullOrEmpty() || string.IsNullOrEmpty(ProviderName[0])) {
+                if (ProviderName.IsNullOrEmpty() || string.IsNullOrWhiteSpace(ProviderName[0])) {
                     return Error(Constants.Errors.UnableToFindProviderForSource, Source ?? Location);
                 }
                 return Error(Constants.Errors.UnknownProvider, ProviderName[0]);

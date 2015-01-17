@@ -16,9 +16,6 @@ namespace Microsoft.OneGet.Implementation {
     using System.Collections.Generic;
     using Api;
     using Providers;
-    using Utility.Extensions;
-    using Utility.Plugin;
-    using IRequestObject = System.Object;
 
     internal class Archiver : ProviderBase<IArchiver> {
         private string _name;
@@ -37,8 +34,8 @@ namespace Microsoft.OneGet.Implementation {
             return base.IsSupportedFile(localFilename) && Provider.IsSupportedFile(localFilename);
         }
 
-        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject) {
-            return new FuncRequestObject<IEnumerable<string>>(this, requestObject.As<IHostApi>(), (request) => Provider.UnpackArchive(localFilename, destinationFolder, request).ByRefEnumerable()).Value;
+        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IHostApi host) {
+            return new FuncRequestObject<IEnumerable<string>>(this, host, (request) => Provider.UnpackArchive(localFilename, destinationFolder, request)).Value;
         }
     }
 }

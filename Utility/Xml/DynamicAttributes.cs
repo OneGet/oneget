@@ -43,7 +43,7 @@ namespace Microsoft.OneGet.Utility.Xml {
         /// <returns>the string value of the attribute if it exists, otherwise null</returns>
         public string this[string attributeName] {
             get {
-                if (string.IsNullOrEmpty(attributeName)) {
+                if (string.IsNullOrWhiteSpace(attributeName)) {
                     return null;
                 }
                 var result = _element.Attribute(attributeName);

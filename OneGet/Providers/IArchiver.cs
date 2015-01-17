@@ -14,8 +14,8 @@
 
 namespace Microsoft.OneGet.Providers {
     using System.Collections.Generic;
+    using Api;
     using Utility.Plugin;
-    using IRequestObject = System.Object;
 
     public interface IArchiver : IProvider {
         /// <summary>
@@ -26,7 +26,7 @@ namespace Microsoft.OneGet.Providers {
         string GetArchiverName();
 
         [Required]
-        IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject);
+        IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IHostApi requestObject);
 
         bool IsSupportedFile(string localFilename);
     }

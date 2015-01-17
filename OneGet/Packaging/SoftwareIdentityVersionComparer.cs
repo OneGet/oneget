@@ -153,7 +153,7 @@ namespace Microsoft.OneGet.Packaging {
         }
 
         private static int IndexOfNotAny(string version, params char[] chars) {
-            if (string.IsNullOrEmpty(version)) {
+            if (string.IsNullOrWhiteSpace(version)) {
                 return -1;
             }
             var n = 0;

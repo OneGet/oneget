@@ -15,24 +15,27 @@
 namespace Microsoft.OneGet.Utility.Plugin {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using Async;
     using Collections;
     using Extensions;
 
-    public class DynamicInterface {
-        public static readonly DynamicInterface Instance = new DynamicInterface();
+    public static class DynamicInterface {
+        internal delegate void OnUnhandledException(string method, Exception exception);
 
-        private static readonly Dictionary<Types, bool> _isCompatibleCache = new Dictionary<Types, bool>();
-        private static readonly Dictionary<string, ProxyClass> _proxyClassDefinitions = new Dictionary<string, ProxyClass>();
+        private static readonly Dictionary<Types, bool> _isCreatableFromTypesCache = new Dictionary<Types, bool>();
+        private static readonly Dictionary<Types, bool> _isCastableFromTypesCache = new Dictionary<Types, bool>();
 
-        public TInterface Create<TInterface>(params Type[] types) {
-            return (TInterface)Create(typeof (TInterface), types);
+        public static TInterface Create<TInterface>(params Type[] types) {
+            return (TInterface)typeof (TInterface).Create(types);
         }
 
-        public object Create(Type tInterface, params Type[] types) {
+        public static TInterface Create<TInterface>(this Type type) {
+            return (TInterface)typeof(TInterface).Create(type);
+        }
+
+        public static object Create(this Type tInterface, params Type[] types) {
             if (tInterface == null) {
                 throw new ArgumentNullException("tInterface");
             }
@@ -43,7 +46,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 throw new Exception("Interface Type '{0}' doesn not have any virtual or abstract methods".format(tInterface.FullNiceName()));
             }
 
-            if (!IsTypeCompatible(tInterface, types)) {
+            if (!tInterface.CanCreateFrom(types)) {
                 var missing = GetMissingMethods(tInterface, types).ToArray();
                 var badctors = FilterOnMissingDefaultConstructors(types).ToArray();
 
@@ -63,20 +66,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return CreateProxy(tInterface, types.Select(Activator.CreateInstance).ToArray());
         }
 
-        public object Create(Type tInterface, params string[] typeNames) {
-            if (tInterface == null) {
-                throw new ArgumentNullException("tInterface");
-            }
-            typeNames = typeNames ?? new string[0];
-
-            return Create(tInterface, (Type[])typeNames.Select(Type.GetType));
-        }
-
-        public TInterface Create<TInterface>(params string[] typeNames) {
-            return (TInterface)Create(typeof (TInterface), typeNames);
-        }
-
-        private IEnumerable<object> Flatten(IEnumerable<object> items) {
+        private static IEnumerable<object> Flatten(IEnumerable<object> items) {
             if (items == null) {
                 yield break;
             }
@@ -99,21 +89,48 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
         }
 
-        private IEnumerable<object> Flatten(params object[] items) {
+        private static IEnumerable<object> Flatten(params object[] items) {
             return Flatten(items as IEnumerable<object>);
         }
 
-        public TInterface Create<TInterface>(params object[] instances) {
-            return (TInterface)Create(typeof (TInterface), instances);
+        public static TInterface DynamicCast<TInterface>(params object[] instances) {
+            return (TInterface)DynamicCast(typeof (TInterface), instances);
         }
 
-        public object Create(Type tInterface, params object[] instances) {
+        private static object DynamicCast(Type tInterface, params object[] instances) {
             if (tInterface == null) {
                 throw new ArgumentNullException("tInterface");
             }
 
             if (instances.Length == 0) {
                 throw new ArgumentException("No instances given", "instances");
+            }
+
+            if (instances.Length == 1) {
+                // shortcut for string coercion
+                if (tInterface == typeof (string)) {
+                    return instances[0] == null ? null : instances[0].ToString();
+                }
+
+                var objects = instances[0] as IEnumerable<object>;
+                if (objects != null) {
+                    // if the tInterface is an IEnumerable<T> 
+                    // then we'll just dynamic cast the items in the collection to the target type.
+                    if (tInterface.IsIEnumerableT()) {
+                        var elementType = tInterface.GetGenericArguments().FirstOrDefault();
+
+                        if (elementType != null) {
+                            return objects.Select(each => DynamicCast(elementType, each)).ToIEnumerableT(elementType);
+                        }
+                    }
+
+                    if (tInterface.IsArray && tInterface.GetArrayRank() == 1) {
+                        var elementType = tInterface.GetElementType();
+                        if (elementType != null) {
+                            return objects.Select(each => DynamicCast(elementType, each)).ToArrayT(elementType);
+                        }
+                    }
+                }
             }
 
             if (!tInterface.GetVirtualMethods().Any()) {
@@ -130,7 +147,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 return instances[0];
             }
 
-            if (!IsInstanceCompatible(tInterface, instances)) {
+            if (!tInterface.CanDynamicCastFrom(instances)) {
                 var missing = GetMethodsMissingFromInstances(tInterface, instances);
                 var msg = "\r\nObjects are missing the following methods from interface ('{0}'):\r\n  {1}".format(
                     tInterface.FullNiceName(),
@@ -142,61 +159,30 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return CreateProxy(tInterface, instances);
         }
 
-        public bool IsTypeCompatible(Type tInterface, params Type[] types) {
-            return _isCompatibleCache.GetOrAdd(new Types(tInterface, types), () => {
-#if DEEPDEBUG
-                Debug.WriteLine(String.Format("IsTypeCompatible {0} for {1}",typeof(TInterface).Name , types[0].Name));
-
-                foreach (var s in types.Where(each => each.GetDefaultConstructor() == null).Select(each => string.Format("{0} has no default constructor", each.Name))) {
-                    Debug.WriteLine(s);
-                }
-#endif
-                try {
-                    if (types.Any(actualType => actualType.GetDefaultConstructor() == null)) {
-                        return false;
-                    }
-                } catch {
-                    // if the actualType's assembly isn't available to this appdomain, we can't create an object from the type anyway.
-                    return false;
-                }
-#if DEEPDEBUG
-                foreach (var s in types) {
-                    Debug.WriteLine(string.Format("»»»{0}",s.Name));
-
-                    var mm = GetMissingMethods<TInterface>(types);
-                    foreach (var method in mm) {
-                        Debug.WriteLine(string.Format("»»»    MISSING {0}", method.Name));
-                    }
-                }
-#endif
-                // verify that required methods are present.
-                return !GetMissingMethods(tInterface, types).Any();
+        public static bool CanCreateFrom(this Type tInterface, params Type[] types) {
+            return _isCreatableFromTypesCache.GetOrAdd(new Types(tInterface, types), () => {
+                // if there isn't a default constructor, we can't use that type to create instances 
+                return types.All(actualType => actualType.GetDefaultConstructor() != null) && CanDynamicCastFrom(tInterface, types);
             });
         }
 
-        public bool IsTypeCompatible<TInterface>(params Type[] types) {
-            return IsTypeCompatible(typeof (TInterface), types);
+        public static bool CanCreateFrom<TInterface>(params Type[] types) {
+            return CanCreateFrom(typeof (TInterface), types);
         }
 
-        private IEnumerable<Type> FilterOnMissingDefaultConstructors(params Type[] types) {
+        public static bool CanDynamicCastFrom(this Type tInterface, params Type[] types) {
+            return _isCastableFromTypesCache.GetOrAdd(new Types(tInterface, types), () => !GetMissingMethods(tInterface, types).Any());
+        }
+
+        private static IEnumerable<Type> FilterOnMissingDefaultConstructors(params Type[] types) {
             return types.Where(actualType => actualType.GetDefaultConstructor() == null);
         }
 
-        private IEnumerable<MethodInfo> GetMissingMethods(Type tInterface, params Type[] types) {
-            var publicMethods = types.GetPublicMethods();
-            return tInterface.GetRequiredMethods().Where(method => publicMethods.FindMethod(method) == null);
+        private static IEnumerable<MethodInfo> GetMissingMethods(Type tInterface, params Type[] types) {
+            return tInterface.GetRequiredMethods().Where(method => types.GetPublicMethods().FindMethod(method) == null);
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
-        private IEnumerable<MethodInfo> GetMissingMethods<TInterface>(params Type[] types) {
-            return GetMissingMethods(typeof (TInterface), types);
-        }
-
-        public bool IsInstanceCompatible<TInterface>(params object[] instances) {
-            return IsInstanceCompatible(typeof (TInterface), instances);
-        }
-
-        public bool IsInstanceCompatible(Type tInterface, params object[] instances) {
+        public static bool CanDynamicCastFrom(this Type tInterface, params object[] instances) {
             if (tInterface == null) {
                 throw new ArgumentNullException("tInterface");
             }
@@ -214,35 +200,29 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
 
             // this will be faster if this type has been checked before.
-            if (IsTypeCompatible(tInterface, instances.Select(each => each.GetType()).ToArray())) {
+            if (CanCreateFrom(tInterface, instances.Select(each => each.GetType()).ToArray())) {
                 return true;
             }
 
 #if DEEPDEBUG
-            var missing = GetMethodsMissingFromInstances<TInterface>(instances).ToArray();
+            var missing = GetMethodsMissingFromInstances(tInterface,instances).ToArray();
 
             if (missing.Length > 0 ) {
                 var msg = "\r\nObjects are missing the following methods from interface ('{0}'):\r\n  {1}".format(
-                    typeof (TInterface).FullNiceName(),
+                    tInterface.FullNiceName(),
                     missing.Select(each => each.ToSignatureString()).Quote().JoinWith("\r\n  "));
                 Debug.WriteLine(msg);
             }
 #endif
-
             // see if any specified object has something for every required method.
             return !instances.Aggregate((IEnumerable<MethodInfo>)tInterface.GetRequiredMethods(), GetMethodsMissingFromInstance).Any();
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
-        private IEnumerable<MethodInfo> GetMethodsMissingFromInstances<TInterface>(params object[] instances) {
-            return GetMethodsMissingFromInstances(typeof (TInterface), instances);
-        }
-
-        private IEnumerable<MethodInfo> GetMethodsMissingFromInstances(Type tInterface, params object[] instances) {
+        private static IEnumerable<MethodInfo> GetMethodsMissingFromInstances(Type tInterface, params object[] instances) {
             return instances.Aggregate((IEnumerable<MethodInfo>)tInterface.GetRequiredMethods(), GetMethodsMissingFromInstance);
         }
 
-        private IEnumerable<MethodInfo> GetMethodsMissingFromInstance(IEnumerable<MethodInfo> methods, object instance) {
+        private static IEnumerable<MethodInfo> GetMethodsMissingFromInstance(IEnumerable<MethodInfo> methods, object instance) {
             var instanceSupportsMethod = DynamicInterfaceExtensions.GenerateInstanceSupportsMethod(instance);
             var instanceType = instance.GetType();
 
@@ -261,12 +241,8 @@ namespace Microsoft.OneGet.Utility.Plugin {
                     ));
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
-        private TInterface CreateProxy<TInterface>(params object[] instances) {
-            return (TInterface)CreateProxy(typeof (TInterface), instances);
-        }
-
-        private object CreateProxy(Type tInterface, params object[] instances) {
+        
+        private static object CreateProxy(Type tInterface, params object[] instances) {
             var matrix = instances.SelectMany(instance => {
                 var instanceType = instance.GetType();
                 // get all the public interfaces for the instances and place them at the top
@@ -323,36 +299,47 @@ namespace Microsoft.OneGet.Utility.Plugin {
                     }
                 }
                 if (!found && (tInterface.IsInterface || method.IsAbstract)) {
-#if DEEPDEBUG
+#if xDEEPDEBUG
                     Console.WriteLine(" Generating stub method for {0} -> {1}".format(tInterface.NiceName(), method.ToSignatureString()));
 #endif
                     stubMethods.Add(method);
                 }
             }
 
-            // now we can calculate the key based on the content of the *Methods collections
-            var key = tInterface.FullName + ":::" + instanceMethods.Keys.Select(each => each.FullName + "." + instanceMethods[each].Select(mi => mi.Value.ToSignatureString()).JoinWithComma()).JoinWith(";\r\n") +
-                      "::" + delegateMethods.Select(each => each.GetType().FullName).JoinWith(";\r\n") +
-                      "::" + stubMethods.Select(mi => mi.ToSignatureString()).JoinWithComma();
-
-            var proxyClass = _proxyClassDefinitions.GetOrAdd(key, () => new ProxyClass(tInterface, instanceMethods, delegateMethods, stubMethods));
-
-            return proxyClass.CreateInstance(usedInstances, delegateMethods);
+            return DynamicType.Create(tInterface, instanceMethods, delegateMethods, stubMethods, usedInstances);
         }
 
-        public IEnumerable<Type> FilterTypesCompatibleTo<TInterface>(IEnumerable<Type> types) {
-            if (types == null) {
-                return Enumerable.Empty<Type>();
-            }
 
-            return types.Where(each => IsTypeCompatible<TInterface>(each));
+        public static IEnumerable<Type> FindCompatibleTypes<TInterface>(this Assembly assembly) {
+            return assembly == null ? Enumerable.Empty<Type>() : assembly.CreatableTypes().Where(each => CanCreateFrom<TInterface>(each));
         }
 
-        public IEnumerable<Type> FilterTypesCompatibleTo<TInterface>(Assembly assembly) {
-            if (assembly == null) {
-                return Enumerable.Empty<Type>();
-            }
-            return assembly.CreatableTypes().Where(each => IsTypeCompatible<TInterface>(each));
+#if UNUSED_VARIANTS
+        
+        public static IEnumerable<Type> FindCompatibleTypes<TInterface>(this IEnumerable<Type> types) {
+            return types == null ? Enumerable.Empty<Type>() : types.Where(each => CanCreateFrom<TInterface>(each));
         }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
+        private static TInterface CreateProxy<TInterface>(params object[] instances) {
+            return (TInterface)CreateProxy(typeof (TInterface), instances);
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
+        private static IEnumerable<MethodInfo> GetMethodsMissingFromInstances<TInterface>(params object[] instances) {
+            return GetMethodsMissingFromInstances(typeof (TInterface), instances);
+        }
+        
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
+        private static IEnumerable<MethodInfo> GetMissingMethods<TInterface>(params Type[] types) {
+            return GetMissingMethods(typeof (TInterface), types);
+        }
+
+        public static bool CanDynamicCastFrom<TInterface>(params object[] instances) {
+            return CanDynamicCastFrom(typeof (TInterface), instances);
+        }
+
+
+#endif
     }
 }

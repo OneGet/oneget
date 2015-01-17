@@ -1,16 +1,16 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 namespace Microsoft.OneGet.Implementation {
     using System;
@@ -19,66 +19,21 @@ namespace Microsoft.OneGet.Implementation {
     using System.Linq;
     using System.Security;
     using Api;
-    using Utility.Extensions;
-    using IRequestObject = System.Object;
 
-    public abstract class Request : IRequest, IDisposable {
-        #region copy core-apis
+    public abstract class Request : IRequest {
+        #region core-apis
 
-        public abstract bool IsCanceled {get;}
+        public abstract IPackageManagementService PackageManagementService {get;}
 
-        /* Synced/Generated code =================================================== */
-
-        /// <summary>
-        ///     Returns the interface type for a Request that the OneGet Core is expecting
-        ///     This is (currently) neccessary to provide an appropriately-typed version
-        ///     of the Request to the core when a Plugin is calling back into the core
-        ///     and has to pass a request object.
-        /// </summary>
-        /// <returns></returns>
-        public abstract Type GetIRequestInterface();
-
-        /// <summary>
-        ///     Returns the internal version of the OneGet core.
-        ///     This will usually only be updated if there is a breaking API or Interface change that might
-        ///     require other code to know which version is running.
-        /// </summary>
-        /// <returns>Internal Version of OneGet</returns>
-        public abstract int CoreVersion();
-
-        public abstract bool NotifyBeforePackageInstall(string packageName, string version, string source, string destination);
-
-        public abstract bool NotifyPackageInstalled(string packageName, string version, string source, string destination);
-
-        public abstract bool NotifyBeforePackageUninstall(string packageName, string version, string source, string destination);
-
-        public abstract bool NotifyPackageUninstalled(string packageName, string version, string source, string destination);
-
-        public abstract IEnumerable<string> ProviderNames {get;}
-
-        public abstract IEnumerable<PackageProvider> PackageProviders {get;}
-
-        public abstract IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName);
-
-        public abstract IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
-
-        public abstract IEnumerable<PackageProvider> SelectProviders(string providerName, IRequestObject requestObject);
-
-        public abstract bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IRequestObject requestObject);
-
-        public abstract string GetCanonicalPackageId(string providerName, string packageName, string version);
-
-        public abstract string ParseProviderName(string canonicalPackageId);
-
-        public abstract string ParsePackageName(string canonicalPackageId);
-
-        public abstract string ParsePackageVersion(string canonicalPackageId);
+        public abstract IProviderServices ProviderServices {get;}
 
         #endregion
 
         #region copy host-apis
 
         /* Synced/Generated code =================================================== */
+        public abstract bool IsCanceled { get; }
+
         public abstract string GetMessageString(string messageText, string defaultText);
 
         public abstract bool Warning(string messageText);
@@ -101,7 +56,7 @@ namespace Microsoft.OneGet.Implementation {
         ///     Used by a provider to request what metadata keys were passed from the user
         /// </summary>
         /// <returns></returns>
-        public abstract IEnumerable<string> GetOptionKeys();
+        public abstract IEnumerable<string> OptionKeys {get;}
 
         /// <summary>
         /// </summary>
@@ -109,11 +64,11 @@ namespace Microsoft.OneGet.Implementation {
         /// <returns></returns>
         public abstract IEnumerable<string> GetOptionValues(string key);
 
-        public abstract IEnumerable<string> GetSources();
+        public abstract IEnumerable<string> Sources {get;}
 
-        public abstract string GetCredentialUsername();
+        public abstract string CredentialUsername { get; }
 
-        public abstract string GetCredentialPassword();
+        public abstract SecureString CredentialPassword { get; }
 
         public abstract bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination);
 
@@ -121,9 +76,9 @@ namespace Microsoft.OneGet.Implementation {
 
         public abstract bool AskPermission(string permission);
 
-        public abstract bool IsInteractive();
+        public abstract bool IsInteractive {get;}
 
-        public abstract int CallCount();
+        public abstract int CallCount {get;}
 
         #endregion
 
@@ -186,61 +141,18 @@ namespace Microsoft.OneGet.Implementation {
 
         #endregion
 
-        #region copy service-apis
-
-        /* Synced/Generated code =================================================== */
-        public abstract bool IsElevated {get;}
-
-        public abstract void DownloadFile(Uri remoteLocation, string localFilename, IRequestObject requestObject);
-
-        public abstract bool IsSupportedArchive(string localFilename, IRequestObject requestObject);
-
-        public abstract IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject);
-
-        public abstract void AddPinnedItemToTaskbar(string item, IRequestObject requestObject);
-
-        public abstract void RemovePinnedItemFromTaskbar(string item, IRequestObject requestObject);
-
-        public abstract void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, IRequestObject requestObject);
-
-        public abstract void SetEnvironmentVariable(string variable, string value, string context, IRequestObject requestObject);
-
-        public abstract void RemoveEnvironmentVariable(string variable, string context, IRequestObject requestObject);
-
-        public abstract void CopyFile(string sourcePath, string destinationPath, IRequestObject requestObject);
-
-        public abstract void Delete(string path, IRequestObject requestObject);
-
-        public abstract void DeleteFolder(string folder, IRequestObject requestObject);
-
-        public abstract void CreateFolder(string folder, IRequestObject requestObject);
-
-        public abstract void DeleteFile(string filename, IRequestObject requestObject);
-
-        public abstract string GetKnownFolder(string knownFolder, IRequestObject requestObject);
-
-        public abstract string CanonicalizePath(string text, string currentDirectory);
-
-        public abstract bool FileExists(string path);
-
-        public abstract bool DirectoryExists(string path);
-
-        public abstract bool Install(string fileName, string additionalArgs, IRequestObject requestObject);
-
-        public abstract bool IsSignedAndTrusted(string filename, IRequestObject requestObject);
-
-        public abstract bool ExecuteElevatedAction(string provider, string payload, IRequestObject requestObject);
-
-        #endregion
 
         #region declare Request-implementation
-
-        public virtual void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public virtual void Dispose(bool disposing) {
+        /// <summary>
+        ///     Yield values in a dictionary as key/value pairs. (one pair for each value in each key)
+        /// </summary>
+        /// <param name="dictionary"></param>
+        /// <returns></returns>
+        public bool Yield(Dictionary<string, string[]> dictionary) {
+            if( dictionary != null ) {
+                return dictionary.All(Yield);
+            }
+            return true;
         }
 
         public bool Yield(KeyValuePair<string, string[]> pair) {
@@ -291,26 +203,10 @@ namespace Microsoft.OneGet.Implementation {
             return args.Aggregate(formatString.Replace('{', '\u00ab').Replace('}', '\u00bb'), (current, arg) => current + string.Format(CultureInfo.CurrentCulture, " \u00ab{0}\u00bb", arg));
         }
 
-        public SecureString Password {
-            get {
-                var p = GetCredentialPassword();
-                if (p == null) {
-                    return null;
-                }
-                return p.FromProtectedString("salt");
-            }
-        }
-
-        public string Username {
-            get {
-                return GetCredentialUsername();
-            }
-        }
-
         #endregion
 
         private string FormatMessageString(string messageText, params object[] args) {
-            if (string.IsNullOrEmpty(messageText)) {
+            if (string.IsNullOrWhiteSpace(messageText)) {
                 return string.Empty;
             }
 

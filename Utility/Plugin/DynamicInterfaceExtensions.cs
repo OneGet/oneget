@@ -1,16 +1,16 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 namespace Microsoft.OneGet.Utility.Plugin {
     using System;
@@ -20,7 +20,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
     using Collections;
     using Extensions;
 
-    internal static class DynamicInterfaceExtensions {
+    public static class DynamicInterfaceExtensions {
         private static readonly Type[] _emptyTypes = {};
 
         private static readonly Dictionary<Type, MethodInfo[]> _methodCache = new Dictionary<Type, MethodInfo[]>();
@@ -32,6 +32,11 @@ namespace Microsoft.OneGet.Utility.Plugin {
         private static readonly Dictionary<Assembly, Type[]> _creatableTypesCache = new Dictionary<Assembly, Type[]>();
 
         public static MethodInfo FindMethod(this MethodInfo[] methods, MethodInfo methodSignature) {
+            // this currently returns the first thing that matches acceptably.
+
+            // we'd really like to find the *best* match, but still be able to have the earlier ones override the later ones.
+            // which is
+
             return methods.FirstOrDefault(candidate => DoNamesMatchAcceptably(methodSignature.Name, candidate.Name) && DoSignaturesMatchAcceptably(methodSignature, candidate));
         }
 
@@ -68,56 +73,34 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         private static bool DoNamesMatchAcceptably(string originalName, string candidateName) {
+            if (string.IsNullOrWhiteSpace(originalName) || string.IsNullOrWhiteSpace(candidateName) || originalName[0] == '_' || candidateName[0] == '_' ) {
+                // names that start with underscores are considered to be private and not supported.
+                return false;
+            }
+
             if (originalName.EqualsIgnoreCase(candidateName)) {
                 return true;
             }
 
             // transform non-leading underscores to nothing.
-            if (!candidateName.StartsWith("_", StringComparison.OrdinalIgnoreCase)) {
-                candidateName = candidateName.Replace("_", "");
-            }
+            candidateName = candidateName.Replace("_", "");
+            originalName = originalName.Replace("_", "");
 
+            // this allows GetSomething to be the same as Get_Some_thing() or get_Something ...
             if (originalName.EqualsIgnoreCase(candidateName)) {
                 return true;
-            }
-
-            // get_ => get
-            if (candidateName.StartsWith("get_", StringComparison.OrdinalIgnoreCase)) {
-                if (originalName.EqualsIgnoreCase("get" + candidateName.Substring(4))) {
-                    return true;
-                }
             }
 
             return false;
         }
 
         private static bool DoSignaturesMatchAcceptably(MethodInfo member, MethodInfo candidate) {
-            return candidate.GetParameterTypes().SequenceEqual(member.GetParameterTypes(), AssignableTypeComparer.Instance) && (member.ReturnType == candidate.ReturnType || member.ReturnType.IsAssignableFrom(candidate.ReturnType));
+            return candidate.GetParameterTypes().SequenceEqual(member.GetParameterTypes(), AssignableTypeComparer.Instance) && (AssignableTypeComparer.IsAssignableOrCompatible(member.ReturnType, candidate.ReturnType) || member.ReturnType == typeof(void));
         }
 
-#if THINKING_OUTLOUD
-        original function:
-
-        IAsyncEnumerable<string>  UnpackArchive(string filename, string folder, IRequestObject request) ;
-
-        ok for client representation:
-            object UnpackArchive(string filename, string folder, IRequestObject request);
-            
-        IMyAsyncEnumerable<string> UnpackArchive(string filename, string folder, IRequestObject request);
-        
-        is( NEW_RETURN_TYPE assignable?) -> No
-        is( NEW_RETURN_TYPE not sealed/static ) -> YES
-            is( NEW_RETURN_TYPE duckable to ORIGINAL_RETURN_TYPE ) -> YES
-
-#endif
 
         internal static MethodInfo[] GetPublicMethods(this Type type) {
-            return _methodCache.GetOrAdd(type, () => {
-                if (type != null) {
-                    return type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
-                }
-                return new MethodInfo[0];
-            });
+            return _methodCache.GetOrAdd(type, () => type != null ? type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance) : new MethodInfo[0]);
         }
 
         internal static MethodInfo[] GetPublicMethods(this Type[] types) {
@@ -125,10 +108,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         internal static IEnumerable<FieldInfo> GetPublicFields(this Type type) {
-            if (type != null) {
-                return type.GetFields(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public);
-            }
-            return Enumerable.Empty<FieldInfo>();
+            return type != null ? type.GetFields(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public) : Enumerable.Empty<FieldInfo>();
         }
 
         internal static FieldInfo[] GetPublicDelegateFields(this Type type) {
@@ -140,10 +120,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         internal static IEnumerable<PropertyInfo> GetPublicProperties(this Type type) {
-            if (type != null) {
-                return type.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public);
-            }
-            return Enumerable.Empty<PropertyInfo>();
+            return type != null ? type.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public) : Enumerable.Empty<PropertyInfo>();
         }
 
         private static IEnumerable<MethodInfo> DisambiguateMethodsBySignature(params IEnumerable<MethodInfo>[] setsOfMethods) {
@@ -167,11 +144,11 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
                 methods = methods.Where(each => each.Name != "Dispose");
 
-                // option 1: 
+                // option 1:
                 // if the target type is a class, and implements an interface -- and the implementation of that interface is already present (ie, abstract class Foo : IDisposable { public void Dispose() {} }  ) then
-                // the generated type should not try to create a method for that interface 
+                // the generated type should not try to create a method for that interface
 
-                // option 2: 
+                // option 2:
                 // I think we're just talking about IDisposable here. maybe we shouldn't try to ducktype IDisposable at all.
 
                 //  try option2 :
@@ -199,7 +176,11 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         internal static ConstructorInfo GetDefaultConstructor(this Type t) {
-            return t.GetConstructor(_emptyTypes);
+            try {
+                return t.GetConstructor(_emptyTypes);
+            } catch {
+            }
+            return null;
         }
 
         internal static string ToSignatureString(this MethodInfo method) {
@@ -230,7 +211,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         internal static Func<string, bool> GenerateInstanceSupportsMethod(object actualInstance) {
-            // if the object implements an IsMethodImplemented Method, we'll be using that 
+            // if the object implements an IsMethodImplemented Method, we'll be using that
             // to see if the method is actually supposed to be used.
             // this enables an implementor to physically implement the function in the class
             // yet treat it as if it didn't. (see the PowerShellPackageProvider)
@@ -240,6 +221,12 @@ namespace Microsoft.OneGet.Utility.Plugin {
             return imiMethodInfo == null ? (s) => true : actualInstance.CreateProxiedDelegate<Func<string, bool>>(imiMethodInfo);
         }
 
+        /// <summary>
+        /// This extension uses the DuckTyper to transform an object into a given interface or type.
+        /// </summary>
+        /// <typeparam name="TInterface"></typeparam>
+        /// <param name="instance"></param>
+        /// <returns></returns>
         public static TInterface As<TInterface>(this object instance) {
             if (typeof (TInterface).IsDelegate()) {
                 // find a function in this object that matches the delegate that we are given
@@ -276,15 +263,27 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 return (TInterface)(object)typeof (TInterface).CreateEmptyDelegate();
                 // throw new Exception("Delegate '{0}' not matched in object.".format(typeof (TInterface).NiceName()));
             }
-            return DynamicInterface.Instance.Create<TInterface>(instance);
+            return DynamicInterface.DynamicCast<TInterface>(instance);
         }
 
         public static TInterface Extend<TInterface>(this object obj, params object[] objects) {
-            return DynamicInterface.Instance.Create<TInterface>(objects, obj);
+            return DynamicInterface.DynamicCast<TInterface>(objects, obj);
         }
 
         public static bool IsDelegate(this Type t) {
             return t.BaseType == typeof (MulticastDelegate);
+        }
+
+        public static bool IsIEnumerableT(this Type t) {
+#if FRAMEWORKv45
+            return t.IsConstructedGenericType && t.GetGenericTypeDefinition() == typeof (IEnumerable<>);
+#else
+            try {
+                return t.GetGenericTypeDefinition() == typeof (IEnumerable<>);
+            } catch {
+            }
+            return false;
+#endif
         }
 
         public static IEnumerable<Type> CreatableTypes(this Assembly assembly) {

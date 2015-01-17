@@ -15,42 +15,47 @@
 namespace Microsoft.OneGet.Api {
     using System;
     using System.Collections.Generic;
-    using IRequestObject = System.Object;
 
     public interface IProviderServices {
-        bool IsElevated {get;}
-
         #region declare service-apis
 
-        /* Synced/Generated code =================================================== */
+        bool IsElevated {get;}
 
-        void DownloadFile(Uri remoteLocation, string localFilename, IRequestObject requestObject);
+        string GetCanonicalPackageId(string providerName, string packageName, string version);
 
-        bool IsSupportedArchive(string localFilename, IRequestObject requestObject);
+        string ParseProviderName(string canonicalPackageId);
 
-        IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequestObject requestObject);
+        string ParsePackageName(string canonicalPackageId);
 
-        void AddPinnedItemToTaskbar(string item, IRequestObject requestObject);
+        string ParsePackageVersion(string canonicalPackageId);
 
-        void RemovePinnedItemFromTaskbar(string item, IRequestObject requestObject);
+        void DownloadFile(Uri remoteLocation, string localFilename, IRequest requestObject);
 
-        void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, IRequestObject requestObject);
+        bool IsSupportedArchive(string localFilename, IRequest requestObject);
 
-        void SetEnvironmentVariable(string variable, string value, string context, IRequestObject requestObject);
+        IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequest requestObject);
 
-        void RemoveEnvironmentVariable(string variable, string context, IRequestObject requestObject);
+        void AddPinnedItemToTaskbar(string item, IRequest requestObject);
 
-        void CopyFile(string sourcePath, string destinationPath, IRequestObject requestObject);
+        void RemovePinnedItemFromTaskbar(string item, IRequest requestObject);
 
-        void Delete(string path, IRequestObject requestObject);
+        void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, IRequest requestObject);
 
-        void DeleteFolder(string folder, IRequestObject requestObject);
+        void SetEnvironmentVariable(string variable, string value, string context, IRequest requestObject);
 
-        void CreateFolder(string folder, IRequestObject requestObject);
+        void RemoveEnvironmentVariable(string variable, string context, IRequest requestObject);
 
-        void DeleteFile(string filename, IRequestObject requestObject);
+        void CopyFile(string sourcePath, string destinationPath, IRequest requestObject);
 
-        string GetKnownFolder(string knownFolder, IRequestObject requestObject);
+        void Delete(string path, IRequest requestObject);
+
+        void DeleteFolder(string folder, IRequest requestObject);
+
+        void CreateFolder(string folder, IRequest requestObject);
+
+        void DeleteFile(string filename, IRequest requestObject);
+
+        string GetKnownFolder(string knownFolder, IRequest requestObject);
 
         string CanonicalizePath(string text, string currentDirectory);
 
@@ -58,11 +63,11 @@ namespace Microsoft.OneGet.Api {
 
         bool DirectoryExists(string path);
 
-        bool Install(string fileName, string additionalArgs, IRequestObject requestObject);
+        bool Install(string fileName, string additionalArgs, IRequest requestObject);
 
-        bool IsSignedAndTrusted(string filename, IRequestObject requestObject);
+        bool IsSignedAndTrusted(string filename, IRequest requestObject);
 
-        bool ExecuteElevatedAction(string provider, string payload, IRequestObject requestObject);
+        bool ExecuteElevatedAction(string provider, string payload, IRequest requestObject);
 
         #endregion
 

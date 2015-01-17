@@ -26,7 +26,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         /// <param name="attributeName"></param>
         /// <returns></returns>
         public static IEnumerable<string> GetAttributes(this IEnumerable<DynamicElement> elements, string attributeName) {
-            return elements.Select(each => each.Attributes[attributeName]).Where(each => !string.IsNullOrEmpty(each));
+            return elements.Select(each => each.Attributes[attributeName]).Where(each => !string.IsNullOrWhiteSpace(each));
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Microsoft.OneGet.Utility.Extensions {
         /// <param name="attributeName"></param>
         /// <returns></returns>
         public static string GetAttribute(this IEnumerable<DynamicElement> elements, string attributeName) {
-            return elements.Select(each => each.Attributes[attributeName]).FirstOrDefault(each => !string.IsNullOrEmpty(each));
+            return elements.Select(each => each.Attributes[attributeName]).FirstOrDefault(each => !string.IsNullOrWhiteSpace(each));
         }
     }
 }

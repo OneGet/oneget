@@ -58,8 +58,16 @@ namespace Microsoft.OneGet.Utility.Plugin {
             il.EmitLoadLocation(location);
         }
 
+        public static void LoadLocation(this ILGenerator il, LocalBuilder local) {
+            il.EmitLoadLocation(local.LocalIndex);
+        }
+
         public static void StoreLocation(this ILGenerator il, int location) {
             il.EmitStoreLocation(location);
+        }
+
+        public static void StoreLocation(this ILGenerator il, LocalBuilder local) {
+            il.EmitStoreLocation(local.LocalIndex);
         }
 
         public static void LoadArgument(this ILGenerator il, int location) {
@@ -72,6 +80,10 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         public static void Call(this ILGenerator il, ConstructorInfo constructorInfo) {
             il.Emit(OpCodes.Call, constructorInfo);
+        }
+
+        public static void Call(this ILGenerator il, MethodInfo methodInfo) {
+            il.EmitCall(OpCodes.Call,methodInfo,null);
         }
 
         public static void StoreField(this ILGenerator il, FieldInfo field) {
@@ -150,6 +162,10 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         public static void ConvertToInt64(this ILGenerator il) {
             il.Emit(OpCodes.Conv_I8);
+        }
+
+        public static void Box(this ILGenerator il, Type type) {
+            il.Emit(OpCodes.Box, type);
         }
     }
 }

@@ -14,8 +14,8 @@
 
 namespace Microsoft.OneGet.Providers {
     using System;
+    using Api;
     using Utility.Plugin;
-    using IRequestObject = System.Object;
 
     public interface IPackageProvider : IProvider {
         #region declare PackageProvider-interface
@@ -49,15 +49,15 @@ namespace Microsoft.OneGet.Providers {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        void AddPackageSource(string name, string location, bool trusted, IRequestObject requestObject);
+        void AddPackageSource(string name, string location, bool trusted, IRequest requestObject);
 
-        void ResolvePackageSources(IRequestObject requestObject);
+        void ResolvePackageSources(IRequest requestObject);
 
-        void RemovePackageSource(string name, IRequestObject requestObject);
+        void RemovePackageSource(string name, IRequest requestObject);
 
-        int StartFind(IRequestObject requestObject);
+        int StartFind(IRequest requestObject);
 
-        void CompleteFind(int id, IRequestObject requestObject);
+        void CompleteFind(int id, IRequest requestObject);
 
         // --- Finds packages ---------------------------------------------------------------------------------------------------
         /// <summary>
@@ -73,28 +73,28 @@ namespace Microsoft.OneGet.Providers {
         /// <param name="id"></param>
         /// <param name="requestObject"></param>
         /// <returns></returns>
-        void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequestObject requestObject);
+        void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequest requestObject);
 
-        void FindPackageByFile(string file, int id, IRequestObject requestObject);
-        void FindPackageByUri(Uri uri, int id, IRequestObject requestObject);
+        void FindPackageByFile(string file, int id, IRequest requestObject);
+        void FindPackageByUri(Uri uri, int id, IRequest requestObject);
 
-        void GetInstalledPackages(string name, IRequestObject requestObject);
+        void GetInstalledPackages(string name, IRequest requestObject);
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
-        void DownloadPackage(string fastPath, string location, IRequestObject requestObject);
-        void GetPackageDependencies(string fastPath, IRequestObject requestObject);
-        void GetPackageDetails(string fastPath, IRequestObject requestObject);
+        void DownloadPackage(string fastPath, string location, IRequest requestObject);
+        void GetPackageDependencies(string fastPath, IRequest requestObject);
+        void GetPackageDetails(string fastPath, IRequest requestObject);
 
-        void InstallPackage(string fastPath, IRequestObject requestObject);
+        void InstallPackage(string fastPath, IRequest requestObject);
         // auto-install-dependencies
         // skip-dependency-check
         // continue-on-failure
         // location system/user/folder
         // fn call-back for each package installed when installing dependencies?
 
-        void UninstallPackage(string fastPath, IRequestObject requestObject);
+        void UninstallPackage(string fastPath, IRequest requestObject);
 
-        void ExecuteElevatedAction(string payload, IRequestObject requestObject);
+        void ExecuteElevatedAction(string payload, IRequest requestObject);
 
         #endregion
     }
