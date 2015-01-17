@@ -31,5 +31,11 @@
       <Name>WixUtilExtension</Name>
     </WixExtension>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="theme-loc.wxl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Theme.xml" />
+  </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
 </Project>

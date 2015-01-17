@@ -9,10 +9,12 @@
       <bal:WixStandardBootstrapperApplication
           LicenseUrl="http://j.mp/onegetlicense"
           LogoFile="logo.png"
-          SuppressOptionsUI="yes" />
+          ThemeFile="theme.xml" 
+          LocalizationFile="theme-loc.wxl" 
+          SuppressOptionsUI="yes"  />
     </BootstrapperApplicationRef>
 
-    <util:RegistrySearch Variable="PowerShellVersion" Root="HKLM" Key="SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine"
+      <util:RegistrySearch Variable="PowerShellVersion" Root="HKLM" Key="SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine"
                          Value="PowerShellVersion" />
 
     <bal:Condition Message="[WixBundleName] requires PowerShell v3.0 or newer. To install a newer version of PowerShell see:  http://j.mp/psinstall" >PowerShellVersion>=v3.0</bal:Condition>

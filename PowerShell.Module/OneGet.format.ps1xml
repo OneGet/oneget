@@ -135,9 +135,7 @@
           <Width>24</Width>
         </TableColumnHeader>
         <TableColumnHeader>
-          <Width>10</Width>
-        </TableColumnHeader>
-        <TableColumnHeader>
+          <Width>16</Width>
         </TableColumnHeader>
         <TableColumnHeader>
         </TableColumnHeader>
@@ -150,9 +148,6 @@
             </TableColumnItem>
             <TableColumnItem>
               <PropertyName>Version</PropertyName>
-            </TableColumnItem>
-            <TableColumnItem>
-              <PropertyName>Features</PropertyName>
             </TableColumnItem>
             <TableColumnItem>
               <PropertyName>DynamicOptions</PropertyName>

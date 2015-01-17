@@ -87,20 +87,23 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
             // generate the constructor for the class.
             DefineConstructor(interfaceType.IsInterface ? typeof (Object) : interfaceType);
-
         }
 
         internal Type Type {
             get {
-                try {
-                    if (_type == null) {
-                        _type = _dynamicType.CreateType();
-                        _dynamicAssembly.Save(_filename);
+                lock (_proxyClassDefinitions) {
+                    try {
+                        if (_type == null) {
+                            _type = _dynamicType.CreateType();
+#if DEEP_DEBUG
+                            _dynamicAssembly.Save(_filename);
+#endif
+                        }
+                        return _type;
+                    } catch (Exception e) {
+                        e.Dump();
+                        throw;
                     }
-                    return _type;
-                } catch (Exception e) {
-                    e.Dump();
-                    throw;
                 }
             }
         }
@@ -118,16 +121,19 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
         private TypeBuilder DefineDynamicType(Type interfaceType) {
-            _proxyName = "{0}_proxy_{1}".format(interfaceType.NiceName().MakeSafeFileName(), _typeCounter++);
-
-            _fullpath = (_proxyName + ".dll").GenerateTemporaryFilename();
-            _directory = Path.GetDirectoryName(_fullpath);
-            _filename = Path.GetFileName(_fullpath);
-
+            lock (_proxyClassDefinitions) {
+                _proxyName = "{0}_proxy_{1}".format(interfaceType.NiceName().MakeSafeFileName(), _typeCounter++);
+            }
+#if DEEP_DEBUG
+             _fullpath = (_proxyName + ".dll").GenerateTemporaryFilename();
+             _directory = Path.GetDirectoryName(_fullpath);
+             _filename = Path.GetFileName(_fullpath);
             _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.RunAndSave, _directory);
-            // Define a dynamic module in this assembly.
-            // , "{0}.dll".format(_proxyName)
             var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName, _filename);
+#else
+            _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.Run, _directory);
+            var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName);
+#endif
 
             // Define a runtime class with specified name and attributes.
             if (interfaceType.IsInterface) {

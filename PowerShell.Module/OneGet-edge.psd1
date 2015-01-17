@@ -15,12 +15,12 @@
 #
 ###
 @{
-    GUID = "4ae9fd46-338a-459c-8186-07f910774cb8"
+    GUID = "4ae9fd46-338a-459c-8186-07f910774cb9"
     Author = "Microsoft Corporation"
     CompanyName = "Microsoft Corporation"
     Copyright = "(C) Microsoft Corporation. All rights reserved."
     HelpInfoUri = "http://go.microsoft.com/fwlink/?linkid=392040"
-    ModuleVersion = "1.0.0.0"
+    ModuleVersion = "1.1.0.0"
     PowerShellVersion = "3.0"
     ClrVersion = "4.0"
     RootModule = "Microsoft.PowerShell.OneGet.dll"
@@ -37,6 +37,8 @@
         'Uninstall-Package'
 		'Save-Package'
 	)
+	# lets the community version support psget too.
+	NestedModules = @('..\powershellget\powershellget.psd1')
 
 	FormatsToProcess  = @('OneGet.format.ps1xml')
 }

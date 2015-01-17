@@ -37,9 +37,9 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("Microsoft.OneGet.Test")]
 [assembly: InternalsVisibleTo("Microsoft.OneGet.MetaProvider.PowerShell")]
 [assembly: InternalsVisibleTo("Microsoft.OneGet.CoreProviders")]
-[assembly: InternalsVisibleTo("Microsoft.OneGet.Archivers")]
-[assembly: InternalsVisibleTo("Microsoft.OneGet.Msi")]
-[assembly: InternalsVisibleTo("Microsoft.OneGet.Msu")]
+[assembly: InternalsVisibleTo("Microsoft.OneGet.ArchiverProviders")]
+[assembly: InternalsVisibleTo("Microsoft.OneGet.MsiProvider")]
+[assembly: InternalsVisibleTo("Microsoft.OneGet.MsuProvider")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from

@@ -31,6 +31,14 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PSBeforeBuild><![CDATA[
+     $v2 = ((Get-Date).Year).ToString().SubString(2)
+     $v3 = ((Get-Date).DayOfYear)
+     $v4 = ([int](((get-date).Ticks - ((get-date).Date).Ticks) / 13200000)).ToString()
+     $v = "1.$v2.$v3.$v4"
+     $txt = (get-content $(SolutionDir)assembly-version.cs) -replace "\d*\.\d*\.\d*\.\d*",$v
+     set-content -path $(SolutionDir)assembly-version.cs -Value $txt
+    ]]></PSBeforeBuild>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -150,9 +158,18 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="BeforeBuild" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PowerShell  ScriptBlock="$(PSBeforeBuild)" />
+  </Target>
+  
+  <UsingTask TaskName="PowerShell" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup><ScriptBlock ParameterType="System.String" Required="true" /></ParameterGroup>
+    <Task><Reference Include="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll"/><Code Type="Class" Language="cs"><![CDATA[
+    public class PowerShell : Microsoft.Build.Tasks.Exec {
+        public string ScriptBlock {set { EchoOff=true; Command = string.Format( "@powershell \"Invoke-Command -ScriptBlock {{ $errorActionPreference='Stop'; {0} ; exit $LASTEXITCODE }} \"",  value.Replace("\"","\\\"").Replace("\r\n",";").Replace("\n",";").Replace("\r",";")); } }
+    }]]></Code></Task>
+  </UsingTask>
 </Project>

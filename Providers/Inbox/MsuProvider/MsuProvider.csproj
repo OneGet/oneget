@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.OneGet.Msu</RootNamespace>
-    <AssemblyName>Microsoft.OneGet.Msu</AssemblyName>
+    <AssemblyName>Microsoft.OneGet.MsuProvider</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), OneGet.sln))\</SolutionDir>
     <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>

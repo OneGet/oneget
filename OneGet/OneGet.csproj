@@ -117,7 +117,7 @@
     <None Include="RunToUnblock.cmd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="ZipBinaries.ps1">
+    <None Include="UploadBuild.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
