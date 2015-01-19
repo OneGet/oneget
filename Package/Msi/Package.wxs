@@ -91,14 +91,12 @@
         <Environment Id="UpdatePsModulePath" Action="set" Name="PSModulePath" Value="[ModulesFolder]" Part="last" System="yes" /> 
       </Component>
 
-
       <Component><File Source="Microsoft.OneGet.MetaProvider.PowerShell.dll" /></Component>
       <Component><File Source="Microsoft.OneGet.ArchiverProviders.dll" /></Component>
       <Component><File Source="Microsoft.OneGet.MsiProvider.dll" /></Component>
       <Component><File Source="Microsoft.OneGet.MsuProvider.dll" /></Component>
       <Component><File Source="Microsoft.OneGet.NuGetProvider.dll" /></Component>
       <Component><File Source="Microsoft.OneGet.CoreProviders.dll" /></Component>
-      
 
       <Component><File Source="Microsoft.OneGet.Utility.dll" /></Component>
       <Component><File Source="Microsoft.OneGet.Utility.PowerShell.dll" /></Component>
