@@ -11,8 +11,9 @@
       <Directory Id="ProgramFilesFolder">
         <Directory Id="WindowsPowerShellFolder" Name="WindowsPowerShell">
           <Directory Id="ModulesFolder" Name="Modules">
-            <Directory Id="OneGetFolder" Name="OneGet-Edge">
-              <Directory Id="ProvidersFolder" Name="Providers" />
+            <Directory Id="OneGetFolder" Name="OneGet">
+            </Directory>
+            <Directory Id="OneGetEdgeFolder" Name="OneGet-Edge">
             </Directory>
             <Directory Id="PowerShellGetFolder" Name="PowerShellGet">
               <Directory Id="PSGetEnUsFolder" Name="en-US" />
@@ -26,6 +27,7 @@
       <ComponentGroupRef Id="OneGetComponents" />
       <ComponentGroupRef Id="PSGetComponents" />
       <ComponentGroupRef Id="PSGetEnUsComponents" />
+      <ComponentGroupRef Id="OneGetEdgeComponents" />
       <!--
       <ComponentGroupRef Id="ProviderComponents" />
       <ComponentGroupRef Id="PdbComponents" />
@@ -102,9 +104,13 @@
       <Component><File Source="Microsoft.OneGet.Utility.PowerShell.dll" /></Component>
       <Component><File Source="Microsoft.PowerShell.OneGet.dll" /></Component>
       <Component><File Source="OneGet.format.ps1xml" /></Component>
-      <Component><File Source="OneGet-Edge.psd1" /></Component>
+      <Component><File Source="OneGet.psd1" /></Component>
       <Component><File Source="PackageProviderFunctions.psm1" /></Component>
       <Component><File Source="nuget.exe" /></Component>
+    </ComponentGroup>
+    
+    <ComponentGroup Id="OneGetEdgeComponents" Directory="OneGetEdgeFolder">
+      <Component><File Source="OneGet-Edge.psd1" /></Component>
     </ComponentGroup>
   </Fragment>
 

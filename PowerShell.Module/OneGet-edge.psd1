@@ -15,7 +15,7 @@
 #
 ###
 @{
-    GUID = "4ae9fd46-338a-459c-8186-07f910774cb9"
+    GUID = "0069E2B7-9D7D-4441-B549-827381DF0739"
     Author = "Microsoft Corporation"
     CompanyName = "Microsoft Corporation"
     Copyright = "(C) Microsoft Corporation. All rights reserved."
@@ -23,22 +23,7 @@
     ModuleVersion = "1.1.0.0"
     PowerShellVersion = "3.0"
     ClrVersion = "4.0"
-    RootModule = "Microsoft.PowerShell.OneGet.dll"
 
-    CmdletsToExport = @(
-        'Find-Package',
-        'Get-Package',
-        'Get-PackageProvider', 
-        'Get-PackageSource',
-        'Install-Package',
-        'Register-PackageSource',
-		'Set-PackageSource',
-		'Unregister-PackageSource',
-        'Uninstall-Package'
-		'Save-Package'
-	)
-	# lets the community version support psget too.
-	NestedModules = @('..\powershellget\powershellget.psd1')
-
-	FormatsToProcess  = @('OneGet.format.ps1xml')
+    # force loading of the community build of OneGet and the PowerShellGet that goes along with it.
+    NestedModules = @('..\oneget\oneget.psd1','..\powershellget\powershellget.psd1')
 }
