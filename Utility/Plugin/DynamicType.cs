@@ -29,10 +29,12 @@ namespace Microsoft.OneGet.Utility.Plugin {
         private readonly TypeBuilder _dynamicType;
         private readonly HashSet<string> _implementedMethods = new HashSet<string>();
         private readonly List<FieldBuilder> _storageFields = new List<FieldBuilder>();
-        private string _directory;
         private AssemblyBuilder _dynamicAssembly;
+#if DEEP_DEBUG        
+        private string _directory;
         private string _filename;
         private string _fullpath;
+#endif        
         private string _proxyName;
         private Type _type;
         private MethodInfo OnUnhandledException;
