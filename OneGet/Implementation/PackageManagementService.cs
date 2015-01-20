@@ -206,8 +206,6 @@ namespace Microsoft.OneGet.Implementation {
                 }
             }
 
-
-
             var currentCallCount = hostApi.CallCount;
 
             if (_lastCallCount >= currentCallCount) {
@@ -298,6 +296,8 @@ namespace Microsoft.OneGet.Implementation {
                 throw new ArgumentNullException("request");
             }
 
+            var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
             var providerAssemblies = (_initialized ? Enumerable.Empty<string>() : _defaultProviders)
                 .Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET"))
                 .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"))
@@ -320,6 +320,22 @@ namespace Microsoft.OneGet.Implementation {
             // todo: expand this out to validate the assembly is ok for this instance of OneGet.
             providerAssemblies = providerAssemblies.Where(each => Manifest.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
 
+            // add inbox assemblies (don't require manifests, because they are versioned with the core)
+            
+#if !COMMUNITY_BUILD
+            // todo: these should just be strong-named references. for now, just load them from the same directory.
+            providerAssemblies = providerAssemblies.Concat(new[] {
+                Path.Combine( baseDir, "Microsoft.OneGet.MetaProvider.PowerShell.dll"),
+                Path.Combine( baseDir, "Microsoft.OneGet.ArchiverProviders.dll" ),
+                Path.Combine( baseDir, "Microsoft.OneGet.CoreProviders.dll"),
+                Path.Combine( baseDir, "Microsoft.OneGet.MsuProvider.dll"),
+#if !CORE_CLR
+                // can't load these providers here.
+                Path.Combine( baseDir, "Microsoft.OneGet.MsiProvider.dll"),
+#endif
+            });
+#endif 
+
 #if DEEP_DEBUG
             providerAssemblies = providerAssemblies.ToArray();
 
@@ -327,7 +343,6 @@ namespace Microsoft.OneGet.Implementation {
                 request.Debug("possible assembly with manifest: {0}".format(each));
             }
 #endif
-
 
             providerAssemblies = providerAssemblies.OrderByDescending(each => {
                 try {
@@ -340,6 +355,7 @@ namespace Microsoft.OneGet.Implementation {
             });
             providerAssemblies = providerAssemblies.Distinct(new PathEqualityComparer(PathCompareOption.FileWithoutExtension));
 
+#if BEFORE_WE_HAD_MANIFESTS
             // hack to make sure we don't load the old version of the nuget provider
             // when we have the ability to examine a plugin without dragging it into the
             // primary appdomain, this won't be needed.
@@ -354,6 +370,7 @@ namespace Microsoft.OneGet.Implementation {
                 }
                 return true;
             });
+#endif
 
             // there is no trouble with loading providers concurrently.
 #if DEBUG
