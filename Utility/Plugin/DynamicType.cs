@@ -133,7 +133,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.RunAndSave, _directory);
             var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName, _filename);
 #else
-            _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.Run, _directory);
+            _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.Run);
             var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName);
 #endif
 
