@@ -77,7 +77,11 @@ if( $testdll ) {
 
 cd $PSSCRIPTROOT
 # run the OneGet Pester Tests
-.\test\BVT\cmdlet-testsuite\test-oneget.ps1 $module -enableSandbox 
+# .\test\BVT\cmdlet-testsuite\test-oneget.ps1 $module 
+#-enableSandbox 
 
 cd $PSSCRIPTROOT
-.\test\BVT\cmdlet-testsuite\scripts\stop-sandbox.ps1
+#.\test\BVT\cmdlet-testsuite\scripts\stop-sandbox.ps1
+
+cd $PSSCRIPTROOT
+# powershell "ipmo $module; ipmo powershellget; cd c:\tests\psget\tests\psgettests\; .\invoketest.ps1 -priority all"
