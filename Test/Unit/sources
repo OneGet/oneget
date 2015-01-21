@@ -1,0 +1,74 @@
+# Copyright (C) 2014 Microsoft Corporation
+
+###
+### OneGet/Test/Unit
+###
+
+!include ..\..\common.inc
+
+TARGETNAME          = Microsoft.OneGet.Test
+TARGETTYPE          = DYNLINK
+
+## !include $(PROJECT_ROOT)\monad\nttargets\build\sources.inc
+OUTPUT_PATH=$(OBJ_PATH)\$(O)
+
+SOURCES_PATH = .\
+
+ONEGET_CORE=$(OBJ_PATH)\..\..\OneGet\$(O)\Microsoft.OneGet.metadata_exe;
+ONEGET_UTILITY=$(OBJ_PATH)\..\..\Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll;
+ONEGET_UTILITY_POWERSHELL=$(OBJ_PATH)\..\..\Utility.PowerShell\$(O)\Microsoft.OneGet.Utility.PowerShell.metadata_dll;
+
+
+### Referenced assemblies
+
+REFERENCES=\
+	$(ONEGET_CORE) \
+	$(ONEGET_UTILITY) \
+	$(ONEGET_UTILITY_POWERSHELL) \
+	$(CLR_REF_PATH)\System.metadata_dll; \
+	$(CLR_REF_PATH)\System.Core.metadata_dll; \
+	$(CLR_REF_PATH)\System.Data.metadata_dll; \
+	$(CLR_REF_PATH)\System.Security.metadata_dll; \
+	$(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
+	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll; \
+    ..\..\packages\xunit.abstractions.2.0.0-beta5-build2785\lib\net35\xunit.abstractions.dll \
+    ..\..\packages\xunit.assert.2.0.0-beta5-build2785\lib\portable-net45+aspnetcore50+win+wpa81+wp80+monoandroid+monotouch10\xunit.assert.dll \
+    ..\..\packages\xunit.core.2.0.0-beta5-build2785\lib\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.core.dll \
+    
+
+#region sourcefiles
+SOURCES=\
+	Core\Host\HostTests.cs \
+ 	Core\Service\ArpProviderTest.cs \
+ 	Core\Service\BasePmsServiceTests.cs \
+ 	Core\Service\BasicHostImpl.cs \
+ 	Core\Service\Happy1ProviderTests.cs \
+ 	Core\Service\MsiProviderTest.cs \
+ 	Core\Service\MsuProviderTest.cs \
+ 	Core\Service\PackageManagementServiceTests.cs \
+ 	Core\Service\ProviderTestTemplate.cs \
+ 	Core\Service\UsingOneProvider.cs \
+ 	Core\TestProviders\Bad1.cs \
+ 	Core\TestProviders\BlankProvider.cs \
+ 	Core\TestProviders\Happy1.cs \
+ 	Core\TestProviders\TestFileProvider.cs \
+ 	Core\BootstrapTests.cs \
+ 	Core\HostTest.cs \
+ 	Sdk\Constants.cs \
+ 	Sdk\ErrorCategory.cs \
+ 	Sdk\Request.cs \
+ 	Support\Console.cs \
+ 	Support\CurrentTask.cs \
+ 	Support\Event.cs \
+ 	Support\XTask.cs \
+ 	Utility\Concpetual\MiscTests.cs \
+ 	Utility\DynamicInterface\NameMatching\NameTests.cs \
+ 	Utility\DynamicInterface\ParameterCoercion\AdvancedDynamicInterfaceTests.cs \
+ 	Utility\DynamicInterface\ReturnTypeCoercion\RtTests.cs \
+ 	Utility\DynamicInterface\Simple\DynamicInterfaceTest.cs \
+ 	Utility\Misc\DynamicTests.cs \
+ 	Utility\Misc\ManifestLoadingTests.cs \
+ 	Tests.cs \
+	$(GENERATED_RESOURCES_SOURCE)
+
+#endregion
