@@ -2,5 +2,9 @@
 
 # Unit test directories should be placed in the OPTIONAL_DIRS section
 OPTIONAL_DIRS=\
-    Unit \
+#    Unit \
 #    RITests
+
+##
+## We're going to have to build and execute the tests in the test environment in a different way.
+##

@@ -101,7 +101,11 @@ namespace Microsoft.OneGet.Implementation {
                 }
                 var path = Path.Combine(basepath, "OneGet", "ProviderAssemblies");
                 if (!Directory.Exists(path)) {
-                    Directory.CreateDirectory(path);
+                    try {
+                        Directory.CreateDirectory(path);
+                    } catch {
+                        // if it can't be created, it's not the end of the world.
+                    }
                 }
                 return path;
             }
