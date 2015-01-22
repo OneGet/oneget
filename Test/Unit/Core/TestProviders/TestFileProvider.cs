@@ -18,7 +18,8 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
     using System.Diagnostics;
     using System.Linq;
     using Sdk;
-
+    using TestCodeAttribute = System.CodeDom.Compiler.GeneratedCodeAttribute;
+    
     /// <summary>
     /// A Package provider for OneGet.
     /// 
@@ -28,6 +29,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
     /// 
     /// todo: Give this class a proper name
     /// </summary>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("TestCode","")]
     public class TestFileProvider {
         /// <summary>
         /// The features that this package supports.
@@ -77,6 +79,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// This is just here as to give us some possibility of knowing when an unexception happens...
         /// At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void OnUnhandledException(string methodName, Exception exception) {
             Debug.WriteLine("Unexpected Exception thrown in '{0}::{1}' -- {2}\\{3}\r\n{4}", PackageProviderName, methodName, exception.GetType().Name, exception.Message, exception.StackTrace);
         }
@@ -85,6 +88,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// Performs one-time initialization of the $provider.
         /// </summary>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void InitializeProvider(Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InitializeProvider'", PackageProviderName);
@@ -96,6 +100,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// Returns a collection of strings to the client advertizing features this provider supports.
         /// </summary>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void GetFeatures(Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", PackageProviderName);
@@ -114,6 +119,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// </summary>
         /// <param name="category">The category of dynamic options that the HOST is interested in</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void GetDynamicOptions(string category, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetDynamicOptions' {1}", PackageProviderName, category);
@@ -149,6 +155,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// Sources are returned using <c>request.YieldPackageSource(...)</c>
         /// </summary>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void ResolvePackageSources(Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::ResolvePackageSources'", PackageProviderName);
@@ -175,6 +182,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="location">The location (ie, directory, URL, etc) of the package source. If this is null or empty, the PROVIDER should use the name as the location (if valid)</param>
         /// <param name="trusted">A boolean indicating that the user trusts this package source. Packages returned from this source should be marked as 'trusted'</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void AddPackageSource(string name, string location, bool trusted, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::AddPackageSource' '{1}','{2}','{3}'", PackageProviderName, name, location, trusted);
@@ -187,6 +195,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// </summary>
         /// <param name="name">The name or location of a package source to remove.</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void RemovePackageSource(string name, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::RemovePackageSource' '{1}'", PackageProviderName, name);
@@ -206,6 +215,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="maximumVersion">A maximum version of the package. Null or empty if the user did not specify</param>
         /// <param name="id">if this is greater than zero (and the number should have been generated using <c>StartFind(...)</c>, the core is calling this multiple times to do a batch search request. The operation can be delayed until <c>CompleteFind(...)</c> is called</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::FindPackage' '{1}','{2}','{3}','{4}'", PackageProviderName, requiredVersion, minimumVersion, maximumVersion, id);
@@ -221,6 +231,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="file">the full path to the file to determine if it is a package</param>
         /// <param name="id">if this is greater than zero (and the number should have been generated using <c>StartFind(...)</c>, the core is calling this multiple times to do a batch search request. The operation can be delayed until <c>CompleteFind(...)</c> is called</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void FindPackageByFile(string file, int id, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::FindPackageByFile' '{1}','{2}'", PackageProviderName, file, id);
@@ -238,6 +249,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="uri">the URI the client requesting a package for.</param>
         /// <param name="id">if this is greater than zero (and the number should have been generated using <c>StartFind(...)</c>, the core is calling this multiple times to do a batch search request. The operation can be delayed until <c>CompleteFind(...)</c> is called</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void FindPackageByUri(Uri uri, int id, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::FindPackageByUri' '{1}','{2}'", PackageProviderName, uri, id);
@@ -251,6 +263,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="fastPackageReference"></param>
         /// <param name="location"></param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void DownloadPackage(string fastPackageReference, string location, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::DownloadPackage' '{1}','{2}'", PackageProviderName, fastPackageReference, location);
@@ -262,6 +275,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// </summary>
         /// <param name="fastPackageReference"></param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void GetPackageDependencies(string fastPackageReference, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetPackageDependencies' '{1}'", PackageProviderName, fastPackageReference);
@@ -275,6 +289,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// </summary>
         /// <param name="fastPackageReference">A provider supplied identifier that specifies an exact package</param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void InstallPackage(string fastPackageReference, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InstallPackage' '{1}'", PackageProviderName, fastPackageReference);
@@ -287,6 +302,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// </summary>
         /// <param name="fastPackageReference"></param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void UninstallPackage(string fastPackageReference, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::UninstallPackage' '{1}'", PackageProviderName, fastPackageReference);
@@ -299,6 +315,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// </summary>
         /// <param name="name"></param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void GetInstalledPackages(string name, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", PackageProviderName, name);
@@ -311,6 +328,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// </summary>
         /// <param name="fastPackageReference"></param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void GetPackageDetails(string fastPackageReference, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetPackageDetails' '{1}'", PackageProviderName, fastPackageReference);
@@ -323,6 +341,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// </summary>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         /// <returns></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public int StartFind(Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::StartFind'", PackageProviderName);
@@ -336,6 +355,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// <param name="id"></param>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
         /// <returns></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void CompleteFind(int id, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::CompleteFind' '{1}'", PackageProviderName, id);

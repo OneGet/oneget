@@ -20,7 +20,9 @@ namespace Microsoft.OneGet.Test {
     using OneGet.Utility.Extensions;
     using Xunit;
     using Xunit.Abstractions;
+    using TestCodeAttribute = System.CodeDom.Compiler.GeneratedCodeAttribute;
 
+    [TestCode("TestCode","")]
     public class Tests {
         private static readonly HashSet<string> _flags = new HashSet<string>();
         public readonly ITestOutputHelper Out;
@@ -91,6 +93,7 @@ namespace Microsoft.OneGet.Test {
 
         public class CaseInsensitiveEqualityComparer : IEqualityComparer<string> {
             internal static CaseInsensitiveEqualityComparer Instance = new CaseInsensitiveEqualityComparer();
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
             public bool Equals(string x, string y) {
                 return x.EqualsIgnoreCase(y);
             }

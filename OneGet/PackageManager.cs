@@ -32,7 +32,7 @@ namespace Microsoft.OneGet {
     ///     <example><![CDATA[
     ///    // Manually load the assembly
     ///    var asm = Assembly.Load("Microsoft.OneGet.Core.dll" )
-            // todo: insert reflection-based loading code.
+    ///     // todo: insert reflection-based loading code.
     /// ]]>
     ///     </example>
     /// </summary>

@@ -18,6 +18,7 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.ParameterCoercion {
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
+    using System.Diagnostics.CodeAnalysis;
 
     public class HostImplementationOfRequest : IRequestInterface {
         public string CallBackToTheHost(string someText) {
@@ -43,7 +44,10 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.ParameterCoercion {
         void OnUnhandledException(string methodName, Exception e);
     }
 
+
     public class ThePluginImplementation {
+
+        [SuppressMessage("Microsoft.Usage", "#pw26506")]  
         public string DoSomething(string someText, ThePluginImplementationOfTheRequest theRequest) {
             // since we're able to use the request object as the plugin's strongly type version
             // we can call methods on it directly.
@@ -87,6 +91,7 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.ParameterCoercion {
             throw new Exception("ha ha");
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]  
         public void OnUnhandledException(string methodName, Exception e) {
             Console.WriteLine("Method : {0}", methodName);
             Console.WriteLine("Exception: {0}/{1}/{2}", e.GetType().Name, e.Message, e.StackTrace);

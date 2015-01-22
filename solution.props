@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="$(BuildingWithBuildExe) == 'true'">
+    <!-- Internal Build Settings -->
+    <CommunityBuild>false</CommunityBuild>
+    <InternalBuild>true</InternalBuild>
+    <SignAssembly>true</SignAssembly>  
+    <DelaySign>true</DelaySign>  
+    <AssemblyOriginatorKeyFile>$(PUBLIC_ROOT)\internal\strongnamekeys\fake\windows.snk</AssemblyOriginatorKeyFile>
+    <SET_MT_EXE>set MTEXE=mt.exe</SET_MT_EXE>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(BuildingWithBuildExe) == '' Or $(BuildingWithBuildExe) == '*Undefined*' Or $(BuildingWithBuildExe) =='false' ">
+    <!-- Community Build Settings -->
+    <CommunityBuild>true</CommunityBuild>
+    <InternalBuild>false</InternalBuild>
+    <OutputPath>$(SolutionRootDir)output\$(TargetFrameworkVersion.Replace(".",""))\$(Configuration)\bin\</OutputPath> 
+    <BaseIntermediateOutputPath>$(SolutionRootDir)intermediate\$(TargetFrameworkVersion.Replace(".",""))\$(Configuration)\$(AssemblyName)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath> 
+    <DocumentationFile>$(OutputPath)$(AssemblyName).XML</DocumentationFile> 
+    <SET_MT_EXE>for /f "delims=" %25%25a in ('powershell "$p = ((Get-ItemProperty -Path HKCU:\Software\OneGet\tools\MT.EXE -Name Path -ea 0).Path) ;  if( -not $p ) { $p = ((dir ${env:ProgramFiles(x86)} -recurse -ea 0|  where -property name -eq mt.exe | select -first 1 ).FullName) ;    $null = mkdir -Path HKCU:\Software\OneGet\tools\MT.EXE -Force ;    $null = New-ItemProperty -Path HKCU:\Software\OneGet\tools\MT.EXE -Name Path -Value $p -force } ; $p"') do @set MTEXE=%25%25a</SET_MT_EXE>
+  </PropertyGroup>
   <PropertyGroup>
+    <!-- Common Build Settings -->
     <SolutionRootDir Condition=" '$(SolutionRootDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), solution.props))\</SolutionRootDir>
     <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), OneGet.sln))\</SolutionDir>
 
@@ -9,11 +29,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
 
     <Prefer32Bit>false</Prefer32Bit>
-    <OutputPath>$(SolutionRootDir)output\$(TargetFrameworkVersion.Replace(".",""))\$(Configuration)\bin\</OutputPath>
-    <BaseIntermediateOutputPath>$(SolutionRootDir)intermediate\$(TargetFrameworkVersion.Replace(".",""))\$(Configuration)\$(AssemblyName)\</BaseIntermediateOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DocumentationFile>$(OutputPath)$(AssemblyName).XML</DocumentationFile>
-    <NoWarn>1591</NoWarn>
+    <NoWarn>1591,3002,3003,3008,3009</NoWarn>
     <RestorePackages>true</RestorePackages>
     <DefineConstants>FRAMEWORK$(TargetFrameworkVersion.Replace(".",""))</DefineConstants>
     <OutputRelativePath>output\$(TargetFrameworkVersion.Replace(".",""))\$(Configuration)\bin\</OutputRelativePath>

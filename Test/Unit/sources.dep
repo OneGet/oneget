@@ -1,0 +1,8 @@
+PUBLIC_PASS0_CONSUMES= \
+    redist\mspartners\netfx45\core\binary_release|PASS0 \
+
+BUILD_PASS1_CONSUMES= \
+    admin\monad\src\oneget\oneget|PASS1 \
+    admin\monad\src\oneget\utility|PASS1 \
+    admin\monad\src\oneget\utility.powershell|PASS1 \
+
