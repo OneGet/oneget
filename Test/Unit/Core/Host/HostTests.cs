@@ -11,6 +11,7 @@ namespace Microsoft.OneGet.Test.Core.Host {
 
     public class HostImpl : IHostApi {
         public bool IsCanceled {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
@@ -53,6 +54,7 @@ namespace Microsoft.OneGet.Test.Core.Host {
         }
 
         public IEnumerable<string> OptionKeys {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
@@ -63,18 +65,21 @@ namespace Microsoft.OneGet.Test.Core.Host {
         }
 
         public IEnumerable<string> Sources {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
         }
 
         public string CredentialUsername {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
         }
 
         public SecureString CredentialPassword {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
@@ -93,12 +98,14 @@ namespace Microsoft.OneGet.Test.Core.Host {
         }
 
         public bool IsInteractive {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
         }
 
         public int CallCount {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }

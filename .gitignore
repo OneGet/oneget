@@ -103,3 +103,6 @@ policheck*
 OneGet.orig.sln
 *pingme*
 .nuget
+UpgradeLog.htm
+manifests/
+xunit-test-results.xml

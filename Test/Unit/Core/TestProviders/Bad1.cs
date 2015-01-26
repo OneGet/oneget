@@ -67,6 +67,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// </summary>
         /// <returns>The version of this provider </returns>
         public string ProviderVersion {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]  
             get {
                 throw new Exception("Misbehaving - ProviderVersion");
             }
@@ -76,6 +77,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// This is just here as to give us some possibility of knowing when an unexception happens...
         /// At the very least, we'll write it to the system debug channel, so a developer can find it if they are looking for it.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]  
         public void OnUnhandledException(string methodName, Exception exception) {
             Support.Console.WriteLine("Unexpected Exception thrown in '{0}::{1}' -- {2}\\{3}\r\n{4}", PackageProviderName, methodName, exception.GetType().Name, exception.Message, exception.StackTrace);
         }
@@ -86,6 +88,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// Performs one-time initialization of the $provider.
         /// </summary>
         /// <param name="request">An object passed in from the CORE that contains functions that can be used to interact with the CORE and HOST</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void InitializeProvider(Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InitializeProvider'", PackageProviderName);

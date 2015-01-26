@@ -444,6 +444,7 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
                 return s != null;
             }
 
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
             public bool TakesAFileStream(FileStream ms) {
                 Console.WriteLine("HUH?");
                 Console.WriteLine("Type of stream is {0}", ms.GetType().Name);

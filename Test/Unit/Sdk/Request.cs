@@ -224,6 +224,7 @@ namespace Microsoft.OneGet.Test.Sdk {
         /// </summary>
         /// <param name="dictionary"></param>
         /// <returns></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public bool Yield(Dictionary<string, string[]> dictionary) {
             return dictionary.All(Yield);
         }
