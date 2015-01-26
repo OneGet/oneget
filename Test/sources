@@ -1,0 +1,10 @@
+TARGETTYPE=NOTARGET
+
+#SOURCES= \
+
+TARGET_DESTINATION=monad\tests\OneGet
+
+PASS_INDEPENDENT_BINPLACE_TREE=\
+    BVT \
+    RITests \
+    Unit 

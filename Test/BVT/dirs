@@ -1,0 +1,5 @@
+## 
+
+# test directories should be placed in the OPTIONAL_DIRS section
+OPTIONAL_DIRS=\
+    cmdlet-testsuite 
