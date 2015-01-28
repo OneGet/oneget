@@ -191,18 +191,6 @@ namespace Microsoft.OneGet.Implementation {
             }, Constants.PackageStatus.Available);
         }
 
-        private IEnumerable<SoftwareIdentity> FindPackagesByFilesImpl(CancellationTokenSource cancellationTokenSource, string[] filenames, IHostApi requestObject) {
-            var id = StartFind(requestObject);
-            foreach (var file in filenames) {
-                foreach (var pkg in FindPackageByFile(file, id.Value, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
-                    yield return pkg;
-                }
-                foreach (var pkg in CompleteFind(id.Value, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
-                    yield return pkg;
-                }
-            }
-        }
-
         public IAsyncEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IHostApi requestObject) {
             return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, request), Constants.PackageStatus.Available);
         }

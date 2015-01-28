@@ -13,9 +13,11 @@
 //  
 
 namespace Microsoft.OneGet.Utility.Extensions {
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
 
     public static class TaskExtensions {
+        [ExcludeFromCodeCoverage /* trivial code */] 
         public static Task<T> AsResultTask<T>(this T result) {
             var x = new TaskCompletionSource<T>(TaskCreationOptions.AttachedToParent);
             x.SetResult(result);
