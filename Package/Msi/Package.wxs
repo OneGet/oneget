@@ -34,7 +34,7 @@
       -->
     </Feature>
   
-    <CustomAction Id="RunPowerShellScript" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="check" Impersonate="yes" />
+    <CustomAction Id="RunPowerShellScript" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no" />
 
   
   <InstallExecuteSequence>
@@ -95,16 +95,33 @@
       <Component><File Source="Microsoft.OneGet.ArchiverProviders.dll" /></Component>
       <Component><File Source="Microsoft.OneGet.MsiProvider.dll" /></Component>
       <Component><File Source="Microsoft.OneGet.MsuProvider.dll" /></Component>
-      <Component><File Source="Microsoft.OneGet.NuGetProvider.dll" /></Component>
+      
+      <Component><File Source="Microsoft.OneGet.NuGetProvider.dll" /></Component> 
+      <Component><File Source="nuget.exe" /></Component> 
+      
+      <!-- <Component><File Source="nuget-anycpu.exe" /></Component>  -->
       <Component><File Source="Microsoft.OneGet.CoreProviders.dll" /></Component>
 
       <Component><File Source="Microsoft.OneGet.Utility.dll" /></Component>
       <Component><File Source="Microsoft.OneGet.Utility.PowerShell.dll" /></Component>
       <Component><File Source="Microsoft.PowerShell.OneGet.dll" /></Component>
+      
+      <Component><File Source="Microsoft.OneGet.pdb" /></Component>
+      <Component><File Source="Microsoft.OneGet.MetaProvider.PowerShell.pdb" /></Component>
+      <Component><File Source="Microsoft.OneGet.ArchiverProviders.pdb" /></Component>
+      <Component><File Source="Microsoft.OneGet.MsiProvider.pdb" /></Component>
+      <Component><File Source="Microsoft.OneGet.MsuProvider.pdb" /></Component>
+      <Component><File Source="Microsoft.OneGet.NuGetProvider.pdb" /></Component>
+      <Component><File Source="Microsoft.OneGet.CoreProviders.pdb" /></Component>
+
+      <Component><File Source="Microsoft.OneGet.Utility.pdb" /></Component>
+      <Component><File Source="Microsoft.OneGet.Utility.PowerShell.pdb" /></Component>
+      <Component><File Source="Microsoft.PowerShell.OneGet.pdb" /></Component>
+      
       <Component><File Source="OneGet.format.ps1xml" /></Component>
       <Component><File Source="OneGet.psd1" /></Component>
       <Component><File Source="PackageProviderFunctions.psm1" /></Component>
-      <Component><File Source="nuget.exe" /></Component>
+      
     </ComponentGroup>
     
     <ComponentGroup Id="OneGetEdgeComponents" Directory="OneGetEdgeFolder">

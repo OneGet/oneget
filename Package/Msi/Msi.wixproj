@@ -22,6 +22,9 @@
     <Compile Include="Package.wxs" />
   </ItemGroup>
   <ItemGroup>
+    <BindInputPaths Include="$(SolutionRootDir)\signed">
+      <InProject>false</InProject>
+    </BindInputPaths>
     <BindInputPaths Include="$(OutputPath)">
       <InProject>false</InProject>
     </BindInputPaths>

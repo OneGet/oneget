@@ -203,6 +203,8 @@ namespace Microsoft.OneGet.Msi {
 
                 Installer.SetInternalUI(InstallUIOptions.UacOnly | InstallUIOptions.Silent);
 
+                // todo 1501: support additional parameters!
+
                 var handler = CreateProgressHandler(request);
                 _progressId = request.StartProgress(0, "Installing MSI '{0}'", file);
                 Installer.SetExternalUI(handler, InstallLogModes.Progress | InstallLogModes.Info);
