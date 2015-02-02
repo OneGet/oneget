@@ -14,140 +14,75 @@
 
 namespace Microsoft.OneGet.Utility.Collections {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Threading;
 
-    public class BlockingCollection<T> : MutableEnumerable<T>, IList<T>, IDisposable {
-        private ManualResetEvent _added = new ManualResetEvent(false);
-        private ManualResetEvent _completed = new ManualResetEvent(false);
+    public class BlockingCollection<T> : System.Collections.Concurrent.BlockingCollection<T>, IEnumerable<T>  {
+        private MutableEnumerable<T> _blockingEnumerable;
 
-        public bool IsCompleted {
-            get {
-                if (_completed == null) {
-                    return true;
+        public IEnumerator<T> GetEnumerator() {
+            // make sure that iterating on this as enumerable is blocking.
+            return this.GetBlockingEnumerable().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
+
+        protected override void Dispose(bool isDisposing) {
+            if (isDisposing) {
+                _blockingEnumerable = null;
+            }
+        }
+
+        public new IEnumerable<T> GetConsumingEnumerable() {
+            return GetConsumingEnumerable(CancellationToken.None);
+        }
+
+        public new IEnumerable<T> GetConsumingEnumerable(CancellationToken cancellationToken) {
+            T item;
+            while (!IsCompleted && SafeTryTake(out item, 0, cancellationToken)) {
+                yield return item;
+            }
+        }
+
+        private bool SafeTryTake(out T item, int time, CancellationToken cancellationToken) {
+            try {
+                if (!cancellationToken.IsCancellationRequested && Count > 0 ) {
+                    return TryTake(out item, time, cancellationToken);
                 }
-                return _completed.WaitOne(0);
+            } catch {
+                // if this throws, that just means that we're done. (ie, canceled)
             }
+            item = default(T);
+            return false;
         }
 
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+        public IEnumerable<T> GetBlockingEnumerable() {
+            return GetBlockingEnumerable(CancellationToken.None);
+        }
+        public  IEnumerable<T> GetBlockingEnumerable( CancellationToken cancellationToken) {
+            return _blockingEnumerable ?? (_blockingEnumerable = SafeGetBlockingEnumerable(cancellationToken).ReEnumerable());
         }
 
-        public void Add(T item) {
-            if (_completed.WaitOne(0)) {
-                // throw new Exception("Attempt to modify completed collection");
-                return;
-            }
-
-            lock (this) {
-                List.Add(item);
-                _added.Set();
-            }
-        }
-
-        public void Clear() {
-            throw new NotImplementedException();
-        }
-
-        public bool Contains(T item) {
-            _completed.WaitOne();
-            return List.Contains(item);
-        }
-
-        public void CopyTo(T[] array, int arrayIndex) {
-            _completed.WaitOne();
-            List.CopyTo(array, arrayIndex);
-        }
-
-        public bool Remove(T item) {
-            throw new NotImplementedException();
-        }
-
-        public int Count {
-            get {
-                _completed.WaitOne();
-                return List.Count;
-            }
-        }
-
-        public bool IsReadOnly {
-            get {
-                return false;
-            }
-        }
-
-        public int IndexOf(T item) {
-            _completed.WaitOne();
-            return List.IndexOf(item);
-        }
-
-        public void Insert(int index, T item) {
-            throw new NotImplementedException();
-        }
-
-        public void RemoveAt(int index) {
-            throw new NotImplementedException();
-        }
-
-        public T this[int index] {
-            get {
-                if (ItemExists(index)) {
-                    return List[index];
+        private IEnumerable<T> SafeGetBlockingEnumerable(CancellationToken cancellationToken) {
+            while (!IsCompleted && !cancellationToken.IsCancellationRequested) {
+                T item;
+                if (SafeTryTake(out item, -1, cancellationToken)) {
+                    yield return item;
                 }
-                throw new ArgumentOutOfRangeException("index");
-            }
-            set {
-                throw new NotImplementedException();
             }
         }
 
         public void Complete() {
-            if (_completed != null) {
-                _completed.Set();
+            CompleteAdding();
+        }
+
+        public bool HasData {
+            get {
+                return Count > 0;
             }
-        }
-
-        public IEnumerable<T> GetConsumingEnumerable() {
-            return this;
-        }
-
-        protected override bool ItemExists(int index) {
-            while (true) {
-                lock (this) {
-                    if (List.Count > index) {
-                        return true;
-                    }
-                    _added.Reset();
-                }
-
-                if (WaitHandle.WaitAny(new WaitHandle[] {_completed, _added}) == 0) {
-                    return List.Count > index;
-                }
-            }
-        }
-
-        public void Dispose(bool disposing) {
-            if (disposing) {
-                if (_completed != null) {
-                    _completed.Set();
-                    _completed.Dispose();
-                    _completed = null;
-                }
-                if (_added != null) {
-                    _added.Set();
-                    _added.Dispose();
-                    _added = null;
-                }
-            }
-        }
-
-        public void Wait(int milliseconds) {
-            _completed.WaitOne(milliseconds);
-        }
-        public void Wait() {
-            _completed.WaitOne(-1);
         }
     }
 }

@@ -88,87 +88,6 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
         }
 
-        /// <summary>
-        ///     This can be used when we want to override some of the functions that are passed
-        ///     in as the implementation of the IHostApi (ie, 'request object').
-        ///     Because the DynamicInterface DuckTyper will use all the objects passed in in order
-        ///     to implement a given API, if we put in delegates to handle some of the functions
-        ///     they will get called instead of the implementation in the current class. ('this')
-        /// </summary>
-        protected IHostApi SuppressErrorsAndWarnings {
-            get {
-                return new object[] {
-                    new {
-                        Error = new Func<string, string, string, string, bool>((id, cat, targetobjectvalue, messageText) => {
-#if DEBUG
-                            Verbose("Suppressed Error {0}", messageText);
-#endif
-                            return false;
-                        }),
-                        Warning = new Func<string, bool>((messageText) => {
-#if DEBUG
-                            Verbose("Suppressed Warning {0}", messageText);
-#endif
-                            return true;
-                        }),
-                        Verbose = new Func<string,bool>((messageText) => {
-                            if (IsProcessing) {
-                                Verbose(messageText);
-                            }
-#if DEBUG 
-                            else {
-                                Verbose("Suppressed Verbose {0}", messageText);
-                            }
-#endif
-
-                            return true;
-                        }),
-
-                    },
-                    this,
-                }.As<IHostApi>();
-            }
-        }
-
-        /// <summary>
-        ///     This can be used when we want to override some of the functions that are passed
-        ///     in as the implementation of the IHostApi (ie, 'request object').
-        ///     Because the DynamicInterface DuckTyper will use all the objects passed in in order
-        ///     to implement a given API, if we put in delegates to handle some of the functions
-        ///     they will get called instead of the implementation in the current class. ('this')
-        /// </summary>
-        protected object SuppressErrorsAndWarningsAndBootstrapping {
-            get {
-                return new object[] {
-                    new {
-                        Error = new Func<string, string, string, string, bool>((id, cat, targetobjectvalue, messageText) => {
-#if DEBUG
-                            Verbose("Suppressed Error", messageText);
-#endif
-                            return false;
-                        }),
-                        Warning = new Func<string, bool>((messageText) => {
-#if DEBUG
-                            Verbose("Suppressed Warning", messageText);
-#endif
-                            return true;
-                        }),
-                        IsInvocation = new Func<bool>(() => {
-                            return false;
-                        }),
-                        ShouldBootstrapProvider = new Func<string,string,string,string,string,string,bool>((s1,s2,s3,s4,s5,s6) => {
-                            return false;
-                        }),
-                        IsInteractive = new Func<bool>(() => {
-                            return false;
-                        }),
-
-                    },
-                    this,
-                };
-            }
-        }
-
         protected int TimeOut {
             get {
                 if (IsInvocation) {
@@ -356,13 +275,13 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
         protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
             if (names.IsNullOrEmpty()) {
-                return PackageManagementService.SelectProviders(null, SuppressErrorsAndWarnings).Where(each => !each.Features.ContainsKey(Microsoft.OneGet.Constants.Features.AutomationOnly));
+                return PackageManagementService.SelectProviders(null, this.SuppressErrorsAndWarnings(IsProcessing)).Where(each => !each.Features.ContainsKey(Microsoft.OneGet.Constants.Features.AutomationOnly));
             }
             // you can manually ask for any provider by name, if it is for automation only.
             if (IsInvocation) {
                 return names.SelectMany(each => PackageManagementService.SelectProviders(each, this));
             }
-            return names.SelectMany(each => PackageManagementService.SelectProviders(each, SuppressErrorsAndWarnings));
+            return names.SelectMany(each => PackageManagementService.SelectProviders(each, this.SuppressErrorsAndWarnings(IsProcessing)));
         }
 
         protected IEnumerable<PackageProvider> SelectProviders(string name) {
@@ -375,7 +294,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 return result;
             }
 
-            var r = PackageManagementService.SelectProviders(name, SuppressErrorsAndWarnings).ToArray();
+            var r = PackageManagementService.SelectProviders(name, this.SuppressErrorsAndWarnings(IsProcessing)).ToArray();
             if (r.Length == 0) {
                 Warning(Constants.Errors.UnknownProvider, name);
             }

@@ -91,5 +91,24 @@ namespace Microsoft.OneGet.Utility.Async {
         IEnumerator IEnumerable.GetEnumerator() {
             return GetEnumerator();
         }
+
+        public IEnumerable<T> GetConsumingEnumerable() {
+            return Enumerable.Empty<T>();
+        }
+
+        public IEnumerable<T> GetBlockingEnumerable() {
+            return Enumerable.Empty<T>();
+        }
+
+        public bool IsConsumed {
+            get {
+                return true;
+            }
+        }
+        public bool HasData {
+            get {
+                return false;
+            }
+        }
     }
 }

@@ -49,6 +49,7 @@
     <Compile Include="Cmdlets\RegisterPackageSource.cs" />
     <Compile Include="Cmdlets\SavePackage.cs" />
     <Compile Include="Cmdlets\SetPackageSource.cs" />
+    <Compile Include="Utility\HostApiExtensions.cs" />
     <Compile Include="Utility\ValidateListAttribute.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Resources\Messages.Designer.cs">

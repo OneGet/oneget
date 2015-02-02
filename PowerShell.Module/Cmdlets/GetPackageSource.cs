@@ -19,6 +19,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
+    using Utility;
 
     [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageSourceNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517137")]
     public sealed class GetPackageSource : CmdletWithProvider {
@@ -85,7 +86,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     return false;
                 }
 
-                using (var sources = provider.ResolvePackageSources(SuppressErrorsAndWarnings).CancelWhen(_cancellationEvent.Token)) {
+                using (var sources = provider.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).CancelWhen(_cancellationEvent.Token)) {
                     if (noCriteria) {
                         // no criteria means just return whatever we found
                         if (WriteSources(sources)) {

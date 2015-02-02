@@ -42,5 +42,24 @@ namespace Microsoft.OneGet.Implementation {
             Results.Complete();
             base.Complete();
         }
+
+        public IEnumerable<T> GetConsumingEnumerable() {
+            return Results.GetConsumingEnumerable(_cancellationTokenSource.Token);
+        }
+
+        public IEnumerable<T> GetBlockingEnumerable() {
+            return Results.GetBlockingEnumerable(_cancellationTokenSource.Token);
+        }
+
+        public bool IsConsumed {
+            get {
+                return IsCanceled || IsAborted || Results.IsCompleted;
+            }
+        }
+        public bool HasData {
+            get {
+                return !IsCanceled || !IsAborted || Results.HasData;
+            }
+        }
     }
 }

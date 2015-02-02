@@ -24,6 +24,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
+    using Utility;
     using Constants = OneGet.Constants;
 
     public abstract class CmdletWithSearchAndSource : CmdletWithSearch {
@@ -62,7 +63,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 if (Source != null && Source.Length > 0) {
                     // sources must actually match a name or location. Keeps providers from being a bit dishonest
 
-                    var potentialSources = providers.SelectMany(each => each.ResolvePackageSources(SuppressErrorsAndWarnings).Where(source => Source.ContainsAnyOfIgnoreCase(source.Name, source.Location))).ReEnumerable();
+                    var potentialSources = providers.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => Source.ContainsAnyOfIgnoreCase(source.Name, source.Location))).ReEnumerable();
 
                     // prefer registered sources
                     var registeredSources = potentialSources.Where(source => source.IsRegistered).ReEnumerable();
@@ -104,18 +105,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             return true;
         }
 
-        internal bool FindViaUri(PackageProvider packageProvider, string searchKey, Uri packageuri) {
-            var found = false;
-
-            using (var packages = packageProvider.FindPackageByUri(packageuri, 0, this).CancelWhen(_cancellationEvent.Token)) {
-                foreach (var p in packages) {
-                    found = true;
-                    ProcessPackage(packageProvider, searchKey, p);
-                }
-            }
-
-            return found;
-        }
+       
 
         private MutableEnumerable<string> FindFiles(string path) {
             if (path.LooksLikeAFilename()) {
@@ -126,203 +116,141 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             return Microsoft.OneGet.Constants.Empty.ReEnumerable();
         }
 
-        internal bool FindViaFile(PackageProvider packageProvider, string searchKey, string filePath) {
-            var found = false;
-            try {
-                // found at least some files
-                // this is probably the right path.
-                //foreach (var file in filePaths) {
-
-                var foundThisFile = false;
-                using (var packages = packageProvider.FindPackageByFile(filePath, 0, this).CancelWhen(_cancellationEvent.Token)) {
-                    foreach (var p in packages) {
-                        foundThisFile = true;
-                        found = true;
-                        ProcessPackage(packageProvider, searchKey, p);
-                    }
-                }
-
-                if (foundThisFile == true) {
-                    lock (_filesWithoutMatches) {
-                        _filesWithoutMatches.Remove(filePath, searchKey);
-                    }
-                }
-            } catch {
-                // didn't actually map to a filename ...  keep movin'
+       
+        protected bool SpecifiedMinimumOrMaximum {
+            get {
+                return !string.IsNullOrWhiteSpace(MaximumVersion) || !string.IsNullOrWhiteSpace(MinimumVersion);
             }
-
-            // it doesn't look like we found any files.
-            // either because we didn't find any file paths that match
-            // or the provider couldn't make sense of the files.
-
-            return found;
         }
 
-        internal bool FindViaName(PackageProvider packageProvider, string name) {
-            var found = false;
+        private List<Uri> _uris = new List<Uri>();
+        private Dictionary<string, Tuple<List<string>, byte[]>> _files = new Dictionary<string, Tuple<List<string>, byte[]>>(StringComparer.OrdinalIgnoreCase);
 
-            using (var packages = packageProvider.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, 0, this).CancelWhen(_cancellationEvent.Token)) {
-                if (AllVersions) {
-                    foreach (var p in packages) {
-                        found = true;
-                        ProcessPackage(packageProvider, name, p);
-                    }
-                } else {
-                    if (!string.IsNullOrWhiteSpace(MaximumVersion) || !string.IsNullOrWhiteSpace(MinimumVersion)) {
-                        foreach (var pkg in from p in packages
-                            group p by p.Name
-                            // for a given name
-                            into grouping
-                                // get the latest version only
-                            select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()) {
-                            found = true;
-                            // each package name should only show up once here.
-                            ProcessPackage(packageProvider, name, pkg);
-                        }
+        private IEnumerable<string> _names;
+
+        private bool IsUri(string name) {
+            if (Uri.IsWellFormedUriString(name, UriKind.Absolute)) {
+                // if it's an uri, then we search via uri or file!
+                var packageUri = new Uri(name, UriKind.Absolute);
+                if (!packageUri.IsFile) {
+                    _uris.Add( packageUri );
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        
+        private bool IsFile(string name) {
+            var files = FindFiles(name);
+            if (files.Any()) {
+                foreach (var f in files) {
+                    if (_files.ContainsKey(f)) {
+                        // if we've got this file already by another parameter, just update it to
+                        // keep track that we've somehow got it twice.
+                        _files[f].Item1.Add(name);
                     } else {
-                        foreach (var pkg in packages) {
-                            ProcessPackage(packageProvider, name, pkg);
-                        }
+                        // otherwise, lets' grab the first chunk of this file so we can check what providers 
+                        // can handle it (later)
+                        _files.Add(f, new List<string> { name }, f.ReadBytes(1024));
                     }
                 }
+                
+                return true;
             }
-            return found;
+            return false;
         }
 
-        private IEnumerable<PackageProvider> SelectProvidersSupportingFile(PackageProvider[] providers, string filename) {
-            if (filename.FileExists()) {
-                var buffer = new byte[1024];
-                var sz = 0;
-                try {
-                    using (var file = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read)) {
-                        sz = file.Read(buffer, 0, 1024);
-                    }
-                } catch {
-                    // not openable. whatever.
-                }
-                foreach (var p in providers) {
-                    if (p.IsSupportedFile(buffer)) {
-                        yield return p;
-                    }
-                }
-            }
-        }
+        
 
         protected void SearchForPackages() {
             var providers = SelectedProviders.ToArray();
 
-            if (!Name.IsNullOrEmpty()) {
-                Name.ParallelForEach(name => {
-                    var found = false;
 
-                    if (Uri.IsWellFormedUriString(name, UriKind.Absolute)) {
-                        // try everyone as via uri
-                        var packageUri = new Uri(name, UriKind.Absolute);
-                        if (!packageUri.IsFile) {
-                            providers.ParallelForEach(provider => {
-                                try {
-                                    found = found | FindViaUri(provider, name, packageUri);
-                                } catch (Exception e) {
-                                    e.Dump();
-                                }
-                            });
-                            // we're done searching for this provider
-                            return;
+            // filter the items into three types of searches
+            _names = Name.IsNullOrEmpty() ? string.Empty.SingleItemAsEnumerable() : Name.Where(each => !IsUri(each) && !IsFile(each));
+
+
+           var requests = SelectedProviders.SelectMany(pv => {
+                // for a given provider, if we get an error, we want just that provider to stop.
+                var host = this.ProviderSpecific(pv);
+
+               var a = _uris.Select(uri => new {
+                   query = new List<string>{uri.AbsolutePath},
+                   provider = pv,
+                   packages = pv.FindPackageByUri(uri, 0, host).CancelWhen(_cancellationEvent.Token)
+               });
+
+               var b = _files.Keys.Where(file => pv.IsSupportedFile(_files[file].Item2)).Select(file => new {
+                   query = _files[file].Item1,
+                   provider = pv,
+                   packages =  pv.FindPackageByFile(file, 0, host)
+               });
+
+               var c = _names.Select(name => new {
+                   query = new List<string>{name},
+                   provider = pv,
+                   packages = pv.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, 0, host)
+               });
+
+               return a.Concat(b).Concat(c);
+           }).ToArray();
+
+            if (AllVersions || !SpecifiedMinimumOrMaximum) {
+                // the user asked for every version or they didn't specify any version ranges
+                // either way, that means that we can just return everything that we're finding.
+
+                while (!IsCanceled && requests.Any(each => !each.packages.IsConsumed)) {
+                    // keep processing while any of the the queries is still going.
+
+                    foreach (var result in requests.Where(each => each.packages.HasData)) {
+                        // look only at requests that have data waiting.
+
+                        foreach (var package in result.packages.GetConsumingEnumerable()) {
+                            // process the results for that set.
+                            ProcessPackage(result.provider, result.query, package);
+
                         }
-                        // file uris should be treated like files, not uris.
                     }
 
-                    var files = FindFiles(name);
-                    if (files.Any()) {
-                        lock (_filesWithoutMatches) {
-                            foreach (var file in files) {
-                                _filesWithoutMatches.Add(file, name);
-                            }
-                        }
-
-                        // they specified something that looked kinda like a 
-                        // file path, and it actually matched some files on disk
-                        // so we're going to assume that they meant to treat it 
-                        // as a file.
-                        files.ParallelForEach(file => {
-                            SelectProvidersSupportingFile(providers, file).ParallelForEach(pv => {
-                                try {
-                                    FindViaFile(pv, name, file);
-                                } catch (Exception e) {
-                                    e.Dump();
-                                }
-                            });
-                        });
-                        return;
+                    // just work with whatever is not yet consumed
+                    var disposable = requests.Where(each => each.packages.IsConsumed).ToArray();
+                    requests = requests.Where(each => !each.packages.IsConsumed).ToArray();
+                    foreach (var i in disposable) {
+                        i.packages.Dispose();
                     }
-
-                    _resultsPerName.GetOrAdd(name, null);
-
-                    // it didn't match any files
-                    // and it's not a uri of any kind
-                    // so we'll just ask if there is a package by that name.
-                    providers.ParallelForEach(provider => {
-                        try {
-#if DEEP_DEBUG
-                             Console.WriteLine("Processing find via name [{0}]",provider.Name);
-#endif
-                            FindViaName(provider, name);
-#if DEEP_DEBUG
-                             Console.WriteLine("Done Processing find via name [{0}]", provider.Name);
-#endif
-                        } catch (Exception e) {
-                            e.Dump();
-                        }
-                    });
-                });
-            } else {
-                
-                providers.ParallelForEach(provider => {
-                    try {
-                        if (!FindViaName(provider, string.Empty)) {
-                            // nothing found?
-                            _providersNotFindingAnything.AddLocked(provider);
-                        }
-                    } catch (Exception e) {
-                        e.Dump();
-                    }
-                });
-            }
-            /*
-            Parallel.ForEach(SelectedProviders, provider => {
-                try {
-                    if (!Name.IsNullOrEmpty()) {
-                        foreach (var each in Name) {
-                            // check if the parameter is an uri
-                            if (FindViaUri(provider, each)) {
-                                continue;
-                            }
-
-                            // then if it's a file
-                            if (FindViaFile(provider, each)) {
-                                continue;
-                            }
-
-                            // otherwise, it's just a name
-                            FindViaName(provider, each);
-                        }
-                        return;
-                    }
-
-                    // no package name passed in.
-                    if (!FindViaName(provider, string.Empty)) {
-                        // nothing found?
-                        _providersNotFindingAnything.AddLocked(provider);
-                    }
-                } catch (Exception e) {
-                    e.Dump();
                 }
-            });
- */
+            } else {
+                // now this is where it gets a bit funny. 
+                // the user specified a min or max
+                // and so we have to only return the highest one in the set for a given package.
+
+                while (!IsCanceled && requests.Any(each => !each.packages.IsConsumed)) {
+                    // keep processing while any of the the queries is still going.
+                    foreach (var perProvider in requests.GroupBy(each => each.provider)) {
+                        foreach (var perQuery in perProvider.GroupBy(each => each.query)) {
+                            if (perQuery.All(each => each.packages.IsCompleted && !each.packages.IsConsumed)) {
+                                foreach (var pkg in from p in perQuery.SelectMany(each => each.packages.GetConsumingEnumerable())
+                                    group p by p.Name
+                                    // for a given name
+                                    into grouping
+                                        // get the latest version only
+                                    select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()) {
+                                    ProcessPackage(perProvider.Key, perQuery.Key, pkg);
+                                }
+                            } 
+                        }
+                    }
+                    // just work with whatever is not yet consumed
+                    requests = requests.Where(each => !each.packages.IsConsumed).ToArray();
+                }
+            }
         }
 
-        protected virtual void ProcessPackage(PackageProvider provider, string searchKey, SoftwareIdentity package) {
-            _resultsPerName.GetOrSetIfDefault(searchKey, () => new List<SoftwareIdentity>()).Add(package);
+        protected virtual void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
+            foreach (var key in searchKey) {
+                _resultsPerName.GetOrSetIfDefault(key, () => new List<SoftwareIdentity>()).Add(package);
+            }
         }
 
         protected bool CheckUnmatchedPackages() {

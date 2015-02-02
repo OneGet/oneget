@@ -19,10 +19,12 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Management.Automation;
+    using Microsoft.OneGet.Api;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.OneGet.Utility.Plugin;
     using Utility;
 
     public abstract class CmdletWithProvider : CmdletBase {
@@ -77,7 +79,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 if (didUserSpecifySources) {
                     // sources must actually match a name or location. Keeps providers from being a bit dishonest
 
-                    var potentialSources = providers.SelectMany(each => each.ResolvePackageSources(SuppressErrorsAndWarnings).Where(source => userSpecifiedSources.ContainsAnyOfIgnoreCase(source.Name, source.Location))).ReEnumerable();
+                    var potentialSources = providers.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => userSpecifiedSources.ContainsAnyOfIgnoreCase(source.Name, source.Location))).ReEnumerable();
 
                     // prefer registered sources
                     var registeredSources = potentialSources.Where(source => source.IsRegistered).ReEnumerable();
@@ -348,7 +350,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "It's a performance thing.")]
         protected DynamicOption[] CachedDynamicOptions {
             get {
-                return GetType().GetOrAdd(() => CachedSelectedProviders.SelectMany(provider => _optionCategories.SelectMany(category => provider.GetDynamicOptions(category, SuppressErrorsAndWarnings))).ToArray(), "CachedDynamicOptions");
+                return GetType().GetOrAdd(() => CachedSelectedProviders.SelectMany(provider => _optionCategories.SelectMany(category => provider.GetDynamicOptions(category, this.SuppressErrorsAndWarnings(IsProcessing)))).ToArray(), "CachedDynamicOptions");
             } 
         }
 
@@ -457,5 +459,6 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
             // return true;
         }
+
     }
 }

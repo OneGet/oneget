@@ -21,6 +21,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
+    using Utility;
 
     [Cmdlet(VerbsLifecycle.Unregister, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517143")]
     public sealed class UnregisterPackageSource : CmdletWithSource {
@@ -121,7 +122,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
 
             if (prov.Length > 0) {
-                var sources = prov.SelectMany(each => each.ResolvePackageSources(SuppressErrorsAndWarnings).Where(source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Location))).ToArray()).ToArray();
+                var sources = prov.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Location))).ToArray()).ToArray();
 
                 if (sources.Length == 0) {
                     return Error(Constants.Errors.SourceNotFound, Source ?? Location);

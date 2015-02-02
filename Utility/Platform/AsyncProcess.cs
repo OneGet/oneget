@@ -20,6 +20,7 @@ namespace Microsoft.OneGet.Utility.Platform {
     using System.Diagnostics;
     using System.Linq;
     using System.Threading;
+    using Collections;
     using Extensions;
 
     /// <summary>
@@ -29,9 +30,9 @@ namespace Microsoft.OneGet.Utility.Platform {
     /// </summary>
     public class AsyncProcess : IDisposable {
         protected Process _process;
+        private BlockingCollection<string> _stdError = new BlockingCollection<string>();
         private ManualResetEvent _stdErrStarted = new ManualResetEvent(false);
-        private Collections.BlockingCollection<string> _stdError = new Collections.BlockingCollection<string>();
-        private Collections.BlockingCollection<string> _stdOut = new Collections.BlockingCollection<string>();
+        private BlockingCollection<string> _stdOut = new BlockingCollection<string>();
         private ManualResetEvent _stdOutStarted = new ManualResetEvent(false);
 
         protected AsyncProcess(Process process) {
@@ -41,14 +42,14 @@ namespace Microsoft.OneGet.Utility.Platform {
         public IEnumerable<string> StandardError {
             get {
                 _stdErrStarted.WaitOne();
-                return _stdError.GetConsumingEnumerable();
+                return _stdError;
             }
         }
 
         public IEnumerable<string> StandardOutput {
             get {
                 _stdOutStarted.WaitOne();
-                return _stdOut.GetConsumingEnumerable();
+                return _stdOut;
             }
         }
 

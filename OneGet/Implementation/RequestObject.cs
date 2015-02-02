@@ -53,6 +53,13 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
+        public override bool IsCanceled {
+            get {
+                return base.IsCanceled || !CanCallHost || _hostApi.IsCanceled;
+            }
+        }
+
+
         protected void InvokeImpl() {
             _invocationTask = Task.Factory.StartNew(() => {
                 _invocationThread = Thread.CurrentThread;

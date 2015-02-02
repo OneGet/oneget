@@ -23,6 +23,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
     using Microsoft.OneGet.Utility.Plugin;
+    using Utility;
 
     [Cmdlet(VerbsCommon.Set, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.ParameterSets.SourceBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517141")]
     public sealed class SetPackageSource : CmdletWithProvider {
@@ -104,15 +105,12 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         ///     to implement a given API, if we put in delegates to handle some of the functions
         ///     they will get called instead of the implementation in the current class. ('this')
         /// </summary>
-        private IHostApi WithUpdatePackageSource {
+        private IHostApi UpdatePackageSourceRequest {
             get {
                 return new object[] {
                     new {
                         // override the GetOptionKeys and the GetOptionValues on the fly.
-
-                        GetOptionKeys = new Func<IEnumerable<string>>(() => {
-                            return OptionKeys.ConcatSingleItem("IsUpdatePackageSource");
-                        }),
+                        GetOptionKeys = new Func<IEnumerable<string>>(() => OptionKeys.ConcatSingleItem("IsUpdatePackageSource")),
 
                         GetOptionValues = new Func<string, IEnumerable<string>>((key) => {
                             if (key != null && key.EqualsIgnoreCase("IsUpdatePackageSource")) {
@@ -152,7 +150,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             if (string.IsNullOrWhiteSpace(NewName)) {
                 // this is a replacement of an existing package source, we're *not* changing the name. (easy)
 
-                foreach (var src in source.Provider.AddPackageSource(string.IsNullOrWhiteSpace(NewName) ? source.Name : NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted, WithUpdatePackageSource)) {
+                foreach (var src in source.Provider.AddPackageSource(string.IsNullOrWhiteSpace(NewName) ? source.Name : NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted, UpdatePackageSourceRequest)) {
                     WriteObject(src);
                 }
 
@@ -197,7 +195,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
 
             if (prov.Length > 0) {
-                var sources = prov.SelectMany(each => each.ResolvePackageSources(SuppressErrorsAndWarnings).Where(source => source.IsRegistered &&
+                var sources = prov.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered &&
                                                                                                        (Name == null || source.Name.EqualsIgnoreCase(Name)) || (Location == null || source.Location.EqualsIgnoreCase(Location))).ToArray()).ToArray();
 
                 if (sources.Length == 0) {

@@ -23,6 +23,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
+    using Utility;
 
     [Cmdlet(VerbsData.Save, Constants.Nouns.PackageNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517140")]
     public sealed class SavePackage : CmdletWithSearchAndSource {
@@ -126,13 +127,13 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
 
             if (IsPackageByObject) {
-                ProcessPackage(SelectProviders(InputObject.ProviderName).FirstOrDefault(), InputObject.Name, InputObject);
+                ProcessPackage(SelectProviders(InputObject.ProviderName).FirstOrDefault(), InputObject.Name.SingleItemAsEnumerable(), InputObject);
                 return true;
             }
             return base.ProcessRecordAsync();
         }
 
-        protected override void ProcessPackage(PackageProvider provider, string searchKey, SoftwareIdentity package) {
+        protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
             base.ProcessPackage(provider, searchKey, package);
 
             var savePath = SaveFileName(package.PackageFilename);
@@ -153,7 +154,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             // if we have a valid path, make a local copy of the file.
             if (!string.IsNullOrWhiteSpace(savePath)) {
                 if (ShouldProcess(savePath, Constants.Messages.SavePackage).Result) {
-                    provider.DownloadPackage(package, SaveFileName(savePath), this).Wait();
+                    provider.DownloadPackage(package, SaveFileName(savePath), this.ProviderSpecific(provider)).Wait();
 
                     if (File.Exists(savePath)) {
                         package.FullPath = savePath;

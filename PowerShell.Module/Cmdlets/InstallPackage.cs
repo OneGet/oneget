@@ -133,11 +133,11 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             return InstallPackages(_resultsPerName.Values.SelectMany(each => each).ToArray());
         }
 
-        protected override void ProcessPackage(PackageProvider provider, string searchKey, SoftwareIdentity package) {
+        protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
             if (WhatIf) {
                 // grab the dependencies and return them *first*
-                foreach (var dep in provider.GetPackageDependencies(package, this)) {
-                    ProcessPackage(provider, searchKey + dep.Name, dep);
+                foreach (var dep in provider.GetPackageDependencies(package, this.ProviderSpecific(provider))) {
+                    ProcessPackage(provider, searchKey.Select( each => each+dep.Name).ToArray() , dep);
                 }
             }
             base.ProcessPackage(provider, searchKey, package);
@@ -179,7 +179,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 }
 
                 // quickly check to see if this package is already installed.
-                var installedPkgs = provider.GetInstalledPackages(pkg.Name, this).CancelWhen(_cancellationEvent.Token).ToArray();
+                var installedPkgs = provider.GetInstalledPackages(pkg.Name, this.ProviderSpecific(provider)).CancelWhen(_cancellationEvent.Token).ToArray();
                 if (IsCanceled) {
                     // if we're stopping, just get out asap.
                     return false;
@@ -207,7 +207,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     // ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source);
                     //} else {
                     if (ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source)) {
-                        foreach (var installedPkg in provider.InstallPackage(pkg, this).CancelWhen(_cancellationEvent.Token)) {
+                        foreach (var installedPkg in provider.InstallPackage(pkg, this.ProviderSpecific(provider)).CancelWhen(_cancellationEvent.Token)) {
                             if (IsCanceled) {
                                 // if we're stopping, just get out asap.
                                 return false;

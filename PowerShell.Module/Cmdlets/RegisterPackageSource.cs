@@ -22,6 +22,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
+    using Utility;
 
     [Cmdlet(VerbsLifecycle.Register, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517139")]
     public sealed class RegisterPackageSource : CmdletWithProvider {
@@ -144,21 +145,23 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
 
             var packageProvider = SelectProviders(ProviderName).ReEnumerable();
+                switch (packageProvider.Count()) {
+                    case 0:
+                        Error(Constants.Errors.UnknownProvider, ProviderName);
+                        return false;
 
-            switch (packageProvider.Count()) {
-                case 0:
-                    Error(Constants.Errors.UnknownProvider, ProviderName);
-                    return false;
+                    case 1:
+                        break;
 
-                case 1:
-                    break;
+                    default:
+                        Error(Constants.Errors.MatchesMultipleProviders, packageProvider.Select(p => p.ProviderName).JoinWithComma());
+                        return false;
+                }
+            
 
-                default:
-                    Error(Constants.Errors.MatchesMultipleProviders, packageProvider.Select(provider => provider.ProviderName).JoinWithComma());
-                    return false;
-            }
+            var provider = packageProvider.First();
 
-            using (var sources = packageProvider.First().ResolvePackageSources(this).CancelWhen(_cancellationEvent.Token)) {
+            using (var sources = provider.ResolvePackageSources(this).CancelWhen(_cancellationEvent.Token)) {
                 // first, check if there is a source by this name already.
                 var existingSources = sources.Where(each => each.IsRegistered && each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase)).ToArray();
 
@@ -166,8 +169,9 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     // if there is, and the user has said -Force, then let's remove it.
                     foreach (var existingSource in existingSources) {
                         if (Force) {
+                            
                             if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, existingSource.Name, existingSource.Location, existingSource.ProviderName), Constants.Messages.ActionReplacePackageSource).Result) {
-                                var removedSources = packageProvider.First().RemovePackageSource(existingSource.Name, this).CancelWhen(_cancellationEvent.Token);
+                                var removedSources = provider.RemovePackageSource(existingSource.Name, this).CancelWhen(_cancellationEvent.Token);
                                 foreach (var removedSource in removedSources) {
                                     Verbose(Constants.Messages.OverwritingPackageSource, removedSource.Name);
                                 }
@@ -180,8 +184,9 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 }
             }
 
+            
             if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, Name, Location, ProviderName), FormatMessageString(Constants.Messages.ActionRegisterPackageSource)).Result) {
-                using (var added = packageProvider.First().AddPackageSource(Name, Location, Trusted, this).CancelWhen(_cancellationEvent.Token)) {
+                using (var added = provider.AddPackageSource(Name, Location, Trusted, this).CancelWhen(_cancellationEvent.Token)) {
                     foreach (var addedSource in added) {
                         WriteObject(addedSource);
                     }

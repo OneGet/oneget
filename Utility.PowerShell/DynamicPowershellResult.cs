@@ -15,11 +15,12 @@
 namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
     using System.Collections;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
     using System.Threading;
-    
+    using Collections;
 
     public class DynamicPowershellResult : IDisposable, IEnumerable<object> {
         public Collections.BlockingCollection<ErrorRecord> Errors = new Collections.BlockingCollection<ErrorRecord>();
@@ -48,7 +49,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         public IEnumerable<object> Values {
             get {
-                return _output.GetConsumingEnumerable();
+                return _output;
             }
         }
 
@@ -75,7 +76,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public IEnumerator<object> GetEnumerator() {
-            return _output.GetConsumingEnumerable().GetEnumerator();
+            return _output.GetBlockingEnumerable().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() {

@@ -166,7 +166,7 @@ namespace Microsoft.OneGet.Utility.Async {
             }
         }
 
-        public bool IsCanceled {
+        public virtual bool IsCanceled {
             get {
                 return _cancellationTokenSource.IsCancellationRequested;
             }

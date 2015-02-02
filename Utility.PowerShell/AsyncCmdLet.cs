@@ -23,7 +23,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using System.Linq;
     using System.Management.Automation;
     using System.Reflection;
-    using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
     using Collections;
@@ -44,34 +43,26 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         StopProcessCompleted
     }
 
-    
-
     public abstract class AsyncCmdlet : PSCmdlet, IDynamicParameters, IDisposable {
         private const BindingFlags BindingFlags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public;
-        private readonly List<ProgressTracker> _progressTrackers = new List<ProgressTracker>();
-
         private ProgressTracker _activeProgressId;
-        private int _nextProgressId = 1;
-
-        private readonly SortedSet<string> _errors = new SortedSet<string>();
-        private readonly SortedSet<string> _warnings = new SortedSet<string>();
-
+        private AsyncCmdletState _asyncCmdletState = AsyncCmdletState.Unknown;
+        protected CancellationTokenSource _cancellationEvent = new CancellationTokenSource();
         private bool _consumedDynamicParameters;
         private RuntimeDefinedParameterDictionary _dynamicParameters;
-
-        protected CancellationTokenSource _cancellationEvent = new CancellationTokenSource();
-        private BlockingCollection<TaskCompletionSource<bool>> _messages;
-        private List<TaskCompletionSource<bool>> _heldMessages;
-
-        private Stopwatch _stopwatch;
         protected bool _errorState;
-
-        private AsyncCmdletState _asyncCmdletState = AsyncCmdletState.Unknown;
-
+        private BlockingCollection<TaskCompletionSource<bool>> _heldMessages;
+        private BlockingCollection<TaskCompletionSource<bool>> _messages;
+        private int _nextProgressId = 1;
+        private Stopwatch _stopwatch;
+        private Dictionary<string, object> _unboundArguments;
 #if DEBUG
         [Parameter()]
         public SwitchParameter IsTesting;
 #endif
+        private readonly SortedSet<string> _errors = new SortedSet<string>();
+        private readonly List<ProgressTracker> _progressTrackers = new List<ProgressTracker>();
+        private readonly SortedSet<string> _warnings = new SortedSet<string>();
 
         private ManualResetEvent ReentrantLock {
             get {
@@ -82,7 +73,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 //     runspace, and we don't want a lock in one to affect
                 //     another.
 
-                return GetType().GetOrAdd(() => new ManualResetEvent(false),"ReentrancyLock");
+                return GetType().GetOrAdd(() => new ManualResetEvent(false), "ReentrancyLock");
             }
         }
 
@@ -98,78 +89,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             set {
                 if (value) {
                     ReentrantLock.Set();
-                }
-                else {
+                } else {
                     ReentrantLock.Reset();
                 }
             }
         }
-
-        #region Dynamic Paramters
-
-        public virtual RuntimeDefinedParameterDictionary DynamicParameterDictionary {
-            get {
-                return _dynamicParameters ?? (_dynamicParameters = new RuntimeDefinedParameterDictionary());
-            }
-        }
-
-        public object GetDynamicParameters() {
-            if (DynamicParameterDictionary.IsNullOrEmpty()) {
-                if (IsOverridden(Constants.Methods.GenerateDynamicParametersMethod)) {
-                    AsyncRun(GenerateDynamicParameters);
-                }
-            }
-
-            return DynamicParameterDictionary;
-        }
-
-        protected T GetDynamicParameterValue<T>(string parameterName) {
-            if (DynamicParameterDictionary.ContainsKey(parameterName)) {
-                var p = DynamicParameterDictionary[parameterName];
-                if (p.IsSet) {
-                    if (typeof (T) == typeof (string[])) {
-                        if (p.Value == null) {
-                            return default(T);
-                        }
-
-                        if (p.Value is string[]) {
-                            return (T)p.Value;
-                        }
-
-                        if (p.Value is string) {
-                            return (T)(object)new string[1] {p.Value.ToString()};
-                        }
-
-                        if (p.Value is IEnumerable) {
-                            return (T)(object)((IEnumerable)p.Value).Cast<object>().Select(each => each.ToString()).ToArray();
-                        }
-
-                        // weird, can't get a collection from whatever is here.
-                        return (T)(object)new string[1] {p.Value.ToString()};
-                    }
-
-                    if (typeof (T) == typeof (string)) {
-                        if (p.Value == null) {
-                            return default(T);
-                        }
-                        return (T)(object)p.Value.ToString();
-                    }
-
-                    return (T)p.Value;
-                }
-            }
-            return default(T);
-        }
-
-        public virtual bool GenerateDynamicParameters() {
-            return true;
-        }
-
-        public virtual bool ConsumeDynamicParameters() {
-            return true;
-        }
-
-        #endregion
 
         protected bool Confirm {
             get {
@@ -194,6 +118,74 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 #endif
                 // this seems to be more reliable than checking the Invocation Line.
                 return MyInvocation != null && MyInvocation.PipelineLength > 0;
+            }
+        }
+
+        /// <summary>
+        ///     The provider can query to see if the operation has been cancelled.
+        ///     This provides for a gentle way for the caller to notify the callee that
+        ///     they don't want any more results.
+        /// </summary>
+        /// <value>returns TRUE if the operation has been cancelled.</value>
+        public bool IsCanceled {
+            get {
+                return Stopping || _cancellationEvent == null || _cancellationEvent.IsCancellationRequested;
+            }
+        }
+
+        protected bool HasErrors {
+            get {
+                return _errors.Any();
+            }
+        }
+
+        protected Dictionary<string, object> UnboundArguments {
+            get {
+                if (_unboundArguments == null && IsReentrantLocked) {
+                    _unboundArguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+                    try {
+                        var context = TryGetProperty(this, "Context");
+                        var processor = TryGetProperty(context, "CurrentCommandProcessor");
+                        var parameterBinder = TryGetProperty(processor, "CmdletParameterBinderController");
+                        var args = TryGetProperty(parameterBinder, "UnboundArguments") as IEnumerable;
+
+                        if (args != null) {
+                            var currentParameterName = string.Empty;
+                            int i = 0;
+                            foreach (var arg in args) {
+                                var isParameterName = TryGetProperty(arg, "ParameterNameSpecified");
+                                if (isParameterName != null && true.Equals(isParameterName)) {
+                                    var parameterName = TryGetProperty(arg, "ParameterName");
+
+                                    if (parameterName != null) {
+                                        currentParameterName = parameterName.ToString();
+
+                                        // add it now, just in case it's value isn't set (or it's a switch)
+                                        _unboundArguments.AddOrSet(currentParameterName, (object)TryGetProperty(arg, "ArgumentValue"));
+                                        continue;
+                                    }
+                                }
+
+                                // not a parameter name.
+                                // treat as a value
+                                var parameterValue = TryGetProperty(arg, "ArgumentValue");
+
+                                if (string.IsNullOrWhiteSpace(currentParameterName)) {
+                                    _unboundArguments.AddOrSet("unbound_" + (i++), parameterValue);
+                                } else {
+                                    _unboundArguments.AddOrSet(currentParameterName, parameterValue);
+                                }
+
+                                // clear the current parameter name
+                                currentParameterName = null;
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.Dump();
+                    }
+                }
+                return _unboundArguments;
             }
         }
 
@@ -497,24 +489,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             return IsCanceled;
         }
 
-        /// <summary>
-        ///     The provider can query to see if the operation has been cancelled.
-        ///     This provides for a gentle way for the caller to notify the callee that
-        ///     they don't want any more results.
-        /// </summary>
-        /// <value>returns TRUE if the operation has been cancelled.</value>
-        public bool IsCanceled {
-            get {
-                return Stopping || _cancellationEvent == null || _cancellationEvent.IsCancellationRequested;
-            }
-        }
-
-        protected bool HasErrors {
-            get {
-                return _errors.Any();
-            }
-        }
-
         public virtual string GetMessageString(string messageText, string defaultText) {
             return null;
         }
@@ -531,38 +505,127 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             return args == null || args.Length == 0 ? messageText : messageText.format(args);
         }
 
+        protected virtual void Init() {
+        }
+
+        protected virtual void Dispose(bool disposing) {
+            if (disposing) {
+                if (_cancellationEvent != null) {
+                    _cancellationEvent.Dispose();
+                    _cancellationEvent = null;
+                }
+
+                // According to http://msdn.microsoft.com/en-us/library/windows/desktop/ms714463(v=vs.85).aspx
+                // Powershell will dispose the cmdlet if it implements IDisposable.
+
+                if (_messages != null) {
+                    _messages.Dispose();
+                    _messages = null;
+                }
+            }
+        }
+
+        #region Dynamic Paramters
+
+        public virtual RuntimeDefinedParameterDictionary DynamicParameterDictionary {
+            get {
+                return _dynamicParameters ?? (_dynamicParameters = new RuntimeDefinedParameterDictionary());
+            }
+        }
+
+        public object GetDynamicParameters() {
+            if (DynamicParameterDictionary.IsNullOrEmpty()) {
+                if (IsOverridden(Constants.Methods.GenerateDynamicParametersMethod)) {
+                    AsyncRun(GenerateDynamicParameters);
+                }
+            }
+
+            return DynamicParameterDictionary;
+        }
+
+        protected T GetDynamicParameterValue<T>(string parameterName) {
+            if (DynamicParameterDictionary.ContainsKey(parameterName)) {
+                var p = DynamicParameterDictionary[parameterName];
+                if (p.IsSet) {
+                    if (typeof (T) == typeof (string[])) {
+                        if (p.Value == null) {
+                            return default(T);
+                        }
+
+                        if (p.Value is string[]) {
+                            return (T)p.Value;
+                        }
+
+                        if (p.Value is string) {
+                            return (T)(object)new string[1] {p.Value.ToString()};
+                        }
+
+                        if (p.Value is IEnumerable) {
+                            return (T)(object)((IEnumerable)p.Value).Cast<object>().Select(each => each.ToString()).ToArray();
+                        }
+
+                        // weird, can't get a collection from whatever is here.
+                        return (T)(object)new string[1] {p.Value.ToString()};
+                    }
+
+                    if (typeof (T) == typeof (string)) {
+                        if (p.Value == null) {
+                            return default(T);
+                        }
+                        return (T)(object)p.Value.ToString();
+                    }
+
+                    return (T)p.Value;
+                }
+            }
+            return default(T);
+        }
+
+        public virtual bool GenerateDynamicParameters() {
+            return true;
+        }
+
+        public virtual bool ConsumeDynamicParameters() {
+            return true;
+        }
+
+        #endregion
+
         #region cmdlet processing 
 
         private void ProcessHeldMessages() {
-            if (_heldMessages != null && _heldMessages.Any()) {
-                foreach (var msg in _heldMessages) {
+            if (_heldMessages != null && _heldMessages.Count > 0 ) {
+                foreach (var msg in _heldMessages.GetConsumingEnumerable().Where(msg => msg != null)) {
                     InvokeMessage(msg);
                 }
+                _heldMessages.Dispose();
             }
             _heldMessages = null;
         }
 
+   
         private void AsyncRun(Func<bool> asyncAction) {
             try {
                 using (_messages = new BlockingCollection<TaskCompletionSource<bool>>()) {
                     // spawn the activity off in another thread.
-                    var task = IsInitialized ?
-                        Task.Factory.StartNew(asyncAction, TaskCreationOptions.LongRunning) :
-                        Task.Factory.StartNew(Init, TaskCreationOptions.LongRunning).ContinueWith(antecedent => {
-                            try {
-                                asyncAction();
-                            } catch (Exception e) {
-                                e.Dump();
+                    Task.Factory.StartNew(() => {
+                        try {
+                            if (!IsInitialized) {
+                                Init();
                             }
-                        })
-                        ;
 
-                    // when the task is done, mark the msg queue as complete
-                    task.ContinueWith(antecedent => {
-                        if (_messages != null) {
-                            _messages.Complete();
+                            return asyncAction();
+                        } catch (Exception e) {
+                            Error("MSG:UnhandledException", ErrorCategory.InvalidOperation.ToString(), e.Message, "{0}/{1}/{2}", e.GetType().Name, e.Message,e.StackTrace);
+                        } finally {
+                            // when the task is done, mark the msg queue as complete
+                            if (_messages != null) {
+                                _messages.Complete();
+                            }
                         }
-                    });
+                        return false;
+                    }, TaskCreationOptions.LongRunning);
+
 
                     // process the queue of messages back in the main thread so that they
                     // can properly access the non-thread-safe-things in cmdlet
@@ -608,7 +671,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
         }
 
-
         protected override sealed void ProcessRecord() {
             try {
                 _asyncCmdletState = AsyncCmdletState.ProcessRecord;
@@ -632,7 +694,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 }
             }
         }
-
 
         protected override sealed void EndProcessing() {
             try {
@@ -686,6 +747,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             // notify anyone listening that we're stopping this call.
             _cancellationEvent.Cancel();
         }
+
         #endregion
 
         #region progress 
@@ -734,10 +796,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             if (func != null) {
                 try {
                     message.SetResult(func());
-                } catch (Exception e) {
-                    if (e is PipelineStoppedException) {
-                        Cancel();
-                    }
+                } catch (PipelineStoppedException pipelineStoppedException) {
+                    Cancel();
+                    message.SetException(pipelineStoppedException);
+                }
+                catch (Exception e) {
                     message.SetException(e);
                 }
             } else {
@@ -748,8 +811,10 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         private void QueueHeldMessage(TaskCompletionSource<bool> message) {
-            _heldMessages = _heldMessages ?? new List<TaskCompletionSource<bool>>();
-            _heldMessages.Add(message);
+            if (message != null) {
+                _heldMessages = _heldMessages ?? new BlockingCollection<TaskCompletionSource<bool>>();
+                _heldMessages.Add(message);
+            }
         }
 
         protected void QueueHeldMessage(Func<bool> action) {
@@ -761,13 +826,11 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
         }
 
-
         private Task<bool> QueueMessage(TaskCompletionSource<bool> message) {
-            
             // if we're not actually into the processing step yet, we're gonna store this message
             // until later. It is possible that it never gets played...
 
-            if (IsBeforeProcessing || IsAfterProcessing ) {
+            if (IsBeforeProcessing || IsAfterProcessing) {
                 QueueHeldMessage(message);
                 return message.Task;
             }
@@ -795,13 +858,12 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public Task<bool> ExecuteOnMainThread(Func<bool> onMainThreadDelegate) {
-            var message= new TaskCompletionSource<bool>(onMainThreadDelegate);
+            var message = new TaskCompletionSource<bool>(onMainThreadDelegate);
 
             if (_messages == null || _messages.IsCompleted) {
                 // message queue isn't active. Just run the message now.
                 InvokeMessage(message);
-            }
-            else {
+            } else {
                 if (!_messages.IsCompleted) {
                     _messages.Add(message);
                 }
@@ -816,7 +878,21 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         public new Task<bool> WriteObject(object obj) {
             return QueueMessage(() => {
                 if (!IsCanceled) {
-                    base.WriteObject(obj);
+                    try {
+                        // if we're stopping, skip this call anyway.
+                        if (!IsCanceled) {
+                            base.WriteObject(obj);
+                        }
+                    }
+                    catch (PipelineStoppedException pipelineStoppedException) {
+                        // this can throw if the pipeline is stopped 
+                        // but that's ok, because it just means
+                        // that we're done.
+                        Cancel();
+                    }
+                    catch {
+                        // any other means that we're done anyway too.
+                    }
                 }
             });
         }
@@ -824,7 +900,22 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         public new Task<bool> WriteObject(object sendToPipeline, bool enumerateCollection) {
             return QueueMessage(() => {
                 if (!IsCanceled) {
-                    base.WriteObject(sendToPipeline, enumerateCollection);
+                    try {
+                        // if we're stopping, skip this call anyway.
+                        if (!IsCanceled) {
+                            base.WriteObject(sendToPipeline, enumerateCollection);
+                        }
+                    }
+                    catch (PipelineStoppedException pipelineStoppedException) {
+                        // this can throw if the pipeline is stopped 
+                        // but that's ok, because it just means
+                        // that we're done.
+                        Cancel();
+                    }
+                    catch {
+                        // any other means that we're done anyway too.
+                    }
+
                 }
             });
         }
@@ -842,21 +933,72 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public new Task<bool> WriteDebug(string text) {
-            return QueueMessage(() => base.WriteDebug(text));
+            return QueueMessage(() => {
+                try {
+                    // if we're stopping, skip this call anyway.
+                    if (!IsCanceled) {
+                        base.WriteDebug(text);
+                    }
+                }
+                catch (PipelineStoppedException pipelineStoppedException) {
+                    // this can throw if the pipeline is stopped 
+                    // but that's ok, because it just means
+                    // that we're done.
+                    Cancel();
+                }
+                catch {
+                    // any other means that we're done anyway too.
+                }
+
+            });
         }
 
         public new Task<bool> WriteError(ErrorRecord errorRecord) {
             if (!IsInvocation) {
                 return false.AsResultTask();
             }
-            return QueueMessage(() => base.WriteError(errorRecord));
+            return QueueMessage(() => {
+                try {
+                    // if we're stopping, skip this call anyway.
+                    if (!IsCanceled) {
+                        base.WriteError(errorRecord);
+                    }
+                }
+                catch (PipelineStoppedException pipelineStoppedException) {
+                    // this can throw if the pipeline is stopped 
+                    // but that's ok, because it just means
+                    // that we're done.
+                    Cancel();
+                }
+                catch {
+                    // any other means that we're done anyway too.
+                }
+
+            });
         }
 
         public new Task<bool> WriteVerbose(string text) {
             if (!IsInvocation) {
                 return false.AsResultTask();
             }
-            return QueueMessage(() => base.WriteVerbose(text));
+            return QueueMessage(() => {
+                try {
+                    // if we're stopping, skip this call anyway.
+                    if (!IsCanceled) {
+                        base.WriteVerbose(text);
+                    }
+                }
+                catch (PipelineStoppedException pipelineStoppedException) {
+                    // this can throw if the pipeline is stopped 
+                    // but that's ok, because it just means
+                    // that we're done.
+                    Cancel();
+                }
+                catch {
+                    // any other means that we're done anyway too.
+                }
+
+            });
         }
 
         #endregion
@@ -917,9 +1059,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         #endregion
-
-        protected virtual void Init() {
-        }
 
         #region Direct Property Access
 
@@ -983,76 +1122,5 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         #endregion
-
-
-        private Dictionary<string, object> _unboundArguments;
-        protected Dictionary<string, object> UnboundArguments {
-            get {
-                if (_unboundArguments == null && IsReentrantLocked) {
-                    _unboundArguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-                    try {
-                        var context = TryGetProperty(this, "Context");
-                        var processor = TryGetProperty(context, "CurrentCommandProcessor");
-                        var parameterBinder = TryGetProperty(processor, "CmdletParameterBinderController");
-                        var args = TryGetProperty(parameterBinder, "UnboundArguments") as IEnumerable;
-
-
-                        if (args != null) {
-                            var currentParameterName = string.Empty;
-                            int i = 0;
-                            foreach (var arg in args) {
-                                var isParameterName = TryGetProperty(arg, "ParameterNameSpecified");
-                                if (isParameterName != null && true.Equals(isParameterName)) {
-                                    var parameterName = TryGetProperty(arg, "ParameterName");
-
-                                    if (parameterName != null) {
-                                        currentParameterName = parameterName.ToString();
-
-                                        // add it now, just in case it's value isn't set (or it's a switch)
-                                        _unboundArguments.AddOrSet(currentParameterName, (object)TryGetProperty(arg, "ArgumentValue"));
-                                        continue;
-                                    }
-                                }
-
-                                // not a parameter name.
-                                // treat as a value
-                                var parameterValue = TryGetProperty(arg, "ArgumentValue");
-
-                                if (string.IsNullOrWhiteSpace(currentParameterName)) {
-                                    _unboundArguments.AddOrSet("unbound_" + (i++), parameterValue);
-                                } else {
-                                    _unboundArguments.AddOrSet(currentParameterName, parameterValue);
-                                }
-
-                                // clear the current parameter name
-                                currentParameterName = null;
-                            }
-
-                        }
-                    } catch (Exception e) {
-                        e.Dump();
-                    }
-                }
-                return _unboundArguments;
-            }
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (disposing) {
-                if (_cancellationEvent != null) {
-                    _cancellationEvent.Dispose();
-                    _cancellationEvent = null;
-                }
-
-                // According to http://msdn.microsoft.com/en-us/library/windows/desktop/ms714463(v=vs.85).aspx
-                // Powershell will dispose the cmdlet if it implements IDisposable.
-
-                if (_messages != null) {
-                    _messages.Dispose();
-                    _messages = null;
-                }
-            }
-        }
     }
 }

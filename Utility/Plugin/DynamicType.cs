@@ -29,7 +29,12 @@ namespace Microsoft.OneGet.Utility.Plugin {
         private readonly TypeBuilder _dynamicType;
         private readonly HashSet<string> _implementedMethods = new HashSet<string>();
         private readonly List<FieldBuilder> _storageFields = new List<FieldBuilder>();
-        private AssemblyBuilder _dynamicAssembly;
+#if DEEP_DEBUG        
+          private AssemblyBuilder _dynamicAssembly;
+#else
+        private static AssemblyBuilder _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("DynamicClasses"), AssemblyBuilderAccess.Run);
+#endif
+     
 #if DEEP_DEBUG        
         private string _directory;
         private string _filename;
@@ -133,7 +138,6 @@ namespace Microsoft.OneGet.Utility.Plugin {
             _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.RunAndSave, _directory);
             var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName, _filename);
 #else
-            _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.Run);
             var dynamicModule = _dynamicAssembly.DefineDynamicModule(_proxyName);
 #endif
 
