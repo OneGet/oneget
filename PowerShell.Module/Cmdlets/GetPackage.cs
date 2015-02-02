@@ -13,18 +13,12 @@
 //  
 
 namespace Microsoft.PowerShell.OneGet.Cmdlets {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using System.Security.Policy;
-    using System.Threading;
-    using Microsoft.OneGet.Api;
-    using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
-    using Microsoft.OneGet.Utility.Plugin;
     using Utility;
 
     [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517135")]
@@ -49,7 +43,6 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
         }
 
-
         protected bool IsPackageInVersionRange(SoftwareIdentity pkg) {
             if (RequiredVersion != null && SoftwareIdentityVersionComparer.CompareVersions(pkg.VersionScheme, pkg.Version, RequiredVersion) != 0) {
                 return false;
@@ -71,9 +64,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             return false;
         }
 
-
         public override bool ProcessRecordAsync() {
-
             // keep track of what package names the user asked for.
             if (!Name.IsNullOrEmpty()) {
                 foreach (var name in Name) {
@@ -86,7 +77,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 // if the user didn't specify any names 
                 SelectedProviders.Select(pv => new {
                     query = "?",
-                    packages = pv.GetInstalledPackages("", this.ProviderSpecific(pv)).CancelWhen(_cancellationEvent.Token) 
+                    packages = pv.GetInstalledPackages("", this.ProviderSpecific(pv)).CancelWhen(_cancellationEvent.Token)
                 }) :
 
                 // if the user specified a name,
@@ -100,14 +91,13 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     });
                 })).ToArray();
 
-
             while (!IsCanceled && requests.Any(each => !each.packages.IsConsumed)) {
                 // keep processing while any of the the queries is still going.
 
                 foreach (var result in requests.Where(each => each.packages.HasData)) {
                     // look only at requests that have data waiting.
 
-                    foreach (var package in result.packages.GetConsumingEnumerable()) { 
+                    foreach (var package in result.packages.GetConsumingEnumerable()) {
                         // process the results for that set.
 
                         if (IsPackageInVersionRange(package)) {
@@ -133,7 +123,6 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 WriteObject(package);
             }
         }
-
 
         public override bool EndProcessingAsync() {
             // give out errors for any package names that we don't find anything for.

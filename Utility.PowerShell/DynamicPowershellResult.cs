@@ -15,7 +15,6 @@
 namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
     using System.Collections;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
@@ -23,13 +22,10 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using Collections;
 
     public class DynamicPowershellResult : IDisposable, IEnumerable<object> {
-        public Collections.BlockingCollection<ErrorRecord> Errors = new Collections.BlockingCollection<ErrorRecord>();
-        private Collections.BlockingCollection<object> _output = new Collections.BlockingCollection<object>();
-
         private ManualResetEvent _completedEvent = new ManualResetEvent(false);
-        
+        private BlockingCollection<object> _output = new BlockingCollection<object>();
         private ManualResetEvent _startedEvent = new ManualResetEvent(false);
-
+        public BlockingCollection<ErrorRecord> Errors = new BlockingCollection<ErrorRecord>();
         public bool LastIsTerminatingError {get; internal set;}
         public bool ContainsErrors {get; internal set;}
 

@@ -16,7 +16,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
     using System.Collections.Generic;
     using System.Dynamic;
-    using System.Globalization;
     using System.Linq;
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
@@ -24,12 +23,12 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using Extensions;
 
     public class DynamicPowershell : DynamicObject, IDisposable {
-        private readonly ManualResetEvent _availableEvent;
-        private readonly ManualResetEvent _opened;
-        private readonly bool _runspaceIsOwned;
         private IDictionary<string, CommandInfo> _commands;
         private DynamicPowershellCommand _currentCommand;
         private Runspace _runspace;
+        private readonly ManualResetEvent _availableEvent;
+        private readonly ManualResetEvent _opened;
+        private readonly bool _runspaceIsOwned;
 
         public DynamicPowershell() {
             _runspace = RunspaceFactory.CreateRunspace();
@@ -144,7 +143,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     // if we got here, we're not in a nested pipeline
                     return Runspace.CreatePipeline();
                 } catch (Exception e) {
-                    
                     // must be in a nested pipeline.
                     return Runspace.CreateNestedPipeline();
                 }
@@ -152,7 +150,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             // if we own this runspace, it shouldn't ever need to be nested
             return Runspace.CreatePipeline();
         }
-    
+
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result) {
             if (binder == null) {
                 throw new ArgumentNullException("binder");
@@ -213,7 +211,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
         }
 
-
         public IEnumerable<CommandInfo> GetCommand() {
             var cmd = new DynamicPowershellCommand(CreatePipeline(), new Command("Get-Command"));
             cmd["ListImported"] = true;
@@ -229,9 +226,9 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             if (_commands == null || !_commands.ContainsKey(name)) {
                 // if we haven't loaded the commands, or we can't find it (maybe you've imported a module)
                 // we should load the commands again.
-                _commands  = GetCommand().ToDictionaryNicely(each => each.Name.Replace("-", ""), each => each, StringComparer.OrdinalIgnoreCase);
+                _commands = GetCommand().ToDictionaryNicely(each => each.Name.Replace("-", ""), each => each, StringComparer.OrdinalIgnoreCase);
             }
-            
+
             var item = _commands.ContainsKey(name) ? _commands[name] : null;
 
             if (item == null) {
