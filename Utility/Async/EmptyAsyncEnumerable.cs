@@ -18,7 +18,6 @@ namespace Microsoft.OneGet.Utility.Async {
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
-    using Extensions;
 
     public class EmptyAsyncEnumerable<T> : IAsyncEnumerable<T> {
         private static readonly ManualResetEventSlim _completed = new ManualResetEventSlim(true);
@@ -108,6 +107,13 @@ namespace Microsoft.OneGet.Utility.Async {
         public bool HasData {
             get {
                 return false;
+            }
+        }
+
+        public WaitHandle Ready {
+            get {
+                // the empty collection is always 'ready' 
+                return _completed.WaitHandle;               
             }
         }
     }

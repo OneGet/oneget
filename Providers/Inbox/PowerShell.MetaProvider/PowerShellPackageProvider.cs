@@ -199,15 +199,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             Call("GetFeatures", requestObject);
         }
 
-        // --- Optimization features -----------------------------------------------------------------------------------------------------
-        public bool GetIsSourceRequired() {
-            // TODO: Fill in implementation
-            // Delete this method if you do not need to implement it
-            // Please don't throw an not implemented exception, it's not optimal.
-
-            return default(bool);
-        }
-
         // --- operations on a package ---------------------------------------------------------------------------------------------------
         public void DownloadPackage(string fastPath, string location, IRequest requestObject) {
             Call("DownloadPackage", requestObject, fastPath, location);

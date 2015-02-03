@@ -15,7 +15,6 @@
 namespace Microsoft.OneGet.Utility.Async {
     using System.Collections.Generic;
     using System.Threading;
-    using Collections;
 
     public interface IAsyncEnumerable<out T> : IAsyncAction, IEnumerable<T> {
         IEnumerable<T> GetConsumingEnumerable();
@@ -25,5 +24,7 @@ namespace Microsoft.OneGet.Utility.Async {
         bool IsConsumed { get; }
         
         bool HasData { get; }
+
+        WaitHandle Ready { get; }
     }
 }

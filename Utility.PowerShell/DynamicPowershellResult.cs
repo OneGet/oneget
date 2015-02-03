@@ -92,8 +92,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public void Completed() {
-            Errors.Complete();
-            _output.Complete();
+            Errors.CompleteAdding();
+            _output.CompleteAdding();
 
             _startedEvent.Set();
             _completedEvent.Set();

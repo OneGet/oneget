@@ -18,6 +18,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System.Management.Automation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
+    using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
@@ -91,7 +92,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     });
                 })).ToArray();
 
-            while (!IsCanceled && requests.Any(each => !each.packages.IsConsumed)) {
+            while (WaitForActivity(requests.Select(each => each.packages))) {
                 // keep processing while any of the the queries is still going.
 
                 foreach (var result in requests.Where(each => each.packages.HasData)) {
@@ -112,7 +113,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 }
 
                 // just work with whatever is not yet consumed
-                requests = requests.Where(each => !each.packages.IsConsumed).ToArray();
+                requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
             }
             return true;
         }

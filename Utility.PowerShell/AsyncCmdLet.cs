@@ -56,14 +56,12 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         private int _nextProgressId = 1;
         private Stopwatch _stopwatch;
         private Dictionary<string, object> _unboundArguments;
-#if DEBUG
-        [Parameter()]
-        public SwitchParameter IsTesting;
-#endif
+
         private readonly SortedSet<string> _errors = new SortedSet<string>();
         private readonly List<ProgressTracker> _progressTrackers = new List<ProgressTracker>();
         private readonly SortedSet<string> _warnings = new SortedSet<string>();
 
+        private PipelineStoppedException _pipelineStopped;
         private ManualResetEvent ReentrantLock {
             get {
                 //     ...
@@ -111,11 +109,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         protected bool IsInvocation {
             get {
-#if DEBUG
-                if (IsTesting) {
-                    return true;
-                }
-#endif
                 // this seems to be more reliable than checking the Invocation Line.
                 return MyInvocation != null && MyInvocation.PipelineLength > 0;
             }
@@ -605,6 +598,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
    
         private void AsyncRun(Func<bool> asyncAction) {
+            
             try {
                 using (_messages = new BlockingCollection<TaskCompletionSource<bool>>()) {
                     // spawn the activity off in another thread.
@@ -620,7 +614,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                         } finally {
                             // when the task is done, mark the msg queue as complete
                             if (_messages != null) {
-                                _messages.Complete();
+                                _messages.CompleteAdding();
                             }
                         }
                         return false;
@@ -633,9 +627,15 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                         InvokeMessage(message);
                     }
                 }
+
+                if (_pipelineStopped != null) {
+                    throw _pipelineStopped;
+                }
             } finally {
                 _messages = null;
+                _pipelineStopped = null;
             }
+
         }
 
         private bool IsOverridden(string functionName) {
@@ -797,6 +797,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 try {
                     message.SetResult(func());
                 } catch (PipelineStoppedException pipelineStoppedException) {
+                    _pipelineStopped = pipelineStoppedException;
                     Cancel();
                     message.SetException(pipelineStoppedException);
                 }
@@ -879,16 +880,14 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             return QueueMessage(() => {
                 if (!IsCanceled) {
                     try {
-                        // if we're stopping, skip this call anyway.
-                        if (!IsCanceled) {
-                            base.WriteObject(obj);
-                        }
+                        base.WriteObject(obj);
                     }
                     catch (PipelineStoppedException pipelineStoppedException) {
                         // this can throw if the pipeline is stopped 
                         // but that's ok, because it just means
                         // that we're done.
                         Cancel();
+                        _pipelineStopped = pipelineStoppedException;
                     }
                     catch {
                         // any other means that we're done anyway too.
@@ -901,16 +900,14 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             return QueueMessage(() => {
                 if (!IsCanceled) {
                     try {
-                        // if we're stopping, skip this call anyway.
-                        if (!IsCanceled) {
-                            base.WriteObject(sendToPipeline, enumerateCollection);
-                        }
+                        base.WriteObject(sendToPipeline, enumerateCollection);
                     }
                     catch (PipelineStoppedException pipelineStoppedException) {
                         // this can throw if the pipeline is stopped 
                         // but that's ok, because it just means
                         // that we're done.
                         Cancel();
+                        _pipelineStopped = pipelineStoppedException;
                     }
                     catch {
                         // any other means that we're done anyway too.
@@ -935,16 +932,14 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         public new Task<bool> WriteDebug(string text) {
             return QueueMessage(() => {
                 try {
-                    // if we're stopping, skip this call anyway.
-                    if (!IsCanceled) {
-                        base.WriteDebug(text);
-                    }
+                    base.WriteDebug(text);
                 }
                 catch (PipelineStoppedException pipelineStoppedException) {
                     // this can throw if the pipeline is stopped 
                     // but that's ok, because it just means
                     // that we're done.
                     Cancel();
+                    _pipelineStopped = pipelineStoppedException;
                 }
                 catch {
                     // any other means that we're done anyway too.
@@ -969,6 +964,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     // but that's ok, because it just means
                     // that we're done.
                     Cancel();
+                    _pipelineStopped = pipelineStoppedException;
                 }
                 catch {
                     // any other means that we're done anyway too.
@@ -984,15 +980,14 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             return QueueMessage(() => {
                 try {
                     // if we're stopping, skip this call anyway.
-                    if (!IsCanceled) {
-                        base.WriteVerbose(text);
-                    }
+                    base.WriteVerbose(text);
                 }
                 catch (PipelineStoppedException pipelineStoppedException) {
                     // this can throw if the pipeline is stopped 
                     // but that's ok, because it just means
                     // that we're done.
                     Cancel();
+                    _pipelineStopped = pipelineStoppedException;
                 }
                 catch {
                     // any other means that we're done anyway too.

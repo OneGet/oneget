@@ -15,7 +15,7 @@
 namespace Microsoft.OneGet.Test.Core.TestProviders {
     using System;
     using System.Collections.Generic;
-    
+    using System.Threading;
     using Sdk;
 
     /// <summary>

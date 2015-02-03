@@ -306,8 +306,8 @@ namespace Microsoft.OneGet.Utility.Platform {
 
         private void ProcessExited(object sender, EventArgs args) {
             WaitForExit();
-            _stdError.Complete();
-            _stdOut.Complete();
+            _stdError.CompleteAdding();
+            _stdOut.CompleteAdding();
             _stdErrStarted.Set();
             _stdOutStarted.Set();
         }

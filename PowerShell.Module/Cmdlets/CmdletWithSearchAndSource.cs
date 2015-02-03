@@ -19,6 +19,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
+    using System.Threading;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
@@ -199,8 +200,8 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             if (AllVersions || !SpecifiedMinimumOrMaximum) {
                 // the user asked for every version or they didn't specify any version ranges
                 // either way, that means that we can just return everything that we're finding.
-
-                while (!IsCanceled && requests.Any(each => !each.packages.IsConsumed)) {
+                
+                while(WaitForActivity(requests.Select(each => each.packages))) {
                     // keep processing while any of the the queries is still going.
 
                     foreach (var result in requests.Where(each => each.packages.HasData)) {
@@ -209,23 +210,20 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                         foreach (var package in result.packages.GetConsumingEnumerable()) {
                             // process the results for that set.
                             ProcessPackage(result.provider, result.query, package);
-
                         }
                     }
 
-                    // just work with whatever is not yet consumed
-                    var disposable = requests.Where(each => each.packages.IsConsumed).ToArray();
-                    requests = requests.Where(each => !each.packages.IsConsumed).ToArray();
-                    foreach (var i in disposable) {
-                        i.packages.Dispose();
-                    }
+                    // filter out whatever we're done with.
+                    requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
                 }
+                
+
             } else {
                 // now this is where it gets a bit funny. 
                 // the user specified a min or max
                 // and so we have to only return the highest one in the set for a given package.
 
-                while (!IsCanceled && requests.Any(each => !each.packages.IsConsumed)) {
+                while (WaitForActivity(requests.Select(each => each.packages))) {
                     // keep processing while any of the the queries is still going.
                     foreach (var perProvider in requests.GroupBy(each => each.provider)) {
                         foreach (var perQuery in perProvider.GroupBy(each => each.query)) {
@@ -241,9 +239,14 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                             } 
                         }
                     }
-                    // just work with whatever is not yet consumed
-                    requests = requests.Where(each => !each.packages.IsConsumed).ToArray();
+                    // filter out whatever we're done with.
+                    requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
                 }
+            }
+
+            // dispose of any requests that didn't get cleaned up earlier.
+            foreach (var i in requests) {
+                i.packages.Dispose();
             }
         }
 

@@ -20,6 +20,8 @@ namespace Microsoft.OneGet.Utility.Collections {
 
     public class BlockingCollection<T> : System.Collections.Concurrent.BlockingCollection<T>, IEnumerable<T>  {
         private MutableEnumerable<T> _blockingEnumerable;
+        private readonly ManualResetEventSlim _activity = new ManualResetEventSlim(false);
+        private readonly object _lock = new object();
 
         public IEnumerator<T> GetEnumerator() {
             // make sure that iterating on this as enumerable is blocking.
@@ -36,6 +38,40 @@ namespace Microsoft.OneGet.Utility.Collections {
             }
         }
 
+        public WaitHandle Ready {
+            get {
+                return _activity.WaitHandle;
+            }
+        }
+
+        private void SetActivity() {
+            // setting _activity to true allows consumers to Wait for data to show up or for the producer to complete.
+            if (HasData || IsCompleted) {
+                _activity.Set();
+            }
+            else {
+                _activity.Reset();
+            }
+        }
+
+        public new void Add(T item) {
+            lock (_lock) {
+                if (!IsAddingCompleted) {
+                    base.Add(item);
+                }
+                SetActivity();
+            }
+        }
+
+        public new void Add(T item, CancellationToken cancellationToken) {
+            lock (_lock) {
+                if (!IsAddingCompleted) {
+                    base.Add(item, cancellationToken);
+                }
+                SetActivity();
+            }
+        }
+
         public new IEnumerable<T> GetConsumingEnumerable() {
             return GetConsumingEnumerable(CancellationToken.None);
         }
@@ -49,11 +85,13 @@ namespace Microsoft.OneGet.Utility.Collections {
 
         private bool SafeTryTake(out T item, int time, CancellationToken cancellationToken) {
             try {
-                if (!cancellationToken.IsCancellationRequested && Count > 0 ) {
+                if (!cancellationToken.IsCancellationRequested && Count > 0) {
                     return TryTake(out item, time, cancellationToken);
                 }
             } catch {
                 // if this throws, that just means that we're done. (ie, canceled)
+            } finally {
+                SetActivity();
             }
             item = default(T);
             return false;
@@ -75,8 +113,11 @@ namespace Microsoft.OneGet.Utility.Collections {
             }
         }
 
-        public void Complete() {
-            CompleteAdding();
+        public new void CompleteAdding() {
+            lock (_lock) {
+                base.CompleteAdding();
+                SetActivity();
+            }
         }
 
         public bool HasData {

@@ -178,6 +178,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         internal static PsRequest New(Object requestObject, PowerShellProviderBase provider, string methodName) {
             if (requestObject is IAsyncAction) {
                 ((IAsyncAction)(requestObject)).OnCancel += provider.CancelRequest;
+                ((IAsyncAction)(requestObject)).OnAbort += provider.CancelRequest;
             }
             var req = requestObject.As<PsRequest>();
 

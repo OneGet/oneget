@@ -20,9 +20,11 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
+    using System.Threading;
     using Microsoft.OneGet;
     using Microsoft.OneGet.Api;
     using Microsoft.OneGet.Implementation;
+    using Microsoft.OneGet.Utility.Async;
     using Microsoft.OneGet.Utility.Extensions;
     using Microsoft.OneGet.Utility.Plugin;
     using Microsoft.OneGet.Utility.PowerShell;
@@ -51,8 +53,16 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             _callCount = _globalCallCount++;
         }
 
+        protected bool WaitForActivity<T>(IEnumerable<IAsyncEnumerable<T>> enumerables) {
+            var handles = enumerables.Select(each => each.Ready).ConcatSingleItem(_cancellationEvent.Token.WaitHandle).ToArray();
+            if (handles.Length > 1) {
+                WaitHandle.WaitAny(handles);
+                return !IsCanceled;
+            }
+            // we are finished when there is only handle to wait on (the cancellation token)
+            return false;
+        }
      
-
         protected abstract IEnumerable<string> ParameterSets {get;}
 
         protected bool IsPackageBySearch {
