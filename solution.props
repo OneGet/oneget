@@ -28,7 +28,8 @@
  <!-- Condition="$(BuildingWithBuildExe) == '' Or $(BuildingWithBuildExe) == '*Undefined*' Or $(BuildingWithBuildExe) =='false' " -->
   <PropertyGroup >
     <!-- Community Build Settings -->
-    
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$(MSBuildThisFileDirectory)</SolutionDir>
+
     <CommunityBuild>true</CommunityBuild>
     <InternalBuild>false</InternalBuild>
     <OutputPath>$(SolutionDir)output\$(Configuration)\bin\</OutputPath> 
