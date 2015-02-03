@@ -270,6 +270,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     } else {
                         if (WildcardPattern.ContainsWildcardCharacters(name)) {
                             Verbose(Constants.Messages.NoMatchesForWildcard, name);
+                            result = false; // even tho' it's not an 'error' it is still enough to know not to actually install.
                         } else {
                             result = false;
                             Error(Constants.Errors.NoMatchFound, name);
