@@ -61,7 +61,8 @@ namespace Microsoft.OneGet.Implementation {
             Activity();
 
             if (_currentItem == null) {
-                Console.WriteLine("TODO: SHOULD NOT GET HERE [YieldSoftwareMetadata] ================================================");
+                // this can get here if the provider got to send back a softwareidentity, and the consumer cancelled the request between that moment
+                // and when the provider managed to try to send back more data.
                 return !IsCanceled;
             }
 
@@ -81,7 +82,8 @@ namespace Microsoft.OneGet.Implementation {
             Activity();
 
             if (_currentItem == null) {
-                Console.WriteLine("TODO: SHOULD NOT GET HERE [YieldEntity] ================================================");
+                // this can get here if the provider got to send back a softwareidentity, and the consumer cancelled the request between that moment
+                // and when the provider managed to try to send back more data.
                 return !IsCanceled;
             }
 
@@ -93,7 +95,8 @@ namespace Microsoft.OneGet.Implementation {
             Activity();
 
             if (_currentItem == null) {
-                Console.WriteLine("TODO: SHOULD NOT GET HERE [YieldLink] ================================================");
+                // this can get here if the provider got to send back a softwareidentity, and the consumer cancelled the request between that moment
+                // and when the provider managed to try to send back more data.
                 return !IsCanceled;
             }
 

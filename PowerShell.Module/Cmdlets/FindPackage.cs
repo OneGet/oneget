@@ -12,13 +12,12 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PowerShell.OneGet.CmdLets {
+namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System.Collections.Generic;
     using System.Management.Automation;
-    using Microsoft.OneGet.Api;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Plugin;
+    using Utility;
 
     [Cmdlet(VerbsCommon.Find, Constants.Nouns.PackageNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517132"), OutputType(typeof(SoftwareIdentity))]
     public sealed class FindPackage : CmdletWithSearchAndSource {
@@ -40,14 +39,14 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
         [Parameter]
         public override SwitchParameter AllVersions {get; set;}
 
-        protected override void ProcessPackage(PackageProvider provider, string searchKey, SoftwareIdentity package) {
+        protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
             base.ProcessPackage(provider, searchKey, package);
 
             // return the object to the caller now.
             WriteObject(package);
 
             if (IncludeDependencies) {
-                foreach (var dep in provider.GetPackageDependencies(package, this)) {
+                foreach (var dep in provider.GetPackageDependencies(package, this.ProviderSpecific(provider))) {
                     ProcessPackage(provider, searchKey, dep);
                 }
             }

@@ -178,8 +178,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     throw new Exception("Re-entrancy Violation in powershell module");
                 }
                 
-                
-
                 try {
                     // otherwise, this is the first time we've been here during this call.
                     _reentrancyLock.Reset();

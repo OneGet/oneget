@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PowerShell.OneGet.CmdLets {
+namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System.Collections.Generic;
     using System.Management.Automation;
 

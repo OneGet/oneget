@@ -39,11 +39,17 @@ namespace Microsoft.OneGet.Utility.Collections {
                     _sourceIterator = _source.GetEnumerator();
                 }
 
-                while (_sourceIterator.MoveNext()) {
-                    List.Add(_sourceIterator.Current);
-                    if (index < List.Count) {
-                        return true;
+                try {
+                    while (_sourceIterator.MoveNext()) {
+                        List.Add(_sourceIterator.Current);
+                        if (index < List.Count) {
+                            return true;
+                        }
                     }
+                } catch {
+                    // if the _sourceIterator is cancelled 
+                    // then MoveNext() will throw; that's ok
+                    // that just means we're done 
                 }
             }
             return false;

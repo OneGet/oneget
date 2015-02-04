@@ -53,10 +53,29 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
+        public override bool IsCanceled {
+            get {
+                return base.IsCanceled || (CanCallHost && _hostApi.IsCanceled);
+            }
+        }
+
+        public override void WarnBeforeResponsivenessCancellation() {
+            if (CanCallHost) {
+                _hostApi.Warning((GetMessageString("MSG:ProviderNotResponsive", null) ?? "Provider '{0}' is not respecting the responsiveness threshold in a timely fashion; Canceling request." ).format(Provider.ProviderName));
+            }
+        }
+        public override void WarnBeforeTimeoutCancellation() {
+            if (CanCallHost) {
+                _hostApi.Warning((GetMessageString("MSG:ProviderTimeoutExceeded",null) ??  "Provider '{0}' is not completing the request in the time allowed; Canceling request.").format(Provider.ProviderName));
+            }
+        }
+
+
         protected void InvokeImpl() {
             _invocationTask = Task.Factory.StartNew(() => {
                 _invocationThread = Thread.CurrentThread;
                 _invocationThread.Name = Provider.ProviderName + ":" + _c++;
+
                 try {
                     _action(this);
                 } catch (ThreadAbortException) {
@@ -66,8 +85,10 @@ namespace Microsoft.OneGet.Implementation {
                     Thread.ResetAbort();
                 } catch (Exception e) {
                     e.Dump();
+                } finally {
+                    Complete();
                 }
-            }, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default).ContinueWith(antecedent => Complete());
+            }, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);// .ContinueWith(antecedent => Complete());
 
             // start thread, call function
             StartCall();

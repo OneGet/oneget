@@ -14,13 +14,13 @@
 
 namespace Microsoft.OneGet.Utility.Async {
     using System;
+    using System.Diagnostics;
     using System.Threading;
 
     public abstract class AsyncAction : IAsyncAction {
         private object _lock = new Object();
-        private static readonly TimeSpan DefaultCallTimeout = TimeSpan.FromMinutes(60);
-        // todo: setting responsiveness to 15 minutes until we're sure we're good with it.
-        private static readonly TimeSpan DefaultResponsiveness = TimeSpan.FromMinutes(15);
+        private static readonly TimeSpan DefaultCallTimeout = TimeSpan.FromMinutes(120);
+        private static readonly TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(30);
         protected readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         private readonly ManualResetEventSlim _completed = new ManualResetEventSlim(false);
@@ -81,24 +81,13 @@ namespace Microsoft.OneGet.Utility.Async {
             }
 
             // activate the cancellation token for those who are watching for that.
-#if DEEP_DEBUG
-            Console.WriteLine("CANCELLING {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif
             _cancellationTokenSource.Cancel();
-#if DEEP_DEBUG
-            Console.WriteLine("Passed Cancel Token {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif
+
             // actively tell anyone who is listening that we're trying to cancel this.
             if (OnCancel != null) {
                 OnCancel();
             }
-#if DEEP_DEBUG
-            Console.WriteLine("Waiting to complete cancellation for {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif
             lock (_lock) {
-#if DEEP_DEBUG
-                Console.WriteLine("CANCELLED {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif
                 if (_actionState < ActionState.Canceled) {
                     _actionState = ActionState.Canceled;
                 }
@@ -166,7 +155,7 @@ namespace Microsoft.OneGet.Utility.Async {
             }
         }
 
-        public bool IsCanceled {
+        public virtual bool IsCanceled {
             get {
                 return _cancellationTokenSource.IsCancellationRequested;
             }
@@ -185,10 +174,6 @@ namespace Microsoft.OneGet.Utility.Async {
         }
 
         public virtual void Dispose(bool disposing) {
-#if DEEP_DEBUG
-            Console.WriteLine("START DISPOSING OF TASK {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif
-
             lock (_lock) {
                 // make sure this kind of thing doesn't happen twice.
                 if (_disposalState > DisposalState.None) {
@@ -203,10 +188,6 @@ namespace Microsoft.OneGet.Utility.Async {
 
                 if (_actionState < ActionState.Aborting) {
                     // if we're not already in the process of aborting, we'll kick that off in a few seconds.
-
-#if DEEP_DEBUG
-                    Console.WriteLine("GIVING 5 seconds to die for TASK {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif
                     _timer.Change(5000, System.Threading.Timeout.Infinite);
                 } else {
                     // stop timer activity
@@ -222,9 +203,6 @@ namespace Microsoft.OneGet.Utility.Async {
                     _cancellationTokenSource.Dispose();
                 }
             }
-#if DEEP_DEBUG
-            Console.WriteLine("DONE TASK {0} {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif
         }
 
         private void DisposeTimer() {
@@ -253,32 +231,42 @@ namespace Microsoft.OneGet.Utility.Async {
             _completed.Set();
         }
 
+        public virtual void WarnBeforeResponsivenessCancellation() {
+        }
+        public virtual void WarnBeforeTimeoutCancellation() {
+        }
+
         private void Signalled(object obj) {
+            // if we're in the debugger, don't ever automatically cancel or abort.
+
+            if (Debugger.IsAttached) {
+                return;
+            }
+
             if (_actionState > ActionState.Aborting) {
                 // we don't have anything to do here.
                 return;
             }
 
             if (_actionState < ActionState.Cancelling) {
-#if DEEP_DEBUG
-                Console.WriteLine("Signalled to Cancel ================================== {0} : {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif
+                if (_responsiveness.Subtract(DateTime.Now.Subtract(_lastActivity)) < TimeSpan.Zero) {
+                    // we have to cancel because the provider isn't responsive enough
+                    WarnBeforeResponsivenessCancellation();
+                } else {
+                    // we have to cancel because the provider didn't complete the call in the time required.
+                    WarnBeforeTimeoutCancellation();
+                }
+
                 Cancel();
                 return;
             }
 
             if (_actionState == ActionState.Cancelling) {
                 // we were in a cancelled state when we noticed the timer hit zero.
-#if DEEP_DEBUG
-                Console.WriteLine("ARE WE SUPPOSED TO ABORT HERE? ================================== {0} : {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif
                 return;
             }
 
             if (_actionState == ActionState.Canceled) {
-#if DEEP_DEBUG
-                Console.WriteLine("Signalled to Abort ================================== {0} : {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
-#endif
                 // we were in a cancelled state when we noticed the timer hit zero.
                 Abort();
             }

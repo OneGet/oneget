@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.OneGet.Utility.Collections {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -29,6 +30,16 @@ namespace Microsoft.OneGet.Utility.Collections {
                 return new ReEnumerable<T>(Enumerable.Empty<T>());
             }
             return collection as MutableEnumerable<T> ?? new ReEnumerable<T>(collection);
+        }
+
+        public static IEnumerable<TSource> FilterWithFinalizer<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate, Action<TSource> onFilterAction) {
+            foreach (var i in source) {
+                if (predicate(i)) {
+                    onFilterAction(i);
+                } else {
+                    yield return i;
+                }
+            }
         }
     }
 }

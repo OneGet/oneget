@@ -106,3 +106,5 @@ OneGet.orig.sln
 UpgradeLog.htm
 manifests/
 xunit-test-results.xml
+signed/
+log.txt

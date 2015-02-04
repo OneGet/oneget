@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PowerShell.OneGet.CmdLets {
+namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
@@ -20,12 +20,11 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
     using System.Management.Automation;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
-    using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
 
     [Cmdlet(VerbsLifecycle.Uninstall, Constants.Nouns.PackageNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517142")]
     public sealed class UninstallPackage : GetPackage {
-        private Dictionary<string, List<SoftwareIdentity>> _resultsPerName;
+        private Dictionary<string, List<SoftwareIdentity>> _resultsPerName = new Dictionary<string, List<SoftwareIdentity>>();
 
         protected override IEnumerable<string> ParameterSets {
             get {
@@ -82,33 +81,28 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                 return UninstallPackages(InputObject);
             }
 
-            // otherwise, it's just packages by name 
-            _resultsPerName = new Dictionary<string, List<SoftwareIdentity>>();
-            SelectedProviders.ParallelForEach(provider => {
-                foreach (var n in Name) {
-                    var c = _resultsPerName.GetOrAdd(n, () => new List<SoftwareIdentity>());
-                    foreach (var pkg in ProcessNames(provider, n)) {
-                        lock (c) {
-                            if (IsPackageInVersionRange(pkg)) {
-                                c.Add(pkg);
-                            }
-                        }
-                    }
-                }
-            });
+            // otherwise do the same as get-package and collect the results for the EndProcessingAsync
+            base.ProcessRecordAsync();
 
             return true;
         }
 
+        protected override void ProcessPackage(string query, SoftwareIdentity package) {
+            // mark down that we found something for that query
+            _resultsPerName.GetOrAdd(query, () => new List<SoftwareIdentity>()).Add(package);
+        }
+
         public override bool EndProcessingAsync() {
-            if (_resultsPerName == null) {
-                return true;
-            }
             // Show errors before?
             foreach (var name in UnprocessedNames) {
                 Error(Constants.Errors.NoMatchFound, name);
             }
 
+            if (_resultsPerName == null) {
+                return true;
+            }
+
+            // if we encountered an error, we're not going to even do anything.
             if (Stopping) {
                 return false;
             }

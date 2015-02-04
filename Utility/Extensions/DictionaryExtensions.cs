@@ -18,6 +18,12 @@ namespace Microsoft.OneGet.Utility.Extensions {
     using System.Linq;
 
     public static class DictionaryExtensions {
+        public static Tuple<T1,T2> Add<TKey, T1, T2>(this IDictionary<TKey, Tuple<T1, T2>> dictionary, TKey key, T1 v1, T2 v2) {
+            var item = new Tuple<T1, T2>(v1, v2);
+            dictionary.Add(key,item);
+            return item;
+        }
+
         public static TValue AddOrSet<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value) {
             lock (dictionary) {
                 if (dictionary.ContainsKey(key)) {
@@ -94,7 +100,10 @@ namespace Microsoft.OneGet.Utility.Extensions {
 
             var d = new Dictionary<TKey, TElement>(comparer);
             foreach (var element in source) {
-                d.AddOrSet(keySelector(element), elementSelector(element));
+                var key = keySelector(element);
+                if (key != null) {
+                    d.AddOrSet(key, elementSelector(element));
+                }
             }
 
             return d;

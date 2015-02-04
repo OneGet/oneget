@@ -12,16 +12,14 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PowerShell.OneGet.CmdLets {
+namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Api;
     using Microsoft.OneGet.Packaging;
     using Microsoft.OneGet.Utility.Async;
-    using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
-    using Microsoft.OneGet.Utility.Plugin;
+    using Utility;
 
     [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageSourceNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517137")]
     public sealed class GetPackageSource : CmdletWithProvider {
@@ -88,7 +86,7 @@ namespace Microsoft.PowerShell.OneGet.CmdLets {
                     return false;
                 }
 
-                using (var sources = provider.ResolvePackageSources(SuppressErrorsAndWarnings).CancelWhen(_cancellationEvent.Token)) {
+                using (var sources = provider.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).CancelWhen(_cancellationEvent.Token)) {
                     if (noCriteria) {
                         // no criteria means just return whatever we found
                         if (WriteSources(sources)) {

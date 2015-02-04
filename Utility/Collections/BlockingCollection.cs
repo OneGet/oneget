@@ -14,140 +14,116 @@
 
 namespace Microsoft.OneGet.Utility.Collections {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Threading;
 
-    public class BlockingCollection<T> : MutableEnumerable<T>, IList<T>, IDisposable {
-        private ManualResetEvent _added = new ManualResetEvent(false);
-        private ManualResetEvent _completed = new ManualResetEvent(false);
+    public class BlockingCollection<T> : System.Collections.Concurrent.BlockingCollection<T>, IEnumerable<T>  {
+        private MutableEnumerable<T> _blockingEnumerable;
+        private readonly ManualResetEventSlim _activity = new ManualResetEventSlim(false);
+        private readonly object _lock = new object();
 
-        public bool IsCompleted {
+        public IEnumerator<T> GetEnumerator() {
+            // make sure that iterating on this as enumerable is blocking.
+            return this.GetBlockingEnumerable().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
+
+        protected override void Dispose(bool isDisposing) {
+            if (isDisposing) {
+                _blockingEnumerable = null;
+            }
+        }
+
+        public WaitHandle Ready {
             get {
-                if (_completed == null) {
-                    return true;
+                return _activity.WaitHandle;
+            }
+        }
+
+        private void SetActivity() {
+            // setting _activity to true allows consumers to Wait for data to show up or for the producer to complete.
+            if (HasData || IsCompleted) {
+                _activity.Set();
+            }
+            else {
+                _activity.Reset();
+            }
+        }
+
+        public new void Add(T item) {
+            lock (_lock) {
+                if (!IsAddingCompleted) {
+                    base.Add(item);
                 }
-                return _completed.WaitOne(0);
+                SetActivity();
             }
         }
 
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public void Add(T item) {
-            if (_completed.WaitOne(0)) {
-                // throw new Exception("Attempt to modify completed collection");
-                return;
-            }
-
-            lock (this) {
-                List.Add(item);
-                _added.Set();
+        public new void Add(T item, CancellationToken cancellationToken) {
+            lock (_lock) {
+                if (!IsAddingCompleted) {
+                    base.Add(item, cancellationToken);
+                }
+                SetActivity();
             }
         }
 
-        public void Clear() {
-            throw new NotImplementedException();
+        public new IEnumerable<T> GetConsumingEnumerable() {
+            return GetConsumingEnumerable(CancellationToken.None);
         }
 
-        public bool Contains(T item) {
-            _completed.WaitOne();
-            return List.Contains(item);
+        public new IEnumerable<T> GetConsumingEnumerable(CancellationToken cancellationToken) {
+            T item;
+            while (!IsCompleted && SafeTryTake(out item, 0, cancellationToken)) {
+                yield return item;
+            }
         }
 
-        public void CopyTo(T[] array, int arrayIndex) {
-            _completed.WaitOne();
-            List.CopyTo(array, arrayIndex);
+        private bool SafeTryTake(out T item, int time, CancellationToken cancellationToken) {
+            try {
+                if (!cancellationToken.IsCancellationRequested && Count > 0) {
+                    return TryTake(out item, time, cancellationToken);
+                }
+            } catch {
+                // if this throws, that just means that we're done. (ie, canceled)
+            } finally {
+                SetActivity();
+            }
+            item = default(T);
+            return false;
         }
 
-        public bool Remove(T item) {
-            throw new NotImplementedException();
+        public IEnumerable<T> GetBlockingEnumerable() {
+            return GetBlockingEnumerable(CancellationToken.None);
+        }
+        public  IEnumerable<T> GetBlockingEnumerable( CancellationToken cancellationToken) {
+            return _blockingEnumerable ?? (_blockingEnumerable = SafeGetBlockingEnumerable(cancellationToken).ReEnumerable());
         }
 
-        public int Count {
+        private IEnumerable<T> SafeGetBlockingEnumerable(CancellationToken cancellationToken) {
+            while (!IsCompleted && !cancellationToken.IsCancellationRequested) {
+                T item;
+                if (SafeTryTake(out item, -1, cancellationToken)) {
+                    yield return item;
+                }
+            }
+        }
+
+        public new void CompleteAdding() {
+            lock (_lock) {
+                base.CompleteAdding();
+                SetActivity();
+            }
+        }
+
+        public bool HasData {
             get {
-                _completed.WaitOne();
-                return List.Count;
+                return Count > 0;
             }
-        }
-
-        public bool IsReadOnly {
-            get {
-                return false;
-            }
-        }
-
-        public int IndexOf(T item) {
-            _completed.WaitOne();
-            return List.IndexOf(item);
-        }
-
-        public void Insert(int index, T item) {
-            throw new NotImplementedException();
-        }
-
-        public void RemoveAt(int index) {
-            throw new NotImplementedException();
-        }
-
-        public T this[int index] {
-            get {
-                if (ItemExists(index)) {
-                    return List[index];
-                }
-                throw new ArgumentOutOfRangeException("index");
-            }
-            set {
-                throw new NotImplementedException();
-            }
-        }
-
-        public void Complete() {
-            if (_completed != null) {
-                _completed.Set();
-            }
-        }
-
-        public IEnumerable<T> GetConsumingEnumerable() {
-            return this;
-        }
-
-        protected override bool ItemExists(int index) {
-            while (true) {
-                lock (this) {
-                    if (List.Count > index) {
-                        return true;
-                    }
-                    _added.Reset();
-                }
-
-                if (WaitHandle.WaitAny(new WaitHandle[] {_completed, _added}) == 0) {
-                    return List.Count > index;
-                }
-            }
-        }
-
-        public void Dispose(bool disposing) {
-            if (disposing) {
-                if (_completed != null) {
-                    _completed.Set();
-                    _completed.Dispose();
-                    _completed = null;
-                }
-                if (_added != null) {
-                    _added.Set();
-                    _added.Dispose();
-                    _added = null;
-                }
-            }
-        }
-
-        public void Wait(int milliseconds) {
-            _completed.WaitOne(milliseconds);
-        }
-        public void Wait() {
-            _completed.WaitOne(-1);
         }
     }
 }

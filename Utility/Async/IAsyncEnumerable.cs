@@ -14,7 +14,17 @@
 
 namespace Microsoft.OneGet.Utility.Async {
     using System.Collections.Generic;
+    using System.Threading;
 
     public interface IAsyncEnumerable<out T> : IAsyncAction, IEnumerable<T> {
+        IEnumerable<T> GetConsumingEnumerable();
+
+        IEnumerable<T> GetBlockingEnumerable();
+
+        bool IsConsumed { get; }
+        
+        bool HasData { get; }
+
+        WaitHandle Ready { get; }
     }
 }

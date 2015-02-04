@@ -19,16 +19,13 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using System.Linq;
     using System.Management.Automation;
     using System.Threading;
-    
+    using Collections;
 
     public class DynamicPowershellResult : IDisposable, IEnumerable<object> {
-        public Collections.BlockingCollection<ErrorRecord> Errors = new Collections.BlockingCollection<ErrorRecord>();
-        private Collections.BlockingCollection<object> _output = new Collections.BlockingCollection<object>();
-
         private ManualResetEvent _completedEvent = new ManualResetEvent(false);
-        
+        private BlockingCollection<object> _output = new BlockingCollection<object>();
         private ManualResetEvent _startedEvent = new ManualResetEvent(false);
-
+        public BlockingCollection<ErrorRecord> Errors = new BlockingCollection<ErrorRecord>();
         public bool LastIsTerminatingError {get; internal set;}
         public bool ContainsErrors {get; internal set;}
 
@@ -48,7 +45,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         public IEnumerable<object> Values {
             get {
-                return _output.GetConsumingEnumerable();
+                return _output;
             }
         }
 
@@ -75,7 +72,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public IEnumerator<object> GetEnumerator() {
-            return _output.GetConsumingEnumerable().GetEnumerator();
+            return _output.GetBlockingEnumerable().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() {
@@ -95,8 +92,8 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         public void Completed() {
-            Errors.Complete();
-            _output.Complete();
+            Errors.CompleteAdding();
+            _output.CompleteAdding();
 
             _startedEvent.Set();
             _completedEvent.Set();

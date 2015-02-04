@@ -422,19 +422,6 @@ function Complete-Find {
 }
 
 <# 
-// --- Optimization features -----------------------------------------------------------------------------------------------------
-#>
-function Get-IsSourceRequired {
-    param(
-    )
-    # TODO: Fill in implementation
-    # Delete this method if you do not need to implement it
-
-    # expected return type : bool
-    # return  $null;
-}
-
-<# 
 
 #>
 function Resolve-PackageSource { 

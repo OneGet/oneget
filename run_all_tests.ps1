@@ -77,7 +77,7 @@ if( $testdll ) {
 
 cd $PSSCRIPTROOT
 # run the OneGet Pester Tests
-# .\test\BVT\cmdlet-testsuite\test-oneget.ps1 $module 
+.\test\BVT\cmdlet-testsuite\test-oneget.ps1 $module 
 #-enableSandbox 
 
 cd $PSSCRIPTROOT

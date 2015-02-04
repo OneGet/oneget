@@ -16,7 +16,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
     using System.Collections.Generic;
     using System.Dynamic;
-    using System.Globalization;
     using System.Linq;
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
@@ -24,12 +23,12 @@ namespace Microsoft.OneGet.Utility.PowerShell {
     using Extensions;
 
     public class DynamicPowershell : DynamicObject, IDisposable {
+        private IDictionary<string, CommandInfo> _commands;
+        private DynamicPowershellCommand _currentCommand;
+        private Runspace _runspace;
         private readonly ManualResetEvent _availableEvent;
         private readonly ManualResetEvent _opened;
         private readonly bool _runspaceIsOwned;
-        private IDictionary<string, PSObject> _commands;
-        private DynamicPowershellCommand _currentCommand;
-        private Runspace _runspace;
 
         public DynamicPowershell() {
             _runspace = RunspaceFactory.CreateRunspace();
@@ -66,9 +65,6 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
                     if (_runspace.RunspaceAvailability == RunspaceAvailability.AvailableForNestedCommand ||
                         _runspace.RunspaceAvailability == RunspaceAvailability.Busy) {
-#if DEPRECATING                        
-                        _runspaceWasLikeThatWhenIGotHere = true;
-#endif
                     }
                 }
                 return _runspace;
@@ -88,7 +84,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             if (disposing) {
                 _runspace.AvailabilityChanged -= CheckIfRunspaceIsAvailable;
                 _runspace.StateChanged -= CheckIfRunspaceIsOpening;
-                
+
                 // note: WHY WOULD THIS HAVE BEEN HERE?
                 // WaitForAvailable();
 
@@ -137,43 +133,22 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         internal Pipeline CreatePipeline() {
             WaitForAvailable();
 
-            //if (_runspaceWasLikeThatWhenIGotHere) {
-            //  return Runspace.CreateNestedPipeline();
-            // }
-            try {
-                TestIfInNestedPipeline();
-                return Runspace.CreatePipeline();
-            } catch (Exception e) {
-                e.Dump();
-#if DEPRECATING
-                _runspaceWasLikeThatWhenIGotHere = true;
-#endif
-                return Runspace.CreateNestedPipeline();
-            }
-        }
+            if (!_runspaceIsOwned) {
+                try {
+                    //we're running a short command to verify that we're not in a nested pipeline
+                    var pipeline = Runspace.CreatePipeline();
+                    pipeline.Commands.Add("get-module");
+                    pipeline.Invoke();
 
-        private void TestIfInNestedPipeline() {
-            var pipeline = Runspace.CreatePipeline();
-            //we're running a short command to verify that we're not in a nested pipeline
-            pipeline.Commands.Add("get-alias");
-            pipeline.Invoke();
-
-            // PowerShell.Create();
-        }
-
-        private void AddCommandNames(IEnumerable<PSObject> cmdsOrAliases) {
-            foreach (var item in cmdsOrAliases) {
-                var cmdName = GetPropertyValue(item, "Name").ToLower(CultureInfo.CurrentCulture);
-                var name = cmdName.Replace("-", "");
-                if (!string.IsNullOrWhiteSpace(name)) {
-                    _commands.AddOrSet(name, item);
+                    // if we got here, we're not in a nested pipeline
+                    return Runspace.CreatePipeline();
+                } catch (Exception e) {
+                    // must be in a nested pipeline.
+                    return Runspace.CreateNestedPipeline();
                 }
             }
-        }
-
-        private string GetPropertyValue(PSObject obj, string propName) {
-            var property = obj.Properties.FirstOrDefault(prop => prop.Name == propName);
-            return property != null ? property.Value.ToString() : null;
+            // if we own this runspace, it shouldn't ever need to be nested
+            return Runspace.CreatePipeline();
         }
 
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result) {
@@ -185,6 +160,24 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             return result != null;
         }
 
+        public DynamicPowershellResult ImportModule(string name, bool passThru) {
+            var cmd = new DynamicPowershellCommand(CreatePipeline(), new Command("Import-Module"));
+            cmd["Name"] = name;
+            if (passThru) {
+                cmd["PassThru"] = true;
+            }
+
+            return cmd.InvokeAsyncIfPossible();
+        }
+
+        public IEnumerable<PSModuleInfo> TestModuleManifest(string path) {
+            var cmd = new DynamicPowershellCommand(CreatePipeline(), new Command("Test-ModuleManifest"));
+            cmd["Path"] = path;
+
+            // this call needs to be synchronous.
+            return cmd.InvokeAsyncIfPossible().Select(each => each as PSModuleInfo).Where(each => each != null).ToArray();
+        }
+
         public DynamicPowershellResult NewTryInvokeMemberEx(string name, string[] argumentNames, params object[] args) {
             // make sure that we're clear to drop the last DPSC.
             WaitForAvailable();
@@ -193,7 +186,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 // command
                 // FYI: This is the most expensive part of the call (the first time.)
                 // I've thought about up-fronting this, but it's probably just not worth the effort.
-                _currentCommand = new DynamicPowershellCommand(CreatePipeline(), new Command(GetPropertyValue(LookupCommand(name), "Name")));
+                _currentCommand = new DynamicPowershellCommand(CreatePipeline(), new Command(LookupCommand(name).Name));
 
                 // parameters
                 var unnamedCount = args.Length - argumentNames.Length;
@@ -218,22 +211,26 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
         }
 
-        internal PSObject LookupCommand(string commandName) {
+        public IEnumerable<CommandInfo> GetCommand() {
+            var cmd = new DynamicPowershellCommand(CreatePipeline(), new Command("Get-Command"));
+            cmd["ListImported"] = true;
+            cmd["CommandType"] = new[] {"Cmdlet", "Alias", "Function"};
+
+            // this call needs to be synchronous.
+            return cmd.InvokeAsyncIfPossible().Select(each => each as CommandInfo).Where(each => each != null).ToArray();
+        }
+
+        internal CommandInfo LookupCommand(string commandName) {
             var name = commandName.DashedToCamelCase();
+
             if (_commands == null || !_commands.ContainsKey(name)) {
-                _commands = new Dictionary<string, PSObject>(StringComparer.OrdinalIgnoreCase);
-
-                using (var pipeline = CreatePipeline()) {
-                    pipeline.Commands.Add("get-command");
-                    AddCommandNames(pipeline.Invoke());
-                }
-
-                using (var pipeline = CreatePipeline()) {
-                    pipeline.Commands.Add("get-alias");
-                    AddCommandNames(pipeline.Invoke());
-                }
+                // if we haven't loaded the commands, or we can't find it (maybe you've imported a module)
+                // we should load the commands again.
+                _commands = GetCommand().ToDictionaryNicely(each => each.Name.Replace("-", ""), each => each, StringComparer.OrdinalIgnoreCase);
             }
+
             var item = _commands.ContainsKey(name) ? _commands[name] : null;
+
             if (item == null) {
                 throw new Exception("MSG:UNABLE_TO_FIND_PS_COMMAND:{0}".format(commandName));
             }

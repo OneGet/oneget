@@ -14,16 +14,11 @@
 
 namespace Microsoft.OneGet.Implementation {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
     using Api;
     using Packaging;
     using Providers;
     using Utility.Async;
-    using Utility.Collections;
     using Utility.Plugin;
-    
 
     public class PackageProvider : ProviderBase<IPackageProvider> {
         private string _name;
@@ -111,20 +106,6 @@ namespace Microsoft.OneGet.Implementation {
             }, Constants.PackageStatus.Available);
         }
 
-        /*
-        private IEnumerable<SoftwareIdentity> FindPackagesImpl(CancellationTokenSource cancellationTokenSource, string[] names, string requiredVersion, string minimumVersion, string maximumVersion, IHostApi requestObject) {
-            var id = StartFind(requestObject);
-            foreach (var name in names) {
-                foreach (var pkg in FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
-                    yield return pkg;
-                }
-                foreach (var pkg in CompleteFind(id, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
-                    yield return pkg;
-                }
-            }
-        }
-*/
-
         public IAsyncEnumerable<SoftwareIdentity> FindPackagesByUris(Uri[] uris, IHostApi requestObject) {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
@@ -150,21 +131,7 @@ namespace Microsoft.OneGet.Implementation {
                 Provider.CompleteFind(id.Value, request);
             }, Constants.PackageStatus.Available);
         }
-
-        /*
-        private IEnumerable<SoftwareIdentity> FindPackagesByUrisImpl(CancellationTokenSource cancellationTokenSource, Uri[] uris, IHostApi requestObject) {
-            var id = StartFind(requestObject);
-            foreach (var uri in uris) {
-                foreach (var pkg in FindPackageByUri(uri, id.Value, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
-                    yield return pkg;
-                }
-                foreach (var pkg in CompleteFind(id.Value, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
-                    yield return pkg;
-                }
-            }
-        }
-*/
-
+   
         public IAsyncEnumerable<SoftwareIdentity> FindPackagesByFiles(string[] filenames, IHostApi requestObject) {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
@@ -189,18 +156,6 @@ namespace Microsoft.OneGet.Implementation {
                 }
                 Provider.CompleteFind(id.Value, request);
             }, Constants.PackageStatus.Available);
-        }
-
-        private IEnumerable<SoftwareIdentity> FindPackagesByFilesImpl(CancellationTokenSource cancellationTokenSource, string[] filenames, IHostApi requestObject) {
-            var id = StartFind(requestObject);
-            foreach (var file in filenames) {
-                foreach (var pkg in FindPackageByFile(file, id.Value, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
-                    yield return pkg;
-                }
-                foreach (var pkg in CompleteFind(id.Value, requestObject).TakeWhile(pkg => !cancellationTokenSource.IsCancellationRequested)) {
-                    yield return pkg;
-                }
-            }
         }
 
         public IAsyncEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IHostApi requestObject) {

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <SoftwareIdentity
     name="Zip and Cab Archiver Providers for OneGet"
-	version="2.8.3.7" versionScheme="multipartnumeric"
+	version="1.0.0.0" versionScheme="multipartnumeric"
 	media="(windows) and (oneget) and (min-oneget.api:2)" 
 	xmlns="http://standards.iso.org/iso/19770/-2/2014/schema.xsd">
     

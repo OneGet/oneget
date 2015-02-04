@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2014/schema.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:oneget="http://oneget.org/swidtag"
+    uniqueId="chocolatey.+NUGET_VERSION+"
+    name="chocolatey"
+    version="+NUGET_VERSION+" versionScheme="multipartnumeric"
+    media="(OS:windows)"
+    tagVersion="1"
+    >
+
+    <!--
+        This swidtag contains links to the installation media for the Chocolatey
+        provider
+    -->
+
+    <Meta
+        providerName="chocolatey"
+        providerVersion="+NUGET_VERSION+"
+        providerType="assembly"
+        targetFilename="nuget-anycpu.exe"
+        summary="chocolatey provider for the OneGet meta-package manager"
+    />
+
+    <!-- chocolatey Provider Swidtag Links -->
+    <Link
+        href="+ROOT+nuget-anycpu-+NUGET_VERSION+.exe"
+        type="application/octet-stream"
+        rel="installationmedia"
+        artifact="nuget-anycpu.exe"
+        media="(OS:windows)"
+    />
+</SoftwareIdentity>

@@ -23,11 +23,12 @@ namespace Microsoft.OneGet.Implementation {
 
     public class EnumerableRequestObject<T> : RequestObject, IAsyncEnumerable<T> {
         protected readonly BlockingCollection<T> Results = new BlockingCollection<T>();
+        
 
         internal EnumerableRequestObject(ProviderBase provider, IHostApi request, Action<RequestObject> action)
             : base(provider, request, action) {
-            OnCancel += Complete;
-            OnAbort += Complete;
+            OnCancel += () => { Results.CompleteAdding(); };
+            OnAbort += () => { Results.CompleteAdding(); };
         }
 
         public IEnumerator<T> GetEnumerator() {
@@ -39,8 +40,33 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         protected override void Complete() {
-            Results.Complete();
+            Results.CompleteAdding();
             base.Complete();
+        }
+
+        public IEnumerable<T> GetConsumingEnumerable() {
+            return Results.GetConsumingEnumerable(_cancellationTokenSource.Token);
+        }
+
+        public IEnumerable<T> GetBlockingEnumerable() {
+            return Results.GetBlockingEnumerable(_cancellationTokenSource.Token);
+        }
+
+        public bool IsConsumed {
+            get {
+                return IsAborted || IsCanceled || Results.IsCompleted;
+            }
+        }
+        public bool HasData {
+            get {
+                return Results.HasData;
+            }
+        }
+
+        public WaitHandle Ready {
+            get {
+                return Results.Ready;
+            }
         }
     }
 }

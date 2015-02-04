@@ -12,11 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PowerShell.OneGet.CmdLets {
+namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System.Management.Automation;
     using System.Security;
     using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Extensions;
 
     public abstract class CmdletWithSource : CmdletWithProvider {
         protected CmdletWithSource(OptionCategory[] categories)

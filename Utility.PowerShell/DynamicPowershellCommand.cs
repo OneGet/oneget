@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Utility.PowerShell {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
     using System.Threading;
@@ -76,6 +77,15 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
             foreach (var arg in namedArguments) {
                 _command.Parameters.Add(arg.Key, arg.Value);
+            }
+        }
+
+        internal object this[string index] {
+            set {
+                _command.Parameters.Add(index, value);
+            }
+            get {
+                return _command.Parameters.Where(p => p.Name.EqualsIgnoreCase(index)).Select(p => p.Value).FirstOrDefault();
             }
         }
 
