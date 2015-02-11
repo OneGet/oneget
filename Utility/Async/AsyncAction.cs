@@ -18,7 +18,7 @@ namespace Microsoft.OneGet.Utility.Async {
     using System.Threading;
 
     public abstract class AsyncAction : IAsyncAction {
-        private object _lock = new Object();
+        private readonly object _lock = new Object();
         private static readonly TimeSpan DefaultCallTimeout = TimeSpan.FromMinutes(120);
         private static readonly TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(30);
         protected readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();

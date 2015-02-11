@@ -54,22 +54,23 @@ REFERENCES=\
 
 #region sourcefiles
 SOURCES=\
-	CmdLets\CmdletBase.cs \
- 	CmdLets\CmdletWithProvider.cs \
- 	CmdLets\CmdletWithSearch.cs \
- 	CmdLets\CmdletWithSearchAndSource.cs \
- 	CmdLets\CmdletWithSource.cs \
- 	CmdLets\FindPackage.cs \
- 	CmdLets\GetPackage.cs \
- 	CmdLets\GetPackageProvider.cs \
- 	CmdLets\GetPackageSource.cs \
- 	CmdLets\InstallPackage.cs \
- 	CmdLets\RegisterPackageSource.cs \
- 	CmdLets\SavePackage.cs \
- 	CmdLets\SetPackageSource.cs \
- 	CmdLets\UninstallPackage.cs \
- 	CmdLets\UnregisterPackageSource.cs \
+	Cmdlets\CmdletBase.cs \
+ 	Cmdlets\CmdletWithProvider.cs \
+ 	Cmdlets\CmdletWithSearch.cs \
+ 	Cmdlets\CmdletWithSearchAndSource.cs \
+ 	Cmdlets\CmdletWithSource.cs \
+ 	Cmdlets\FindPackage.cs \
+ 	Cmdlets\GetPackage.cs \
+ 	Cmdlets\GetPackageProvider.cs \
+ 	Cmdlets\GetPackageSource.cs \
+ 	Cmdlets\InstallPackage.cs \
+ 	Cmdlets\RegisterPackageSource.cs \
+ 	Cmdlets\SavePackage.cs \
+ 	Cmdlets\SetPackageSource.cs \
+ 	Cmdlets\UninstallPackage.cs \
+ 	Cmdlets\UnregisterPackageSource.cs \
  	Utility\CustomRuntimeDefinedParameter.cs \
+ 	Utility\HostApiExtensions.cs \
  	Constants.cs \
 	$(GENERATED_RESOURCES_SOURCE)
 

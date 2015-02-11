@@ -8,5 +8,5 @@ DIRS=\
 	PowerShell.Module \
 
 # Unit test directories should be placed in the OPTIONAL_DIRS section
-#OPTIONAL_DIRS=\
-#    Test 
+OPTIONAL_DIRS=\
+    Test 

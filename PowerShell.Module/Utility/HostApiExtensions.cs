@@ -13,6 +13,7 @@
 //  
 namespace Microsoft.PowerShell.OneGet.Utility {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using Microsoft.OneGet.Api;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Utility.Extensions;
@@ -79,6 +80,7 @@ namespace Microsoft.PowerShell.OneGet.Utility {
             }.As<IHostApi>();
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Required.")]
         internal static IHostApi SuprressBootstrapping(this IHostApi parent, bool isProcessing) {
             return new object[] {
                 new {
