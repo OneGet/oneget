@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ImportGroup Condition="$(BuildingWithBuildExe) == 'true'" >
-    <Import Project="..\..\packages\xunit.core.2.0.0-beta5-build2785\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid\xunit.core.props" Condition="Exists('..\..\packages\xunit.core.2.0.0-beta5-build2785\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid\xunit.core.props')" /> 
+  <ImportGroup Condition="$(InternalBuild) == 'true'" >
+    <Import Project="..\packages\xunit.core.2.0.0-beta5-build2785\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid\xunit.core.props" Condition="Exists('..\packages\xunit.core.2.0.0-beta5-build2785\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid\xunit.core.props')" /> 
   </ImportGroup>
   
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -14,8 +14,7 @@
     <RootNamespace>Microsoft.OneGet.Test</RootNamespace>
     <AssemblyName>Microsoft.OneGet.Test</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), OneGet.sln))\</SolutionDir>
-    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <NuGetPackageImportStamp>7c580595</NuGetPackageImportStamp>
   </PropertyGroup>
@@ -37,15 +36,15 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <ItemGroup  Condition="$(InternalBuild)">
+  <ItemGroup  Condition="$(InternalBuild) == 'true'">
     <Reference Include="Microsoft.OneGet"  >
-        <HintPath>$(ObjectPath)\..\..\OneGet\$(ObjectDirectory)\Microsoft.OneGet.metadata_exe</HintPath> 
+        <HintPath>..\Microsoft.OneGet.exe</HintPath> 
     </Reference>
     <Reference Include="Microsoft.OneGet.Utility" >
-        <HintPath>$(ObjectPath)\..\..\Utility\$(ObjectDirectory)\Microsoft.OneGet.Utility.metadata_dll</HintPath> 
+        <HintPath>..\Microsoft.OneGet.Utility.dll</HintPath> 
     </Reference>
     <Reference Include="Microsoft.OneGet.Utility.PowerShell" >
-        <HintPath>$(ObjectPath)\..\..\Utility.PowerShell\$(ObjectDirectory)\Microsoft.OneGet.Utility.PowerShell.metadata_dll</HintPath> 
+        <HintPath>..\Microsoft.OneGet.Utility.PowerShell.dll</HintPath> 
     </Reference>
   </ItemGroup>
   
@@ -59,13 +58,13 @@
     <Reference Include="System.Threading.Tasks" />
     
     <Reference Include="xunit.abstractions">
-      <HintPath>..\..\packages\xunit.abstractions.2.0.0-beta5-build2785\lib\net35\xunit.abstractions.dll</HintPath>
+      <HintPath>..\packages\xunit.abstractions.2.0.0-beta5-build2785\lib\net35\xunit.abstractions.dll</HintPath>
     </Reference>
     <Reference Include="xunit.assert">
-      <HintPath>..\..\packages\xunit.assert.2.0.0-beta5-build2785\lib\portable-net45+aspnetcore50+win+wpa81+wp80+monoandroid+monotouch10\xunit.assert.dll</HintPath>
+      <HintPath>..\packages\xunit.assert.2.0.0-beta5-build2785\lib\portable-net45+aspnetcore50+win+wpa81+wp80+monoandroid+monotouch10\xunit.assert.dll</HintPath>
     </Reference>
     <Reference Include="xunit.core">
-      <HintPath>..\..\packages\xunit.core.2.0.0-beta5-build2785\lib\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.core.dll</HintPath>
+      <HintPath>..\packages\xunit.core.2.0.0-beta5-build2785\lib\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -118,6 +117,9 @@
     <None Include="Providers\TestProviders.psm1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="xUnit.Tests.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
@@ -161,10 +163,9 @@ $(SET_MT_EXE)
 :Run the tool to add the manifest to the binary.
 "%25MTEXE%25" -manifest $(ProjectDir)oneget.manifest -outputresource:$(TargetPath);#101</PostBuildEvent>
     <PostBuildEvent Condition="$(InternalBuild)">
-$(SET_MT_EXE)
 
 :Run the tool to add the manifest to the binary.
-"%25MTEXE%25" -manifest $(ProjectDir)oneget.manifest -outputresource:$(IntermediateOutputPath)Microsoft.OneGet.Test.dll;#101</PostBuildEvent>
+"$(ProjectDir)..\tools\mt.exe" -manifest $(ProjectDir)oneget.manifest -outputresource:$(IntermediateOutputPath)Microsoft.OneGet.Test.dll;#101</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

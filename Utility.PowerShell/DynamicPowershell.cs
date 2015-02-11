@@ -142,7 +142,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
                     // if we got here, we're not in a nested pipeline
                     return Runspace.CreatePipeline();
-                } catch (Exception e) {
+                } catch {
                     // must be in a nested pipeline.
                     return Runspace.CreateNestedPipeline();
                 }

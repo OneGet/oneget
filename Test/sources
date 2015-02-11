@@ -7,4 +7,9 @@ TARGET_DESTINATION=monad\tests\OneGet
 PASS_INDEPENDENT_BINPLACE_TREE=\
     BVT \
     RITests \
-    Unit 
+    Unit     
+    
+PASS_INDEPENDENT_BINPLACE=\
+    Install-TestSuite.ps1 \
+    InvokeTest.ps1 
+    
