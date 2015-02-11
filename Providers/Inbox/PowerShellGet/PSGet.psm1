@@ -164,6 +164,10 @@ function Publish-Module
         [ValidateNotNullOrEmpty()]
         [Uri]
         $ProjectUri
+
+		#[Parameter()]
+		#[switch]
+		#$AnalyzeScriptModule
     )
 
     Begin
@@ -345,6 +349,26 @@ function Publish-Module
                             -ErrorCategory InvalidOperation
             }
 
+
+			#Do an analysis on the script files in the module before uploading. If there are any errors, we should not publish the module
+			#if($AnalyzeScriptModule)
+			#{
+			#	$invokeScriptAnalyzer = get-command PSScriptAnalyzer\Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue
+			#	if ($invokeScriptAnalyzer)
+			#	{
+			#		$diagnosticResults  = PSScriptAnalyzer\Invoke-ScriptAnalyzer -path $Path -Verbose:$VerbosePreference -ErrorAction SilentlyContinue 
+			#		if($diagnosticResults)
+			#		{
+			#			$diagnosticResults
+			#			ThrowError -ExceptionName "System.InvalidOperationException" `
+            #               				-ExceptionMessage $LocalizedData.ScriptErrorsOrWarningsReturnedByPSScriptAnalyzer `
+            #               				-ErrorId "ScriptErrorsOrWarningsReturnedByPSScriptAnalyzer" `
+            #               				-CallerPSCmdlet $PSCmdlet `
+            #               				-ErrorCategory InvalidOperation
+			#		}
+			#	}
+			#}
+
             $shouldProcessMessage = $LocalizedData.PublishModulewhatIfMessage -f ($moduleInfo.Version, $moduleInfo.Name)
             if($PSCmdlet.ShouldProcess($shouldProcessMessage, "Publish-Module"))
             {
@@ -363,6 +387,7 @@ function Publish-Module
                                        -ErrorAction $ErrorActionPreference `
                                        -Debug:$DebugPreference
             }
+
         }
         finally
         {
@@ -1383,6 +1408,7 @@ function New-PSGetItemInfo
         }
 
         $published = (Get-First $swid["published"])
+        $PublishedDate = New-Object System.DateTime
 
         $tags = (Get-First $swid["tags"]) -split " "
         $userTags = @()
@@ -1420,7 +1446,7 @@ function New-PSGetItemInfo
                 Author = (Get-EntityName -SoftwareIdentity $swid -Role "author")
                 CompanyName = (Get-EntityName -SoftwareIdentity $swid -Role "owner")
                 Copyright = (Get-First $swid["copyright"])
-                PublishedDate = if($published){ [DateTime]$published };
+                PublishedDate = if([System.DateTime]::TryParse($published, ([ref]$PublishedDate))){$PublishedDate};
                 LicenseUri = (Get-UrlFromSwid -SoftwareIdentity $swid -UrlName "license")
                 ProjectUri = (Get-UrlFromSwid -SoftwareIdentity $swid -UrlName "project")
                 IconUri = (Get-UrlFromSwid -SoftwareIdentity $swid -UrlName "icon")
@@ -3510,6 +3536,22 @@ function ThrowError
     $CallerPSCmdlet.ThrowTerminatingError($errorRecord)
 }
 #endregion
+
+if((Test-RunningAsElevated) -and ($PSVersionTable.PSVersion -lt [Version]"4.0"))
+{ 
+    # Check and add the $script:ProgramFilesModulesPath to PSModulePath environment variable needed for downlevel OS versions.
+    $PSModulePathCurrentEnvValue = [Environment]::GetEnvironmentVariable("PSModulePath", "Machine")
+    if(($PSModulePathCurrentEnvValue -split ";") -notcontains $script:ProgramFilesModulesPath)
+    {
+        [Environment]::SetEnvironmentVariable("PSModulePath", "$PSModulePathCurrentEnvValue;$script:ProgramFilesModulesPath", "Machine")
+    }
+
+    # Check and add the $script:ProgramFilesModulesPath to $env:PSModulePath value for the current session
+    if(($env:PSModulePath -split ";") -notcontains $script:ProgramFilesModulesPath)
+    {
+        $env:PSModulePath = "$env:PSModulePath;$script:ProgramFilesModulesPath"
+    }
+}
 
 Set-Alias -Name fimo -Value Find-Module
 Set-Alias -Name inmo -Value Install-Module
