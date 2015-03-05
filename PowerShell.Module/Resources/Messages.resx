@@ -154,6 +154,10 @@
     <value>The package '{0}' comes from a package source that is not marked as trusted.</value>
     <comment>{0} package name</comment>
   </data>
+  <data name="CaptionSourceNotTrusted" xml:space="preserve">
+    <value>The package(s) come from a package source that is not marked as trusted.</value>
+    <comment>package source not trusted</comment>
+  </data>
   <data name="ActionInstallPackage" xml:space="preserve">
     <value>Install Package</value>
     <comment>action 'install package'</comment>
@@ -316,6 +320,10 @@
   </data>
   <data name="ShouldContinueWithUntrustedPackageSource" xml:space="preserve">
     <value>??? not used ???</value>
+  </data>
+  <data name="UserDeclinedUntrustedPackageInstall" xml:space="preserve">
+    <value>User declined to install untrusted package ({0}).</value>
+    <comment>provider names</comment>
   </data>
   <data name="UnknownProviders" xml:space="preserve">
     <value>Unable to find package providers ({0}.</value>

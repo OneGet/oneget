@@ -58,7 +58,7 @@ REFERENCES=\
 
 #region sourcefiles
 SOURCES=\
- 	ArpProvider.cs \
+ 	ProgramsProvider.cs \
  	BootstrapProvider.cs \
  	BootstrapRequest.cs \
  	SwidProvider.cs \

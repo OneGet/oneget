@@ -35,7 +35,7 @@ cd $PSScriptRoot
 .\scripts\install-repository.ps1 
 
 # Make sure the sandbox can run
-if (get-command remove-iissite) { 
+if (get-command remove-iissite -ea silentlycontinue) { 
 
     if (get-iissite -Name "Default Web Site" ) { 
         remove-iissite -Name "Default Web Site" -Confirm:$false
