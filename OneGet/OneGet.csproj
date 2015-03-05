@@ -50,6 +50,7 @@
     <Compile Include="Implementation\DictionaryRequestObject.cs" />
     <Compile Include="Implementation\DynamicOptionRequestObject.cs" />
     <Compile Include="Implementation\FuncRequestObject.cs" />
+    <Compile Include="Implementation\PackageDetailsRequestObject.cs" />
     <Compile Include="Implementation\ProviderServicesImpl.cs" />
     <Compile Include="Implementation\RequestObject.cs" />
     <Compile Include="Implementation\PackageSourceRequestObject.cs" />

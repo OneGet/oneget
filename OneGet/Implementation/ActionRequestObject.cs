@@ -15,23 +15,10 @@
 namespace Microsoft.OneGet.Implementation {
     using System;
     using Api;
-    using Packaging;
 
     public class ActionRequestObject : RequestObject {
         public ActionRequestObject(ProviderBase provider, IHostApi hostApi, Action<RequestObject> action) : base(provider, hostApi, action) {
             InvokeImpl();
         }
-    }
-
-    public class PackageDetailsRequestObject : RequestObject {
-        private SoftwareIdentity _softwareIdentity;
-
-        public PackageDetailsRequestObject(ProviderBase provider, IHostApi hostApi, SoftwareIdentity softwareIdentity, Action<RequestObject> action)
-            : base(provider, hostApi, action) {
-            _softwareIdentity = softwareIdentity;
-            InvokeImpl();
-        }
-
-        
     }
 }
