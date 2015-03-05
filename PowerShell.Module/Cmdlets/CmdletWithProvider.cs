@@ -191,8 +191,16 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 if (!missingRequiredParameters.Any()) {
                     yield return provider;
                 } else {
+                    Collection<string> missingOptions = new Collection<string>();
+                    foreach (var missingRequiredParameter in missingRequiredParameters)
+                    {
+                        foreach (var option in missingRequiredParameter.Options)
+                        {
                     // remember these so we can warn later.
-                    excluded.Add(provider.ProviderName, missingRequiredParameters.Select(each => each.Name).ReEnumerable());
+                            missingOptions.Add(option.Name);
+                        }
+                    }
+                    excluded.Add(provider.ProviderName, missingOptions);
                 }
             }
 
@@ -240,7 +248,8 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             // these warnings only show for providers that would have otherwise be selected.
             // if not for the missing requrired parameter.
             foreach (var mp in excluded.OrderBy(each => each.Key)) {
-                Verbose(Constants.Messages.SkippedProviderMissingRequiredOption, mp.Key, mp.Value);
+                string optionsValue = mp.Value.JoinWithComma();
+                Verbose(Constants.Messages.SkippedProviderMissingRequiredOption, mp.Key, optionsValue);
             }
         }
 
@@ -400,17 +409,19 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
                         // ask for the unbound arguments.
                           var unbound = UnboundArguments;
-
-                        if (unbound.ContainsKey("ProviderName")) {
-                            var pName = unbound["ProviderName"];
-                            if (pName != null) {
-                                ProviderName = pName as string[] ?? new[] { pName.ToString() };
+                          if (unbound.ContainsKey("ProviderName") || unbound.ContainsKey("Provider"))
+                          {                                                                  
+                            var pName = unbound.ContainsKey("ProviderName")?unbound["ProviderName"]:unbound["Provider"] ;                                                     
+                            if (pName != null)
+                            {
+                                if (pName.GetType().IsArray)
+                                {
+                                    ProviderName = pName as string[] ?? (((object[])pName).Select(p => p.ToString()).ToArray());
+                                }
+                                else
+                                {
+                                    ProviderName = new[] { pName.ToString() };
                             }
-                            
-                        } else if( unbound.ContainsKey("Provider") ) {
-                            var pName = unbound["Provider"];
-                            if (pName != null) {
-                                ProviderName = pName as string[] ?? new[] { pName.ToString() };
                             }
                         }
 

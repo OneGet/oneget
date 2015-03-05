@@ -184,8 +184,9 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 }
             }
 
-            
-            if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, Name, Location, ProviderName), FormatMessageString(Constants.Messages.ActionRegisterPackageSource)).Result) {
+            string providerNameForProcessMessage = ProviderName.JoinWithComma();
+            if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, Name, Location, providerNameForProcessMessage), FormatMessageString(Constants.Messages.ActionRegisterPackageSource)).Result)
+            {
                 using (var added = provider.AddPackageSource(Name, Location, Trusted, this).CancelWhen(_cancellationEvent.Token)) {
                     foreach (var addedSource in added) {
                         WriteObject(addedSource);

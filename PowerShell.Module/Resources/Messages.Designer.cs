@@ -186,6 +186,17 @@ namespace Microsoft.PowerShell.OneGet.Resources {
                 return ResourceManager.GetString("CaptionPackageNotTrusted", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The package(s) comes from a package source that is not marked as trusted..
+        /// </summary>
+        internal static string CaptionSourceNotTrusted
+        {
+            get
+            {
+                return ResourceManager.GetString("CaptionSourceNotTrusted", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; failed to uninstall..
@@ -337,6 +348,17 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         internal static string PackageFileExists {
             get {
                 return ResourceManager.GetString("PackageFileExists", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to User declined to install untrusted package &apos;{0}&apos;.
+        /// </summary>
+        internal static string UserDeclinedUntrustedPackageInstall
+        {
+            get
+            {
+                return ResourceManager.GetString("UserDeclinedUntrustedPackageInstall", resourceCulture);
             }
         }
         

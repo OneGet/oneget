@@ -93,6 +93,7 @@ namespace Microsoft.PowerShell.OneGet {
             internal const string CaptionPackageContainsUninstallationScript = "MSG:CaptionPackageContainsUninstallationScript";
             internal const string CaptionPackageInstallFailure = "MSG:CaptionPackageInstallFailure";
             internal const string CaptionPackageNotTrusted = "MSG:CaptionPackageNotTrusted";
+            internal const string CaptionSourceNotTrusted = "MSG:CaptionSourceNotTrusted";
             internal const string CaptionPackageUninstallFailure = "MSG:CaptionPackageUninstallFailure";
             internal const string DestinationOrLiteralPathRequired = "MSG:DestinationOrLiteralPathRequired";
             internal const string DestinationPathInvalid = "MSG:DestinationPathInvalid";

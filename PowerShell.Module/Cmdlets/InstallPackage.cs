@@ -27,6 +27,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     [Cmdlet(VerbsLifecycle.Install, Constants.Nouns.PackageNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.ParameterSets.PackageBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517138")]
     public sealed class InstallPackage : CmdletWithSearchAndSource {
         private readonly HashSet<string> _sourcesTrusted = new HashSet<string>();
+        private HashSet<string> __sourcesDeniedTrust = new HashSet<string>();
 
         public InstallPackage()
             : base(new[] {
@@ -244,9 +245,14 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 if (_sourcesTrusted.Contains(packageSource) || Force || WhatIf) {
                     return true;
                 }
-                if (ShouldContinue(FormatMessageString(Constants.Messages.QueryInstallUntrustedPackage, package, packageSource), FormatMessageString(Constants.Messages.CaptionPackageNotTrusted, package)).Result) {
+                    if(__sourcesDeniedTrust.Contains(packageSource)) {
+                        return false;
+                    }
+                    if (ShouldContinue(FormatMessageString(Constants.Messages.QueryInstallUntrustedPackage, package, packageSource), FormatMessageString(Constants.Messages.CaptionSourceNotTrusted)).Result) {
                     _sourcesTrusted.Add(packageSource);
                     return true;
+                    } else {
+                        __sourcesDeniedTrust.Add(packageSource);
                 }
             } catch {
             }
