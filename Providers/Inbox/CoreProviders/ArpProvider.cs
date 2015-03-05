@@ -177,8 +177,8 @@ namespace Microsoft.OneGet.Providers {
                                 var comments = properties.Get("Comments") ?? "";
 
                                 var fp = hive + @"\" + subkey;
-                                if (request.YieldSoftwareIdentity(fp, productName, productVersion, "unknown", comments, "", name, "", "")) {
-                                    if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => !request.YieldSoftwareMetadata(fp, k.MakeSafeFileName(), properties[k]))) {
+                                if (request.YieldSoftwareIdentity(fp, productName, productVersion, "unknown", comments, "", name, "", "") != null) {
+                                    if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => request.AddMetadata(fp, k.MakeSafeFileName(), properties[k]) == null )) {
                                         return false;
                                     }
                                 }
@@ -197,8 +197,8 @@ namespace Microsoft.OneGet.Providers {
             var uninstallString = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
             var comments = properties.Get("Comments") ?? "";
 
-            if (request.YieldSoftwareIdentity(path, productName, productVersion, "unknown", comments, "", searchKey, "", "")) {
-                if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => !request.YieldSoftwareMetadata(path, k.MakeSafeFileName(), properties[k]))) {
+            if (request.YieldSoftwareIdentity(path, productName, productVersion, "unknown", comments, "", searchKey, "", "") != null) {
+                if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => request.AddMetadata(path, k.MakeSafeFileName(), properties[k]) == null)) {
                     return false;
                 }
             }
