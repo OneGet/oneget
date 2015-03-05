@@ -271,8 +271,8 @@ namespace Microsoft.OneGet.Msi {
                 Installer.SetExternalUI(handler, InstallLogModes.None);
 
                 // YieldPackage(product,fastPackageReference, request);
-                if (request.YieldSoftwareIdentity(fastPackageReference, productName, productVersion, "multipartnumeric", summary, "", fastPackageReference, "", "")) {
-                    request.YieldSoftwareMetadata(fastPackageReference, "ProductCode", fastPackageReference);
+                if (request.YieldSoftwareIdentity(fastPackageReference, productName, productVersion, "multipartnumeric", summary, "", fastPackageReference, "", "") != null) {
+                    request.AddMetadata(fastPackageReference, "ProductCode", fastPackageReference);
                 }
 
                 request.Warning("Reboot is required to complete uninstallation.");
@@ -347,18 +347,18 @@ namespace Microsoft.OneGet.Msi {
                            Debug.WriteLine("Property {0} = {1}", i, package.Property[i]);
                        }
                        */
-            if (request.YieldSoftwareIdentity(filename, package.Property["ProductName"], package.Property["ProductVersion"], "multipartnumeric", package.Property["Summary"], filename, filename, filename, Path.GetFileName(filename))) {
+            if (request.YieldSoftwareIdentity(filename, package.Property["ProductName"], package.Property["ProductVersion"], "multipartnumeric", package.Property["Summary"], filename, filename, filename, Path.GetFileName(filename)) != null) {
                 var trusted = request.ProviderServices.IsSignedAndTrusted(filename, request);
 
-                if (!request.YieldSoftwareMetadata(filename, "FromTrustedSource", trusted.ToString())) {
+                if (request.AddMetadata(filename, "FromTrustedSource", trusted.ToString()) == null ) {
                     return false;
                 }
 
-                if (!request.YieldSoftwareMetadata(filename, "ProductCode", package.Property["ProductCode"])) {
+                if (request.AddMetadata(filename, "ProductCode", package.Property["ProductCode"]) == null) {
                     return false;
                 }
 
-                if (!request.YieldSoftwareMetadata(filename, "UpgradeCode", package.Property["UpgradeCode"])) {
+                if (request.AddMetadata(filename, "UpgradeCode", package.Property["UpgradeCode"]) == null) {
                     return false;
                 }
 
@@ -369,12 +369,12 @@ namespace Microsoft.OneGet.Msi {
         }
 
         private bool YieldPackage(ProductInstallation package, string searchKey, Request request) {
-            if (request.YieldSoftwareIdentity(package.ProductCode, package.ProductName, package.ProductVersion.ToString(), "multipartnumeric", package["Summary"], package.InstallSource, searchKey, package.InstallLocation, "?")) {
-                if (!request.YieldSoftwareMetadata(package.ProductCode, "ProductCode", package.ProductCode)) {
+            if (request.YieldSoftwareIdentity(package.ProductCode, package.ProductName, package.ProductVersion.ToString(), "multipartnumeric", package["Summary"], package.InstallSource, searchKey, package.InstallLocation, "?") != null) {
+                if (request.AddMetadata(package.ProductCode, "ProductCode", package.ProductCode) == null) {
                     return false;
                 }
 
-                if (!request.YieldSoftwareMetadata(package.ProductCode, "UpgradeCode", package["UpgradeCode"])) {
+                if (request.AddMetadata(package.ProductCode, "UpgradeCode", package["UpgradeCode"]) == null) {
                     return false;
                 }
                 return true;

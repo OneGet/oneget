@@ -269,28 +269,73 @@ namespace Microsoft.OneGet.Implementation {
 
         #region response api implementation
 
-        public virtual bool YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName) {
-            Console.WriteLine("SHOULD NOT GET HERE [YieldSoftwareIdentity] ================================================");
-            // todo: give an actual error here
-            return true; // cancel
+        public virtual string YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName) {
+            Debug("Unexpected call to YieldSoftwareIdentity in RequestObject");
+            return null;
         }
 
-        public virtual bool YieldSoftwareMetadata(string parentFastPath, string name, string value) {
-            Console.WriteLine("SHOULD NOT GET HERE [YieldSoftwareIdentity] ================================================");
-            // todo: give an actual error here
-            return true; // cancel
+        public virtual string AddMetadata(string name, string value) {
+            Debug("Unexpected call to AddMetaData in RequestObject");
+            return null;
         }
 
-        public virtual bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint) {
-            Console.WriteLine("SHOULD NOT GET HERE [YieldSoftwareIdentity] ================================================");
-            // todo: give an actual error here
-            return true; // cancel
+        public virtual string AddMetadata(string elementPath, string name, string value) {
+            Debug("Unexpected call to AddMetaData in RequestObject");
+            return null;
         }
 
-        public virtual bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact) {
-            Console.WriteLine("SHOULD NOT GET HERE [YieldSoftwareIdentity] ================================================");
-            // todo: give an actual error here
-            return true; // cancel
+        public virtual string AddMetadata(string elementPath, Uri @namespace, string name, string value) {
+            Debug("Unexpected call to AddMetaData in RequestObject");
+            return null;
+        }
+
+        public virtual string AddMeta(string elementPath) {
+            Debug("Unexpected call to AddMeta in RequestObject");
+            return null;
+        }
+
+        public virtual string AddPayload() {
+            Debug("Unexpected call to AddPayload in RequestObject");
+            return null;
+        }
+
+        public virtual string AddEvidence(DateTime date, string deviceId) {
+            Debug("Unexpected call to AddEvidence in RequestObject");
+            return null;
+        }
+        public virtual string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey) {
+            Debug("Unexpected call to AddDirectory in RequestObject");
+            return null;
+        }
+
+        public virtual string AddFile(string elementPath, string fileName, string location, string root, bool isKey, long size, string version) {
+            Debug("Unexpected call to AddFile in RequestObject");
+            return null;
+        }
+
+        public virtual string AddProcess(string elementPath, string processName, int pid) {
+            Debug("Unexpected call to AddProcess in RequestObject");
+            return null;
+        }
+
+        public virtual string AddResource(string elementPath, string type) {
+            Debug("Unexpected call to AddResource in RequestObject");
+            return null;
+        }
+
+        public virtual string AddEntity(string name, string regid, string role, string thumbprint) {
+            Debug("Unexpected call to AddEntity in RequestObject");
+            return null;
+        }
+
+        public virtual string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact) {
+            Debug("Unexpected call to AddLink in RequestObject");
+            return null;
+        }
+
+        public virtual string AddDependency(string providerName, string packageName, string version, string source, string appliesTo) {
+            Debug("Unexpected call to AddDependency in RequestObject");
+            return null;
         }
 
         public virtual bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated) {

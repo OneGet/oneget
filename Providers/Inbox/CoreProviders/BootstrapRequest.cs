@@ -34,7 +34,7 @@ namespace Microsoft.OneGet.Providers {
                 if (_namespaceManager == null) {
                     XmlNameTable nameTable = new NameTable();
                     _namespaceManager = new XmlNamespaceManager(nameTable);
-                    _namespaceManager.AddNamespace("swid", "http://standards.iso.org/iso/19770/-2/2014/schema.xsd");
+                    _namespaceManager.AddNamespace("swid", "http://standards.iso.org/iso/19770/-2/2015/schema.xsd");
                     _namespaceManager.AddNamespace("oneget", "http://oneget.org/swidtag");
                 }
                 return _namespaceManager;
@@ -150,26 +150,26 @@ namespace Microsoft.OneGet.Providers {
                 return true;
             }
 
-            if (YieldSoftwareIdentity(name, name, version, versionScheme, summary, null, searchKey, null, packageFilename)) {
+            if (YieldSoftwareIdentity(name, name, version, versionScheme, summary, null, searchKey, null, packageFilename) != null) {
                 // note: temporary until we actaully support swidtags in the core.
 
                 // yield all the meta/attributes
                 if (provider.XPath("/swid:SoftwareIdentity/swid:Meta").Any(
-                    meta => meta.Attributes.Any(attribute => !YieldSoftwareMetadata(name, attribute.Name.LocalName, attribute.Value)))) {
+                    meta => meta.Attributes.Any(attribute => AddMetadata(name, attribute.Name.LocalName, attribute.Value) == null))) {
                     return false;
                 }
 
                 if (provider.XPath("/swid:SoftwareIdentity/swid:Link").Any(
-                    link => !YieldLink(name, link.Attributes["href"], link.Attributes["rel"], link.Attributes["type"], link.Attributes["ownership"], link.Attributes["use"], link.Attributes["media"], link.Attributes["artifact"]))) {
+                    link => AddLink(new Uri(link.Attributes["href"]), link.Attributes["rel"], link.Attributes["type"], link.Attributes["ownership"], link.Attributes["use"], link.Attributes["media"], link.Attributes["artifact"]) == null)) {
                     return false;
                 }
 
                 if (provider.XPath("/swid:SoftwareIdentity/swid:Entity").Any(
-                    entity => !YieldEntity(name, entity.Attributes["name"], entity.Attributes["regid"], entity.Attributes["role"], entity.Attributes["thumbprint"]))) {
+                    entity => AddEntity( entity.Attributes["name"], entity.Attributes["regid"], entity.Attributes["role"], entity.Attributes["thumbprint"]) == null)) {
                     return false;
                 }
 
-                if (!YieldSoftwareMetadata(name, "FromTrustedSource", true.ToString())) {
+                if (AddMetadata(name, "FromTrustedSource", true.ToString()) == null) {
                     return false;
                 }
             }

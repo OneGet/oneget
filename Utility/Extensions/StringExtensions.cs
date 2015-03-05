@@ -158,6 +158,13 @@ namespace Microsoft.OneGet.Utility.Extensions {
             return !string.IsNullOrWhiteSpace(text) && text.Equals("true", StringComparison.CurrentCultureIgnoreCase);
         }
 
+        public static bool? IsTruePreserveNull(this string text) {
+            if (text == null) {
+                return null;
+            }
+            return !string.IsNullOrWhiteSpace(text) && text.Equals("true", StringComparison.CurrentCultureIgnoreCase);
+        }
+
         /// <summary>
         ///     coerces a string to an int32, defaults to zero.
         /// </summary>

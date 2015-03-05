@@ -99,20 +99,33 @@ namespace Microsoft.OneGet.Implementation {
         /// <param name="fullPath"></param>
         /// <param name="packageFileName"></param>
         /// <returns></returns>
-        public abstract bool YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
+        public abstract string YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
 
-        public abstract bool YieldSoftwareMetadata(string parentFastPath, string name, string value);
+        public abstract string AddMetadata(string name, string value);
 
-        public abstract bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint);
+        public abstract string AddMetadata(string elementPath, string name, string value);
 
-        public abstract bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
+        public abstract string AddMetadata(string elementPath, Uri @namespace, string name, string value);
 
-#if M2
-        public abstract bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
+        public abstract string AddMeta(string elementPath);
 
-        public abstract bool YieldMetadata(string fieldId, string @namespace, string name, string value);
+        public abstract string AddEntity(string name, string regid, string role, string thumbprint);
 
-        #endif
+        public abstract string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
+
+        public abstract string AddDependency(string providerName, string packageName, string version, string source, string appliesTo);
+
+        public abstract string AddPayload();
+
+        public abstract string AddEvidence(DateTime date, string deviceId);
+
+        public abstract string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey);
+
+        public abstract string AddFile(string elementPath, string fileName, string location, string root, bool isKey, long size, string version);
+
+        public abstract string AddProcess(string elementPath, string processName, int pid);
+
+        public abstract string AddResource(string elementPath, string type);
 
         /// <summary>
         ///     Used by a provider to return fields for a package source (repository)

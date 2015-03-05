@@ -20,7 +20,7 @@ namespace Microsoft.OneGet.Utility.Async {
     public abstract class AsyncAction : IAsyncAction {
         private readonly object _lock = new Object();
         private static readonly TimeSpan DefaultCallTimeout = TimeSpan.FromMinutes(120);
-        private static readonly TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(120);
         protected readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         private readonly ManualResetEventSlim _completed = new ManualResetEventSlim(false);

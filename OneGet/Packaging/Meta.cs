@@ -13,95 +13,52 @@
 //  
 
 namespace Microsoft.OneGet.Packaging {
-    using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using System.Xml.Linq;
-    using Utility.Collections;
 
-    public class Meta :  IDictionary<string, string> {
-        private XElement _element;
+    /// <summary>
+    /// An intermediate base class for elements in the swidtag that support 
+    /// arbitrary attributes in the default namespace.
+    /// 
+    /// From the swidtag schema:
+    ///     An open-ended collection of key/value data related to this SWID. 
+    ///     Permits any user-defined attributes in Meta tags
+    /// </summary>
+    public class Meta : BaseElement {
 
-        protected internal Meta(XElement element) {
-            _element = element;
+        internal Meta(XElement element)
+            : base(element) {
+            // we don't do an Element type validation here, since this will get called from 
+            // child classes too.
+            // and that's ok, because Meta doesn't directly have any predefined fields anyway.
         }
 
-        public IEnumerator<KeyValuePair<string, string>> GetEnumerator() {
-            return _element.Attributes().Select(each => new KeyValuePair<string, string>(each.Name.LocalName, each.Value)).GetEnumerator();
+        public override string ToString() {
+            return Attributes.ToString();
         }
 
-        IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator();
+
+        internal Meta()
+            : base(new XElement(Iso19770_2.Meta)) {
         }
 
-        public void Add(KeyValuePair<string, string> item) {
-            throw new NotImplementedException();
-        }
-
-        public void Clear() {
-            throw new NotImplementedException();
-        }
-
-        public bool Contains(KeyValuePair<string, string> item) {
-            throw new NotImplementedException();
-        }
-
-        public void CopyTo(KeyValuePair<string, string>[] array, int arrayIndex) {
-            throw new NotImplementedException();
-        }
-
-        public bool Remove(KeyValuePair<string, string> item) {
-            throw new NotImplementedException();
-        }
-
-        public int Count {
-            get {
-                return _element.Attributes().Count();
-            }
-        }
-
-        public bool IsReadOnly {
-            get {
-                return true;
-            }
-        }
-
+        /// <summary>
+        /// Determines if the element contains an attribute with the given name.
+        /// </summary>
+        /// <param name="key">the attribute to find</param>
+        /// <returns>True, if the element contains the attribute.</returns>
         public bool ContainsKey(string key) {
-            return _element.Attribute(key) != null;
-        }
+            if (string.IsNullOrWhiteSpace(key)) {
+                return false;
+            }
 
-        public void Add(string key, string value) {
-            throw new NotImplementedException();
-        }
-
-        public bool Remove(string key) {
-            throw new NotImplementedException();
-        }
-
-        public bool TryGetValue(string key, out string value) {
-            value = _element.Get(key);
-            return value != null;
+            return Element.Attribute(key) != null;
         }
 
         public string this[string key] {
             get {
-                return _element.Get(key);
-            }
-            set {
-                throw new NotImplementedException();
-            }
-        }
-
-        public ICollection<string> Keys {
-            get {
-                return _element.Attributes().Select(each => each.Name.LocalName).ToArray();
-            }
-        }
-
-        public ICollection<string> Values {
-            get {
-                return _element.Attributes().Select(each => each.Value).ToArray();
+                return Attributes[key];
             }
         }
     }

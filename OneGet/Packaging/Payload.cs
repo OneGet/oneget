@@ -13,6 +13,35 @@
 //  
 
 namespace Microsoft.OneGet.Packaging {
-    public class Payload {
+    using System;
+    using System.Xml.Linq;
+
+    /// <summary>
+    /// From the schema:
+    ///     The items that may be installed on a device when the software is
+    ///     installed.  Note that Payload may be a superset of the items
+    ///     installed and, depending on optimization systems for a device,
+    ///     may or may not include every item that could be created or
+    ///     executed on a device when software is installed.  
+    ///     
+    ///     In general, payload will be used to indicate the files that
+    ///     may be installed with a software product and will often be a
+    ///     superset of those files (i.e. if a particular optional
+    ///     component is not installed, the files associated with that
+    ///     component may be included in payload, but not installed on
+    ///     the device).
+    /// </summary>
+    public class Payload : ResourceCollection {
+
+        internal Payload(XElement element)
+            : base(element) {
+                if (element.Name != Iso19770_2.Payload) {
+                    throw new ArgumentException("Element is not of type 'Payload'", "element");
+                }
+        }
+
+        internal Payload()
+            : base(new XElement(Iso19770_2.Payload)) {
+        }
     }
 }
