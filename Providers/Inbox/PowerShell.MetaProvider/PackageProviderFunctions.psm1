@@ -140,8 +140,8 @@ function New-SoftwareIdentity {
 		[System.Collections.Hashtable] $details = $null,
 		[System.Collections.ArrayList] $entities = $null,
 		[System.Collections.ArrayList] $links = $null,
-		[bool] $fromTrustedSource = $false
-		[System.Collections.ArrayList] $dependencies = $null,
+		[bool] $fromTrustedSource = $false,
+		[System.Collections.ArrayList] $dependencies = $null
 	)
 	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links, $fromTrustedSource, $dependencies
 }
@@ -247,7 +247,7 @@ function New-Dependency {
 		[Parameter(Mandatory=$true)][string] $packageName,
 		[string] $version= $null,
 		[string] $source = $null,
-		[string] $source = $appliesTo
+		[string] $appliesTo = $null
 	)
 
 	$o = New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Dependency
