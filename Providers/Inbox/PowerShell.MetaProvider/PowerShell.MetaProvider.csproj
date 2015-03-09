@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="Dependency.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="Feature.cs" />
     <Compile Include="Link.cs" />

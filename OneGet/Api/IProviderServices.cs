@@ -21,7 +21,7 @@ namespace Microsoft.OneGet.Api {
 
         bool IsElevated {get;}
 
-        string GetCanonicalPackageId(string providerName, string packageName, string version);
+        string GetCanonicalPackageId(string providerName, string packageName, string version, string source);
 
         string ParseProviderName(string canonicalPackageId);
 

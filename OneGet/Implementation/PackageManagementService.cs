@@ -203,6 +203,30 @@ namespace Microsoft.OneGet.Implementation {
             return PackageProviders;
         }
 
+        public IEnumerable<SoftwareIdentity> FindPackageByCanonicalId(string packageId, IHostApi hostApi) {
+            if (Uri.IsWellFormedUriString(packageId, UriKind.Absolute)) {
+                var pkgId = new Uri(packageId);
+                var segments = pkgId.Segments;
+                if (segments.Length > 0) {
+                    var provider = SelectProviders(pkgId.Scheme, hostApi).FirstOrDefault();
+                    if (provider != null) {
+                        var name = segments[0].Trim('/','\\');
+                        var version = (segments.Length > 1) ? segments[1] : null;
+                        var source = pkgId.Fragment.TrimStart('#');
+                        var sources = (string.IsNullOrWhiteSpace(source) ? hostApi.Sources : source.SingleItemAsEnumerable()).ToArray();
+                        
+                        var host = new object[] {
+                            new { GetSources = new Func<IEnumerable<string>>(() => sources), },
+                            hostApi,
+                        }.As<IHostApi>();
+
+                        return provider.FindPackage(name, version, null, null, 0, host).ReEnumerable();
+                    }
+                }
+            }
+            return new SoftwareIdentity[0];
+        }
+
         public bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IHostApi hostApi) {
             // check if the package provider is already installed
             if (_packageProviders.ContainsKey(packageProviderName)) {

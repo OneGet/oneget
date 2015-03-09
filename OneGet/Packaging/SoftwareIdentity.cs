@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Packaging {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.Design;
     using System.Linq;
     using System.Xml.Linq;
     using Api;
@@ -74,7 +75,7 @@ namespace Microsoft.OneGet.Packaging {
             }
         }
 
-        private static string CreateCanonicalId(string provider, string name, string version, string source ) {
+        internal static string CreateCanonicalId(string provider, string name, string version, string source ) {
 
             if (provider == null || name == null) {
                 return null;
@@ -332,7 +333,15 @@ namespace Microsoft.OneGet.Packaging {
         /// <returns>a collection of strings with the values from all Meta elements that match</returns>
         public IEnumerable<string> this[string key] {
             get {
-                return Element.Elements(Iso19770_2.Meta).Where(each => each.Attribute(key) != null).Select(each => each.Attribute(key).Value).ReEnumerable();
+                return Element.Elements(Iso19770_2.Meta).Where(each =>  {
+                    try {
+                        return (each.Attribute(key) != null);
+                    } catch {
+                        // happens when key is not a legal attribute name
+                    }
+                return false;
+            } ).Select(each => each.Attribute(key).Value).ReEnumerable();
+                
             }
         }
     }

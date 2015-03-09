@@ -28,7 +28,7 @@ namespace Microsoft.OneGet.Test.Sdk {
         public interface IProviderServices {
             bool IsElevated { get; }
 
-            string GetCanonicalPackageId(string providerName, string packageName, string version);
+            string GetCanonicalPackageId(string providerName, string packageName, string version, string source);
 
             string ParseProviderName(string canonicalPackageId);
 

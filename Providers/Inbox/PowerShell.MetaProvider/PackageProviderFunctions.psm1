@@ -141,8 +141,9 @@ function New-SoftwareIdentity {
 		[System.Collections.ArrayList] $entities = $null,
 		[System.Collections.ArrayList] $links = $null,
 		[bool] $fromTrustedSource = $false
+		[System.Collections.ArrayList] $dependencies = $null,
 	)
-	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links, $fromTrustedSource
+	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links, $fromTrustedSource, $dependencies
 }
 
 <#
@@ -236,6 +237,26 @@ function New-Link {
 	$o.Use = $use
 	$o.AppliesToMedia = $appliesToMedia
 	$o.Artifact = $artifact
+
+	return $o
+}
+
+function New-Dependency {
+	param(
+		[Parameter(Mandatory=$true)][string] $providerName,
+		[Parameter(Mandatory=$true)][string] $packageName,
+		[string] $version= $null,
+		[string] $source = $null,
+		[string] $source = $appliesTo
+	)
+
+	$o = New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Dependency
+
+	$o.ProviderName = $providerName
+	$o.PackageName =$packageName
+	$o.Version =$version
+	$o.Source =$source
+	$o.AppliesTo = $appliesTo
 
 	return $o
 }

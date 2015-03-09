@@ -15,13 +15,15 @@
 namespace Microsoft.OneGet.Implementation {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
     using Api;
+    using Packaging;
     using Utility.Extensions;
     using Utility.Platform;
     using Utility.Plugin;
+    using Directory = System.IO.Directory;
+    using File = System.IO.File;
 
     internal class ProviderServicesImpl : IProviderServices {
         internal static IProviderServices Instance = new ProviderServicesImpl();
@@ -39,8 +41,8 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        public string GetCanonicalPackageId(string providerName, string packageName, string version) {
-            return "{0}:{1}/{2}".format(providerName, packageName, version);
+        public string GetCanonicalPackageId(string providerName, string packageName, string version, string source) {
+            return SoftwareIdentity.CreateCanonicalId(providerName, packageName, version, source);
         }
 
         public string ParseProviderName(string canonicalPackageId) {

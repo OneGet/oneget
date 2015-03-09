@@ -16,6 +16,7 @@ namespace Microsoft.OneGet {
     using System.Collections.Generic;
     using Api;
     using Implementation;
+    using Packaging;
 
     /// <summary>
     ///     The current Package Management Service Interface
@@ -41,6 +42,8 @@ namespace Microsoft.OneGet {
         IEnumerable<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
 
         IEnumerable<PackageProvider> SelectProviders(string providerName, IHostApi requestObject);
+
+        IEnumerable<SoftwareIdentity> FindPackageByCanonicalId(string packageId, IHostApi requestObject);
 
         bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IHostApi requestObject);
     }
