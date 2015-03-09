@@ -325,10 +325,14 @@ namespace Microsoft.OneGet.Packaging {
             return AddLink(new Uri(CreateCanonicalId(providerName, packageName, version, source)), Iso19770_2.Relationship.Requires, null, null, null, appliesTo, null);
         }
 
-        public string this[string key] {
+        /// <summary>
+        /// Accessor to grab Meta attribute values in an aggregate fashion.
+        /// </summary>
+        /// <param name="key">Meta attribute name</param>
+        /// <returns>a collection of strings with the values from all Meta elements that match</returns>
+        public IEnumerable<string> this[string key] {
             get {
-                var attr = Element.Elements(Iso19770_2.Meta).FirstOrDefault(each => each.Attribute(key) != null);
-                return attr == null ? null : attr.Value;
+                return Element.Elements(Iso19770_2.Meta).Where(each => each.Attribute(key) != null).Select(each => each.Value).ReEnumerable();
             }
         }
     }
