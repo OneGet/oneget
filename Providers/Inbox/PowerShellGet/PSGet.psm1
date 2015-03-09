@@ -31,6 +31,12 @@ $Script:PSGalleryModuleSource="PSGallery"
 $Script:PSGallerySourceUri  = 'https://go.microsoft.com/fwlink/?LinkID=397631&clcid=0x409'
 $Script:PSGalleryPublishUri = 'https://go.microsoft.com/fwlink/?LinkID=397527&clcid=0x409'
 
+# PSGallery V3 Source
+$Script:PSGalleryV3SourceUri = 'https://go.microsoft.com/fwlink/?LinkId=528403&clcid=0x409'
+
+$Script:PSGalleryV2ApiAvailable = $true
+$Script:PSGalleryV3ApiAvailable = $false
+
 # Internal MSPSGallery module source name and location
 $Script:InternalSourceName = "MSPSGallery"
 $Script:InternalSourceUri = 'http://go.microsoft.com/fwlink/?LinkID=397633&clcid=0x409'
@@ -82,20 +88,60 @@ $script:DynamicOptionTypeMap = @{
 
 $script:OneGetMessageResolverScriptBlock =  {
                                                 param($i, $Message)
+                                                return (OneGetMessageResolver -MsgId $i, -Message $Message)			
+                                            }		
 
-                                                if($Message)
+$script:OneGetInstallModuleMessageResolverScriptBlock =  {
+                                                param($i, $Message)
+                                                $PackageTarget = $LocalizedData.InstallModulewhatIfMessage
+                                                switch ($i)
                                                 {
-                                                    $tempMessage = $Message     -creplace "Package", "Module"
-                                                    $tempMessage = $tempMessage -creplace "package", "module"
-                                                    $tempMessage = $tempMessage -creplace "Sources", "Repositories"
-                                                    $tempMessage = $tempMessage -creplace "sources", "repositories"
-                                                    $tempMessage = $tempMessage -creplace "Source", "Repository"
-                                                    $tempMessage = $tempMessage -creplace "source", "repository"
+                                                    'ActionInstallPackage' { return "Install-Module" }              
+                                                    'TargetPackage' { return $PackageTarget }
+                                                     Default {
+                                                        return (OneGetMessageResolver -MsgId $i, -Message $Message)
+                                                     }
+                                                }                                                
+                                            }		
 
-                                                    return $tempMessage
-                                                }
-                                            }
+$script:OneGetUpdateModuleMessageResolverScriptBlock =  {
+                                                param($i, $Message)
+                                                $PackageTarget = ($LocalizedData.UpdateModulewhatIfMessage -replace "__OLDVERSION__",$($psgetItemInfo.Version))                                                
+                                                switch ($i)
+                                                {
+                                                    'ActionInstallPackage' { return "Update-Module" }              
+                                                    'TargetPackage' { return $PackageTarget }
+                                                     Default {
+                                                        return (OneGetMessageResolver -MsgId $i, -Message $Message)
+                                                     }
+                                                }                                                
+                                            }		
+                                            
+function OneGetMessageResolver($MsgID, $Message) {    
+              	$SourceNotFound = $LocalizedData.SourceNotFound
+                $ModuleIsNotTrusted = $LocalizedData.ModuleIsNotTrusted
+                $RepositoryIsNotTrusted = $LocalizedData.RepositoryIsNotTrusted
 
+                switch ($MsgID)
+                {
+                   'SourceNotFound' { return $SourceNotFound }                   
+                   'CaptionPackageNotTrusted' { return $ModuleIsNotTrusted }
+                   'CaptionSourceNotTrusted' { return $RepositoryIsNotTrusted }
+                    Default {
+                        if($Message)
+                        {
+	                        $tempMessage = $Message     -creplace "Package", "Module"
+                	        $tempMessage = $tempMessage -creplace "package", "module"
+        	        	    $tempMessage = $tempMessage -creplace "Sources", "Repositories"
+                            $tempMessage = $tempMessage -creplace "sources", "repositories"
+                            $tempMessage = $tempMessage -creplace "Source", "Repository"
+                            $tempMessage = $tempMessage -creplace "source", "repository"
+
+                            return $tempMessage
+                         }
+                     }
+			    }    
+}                                    		
 
 Microsoft.PowerShell.Utility\Import-LocalizedData  LocalizedData -filename PSGet.Resource.psd1
 
@@ -125,6 +171,11 @@ function Publish-Module
         [string]
         $Path,
 
+        [Parameter(ParameterSetName="ModuleNameParameterSet")]
+        [ValidateNotNullOrEmpty()]
+        [Version]
+        $RequiredVersion,
+
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string]
@@ -142,7 +193,7 @@ function Publish-Module
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [string]
+        [string[]]
         $ReleaseNotes,
 
         [Parameter()]
@@ -164,14 +215,12 @@ function Publish-Module
         [ValidateNotNullOrEmpty()]
         [Uri]
         $ProjectUri
-
-		#[Parameter()]
-		#[switch]
-		#$AnalyzeScriptModule
     )
 
     Begin
     {
+        Get-PSGalleryApiAvailability -Repository $Repository
+        
         if($LicenseUri -and -not (Test-WebUri -uri $LicenseUri))
         {
             $message = $LocalizedData.InvalidWebUri -f ($LicenseUri, "LicenseUri")
@@ -241,7 +290,16 @@ function Publish-Module
     {
         if($Name)
         {
-            $module = Get-Module -ListAvailable -Name $Name -Verbose:$false
+            if($RequiredVersion)
+            {
+                $module = Microsoft.PowerShell.Core\Get-Module -FullyQualifiedName @{ModuleName=$Name;RequiredVersion=$RequiredVersion} `
+                                                               -ListAvailable `
+                                                               -Verbose:$false
+            }
+            else
+            {
+                $module = Microsoft.PowerShell.Core\Get-Module -Name $Name -ListAvailable -Verbose:$false
+            }
 
             if(-not $module)
             {
@@ -281,27 +339,34 @@ function Publish-Module
         }
 
         $moduleName = Microsoft.PowerShell.Management\Split-Path $Path -Leaf
+        
+        # if the Leaf of the $Path is a version, use its parent folder name as the module name
+        $ModuleVersion = New-Object System.Version
+        if([System.Version]::TryParse($moduleName, ([ref]$ModuleVersion)))
+        {
+            $moduleName = Microsoft.PowerShell.Management\Split-Path -Path (Microsoft.PowerShell.Management\Split-Path $Path -Parent) -Leaf
+        }
 
         $message = $LocalizedData.PublishModuleLocation -f ($moduleName, $Path)
         Write-Verbose -Message $message
 
         # Copy the source module to temp location to publish
-        $tempModulePath = "$script:TempPath\$(Microsoft.PowerShell.Utility\Get-Random)"
+        $tempModulePath = "$script:TempPath\$(Microsoft.PowerShell.Utility\Get-Random)\$moduleName"
         if(-not $FormatVersion)
         {
             $tempModulePathForFormatVersion = $tempModulePath
         }
         elseif ($FormatVersion -eq "1.0")
         {
-            $tempModulePathForFormatVersion = Microsoft.PowerShell.Management\Join-Path $tempModulePath "$moduleName\Content\Deployment\$script:ModuleReferences"
+            $tempModulePathForFormatVersion = Microsoft.PowerShell.Management\Join-Path $tempModulePath "Content\Deployment\$script:ModuleReferences\$moduleName"
         }
 
         $null = Microsoft.PowerShell.Management\New-Item -Path $tempModulePathForFormatVersion -ItemType Directory -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Confirm:$false -WhatIf:$false
-        Microsoft.PowerShell.Management\Copy-Item -Path $Path -Destination $tempModulePathForFormatVersion -Force -Recurse -Confirm:$false -WhatIf:$false
+        Microsoft.PowerShell.Management\Copy-Item -Path "$Path\*" -Destination $tempModulePathForFormatVersion -Force -Recurse -Confirm:$false -WhatIf:$false
 
         try
         {
-            $manifestPath = Microsoft.PowerShell.Management\Join-Path (Microsoft.PowerShell.Management\Join-Path $tempModulePathForFormatVersion $moduleName) "$moduleName.psd1"
+            $manifestPath = Microsoft.PowerShell.Management\Join-Path $tempModulePathForFormatVersion "$moduleName.psd1"
         
             if(-not (Microsoft.PowerShell.Management\Test-Path $manifestPath))
             {
@@ -315,9 +380,7 @@ function Publish-Module
             }
 
             $moduleInfo = Microsoft.PowerShell.Core\Test-ModuleManifest -Path $manifestPath `
-                                              -ErrorAction SilentlyContinue `
-                                              -WarningAction SilentlyContinue `
-                                              -Verbose:$VerbosePreference
+                                                                        -Verbose:$VerbosePreference
 
             if(-not $moduleInfo -or 
                -not $moduleInfo.Author -or 
@@ -337,7 +400,9 @@ function Publish-Module
                                                 -Verbose:$VerbosePreference `
                                                 -ErrorAction SilentlyContinue `
                                                 -WarningAction SilentlyContinue `
-                                                -Debug:$DebugPreference
+                                                -Debug:$DebugPreference | 
+                                        Microsoft.PowerShell.Core\Where-Object {$_.Name -eq $moduleInfo.Name} | 
+                                            Microsoft.PowerShell.Utility\Select-Object -Last 1
 
             if($currentPSGetItemInfo -and $currentPSGetItemInfo.Version -ge $moduleInfo.Version)
             {
@@ -349,35 +414,16 @@ function Publish-Module
                             -ErrorCategory InvalidOperation
             }
 
-
-			#Do an analysis on the script files in the module before uploading. If there are any errors, we should not publish the module
-			#if($AnalyzeScriptModule)
-			#{
-			#	$invokeScriptAnalyzer = get-command PSScriptAnalyzer\Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue
-			#	if ($invokeScriptAnalyzer)
-			#	{
-			#		$diagnosticResults  = PSScriptAnalyzer\Invoke-ScriptAnalyzer -path $Path -Verbose:$VerbosePreference -ErrorAction SilentlyContinue 
-			#		if($diagnosticResults)
-			#		{
-			#			$diagnosticResults
-			#			ThrowError -ExceptionName "System.InvalidOperationException" `
-            #               				-ExceptionMessage $LocalizedData.ScriptErrorsOrWarningsReturnedByPSScriptAnalyzer `
-            #               				-ErrorId "ScriptErrorsOrWarningsReturnedByPSScriptAnalyzer" `
-            #               				-CallerPSCmdlet $PSCmdlet `
-            #               				-ErrorCategory InvalidOperation
-			#		}
-			#	}
-			#}
-
             $shouldProcessMessage = $LocalizedData.PublishModulewhatIfMessage -f ($moduleInfo.Version, $moduleInfo.Name)
             if($PSCmdlet.ShouldProcess($shouldProcessMessage, "Publish-Module"))
             {
                 Publish-PSGetExtModule -PSModuleInfo $moduleInfo `
                                        -NugetApiKey $NuGetApiKey `
                                        -Destination $DestinationLocation `
-                                       -NugetPackageRoot "$tempModulePath\$moduleName"`
+                                       -Repository $Repository `
+                                       -NugetPackageRoot $tempModulePath `
                                        -FormatVersion $FormatVersion `
-                                       -ReleaseNotes $ReleaseNotes `
+                                       -ReleaseNotes "$ReleaseNotes" `
                                        -Tags $Tags `
                                        -LicenseUri $LicenseUri `
                                        -IconUri $IconUri `
@@ -387,7 +433,6 @@ function Publish-Module
                                        -ErrorAction $ErrorActionPreference `
                                        -Debug:$DebugPreference
             }
-
         }
         finally
         {
@@ -416,6 +461,11 @@ function Find-Module
         [Alias("Version")]
         [Version]
         $MinimumVersion,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNull()]
+        [Version]
+        $MaximumVersion,
         
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [ValidateNotNull()]
@@ -425,6 +475,10 @@ function Find-Module
         [Parameter()]
         [switch]
         $AllVersions,
+
+        [Parameter()]
+        [switch]
+        $IncludeDependencies,
 
         [Parameter()]
         [ValidateNotNull()]
@@ -460,30 +514,24 @@ function Find-Module
 
     Begin
     {
+        Get-PSGalleryApiAvailability -Repository $Repository
+        
         Install-NuGetClientBinaries
     }
 
     Process
     {
-        if($RequiredVersion -and $MinimumVersion)
-        {
-            ThrowError -ExceptionName "System.ArgumentException" `
-                       -ExceptionMessage $LocalizedData.MinimumVersionAndRequiredVersionCannotBeSpecifiedTogether `
-                       -ErrorId "MinimumVersionAndRequiredVersionCannotBeSpecifiedTogether" `
-                       -CallerPSCmdlet $PSCmdlet `
-                       -ErrorCategory InvalidArgument
-        }
+        $ValidationResult = Validate-VersionParameters -CallerPSCmdlet $PSCmdlet `
+                                                       -Name $Name `
+                                                       -MinimumVersion $MinimumVersion `
+                                                       -MaximumVersion $MaximumVersion `
+                                                       -RequiredVersion $RequiredVersion
 
-        if($RequiredVersion -or $MinimumVersion)
+        if(-not $ValidationResult)
         {
-            if(-not $Name -or $Name.Count -ne 1 -or (Test-WildcardPattern -Name $Name[0]))
-            {
-                ThrowError -ExceptionName "System.ArgumentException" `
-                           -ExceptionMessage $LocalizedData.VersionParametersAreAllowedOnlyWithSingleModule `
-                           -ErrorId "VersionParametersAreAllowedOnlyWithSingleModule" `
-                           -CallerPSCmdlet $PSCmdlet `
-                           -ErrorCategory InvalidArgument
-            }
+            # Validate-VersionParameters throws the error. 
+            # returning to avoid further execution when different values are specified for -ErrorAction parameter
+            return
         }
 
         $PSBoundParameters["Provider"] = $script:PSModuleProviderName
@@ -533,6 +581,12 @@ function Install-Module
         [ValidateNotNull()]
         [Version]
         $MinimumVersion,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true,
+                   ParameterSetName='NameParameterSet')]
+        [ValidateNotNull()]
+        [Version]
+        $MaximumVersion,
         
         [Parameter(ValueFromPipelineByPropertyName=$true,
                    ParameterSetName='NameParameterSet')]
@@ -557,6 +611,8 @@ function Install-Module
 
     Begin
     {
+        Get-PSGalleryApiAvailability -Repository $Repository
+        
         if(-not (Test-RunningAsElevated) -and ($Scope -ne "CurrentUser"))
         {
             # Throw an error when Install-Module is used as a non-admin user and '-Scope CurrentUser' is not specified
@@ -578,60 +634,21 @@ function Install-Module
     Process
     {
         $PSBoundParameters["Provider"] = $script:PSModuleProviderName
-
-        $MessageResolverScriptBlock = & {
-                                            $PackageTarget = $LocalizedData.InstallModulewhatIfMessage
-                                            $ModuleIsNotTrusted = $LocalizedData.ModuleIsNotTrusted
-
-                                            #Create script block with closure for PackageTarget message
-                                            {
-                                                param($i, $Message)
-
-                                                switch ($i)
-                                                {
-                                                    'ActionInstallPackage' { return "Install-Module" }
-                                                    'TargetPackage' { return $PackageTarget }
-                                                    'CaptionPackageNotTrusted' { return $ModuleIsNotTrusted }
-
-                                                    Default {
-                                                        if($Message)
-                                                        {
-                                                            $tempMessage = $Message     -creplace "Package", "Module"
-                                                            $tempMessage = $tempMessage -creplace "package", "module"
-                                                            $tempMessage = $tempMessage -creplace "Sources", "Repositories"
-                                                            $tempMessage = $tempMessage -creplace "sources", "repositories"
-                                                            $tempMessage = $tempMessage -creplace "Source", "Repository"
-                                                            $tempMessage = $tempMessage -creplace "source", "repository"
-                                                            return $tempMessage
-                                                        }
-                                                    }
-                                                }
-                                             }.GetNewClosure()
-                                        }
-
-        $PSBoundParameters["MessageResolver"] = $MessageResolverScriptBlock
+        $PSBoundParameters["MessageResolver"] = $script:OneGetInstallModuleMessageResolverScriptBlock
 
         if($PSCmdlet.ParameterSetName -eq "NameParameterSet")
         {
-            if($RequiredVersion -and $MinimumVersion)
-            {
-                ThrowError -ExceptionName "System.ArgumentException" `
-                           -ExceptionMessage $LocalizedData.MinimumVersionAndRequiredVersionCannotBeSpecifiedTogether `
-                           -ErrorId "MinimumVersionAndRequiredVersionCannotBeSpecifiedTogether" `
-                           -CallerPSCmdlet $PSCmdlet `
-                           -ErrorCategory InvalidArgument
-            }
+            $ValidationResult = Validate-VersionParameters -CallerPSCmdlet $PSCmdlet `
+                                                           -Name $Name `
+                                                           -MinimumVersion $MinimumVersion `
+                                                           -MaximumVersion $MaximumVersion `
+                                                           -RequiredVersion $RequiredVersion
 
-            if($RequiredVersion -or $MinimumVersion)
+            if(-not $ValidationResult)
             {
-                if(-not $Name -or $Name.Count -ne 1 -or (Test-WildcardPattern -Name $Name[0]))
-                {
-                    ThrowError -ExceptionName "System.ArgumentException" `
-                               -ExceptionMessage $LocalizedData.VersionParametersAreAllowedOnlyWithSingleModule `
-                               -ErrorId "VersionParametersAreAllowedOnlyWithSingleModule" `
-                               -CallerPSCmdlet $PSCmdlet `
-                               -ErrorCategory InvalidArgument
-                }
+                # Validate-VersionParameters throws the error. 
+                # returning to avoid further execution when different values are specified for -ErrorAction parameter
+                return
             }
 
             if($PSBoundParameters.ContainsKey("Repository"))
@@ -724,6 +741,11 @@ function Update-Module
         [Version]
         $RequiredVersion,
 
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNull()]
+        [Version]
+        $MaximumVersion,
+
         [Parameter()]
         [Switch]
         $Force
@@ -732,19 +754,25 @@ function Update-Module
     Begin
     {
         Install-NuGetClientBinaries
+
+        # Module names already tried in the current pipeline
+        $moduleNamesInPipeline = @()
     }
 
     Process
     {
         $moduleBasesToUpdate = @()
 
-        if($RequiredVersion -and (-not $Name -or $Name.Count -ne 1 -or (Test-WildcardPattern -Name $Name[0])))
+        $ValidationResult = Validate-VersionParameters -CallerPSCmdlet $PSCmdlet `
+                                                       -Name $Name `
+                                                       -MaximumVersion $MaximumVersion `
+                                                       -RequiredVersion $RequiredVersion
+
+        if(-not $ValidationResult)
         {
-            ThrowError -ExceptionName "System.ArgumentException" `
-                       -ExceptionMessage $LocalizedData.RequiredVersionAllowedOnlyWithSingleModuleName `
-                       -ErrorId "RequiredVersionAllowedOnlyWithSingleModuleName" `
-                       -CallerPSCmdlet $PSCmdlet `
-                       -ErrorCategory InvalidArgument
+            # Validate-VersionParameters throws the error. 
+            # returning to avoid further execution when different values are specified for -ErrorAction parameter
+            return
         }
 
         if($Name)
@@ -828,6 +856,14 @@ function Update-Module
             $PSGetItemInfoPath = Microsoft.PowerShell.Management\Join-Path $moduleBase $script:PSGetItemInfoFileName
 
             $psgetItemInfo = Microsoft.PowerShell.Utility\Import-Clixml -Path $PSGetItemInfoPath
+            
+            # Skip the module name if it is already tried in the current pipeline
+            if($moduleNamesInPipeline -contains $psgetItemInfo.Name)
+            {
+                continue
+            }
+
+            $moduleNamesInPipeline += $psgetItemInfo.Name
 
             $message = $LocalizedData.CheckingForModuleUpdate -f ($psgetItemInfo.Name)
             Write-Verbose -Message $message
@@ -840,6 +876,9 @@ function Update-Module
 
             $PSBoundParameters["Name"] = $psgetItemInfo.Name
             $PSBoundParameters["Location"] = $psgetItemInfo.RepositorySourceLocation
+
+            Get-PSGalleryApiAvailability -Repository (Get-SourceName -Location $psgetItemInfo.RepositorySourceLocation)
+
             $PSBoundParameters["OneGetProvider"] = $providerName 
             $PSBoundParameters["InstallUpdate"] = $true
 
@@ -848,41 +887,159 @@ function Update-Module
                 $PSBoundParameters["Scope"] = "CurrentUser"
             }
 
-            $MessageResolverScriptBlock = & {
-                                                $PackageTarget = ($LocalizedData.UpdateModulewhatIfMessage -replace "__OLDVERSION__",$($psgetItemInfo.Version))
-                                                $ModuleIsNotTrusted = $LocalizedData.ModuleIsNotTrusted
-
-                                                #Create script block with closure for PackageTarget message
-                                                {
-                                                    param($i, $Message)
-
-                                                    switch ($i)
-                                                    {
-                                                        'ActionInstallPackage' { return "Update-Module" }
-                                                        'TargetPackage' { return $PackageTarget }
-                                                        'CaptionPackageNotTrusted' { return $ModuleIsNotTrusted }
-
-                                                        Default { 
-                                                            if($Message)
-                                                            {
-                                                                $tempMessage = $Message     -creplace "Package", "Module"
-                                                                $tempMessage = $tempMessage -creplace "package", "module"
-                                                                $tempMessage = $tempMessage -creplace "Sources", "Repositories"
-                                                                $tempMessage = $tempMessage -creplace "sources", "repositories"
-                                                                $tempMessage = $tempMessage -creplace "Source", "Repository"
-                                                                $tempMessage = $tempMessage -creplace "source", "repository"
-                                                                return $tempMessage
-                                                            }
-                                                        }
-                                                    }
-                                                 }.GetNewClosure()
-                                            }
-
-            $PSBoundParameters["MessageResolver"] = $MessageResolverScriptBlock
-
-
+            $PSBoundParameters["MessageResolver"] = $script:OneGetUpdateModuleMessageResolverScriptBlock
             $sid = OneGet\Install-Package @PSBoundParameters
         }
+    }
+}
+
+function Uninstall-Module
+{
+    <#
+    .ExternalHelp PSGet.psm1-help.xml
+    #>
+    [CmdletBinding(DefaultParameterSetName='NameParameterSet',
+                   SupportsShouldProcess=$true,
+                   HelpUri='http://go.microsoft.com/fwlink/?LinkId=526864')]
+    Param
+    (
+        [Parameter(ValueFromPipelineByPropertyName=$true,
+                   Mandatory=$true, 
+                   Position=0,
+                   ParameterSetName='NameParameterSet')]
+        [ValidateNotNullOrEmpty()]
+        [String[]]
+        $Name, 
+
+        [Parameter(Mandatory=$true, 
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true,
+                   Position=0,
+                   ParameterSetName='InputObject')]
+        [ValidateNotNull()]
+        [PSCustomObject[]]
+        $InputObject,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true,
+                   ParameterSetName='NameParameterSet')]
+        [ValidateNotNull()]
+        [Version]
+        $MinimumVersion,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true,
+                   ParameterSetName='NameParameterSet')]
+        [ValidateNotNull()]
+        [Version]
+        $RequiredVersion,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true,
+                   ParameterSetName='NameParameterSet')]
+        [ValidateNotNull()]
+        [Version]
+        $MaximumVersion,
+
+        [Parameter()]
+        [Switch]
+        $Force
+    )
+
+    Process
+    {
+        $PSBoundParameters["Provider"] = $script:PSModuleProviderName
+        $PSBoundParameters["MessageResolver"] = $script:OneGetMessageResolverScriptBlock
+
+        if($PSCmdlet.ParameterSetName -eq "InputObject")
+        {
+            $null = $PSBoundParameters.Remove("InputObject")
+        
+            foreach($inputValue in $InputObject)
+            {
+                if (($inputValue.PSTypeNames -notcontains "Microsoft.PowerShell.Commands.PSGetModuleInfo") -and
+                    ($inputValue.PSTypeNames -notcontains "Deserialized.Microsoft.PowerShell.Commands.PSGetModuleInfo"))
+                {
+                    ThrowError -ExceptionName "System.ArgumentException" `
+                                -ExceptionMessage $LocalizedData.InvalidInputObjectValue `
+                                -ErrorId "InvalidInputObjectValue" `
+                                -CallerPSCmdlet $PSCmdlet `
+                                -ErrorCategory InvalidArgument `
+                                -ExceptionObject $inputValue
+                }
+
+                $PSBoundParameters["Name"] = $inputValue.Name
+                $PSBoundParameters["RequiredVersion"] = $inputValue.Version
+
+                $null = OneGet\Uninstall-Package @PSBoundParameters
+            }
+        }
+        else
+        {
+            $ValidationResult = Validate-VersionParameters -CallerPSCmdlet $PSCmdlet `
+                                                           -Name $Name `
+                                                           -MinimumVersion $MinimumVersion `
+                                                           -MaximumVersion $MaximumVersion `
+                                                           -RequiredVersion $RequiredVersion
+
+            if(-not $ValidationResult)
+            {
+                # Validate-VersionParameters throws the error. 
+                # returning to avoid further execution when different values are specified for -ErrorAction parameter
+                return
+            }
+
+            $null = OneGet\Uninstall-Package @PSBoundParameters
+        }
+    }
+}
+
+function Get-InstalledModule
+{
+    <#
+    .ExternalHelp PSGet.psm1-help.xml
+    #>
+    [CmdletBinding(HelpUri='http://go.microsoft.com/fwlink/?LinkId=526863')]
+    Param
+    (
+        [Parameter(ValueFromPipelineByPropertyName=$true, 
+                   Position=0)]
+        [ValidateNotNullOrEmpty()]
+        [String[]]
+        $Name, 
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNull()]
+        [Version]
+        $MinimumVersion,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNull()]
+        [Version]
+        $RequiredVersion,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNull()]
+        [Version]
+        $MaximumVersion
+    )
+
+    Process
+    {
+        $ValidationResult = Validate-VersionParameters -CallerPSCmdlet $PSCmdlet `
+                                                       -Name $Name `
+                                                       -MinimumVersion $MinimumVersion `
+                                                       -MaximumVersion $MaximumVersion `
+                                                       -RequiredVersion $RequiredVersion
+
+        if(-not $ValidationResult)
+        {
+            # Validate-VersionParameters throws the error. 
+            # returning to avoid further execution when different values are specified for -ErrorAction parameter
+            return
+        }
+
+        $PSBoundParameters["Provider"] = $script:PSModuleProviderName
+        $PSBoundParameters["MessageResolver"] = $script:OneGetMessageResolverScriptBlock
+
+        OneGet\Get-Package @PSBoundParameters | Microsoft.PowerShell.Core\ForEach-Object {New-PSGetItemInfo -SoftwareIdenties $_}  
     }
 }
 
@@ -943,6 +1100,8 @@ function Register-PSRepository
 
     Begin
     {
+        Get-PSGalleryApiAvailability -Repository $Name
+        
         Install-NuGetClientBinaries
     }
 
@@ -1055,6 +1214,8 @@ function Set-PSRepository
 
     Begin
     {
+        Get-PSGalleryApiAvailability -Repository $Name
+        
         Install-NuGetClientBinaries
     }
 
@@ -1129,6 +1290,11 @@ function Unregister-PSRepository
         [string[]]
         $Name
     )
+    
+    Begin
+    {
+        Get-PSGalleryApiAvailability -Repository $Name
+    }
 
     Process
     {
@@ -1167,6 +1333,11 @@ function Get-PSRepository
         [string[]]
         $Name
     )
+    
+    Begin
+    {
+        Get-PSGalleryApiAvailability -Repository $Name
+    }
 
     Process
     {
@@ -1195,6 +1366,106 @@ function Get-PSRepository
 
 
 #region Utility functions
+
+function Get-PSGalleryApiAvailability
+{
+    param
+    (
+        [Parameter()]
+        [string[]]
+        $Repository
+    )
+
+    # skip if repository is null or not PSGallery
+    if ( -not $Repository)
+    {
+        return
+    }
+
+    if ($Repository -notcontains $Script:PSGalleryModuleSource )
+    {
+        return
+    }
+
+
+    if ($Script:PSGalleryV3ApiAvailable)
+    {
+        if ($Script:PSGalleryV2ApiAvailable)
+        {
+            Write-Warning -Message $LocalizedData.PSGalleryApiV2Deprecated
+            return
+        }
+        else 
+        {
+            ThrowError  -ExceptionName "System.InvalidOperationException" `
+                        -ExceptionMessage $LocalizedData.PSGalleryApiV2Discontinued `
+                        -ErrorId "PSGalleryApiV2Discontinued" `
+                        -CallerPSCmdlet $PSCmdlet `
+                        -ErrorCategory InvalidOperation
+        }
+    }
+
+    # if V3 is not available, v2 must be 
+}
+
+function Validate-VersionParameters
+{
+    Param(
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCmdlet]
+        $CallerPSCmdlet,
+
+        [Parameter()]
+        [String[]]
+        $Name,
+
+        [Parameter()]
+        [Version]
+        $MinimumVersion,
+
+        [Parameter()]
+        [Version]
+        $RequiredVersion,
+
+        [Parameter()]
+        [Version]
+        $MaximumVersion
+    )
+
+    if($RequiredVersion -and ($MinimumVersion -or $MaximumVersion))
+    {
+        ThrowError -ExceptionName "System.ArgumentException" `
+                   -ExceptionMessage $LocalizedData.VersionRangeAndRequiredVersionCannotBeSpecifiedTogether `
+                   -ErrorId "VersionRangeAndRequiredVersionCannotBeSpecifiedTogether" `
+                   -CallerPSCmdlet $CallerPSCmdlet `
+                   -ErrorCategory InvalidArgument
+    }
+
+    if($RequiredVersion -or $MinimumVersion -or $MaximumVersion)
+    {
+        if(-not $Name -or $Name.Count -ne 1 -or (Test-WildcardPattern -Name $Name[0]))
+        {
+            ThrowError -ExceptionName "System.ArgumentException" `
+                       -ExceptionMessage $LocalizedData.VersionParametersAreAllowedOnlyWithSingleModule `
+                       -ErrorId "VersionParametersAreAllowedOnlyWithSingleModule" `
+                       -CallerPSCmdlet $CallerPSCmdlet `
+                       -ErrorCategory InvalidArgument
+        }
+    }
+
+    if($MinimumVersion -and $MaximumVersion -and ($MinimumVersion -gt $MaximumVersion))
+    {
+        $Message = $LocalizedData.MinimumVersionIsGreaterThanMaximumVersion -f ($MinimumVersion, $MaximumVersion)
+        ThrowError -ExceptionName "System.ArgumentException" `
+                    -ExceptionMessage $Message `
+                    -ErrorId "MinimumVersionIsGreaterThanMaximumVersion" `
+                    -CallerPSCmdlet $CallerPSCmdlet `
+                    -ErrorCategory InvalidArgument
+    }
+
+    return $true
+}
 
 function Set-ModuleSourcesVariable
 {
@@ -1404,7 +1675,7 @@ function New-PSGetItemInfo
 
         if(-not $sourceName)
         {
-            $sourceName = (Get-SourceName -Location $SourceLocation)
+            $sourceName = (Get-SourceName -Location $swid.Source)
         }
 
         $published = (Get-First $swid["published"])
@@ -1619,6 +1890,228 @@ function Get-EscapedString
     return [System.Security.SecurityElement]::Escape($ElementValue)
 }
 
+function ValidateAndGet-RequiredModuleDetails
+{
+    param(
+        [Parameter()]
+        $ModuleManifestRequiredModules,
+
+        [Parameter()]
+        [PSModuleInfo[]]
+        $RequiredPSModuleInfos,
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        $Repository,
+
+        [Parameter(Mandatory=$true)]
+        [PSModuleInfo]
+        $DependentModuleInfo,
+
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCmdlet]
+        $CallerPSCmdlet
+    )
+
+    $RequiredModuleDetails = @()
+
+    if(-not $RequiredPSModuleInfos)
+    {
+        return $RequiredModuleDetails
+    }
+
+    if($ModuleManifestRequiredModules)
+    {
+        ForEach($RequiredModule in $ModuleManifestRequiredModules)
+        {
+            $ModuleName = $null
+            $VersionString = $null
+
+            $ReqModuleInfo = @{}
+
+            $FindModuleArguments = @{
+                                        Repository = $Repository
+                                        Verbose = $VerbosePreference
+                                        ErrorAction = 'SilentlyContinue'
+                                        WarningAction = 'SilentlyContinue'
+                                        Debug = $DebugPreference
+                                    }
+
+            # ModuleSpecification case
+            if($RequiredModule.GetType().ToString() -eq 'System.Collections.Hashtable')
+            {
+                $ModuleName = $RequiredModule.ModuleName
+
+                # Version format in NuSpec:
+                # "[2.0]" --> (== 2.0) Required Version
+                # "2.0" --> (>= 2.0) Minimum Version
+                if($RequiredModule.Keys -Contains "RequiredVersion")
+                {
+                    $FindModuleArguments['RequiredVersion'] = $RequiredModule.RequiredVersion
+                    $ReqModuleInfo['RequiredVersion'] = $RequiredModule.RequiredVersion
+                }
+                elseif($RequiredModule.Keys -Contains "ModuleVersion")
+                {
+                    $FindModuleArguments['MinimumVersion'] = $RequiredModule.ModuleVersion
+                    $ReqModuleInfo['MinimumVersion'] = $RequiredModule.ModuleVersion
+                }
+            }
+            else
+            {
+                # Just module name was specified
+                $ModuleName = $RequiredModule.ToString()
+            }
+            
+            # Skip this module name if it's name is not in $RequiredPSModuleInfos.
+            # This is required when a ModuleName is part of the NestedModules list of the actual module.
+            # $ModuleName is packaged as part of the actual module When $RequiredPSModuleInfos doesn't contain it's name.
+            if($RequiredPSModuleInfos.Name -notcontains $ModuleName)
+            {
+                continue
+            }
+
+            $ReqModuleInfo['Name'] = $ModuleName
+
+            # Add the dependency only if the module is available on the gallery
+            # Otherwise Module installation will fail as all required modules need to be available on 
+            # the same Repository
+            $FindModuleArguments['Name'] = $ModuleName
+
+            $psgetItemInfo = Find-Module @FindModuleArguments  | 
+                                        Microsoft.PowerShell.Core\Where-Object {$_.Name -eq $ModuleName} | 
+                                            Microsoft.PowerShell.Utility\Select-Object -Last 1
+
+            if(-not $psgetItemInfo)
+            {
+                $message = $LocalizedData.UnableResolveModuleDependency -f ($ModuleName, $Repository, $DependentModuleInfo.Name, $ModuleName, $Repository, $ModuleName)
+                ThrowError -ExceptionName "System.InvalidOperationException" `
+                            -ExceptionMessage $message `
+                            -ErrorId "UnableResolveModuleDependency" `
+                            -CallerPSCmdlet $CallerPSCmdlet `
+                            -ErrorCategory InvalidOperation
+            }
+
+            $RequiredModuleDetails += $ReqModuleInfo
+        }
+    }
+    else
+    {
+        # If Import-LocalizedData cmdlet was failed to read the .psd1 contents 
+        # use provided $RequiredPSModuleInfos (PSModuleInfo.RequiredModules or PSModuleInfo.NestedModules of the actual dependent module)
+
+        $FindModuleArguments = @{
+                                    Repository = $Repository
+                                    Verbose = $VerbosePreference
+                                    ErrorAction = 'SilentlyContinue'
+                                    WarningAction = 'SilentlyContinue'
+                                    Debug = $DebugPreference
+                                }
+
+        ForEach($RequiredModuleInfo in $RequiredPSModuleInfos)
+        {
+            $ModuleName = $requiredModuleInfo.Name
+            $FindModuleArguments['Name'] = $ModuleName
+            $FindModuleArguments['MinimumVersion'] = $requiredModuleInfo.Version
+
+            $psgetItemInfo = Find-Module @FindModuleArguments  | 
+                                        Microsoft.PowerShell.Core\Where-Object {$_.Name -eq $ModuleName} | 
+                                            Microsoft.PowerShell.Utility\Select-Object -Last 1
+
+            if(-not $psgetItemInfo)
+            {
+                $message = $LocalizedData.UnableResolveModuleDependency -f ($ModuleName, $Repository, $DependentModuleInfo.Name, $ModuleName, $Repository, $ModuleName)
+                ThrowError -ExceptionName "System.InvalidOperationException" `
+                            -ExceptionMessage $message `
+                            -ErrorId "UnableResolveModuleDependency" `
+                            -CallerPSCmdlet $PSCmdlet `
+                            -ErrorCategory InvalidOperation
+            }
+
+            $RequiredModuleDetails += @{
+                                            Name=$_.Name
+                                            MinimumVersion=$_.Version
+                                       }
+        }
+    }
+
+    return $RequiredModuleDetails
+}
+
+function Get-ModuleDependencies
+{
+    Param (
+        [Parameter(Mandatory=$true)]
+        [PSModuleInfo]
+        $PSModuleInfo,
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        $Repository,
+
+        [parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCmdlet]
+        $CallerPSCmdlet
+    )
+
+    $DependentModuleDetails = @()
+
+    if($PSModuleInfo.RequiredModules -or $PSModuleInfo.NestedModules)
+    {
+        # PSModuleInfo.RequiredModules doesn't provide the RequiredVersion info from the ModuleSpecification
+        # Reading the contents of module manifest file using Import-LocalizedData cmdlet
+        # to get the RequiredVersion details.
+        Import-LocalizedData -BindingVariable ModuleManifestHashTable `
+                             -FileName (Microsoft.PowerShell.Management\Split-Path $PSModuleInfo.Path -Leaf) `
+                             -BaseDirectory $PSModuleInfo.ModuleBase `
+                             -ErrorAction SilentlyContinue `
+                             -WarningAction SilentlyContinue                                
+
+        if($PSModuleInfo.RequiredModules)
+        {
+            $ModuleManifestRequiredModules = $null
+
+            if($ModuleManifestHashTable)
+            {
+                $ModuleManifestRequiredModules = $ModuleManifestHashTable.RequiredModules
+            }
+           
+
+            $DependentModuleDetails += ValidateAndGet-RequiredModuleDetails -ModuleManifestRequiredModules $ModuleManifestRequiredModules `
+                                                                            -RequiredPSModuleInfos $PSModuleInfo.RequiredModules `
+                                                                            -Repository $Repository `
+                                                                            -DependentModuleInfo $PSModuleInfo `
+                                                                            -CallerPSCmdlet $CallerPSCmdlet `
+                                                                            -Verbose:$VerbosePreference `
+                                                                            -Debug:$DebugPreference 
+        }
+
+        if($PSModuleInfo.NestedModules)
+        {
+            $ModuleManifestRequiredModules = $null
+
+            if($ModuleManifestHashTable)
+            {
+                $ModuleManifestRequiredModules = $ModuleManifestHashTable.NestedModules
+            }
+           
+            # A nested module is a required module if it's ModuleBase is not starting with the current module's ModuleBase.
+            $RequiredPSModuleInfos = $PSModuleInfo.NestedModules | Microsoft.PowerShell.Core\Where-Object {-not $_.ModuleBase.StartsWith($PSModuleInfo.ModuleBase, [System.StringComparison]::OrdinalIgnoreCase)}
+
+            $DependentModuleDetails += ValidateAndGet-RequiredModuleDetails -ModuleManifestRequiredModules $ModuleManifestRequiredModules `
+                                                                            -RequiredPSModuleInfos $RequiredPSModuleInfos `
+                                                                            -Repository $Repository `
+                                                                            -DependentModuleInfo $PSModuleInfo `
+                                                                            -CallerPSCmdlet $CallerPSCmdlet `
+                                                                            -Verbose:$VerbosePreference `
+                                                                            -Debug:$DebugPreference 
+        }
+    }
+
+    return $DependentModuleDetails
+}
+
 function Publish-PSGetExtModule
 {
     [CmdletBinding(PositionalBinding=$false)]
@@ -1633,6 +2126,11 @@ function Publish-PSGetExtModule
         [ValidateNotNullOrEmpty()]
         [string]
         $Destination,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Repository,
 
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -1743,6 +2241,35 @@ function Publish-PSGetExtModule
         $Tags += $dscResourceNames | Microsoft.PowerShell.Core\ForEach-Object { "$($script:DscResource)_$_" }
     }
 
+    # Populate the module dependencies elements from RequiredModules and 
+    # NestedModules properties of the current PSModuleInfo
+    $DependentModuleDetails = Get-ModuleDependencies -PSModuleInfo $PSModuleInfo `
+                                                     -Repository $Repository `
+                                                     -CallerPSCmdlet $PSCmdlet `
+                                                     -Verbose:$VerbosePreference `
+                                                     -Debug:$DebugPreference 
+
+    $dependencies = @()
+    ForEach($Dependency in $DependentModuleDetails)
+    {    
+        $ModuleName = $Dependency.Name
+        $VersionString = $null
+
+        # Version format in NuSpec:
+        # "[2.0]" --> (== 2.0) Required Version
+        # "2.0" --> (>= 2.0) Minimum Version
+        if($Dependency.Keys -Contains "RequiredVersion")
+        {
+            $VersionString = "[$($Dependency.RequiredVersion)]"
+        }
+        elseif($Dependency.Keys -Contains "MinimumVersion")
+        {
+            $VersionString = "$($Dependency.MinimumVersion)"
+        }
+
+        $dependencies += "<dependency id='$($ModuleName)' version='$($VersionString)' />"
+    }
+    
     # Populate the nuspec elements
     $nuspec = @"
 <?xml version="1.0"?>
@@ -1767,6 +2294,7 @@ function Publish-PSGetExtModule
         "<iconUrl>$(Get-EscapedString -ElementValue $IconUri)</iconUrl>"
         })
         <dependencies>
+            $dependencies
         </dependencies>
     </metadata>
 </package>
@@ -1802,7 +2330,7 @@ function Publish-PSGetExtModule
         }
         else
         {
-            $message = $LocalizedData.PublishedSuccessfully -f ($PSModuleInfo.Name, $Destination) 
+            $message = $LocalizedData.PublishedSuccessfully -f ($PSModuleInfo.Name, $Destination, $PSModuleInfo.Name)
             Write-Verbose -Message $message
         }
     }
@@ -2695,12 +3223,95 @@ function Find-Package
     }
 }
 
+function Get-PackageDependencies
+{ 
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $fastPackageReference
+    )
+
+    Set-ModuleSourcesVariable
+
+    Write-Debug -Message ($LocalizedData.ProviderApiDebugMessage -f ('Get-PackageDependencies'))
+
+    Write-Debug -Message ($LocalizedData.FastPackageReference -f $fastPackageReference)
+    
+    # take the fastPackageReference and get the package details.
+    $parts = $fastPackageReference -Split '[|]'
+
+    if( $parts.Length -eq 4 )
+    {
+        $providerName = $parts[0]
+        $packageName = $parts[1]
+        $version = $parts[2]
+        $sourceLocation= $parts[3]
+
+        $provider = $request.SelectProvider($providerName)
+        if(-not $provider)
+        {
+            Write-Error -Message ($LocalizedData.OneGetProviderIsNotAvailable -f $providerName)
+
+            return
+        }
+
+        if($request.IsCanceled)
+        {
+            return
+        }
+
+        Write-Verbose ($LocalizedData.SpecifiedLocationAndOGP -f ($provider.ProviderName, $providerName))
+		
+        $message = $LocalizedData.FindingModuleDependencies -f ($packageName, $version, $sourceLocation)
+        Write-Verbose $message
+
+        $pkgs = $provider.GetPackageDependencies($script:FastPackRefHastable[$fastPackageReference], (New-Request -Sources @($sourceLocation)))
+        
+        foreach($pkg in  $pkgs)
+        {
+            if($request.IsCanceled)
+            {
+                return
+            }
+
+            $dependentFastPackageReference = New-FastPackageReference -ProviderName $provider.ProviderName `
+                                                                      -PackageName $pkg.Name `
+                                                                      -Version $pkg.Version `
+                                                                      -Source $sourceLocation
+
+            $FromTrustedSource = $false
+
+            $ModuleSourceName = Get-SourceName -Location $sourceLocation
+
+            if($ModuleSourceName)
+            {
+                $FromTrustedSource = $script:PSGetModuleSources[$ModuleSourceName].Trusted
+            }
+            elseif($InstallationPolicy -eq "Trusted")
+            {
+                $FromTrustedSource = $true
+            }
+
+            $sid = New-SoftwareIdentityFromPackage -Package $pkg `
+                                                    -OneGetProviderName $provider.ProviderName `
+                                                    -SourceLocation $sourceLocation `
+                                                    -IsFromTrustedSource:$FromTrustedSource
+            
+            $script:FastPackRefHastable[$dependentFastPackageReference] = $pkg
+
+            Write-Output -InputObject $sid
+        }
+    }
+}
+
 function Install-Package
 { 
     [CmdletBinding()]
     param
     (
-        [Parameter()]
+        [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string]
         $fastPackageReference
@@ -2714,6 +3325,7 @@ function Install-Package
     
     $Force = $false
     $MinimumVersion = $null
+    $RequiredVersion = $null
 
     # take the fastPackageReference and get the package object again.
     $parts = $fastPackageReference -Split '[|]'
@@ -2770,7 +3382,12 @@ function Install-Package
             {
                 $MinimumVersion = $options['MinimumVersion']
             }
-            
+
+            if($options.ContainsKey('RequiredVersion'))
+            {
+                $RequiredVersion = $options['RequiredVersion']
+            }
+                        
             if($options.ContainsKey('InstallUpdate'))
             {
                 $installUpdate = $options['InstallUpdate']
@@ -2778,37 +3395,52 @@ function Install-Package
         }
 
         # Test if module is already installed
-        $InstalledModuleInfo = Test-ModuleInstalled -Name $packageName
+        $InstalledModuleInfo = Test-ModuleInstalled -Name $packageName -RequiredVersion $RequiredVersion
+
         if(-not $Force -and $InstalledModuleInfo)
         {
-            if(-not $installUpdate)
+            if($RequiredVersion -and (Test-ModuleSxSVersionSupport))
             {
-                if( (-not $MinimumVersion -and ($version -ne $InstalledModuleInfo.Version)) -or 
-                    ($MinimumVersion -and ($MinimumVersion -gt $InstalledModuleInfo.Version)))
+                # Check if the module with the required version is already installed otherwise proceed to install/update.
+                if($InstalledModuleInfo)
                 {
-                    $message = $LocalizedData.ModuleAlreadyInstalled -f ($InstalledModuleInfo.Version, $InstalledModuleInfo.Name, $InstalledModuleInfo.ModuleBase, $InstalledModuleInfo.Version, $version)
-                    Write-Error -Message $message -ErrorId "ModuleAlreadyInstalled" -Category InvalidOperation
-                }
-                else
-                {
-                    $message = $LocalizedData.ModuleAlreadyInstalledVerbose -f ($InstalledModuleInfo.Version, $InstalledModuleInfo.Name, $InstalledModuleInfo.ModuleBase)
-                    Write-Verbose $message                
-                }
+                    $message = $LocalizedData.ModuleWithRequiredVersionAlreadyInstalled -f ($InstalledModuleInfo.Version, $InstalledModuleInfo.Name, $InstalledModuleInfo.ModuleBase, $InstalledModuleInfo.Version)
+                    Write-Error -Message $message -ErrorId "ModuleWithRequiredVersionAlreadyInstalled" -Category InvalidOperation
 
-                return
+                    return
+                }
             }
             else
             {
-                if($InstalledModuleInfo.Version -lt $version)
+                if(-not $installUpdate)
                 {
-                    $message = $LocalizedData.FoundModuleUpdate -f ($InstalledModuleInfo.Name, $version)
-                    Write-Verbose $message    
+                    if( (-not $MinimumVersion -and ($version -ne $InstalledModuleInfo.Version)) -or 
+                        ($MinimumVersion -and ($MinimumVersion -gt $InstalledModuleInfo.Version)))
+                    {
+                        $message = $LocalizedData.ModuleAlreadyInstalled -f ($InstalledModuleInfo.Version, $InstalledModuleInfo.Name, $InstalledModuleInfo.ModuleBase, $InstalledModuleInfo.Version, $version)
+                        Write-Error -Message $message -ErrorId "ModuleAlreadyInstalled" -Category InvalidOperation
+                    }
+                    else
+                    {
+                        $message = $LocalizedData.ModuleAlreadyInstalledVerbose -f ($InstalledModuleInfo.Version, $InstalledModuleInfo.Name, $InstalledModuleInfo.ModuleBase)
+                        Write-Verbose $message                
+                    }
+
+                    return
                 }
                 else
                 {
-                    $message = $LocalizedData.NoUpdateAvailable -f ($InstalledModuleInfo.Name)
-                    Write-Verbose $message
-                    return
+                    if($InstalledModuleInfo.Version -lt $version)
+                    {
+                        $message = $LocalizedData.FoundModuleUpdate -f ($InstalledModuleInfo.Name, $version)
+                        Write-Verbose $message    
+                    }
+                    else
+                    {
+                        $message = $LocalizedData.NoUpdateAvailable -f ($InstalledModuleInfo.Name)
+                        Write-Verbose $message
+                        return
+                    }
                 }
             }
         }
@@ -2867,27 +3499,87 @@ function Install-Package
                 
                 if(-not $psgItemInfo.PowerShellGetFormatVersion)
                 {
-                    $sourceModulePath = Microsoft.PowerShell.Management\Join-Path $tempDestination $packageName
+                    $sourceModulePath = Microsoft.PowerShell.Management\Join-Path $tempDestination $pkg.Name
                 }
                 else
                 {
-                    $sourceModulePath = Microsoft.PowerShell.Management\Join-Path $tempDestination "$packageName\Content\*\$script:ModuleReferences\$packageName"
+                    $sourceModulePath = Microsoft.PowerShell.Management\Join-Path $tempDestination "$($pkg.Name)\Content\*\$script:ModuleReferences\$($pkg.Name)"
                 }
 
-                $destinationModulePath = Microsoft.PowerShell.Management\Join-Path $destination $packageName
+                $destinationModulePath = Microsoft.PowerShell.Management\Join-Path $destination $pkg.Name
+                
+                # Side-by-Side module version is avialable on PowerShell 5.0 or later versions only
+                # By default, PowerShell module versions will be installed/updated Side-by-Side.
+                if(Test-ModuleSxSVersionSupport)
+                {
+                    $destinationModulePath = Microsoft.PowerShell.Management\Join-Path $destinationModulePath $psgItemInfo.Version
+                }
 
                 # Validate the module
                 if(-not (Test-ValidManifestModule -ModuleBasePath $sourceModulePath))
                 {
-                    $message = $LocalizedData.InvalidPSModule -f ($packageName)
+                    $message = $LocalizedData.InvalidPSModule -f ($pkg.Name)
                     Write-Error -Message $message -ErrorId "InvalidManifestModule" -Category InvalidOperation
                     continue
                 }
 
-                # check if module is in use
-                if($InstalledModuleInfo)
+                # Test if module is already installed
+                $InstalledModuleInfo2 = Test-ModuleInstalled -Name $pkg.Name -RequiredVersion $pkg.Version
+
+                if($pkg.Name -ne $packageName)
                 {
-                    $moduleInUse = Test-ModuleInUse -ModuleBasePath $InstalledModuleInfo.ModuleBase `
+                    if(-not $Force -and $InstalledModuleInfo2)
+                    {
+                        if(Test-ModuleSxSVersionSupport)
+                        {
+                            if($pkg.version -eq $InstalledModuleInfo2.Version)
+                            {
+                                if(-not $installUpdate)
+                                {
+                                    $message = $LocalizedData.ModuleWithRequiredVersionAlreadyInstalled -f ($InstalledModuleInfo2.Version, $InstalledModuleInfo2.Name, $InstalledModuleInfo2.ModuleBase, $InstalledModuleInfo2.Version)
+                                }
+                                else
+                                {
+                                    $message = $LocalizedData.NoUpdateAvailable -f ($pkg.Name)
+                                }
+
+                                Write-Verbose $message
+                                Continue
+                            }
+                        }
+                        else
+                        {
+                            if(-not $installUpdate)
+                            {
+                                $message = $LocalizedData.ModuleAlreadyInstalledVerbose -f ($InstalledModuleInfo2.Version, $InstalledModuleInfo2.Name, $InstalledModuleInfo2.ModuleBase)
+                                Write-Verbose $message
+                                Continue
+                            }
+                            else
+                            {
+                                if($pkg.version -gt $InstalledModuleInfo2.Version)
+                                {
+                                    $message = $LocalizedData.FoundModuleUpdate -f ($pkg.Name, $pkg.Version)
+                                    Write-Verbose $message
+                                }
+                                else
+                                {
+                                    $message = $LocalizedData.NoUpdateAvailable -f ($pkg.Name)
+                                    Write-Verbose $message
+                                    Continue
+                                }
+                            }
+                        }
+                    }
+                                    
+                    $DependencyInstallMessage = $LocalizedData.InstallingDependencyModule -f ($pkg.Name, $pkg.Version, $packageName)
+                    Write-Verbose  $DependencyInstallMessage
+                }
+
+                # check if module is in use
+                if($InstalledModuleInfo2)
+                {
+                    $moduleInUse = Test-ModuleInUse -ModuleBasePath $InstalledModuleInfo2.ModuleBase `
                                                     -Verbose:$VerbosePreference `
                                                     -WarningAction $WarningPreference `
                                                     -ErrorAction $ErrorActionPreference `
@@ -2901,37 +3593,22 @@ function Install-Package
                     }
                 }
 
-                if(-not $installUpdate)
-                {
-                    $shouldprocessmessage = $LocalizedData.InstallModulewhatIfMessage -f ($version, $packageName)
-                    $action = "Install-Module"
-                    $message = $LocalizedData.ModuleInstalledSuccessfully -f ($packageName)
-                }
-                else
-                {
-                    $shouldprocessmessage = $LocalizedData.UpdateModulewhatIfMessage -f ($InstalledModuleInfo.Version, $packageName, $version)
-                    $action = "Update-Module"
-                    $message = $LocalizedData.ModuleGotUpdated -f ($packageName)
-                }
-
-                if($Force -or $PSCmdlet.ShouldProcess($shouldprocessmessage, $action))
-                {                    
-                    Copy-Module -SourcePath $sourceModulePath -DestinationPath $destinationModulePath -PSGetItemInfo $psgItemInfo
+                Copy-Module -SourcePath $sourceModulePath -DestinationPath $destinationModulePath -PSGetItemInfo $psgItemInfo
                     
-                    # Remove the old module base folder if it is different from the required destination module path when -Force is specified
-                    if($Force -and 
-                       $InstalledModuleInfo -and
-                       -not $InstalledModuleInfo.ModuleBase.StartsWith($destinationModulePath, [System.StringComparison]::OrdinalIgnoreCase))
-                    {
-                        Microsoft.PowerShell.Management\Remove-Item -Path $InstalledModuleInfo.ModuleBase `
-                                                                    -Force -Recurse `
-                                                                    -ErrorAction SilentlyContinue `
-                                                                    -WarningAction SilentlyContinue `
-                                                                    -Confirm:$false -WhatIf:$false
-                    }
-
-                    Write-Verbose $message
+                # Remove the old module base folder if it is different from the required destination module path when -Force is specified
+                if($Force -and 
+                    $InstalledModuleInfo2 -and
+                    -not $destinationModulePath.StartsWith($InstalledModuleInfo2.ModuleBase, [System.StringComparison]::OrdinalIgnoreCase))
+                {
+                    Microsoft.PowerShell.Management\Remove-Item -Path $InstalledModuleInfo2.ModuleBase `
+                                                                -Force -Recurse `
+                                                                -ErrorAction SilentlyContinue `
+                                                                -WarningAction SilentlyContinue `
+                                                                -Confirm:$false -WhatIf:$false
                 }
+
+                $message = $LocalizedData.ModuleInstalledSuccessfully -f ($psgItemInfo.Name)
+                Write-Verbose $message
 
                 Write-Output -InputObject $sid
             }
@@ -2940,6 +3617,180 @@ function Install-Package
         {
             Microsoft.PowerShell.Management\Remove-Item $tempDestination -Force -Recurse -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Confirm:$false -WhatIf:$false
         }
+    }
+}
+
+function Uninstall-Package
+{ 
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $fastPackageReference
+    )
+
+    Write-Debug -Message ($LocalizedData.ProviderApiDebugMessage -f ('Uninstall-Package'))
+
+    Write-Debug -Message ($LocalizedData.FastPackageReference -f $fastPackageReference)
+    
+    # take the fastPackageReference and get the package object again.
+    $parts = $fastPackageReference -Split '[|]'
+    $Force = $false
+
+    $options = $request.Options
+    if($options)
+    {
+        foreach( $o in $options.Keys )
+        {
+            Write-Debug -Message ("OPTION: {0} => {1}" -f ($o, $request.Options[$o]) )
+        }
+    }
+
+    if($parts.Length -eq 4)
+    {
+        $providerName = $parts[0]
+        $moduleName = $parts[1]
+        $version = $parts[2]
+        $sourceLocation= $parts[3]
+
+        if($request.IsCanceled)
+        {
+            return
+        }
+        
+        if($options.ContainsKey('Force'))
+        {
+            $Force = $options['Force']
+        }
+
+        $InstalledModuleInfo = $script:PSGetInstalledModules["$($moduleName)$($version)"] 
+
+        if(-not $InstalledModuleInfo)
+        {
+            $message = $LocalizedData.ModuleUninstallationNotPossibleAsItIsNotInstalledUsingPowerShellGet -f $moduleName
+
+            ThrowError -ExceptionName "System.ArgumentException" `
+                       -ExceptionMessage $message `
+                       -ErrorId "ModuleUninstallationNotPossibleAsItIsNotInstalledUsingPowerShellGet" `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidArgument
+            
+            return
+        }
+
+        $moduleBase = $InstalledModuleInfo["InstalledModuleBase"]
+
+        if(-not (Test-RunningAsElevated) -and $moduleBase.ModuleBase.StartsWith($script:programFilesModulesPath, [System.StringComparison]::OrdinalIgnoreCase))
+        {                            
+            $message = $LocalizedData.AdminPrivilegesRequiredForUninstall -f ($moduleName, $moduleBase)
+
+            ThrowError -ExceptionName "System.InvalidOperationException" `
+                       -ExceptionMessage $message `
+                       -ErrorId "AdminPrivilegesRequiredForUninstall" `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidOperation
+            
+            return
+        }
+
+        $dependentModules = Microsoft.PowerShell.Core\Get-Module -ListAvailable | 
+                                Microsoft.PowerShell.Core\Where-Object {
+                                    $_.RequiredModules -and $_.RequiredModules.Name -contains $moduleName
+                                }
+        if(-not $Force -and $dependentModules)
+        {
+            $message = $LocalizedData.UnableToUninstallAsOtherModulesNeedThisModule -f ($moduleName, $version, $moduleBase, $($dependentModules.Name -join ','), $moduleName)
+
+            ThrowError -ExceptionName "System.InvalidOperationException" `
+                       -ExceptionMessage $message `
+                       -ErrorId "UnableToUninstallAsOtherModulesNeedThisModule" `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidOperation
+
+            return
+        }
+
+        $moduleInUse = Test-ModuleInUse -ModuleBasePath $moduleBase `
+                                        -Verbose:$VerbosePreference `
+                                        -WarningAction $WarningPreference `
+                                        -ErrorAction $ErrorActionPreference `
+                                        -Debug:$DebugPreference
+
+        if($moduleInUse)
+        {
+            $message = $LocalizedData.ModuleIsInUse -f ($moduleName)
+
+            ThrowError -ExceptionName "System.InvalidOperationException" `
+                       -ExceptionMessage $message `
+                       -ErrorId "ModuleIsInUse" `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidOperation
+
+            return
+        }
+
+        $ModuleBaseFolderToBeRemoved = $moduleBase
+
+        # With SxS version support, more than one version of the module can be installed.
+        # - Remove the parent directory of the module version base when only one version is installed
+        # - Don't remove the modulebase when it was installed before SxS version support and 
+        #   other versions are installed under the module base folder
+        # 
+        if(Test-ModuleSxSVersionSupport)
+        {
+            $ModuleBaseWithoutVersion = $moduleBase
+            $IsModuleInstalledAsSxSVersion = $false
+
+            if($moduleBase.EndsWith("$version", [System.StringComparison]::OrdinalIgnoreCase))
+            {
+                $IsModuleInstalledAsSxSVersion = $true
+                $ModuleBaseWithoutVersion = Microsoft.PowerShell.Management\Split-Path -Path $moduleBase -Parent
+            }
+
+            $InstalledVersionsWithSameModuleBase = @()
+            Get-InstalledModuleDetails -Name $moduleName | 
+                Microsoft.PowerShell.Core\ForEach-Object {
+                    if($_.InstalledModuleBase.StartsWith($ModuleBaseWithoutVersion, [System.StringComparison]::OrdinalIgnoreCase))
+                    {
+                        $InstalledVersionsWithSameModuleBase += $_.InstalledModuleBase
+                    }
+                }
+
+            # Remove ..\ModuleName directory when only one module is installed with the same ..\ModuleName path 
+            # like ..\ModuleName\1.0 or ..\ModuleName
+            if($InstalledVersionsWithSameModuleBase.Count -eq 1)
+            {
+                $ModuleBaseFolderToBeRemoved = $ModuleBaseWithoutVersion
+            }
+            elseif($ModuleBaseWithoutVersion -eq $moduleBase)
+            {
+                # There are version specific folders under the same module base dir
+                # Throw an error saying uninstall other versions then uninstall this current version
+                $message = $LocalizedData.UnableToUninstallModuleVersion -f ($moduleName, $version, $moduleBase)
+
+                ThrowError -ExceptionName "System.InvalidOperationException" `
+                           -ExceptionMessage $message `
+                           -ErrorId "ModuleIsInUse" `
+                           -CallerPSCmdlet $PSCmdlet `
+                           -ErrorCategory InvalidOperationException
+
+                return
+            }
+            # Otherwise specified version folder will be removed as current module base is assigned to $ModuleBaseFolderToBeRemoved
+        }
+
+        Microsoft.PowerShell.Management\Remove-Item -Path $ModuleBaseFolderToBeRemoved `
+                                                    -Force -Recurse `
+                                                    -ErrorAction SilentlyContinue `
+                                                    -WarningAction SilentlyContinue `
+                                                    -Confirm:$false -WhatIf:$false        
+                                                    
+        $message = $LocalizedData.ModuleUninstallationSucceeded -f $moduleName, $moduleBase
+        Write-Verbose  $message
+        
+        Write-Output -InputObject $InstalledModuleInfo.SoftwareIdentity
     }
 }
 
@@ -2953,22 +3804,37 @@ function Get-InstalledPackage
         $Name
     )
 
-    Write-Verbose ($LocalizedData.ProviderApiDebugMessage -f ('Get-InstalledPackage'))
+    Write-Verbose -Message ($LocalizedData.ProviderApiDebugMessage -f ('Get-InstalledPackage'))
 
-    Set-InstalledModulesVariable
-    
-    if(-not $Name)
-    {
-        $Name = '*'
-    }
-
-    $wildcardPattern = New-Object System.Management.Automation.WildcardPattern $Name,$script:wildcardOptions
-
-    $script:PSGetInstalledModules.GetEnumerator() | Microsoft.PowerShell.Core\ForEach-Object { if($wildcardPattern.IsMatch($_.Key)) {$_.Value} }
+    Get-InstalledModuleDetails -Name $Name |  Microsoft.PowerShell.Core\ForEach-Object {$_.SoftwareIdentity}
 }
 #endregion
 
 #region Internal Utility functions for the OneGet Provider Implementation
+function Get-InstalledModuleDetails
+{ 
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [string]
+        $Name
+    )
+
+    Set-InstalledModulesVariable
+    
+    $Name = "$Name*"
+
+    $wildcardPattern = New-Object System.Management.Automation.WildcardPattern $Name,$script:wildcardOptions
+
+    $script:PSGetInstalledModules.GetEnumerator() | Microsoft.PowerShell.Core\ForEach-Object {
+                                                        if($wildcardPattern.IsMatch($_.Key))
+                                                        {
+                                                            $_.Value
+                                                        }
+                                                    }
+}
+
 function New-SoftwareIdentityFromPackage
 {
     param
@@ -3006,7 +3872,7 @@ function New-SoftwareIdentityFromPackage
     $entities = New-Object -TypeName  System.Collections.ArrayList
     foreach( $entity in $Package.Entities )
     {
-        if( $entity.Role -eq "author" -or $entity.Role -eq "owner" )
+        if( $entity.Roles -contains "author" -or $entity.Roles -contains "owner" )
         {
             $entities.Add( (New-Entity -Name $entity.Name -Role $entity.Role -RegId $entity.RegId -Thumbprint $entity.Thumbprint)  )
         }
@@ -3184,7 +4050,11 @@ function Set-InstalledModulesVariable
 
                 if($package)
                 {
-                    $script:PSGetInstalledModules[$psgetItemInfo.Name] = $package
+                    $script:PSGetInstalledModules["$($psgetItemInfo.Name)$($psgetItemInfo.Version)"] = @{
+                                                                                                            SoftwareIdentity = $package
+                                                                                                            PSGetItemInfo = $psgetItemInfo
+                                                                                                            InstalledModuleBase = $moduleBase.FullName
+                                                                                                        }
                 }
             }
         }
@@ -3206,34 +4076,39 @@ function New-SoftwareIdentityFromPSGetItemInfo
                                                      -Version $psgetItemInfo.Version `
                                                      -Source $SourceLocation
 
-    $links = @()
+    $links = New-Object -TypeName  System.Collections.ArrayList
     if($psgetItemInfo.IconUri)
     {
-        $links += New-Link -Href $psgetItemInfo.IconUri -RelationShip "icon"
+        $links.Add( (New-Link -Href $psgetItemInfo.IconUri -RelationShip "icon") )
     }
     
     if($psgetItemInfo.LicenseUri)
     {
-        $links += New-Link -Href $psgetItemInfo.LicenseUri -RelationShip "license"
+        $links.Add( (New-Link -Href $psgetItemInfo.LicenseUri -RelationShip "license") )
     }
 
     if($psgetItemInfo.ProjectUri)
     {
-        $links += New-Link -Href $psgetItemInfo.ProjectUri -RelationShip "project"
+        $links.Add( (New-Link -Href $psgetItemInfo.ProjectUri -RelationShip "project") )
     }
     
-    $entities = @()
+    $entities = New-Object -TypeName  System.Collections.ArrayList
     if($psgetItemInfo.Author)
     {
-        $entities += New-Entity -Name $psgetItemInfo.Author -Role 'Author'
+        $entities.Add( (New-Entity -Name $psgetItemInfo.Author -Role 'author') )
+    }
+
+    if($psgetItemInfo.CompanyName -and $psgetItemInfo.CompanyName.ToString())
+    {
+        $entities.Add( (New-Entity -Name $psgetItemInfo.CompanyName -Role 'owner') )
     }
 
     $details =  @{
-                    Description    = $psgetItemInfo.Description
-                    Copyright      = $psgetItemInfo.Copyright
-                    Published      = $psgetItemInfo.PublishedDate.ToString()
-                    Tags           = $psgetItemInfo.Tags
-                    ReleaseNotes   = $psgetItemInfo.ReleaseNotes
+                    description    = $psgetItemInfo.Description
+                    copyright      = $psgetItemInfo.Copyright
+                    published      = $psgetItemInfo.PublishedDate.ToString()
+                    tags           = $psgetItemInfo.Tags
+                    releaseNotes   = $psgetItemInfo.ReleaseNotes
                     OneGetProvider = $psgetItemInfo.OneGetProvider
                  }
 
@@ -3336,6 +4211,12 @@ function Save-ModuleSources
     }   
 }
 
+function Test-ModuleSxSVersionSupport
+{
+    # Side-by-Side module version is avialable on PowerShell 5.0 or later versions only
+    # By default, PowerShell module versions will be installed/updated Side-by-Side.
+    $PSVersionTable.PSVersion -ge [Version]"5.0"
+}
 
 function Test-ModuleInstalled
 {
@@ -3346,19 +4227,26 @@ function Test-ModuleInstalled
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $Name
+        $Name,
+
+        [Parameter()]
+        [Version]
+        $RequiredVersion
     )
 
     # Check if module is already installed
-    $availableModule = Get-Module -ListAvailable $Name -Verbose:$false | Microsoft.PowerShell.Utility\Select-Object -First 1
-    if($availableModule)
+    $availableModule = Microsoft.PowerShell.Core\Get-Module -ListAvailable -Name $Name -Verbose:$false | Microsoft.PowerShell.Utility\Select-Object -First 1
+ 
+    if($RequiredVersion -and $availableModule -and ($availableModule.Version -ne $RequiredVersion))
     {
-        return $availableModule
+        $availableModule = Microsoft.PowerShell.Core\Get-Module -FullyQualifiedName @{ModuleName=$Name;RequiredVersion=$RequiredVersion} `
+                                                                -ListAvailable `
+                                                                -Verbose:$false `
+                                                                -ErrorAction SilentlyContinue `
+                                                                -WarningAction SilentlyContinue | Microsoft.PowerShell.Utility\Select-Object -First 1
     }
-    else
-    {
-        return $null
-    }
+
+    return $availableModule
 }
 
 function Copy-Module
@@ -3414,6 +4302,7 @@ function Test-ModuleInUse
         [string]
         $ModuleBasePath
     )
+
     $dllsInModule = Get-ChildItem -Path $ModuleBasePath `
                                   -Filter *.dll `
                                   -Recurse `
@@ -3535,6 +4424,8 @@ function ThrowError
     $errorRecord = New-Object System.Management.Automation.ErrorRecord $exception, $ErrorId, $ErrorCategory, $ExceptionObject    
     $CallerPSCmdlet.ThrowTerminatingError($errorRecord)
 }
+
+
 #endregion
 
 if((Test-RunningAsElevated) -and ($PSVersionTable.PSVersion -lt [Version]"4.0"))
@@ -3553,6 +4444,64 @@ if((Test-RunningAsElevated) -and ($PSVersionTable.PSVersion -lt [Version]"4.0"))
     }
 }
 
+function Check-PSGalleryApiAvailability
+{
+    param
+    (
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string[]]
+        $PSGalleryV2ApiUri,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string[]]
+        $PSGalleryV3ApiUri
+    )
+    
+    
+    # check internet availability first
+    $connected = Microsoft.PowerShell.Management\Test-Connection -ComputerName "www.microsoft.com" -Count 1 -Quiet
+    if ( -not $connected )
+    {
+        return
+    }
+
+
+    # ping V2
+    try 
+    {
+        $request_v2 = Microsoft.PowerShell.Utility\Invoke-WebRequest -Uri ([System.Uri]"$PSGalleryV2ApiUri") -TimeoutSec 30 -UseBasicParsing -ErrorAction SilentlyContinue
+        $resolvedUri_v2 = $request_v2.BaseResponse.ResponseUri
+        $statusCode_v2 = [int] $request_v2.StatusCode
+    }
+    catch
+    {
+        $resolvedUri_v2 = $_.Exception.Response.ResponseUri
+        $statusCode_v2 = [int] $_.Exception.Response.StatusCode.Value__
+    }
+
+
+    # ping V3
+    try 
+    {
+        $request_v3 = Microsoft.PowerShell.Utility\Invoke-WebRequest -Uri ([System.Uri]"$PSGalleryV3ApiUri") -TimeoutSec 30 -UseBasicParsing -ErrorAction SilentlyContinue
+        $resolvedUri_v3 = $request_v3.BaseResponse.ResponseUri
+        $statusCode_v3 = [int] $request_v3.StatusCode
+    }
+    catch
+    {
+        $resolvedUri_v3 = $_.Exception.Response.ResponseUri
+        $statusCode_v3 = [int] $_.Exception.Response.StatusCode.Value__
+    }
+
+    $Script:PSGalleryV2ApiAvailable = (($statusCode_v2 -eq 200) -and ($resolvedUri_v2))
+    $Script:PSGalleryV3ApiAvailable = (($statusCode_v3 -eq 200) -and ($resolvedUri_v3))
+}
+
+$null = Check-PSGalleryApiAvailability -PSGalleryV2ApiUri $Script:PSGallerySourceUri -PSGalleryV3ApiUri $Script:PSGalleryV3SourceUri
+
+
 Set-Alias -Name fimo -Value Find-Module
 Set-Alias -Name inmo -Value Install-Module
 Set-Alias -Name upmo -Value Update-Module
@@ -3562,12 +4511,16 @@ Export-ModuleMember -Function Find-Module, `
                               Install-Module, `
                               Update-Module, `
                               Publish-Module, `
+                              Uninstall-Module, `
+                              Get-InstalledModule, `
                               Get-PSRepository, `
                               Register-PSRepository, `
                               Unregister-PSRepository, `
                               Set-PSRepository, `
                               Find-Package, `
+                              Get-PackageDependencies, `
                               Install-Package, `
+                              Uninstall-Package, `
                               Get-InstalledPackage, `
                               Remove-PackageSource, `
                               Resolve-PackageSource, `

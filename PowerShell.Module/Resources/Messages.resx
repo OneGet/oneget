@@ -207,7 +207,7 @@
     <comment>{0} - package script location</comment>
   </data>
   <data name="SourceNotFound" xml:space="preserve">
-    <value>Unable to find package source '{0}'.</value>
+    <value>Unable to find package source '{0}'. Use Get-PackageSource to see all available package sources.</value>
     <comment>{0} package source name</comment>
   </data>
   <data name="QueryInstallUntrustedPackage" xml:space="preserve">
@@ -336,5 +336,12 @@
   <data name="UnableToOverwrite" xml:space="preserve">
     <value>Unable to remove package file '{0}'. </value>
     <comment>{0} - package filename</comment>
+  </data>
+  <data name="FilePathMustBeFileSystemPath" xml:space="preserve">
+    <value>The path '{0}' must refer to a single file system path.</value>
+    <comment>{0} provides the path supplied by the user</comment>
+  </data>
+  <data name="SavePackageError" xml:space="preserve">
+    <value>Error running Save-Package cmdlet: {0}</value>
   </data>
 </root>

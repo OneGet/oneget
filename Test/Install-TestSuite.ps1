@@ -12,6 +12,7 @@ if( -not (test-path $outputPath) ) {
 
 # put all the binaries into output path
 copy -force .\*oneget* $outputPath
+copy -force .\*.psm1 $outputPath
 copy -force  ".\packages\xunit.runners.2*\tools\*" $outputPath
 
 # build the xUnit tests

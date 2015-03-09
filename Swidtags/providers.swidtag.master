@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2014/schema.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:oneget="http://oneget.org/swidtag"
+<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:oneget="http://oneget.org/swidtag"
     patch="false"
     media="(OS:windows)"
     name="OneGet.Providers"
