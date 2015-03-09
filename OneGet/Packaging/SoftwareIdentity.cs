@@ -332,7 +332,7 @@ namespace Microsoft.OneGet.Packaging {
         /// <returns>a collection of strings with the values from all Meta elements that match</returns>
         public IEnumerable<string> this[string key] {
             get {
-                return Element.Elements(Iso19770_2.Meta).Where(each => each.Attribute(key) != null).Select(each => each.Value).ReEnumerable();
+                return Element.Elements(Iso19770_2.Meta).Where(each => each.Attribute(key) != null).Select(each => each.Attribute(key).Value).ReEnumerable();
             }
         }
     }
