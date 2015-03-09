@@ -324,5 +324,12 @@ namespace Microsoft.OneGet.Packaging {
         public string AddDependency(string providerName, string packageName, string version, string source, string appliesTo) {
             return AddLink(new Uri(CreateCanonicalId(providerName, packageName, version, source)), Iso19770_2.Relationship.Requires, null, null, null, appliesTo, null);
         }
+
+        public string this[string key] {
+            get {
+                var attr = Element.Elements(Iso19770_2.Meta).FirstOrDefault(each => each.Attribute(key) != null);
+                return attr == null ? null : attr.Value;
+            }
+        }
     }
 }
