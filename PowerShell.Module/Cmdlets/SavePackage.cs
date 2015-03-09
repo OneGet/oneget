@@ -85,7 +85,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         }
 
         [Parameter]
-        public string DestinationPath {get; set;}
+        public string Path {get; set;}
 
         [Parameter]
         public string LiteralPath {get; set;}
@@ -94,36 +94,62 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         public SoftwareIdentity InputObject {get; set;}
 
         private string SaveFileName(string packageName) {
-            string path = null;
+            string resolvedPath = null;
 
-            if (string.IsNullOrWhiteSpace(DestinationPath)) {
-                path = Path.GetFullPath(LiteralPath);
-            } else {
-                path = GetUnresolvedProviderPathFromPSPath(DestinationPath);
+            try
+            {
+                // Validate Path
+                if (!String.IsNullOrEmpty(Path))
+                {
+                    ProviderInfo provider = null;
+                    Collection<string> resolvedPaths = GetResolvedProviderPathFromPSPath(Path, out provider);
+
+                    // Ensure the path is a single path from the file system provider
+                    if ((resolvedPaths.Count > 1) ||
+                        (!String.Equals(provider.Name, "FileSystem", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        Error(Constants.Errors.FilePathMustBeFileSystemPath, Path);
+                        return null;
+                    }
+
+                    resolvedPath = resolvedPaths[0];
+                }
+
+                if (!String.IsNullOrEmpty(LiteralPath))
+                {
+                    // Validate that the path exists
+                    SessionState.InvokeProvider.Item.Get(new string[] { LiteralPath }, false, true);
+                    resolvedPath = LiteralPath;
+                }
+            }
+            catch(Exception e)
+            {
+                Error(Constants.Errors.SavePackageError, e.Message);
+                return null;
             }
 
-            if (Directory.Exists(path)) {
+            if (Directory.Exists(resolvedPath))
+            {
                 // it appears to be a directory name
-                return Path.Combine(path, packageName);
+                return System.IO.Path.Combine(resolvedPath, packageName);
             }
 
-            var parentPath = Path.GetDirectoryName(path);
-            if (Directory.Exists(parentPath)) {
+            var parentPath = System.IO.Path.GetDirectoryName(resolvedPath);
+            if (Directory.Exists(parentPath))
+            {
                 // it appears to be a full path including filename
-                return path;
+                return resolvedPath;
             }
 
             // it's not an existing directory, 
-            // and the parent directory of that path doesn't exist
-            // so I guess we're returning null, because I dunno what
-            // to do.
-
-            Warning(Constants.Messages.DestinationPathInvalid, DestinationPath, packageName);
+            // and the parent directory of that path doesn't exist.
+            // So throw a terminating error.
+            Error(Constants.Errors.DestinationPathInvalid, resolvedPath, packageName);
             return null;
         }
 
         public override bool ProcessRecordAsync() {
-            if (string.IsNullOrWhiteSpace(DestinationPath) && string.IsNullOrWhiteSpace(LiteralPath)) {
+            if (string.IsNullOrWhiteSpace(Path) && string.IsNullOrWhiteSpace(LiteralPath)) {
                 Error(Constants.Errors.DestinationOrLiteralPathNotSpecified);
                 return false;
             }
