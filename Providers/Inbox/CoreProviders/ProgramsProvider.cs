@@ -24,11 +24,11 @@ namespace Microsoft.OneGet.Providers {
     using Utility.Platform;
     using Win32;
 
-    public class ArpProvider {
+    public class ProgramsProvider {
         /// <summary>
         ///     The name of this Package Provider
         /// </summary>
-        internal const string ProviderName = "ARP";
+        internal const string ProviderName = "Programs";
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]>();
 
@@ -177,8 +177,8 @@ namespace Microsoft.OneGet.Providers {
                                 var comments = properties.Get("Comments") ?? "";
 
                                 var fp = hive + @"\" + subkey;
-                                if (request.YieldSoftwareIdentity(fp, productName, productVersion, "unknown", comments, "", name, "", "")) {
-                                    if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => !request.YieldSoftwareMetadata(fp, k.MakeSafeFileName(), properties[k]))) {
+                                if (request.YieldSoftwareIdentity(fp, productName, productVersion, "unknown", comments, "", name, "", "") != null) {
+                                    if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => request.AddMetadata(fp, k.MakeSafeFileName(), properties[k]) == null )) {
                                         return false;
                                     }
                                 }
@@ -197,8 +197,8 @@ namespace Microsoft.OneGet.Providers {
             var uninstallString = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
             var comments = properties.Get("Comments") ?? "";
 
-            if (request.YieldSoftwareIdentity(path, productName, productVersion, "unknown", comments, "", searchKey, "", "")) {
-                if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => !request.YieldSoftwareMetadata(path, k.MakeSafeFileName(), properties[k]))) {
+            if (request.YieldSoftwareIdentity(path, productName, productVersion, "unknown", comments, "", searchKey, "", "") != null) {
+                if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => request.AddMetadata(path, k.MakeSafeFileName(), properties[k]) == null)) {
                     return false;
                 }
             }
@@ -233,28 +233,44 @@ namespace Microsoft.OneGet.Providers {
                 switch (path[0].ToLowerInvariant()) {
                     case "hklm64":
                         using (var product = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(path[2], RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
+                            if (product == null) {
+                                return;
+                            }
                             properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
                             uninstallCommand = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
                         }
                         break;
                     case "hkcu64":
                         using (var product = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(path[2], RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
+                            if (product == null) {
+                                return;
+                            }
                             properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
                             uninstallCommand = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
                         }
                         break;
                     case "hklm32":
                         using (var product = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(path[2], RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
+                            if (product == null) {
+                                return;
+                            }
                             properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
                             uninstallCommand = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
                         }
                         break;
                     case "hkcu32":
                         using (var product = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32).OpenSubKey(path[2], RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
+                            if (product == null) {
+                                return;
+                            }
                             properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
                             uninstallCommand = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
                         }
                         break;
+                }
+
+                if (properties == null) {
+                    return;
                 }
 
                 if (!string.IsNullOrWhiteSpace(uninstallCommand)) {

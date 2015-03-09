@@ -14,13 +14,15 @@
 
 namespace Microsoft.OneGet.Implementation {
     using System;
+    using System.Collections.Generic;
+    using System.Security.Cryptography;
+    using System.Xml.Linq;
     using Api;
     using Packaging;
     using Utility.Extensions;
 
     public class SoftwareIdentityRequestObject : EnumerableRequestObject<SoftwareIdentity> {
         private readonly string _status;
-
         private SoftwareIdentity _currentItem;
 
         public SoftwareIdentityRequestObject(ProviderBase provider, IHostApi request, Action<RequestObject> action, string status)
@@ -36,7 +38,7 @@ namespace Microsoft.OneGet.Implementation {
             _currentItem = null;
         }
 
-        public override bool YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName) {
+        public override string YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName) {
             Activity();
             CommitCurrentItem();
 
@@ -46,7 +48,7 @@ namespace Microsoft.OneGet.Implementation {
                 Version = version,
                 VersionScheme = versionScheme,
                 Summary = summary,
-                ProviderName = Provider.ProviderName,
+                Provider = (PackageProvider)Provider,
                 Source = source,
                 Status = _status,
                 SearchKey = searchKey,
@@ -54,57 +56,116 @@ namespace Microsoft.OneGet.Implementation {
                 PackageFilename = packageFileName
             };
 
-            return !IsCanceled;
+            return fastPath;
         }
 
-        public override bool YieldSoftwareMetadata(string parentFastPath, string name, string value) {
+        /// <summary>
+        /// Adds a metadata key/value pair to the Swidtag.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public override string AddMetadata(string name, string value) {
             Activity();
 
-            if (_currentItem == null) {
-                // this can get here if the provider got to send back a softwareidentity, and the consumer cancelled the request between that moment
-                // and when the provider managed to try to send back more data.
-                return !IsCanceled;
-            }
-
-            // special cases:
-            if (name != null) {
-                if (name.EqualsIgnoreCase("FromTrustedSource")) {
-                    _currentItem.FromTrustedSource = (value ?? string.Empty).IsTrue();
-                    return !IsCanceled;
-                }
-                _currentItem.Set(name, value);
-            }
-
-            return !IsCanceled;
+            var swid = _currentItem;
+            return swid != null ? swid.AddMetadataValue(swid.FastPackageReference, name, value) : null;
         }
 
-        public override bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint) {
+        /// <summary>
+        /// Adds an attribute to a 'Meta' object. If called for a Swidtag or Entity, it implicitly adds a child Meta object.
+        /// 
+        /// Any other elementPath is an error and will be ignored.
+        /// </summary>
+        /// <param name="elementPath"> the string that represents one of :
+        ///   a Swidtag (the fastPackageReference) (passing null as the elementPath will default to the swidtag)
+        ///   an Entity (the result gained from an YieldEntity(...) call )
+        ///   a Meta object (the result from previously calling AddMetadataValue(...) )
+        /// </param>
+        /// <param name="name">the name of the attribute to add</param>
+        /// <param name="value">the value of the attribute to add</param>
+        /// <returns></returns>
+        public override string AddMetadata(string elementPath, string name, string value) {
             Activity();
 
-            if (_currentItem == null) {
-                // this can get here if the provider got to send back a softwareidentity, and the consumer cancelled the request between that moment
-                // and when the provider managed to try to send back more data.
-                return !IsCanceled;
-            }
-
-            _currentItem.AddEntity(name, regid, role, thumbprint);
-            return !IsCanceled;
+            var swid = _currentItem;
+            return swid != null ? swid.AddMetadataValue(elementPath, name, value) : null;
         }
 
-        public override bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact) {
+        public override string AddMetadata(string elementPath, Uri @namespace, string name, string value) {
             Activity();
 
-            if (_currentItem == null) {
-                // this can get here if the provider got to send back a softwareidentity, and the consumer cancelled the request between that moment
-                // and when the provider managed to try to send back more data.
-                return !IsCanceled;
+            var swid = _currentItem;
+            if (swid == null || string.IsNullOrWhiteSpace(elementPath)) {
+                return null;
             }
+            
+            return swid.AddMetadataValue(elementPath, @namespace, name, value);
+        }
 
-            if (_currentItem != null) {
-                _currentItem.AddLink(referenceUri, relationship, mediaType, ownership, use, appliesToMedia, artifact);
-            }
+        public override string AddMeta(string elementPath) {
+            Activity();
 
-            return !IsCanceled;
+            var swid = _currentItem;
+            return swid != null ? swid.AddMeta(elementPath) : null;
+        }
+
+        public override string AddPayload() {
+            var swid = _currentItem;
+            return swid != null ? swid.AddPayload().ElementUniqueId : null;
+        }
+
+        public override string AddEvidence(DateTime date, string deviceId) {
+            var swid = _currentItem;
+            return swid != null ? swid.AddEvidence(date, deviceId).ElementUniqueId : null;
+        }
+
+        public override string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey) {
+            Activity();
+
+            var swid = _currentItem;
+            return swid != null ? swid.AddDirectory(elementPath, directoryName, location, root, isKey) : null;
+        }
+
+        public override string AddFile(string elementPath, string fileName, string location, string root, bool isKey, long size, string version) {
+            Activity();
+
+            var swid = _currentItem;
+            return swid != null ? swid.AddFile(elementPath, fileName, location, root, isKey, size, version ) : null;
+        }
+
+        public override string AddProcess(string elementPath, string processName, int pid) {
+            Activity();
+
+            var swid = _currentItem;
+            return swid != null ? swid.AddProcess(elementPath, processName, pid ) : null;
+        }
+
+        public override string AddResource(string elementPath, string type) {
+            Activity();
+
+            var swid = _currentItem;
+            return swid != null ? swid.AddResource(elementPath, type) : null;
+        }
+
+        public override string AddEntity(string name, string regid, string role, string thumbprint) {
+            Activity();
+
+            var swid = _currentItem;
+            return swid != null ? swid.AddEntity(name,regid,role,thumbprint) : null;
+        }
+
+        public override string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact) {
+            Activity();
+
+            var swid = _currentItem;
+            return swid != null ? swid.AddLink(referenceUri, relationship, mediaType, ownership, use, appliesToMedia, artifact) : null;
+        }
+
+        public override string AddDependency(string providerName, string packageName, string version, string source, string appliesTo) {
+            Activity();
+            var swid = _currentItem;
+            return swid != null ? swid.AddDependency(providerName, packageName, version, source, appliesTo): null;
         }
 
         protected override void Complete() {

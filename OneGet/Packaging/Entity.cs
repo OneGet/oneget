@@ -13,34 +13,149 @@
 //  
 
 namespace Microsoft.OneGet.Packaging {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Xml.Linq;
+    using Utility.Collections;
+    using Utility.Extensions;
 
-    public class Entity : Meta {
+    /// <summary>
+    /// 
+    /// From the schema:
+    ///   Specifies the organizations related to the software component
+    ///   referenced by this SWID tag.
+    ///   This has a minOccurs of 1 because the spec declares that
+    ///   you must have at least a Entity with role='tagCreator'
+    /// </summary>
+    public class Entity : BaseElement {
+        /// <summary>
+        /// Construct an Entity object tied to an existing element in a document
+        /// </summary>
+        /// <param name="element"></param>
         internal Entity(XElement element) : base(element) {
+            if (element.Name != Iso19770_2.Entity) {
+                throw new ArgumentException("Element is not of type 'Entity'", "element");
+            }
         }
 
+        internal Entity(string name, string regId, string role)
+            : base(new XElement(Iso19770_2.Entity)) {
+            Name = name;
+            RegId = string.IsNullOrWhiteSpace(regId) ? "invalid.unavailable" : regId;
+            AddRole(role);
+        }
+
+        /// <summary>
+        /// The name of the organization claiming a particular role in the SWIDtag.
+        /// </summary>
         public string Name {
             get {
-                return this[Iso19770_2.NameAttribute.LocalName];
+                return GetAttribute(Iso19770_2.NameAttribute);
+            }
+            internal set {
+                AddAttribute(Iso19770_2.NameAttribute, value);
+            }
+        }
+
+        /// <summary>
+        /// An enumeration of the Roles for a given entity.
+        /// 
+        /// From the schema:
+        ///     The relationship between this organization and this tag e.g. tag,
+        ///     softwareCreator, licensor, tagCreator, etc.  The role of
+        ///     tagCreator is required for every SWID tag.
+        ///     
+        ///     Role may include any role value, but the pre-defined roles 
+        ///     include: aggregator, distributor, licensor, softwareCreator, 
+        ///     tagCreator
+        ///     
+        ///     Other roles will be defined as the market uses the SWID tags.
+        /// </summary>
+        public IEnumerable<string> Roles {
+            get {
+                var attr = GetAttribute(Iso19770_2.RoleAttribute.LocalName);
+                if (attr != null) {
+                    return attr.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+                }
+                return Enumerable.Empty<string>();
             }
         }
 
         public string Role {
             get {
-                return this[Iso19770_2.RoleAttribute.LocalName];
+                return GetAttribute(Iso19770_2.RoleAttribute.LocalName);
+            }
+            internal set {
+                AddAttribute(Iso19770_2.RoleAttribute, value);
             }
         }
 
+        /// <summary>
+        /// adds a role to the element.
+        /// </summary>
+        /// <param name="role">the role to add</param>
+        internal void AddRole(string role) {
+            if (string.IsNullOrWhiteSpace(role)) {
+                role = string.Empty;
+            }
+            
+            var attr = GetAttribute(Iso19770_2.RoleAttribute.LocalName);
+            if (attr != null) {
+                var roles = attr.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries).ConcatSingleItem(role).Distinct();
+                role = roles.JoinWith(" ");
+            }
+
+            // if there isn't an actual role added; set it to 'unknown'
+            if (string.IsNullOrWhiteSpace(role)) {
+                role = "unknown";
+            }
+
+            Element.SetAttributeValue(Iso19770_2.RoleAttribute, role.Trim());
+        }
+
+        /// <summary>
+        /// this value provides a hexadecimal string that contains a hash
+        /// (or thumbprint) of the signing entities certificate.
+        /// </summary>
         public string Thumbprint {
             get {
-                return this[Iso19770_2.ThumbprintAttribute.LocalName];
+                return GetAttribute(Iso19770_2.ThumbprintAttribute.LocalName);
+            }
+            internal set {
+                AddAttribute(Iso19770_2.ThumbprintAttribute, value);
             }
         }
 
+        /// <summary>
+        ///   The regid of the organization.  If the regid is unknown, the
+        ///   value "invalid.unavailable" is assumed by default (see 
+        ///   RFC 6761 for more details on the default value).
+        /// </summary>
         public string RegId {
             get {
-                return this[Iso19770_2.RegIdAttribute.LocalName];
+                return GetAttribute(Iso19770_2.RegIdAttribute.LocalName);
             }
+            internal set {
+                AddAttribute(Iso19770_2.RegIdAttribute, value);
+            }
+        }
+
+        /// <summary>
+        /// An enumeration of nested metadata for the Entity
+        /// </summary>
+        public IEnumerable<Meta> Meta {
+            get {
+                return Element.Elements(Iso19770_2.Meta).Select(each => new Meta(each)).ReEnumerable();
+            }
+        }
+
+        /// <summary>
+        /// Adds a nested metadata element to the entity.
+        /// </summary>
+        /// <returns></returns>
+        internal Meta AddMeta() {
+            return AddElement(new Meta());
         }
     }
 }

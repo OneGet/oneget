@@ -27,6 +27,7 @@ namespace Microsoft.OneGet.Implementation {
     using Utility.Extensions;
     using Utility.Plugin;
     using Utility.Versions;
+    using File = System.IO.File;
 
     public abstract class ProviderBase  {
         public abstract string ProviderName {get;}

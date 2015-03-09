@@ -32,7 +32,9 @@ namespace Microsoft.OneGet.Implementation {
     using Utility.Plugin;
     using Utility.Versions;
     using Win32;
-    
+    using Directory = System.IO.Directory;
+    using File = System.IO.File;
+
     /// <summary>
     ///     The Client API is designed for use by installation hosts:
     ///     - OneGet Powershell Cmdlets
@@ -249,12 +251,12 @@ namespace Microsoft.OneGet.Implementation {
                 // Yeah? Install it.
                 var package = pkg[0];
                 var metaWithProviderType = pkg[0].Meta.FirstOrDefault(each => each.ContainsKey("providerType"));
-                var providerType = metaWithProviderType == null ? "unknown" : metaWithProviderType["providerType"];
+                var providerType = metaWithProviderType == null ? "unknown" : metaWithProviderType.GetAttribute("providerType");
                 var destination = providerType == "assembly" ? (AdminPrivilege.IsElevated ? SystemAssemblyLocation : UserAssemblyLocation) : string.Empty;
                 var link = package.Links.FirstOrDefault(each => each.Relationship == "installationmedia");
                 var location = string.Empty;
                 if (link != null) {
-                    location = link.HRef;
+                    location = link.HRef.ToString();
                 }
 
                 // what can't find an installationmedia link?

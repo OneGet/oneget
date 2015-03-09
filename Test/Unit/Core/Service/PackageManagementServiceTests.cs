@@ -39,7 +39,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
                 // and our core providers
                 Assert.Contains("msi", providers, IgnoreCase);
                 Assert.Contains("msu", providers, IgnoreCase);
-                Assert.Contains("ARP", providers, IgnoreCase);
+                Assert.Contains("Programs", providers, IgnoreCase);
                 Assert.Contains("Bootstrap", providers, IgnoreCase);
             }
         }

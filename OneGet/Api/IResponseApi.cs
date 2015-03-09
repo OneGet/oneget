@@ -13,6 +13,8 @@
 //  
 
 namespace Microsoft.OneGet.Api {
+    using System;
+
     public interface IResponseApi {
         #region declare response-apis
 
@@ -31,19 +33,33 @@ namespace Microsoft.OneGet.Api {
         /// <param name="fullPath"></param>
         /// <param name="packageFileName"></param>
         /// <returns></returns>
-        bool YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
+        string YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
 
-        bool YieldSoftwareMetadata(string parentFastPath, string name, string value);
+        string AddMetadata(string name, string value);
 
-        bool YieldEntity(string parentFastPath, string name, string regid, string role, string thumbprint);
+        string AddMetadata(string elementPath, string name, string value);
 
-        bool YieldLink(string parentFastPath, string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
+        string AddMetadata(string elementPath, Uri @namespace, string name, string value);
 
-#if M2
-        bool YieldSwidtag(string fastPath, string xmlOrJsonDoc);
+        string AddMeta(string elementPath);
 
-        bool YieldMetadata(string fieldId, string @namespace, string name, string value);
-#endif
+        string AddEntity(string name, string regid, string role, string thumbprint);
+
+        string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
+
+        string AddDependency(string providerName, string packageName, string version, string source, string appliesTo);
+
+        string AddPayload();
+
+        string AddEvidence(DateTime date, string deviceId);
+
+        string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey);
+
+        string AddFile(string elementPath, string fileName, string location, string root, bool isKey, long size, string version);
+
+        string AddProcess(string elementPath, string processName, int pid);
+
+        string AddResource(string elementPath, string type);
 
         /// <summary>
         ///     Used by a provider to return fields for a package source (repository)

@@ -61,7 +61,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 throw new ArgumentNullException("r");
             }
 
-            return r.YieldSoftwareIdentity(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey,FullPath, Filename) && YieldDetails(r) && YieldEntities(r) && YieldLinks(r) && r.YieldSoftwareMetadata(FastPackageReference, "FromTrustedSource", FromTrustedSource.ToString());
+            return r.YieldSoftwareIdentity(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey, FullPath, Filename) != null && YieldDetails(r) && YieldEntities(r) && YieldLinks(r) && r.AddMetadata(FastPackageReference, "FromTrustedSource", FromTrustedSource.ToString()) != null;
         }
 
         private ArrayList _links;
@@ -70,21 +70,21 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         protected override bool YieldDetails(PsRequest r) {
             if (_details != null && _details.Count > 0) {
                 // we need to send this back as a set of key/path & value  pairs.
-                return _details.Flatten().All(kvp => r.YieldSoftwareMetadata(FastPackageReference,kvp.Key, kvp.Value));
+                return _details.Flatten().All(kvp => r.AddMetadata(FastPackageReference,kvp.Key, kvp.Value) != null);
             }
             return true;
         }
 
         protected virtual bool YieldLinks(PsRequest r) {
             if( _links != null ) {
-                return _links.OfType<Link>().All(link => r.YieldLink(FastPackageReference, link.HRef, link.Relationship, link.MediaType, link.Ownership, link.Use, link.AppliesToMedia, link.Artifact));
+                return _links.OfType<Link>().All(link => r.AddLink(new Uri(link.HRef), link.Relationship, link.MediaType, link.Ownership, link.Use, link.AppliesToMedia, link.Artifact) != null);
             }
             return true;
         }
 
         protected virtual bool YieldEntities(PsRequest r) {
             if (_links != null) {
-                return _entities.OfType<Entity>().All(entity => r.YieldEntity(FastPackageReference, entity.Name, entity.RegId, entity.Role, entity.Thumbprint));
+                return _entities.OfType<Entity>().All(entity => r.AddEntity(entity.Name, entity.RegId, entity.Role, entity.Thumbprint) != null);
             }
             return true;
         }

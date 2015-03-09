@@ -26,12 +26,7 @@
     <TableControl>
       <TableHeaders>
         <TableColumnHeader>
-        </TableColumnHeader>
-        <TableColumnHeader>
-          <Width>12</Width>
-        </TableColumnHeader>
-        <TableColumnHeader>
-          <Width>12</Width>
+          <Width>30</Width>
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>16</Width>
@@ -40,7 +35,6 @@
           <Width>16</Width>
         </TableColumnHeader>
         <TableColumnHeader>
-
         </TableColumnHeader>
       </TableHeaders>
       <TableRowEntries>
@@ -51,12 +45,6 @@
             </TableColumnItem>
             <TableColumnItem>
               <PropertyName>Version</PropertyName>
-            </TableColumnItem>
-            <TableColumnItem>
-              <PropertyName>Status</PropertyName>
-            </TableColumnItem>
-            <TableColumnItem>
-              <PropertyName>ProviderName</PropertyName>
             </TableColumnItem>
             <TableColumnItem>
               <PropertyName>Source</PropertyName>

@@ -53,6 +53,7 @@ namespace Microsoft.PowerShell.OneGet {
         internal static class Errors {
             // ReSharper disable InconsistentNaming
             public static ErrorMessage DestinationOrLiteralPathNotSpecified = new ErrorMessage(Messages.DestinationOrLiteralPathRequired, ErrorCategory.InvalidArgument);
+            public static ErrorMessage DestinationPathInvalid = new ErrorMessage(Messages.DestinationPathInvalid, ErrorCategory.InvalidArgument);
             public static ErrorMessage DisambiguateForInstall = new ErrorMessage(Messages.DisambiguateForInstall, ErrorCategory.InvalidArgument);
             public static ErrorMessage DisambiguateForUninstall = new ErrorMessage(Messages.DisambiguateForUninstall, ErrorCategory.InvalidArgument);
             public static ErrorMessage InstallationFailure = new ErrorMessage(Messages.InstallationFailure, ErrorCategory.InvalidOperation);
@@ -71,6 +72,8 @@ namespace Microsoft.PowerShell.OneGet {
             public static ErrorMessage UnknownProviders = new ErrorMessage(Messages.UnknownProviders, ErrorCategory.InvalidArgument);
             public static ErrorMessage PackageFileExists = new ErrorMessage(Messages.PackageFileExists, ErrorCategory.InvalidArgument);
             public static ErrorMessage UnableToOverwrite = new ErrorMessage(Messages.UnableToOverwrite, ErrorCategory.InvalidResult);
+            public static ErrorMessage FilePathMustBeFileSystemPath = new ErrorMessage(Messages.FilePathMustBeFileSystemPath, ErrorCategory.ObjectNotFound);
+            public static ErrorMessage SavePackageError = new ErrorMessage(Messages.SavePackageError, ErrorCategory.InvalidArgument);
             // ReSharper restore InconsistentNaming
         }
 
@@ -93,12 +96,14 @@ namespace Microsoft.PowerShell.OneGet {
             internal const string CaptionPackageContainsUninstallationScript = "MSG:CaptionPackageContainsUninstallationScript";
             internal const string CaptionPackageInstallFailure = "MSG:CaptionPackageInstallFailure";
             internal const string CaptionPackageNotTrusted = "MSG:CaptionPackageNotTrusted";
+            internal const string CaptionSourceNotTrusted = "MSG:CaptionSourceNotTrusted";
             internal const string CaptionPackageUninstallFailure = "MSG:CaptionPackageUninstallFailure";
             internal const string DestinationOrLiteralPathRequired = "MSG:DestinationOrLiteralPathRequired";
             internal const string DestinationPathInvalid = "MSG:DestinationPathInvalid";
             internal const string DisambiguateForInstall = "MSG:DisambiguateForInstall";
             internal const string DisambiguateForUninstall = "MSG:DisambiguateForUninstall";
             internal const string FileNotRecognized = "MSG:FileNotRecognized";
+            internal const string FilePathMustBeFileSystemPath = "MSG:FilePathMustBeFileSystemPath";
             internal const string InstallationFailure = "MSG:InstallationFailure";
             internal const string MatchesMultiplePackages = "MSG:MatchesMultiplePackages";
             internal const string MatchesMultipleProviders = "MSG:MatchesMultipleProviders";
@@ -117,6 +122,7 @@ namespace Microsoft.PowerShell.OneGet {
             internal const string QueryShouldThePackageScriptAtBeProcessed = "MSG:QueryShouldThePackageScriptAtBeProcessed";
             internal const string QueryShouldThePackageUninstallScriptAtBeProcessed = "MSG:QueryShouldThePackageUninstallScriptAtBeProcessed";
             internal const string SavePackage = "MSG:SavePackage";
+            internal const string SavePackageError = "MSG:SavePackageError";
             internal const string ShouldContinueWithUntrustedPackageSource = "MSG:ShouldContinueWithUntrustedPackageSource";
             internal const string SkippedProviderMissingRequiredOption = "MSG:SkippedProviderMissingRequiredOption";
             internal const string SourceFoundInMultipleProviders = "MSG:SourceFoundInMultipleProviders";

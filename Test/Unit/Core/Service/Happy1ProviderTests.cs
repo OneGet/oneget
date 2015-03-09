@@ -23,6 +23,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
+    using Microsoft.OneGet.Packaging;
 
     public class Happy1ProviderTests : UsingOneProvider {
         public Happy1ProviderTests(ITestOutputHelper outputHelper) : base(outputHelper, "Happy1") {
@@ -243,8 +244,6 @@ namespace Microsoft.OneGet.Test.Core.Service {
                 var packages = Provider.FindPackage(null, null, null, null, 0, Host()).ToArray();
                 AssertNoErrors();
                 Assert.Equal( 5, packages.Length );
-
-
             }
         }
 

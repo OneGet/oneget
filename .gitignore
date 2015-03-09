@@ -107,4 +107,5 @@ UpgradeLog.htm
 manifests/
 xunit-test-results.xml
 signed/
+.vs/
 log.txt

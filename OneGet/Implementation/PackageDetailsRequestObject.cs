@@ -10,14 +10,20 @@
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
+//  
 
-using System.Reflection;
+namespace Microsoft.OneGet.Implementation {
+    using System;
+    using Api;
+    using Packaging;
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-[assembly: AssemblyVersion("1.15.68.26026")]
-[assembly: AssemblyFileVersion("1.15.68.26026")]
+    public class PackageDetailsRequestObject : RequestObject {
+        private SoftwareIdentity _softwareIdentity;
+
+        public PackageDetailsRequestObject(ProviderBase provider, IHostApi hostApi, SoftwareIdentity softwareIdentity, Action<RequestObject> action)
+            : base(provider, hostApi, action) {
+            _softwareIdentity = softwareIdentity;
+            InvokeImpl();
+        }
+    }
+}

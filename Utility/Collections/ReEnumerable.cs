@@ -58,5 +58,20 @@ namespace Microsoft.OneGet.Utility.Collections {
         public MutableEnumerable<T> Concat(IEnumerable<T> additionalItems) {
             return Enumerable.Concat(this, additionalItems).ReEnumerable();
         }
+
+        public T this[int index] {
+            get {
+                if (ItemExists(index)) {
+                    return List[index];
+                }
+                return default(T);
+            }
+        }
+
+        public int Count {
+            get {
+                return this.Count();
+            }
+        }
     }
 }

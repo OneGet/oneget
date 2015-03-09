@@ -194,14 +194,23 @@ function New-Request {
 function New-Entity {
 	param(
 		[Parameter(Mandatory=$true)][string] $name,
-		[Parameter(Mandatory=$true)][string] $role,
+		[Parameter(Mandatory=$true,ParameterSetName="role")][string] $role,
+		[Parameter(Mandatory=$true,ParameterSetName="roles")][System.Collections.ArrayList]$roles,
         [string] $regId = $null,
         [string] $thumbprint= $null
 	)
 
 	$o = New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Entity
 	$o.Name = $name
-	$o.Role = $role
+
+	# support role as a NMTOKENS string or an array of strings
+	if( $role ) {
+		$o.Role = $role
+	} 
+	if( $roles )  {
+		$o.Roles = $roles
+	}
+
 	$o.regId = $regId
 	$o.thumbprint = $thumbprint
 	return $o

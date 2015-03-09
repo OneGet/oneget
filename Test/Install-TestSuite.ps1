@@ -12,6 +12,7 @@ if( -not (test-path $outputPath) ) {
 
 # put all the binaries into output path
 copy -force .\*oneget* $outputPath
+copy -force .\*.psm1 $outputPath
 copy -force  ".\packages\xunit.runners.2*\tools\*" $outputPath
 
 # build the xUnit tests
@@ -35,7 +36,7 @@ cd $PSScriptRoot
 .\scripts\install-repository.ps1 
 
 # Make sure the sandbox can run
-if (get-command remove-iissite) { 
+if (get-command remove-iissite -ea silentlycontinue) { 
 
     if (get-iissite -Name "Default Web Site" ) { 
         remove-iissite -Name "Default Web Site" -Confirm:$false

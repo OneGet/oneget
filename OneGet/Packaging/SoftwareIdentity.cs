@@ -16,236 +16,324 @@ namespace Microsoft.OneGet.Packaging {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
-    using System.Xml;
     using System.Xml.Linq;
+    using Api;
+    using Implementation;
+    using Utility.Collections;
     using Utility.Extensions;
+    using System.Globalization;
 
     /// <summary>
     ///     This class represents a package (retrieved from Find-SoftwareIdentity or Get-SoftwareIdentity)
     ///     Will eventually also represent a swidtag.
-    ///     todo: Should this be serializable instead?
     /// </summary>
-    public class SoftwareIdentity  {
+    public class SoftwareIdentity : Swidtag {
+        public SoftwareIdentity(XDocument document)
+            : base(document.Root) {
+        }
 
-        #region OneGet specific data
+        public SoftwareIdentity() {
+        }
 
         internal string FastPackageReference {get; set;}
+        internal PackageProvider Provider {get; set;}
 
-        public string ProviderName {get; internal set;}
+        public string ProviderName {
+            get {
+                return Provider != null ? Provider.ProviderName : null;
+            }
+        }
+
+        public IEnumerable<string> Dependencies {
+            get {
+                return Links.Where(each => Iso19770_2.Relationship.Requires == each.Relationship && each.HRef != null).Select(each => each.HRef.ToString() ).ReEnumerable();
+            }
+        }
+
         public string Source {get; internal set;}
         public string Status {get; internal set;}
-
         public string SearchKey {get; internal set;}
-
         public string FullPath {get; internal set;}
         public string PackageFilename {get; internal set;}
-
         public bool FromTrustedSource {get; internal set;}
-
-        // OneGet shortcut property -- Summary *should* be stored in SoftwareMetadata
+        
         public string Summary {
             get {
-                return Swid.Root().Elements(Iso19770_2.Meta).Select(each => each.Get(Iso19770_2.SummaryAttribute)).WhereNotNull().FirstOrDefault();
+                return Element.Elements(Iso19770_2.Meta).Select(each => each.GetAttribute(Iso19770_2.SummaryAttribute)).WhereNotNull().FirstOrDefault();
             }
             internal set {
-                Set(Iso19770_2.SummaryAttribute.LocalName, value);
+                (Meta.FirstOrDefault() ?? AddMeta()).AddAttribute(Iso19770_2.SummaryAttribute, value);
             }
+        }
+
+        public IEnumerable<Swidtag> SwidTags {
+            get {
+                // todo: in the not-too-distant future, the SoftwareIdentity will support a collection of swidtags in addition to 'itself'
+                // todo: at that time, we'll add the remaining logic to support collections of swidtags for a given SoftwareIdentity.
+                yield return this;
+            }
+        }
+
+        private static string CreateCanonicalId(string provider, string name, string version, string source ) {
+
+            if (provider == null || name == null) {
+                return null;
+            }
+            if (string.IsNullOrWhiteSpace(version) && string.IsNullOrWhiteSpace(source)) {
+                return "{0}:{1}".format(provider.ToLower(CultureInfo.CurrentCulture), name);
+            }
+            if (string.IsNullOrWhiteSpace(source)) {
+                return "{0}:{1}/{2}".format(provider.ToLower(CultureInfo.CurrentCulture), name, version);
+            }
+            if (string.IsNullOrWhiteSpace(version)) {
+                "{0}:{1}#{2}".format(provider.ToLower(CultureInfo.CurrentCulture), name, source);
+            }
+
+            return "{0}:{1}/{2}#{3}".format(provider.ToLower(CultureInfo.CurrentCulture), name, version, source);
         }
 
         public string CanonicalId {
             get {
-                return "{0}:{1}/{2}#{3}".format( ProviderName, Name, Version, Source);
+                return CreateCanonicalId(ProviderName, Name, Version, Source);
             }
         }
 
-        #endregion
+        public void FetchPackageDetails(IHostApi api) {
+            Provider.GetPackageDetails(this, api);
+        }
 
-        #region ISO-19770-2-2014 metadata
-
-        public string Name {
-            get {
-                return Swid.Root().Get(Iso19770_2.NameAttribute);
+        /// <summary>
+        ///     Sets a SoftwareMetadata value
+        /// </summary>
+        /// <param name="metaKey"></param>
+        /// <param name="value"></param>
+        internal void AddMetadataAttribute(string metaKey, string value) {
+            if (string.IsNullOrWhiteSpace(value)) {
+                // we don't store empty values.
+                return;
             }
-            internal set {
-                Swid.Root().Set(Iso19770_2.NameAttribute, value);
+
+            var metaElements = Element.Elements(Iso19770_2.Meta).ReEnumerable();
+            var currentValue = metaElements.Select(each => each.GetAttribute(metaKey)).WhereNotNull().FirstOrDefault();
+
+            // if the current value is already the value, then don't worry about it.
+            if (currentValue == value) {
+                return;
+            }
+
+            if (metaElements.Any() && currentValue == null) {
+                // value has not been set (and we have at least one metadata element)
+                // let's set it in the first meta element.
+                Element.Elements(Iso19770_2.Meta).FirstOrDefault().AddAttribute(metaKey, value);
+            } else {
+                // add a new metadata object at the end and set the value in that element.
+                AddElement(new Meta())
+                    .AddAttribute(metaKey, value);
             }
         }
 
-        public string Version {
-            get {
-                return Swid.Root().Get(Iso19770_2.VersionAttribute);
+        protected override XElement FindElementWithUniqueId(string elementId) {
+            if (elementId == FastPackageReference) {
+                return Element;
             }
-            internal set {
-                Swid.Root().Set(Iso19770_2.VersionAttribute, value);
-            }
+            return base.FindElementWithUniqueId(elementId);
         }
 
-        public string VersionScheme {
-            get {
-                return Swid.Root().Get(Iso19770_2.VersionSchemeAttribute);
-            }
-            internal set {
-                Swid.Root().Set(Iso19770_2.VersionSchemeAttribute, value);
-            }
-        }
+        internal string AddMeta(string elementPath) {
+            var element = FindElementWithUniqueId(elementPath);
+            if (element != null) {
+                switch (element.Name.LocalName) {
+                    case "SoftwareIdentity":
+                        // adds a SoftwareMeta to the swidtag
+                        return AddElement(new SoftwareMetadata()).ElementUniqueId;
 
-        public string TagVersion {
-            get {
-                return Swid.Root().Get(Iso19770_2.TagVersionAttribute);
-            }
-            internal set {
-                Swid.Root().Set(Iso19770_2.TagVersionAttribute, value);
-            }
-        }
-
-        public string TagId {
-            get {
-                return Swid.Root().Get(Iso19770_2.TagIdAttribute);
-            }
-            internal set {
-                Swid.Root().Set(Iso19770_2.TagIdAttribute, value);
-            }
-        }
-
-        public bool? IsPatch {
-            get {
-                return Swid.Root().Get(Iso19770_2.PatchAttribute).IsTrue();
-            }
-            internal set {
-                Swid.Root().Set(Iso19770_2.PatchAttribute, value.ToString());
-            }
-        }
-
-        public bool? IsSupplemental {
-            get {
-                return Swid.Root().Get(Iso19770_2.SupplementalAttribute).IsTrue();
-            }
-            internal set {
-                Swid.Root().Set(Iso19770_2.SupplementalAttribute, value.ToString());
-            }
-        }
-
-        public string AppliesToMedia {
-            get {
-                return Swid.Root().Get(Iso19770_2.MediaAttribute);
-            }
-            internal set {
-                Swid.Root().Set(Iso19770_2.MediaAttribute, value);
-            }
-        }
-
-        // shortcut for Meta values 
-        public IEnumerable<string> this[string index] {
-            get {
-                return Meta.Where(each => each.ContainsKey(index)).Select(each => each[index]);
-            }
-        }
-
-        internal void Set(string metaKey, string value) {
-            var v = this[metaKey].ToArray();
-
-            if (v.Length > 0 && !v.Contains(value)) {
-                // if the value is already set, we don't want to re set it.
-                // Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "REPLACING {0} in Meta element in swidtag {1} -> {2} ", metaKey, v[0], value));
-                throw new Exception("INVALID_SWIDTAG_ATTRIBUTE_VALUE_CHANGE");
-            }
-
-            // looks good, let's set it in the first meta element.
-            FirstMeta.Set(metaKey, value);
-        }
-
-        public IEnumerable<SoftwareMetadata> Meta {
-            get {
-                return Swid.Root().Elements(Iso19770_2.Meta).Select(each => new SoftwareMetadata(each));
-            }
-        }
-
-        public IEnumerable<Entity> Entities {
-            get {
-                return Swid.Root().Elements(Iso19770_2.Entity).Select(each => new Entity(each));
-            }
-        }
-
-        internal Entity AddEntity(string name, string regid, string role, string thumbprint = null) {
-            XElement e;
-            Swid.Root().Add(e = new XElement(Iso19770_2.Entity)
-                .Set(Iso19770_2.NameAttribute, name)
-                .Set(Iso19770_2.RegIdAttribute, regid)
-                .Set(Iso19770_2.RoleAttribute, role)
-                .Set(Iso19770_2.ThumbprintAttribute, thumbprint)
-                );
-            return new Entity(e);
-        }
-
-        public IEnumerable<Link> Links {
-            get {
-                return Swid.Root().Elements(Iso19770_2.Link).Select(each => new Link(each));
-            }
-        }
-
-        internal Link AddLink(string referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact) {
-            XElement e;
-            Swid.Root().Add(e = new XElement(Iso19770_2.Link)
-                .Set(Iso19770_2.HRefAttribute, referenceUri)
-                .Set(Iso19770_2.RelationshipAttribute, relationship)
-                .Set(Iso19770_2.MediaTypeAttribute, mediaType)
-                .Set(Iso19770_2.OwnershipAttribute, ownership)
-                .Set(Iso19770_2.UseAttribute, use)
-                .Set(Iso19770_2.MediaAttribute, appliesToMedia)
-                .Set(Iso19770_2.ArtifactAttribute, artifact)
-                );
-            return new Link(e);
-        }
-
-#if M2
-        public Evidence Evidence {get; internal set;}
-
-        public Payload Payload {get; internal set;}
-#endif
-
-        private XElement FirstMeta {
-            get {
-                var meta = Swid.Root().Elements(Iso19770_2.Meta).FirstOrDefault();
-                if (meta == null) {
-                    // there isn't one 
-                    Swid.Root().Add(meta = new XElement(Iso19770_2.Meta));
+                    case "Entity":
+                        // adds a Meta to the entity
+                        return new Entity(element).AddMeta().ElementUniqueId;
                 }
-                return meta;
             }
+            return null;
         }
 
-        private XDocument _swidTag;
+        internal string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact) {
+            var link = AddLink(referenceUri, relationship);
 
-        public XDocument Swid {
-            get {
-                if (_swidTag == null) {
-                    _swidTag = Iso19770_2.NewDocument;
-                }
-                return _swidTag;
+            if (!string.IsNullOrWhiteSpace(mediaType)) {
+                link.MediaType = mediaType;
             }
-            internal set {
+
+            if (!string.IsNullOrWhiteSpace(ownership)) {
+                link.Ownership = ownership;
             }
+
+            if (!string.IsNullOrWhiteSpace(use)) {
+                link.Use = use;
+            }
+
+            if (!string.IsNullOrWhiteSpace(appliesToMedia)) {
+                link.Media = appliesToMedia;
+            }
+
+            if (!string.IsNullOrWhiteSpace(artifact)) {
+                link.Artifact = artifact;
+            }
+
+            return link.ElementUniqueId;
         }
 
-        public string SwidTagText {
-            get {
-                var stringBuilder = new StringBuilder();
+        internal string AddEntity(string name, string regid, string role, string thumbprint) {
+            var entity = AddEntity(name, regid, role);
 
-                var settings = new XmlWriterSettings();
-                settings.OmitXmlDeclaration = false;
-                settings.Indent = true;
-                settings.NewLineOnAttributes = true;
-                settings.NamespaceHandling = NamespaceHandling.OmitDuplicates;
+            if (!string.IsNullOrWhiteSpace(thumbprint) && entity.Thumbprint == null) {
+                entity.Thumbprint = thumbprint;
+            }
 
-                using (var xmlWriter = XmlWriter.Create(stringBuilder, settings)) {
-                    Swid.Save(xmlWriter);
+            return entity.ElementUniqueId;
+        }
+
+        public string AddMetadataValue(string elementPath, Uri @namespace, string name, string value) {
+            if (@namespace == null) {
+                return null;
+            }
+            var element = FindElementWithUniqueId(elementPath);
+            if (element != null) {
+                element.AddAttribute(XNamespace.Get(@namespace.ToString()) + name, value);
+                return PathToElement(element);
+            }
+            return null;
+        }
+
+        internal string AddMetadataValue(string elementPath, string name, string value) {
+            var element = FindElementWithUniqueId(elementPath);
+            if (element == null || string.IsNullOrWhiteSpace(name)) {
+                return null;
+            }
+
+            if (element == Element) {
+                // special case:
+                if (name.EqualsIgnoreCase("FromTrustedSource")) {
+                    FromTrustedSource = (value ?? string.Empty).IsTrue();
+                    return FastPackageReference;
                 }
 
-                return stringBuilder.ToString();
+                // metadata values on the swidtag go to the first Meta 
+                var meta = (Meta.FirstOrDefault() ?? AddMeta());
+                meta.AddAttribute(name, value);
+                return meta.ElementUniqueId;
             }
+
+            if (element.Name == Iso19770_2.Entity) {
+                // metadata values on entities go to the first Meta in the entity
+                var entity = new Entity(element);
+                var meta = (entity.Meta.FirstOrDefault() ?? entity.AddMeta());
+                meta.AddAttribute(name, value);
+                return meta.ElementUniqueId;
+            }
+
+            // for non-namespaced metadata values, the target element must be one that inherits from Meta
+            if (IsMetaElement(element)) {
+                var meta = new Meta(element);
+                meta.AddAttribute(name, value);
+                return meta.ElementUniqueId;
+            }
+
+            return null;
         }
 
-        #endregion
+        internal string AddResource(string elementPath, string type) {
+            var element = FindElementWithUniqueId(elementPath);
+            if (element == null || string.IsNullOrWhiteSpace(type)) {
+                return null;
+            }
+            if (element.Name == Iso19770_2.Payload || element.Name == Iso19770_2.Evidence) {
+                return new ResourceCollection(element).AddResource(type).ElementUniqueId;
+            }
+            return null;
+        }
+
+        internal string AddProcess(string elementPath, string processName, int pid) {
+            var element = FindElementWithUniqueId(elementPath);
+            if (element == null || string.IsNullOrWhiteSpace(processName)) {
+                return null;
+            }
+            if (element.Name == Iso19770_2.Payload || element.Name == Iso19770_2.Evidence) {
+                var process = new ResourceCollection(element).AddProcess(processName);
+                if (pid != 0) {
+                    process.Pid = pid;
+                }
+                return process.ElementUniqueId;
+            }
+            return null;
+        }
+
+        internal string AddFile(string elementPath, string fileName, string location, string root, bool isKey, long size, string version) {
+            var element = FindElementWithUniqueId(elementPath);
+            if (element == null || string.IsNullOrWhiteSpace(fileName)) {
+                return null;
+            }
+            if (element.Name == Iso19770_2.Payload || element.Name == Iso19770_2.Evidence || element.Name == Iso19770_2.Directory) {
+                var file = new ResourceCollection(element).AddFile(fileName);
+                if (!string.IsNullOrWhiteSpace(location)) {
+                    file.Location = location;
+                }
+                if (!string.IsNullOrWhiteSpace(root)) {
+                    file.Root = root;
+                }
+                if (isKey) {
+                    file.IsKey = true;
+                }
+                if (size > 0) {
+                    file.Size = size;
+                }
+                if (!string.IsNullOrWhiteSpace(version)) {
+                    file.Version = version;
+                }
+                return file.ElementUniqueId;
+            }
+            return null;
+        }
+
+        internal string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey) {
+            var element = FindElementWithUniqueId(elementPath);
+            if (element == null || string.IsNullOrWhiteSpace(directoryName)) {
+                return null;
+            }
+            if (element.Name == Iso19770_2.Payload || element.Name == Iso19770_2.Evidence || element.Name == Iso19770_2.Directory) {
+                var file = new ResourceCollection(element).AddDirectory(directoryName);
+                if (!string.IsNullOrWhiteSpace(location)) {
+                    file.Location = location;
+                }
+                if (!string.IsNullOrWhiteSpace(root)) {
+                    file.Root = root;
+                }
+                if (isKey) {
+                    file.IsKey = true;
+                }
+                return file.ElementUniqueId;
+            }
+            return null;
+        }
+
+        internal Evidence AddEvidence(DateTime date, string deviceId) {
+            var evidence = AddEvidence();
+            evidence.Date = date;
+            evidence.DeviceId = deviceId;
+            return evidence;
+        }
+
+        public string AddDependency(string providerName, string packageName, string version, string source, string appliesTo) {
+            return AddLink(new Uri(CreateCanonicalId(providerName, packageName, version, source)), Iso19770_2.Relationship.Requires, null, null, null, appliesTo, null);
+        }
+
+        /// <summary>
+        /// Accessor to grab Meta attribute values in an aggregate fashion.
+        /// </summary>
+        /// <param name="key">Meta attribute name</param>
+        /// <returns>a collection of strings with the values from all Meta elements that match</returns>
+        public IEnumerable<string> this[string key] {
+            get {
+                return Element.Elements(Iso19770_2.Meta).Where(each => each.Attribute(key) != null).Select(each => each.Attribute(key).Value).ReEnumerable();
+            }
+        }
     }
 }

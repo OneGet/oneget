@@ -13,6 +13,68 @@
 //  
 
 namespace Microsoft.OneGet.Packaging {
-    public class Evidence {
+    using System;
+    using System.Xml;
+    using System.Xml.Linq;
+    using System.Globalization;
+
+    /// <summary>
+    /// From the schema:
+    /// 
+    ///     The element is used to provide results from a scan of a system
+    ///     where software that does not have a SWID tag is discovered.  
+    ///     This information is not provided by the software creator, and 
+    ///     is instead created when a system is being scanned and the 
+    ///     evidence for why software is believed to be installed on the 
+    ///     device is provided in the Evidence element.
+    /// </summary>
+    public class Evidence : ResourceCollection {
+        internal Evidence(XElement element)
+            : base(element) {
+                if (element.Name != Iso19770_2.Evidence) {
+                    throw new ArgumentException("Element is not of type 'Evidence'", "element");
+                }
+        }
+
+        internal Evidence()
+            : base(new XElement(Iso19770_2.Evidence)) {
+        }
+
+        /// <summary>
+        /// Date the evidence was gathered.
+        /// </summary>
+        public DateTime? Date {
+            get {
+                var v = GetAttribute(Iso19770_2.DateAttribute);
+                if (v != null) {
+                    try {
+                        return XmlConvert.ToDateTime(v, XmlDateTimeSerializationMode.Utc);
+                    }
+                    catch {
+                    }
+                }
+                return null;
+            }
+            internal set {
+                if (value == null) {
+                    return;
+                }
+                var v = (DateTime)value;
+
+                AddAttribute(Iso19770_2.DateAttribute, v.ToUniversalTime().ToString("o",CultureInfo.CurrentCulture));
+            }
+        }
+
+        /// <summary>
+        /// Identifier for the device the evidence was gathered from.
+        /// </summary>
+        public string DeviceId {
+            get {
+                return GetAttribute(Iso19770_2.DeviceIdAttribute);
+            }
+            internal set {
+                AddAttribute(Iso19770_2.DeviceIdAttribute, value);
+            }
+        }
     }
 }

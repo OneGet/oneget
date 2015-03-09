@@ -27,6 +27,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using Microsoft.OneGet.Utility.Extensions;
     using Utility;
     using Constants = OneGet.Constants;
+    using Directory = System.IO.Directory;
 
     public abstract class CmdletWithSearchAndSource : CmdletWithSearch {
         protected readonly List<string, string> _filesWithoutMatches = new List<string, string>();

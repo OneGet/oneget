@@ -1,17 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//  http://www.apache.org/licenses/LICENSE-2.0
+//  
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//  
 
 namespace Microsoft.OneGet.Test.Core.Host {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Security;
     using Api;
     using Xunit.Abstractions;
 
     public class HostImpl : IHostApi {
         public bool IsCanceled {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
+            [SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
@@ -54,7 +65,7 @@ namespace Microsoft.OneGet.Test.Core.Host {
         }
 
         public IEnumerable<string> OptionKeys {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
+            [SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
@@ -65,21 +76,21 @@ namespace Microsoft.OneGet.Test.Core.Host {
         }
 
         public IEnumerable<string> Sources {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
+            [SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
         }
 
         public string CredentialUsername {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
+            [SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
         }
 
         public SecureString CredentialPassword {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
+            [SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
@@ -98,14 +109,14 @@ namespace Microsoft.OneGet.Test.Core.Host {
         }
 
         public bool IsInteractive {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
+            [SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
         }
 
         public int CallCount {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065")]
+            [SuppressMessage("Microsoft.Design", "CA1065")]
             get {
                 throw new NotImplementedException();
             }
@@ -114,8 +125,6 @@ namespace Microsoft.OneGet.Test.Core.Host {
 
     public class HostTests : Tests {
         public HostTests(ITestOutputHelper outputHelper) : base(outputHelper) {
-
-
         }
     }
 }

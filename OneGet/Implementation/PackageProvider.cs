@@ -166,6 +166,20 @@ namespace Microsoft.OneGet.Implementation {
             return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.GetInstalledPackages(name, request), Constants.PackageStatus.Installed);
         }
 
+        public SoftwareIdentity GetPackageDetails(SoftwareIdentity softwareIdentity, IHostApi requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
+            }
+
+            if (softwareIdentity == null) {
+                throw new ArgumentNullException("softwareIdentity");
+            }
+
+            new PackageDetailsRequestObject(this, requestObject, softwareIdentity, request => Provider.GetPackageDetails(softwareIdentity.FastPackageReference, request)).Wait();
+            
+            return softwareIdentity;
+        }
+
         public IAsyncEnumerable<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, IHostApi requestObject) {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
