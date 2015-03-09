@@ -199,7 +199,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         public IEnumerable<object> FindPackageByCanonicalId(string packageId, object requestObject) {
-            return PackageManagementService.FindPackageByCanonicalId(packageId, requestObject.As<IHostApi>());
+            return PackageManagementService.FindPackageByCanonicalId(packageId, (requestObject ?? new object()) .As<IHostApi>());
         }
 
         public bool RequirePackageProvider(string packageProviderName, string minimumVersion) {

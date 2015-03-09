@@ -62,6 +62,7 @@ REFERENCES=\
 #region sourcefiles
 SOURCES=\
  	Constants.cs \
+    Dependency.cs \
  	DynamicOption.cs \
  	Entity.cs \
  	Enums.cs \
