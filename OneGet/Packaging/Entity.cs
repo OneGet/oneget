@@ -82,6 +82,15 @@ namespace Microsoft.OneGet.Packaging {
             }
         }
 
+        public string Role {
+            get {
+                return GetAttribute(Iso19770_2.RoleAttribute.LocalName);
+            }
+            internal set {
+                AddAttribute(Iso19770_2.RoleAttribute, value);
+            }
+        }
+
         /// <summary>
         /// adds a role to the element.
         /// </summary>

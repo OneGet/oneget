@@ -13,10 +13,23 @@
 //  
 
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
+    using System;
+    using Utility.Extensions;
+
     public class Entity {
         public string Name {get; set;}
         public string RegId {get; set;}
         public string Role {get; set;}
+
+        public string[] Roles {
+            get {
+                return (string.IsNullOrWhiteSpace(Role) ? "unknown" : Role).Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+            }
+            set {
+                Role = value.IsNullOrEmpty() ? "unknown" : value.JoinWith(" ");
+            }
+        }
+
         public string Thumbprint {get; set;}
     }
 }
