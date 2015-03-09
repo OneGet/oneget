@@ -76,17 +76,27 @@ SOURCES=\
  	Implementation\Request.cs \
  	Implementation\RequestObject.cs \
  	Implementation\SoftwareIdentityRequestObject.cs \
+        Implementation\PackageDetailsRequestObject.cs \
+ 	Packaging\AttributeIndexer.cs \
+ 	Packaging\BaseElement.cs \
+ 	Packaging\Directory.cs \
  	Packaging\DynamicOption.cs \
  	Packaging\Entity.cs \
  	Packaging\Evidence.cs \
+ 	Packaging\File.cs \
+ 	Packaging\FilesystemItem.cs \
  	Packaging\InstallationOptions.cs \
  	Packaging\Iso19770_2.cs \
  	Packaging\Link.cs \
+ 	Packaging\MediaQuery.cs \
  	Packaging\Meta.cs \
  	Packaging\OptionCategory.cs \
  	Packaging\OptionType.cs \
  	Packaging\PackageSource.cs \
  	Packaging\Payload.cs \
+ 	Packaging\Process.cs \
+ 	Packaging\Resource.cs \
+ 	Packaging\ResourceCollection.cs \
  	Packaging\SoftwareIdentity.cs \
  	Packaging\SoftwareIdentityVersionComparer.cs \
  	Packaging\SoftwareMetadata.cs \

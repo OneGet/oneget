@@ -21,6 +21,7 @@ namespace Microsoft.OneGet.Packaging {
     using Implementation;
     using Utility.Collections;
     using Utility.Extensions;
+    using System.Globalization;
 
     /// <summary>
     ///     This class represents a package (retrieved from Find-SoftwareIdentity or Get-SoftwareIdentity)
@@ -79,16 +80,16 @@ namespace Microsoft.OneGet.Packaging {
                 return null;
             }
             if (string.IsNullOrWhiteSpace(version) && string.IsNullOrWhiteSpace(source)) {
-                return "{0}:{1}".format(provider.ToLower(), name);
+                return "{0}:{1}".format(provider.ToLower(CultureInfo.CurrentCulture), name);
             }
             if (string.IsNullOrWhiteSpace(source)) {
-                return "{0}:{1}/{2}".format(provider.ToLower(), name, version);
+                return "{0}:{1}/{2}".format(provider.ToLower(CultureInfo.CurrentCulture), name, version);
             }
             if (string.IsNullOrWhiteSpace(version)) {
-                "{0}:{1}#{2}".format(provider.ToLower(), name, source);
+                "{0}:{1}#{2}".format(provider.ToLower(CultureInfo.CurrentCulture), name, source);
             }
 
-            return "{0}:{1}/{2}#{3}".format(provider.ToLower(), name , version, source);
+            return "{0}:{1}/{2}#{3}".format(provider.ToLower(CultureInfo.CurrentCulture), name, version, source);
         }
 
         public string CanonicalId {
@@ -191,6 +192,9 @@ namespace Microsoft.OneGet.Packaging {
         }
 
         public string AddMetadataValue(string elementPath, Uri @namespace, string name, string value) {
+            if (@namespace == null) {
+                return null;
+            }
             var element = FindElementWithUniqueId(elementPath);
             if (element != null) {
                 element.AddAttribute(XNamespace.Get(@namespace.ToString()) + name, value);

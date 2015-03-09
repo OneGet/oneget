@@ -16,6 +16,7 @@ namespace Microsoft.OneGet.Packaging {
     using System;
     using System.Xml;
     using System.Xml.Linq;
+    using System.Globalization;
 
     /// <summary>
     /// From the schema:
@@ -60,7 +61,7 @@ namespace Microsoft.OneGet.Packaging {
                 }
                 var v = (DateTime)value;
 
-                AddAttribute(Iso19770_2.DateAttribute, v.ToUniversalTime().ToString("o"));
+                AddAttribute(Iso19770_2.DateAttribute, v.ToUniversalTime().ToString("o",CultureInfo.CurrentCulture));
             }
         }
 

@@ -15,6 +15,7 @@
 namespace Microsoft.OneGet.Packaging {
     using System;
     using System.Xml.Linq;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Specifies an arbitrary or custom resource in a swidtag. 
@@ -43,6 +44,7 @@ namespace Microsoft.OneGet.Packaging {
         /// From the swidtag schema:
         ///     The type of resource (ie, registrykey, port, rootUrl,etc..) 
         /// </summary>
+         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethod", Justification = "ISO field name.")]
         public string Type {
             get {
                 return GetAttribute(Iso19770_2.TypeAttribute);

@@ -61,7 +61,7 @@ namespace Microsoft.OneGet.Packaging {
                     return each;
                 }
 
-                if (elementId.StartsWith(eId)) {
+                if (elementId.StartsWith(eId,StringComparison.CurrentCulture)) {
                     return FindChildElementViaPath(eId, each, elementId);
                 }
             }

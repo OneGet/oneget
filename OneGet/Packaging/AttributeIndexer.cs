@@ -18,6 +18,7 @@ namespace Microsoft.OneGet.Packaging {
     using System.Xml.Linq;
     using Utility.Collections;
     using Utility.Extensions;
+    using System.Diagnostics.CodeAnalysis;
 
     public class AttributeIndexer {
         private XElement _element;
@@ -31,6 +32,7 @@ namespace Microsoft.OneGet.Packaging {
         /// </summary>
         /// <param name="key"></param>
         /// <returns>the string value of a given attribute. If the attribute does not exist, returns null.</returns>
+        [SuppressMessage("Microsoft.Design", "CA1043:UseIntegralOrStringArgumentForIndexers", Justification = "It's a collection of attributes.")]
         public string this[XName key] {
             get {
                 if (key == null || string.IsNullOrWhiteSpace(key.LocalName)) {

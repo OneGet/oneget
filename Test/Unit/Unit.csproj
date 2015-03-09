@@ -2,7 +2,7 @@
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\xunit.core.2.0.0-rc3-build2880\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props" Condition="Exists('..\..\packages\xunit.core.2.0.0-rc3-build2880\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props')" />
   <ImportGroup Condition="$(InternalBuild) == 'true'">
-    <Import Project="..\packages\xunit.core.2.0.0-beta5-build2785\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid\xunit.core.props" Condition="Exists('..\packages\xunit.core.2.0.0-beta5-build2785\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid\xunit.core.props')" />
+    <Import Project="..\packages\xunit.core.2.0.0-rc3-build2880\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props" Condition="Exists('..\packages\xunit.core.2.0.0-rc3-build2880\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props')" /> 
   </ImportGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -36,6 +36,18 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+<ItemGroup  Condition="$(InternalBuild) == 'true'">
+    <Reference Include="Microsoft.OneGet"  >
+        <HintPath>..\Microsoft.OneGet.exe</HintPath> 
+    </Reference>
+    <Reference Include="Microsoft.OneGet.Utility" >
+        <HintPath>..\Microsoft.OneGet.Utility.dll</HintPath> 
+    </Reference>
+    <Reference Include="Microsoft.OneGet.Utility.PowerShell" >
+        <HintPath>..\Microsoft.OneGet.Utility.PowerShell.dll</HintPath> 
+    </Reference>
+  </ItemGroup>
+  
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Runtime" />
@@ -44,6 +56,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Threading.Tasks" />
+    
     <Reference Include="xunit.abstractions">
       <HintPath>..\..\packages\xunit.abstractions.2.0.0-rc3-build2880\lib\net35\xunit.abstractions.dll</HintPath>
       <Private>True</Private>
@@ -118,6 +131,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\Providers\Inbox\PowerShell.MetaProvider\PowerShell.MetaProvider.csproj" Condition="$(CommunityBuild)">
       <Project>{ebeb46b5-3683-4d9f-939b-b1b2bbeea369}</Project>

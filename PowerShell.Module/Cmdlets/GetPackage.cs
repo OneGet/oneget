@@ -21,6 +21,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using Microsoft.OneGet.Utility.Collections;
     using Microsoft.OneGet.Utility.Extensions;
     using Utility;
+    using System.Diagnostics.CodeAnalysis;
 
     [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517135")]
     public class GetPackage : CmdletWithSearch {
@@ -44,6 +45,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Considered. Still No.")]
         protected bool IsPackageInVersionRange(SoftwareIdentity pkg) {
             if (RequiredVersion != null && SoftwareIdentityVersionComparer.CompareVersions(pkg.VersionScheme, pkg.Version, RequiredVersion) != 0) {
                 return false;
