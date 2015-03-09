@@ -14,6 +14,8 @@
 
 namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using Utility.Extensions;
 
     public class Entity {
@@ -21,12 +23,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public string RegId {get; set;}
         public string Role {get; set;}
 
-        public string[] Roles {
+        public IEnumerable<string> Roles {
             get {
                 return (string.IsNullOrWhiteSpace(Role) ? "unknown" : Role).Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
             }
-            set {
-                Role = value.IsNullOrEmpty() ? "unknown" : value.JoinWith(" ");
+            set
+            {
+                var values = value == null ? new string[0] : value.ToArray();
+                Role = ( values.Length == 0) ? "unknown" : value.JoinWith(" ");
             }
         }
 
