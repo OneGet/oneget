@@ -36,7 +36,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
         private int NextNumber {
             get {
                 lock (lockObject) {
-                    return _count ++;
+                    return ++_count;
                 }
             }
         }
@@ -146,7 +146,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
         public virtual bool IsInteractive {
             get {
                 Console.WriteLine("[IsInteractive]");
-                return false;
+                return true; // this way, it tries to bootstrap when asked.
             }
         }
 

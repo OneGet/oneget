@@ -68,9 +68,11 @@ namespace Microsoft.OneGet.Test.Core.Service {
                         Assert.True(svc.Initialize(new BasicHostImpl()));
                         // if we got this far, the svc is good to go.
 
-                        Assert.True( svc.RequirePackageProvider("testing", "nuget", "2.8.4.40", new BasicHostImpl()));
-
                         _service = svc;
+
+                        // now, get nuget installed.
+                        Assert.True( svc.RequirePackageProvider("testing", "nuget", "2.8.4.47", new BasicHostImpl()));
+
                     }
                 }
 
