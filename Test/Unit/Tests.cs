@@ -49,6 +49,8 @@ namespace Microsoft.OneGet.Test {
                 catch { }
             }));
              * */
+
+            // we need to ensure that 
         }
 
         private static ThreadLocal<ITestOutputHelper> _out = new ThreadLocal<ITestOutputHelper>();
