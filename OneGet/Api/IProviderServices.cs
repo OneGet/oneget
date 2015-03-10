@@ -15,11 +15,14 @@
 namespace Microsoft.OneGet.Api {
     using System;
     using System.Collections.Generic;
+    using Packaging;
 
     public interface IProviderServices {
         #region declare service-apis
 
         bool IsElevated {get;}
+
+        IEnumerable<SoftwareIdentity> FindPackageByCanonicalId(string canonicalId, IRequest requestObject);
 
         string GetCanonicalPackageId(string providerName, string packageName, string version, string source);
 
@@ -28,6 +31,8 @@ namespace Microsoft.OneGet.Api {
         string ParsePackageName(string canonicalPackageId);
 
         string ParsePackageVersion(string canonicalPackageId);
+
+        string ParsePackageSource(string canonicalPackageId);
 
         void DownloadFile(Uri remoteLocation, string localFilename, IRequest requestObject);
 

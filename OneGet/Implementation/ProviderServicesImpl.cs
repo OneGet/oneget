@@ -27,7 +27,7 @@ namespace Microsoft.OneGet.Implementation {
 
     internal class ProviderServicesImpl : IProviderServices {
         internal static IProviderServices Instance = new ProviderServicesImpl();
-        private static readonly Regex _canonicalPackageRegex = new Regex("(.*?):(.*?)/(.*)");
+        private static readonly Regex _canonicalPackageRegex = new Regex(@"([^:]*?):([^/\#]*)/?([^#]*)\#?(.*)");
 
         private PackageManagementService PackageManagementService {
             get {
@@ -39,6 +39,14 @@ namespace Microsoft.OneGet.Implementation {
             get {
                 return AdminPrivilege.IsElevated;
             }
+        }
+
+        public IEnumerable<SoftwareIdentity> FindPackageByCanonicalId(string canonicalId, IRequest requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
+            }
+
+            return PackageManagementService.FindPackageByCanonicalId(canonicalId, requestObject);
         }
 
         public string GetCanonicalPackageId(string providerName, string packageName, string version, string source) {
@@ -55,6 +63,10 @@ namespace Microsoft.OneGet.Implementation {
 
         public string ParsePackageVersion(string canonicalPackageId) {
             return _canonicalPackageRegex.Match(canonicalPackageId).Groups[3].Value;
+        }
+
+        public string ParsePackageSource(string canonicalPackageId) {
+            return _canonicalPackageRegex.Match(canonicalPackageId).Groups[4].Value;
         }
 
         public bool IsSupportedArchive(string localFilename, IRequest request) {
