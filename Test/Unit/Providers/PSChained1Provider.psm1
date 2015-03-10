@@ -19,7 +19,6 @@
 	if( (-not $name) -or ($name -eq "zlib"))  {
 		$pkgs = $request.FindPackageByCanonicalId("nuget:zlib/1.2.8.7", $req);
 		foreach( $pkg in $pkgs ) {
-		
 
 			$deps = (new-Object -TypeName  System.Collections.ArrayList)
 			foreach( $d in $pkg.Dependencies ) {
