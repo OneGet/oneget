@@ -74,6 +74,8 @@ namespace Microsoft.OneGet.Api {
 
         bool ExecuteElevatedAction(string provider, string payload, IRequest requestObject);
 
+        int StartProcess(string filename, string arguments, bool requiresElevation, out string standardOutput, IRequest requestObject);
+
         #endregion
 
 #if NOT_ADDED_YET
@@ -89,8 +91,6 @@ namespace Microsoft.OneGet.Api {
         void AddFolderToPath();
 
         void RemoveFolderFromPath();
-
-        void StartProcess();
 
         void InstallVSIX();
 

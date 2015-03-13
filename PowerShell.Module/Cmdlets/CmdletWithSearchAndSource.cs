@@ -170,7 +170,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
 
             // filter the items into three types of searches
-            _names = Name.IsNullOrEmpty() ? string.Empty.SingleItemAsEnumerable() : Name.Where(each => !IsUri(each) && !IsFile(each));
+            _names = Name.IsNullOrEmpty() ? string.Empty.SingleItemAsEnumerable() : Name.Where(each => !IsUri(each) && !IsFile(each)).ToArray();
 
 
            var requests = SelectedProviders.SelectMany(pv => {

@@ -161,6 +161,24 @@ namespace Microsoft.OneGet.Archivers.Compression
             }
         }
 
+        public string FullNameExtension
+        {
+            get
+            {
+                // GetFullPathInternal would have already stripped out the terminating "." if present.
+                int len = FullName.Length;
+                for (int i = len; --i >= 0;)
+                {
+                    char ch = FullName[i];
+                    if (ch == '.')
+                        return FullName.Substring(i, len - i);
+                    if (ch == System.IO.Path.DirectorySeparatorChar || ch == System.IO.Path.AltDirectorySeparatorChar || ch == System.IO.Path.VolumeSeparatorChar)
+                        break;
+                }
+                return String.Empty;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the archive that contains this file.
         /// </summary>

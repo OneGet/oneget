@@ -309,8 +309,6 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
                 var staticParameters = GetType().Get<Dictionary<string, ParameterMetadata>>("MyInvocation.MyCommand.Parameters");
 
-               
-
                 foreach (var md in dynamicOptions) {
                     if (DynamicParameterDictionary.ContainsKey(md.Name)) {
                         // todo: if the dynamic parameters from two providers aren't compatible, then what? 
@@ -341,7 +339,6 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                             // don't add it.
                             continue;
                         }
-                        
                         
                         DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
                     }

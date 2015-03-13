@@ -184,7 +184,7 @@ $(SET_MT_EXE)
     <PostBuildEvent Condition="$(InternalBuild)">
 
 :Run the tool to add the manifest to the binary.
-"$(ProjectDir)..\tools\mt.exe" -manifest $(ProjectDir)oneget.manifest -outputresource:$(IntermediateOutputPath)Microsoft.OneGet.Test.dll;#101</PostBuildEvent>
+"$(ProjectDir)..\tools\mt.exe" -manifest $(ProjectDir)oneget.manifest -outputresource:$(OutputPath)Microsoft.OneGet.Test.dll;#101</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>

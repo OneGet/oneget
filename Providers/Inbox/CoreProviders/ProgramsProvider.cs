@@ -109,7 +109,6 @@ namespace Microsoft.OneGet.Providers {
 
                 case "package":
                     // options used when searching for packages
-                    
                     break;
             }
         }
@@ -213,7 +212,6 @@ namespace Microsoft.OneGet.Providers {
                                     return false;
                                 }
                             }
-
                         }
                     }
                 }

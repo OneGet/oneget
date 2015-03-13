@@ -540,5 +540,44 @@ namespace Microsoft.OneGet.Implementation {
             }
             return false;
         }
+
+        public int StartProcess(string filename, string arguments, bool requiresElevation, out string standardOutput, IRequest requestObject)
+        {
+            System.Diagnostics.Process p = new System.Diagnostics.Process();
+
+            if (requiresElevation)
+            {
+                p.StartInfo.UseShellExecute = true;
+                p.StartInfo.Verb = "runas";
+            }
+            else
+            {
+                p.StartInfo.UseShellExecute = false;
+                p.StartInfo.RedirectStandardOutput = true;
+            }
+
+            p.StartInfo.CreateNoWindow = true;
+            p.StartInfo.FileName = filename;
+
+            if (!String.IsNullOrEmpty(arguments))
+            {
+                p.StartInfo.Arguments = arguments;
+            }
+
+            p.Start();
+
+            if (p.StartInfo.RedirectStandardOutput)
+            {
+                standardOutput = p.StandardOutput.ReadToEnd();
+            }
+            else
+            {
+                standardOutput = String.Empty;
+            }
+
+            p.WaitForExit();
+
+            return p.ExitCode;
+        }
     }
 }
