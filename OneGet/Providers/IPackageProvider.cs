@@ -82,7 +82,7 @@ namespace Microsoft.OneGet.Providers {
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
         void DownloadPackage(string fastPath, string location, IRequest requestObject);
-        void GetPackageDependencies(string fastPath, IRequest requestObject);
+
         void GetPackageDetails(string fastPath, IRequest requestObject);
 
         void InstallPackage(string fastPath, IRequest requestObject);

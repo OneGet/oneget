@@ -220,7 +220,7 @@ namespace Microsoft.OneGet.Implementation {
                             hostApi,
                         }.As<IHostApi>();
 
-                        return provider.FindPackage(name, version, null, null, 0, host).ReEnumerable();
+                        return provider.FindPackage(name, version, null, null, 0, host).Select( each => {each.Status = Constants.PackageStatus.Dependency; return each;}).ReEnumerable();
                     }
                 }
             }

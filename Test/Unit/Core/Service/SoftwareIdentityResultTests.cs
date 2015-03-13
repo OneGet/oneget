@@ -148,13 +148,6 @@ namespace Microsoft.OneGet.Test.Core.Service {
         }
 
         [Fact]
-        public void GetPackageDependenciesTest() {
-            using (CaptureConsole) {
-
-            }
-        }
-
-        [Fact]
         public void InstallPackageTest() {
             using (CaptureConsole) {
 

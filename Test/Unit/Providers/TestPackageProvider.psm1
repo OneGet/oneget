@@ -315,15 +315,6 @@ function Download-Package {
     write-debug "In TestPackageProvider - Download-Package"
 }
 
-<# 
-
-#>
-function Get-PackageDependencies { 
-    param(
-        [string] $fastPackageReference
-    )
-    write-debug "In TestPackageProvider - Get-PackageDependencies"
-}
 
 <# 
 

@@ -410,16 +410,6 @@ function Download-Package {
 
 }
 
-function Get-PackageDependencies { 
-    param(
-        [string] $fastPackageReference
-    )
-    write-debug "In TestChainingPackageProvider - Get-PackageDependencies"
-
-	# return values with
-	# write-output  (new-SoftwareIdentity "fastPackageReference"  "package-name" "package-version" "multipartnumeric" "source_name_or_location" "summary" "searchkey" "filename-of-the-package" "full-path-of-the-package-or-installed-location" )
-
-}
 
 function Get-PackageDetail { 
     param(

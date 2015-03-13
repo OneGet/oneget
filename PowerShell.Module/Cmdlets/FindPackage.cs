@@ -14,6 +14,7 @@
 
 namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Management.Automation;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
@@ -46,8 +47,13 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             WriteObject(package);
 
             if (IncludeDependencies) {
-                foreach (var dep in provider.GetPackageDependencies(package, this.ProviderSpecific(provider))) {
-                    ProcessPackage(provider, searchKey, dep);
+                foreach (var dep in package.Dependencies) {
+                    // note: future work may be needed if the package sources currently selected by the user don't
+                    // contain the dependencies. 
+                    var dependendcies = PackageManagementService.FindPackageByCanonicalId(dep, this);
+                    foreach (var depPackage in dependendcies) {
+                        ProcessPackage(depPackage.Provider, searchKey.Select(each => each + depPackage.Name).ToArray(), depPackage);
+                    }
                 }
             }
         }

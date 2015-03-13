@@ -215,9 +215,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public void DownloadPackage(string fastPath, string location, IRequest requestObject) {
             Call("DownloadPackage", requestObject, fastPath, location);
         }
-        public void GetPackageDependencies(string fastPath, IRequest requestObject) {
-            Call("GetPackageDependencies", requestObject, fastPath);
-        }
+    
         public void GetPackageDetails(string fastPath, IRequest requestObject) {
             Call("GetPackageDetails", requestObject, fastPath);
         }
