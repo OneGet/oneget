@@ -3872,7 +3872,7 @@ function New-SoftwareIdentityFromPackage
     $entities = New-Object -TypeName  System.Collections.ArrayList
     foreach( $entity in $Package.Entities )
     {
-        if( $entity.Roles -contains "author" -or $entity.Roles -contains "owner" )
+        if( $entity.Role -eq "author" -or $entity.Role -eq "owner" )
         {
             $entities.Add( (New-Entity -Name $entity.Name -Role $entity.Role -RegId $entity.RegId -Thumbprint $entity.Thumbprint)  )
         }
