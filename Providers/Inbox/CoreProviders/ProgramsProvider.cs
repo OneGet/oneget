@@ -16,13 +16,14 @@ namespace Microsoft.OneGet.Providers {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.IO;
     using System.Linq;
     using System.Security.AccessControl;
     using Implementation;
+    using Packaging;
     using Utility.Extensions;
     using Utility.Platform;
     using Win32;
+    using File = System.IO.File;
 
     public class ProgramsProvider {
         /// <summary>
@@ -113,49 +114,53 @@ namespace Microsoft.OneGet.Providers {
 
 
         /// <summary>
+        /// Returns the packages that are installed
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">the package name to match. Empty or null means match everything</param>
+        /// <param name="requiredVersion">the specific version asked for. If this parameter is specified (ie, not null or empty string) then the minimum and maximum values are ignored</param>
+        /// <param name="minimumVersion">the minimum version of packages to return . If the <code>requiredVersion</code> parameter is specified (ie, not null or empty string) this should be ignored</param>
+        /// <param name="maximumVersion">the maximum version of packages to return . If the <code>requiredVersion</code> parameter is specified (ie, not null or empty string) this should be ignored</param>
         /// <param name="request">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetInstalledPackages(string name, Request request) {
+        public void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
             }
             // Nice-to-have put a debug message in that tells what's going on.
-            request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", ProviderName, name);
+            request.Debug("Calling '{0}::GetInstalledPackages' '{1}','{2}','{3}','{4}'", ProviderName, name, requiredVersion, minimumVersion, maximumVersion);
 
             // dump out results.
             var includeWindowsInstaller = request.GetOptionValue("IncludeWindowsInstaller").IsTrue();
             if (Environment.Is64BitOperatingSystem) {
                 using (var hklm64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
-                    if (!YieldPackages("hklm64", hklm64, name, includeWindowsInstaller, request)) {
+                    if (!YieldPackages("hklm64", hklm64, name, includeWindowsInstaller,requiredVersion, minimumVersion,maximumVersion, request)) {
                         return;
                     }
                 }
 
                 using (var hkcu64 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false)) {
-                    if (!YieldPackages("hkcu64", hkcu64, name, includeWindowsInstaller, request)) {
+                    if (!YieldPackages("hkcu64", hkcu64, name, includeWindowsInstaller, requiredVersion, minimumVersion, maximumVersion, request)) {
                         return;
                     }
                 }
             }
 
             using (var hklm32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false)) {
-                if (!YieldPackages("hklm32", hklm32, name, includeWindowsInstaller, request)) {
+                if (!YieldPackages("hklm32", hklm32, name, includeWindowsInstaller, requiredVersion, minimumVersion, maximumVersion, request)) {
                     return;
                 }
             }
 
             using (var hkcu32 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false)) {
-                if (!YieldPackages("hkcu32", hkcu32, name, includeWindowsInstaller, request)) {
+                if (!YieldPackages("hkcu32", hkcu32, name, includeWindowsInstaller, requiredVersion, minimumVersion,maximumVersion, request)) {
                 }
             }
         }
 
 
-        private bool YieldPackages(string hive, RegistryKey regkey, string name, bool includeWindowsInstaller, Request request) {
+        private bool YieldPackages(string hive, RegistryKey regkey, string name, bool includeWindowsInstaller, string requiredVersion, string minimumVersion, string maximumVersion, Request request) {
             if (regkey != null) {
                 foreach (var key in regkey.GetSubKeyNames()) {
                     var subkey = regkey.OpenSubKey(key);
@@ -177,6 +182,20 @@ namespace Microsoft.OneGet.Providers {
                                 var comments = properties.Get("Comments") ?? "";
 
                                 var fp = hive + @"\" + subkey;
+
+                                if (!string.IsNullOrEmpty(requiredVersion)) {
+                                    if (SoftwareIdentityVersionComparer.CompareVersions("unknown", requiredVersion, productVersion) != 0) {
+                                        continue;
+                                    }
+                                } else {
+                                    if (!string.IsNullOrEmpty(minimumVersion) && SoftwareIdentityVersionComparer.CompareVersions("unknown", productVersion, minimumVersion ) < 0) {
+                                        continue;
+                                    }
+                                    if (!string.IsNullOrEmpty(maximumVersion) && SoftwareIdentityVersionComparer.CompareVersions("unknown",productVersion, maximumVersion ) > 0) {
+                                        continue;
+                                    }
+                                }
+
                                 if (request.YieldSoftwareIdentity(fp, productName, productVersion, "unknown", comments, "", name, "", "") != null) {
                                     if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => request.AddMetadata(fp, k.MakeSafeFileName(), properties[k]) == null )) {
                                         return false;

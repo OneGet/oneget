@@ -203,6 +203,43 @@ namespace Microsoft.OneGet.Utility.Extensions {
         public static object ToArrayT(this IEnumerable<object> enumerable, Type elementType) {
             return _toArrayMethods.GetOrAdd(elementType, () => _toArrayMethod.MakeGenericMethod(elementType)).Invoke(null, new[] { enumerable.ToIEnumerableT(elementType) });
         }
+
+        /// <summary>
+        /// returns the index position where the predicate matches the value
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public static int IndexWhere<T>(this IEnumerable<T> source, Func<T, int, bool> predicate) {
+            if (source != null && predicate != null) {
+                var index = -1;
+                if (source.Any(element => predicate(element, ++index))) {
+                    return index;
+                }
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// returns the index position where the predicate matches the value
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public static int IndexWhere<T>(this IEnumerable<T> source, Func<T, bool> predicate) {
+            if (source != null && predicate != null) {
+                var index = -1;
+                if (source.Any(element => {
+                    ++index;
+                    return predicate(element);
+                })) {
+                    return index;
+                }
+            }
+            return -1;
+        }
     }
 
     // <summary>Provides a task scheduler that dedicates a thread per task.</summary>

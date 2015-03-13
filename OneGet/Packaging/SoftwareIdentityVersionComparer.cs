@@ -38,8 +38,25 @@ namespace Microsoft.OneGet.Packaging {
         }
 
         public static int CompareVersions(string versionScheme, string xVersion, string yVersion) {
-            xVersion = xVersion ?? string.Empty;
-            yVersion = yVersion ?? string.Empty;
+            xVersion = (xVersion ?? string.Empty).Trim();
+            yVersion = (yVersion ?? string.Empty).Trim();
+
+            // regardless of type, if the strings are equal, it's the same version. 
+            // if we have two nulls or blanks, this works the same 
+            if (xVersion.Equals(yVersion)) {
+                return 0;
+            }
+
+            if (xVersion.IsNullOrEmpty()) {
+                // yVersion has a value and is always therefore greater than not a value
+                return -1;
+            }
+
+            if (yVersion.IsNullOrEmpty()) {
+                // xVersion has a value and is always therefore greater than not a value
+                return 1;
+            }
+
 
             switch ((versionScheme ?? "unknown").ToLowerInvariant()) {
                 case "alphanumeric":
@@ -64,23 +81,40 @@ namespace Microsoft.OneGet.Packaging {
                     return CompareSemVer(xVersion, yVersion);
 
                 case "unknown":
-                    // can't sort what we don't know
-                    return 0;
+                    return GuessComparison(xVersion, yVersion);
 
                 default:
-                    // can't sort what we don't know
-                    return 0;
+                    return GuessComparison(xVersion, yVersion);
             }
+        }
+
+        private static int GuessComparison(string xVersion, string yVersion) {
+            // if either one starts with a dot, prepend a zero
+            if (xVersion[0] == '.') {
+                xVersion = "0" + xVersion;
+            }
+            if (yVersion[0] == '.') {
+                yVersion = "0" + yVersion;
+            }
+
+            // if they both start with numbers, we're going to treat them as multipart numeric with suffix.
+            if (xVersion.IndexWhere(ch => ch >= '0' && ch <= '9') == 0 && yVersion.IndexWhere(ch => ch >= '0' && ch <= '9') == 0  ) {
+                return CompareMultipartNumericSuffix(xVersion, yVersion);
+            }
+
+            // otherwise, we really don't know
+            return 0;
         }
 
         private static int CompareMultipartNumeric(string xVersion, string yVersion) {
             var xs = xVersion.Split('.');
             var ys = yVersion.Split('.');
-            for (var i = 0; i < xs.Length; i++) {
+            var len = Math.Max(xs.Length, ys.Length);
+            for (var i = 0; i < len; i++) {
                 ulong xLong;
                 ulong yLong;
 
-                if (ulong.TryParse(xs[i], out xLong) && ulong.TryParse(ys.Length > i ? ys[i] : "0", out yLong)) {
+                if (ulong.TryParse(xs.Length > i ? xs[i] : "0", out xLong) && ulong.TryParse(ys.Length > i ? ys[i] : "0", out yLong)) {
                     var compare = xLong.CompareTo(yLong);
                     if (compare != 0) {
                         return compare;
@@ -93,8 +127,8 @@ namespace Microsoft.OneGet.Packaging {
         }
 
         private static int CompareMultipartNumericSuffix(string xVersion, string yVersion) {
-            var xPos = IndexOfNotAny(xVersion);
-            var yPos = IndexOfNotAny(yVersion);
+            var xPos = IndexOfNonNumericWithDots(xVersion);
+            var yPos = IndexOfNonNumericWithDots(yVersion);
             var xMulti = xPos == -1 ? xVersion : xVersion.Substring(0, xPos);
             var yMulti = yPos == -1 ? yVersion : yVersion.Substring(0, yPos);
             var compare = CompareMultipartNumeric(xMulti, yMulti);
@@ -123,8 +157,8 @@ namespace Microsoft.OneGet.Packaging {
         }
 
         private static int CompareSemVer(string xVersion, string yVersion) {
-            var xPos = IndexOfNotAny(xVersion);
-            var yPos = IndexOfNotAny(yVersion);
+            var xPos = IndexOfNonNumericWithDots(xVersion);
+            var yPos = IndexOfNonNumericWithDots(yVersion);
             var xMulti = xPos == -1 ? xVersion : xVersion.Substring(0, xPos);
             var yMulti = yPos == -1 ? yVersion : yVersion.Substring(0, yPos);
             var compare = CompareMultipartNumeric(xMulti, yMulti);
@@ -152,18 +186,8 @@ namespace Microsoft.OneGet.Packaging {
             return String.Compare(xVersion.Substring(xPos), yVersion.Substring(yPos), StringComparison.Ordinal);
         }
 
-        private static int IndexOfNotAny(string version, params char[] chars) {
-            if (string.IsNullOrWhiteSpace(version)) {
-                return -1;
-            }
-            var n = 0;
-            foreach (var ch in version) {
-                if (chars.Contains(ch)) {
-                    return n;
-                }
-                n++;
-            }
-            return -1;
+        private static int IndexOfNonNumericWithDots(string version) {
+            return string.IsNullOrEmpty(version) ? -1 : version.IndexWhere(ch => (ch < '0' || ch > '9') && ch != '.' );
         }
     }
 }

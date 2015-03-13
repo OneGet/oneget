@@ -170,6 +170,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         public object CallPowerShell(params object[] args) {
             if (IsMethodImplemented) {
+#if DEEP_DEBUG
+                Debug("Calling PowerShell Method [{0}] ({1})", CommandInfo.Name, args.WhereNotNull().Select(each => each.ToString()).JoinWithComma());
+#endif
                 return _provider.CallPowerShell(this, args);
             }
             return null;

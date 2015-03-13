@@ -90,7 +90,10 @@ function Find-PackageByUri {
 #>
 function Get-InstalledPackage { 
     param(
-        [string] $name
+        [string] $name,
+		[string] $requiredVersion,
+		[string] $minimumVersion,
+		[string] $maximumVersion
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it

@@ -180,7 +180,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 }
 
                 // quickly check to see if this package is already installed.
-                var installedPkgs = provider.GetInstalledPackages(pkg.Name, this.ProviderSpecific(provider)).CancelWhen(_cancellationEvent.Token).ToArray();
+                var installedPkgs = provider.GetInstalledPackages(pkg.Name,pkg.Version,null,null, this.ProviderSpecific(provider)).CancelWhen(_cancellationEvent.Token).ToArray();
                 if (IsCanceled) {
                     // if we're stopping, just get out asap.
                     return false;

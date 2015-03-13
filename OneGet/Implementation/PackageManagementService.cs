@@ -419,7 +419,22 @@ namespace Microsoft.OneGet.Implementation {
                     request.Error(Constants.Messages.ProviderPluginLoadFailure, ErrorCategory.InvalidOperation.ToString(), providerAssemblyName, request.FormatMessageString(Constants.Messages.ProviderPluginLoadFailure, providerAssemblyName));
                 }
             });
+#if DEEP_DEBUG
+            WaitForDebugger();
+#endif 
         }
+
+#if DEEP_DEBUG
+        internal void WaitForDebugger() {
+            if (!System.Diagnostics.Debugger.IsAttached) {
+                Console.Beep(500, 2000);
+                while (!System.Diagnostics.Debugger.IsAttached) {
+                    System.Threading.Thread.Sleep(1000);
+                    Console.Beep(500, 200);
+                }
+            }
+        }
+#endif 
 
         private static IEnumerator<string> GetProvidersFromRegistry(RegistryKey registryKey, string p) {
             RegistryKey key;

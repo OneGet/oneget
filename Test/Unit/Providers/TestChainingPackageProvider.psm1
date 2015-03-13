@@ -284,7 +284,11 @@ function Find-PackageByUri {
 
 function Get-InstalledPackage { 
     param(
-        [string] $name
+        [string] $name,
+		[string] $requiredVersion,
+		[string] $minimumVersion,
+		[string] $maximumVersion
+
     )
     write-debug "In TestChainingPackageProvider - Get-InstalledPackage {0} {1}" $InstalledPackages.Count $name
 

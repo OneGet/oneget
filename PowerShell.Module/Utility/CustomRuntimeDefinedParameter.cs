@@ -26,7 +26,7 @@ namespace Microsoft.PowerShell.OneGet.Utility {
     internal class CustomRuntimeDefinedParameter : RuntimeDefinedParameter {
         internal HashSet<DynamicOption> Options = new HashSet<DynamicOption>();
 
-        public CustomRuntimeDefinedParameter(DynamicOption option, bool isInvocation, IEnumerable<string> parameterSets)
+        public CustomRuntimeDefinedParameter(DynamicOption option, bool isInvocation, IEnumerable<string> parameterSets )
             : base(option.Name, ActualParameterType(option.Type), new Collection<Attribute>()) {
             if (isInvocation) {
                 Attributes.Add(new ParameterAttribute());

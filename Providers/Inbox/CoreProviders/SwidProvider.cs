@@ -290,19 +290,23 @@ namespace Microsoft.OneGet.Providers {
             }
         }
 
-        /// <summary>
+                /// <summary>
+        /// Returns the packages that are installed
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="requestObject">
+        /// <param name="name">the package name to match. Empty or null means match everything</param>
+        /// <param name="requiredVersion">the specific version asked for. If this parameter is specified (ie, not null or empty string) then the minimum and maximum values are ignored</param>
+        /// <param name="minimumVersion">the minimum version of packages to return . If the <code>requiredVersion</code> parameter is specified (ie, not null or empty string) this should be ignored</param>
+        /// <param name="maximumVersion">the maximum version of packages to return . If the <code>requiredVersion</code> parameter is specified (ie, not null or empty string) this should be ignored</param>
+        /// <param name="request">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetInstalledPackages(string name, IRequest requestObject) {
+        public void GetInstalledPackages(string name,string requiredVersion, string minimumVersion, string maximumVersion, IRequest requestObject) {
             try {
                 // create a strongly-typed request object.
                 using (var request = requestObject.As<Request>()) {
                     // Nice-to-have put a debug message in that tells what's going on.
-                    request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", ProviderName, name);
+                    request.Debug("Calling '{0}::GetInstalledPackages' '{1}','{2}','{3}','{4}'", PackageProviderName, name, requiredVersion, minimumVersion, maximumVersion);
                 }
             } catch (Exception e) {
                 // We shoudn't throw exceptions from here, it's not-optimal. And if the exception class wasn't properly Serializable, it'd cause other issues.
