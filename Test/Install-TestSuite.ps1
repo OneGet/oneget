@@ -31,9 +31,9 @@ cd unit
 #>
 
 
-# Install ProGet
-cd $PSScriptRoot
-.\scripts\install-repository.ps1 
+# Install ProGet -- not needed because of sandbox.
+#cd $PSScriptRoot
+#.\scripts\install-repository.ps1 
 
 # Make sure the sandbox can run
 if (get-command remove-iissite -ea silentlycontinue) { 

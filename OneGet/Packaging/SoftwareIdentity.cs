@@ -325,24 +325,5 @@ namespace Microsoft.OneGet.Packaging {
         public string AddDependency(string providerName, string packageName, string version, string source, string appliesTo) {
             return AddLink(new Uri(CreateCanonicalId(providerName, packageName, version, source)), Iso19770_2.Relationship.Requires, null, null, null, appliesTo, null);
         }
-
-        /// <summary>
-        /// Accessor to grab Meta attribute values in an aggregate fashion.
-        /// </summary>
-        /// <param name="key">Meta attribute name</param>
-        /// <returns>a collection of strings with the values from all Meta elements that match</returns>
-        public IEnumerable<string> this[string key] {
-            get {
-                return Element.Elements(Iso19770_2.Meta).Where(each =>  {
-                    try {
-                        return (each.Attribute(key) != null);
-                    } catch {
-                        // happens when key is not a legal attribute name
-                    }
-                return false;
-            } ).Select(each => each.Attribute(key).Value).ReEnumerable();
-                
-            }
-        }
     }
 }
