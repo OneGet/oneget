@@ -151,7 +151,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         ///     the CORE and HOST
         /// </param>
         public void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, IRequest requestObject) {
-            Call("GetInstalledPackages",requestObject, name,requestObject,requiredVersion,minimumVersion,maximumVersion);
+            Call("GetInstalledPackages",requestObject, name,requiredVersion,minimumVersion,maximumVersion);
         }
 
         public void GetDynamicOptions(string category, IRequest requestObject) {

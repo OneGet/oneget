@@ -186,17 +186,6 @@ namespace Microsoft.PowerShell.OneGet.Resources {
                 return ResourceManager.GetString("CaptionPackageNotTrusted", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to The package(s) comes from a package source that is not marked as trusted..
-        /// </summary>
-        internal static string CaptionSourceNotTrusted
-        {
-            get
-            {
-                return ResourceManager.GetString("CaptionSourceNotTrusted", resourceCulture);
-            }
-        }
         
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; failed to uninstall..
@@ -204,6 +193,15 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         internal static string CaptionPackageUninstallFailure {
             get {
                 return ResourceManager.GetString("CaptionPackageUninstallFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package(s) come from a package source that is not marked as trusted..
+        /// </summary>
+        internal static string CaptionSourceNotTrusted {
+            get {
+                return ResourceManager.GetString("CaptionSourceNotTrusted", resourceCulture);
             }
         }
         
@@ -253,6 +251,15 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The path &apos;{0}&apos; must refer to a single file system path..
+        /// </summary>
+        internal static string FilePathMustBeFileSystemPath {
+            get {
+                return ResourceManager.GetString("FilePathMustBeFileSystemPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; failed to install..
         /// </summary>
         internal static string InstallationFailure {
@@ -276,6 +283,15 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         internal static string MatchesMultipleProviders {
             get {
                 return ResourceManager.GetString("MatchesMultipleProviders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Install-Package requires parameters to select a package to install..
+        /// </summary>
+        internal static string MustSpecifyCriteria {
+            get {
+                return ResourceManager.GetString("MustSpecifyCriteria", resourceCulture);
             }
         }
         
@@ -350,17 +366,6 @@ namespace Microsoft.PowerShell.OneGet.Resources {
                 return ResourceManager.GetString("PackageFileExists", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to User declined to install untrusted package &apos;{0}&apos;.
-        /// </summary>
-        internal static string UserDeclinedUntrustedPackageInstall
-        {
-            get
-            {
-                return ResourceManager.GetString("UserDeclinedUntrustedPackageInstall", resourceCulture);
-            }
-        }
         
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; from package provider &apos;{1}&apos; requires the &apos;{2}&apos; parameter to install..
@@ -377,6 +382,15 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         internal static string PackageSourceExists {
             get {
                 return ResourceManager.GetString("PackageSourceExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to download the list of available providers. Check your internet connection..
+        /// </summary>
+        internal static string ProviderSwidtagUnavailable {
+            get {
+                return ResourceManager.GetString("ProviderSwidtagUnavailable", resourceCulture);
             }
         }
         
@@ -444,6 +458,15 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error running Save-Package cmdlet: {0}.
+        /// </summary>
+        internal static string SavePackageError {
+            get {
+                return ResourceManager.GetString("SavePackageError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ??? not used ???.
         /// </summary>
         internal static string ShouldContinueWithUntrustedPackageSource {
@@ -471,7 +494,7 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to find package source &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Unable to find package source &apos;{0}&apos;. Use Get-PackageSource to see all available package sources..
         /// </summary>
         internal static string SourceNotFound {
             get {
@@ -557,6 +580,15 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         internal static string UnknownProviders {
             get {
                 return ResourceManager.GetString("UnknownProviders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User declined to install untrusted package ({0})..
+        /// </summary>
+        internal static string UserDeclinedUntrustedPackageInstall {
+            get {
+                return ResourceManager.GetString("UserDeclinedUntrustedPackageInstall", resourceCulture);
             }
         }
     }

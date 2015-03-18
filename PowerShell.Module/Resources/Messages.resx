@@ -344,4 +344,10 @@
   <data name="SavePackageError" xml:space="preserve">
     <value>Error running Save-Package cmdlet: {0}</value>
   </data>
+  <data name="ProviderSwidtagUnavailable" xml:space="preserve">
+    <value>Unable to download the list of available providers. Check your internet connection.</value>
+  </data>
+  <data name="MustSpecifyCriteria" xml:space="preserve">
+    <value>Install-Package requires parameters to select a package to install.</value>
+  </data>
 </root>

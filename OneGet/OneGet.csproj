@@ -63,6 +63,7 @@
     <Compile Include="Packaging\File.cs" />
     <Compile Include="Packaging\FilesystemItem.cs" />
     <Compile Include="Packaging\MediaQuery.cs" />
+    <Compile Include="Packaging\MetadataIndexer.cs" />
     <Compile Include="Packaging\OptionCategory.cs" />
     <Compile Include="Packaging\OptionType.cs" />
     <Compile Include="Implementation\PackageManagementService.cs" />

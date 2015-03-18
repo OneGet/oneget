@@ -548,7 +548,6 @@ namespace Microsoft.OneGet.Implementation {
             if (requiresElevation)
             {
                 p.StartInfo.UseShellExecute = true;
-                p.StartInfo.Verb = "runas";
             }
             else
             {

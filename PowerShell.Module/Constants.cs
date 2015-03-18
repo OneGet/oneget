@@ -58,6 +58,7 @@ namespace Microsoft.PowerShell.OneGet {
             public static ErrorMessage DisambiguateForUninstall = new ErrorMessage(Messages.DisambiguateForUninstall, ErrorCategory.InvalidArgument);
             public static ErrorMessage InstallationFailure = new ErrorMessage(Messages.InstallationFailure, ErrorCategory.InvalidOperation);
             public static ErrorMessage MatchesMultipleProviders = new ErrorMessage(Messages.MatchesMultipleProviders, ErrorCategory.InvalidArgument);
+            public static ErrorMessage MustSpecifyCriteria = new ErrorMessage(Messages.MustSpecifyCriteria, ErrorCategory.InvalidArgument);
             public static ErrorMessage NameOrLocationRequired = new ErrorMessage(Messages.NameOrLocationRequired, ErrorCategory.InvalidArgument);
             public static ErrorMessage NoMatchForProvidersAndSources = new ErrorMessage(Messages.NoMatchForProvidersAndSources, ErrorCategory.InvalidArgument);
             public static ErrorMessage NoMatchFound = new ErrorMessage(Messages.NoMatchFound, ErrorCategory.ObjectNotFound);
@@ -107,6 +108,7 @@ namespace Microsoft.PowerShell.OneGet {
             internal const string InstallationFailure = "MSG:InstallationFailure";
             internal const string MatchesMultiplePackages = "MSG:MatchesMultiplePackages";
             internal const string MatchesMultipleProviders = "MSG:MatchesMultipleProviders";
+            internal const string MustSpecifyCriteria = "MSG:MustSpecifyCriteria";
             internal const string NameOrLocationRequired = "MSG:NameOrLocationRequired";
             internal const string NoMatchesForWildcard = "MSG:NoMatchesForWildcard";
             internal const string NoMatchForProvidersAndSources = "MSG:NoMatchForProvidersAndSources";

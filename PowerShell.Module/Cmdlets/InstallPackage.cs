@@ -107,6 +107,13 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             if (IsPackageByObject) {
                 return InstallPackages(InputObject);
             }
+            if (MyInvocation.BoundParameters.Count == 0 || (MyInvocation.BoundParameters.Count == 1 &&  MyInvocation.BoundParameters.ContainsKey("ProviderName")) ) {
+                // didn't pass in anything, (except maybe Providername)
+                // that's no ok -- we need some criteria 
+                Error(Constants.Errors.MustSpecifyCriteria);
+                return false;
+            }
+
             // otherwise, just do the search right now.
             return base.ProcessRecordAsync();
         }

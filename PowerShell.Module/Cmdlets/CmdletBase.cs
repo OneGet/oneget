@@ -190,7 +190,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 }).Wait();
             }
 
-            return result ?? Messages.ResourceManager.GetString(messageText);
+            return result ?? Messages.ResourceManager.GetString(messageText) ?? defaultText;
         }
 
         public virtual bool AskPermission(string permission) {

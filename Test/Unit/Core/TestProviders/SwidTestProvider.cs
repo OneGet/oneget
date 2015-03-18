@@ -181,6 +181,8 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
                     var meta = request.AddMeta(pkg);
                     request.AddMetadata(meta, "sample", "value");
                     request.AddMetadata(meta, new Uri("http://oneget.org/oneget"), "testkey", "testvalue");
+
+                    var link = request.AddDependency(PackageProviderName, "third", "[1.0]", null, null);
                 }
             }
 

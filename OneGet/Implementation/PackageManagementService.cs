@@ -204,8 +204,8 @@ namespace Microsoft.OneGet.Implementation {
         }
 
         public IEnumerable<SoftwareIdentity> FindPackageByCanonicalId(string packageId, IHostApi hostApi) {
-            if (Uri.IsWellFormedUriString(packageId, UriKind.Absolute)) {
-                var pkgId = new Uri(packageId);
+            Uri pkgId;
+            if (Uri.TryCreate(packageId, UriKind.Absolute, out pkgId)) {
                 var segments = pkgId.Segments;
                 if (segments.Length > 0) {
                     var provider = SelectProviders(pkgId.Scheme, hostApi).FirstOrDefault();
@@ -216,7 +216,12 @@ namespace Microsoft.OneGet.Implementation {
                         var sources = (string.IsNullOrWhiteSpace(source) ? hostApi.Sources : source.SingleItemAsEnumerable()).ToArray();
                         
                         var host = new object[] {
-                            new { GetSources = new Func<IEnumerable<string>>(() => sources), },
+                            new {
+                                GetSources = new Func<IEnumerable<string>>(() => sources), 
+                                GetOptionValues = new Func<string, IEnumerable<string>>(key => key.EqualsIgnoreCase("FindByCanonicalId") ? new[] { "true" } : hostApi.GetOptionValues(key)),
+                                GetOptionKeys = new Func<IEnumerable<string>>(() => hostApi.OptionKeys.ConcatSingleItem("FindByCanonicalId")),
+                            },
+                            
                             hostApi,
                         }.As<IHostApi>();
 

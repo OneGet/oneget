@@ -15,7 +15,6 @@
 namespace Microsoft.OneGet.Packaging {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel.Design;
     using System.Linq;
     using System.Xml.Linq;
     using Api;
@@ -47,7 +46,7 @@ namespace Microsoft.OneGet.Packaging {
 
         public IEnumerable<string> Dependencies {
             get {
-                return Links.Where(each => Iso19770_2.Relationship.Requires == each.Relationship && each.HRef != null).Select(each => each.HRef.ToString() ).ReEnumerable();
+                return Links.Where(each => Iso19770_2.Relationship.Requires == each.Relationship).Select(each => each.HRef).WhereNotNull().Select( each => each.ToString()).ReEnumerable();
             }
         }
 
@@ -57,7 +56,7 @@ namespace Microsoft.OneGet.Packaging {
         public string FullPath {get; internal set;}
         public string PackageFilename {get; internal set;}
         public bool FromTrustedSource {get; internal set;}
-        
+
         public string Summary {
             get {
                 return Element.Elements(Iso19770_2.Meta).Select(each => each.GetAttribute(Iso19770_2.SummaryAttribute)).WhereNotNull().FirstOrDefault();
@@ -75,7 +74,7 @@ namespace Microsoft.OneGet.Packaging {
             }
         }
 
-        internal static string CreateCanonicalId(string provider, string name, string version, string source ) {
+        internal static string CreateCanonicalId(string provider, string name, string version, string source) {
 
             if (provider == null || name == null) {
                 return null;
@@ -324,6 +323,12 @@ namespace Microsoft.OneGet.Packaging {
 
         public string AddDependency(string providerName, string packageName, string version, string source, string appliesTo) {
             return AddLink(new Uri(CreateCanonicalId(providerName, packageName, version, source)), Iso19770_2.Relationship.Requires, null, null, null, appliesTo, null);
+        }
+
+        public MetadataIndexer Metadata {
+            get {
+                return new MetadataIndexer(this);
+            }
         }
     }
 }
