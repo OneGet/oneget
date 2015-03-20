@@ -4,7 +4,7 @@
 
 ### Get Started!
 
-Download the latest 'experimental' release [here](http://oneget.org/oneget.zip) -- you can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notified of every new build.
+Download the latest 'experimental' release [here](http://oneget.org/install-oneget.exe) -- you can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notified of every new build.
 
 Download the latest 'official' release [here](http://www.microsoft.com/en-us/download/details.aspx?id=44987) -- currently it's in the WMF 5.0 CTP (WMF is where you get PowerShell!). This build does not currently contain the Chocolatey Provider.
 
@@ -21,11 +21,11 @@ OneGet should be shipping inside future versions of PowerShell, and by extension
 #### Required Tools
 - Visual Studio 2013
 - Powershell Tools for Visual Studio : http://visualstudiogallery.msdn.microsoft.com/c9eb3ba8-0c59-4944-9a62-6eee37294597
-- XUnit ( I currently use 0.99.3 ) : http://xunit.codeplex.com/releases
+- XUnit ( I currently use 2.0.0.0 ) : http://xunit.codeplex.com/releases
 
 #### Optional Tools
 - Resharper - http://www.jetbrains.com/resharper/
-- Resharper xUnit test runner - http://resharper-plugins.jetbrains.com/packages/xunitcontrib/1.6.2
+- Resharper xUnit test runner - http://resharper-plugins.jetbrains.com/packages/xunitcontrib/2.0.0
 - Wix 3.9 : http://wixtoolset.org (only if you want to build the MSI and Installer)
 
 check out the source code 
@@ -37,20 +37,20 @@ check out the source code
 # go to the project folder
 > cd oneget
 
-# switch to the wip branch
+# optional: switch to the wip branch
 > git checkout wip
 
 # get the submodules for this branch
 > git submodule update --init
 
 # fix the detached HEADs
-> cd NuGetProvider 
+> cd providers\dynamic\NuGetProvider 
 > git checkout master
 > cd ..
-> cd ProviderSdk
+> cd providers\sdk\ProviderSdk
 > git checkout master
 > cd ..
-> cd cmdlet-testsuite
+> cd test\bvt\cmdlet-testsuite
 > git checkout master
 > cd ..
 
@@ -70,9 +70,6 @@ check out the source code
 > git remote add origin <your-repo-url> 
     
 ```
-
-### SEE THE CURRENT RELEASE NOTES for this branch: 
-### https://github.com/OneGet/oneget/blob/wip/release-notes.md 
 
 
 ## Understanding the OneGet code repository
