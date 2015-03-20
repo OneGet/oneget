@@ -1,23 +1,23 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Test.Core.Service {
+namespace Microsoft.PackageManagement.Test.Core.Service {
     using System;
     using System.Linq;
     using System.Xml.Linq;
     using Implementation;
-    using OneGet.Packaging;
+    using PackageManagement.Packaging;
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
@@ -75,21 +75,21 @@ namespace Microsoft.OneGet.Test.Core.Service {
         [Fact]
         public void TestInitialized() {
             using (CaptureConsole) {
-             
+
             }
         }
 
         [Fact]
         public void TestFeatures() {
             using (CaptureConsole) {
-             
+
             }
         }
 
         [Fact]
         public void DynamicOptionsTest() {
             using (CaptureConsole) {
-               
+
             }
         }
 
@@ -114,7 +114,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
             }
         }
 
-      
+
         [Fact]
         public void FindPackageByUriTest() {
             using (CaptureConsole) {
@@ -154,7 +154,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
         [Fact]
         public void IsSupportedFile() {
             using (CaptureConsole) {
-               
+
             }
         }
 

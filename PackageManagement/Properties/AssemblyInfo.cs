@@ -1,16 +1,16 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -20,11 +20,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("Microsoft.OneGet")]
-[assembly: AssemblyDescription("OneGet Core")]
+[assembly: AssemblyTitle("Microsoft.PackageManagement")]
+[assembly: AssemblyDescription("PackageManagement Core")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("OneGet")]
+[assembly: AssemblyProduct("PackageManagement")]
 [assembly: AssemblyCopyright("Copyright Microsoft © 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -33,13 +33,13 @@ using System.Runtime.InteropServices;
 // but we're sharing code with the other tightly-coupled providers
 // Third-party providers shouldn't use (or want) to be tightly-coupled
 
-[assembly: InternalsVisibleTo("Microsoft.PowerShell.OneGet")]
-[assembly: InternalsVisibleTo("Microsoft.OneGet.Test")]
-[assembly: InternalsVisibleTo("Microsoft.OneGet.MetaProvider.PowerShell")]
-[assembly: InternalsVisibleTo("Microsoft.OneGet.CoreProviders")]
-[assembly: InternalsVisibleTo("Microsoft.OneGet.ArchiverProviders")]
-[assembly: InternalsVisibleTo("Microsoft.OneGet.MsiProvider")]
-[assembly: InternalsVisibleTo("Microsoft.OneGet.MsuProvider")]
+[assembly: InternalsVisibleTo("Microsoft.PowerShell.PackageManagement")]
+[assembly: InternalsVisibleTo("Microsoft.PackageManagement.Test")]
+[assembly: InternalsVisibleTo("Microsoft.PackageManagement.MetaProvider.PowerShell")]
+[assembly: InternalsVisibleTo("Microsoft.PackageManagement.CoreProviders")]
+[assembly: InternalsVisibleTo("Microsoft.PackageManagement.ArchiverProviders")]
+[assembly: InternalsVisibleTo("Microsoft.PackageManagement.MsiProvider")]
+[assembly: InternalsVisibleTo("Microsoft.PackageManagement.MsuProvider")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from

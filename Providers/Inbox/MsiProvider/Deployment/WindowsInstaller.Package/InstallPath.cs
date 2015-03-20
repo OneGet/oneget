@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Package
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
 {
     using System;
     using System.Collections;
@@ -490,7 +490,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Package
             using (View compView = db.OpenView("SELECT `Component`, `Directory_` FROM `Component`"))
             {
                 compView.Execute();
-                
+
                 foreach (Record compRec in compView)
                 {
                     using (compRec)

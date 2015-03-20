@@ -1,4 +1,4 @@
-﻿namespace Microsoft.OneGet.Test.Utility.Misc {
+﻿namespace Microsoft.PackageManagement.Test.Utility.Misc {
     using Packaging;
     using Support;
     using Xunit;
@@ -34,7 +34,7 @@
                 Assert.Equal(0, SoftwareIdentityVersionComparer.CompareVersions("multipartnumeric", "1.0.0.0.0.0.0", "1"));
                 Assert.Equal(0,SoftwareIdentityVersionComparer.CompareVersions("multipartnumeric", "1.2", "1.2.0") );
                 Assert.Equal(0, SoftwareIdentityVersionComparer.CompareVersions("multipartnumeric", "1.2.0", "1.2"));
-                
+
 
                 Assert.Equal(0, SoftwareIdentityVersionComparer.CompareVersions("multipartnumeric+suffix", "1.0", "1.0"));
                 Assert.True(SoftwareIdentityVersionComparer.CompareVersions("multipartnumeric+suffix", "1.1", "1.2") < 0);

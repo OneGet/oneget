@@ -1,18 +1,18 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Utility.PowerShell {
+namespace Microsoft.PackageManagement.Utility.PowerShell {
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -65,7 +65,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         private ManualResetEvent ReentrantLock {
             get {
                 //     ...
-                //     In the future, I suspect that 
+                //     In the future, I suspect that
                 //     we need to make this 'RunSpace-static' (or 'host-static'?) too
                 //     if the same set of cmdlets ends up loaded in another
                 //     runspace, and we don't want a lock in one to affect
@@ -79,7 +79,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         private static object __lock = new object();
         private void Log(string category, string text) {
             lock (__lock) {
-                using (var s = File.AppendText("c:\\tmp\\oneget.log")) {
+                using (var s = File.AppendText("c:\\tmp\\PackageManagement.log")) {
                     s.WriteLine("[Cmdlet:{0}][Thread:{1}][{2}] {3}".format(GetType().Name, Thread.CurrentThread.ManagedThreadId , category, text));
                 }
 
@@ -223,7 +223,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             var files = GetResolvedProviderPathFromPSPath(filePath, out providerInfo).ToArray();
             switch (files.Length) {
                 case 0:
-                    // none found 
+                    // none found
                     Error(Errors.FileNotFound, filePath);
                     break;
 
@@ -246,7 +246,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             var files = GetResolvedProviderPathFromPSPath(folderPath, out providerInfo).ToArray();
             switch (files.Length) {
                 case 0:
-                    // none found 
+                    // none found
                     Error(Errors.FolderNotFound, folderPath);
                     break;
 
@@ -322,7 +322,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 if (!_errors.Contains(errorMessage)) {
                     if (!HasErrors) {
                         // we only *show* the very first error we get.
-                        // any more, we just toss them in the collection and 
+                        // any more, we just toss them in the collection and
                         // maybe we'll worry about them later.
                         ErrorCategory errorCategory;
                         if (!Enum.TryParse(category, true, out errorCategory)) {
@@ -331,7 +331,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                         try {
 #if DEEP_DEBUG
                             Log("ERROR",errorMessage);
-#endif 
+#endif
                             WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrWhiteSpace(targetObjectValue) ? (object)this : targetObjectValue)).Wait();
                         } catch {
                             // this will throw if the provider thread abends before we get back our result.
@@ -614,7 +614,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         #endregion
 
-        #region cmdlet processing 
+        #region cmdlet processing
 
         private void ProcessHeldMessages() {
             if (_heldMessages != null && _heldMessages.Count > 0 ) {
@@ -626,9 +626,9 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             _heldMessages = null;
         }
 
-   
+
         private void AsyncRun(Func<bool> asyncAction) {
-            
+
             try {
                 using (_messages = new BlockingCollection<TaskCompletionSource<bool>>()) {
                     // spawn the activity off in another thread.
@@ -795,7 +795,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
 
         #endregion
 
-        #region progress 
+        #region progress
 
         public new Task<bool> WriteProgress(ProgressRecord progressRecord) {
             return QueueMessage(() => {
@@ -928,7 +928,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                         base.WriteObject(obj);
                     }
                     catch (PipelineStoppedException pipelineStoppedException) {
-                        // this can throw if the pipeline is stopped 
+                        // this can throw if the pipeline is stopped
                         // but that's ok, because it just means
                         // that we're done.
                         Cancel();
@@ -948,7 +948,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                         base.WriteObject(sendToPipeline, enumerateCollection);
                     }
                     catch (PipelineStoppedException pipelineStoppedException) {
-                        // this can throw if the pipeline is stopped 
+                        // this can throw if the pipeline is stopped
                         // but that's ok, because it just means
                         // that we're done.
                         Cancel();
@@ -980,7 +980,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     base.WriteDebug(text);
                 }
                 catch (PipelineStoppedException pipelineStoppedException) {
-                    // this can throw if the pipeline is stopped 
+                    // this can throw if the pipeline is stopped
                     // but that's ok, because it just means
                     // that we're done.
                     Cancel();
@@ -1005,7 +1005,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     }
                 }
                 catch (PipelineStoppedException pipelineStoppedException) {
-                    // this can throw if the pipeline is stopped 
+                    // this can throw if the pipeline is stopped
                     // but that's ok, because it just means
                     // that we're done.
                     Cancel();
@@ -1028,7 +1028,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     base.WriteVerbose(text);
                 }
                 catch (PipelineStoppedException pipelineStoppedException) {
-                    // this can throw if the pipeline is stopped 
+                    // this can throw if the pipeline is stopped
                     // but that's ok, because it just means
                     // that we're done.
                     Cancel();
@@ -1050,7 +1050,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 return false.AsResultTask();
             }
             return ExecuteOnMainThread(() => base.ShouldContinue(query, caption));
-            // it is apparently OK to have this called during dynamic parameter generation 
+            // it is apparently OK to have this called during dynamic parameter generation
         }
 
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", Justification = "MYOB.")]
@@ -1103,7 +1103,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         #region Direct Property Access
 
         protected object TryGetProperty(object instance, string fieldName) {
-            // any access of a null object returns null. 
+            // any access of a null object returns null.
             if (instance == null || string.IsNullOrWhiteSpace(fieldName)) {
                 return null;
             }
@@ -1132,7 +1132,7 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         protected bool TrySetProperty(object instance, string fieldName, object value) {
-            // any access of a null object returns null. 
+            // any access of a null object returns null.
             if (instance == null || string.IsNullOrWhiteSpace(fieldName)) {
                 return false;
             }

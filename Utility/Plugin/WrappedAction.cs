@@ -11,7 +11,7 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.OneGet.Utility.Plugin {
+namespace Microsoft.PackageManagement.Utility.Plugin {
     using System;
     using System.Globalization;
 
@@ -27,7 +27,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 	public class WrappedAction : Invokable {
         private readonly Action _action;
 
-        public WrappedAction() { 
+        public WrappedAction() {
 
         }
 

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression.Cab
+namespace Microsoft.PackageManagement.Archivers.Compression.Cab
 {
     using System;
     using System.Collections.Generic;
@@ -162,10 +162,10 @@ namespace Microsoft.OneGet.Archivers.Compression.Cab
             }
         }
 
-        public void Dispose() 
+        public void Dispose()
         {
             this.Dispose(true);
-            GC.SuppressFinalize(this); 
+            GC.SuppressFinalize(this);
         }
 
         protected void ResetProgressData()
@@ -301,12 +301,12 @@ namespace Microsoft.OneGet.Archivers.Compression.Cab
         /// Disposes of resources allocated by the cabinet engine.
         /// </summary>
         /// <param name="disposing">If true, the method has been called directly or indirectly by a user's code,
-        /// so managed and unmanaged resources will be disposed. If false, the method has been called by the 
+        /// so managed and unmanaged resources will be disposed. If false, the method has been called by the
         /// runtime from inside the finalizer, and only unmanaged resources will be disposed.</param>
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        protected virtual void Dispose(bool disposing) 
+        protected virtual void Dispose(bool disposing)
         {
-            if (disposing) 
+            if (disposing)
             {
                 if (this.cabStream != null)
                 {

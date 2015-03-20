@@ -1,18 +1,18 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Utility.Plugin {
+namespace Microsoft.PackageManagement.Utility.Plugin {
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -29,17 +29,17 @@ namespace Microsoft.OneGet.Utility.Plugin {
         private readonly TypeBuilder _dynamicType;
         private readonly HashSet<string> _implementedMethods = new HashSet<string>();
         private readonly List<FieldBuilder> _storageFields = new List<FieldBuilder>();
-#if DEEP_DEBUG        
+#if DEEP_DEBUG
           private AssemblyBuilder _dynamicAssembly;
 #else
         private static AssemblyBuilder _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("DynamicClasses"), AssemblyBuilderAccess.Run);
 #endif
-     
-#if DEEP_DEBUG        
+
+#if DEEP_DEBUG
         private string _directory;
         private string _filename;
         private string _fullpath;
-#endif        
+#endif
         private string _proxyName;
         private Type _type;
         private MethodInfo OnUnhandledException;
@@ -84,7 +84,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             }
 
             foreach (var method in stubs) {
-                // did not find a matching method or signature, or the instance told us that it doesn't actually support it 
+                // did not find a matching method or signature, or the instance told us that it doesn't actually support it
                 // that's ok, if we get here, it must not be a required method.
                 // we'll implement a placeholder method for it.
                 _dynamicType.GenerateStubMethod(method);
@@ -118,7 +118,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         internal object CreateInstance(List<Type, object> instances, List<Delegate, MethodInfo> delegates) {
             var proxyConstructor = Type.GetConstructors()[0];
             var instance = proxyConstructor.Invoke(instances.Select(each => each.Value).Concat(delegates.Select(each => each.Key)).ToArray());
-            // set the implemented methods collection 
+            // set the implemented methods collection
             var imf = Type.GetField("__implementedMethods", BindingFlags.NonPublic | BindingFlags.Instance);
             if (imf != null) {
                 imf.SetValue(instance, _implementedMethods);

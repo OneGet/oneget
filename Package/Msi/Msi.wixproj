@@ -32,5 +32,8 @@
       <InProject>false</InProject>
     </BindInputPaths>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="install-oneget.cmd" />
+  </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
 </Project>

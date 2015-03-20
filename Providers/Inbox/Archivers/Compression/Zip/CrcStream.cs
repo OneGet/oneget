@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression.Zip
+namespace Microsoft.PackageManagement.Archivers.Compression.Zip
 {
     using System.Diagnostics.CodeAnalysis;
     using System.IO;

@@ -8,7 +8,7 @@
 	PowerShellVersion = '3.0'
 	VariablesToExport = "*"
 	PrivateData = @{ 
-		"OneGetProviders" = @(
+		"PackageManagementProviders" = @(
 			'TestPackageProvider.psm1', 
 			'PSChained1Provider.psm1' 
 		)

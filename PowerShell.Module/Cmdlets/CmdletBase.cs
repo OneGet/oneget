@@ -1,18 +1,18 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PowerShell.OneGet.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -21,23 +21,23 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System.Management.Automation;
     using System.Security;
     using System.Threading;
-    using Microsoft.OneGet;
-    using Microsoft.OneGet.Api;
-    using Microsoft.OneGet.Implementation;
-    using Microsoft.OneGet.Utility.Async;
-    using Microsoft.OneGet.Utility.Extensions;
-    using Microsoft.OneGet.Utility.Plugin;
-    using Microsoft.OneGet.Utility.PowerShell;
+    using Microsoft.PackageManagement;
+    using Microsoft.PackageManagement.Api;
+    using Microsoft.PackageManagement.Implementation;
+    using Microsoft.PackageManagement.Utility.Async;
+    using Microsoft.PackageManagement.Utility.Extensions;
+    using Microsoft.PackageManagement.Utility.Plugin;
+    using Microsoft.PackageManagement.Utility.PowerShell;
     using Resources;
     using Utility;
-    using Constants = OneGet.Constants;
+    using Constants = PackageManagement.Constants;
 
     public delegate string GetMessageString(string messageId, string defaultText);
 
     public abstract class CmdletBase : AsyncCmdlet, IHostApi {
         private static int _globalCallCount = 1;
         private static readonly object _lockObject = new object();
-        
+
         private readonly int _callCount;
         private readonly Hashtable _dynamicOptions = new Hashtable();
 
@@ -62,7 +62,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             // we are finished when there is only handle to wait on (the cancellation token)
             return false;
         }
-     
+
         protected abstract IEnumerable<string> ParameterSets {get;}
 
         protected bool IsPackageBySearch {
@@ -184,7 +184,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
                 // if we are anywhere but the end of the pipeline, the delegate here would block on stuff later in the pipe
                 // and since we're blocking *that* based on the the resolution of this, we're better off just skipping
-                // the message resoluion for things earlier in the pipeline. 
+                // the message resoluion for things earlier in the pipeline.
                 ExecuteOnMainThread(() => {
                     result = MessageResolver(messageText, defaultText);
                     if (string.IsNullOrWhiteSpace(result)) {
@@ -289,7 +289,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
         protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
             if (names.IsNullOrEmpty()) {
-                return PackageManagementService.SelectProviders(null, this.SuppressErrorsAndWarnings(IsProcessing)).Where(each => !each.Features.ContainsKey(Microsoft.OneGet.Constants.Features.AutomationOnly));
+                return PackageManagementService.SelectProviders(null, this.SuppressErrorsAndWarnings(IsProcessing)).Where(each => !each.Features.ContainsKey(Microsoft.PackageManagement.Constants.Features.AutomationOnly));
             }
             // you can manually ask for any provider by name, if it is for automation only.
             if (IsInvocation) {

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Linq
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
 {
     using System;
     using System.Collections;
@@ -62,7 +62,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Linq
         {
             if (this.selectColumns.Count == 0)
             {
-                AddAllColumns(this.tables[0], this.selectColumns);                
+                AddAllColumns(this.tables[0], this.selectColumns);
             }
 
             string query = this.CompileQuery();
@@ -560,7 +560,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Linq
                 case ExpressionType.GreaterThanOrEqual:
                     queryBuilder.Append(" >= ");
                     break;
-                
+
                 default:
                     throw new NotSupportedException(
                         "Unsupported query expression type: " + expressionType);

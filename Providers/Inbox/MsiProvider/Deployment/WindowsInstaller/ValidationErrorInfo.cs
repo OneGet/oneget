@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System.Diagnostics.CodeAnalysis;
 
@@ -21,7 +21,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
     {
         private ValidationError error;
         private string column;
-        
+
         internal ValidationErrorInfo(ValidationError error, string column)
         {
             this.error = error;

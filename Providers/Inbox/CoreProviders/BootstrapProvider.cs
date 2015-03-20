@@ -1,18 +1,18 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Providers {
+namespace Microsoft.PackageManagement.Providers {
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -37,7 +37,7 @@ namespace Microsoft.OneGet.Providers {
         private static readonly string[] _urls = {
 #if LOCAL_DEBUG
             "http://localhost:81/providers.swidtag",
-#endif 
+#endif
 #if M2_PROVIDER
             "http://go.microsoft.com/fwlink/?LinkID=517832",
             "https://oneget.org/providers.swidtag"
@@ -78,12 +78,12 @@ namespace Microsoft.OneGet.Providers {
 
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Plugin requirement.")]
         public void InitializeProvider(BootstrapRequest request) {
-            // we should go find out what's available once here just to make sure that 
-            // we have a list 
+            // we should go find out what's available once here just to make sure that
+            // we have a list
             try {
                 PackageManagementService.BootstrappableProviderNames = GetProviders(request).Select(provider => provider.Attributes["name"]).ToArray();
             } catch {
-                
+
             }
         }
 
@@ -130,8 +130,8 @@ namespace Microsoft.OneGet.Providers {
                 return Enumerable.Empty<DynamicElement>();
             }
 
-            // they are looking for a provider 
-            // return all providers 
+            // they are looking for a provider
+            // return all providers
             return request.GetProviders(master);
         }
 
@@ -158,15 +158,15 @@ namespace Microsoft.OneGet.Providers {
                 return;
             }
 
-            if (name != null && name.EqualsIgnoreCase("oneget")) {
-                // they are looking for OneGet itself.
-                // future todo: let oneget update itself.
+            if (name != null && name.EqualsIgnoreCase("PackageManagement")) {
+                // they are looking for PackageManagement itself.
+                // future todo: let PackageManagement update itself.
                 return;
             }
 
-            // they are looking for a provider 
+            // they are looking for a provider
             if (string.IsNullOrWhiteSpace(name)) {
-                // return all providers 
+                // return all providers
                 var providers = request.GetProviders(master);
                 foreach (var p in providers) {
                     request.YieldFromSwidtag(p, requiredVersion, minimumVersion, maximumVersion, name);
@@ -284,9 +284,9 @@ namespace Microsoft.OneGet.Providers {
             foreach (var link in provider.XPath("/swid:SoftwareIdentity/swid:Link[@rel = 'package']")) {
                 var href = link.Attributes["href"];
 
-                // NOT THIS -> at this point href should either be url to a location (that a provider will recognize) 
+                // NOT THIS -> at this point href should either be url to a location (that a provider will recognize)
                 // JUST THIS -> or more likely should be a prototype canonical id: <provider>:<packagename>[/version][#source]
-                // 
+                //
                 if (string.IsNullOrWhiteSpace(href) || !Uri.IsWellFormedUriString(href, UriKind.Absolute)) {
                     request.Debug("Bad or missing uri: {0}", href);
                     continue;
@@ -357,7 +357,7 @@ namespace Microsoft.OneGet.Providers {
                     if (request.IsCanceled) {
                         return;
                     }
-                    
+
                     if (installed) {
                         // it installed ok!
                         PackageManagementService.LoadProviders(request);
@@ -427,7 +427,7 @@ namespace Microsoft.OneGet.Providers {
                         targetFile.TryHardToDelete();
                     }
 
-                    // is that file still there? 
+                    // is that file still there?
                     if (File.Exists(targetFile)) {
                         request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.UnableToRemoveFile, targetFile);
                         return;

@@ -1,18 +1,18 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Utility.Plugin {
+namespace Microsoft.PackageManagement.Utility.Plugin {
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -62,7 +62,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                 throw new Exception(msg);
             }
 
-            // create actual instance 
+            // create actual instance
             return CreateProxy(tInterface, types.Select(Activator.CreateInstance).ToArray());
         }
 
@@ -114,7 +114,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
                 var objects = instances[0] as IEnumerable<object>;
                 if (objects != null) {
-                    // if the tInterface is an IEnumerable<T> 
+                    // if the tInterface is an IEnumerable<T>
                     // then we'll just dynamic cast the items in the collection to the target type.
                     if (tInterface.IsIEnumerableT()) {
                         var elementType = tInterface.GetGenericArguments().FirstOrDefault();
@@ -161,7 +161,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
         public static bool CanCreateFrom(this Type tInterface, params Type[] types) {
             return _isCreatableFromTypesCache.GetOrAdd(new Types(tInterface, types), () => {
-                // if there isn't a default constructor, we can't use that type to create instances 
+                // if there isn't a default constructor, we can't use that type to create instances
                 return types.All(actualType => actualType.GetDefaultConstructor() != null) && CanDynamicCastFrom(tInterface, types);
             });
         }
@@ -241,7 +241,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                     ));
         }
 
-        
+
         private static object CreateProxy(Type tInterface, params object[] instances) {
             var matrix = instances.SelectMany(instance => {
                 var instanceType = instance.GetType();
@@ -315,7 +315,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         }
 
 #if UNUSED_VARIANTS
-        
+
         public static IEnumerable<Type> FindCompatibleTypes<TInterface>(this IEnumerable<Type> types) {
             return types == null ? Enumerable.Empty<Type>() : types.Where(each => CanCreateFrom<TInterface>(each));
         }
@@ -329,7 +329,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
         private static IEnumerable<MethodInfo> GetMethodsMissingFromInstances<TInterface>(params object[] instances) {
             return GetMethodsMissingFromInstances(typeof (TInterface), instances);
         }
-        
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Provided for completion, future work may use this instead of the less-type-safe version")]
         private static IEnumerable<MethodInfo> GetMissingMethods<TInterface>(params Type[] types) {
             return GetMissingMethods(typeof (TInterface), types);

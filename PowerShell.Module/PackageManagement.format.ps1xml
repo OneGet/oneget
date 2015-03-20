@@ -20,8 +20,8 @@
   <View>
     <Name>package</Name>
     <ViewSelectedBy>
-      <TypeName>Microsoft.OneGet.Packaging.SoftwareIdentity</TypeName>
-      <TypeName>Deserialized.Microsoft.OneGet.Packaging.SoftwareIdentity</TypeName>
+      <TypeName>Microsoft.PackageManagement.Packaging.SoftwareIdentity</TypeName>
+      <TypeName>Deserialized.Microsoft.PackageManagement.Packaging.SoftwareIdentity</TypeName>
     </ViewSelectedBy>
     <TableControl>
       <TableHeaders>
@@ -61,8 +61,8 @@
   <View>
     <Name>PackageSource</Name>
     <ViewSelectedBy>
-      <TypeName>Microsoft.OneGet.Packaging.PackageSource</TypeName>
-      <TypeName>Deserialized.Microsoft.OneGet.Packaging.PackageSource</TypeName>
+      <TypeName>Microsoft.PackageManagement.Packaging.PackageSource</TypeName>
+      <TypeName>Deserialized.Microsoft.PackageManagement.Packaging.PackageSource</TypeName>
     </ViewSelectedBy>
     <TableControl>
       <TableHeaders>
@@ -114,8 +114,8 @@
   <View>
     <Name>PackageProvider</Name>
     <ViewSelectedBy>
-      <TypeName>Microsoft.OneGet.Implementation.PackageProvider</TypeName>
-      <TypeName>Deserialized.Microsoft.OneGet.Implementation.PackageProvider</TypeName>
+      <TypeName>Microsoft.PackageManagement.Implementation.PackageProvider</TypeName>
+      <TypeName>Deserialized.Microsoft.PackageManagement.Implementation.PackageProvider</TypeName>
     </ViewSelectedBy>
     <TableControl>
       <TableHeaders>

@@ -1,32 +1,32 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Test.Utility.Misc {
+namespace Microsoft.PackageManagement.Test.Utility.Misc {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using OneGet.Utility.Extensions;
-    using OneGet.Utility.Plugin;
+    using PackageManagement.Utility.Extensions;
+    using PackageManagement.Utility.Plugin;
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
 
     public class DynamicTests : Tests {
-  
+
         public DynamicTests(ITestOutputHelper output) : base(output) {
-            
+
         }
 
         [Fact]
@@ -85,7 +85,7 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
         }
 
         internal static object[] ItemsViaParams(params object[] items) {
-            
+
             return items;
         }
         internal static object[] ItemsWithoutParams(object[] items) {
@@ -118,7 +118,7 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
         }
 
         public void SampleMethod(int a, int b, string c, Func<object, Int32> d) {
-            
+
         }
 
         [Fact]
@@ -141,16 +141,16 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
         }
 
         public interface IOneAndTwo : IOne, ITwo {
-            
+
         }
 
         public class FooBar : IOne, ITwo {
             public void Foo() {
-                
+
             }
 
             public void Bar() {
-                
+
             }
         }
     }
@@ -184,8 +184,8 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
         public PackageProviderProxy(Type type): this(Activator.CreateInstance(type)) {
         }
 
-     
-        
+
+
 
     }
 
@@ -219,7 +219,7 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
     // So:
     // Take the Interface, generate a proxy class that has the <Member>Delegates and instances of the Delegates
     // and then generate the Constructor which takes an object instance.
-    
+
     public interface IPretendProvider {
 
         bool AddPackageSource(string name, string location);
@@ -232,6 +232,6 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
         Delegate CreateDelegate(string memberName, IEnumerable<string> pNames, IEnumerable<Type> pTypes, Type returnType);
     }
 
-    
-   
+
+
 }

@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Resources {
+namespace Microsoft.PackageManagement.Resources {
     using System;
-    
-    
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -23,15 +23,15 @@ namespace Microsoft.OneGet.Resources {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Messages {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Messages() {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -39,13 +39,13 @@ namespace Microsoft.OneGet.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.OneGet.Resources.Messages", typeof(Messages).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.PackageManagement.Resources.Messages", typeof(Messages).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
@@ -59,7 +59,7 @@ namespace Microsoft.OneGet.Resources {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to create specified folder &apos;{0}&apos;..
         /// </summary>
@@ -68,7 +68,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("CreatefolderFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Dependent Package &apos;{0}&apos; failed to install..
         /// </summary>
@@ -77,7 +77,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("DependentPackageFailedInstall_dependency", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Destination Path not set..
         /// </summary>
@@ -86,7 +86,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("DestinationPathNotSet", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Failed to bootstrap provider &apos;{0}&apos;..
         /// </summary>
@@ -95,7 +95,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("FailedProviderBootstrap", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to File from &apos;{0}&apos; failed signature validation. .
         /// </summary>
@@ -104,7 +104,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("FileFailedVerification", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The filename specified is not valid..
         /// </summary>
@@ -113,7 +113,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("InvalidFilename", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The parameter &apos;{0}&apos; is required for this operation.
         /// </summary>
@@ -122,7 +122,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("MissingRequiredParameter", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The package source &apos;{0}&apos; already exists with that provider..
         /// </summary>
@@ -131,7 +131,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("PackageSourceExists", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to A protocol handler for scheme &apos;{0}&apos; is not available..
         /// </summary>
@@ -140,7 +140,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("ProtocolNotSupported", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Provider &apos;{0}&apos; failed to load..
         /// </summary>
@@ -149,7 +149,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("ProviderPluginLoadFailure", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to download the list of available providers. Check your internet connection..
         /// </summary>
@@ -158,7 +158,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("ProviderSwidtagUnavailable", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Removal of the environment variable &apos;{0}&apos; requires elevation.
         /// </summary>
@@ -167,7 +167,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("RemoveEnvironmentVariableRequiresElevation", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to A protocol handler for scheme &apos;{0}&apos; is not available..
         /// </summary>
@@ -176,7 +176,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("SchemeNotSupported", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Source location &apos;{0}&apos; is not valid for this provider..
         /// </summary>
@@ -185,7 +185,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("SourceLocationNotValid_Location", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to copy file to destination &apos;{0}&apos;..
         /// </summary>
@@ -194,7 +194,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnableToCopyFileTo", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to create shortcut for file &apos;{0}&apos; that does not exist .
         /// </summary>
@@ -203,7 +203,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnableToCreateShortcutTargetDoesNotExist", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to download from URI &apos;{0}&apos; to &apos;{1}&apos;..
         /// </summary>
@@ -212,7 +212,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnableToDownload", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The package &apos;{0}&apos; failed to install..
         /// </summary>
@@ -221,7 +221,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnableToInstallPackage_package_reason", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to overwrite existing file &apos;{0}&apos;..
         /// </summary>
@@ -230,7 +230,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnableToOverwriteExistingFile", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to remove existing file &apos;{0}&apos;..
         /// </summary>
@@ -239,7 +239,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnableToRemoveFile", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to resolve package dependency -- package &apos;{0}&apos; not found..
         /// </summary>
@@ -248,7 +248,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnableToResolveDependency_dependencyPackage", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to resolve package reference &apos;{0}&apos;..
         /// </summary>
@@ -257,7 +257,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnableToResolvePackage", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to resolve package source &apos;{0}&apos;..
         /// </summary>
@@ -266,7 +266,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnableToResolveSource_NameOrLocation", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to uninstall package..
         /// </summary>
@@ -275,7 +275,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnableToUninstallPackage", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unknown Folder Id &apos;{0}&apos;..
         /// </summary>
@@ -284,7 +284,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnknownFolderId", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to find package provider &apos;{0}&apos;..
         /// </summary>
@@ -293,7 +293,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnknownProvider", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The archive file type is not supported..
         /// </summary>
@@ -302,7 +302,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnsupportedArchive", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The provider type is not supported..
         /// </summary>
@@ -311,7 +311,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UnsupportedProviderType", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to ??? not used ???.
         /// </summary>
@@ -320,7 +320,7 @@ namespace Microsoft.OneGet.Resources {
                 return ResourceManager.GetString("UriSchemeNotSupported_Scheme", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to User declined to install untrusted package &apos;{0}&apos;..
         /// </summary>

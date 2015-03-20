@@ -1,18 +1,18 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Test.Core {
+namespace Microsoft.PackageManagement.Test.Core {
 #if DISABLED_FOR_NOW
 
     using System;
@@ -26,7 +26,7 @@ namespace Microsoft.OneGet.Test.Core {
     using Api;
     using Implementation;
     using Packaging;
-    using PowerShell.OneGet.CmdLets;
+    using PowerShell.PackageManagement.CmdLets;
     using Utility.Extensions;
     using Utility.Plugin;
     using Xunit;
@@ -210,7 +210,7 @@ namespace Microsoft.OneGet.Test.Core {
         [Fact]
         public void Provider_IsMethodImplemented() {
 
-            
+
         }
 
         private static Req Request {
@@ -248,7 +248,7 @@ namespace Microsoft.OneGet.Test.Core {
             }
         }
 
-      
+
         [Fact]
         public void Provider_FindPackageByUri() {
             var pkgs = TestPSProvider.FindPackageByUri(new Uri("http://foo/bar/x.testpkg"),0, Request).ToArray();
@@ -313,7 +313,7 @@ namespace Microsoft.OneGet.Test.Core {
             Assert.Equal(2, pkgs.Length);
         }
 
-      
+
 
         [Fact]
         public void Provider_GetInstalledPackages() {
@@ -351,7 +351,7 @@ namespace Microsoft.OneGet.Test.Core {
         [Fact]
         public void Provider_GetDynamicOptions() {
             var options = TestPSProvider.GetDynamicOptions(OptionCategory.Package, Request).ToArray();
-            
+
             foreach (var option in options) {
                 Console.WriteLine("Option: {0} {1} {2} {3} {4}", option.Name, option.Category, option.Type, option.IsRequired, option.PossibleValues.JoinWithComma());
             }

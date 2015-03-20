@@ -8,7 +8,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections;
@@ -100,7 +100,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
                 int buttons   = messageType & 0x0000000F;
                 int icon      = messageType & 0x000000F0;
                 int defButton = messageType & 0x00000F00;
-                
+
                 Record msgRec = (recordHandle != 0 ? Record.FromHandle((IntPtr) recordHandle, false) : null);
                 using (msgRec)
                 {

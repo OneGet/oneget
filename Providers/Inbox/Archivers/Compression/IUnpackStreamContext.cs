@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Compression
 {
     using System;
     using System.IO;
@@ -15,7 +15,7 @@ namespace Microsoft.OneGet.Archivers.Compression
     /// <summary>
     /// This interface provides the methods necessary for the <see cref="CompressionEngine"/> to open
     /// and close streams for archives and files. The implementor of this interface can use any
-    /// kind of logic to determine what kind of streams to open and where 
+    /// kind of logic to determine what kind of streams to open and where
     /// </summary>
     public interface IUnpackStreamContext
     {

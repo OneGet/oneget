@@ -23,7 +23,7 @@
     ModuleVersion = "1.0.0.0"
     PowerShellVersion = "3.0"
     ClrVersion = "4.0"
-    RootModule = "Microsoft.PowerShell.OneGet.dll"
+    RootModule = "Microsoft.PowerShell.PackageManagement.dll"
 
     CmdletsToExport = @(
         'Find-Package',
@@ -38,5 +38,5 @@
 		'Save-Package'
 	)
 
-	FormatsToProcess  = @('OneGet.format.ps1xml')
+	FormatsToProcess  = @('PackageManagement.format.ps1xml')
 }

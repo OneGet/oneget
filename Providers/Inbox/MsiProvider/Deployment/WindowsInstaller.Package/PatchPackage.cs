@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Package
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
 {
     using System;
     using System.Collections;
@@ -227,7 +227,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Package
                     {
                         if(tempTransformFile != null && File.Exists(tempTransformFile))
                         {
-                            try { File.Delete(tempTransformFile); } 
+                            try { File.Delete(tempTransformFile); }
                             catch(IOException) { }
                         }
                     }

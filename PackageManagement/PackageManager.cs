@@ -12,10 +12,10 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.OneGet {
+namespace Microsoft.PackageManagement {
     using System.Diagnostics;
     using System.Linq;
-    
+
     using Api;
     using Implementation;
     using Utility.Extensions;
@@ -31,7 +31,7 @@ namespace Microsoft.OneGet {
     ///     instance of the PackageManagementService that implements an interface of their own choosing.
     ///     <example><![CDATA[
     ///    // Manually load the assembly
-    ///    var asm = Assembly.Load("Microsoft.OneGet.Core.dll" )
+    ///    var asm = Assembly.Load("Microsoft.PackageManagement.Core.dll" )
     ///     // todo: insert reflection-based loading code.
     /// ]]>
     ///     </example>
@@ -49,8 +49,8 @@ namespace Microsoft.OneGet {
                 return _instance;
             }
         }
-        
- 
+
+
         public static int Main(string[] args) {
 #if WHAT_DO_WE_DO_TO_REMOTE_BETWEEN_PROCESSES_WITHOUT_REMOTING_HUH
             // this entrypoint is only for use when inter-process remoting to get an elevated host.

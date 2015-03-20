@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Compression
 {
     /// <summary>
     /// The type of progress event.

@@ -1,29 +1,29 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
-namespace Microsoft.OneGet.Test.Core.Service {
+//
+namespace Microsoft.PackageManagement.Test.Core.Service {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using Host;
-    using OneGet.Utility.Async;
-    using OneGet.Utility.Extensions;
+    using PackageManagement.Utility.Async;
+    using PackageManagement.Utility.Extensions;
     using Packaging;
     using TestProviders;
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
-    using Microsoft.OneGet.Packaging;
+    using Microsoft.PackageManagement.Packaging;
 
     public class Happy1ProviderTests : UsingOneProvider {
         public Happy1ProviderTests(ITestOutputHelper outputHelper) : base(outputHelper, "Happy1") {
@@ -80,7 +80,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
 
                     Assert.Equal(9, opts.Length);
                     foreach (var o in opts) {
-                        // common 
+                        // common
                         Assert.Equal(OptionCategory.Install, o.Category);
                         Assert.False(o.IsRequired);
                         Assert.Empty(o.PossibleValues);
@@ -177,7 +177,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
 
                     // simple update a package source
                     addedSources = Provider.AddPackageSource("srcname", "srcLocation2", true, Host(new {
-                        
+
                         // tell the client that it's an update
                         GetOptionValues = new Func<string,IEnumerable<string>>(key => {
                             if (key == Constants.Parameters.IsUpdate) {
@@ -223,7 +223,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
                 var removedSources = Provider.RemovePackageSource("srcname", Host()).ToArray();
                 AssertNoErrors();
                 Assert.Equal(1, removedSources.Length);
-                
+
                 // make sure that the package source doesn't exist in the list anymore
                 var sources = Provider.ResolvePackageSources(Host()).ToArray();
                 AssertNoErrors();
@@ -303,46 +303,46 @@ namespace Microsoft.OneGet.Test.Core.Service {
                 Reset();
             }
             /*
-            
-            
-             * 
+
+
+             *
             PackageProvider a;
             a.AddPackageSource();
             a.RemovePackageSource();
 
             a.StartFind();
             a.CompleteFind();
-             
+
             a.DownloadPackage();
-             
+
             a.ExecuteElevatedAction();
-            
-            
+
+
             a.FindPackage();
             a.FindPackageByFile();
             a.FindPackageByUri();
-             
+
             a.FindPackages();
             a.FindPackagesByFiles();
             a.FindPackagesByUris();
-             
+
             a.GetInstalledPackages();
-            
+
             a.InstallPackage();
             a.UninstallPackage();
-             
+
             a.IsSupportedFile();
-             
+
             a.IsSupportedFile();
-             
+
             a.IsSupportedFileName();
-             
+
             a.IsSupportedScheme();
-            
-            
-            
-            
-            
+
+
+
+
+
             a.Features;
             a.DynamicOptions;
             a.Initialize();

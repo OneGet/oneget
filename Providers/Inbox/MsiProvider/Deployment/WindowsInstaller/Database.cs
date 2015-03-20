@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -24,20 +24,20 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
     /// rollback upon object destruction.
     /// </p><p>
     /// The client can use the following procedure for data access:<list type="number">
-    /// <item><description>Obtain a Database object using one of the Database constructors.</description></item> 
+    /// <item><description>Obtain a Database object using one of the Database constructors.</description></item>
     /// <item><description>Initiate a query using a SQL string by calling the <see cref="OpenView"/>
-    ///		method of the Database.</description></item> 
+    ///		method of the Database.</description></item>
     /// <item><description>Set query parameters in a <see cref="Record"/> and execute the database
     ///		query by calling the <see cref="View.Execute(Record)"/> method of the <see cref="View"/>. This
-    ///		produces a result that can be fetched or updated.</description></item> 
+    ///		produces a result that can be fetched or updated.</description></item>
     /// <item><description>Call the <see cref="View.Fetch"/> method of the View repeatedly to return
-    ///		Records.</description></item> 
+    ///		Records.</description></item>
     /// <item><description>Update database rows of a Record object obtained by the Fetch method using
-    ///		one of the <see cref="View.Modify"/> methods of the View.</description></item> 
+    ///		one of the <see cref="View.Modify"/> methods of the View.</description></item>
     /// <item><description>Release the query and any unfetched records by calling the <see cref="InstallerHandle.Close"/>
-    ///		method of the View.</description></item> 
+    ///		method of the View.</description></item>
     /// <item><description>Persist any database updates by calling the Commit method of the Database.
-    ///		</description></item> 
+    ///		</description></item>
     /// </list>
     /// </p></remarks>
     public partial class Database : InstallerHandle
@@ -620,7 +620,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Imports a database table from a text archive file, dropping any existing table.
         /// </summary>
-        /// <param name="importFilePath">Path to the file to be imported. 
+        /// <param name="importFilePath">Path to the file to be imported.
         /// The table name is specified within the file.</param>
         /// <exception cref="FileNotFoundException">the file path is invalid</exception>
         /// <exception cref="InvalidHandleException">the Database handle is invalid</exception>
@@ -703,7 +703,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
                     if (stream.EndsWith("SummaryInformation", StringComparison.Ordinal)) continue;
 
                     int i = stream.IndexOf('.');
-                    if (i >= 0) 
+                    if (i >= 0)
                     {
                         if (File.Exists(Path.Combine(
                             directoryPath,

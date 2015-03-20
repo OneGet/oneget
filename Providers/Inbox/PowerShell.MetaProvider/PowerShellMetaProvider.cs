@@ -1,18 +1,18 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.MetaProvider.PowerShell {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -27,9 +27,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using Utility.Extensions;
     using Utility.Plugin;
     using Utility.PowerShell;
-    
+
     /// <summary>
-    ///     A OneGet MetaProvider class that loads Providers implemented as a PowerShell Module.
+    ///     A  MetaProvider class that loads Providers implemented as a PowerShell Module.
     ///     It connects the functions in the PowerShell module to the expected functions that the
     ///     interface expects.
     /// </summary>
@@ -93,8 +93,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             "WindowsDeveloperLicense",
             "WindowsErrorReporting",
             "WindowsSearch",
-            "OneGet", // dont' search ourselves. 
-            "OneGet-Edge" // dont' search ourselves. 
+            "PackageManagement", // dont' search ourselves.
+            "OneGet", // dont' search ourselves.
+            "OneGet-Edge" // dont' search ourselves.
         };
 
         private readonly Dictionary<string, PowerShellPackageProvider> _packageProviders = new Dictionary<string, PowerShellPackageProvider>(StringComparer.OrdinalIgnoreCase);
@@ -152,9 +153,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         internal IEnumerable<string> ScanPrivateDataForProviders(string baseFolder, Hashtable privateData) {
-            var providers = privateData.GetStringCollection("OneGetProviders").ToArray();
+            var providers = privateData.GetStringCollection("PackageManagementProviders").ToArray();
             if (providers.Length > 0) {
-                // found a module that is advertizing one or more OneGet Providers.
+                // found a module that is advertizing one or more  Providers.
 
                 foreach (var provider in providers) {
                     var fullPath = provider;
@@ -167,7 +168,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                         continue;
                     }
                     if (Directory.Exists(fullPath) || File.Exists(fullPath)) {
-                        // looks like we have something that could definitely be a 
+                        // looks like we have something that could definitely be a
                         // a module path.
                         yield return fullPath;
                     }
@@ -183,8 +184,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
         }
 
-        private IEnumerable<string> GetOneGetModules(PSModuleInfo module) {
-            // skip modules that we know don't contain any oneget modules
+        private IEnumerable<string> GetPackageManagementModules(PSModuleInfo module) {
+            // skip modules that we know don't contain any PM modules
             if (!_exclusionList.Contains(module.Name)) {
                 var privateData = module.PrivateData as Hashtable;
                 if (privateData != null) {
@@ -195,12 +196,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         internal IEnumerable<string> ScanForModules(PsRequest request) {
-            // two places we search for modules 
-            // 1. in this assembly's folder, look for all psd1 and psm1 files. 
-            // 
+            // two places we search for modules
+            // 1. in this assembly's folder, look for all psd1 and psm1 files.
+            //
             // 2. modules in the PSMODULEPATH
             //
-            // Import each one of those, and check to see if they have a OneGet.Providers section in their private data
+            // Import each one of those, and check to see if they have a PackageManagementProviders section in their private data
 
             using (var ps = new DynamicPowershell()) {
 
@@ -209,7 +210,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
                 // scan all the ps modules in the folders provided
                 foreach (var each in AlternativeModuleScan(request)) {
-                    foreach (var ogModule in ps.TestModuleManifest(each).SelectMany(GetOneGetModules)) {
+                    foreach (var ogModule in ps.TestModuleManifest(each).SelectMany(GetPackageManagementModules)) {
                         yield return ogModule;
                     }
                 }
@@ -218,7 +219,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         private IEnumerable<string> AlternativeModuleScan(PsRequest request) {
             var psModulePath = Environment.GetEnvironmentVariable("PSModulePath") ?? "";
-              
+
             IEnumerable<string> paths = psModulePath.Split(new char[]{';'} , StringSplitOptions.RemoveEmptyEntries);
 
             var sysRoot = Environment.GetEnvironmentVariable("systemroot");
@@ -234,7 +235,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             paths = paths.Distinct().ToArray();
 
-            return paths.Where(each => each.DirectoryExists()).SelectMany(each => Directory.EnumerateDirectories(each).Where(dir => !_exclusionList.Contains(Path.GetFileName(dir))), (p, child) => Path.Combine(child, Path.GetFileName(child) + ".psd1")).Where(moduleName => File.Exists(moduleName) && File.ReadAllText(moduleName).IndexOf("OneGetProviders", StringComparison.OrdinalIgnoreCase) > -1);
+            return paths.Where(each => each.DirectoryExists()).SelectMany(each => Directory.EnumerateDirectories(each).Where(dir => !_exclusionList.Contains(Path.GetFileName(dir))), (p, child) => Path.Combine(child, Path.GetFileName(child) + ".psd1")).Where(moduleName => File.Exists(moduleName) && File.ReadAllText(moduleName).IndexOf("PackageManagementProviders", StringComparison.OrdinalIgnoreCase) > -1);
         }
 
         public object CreateProvider(string name) {
@@ -291,7 +292,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             if (request == null) {
                 throw new ArgumentNullException("request");
             }
-            
+
             request.Debug("Initializing PowerShell MetaProvider");
 
             // to do : get modules to load (from configuration ?)
@@ -311,7 +312,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                         provider = null;
                     }
                 }
-            
+
             });
 
             request.Debug("Loaded PowerShell Provider Modules ");

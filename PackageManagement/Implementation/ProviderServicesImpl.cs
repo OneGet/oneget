@@ -1,18 +1,18 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Implementation {
+namespace Microsoft.PackageManagement.Implementation {
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -83,10 +83,10 @@ namespace Microsoft.OneGet.Implementation {
             if (request == null) {
                 throw new ArgumentNullException("request");
             }
-            
+
             if (!request.IsCanceled) {
 
-                // check the Uri type, see if we have anyone who can handle that 
+                // check the Uri type, see if we have anyone who can handle that
                 // if so, call that provider's download file
                 if (remoteLocation == null) {
                     throw new ArgumentNullException("remoteLocation");
@@ -431,7 +431,7 @@ namespace Microsoft.OneGet.Implementation {
                     return false;
                 }
 
-                // high-level api for simply installing a file 
+                // high-level api for simply installing a file
                 // returns false if unsuccessful.
                 foreach (var provider in PackageManager.Instance.PackageProviders) {
                     var packages = provider.FindPackageByFile(fileName, 0, request).ToArray();
@@ -487,21 +487,21 @@ namespace Microsoft.OneGet.Implementation {
 #if WHAT_DO_WE_DO_TO_REMOTE_BETWEEN_PROCESSES_WITHOUT_REMOTING_HUH
             if (request == null) {
                 throw new ArgumentNullException("request");
-                    
+
             }
 
-            // launches a new elevated host that 
+            // launches a new elevated host that
             // talks back to this (unelevated) host for everything in HostApi
             // everything else should be handled in the new process.
             var guid = Guid.NewGuid();
 
             var properties = new Hashtable();
-            properties.Add("portName", "OneGet_" + guid);
+            properties.Add("portName", "PackageManagement_" + guid);
             properties.Add("authorizedGroup", "Administrators");
             properties.Add("secure", "true");
             properties.Add("exclusiveAddressUse", "true");
             properties.Add("strictBinding", "false");
-            properties.Add("name", "OneGetHost");
+            properties.Add("name", "PackageManagementHost");
 
             // set up the server IPC channel
             var serverChannel = new IpcServerChannel(properties, new BinaryServerFormatterSinkProvider(properties, null));
@@ -518,7 +518,7 @@ namespace Microsoft.OneGet.Implementation {
                 var process = AsyncProcess.Start(new ProcessStartInfo {
                     FileName = Assembly.GetExecutingAssembly().Location,
                     Arguments = "{0} {1} {2}".format( uri, provider, (string.IsNullOrWhiteSpace(payload) ? "null" : payload).ToBase64()),
-#if !DEBUG                    
+#if !DEBUG
                     WindowStyle = ProcessWindowStyle.Hidden,
 #endif
                     Verb = "runas",

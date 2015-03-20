@@ -1,18 +1,18 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Test.Core.Packaging {
+namespace Microsoft.PackageManagement.Test.Core.Packaging {
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -20,8 +20,8 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
     using System.Xml;
     using System.Xml.Linq;
     using System.Xml.XPath;
-    using OneGet.Packaging;
-    using OneGet.Utility.Extensions;
+    using PackageManagement.Packaging;
+    using PackageManagement.Utility.Extensions;
     using Support;
     using Xunit;
     using Xunit.Abstractions;
@@ -32,8 +32,8 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
             : base(outputHelper) {
         }
 
-     
-      
+
+
         [Fact]
         public void SimpleTag() {
             using (CaptureConsole) {
@@ -83,7 +83,7 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
                 Assert.True(xml.XPathToAttribute("/swid:SoftwareIdentity/@corpus").Value.IsFalse());
 
                 Assert.Equal("Summary Text",xml.XPathToAttribute("/swid:SoftwareIdentity/swid:Meta/@summary").Value);
-              
+
 
                 Assert.Equal("value", xml.XPathToAttribute("/swid:SoftwareIdentity/swid:Meta/@sample").Value);
 
@@ -102,10 +102,10 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
 
                 // validate that an empty tag isn't broken (although, aruguably not entirely valid)
                 Assert.Null(swid.Name);
-                Assert.Null(swid.IsCorpus); 
+                Assert.Null(swid.IsCorpus);
                 Assert.Null(swid.IsPatch);
                 Assert.Null(swid.CanonicalId);
-                
+
                 Assert.Null(swid.IsSupplemental);
                 Assert.Null(swid.PackageFilename);
                 Assert.Null(swid.Provider);
@@ -114,7 +114,7 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
                 Assert.Null(swid.Source);
                 Assert.Null(swid.Status);
                 Assert.Null(swid.Summary);
-                
+
                 Assert.Null(swid.FullPath);
                 Assert.Null(swid.TagId);
                 Assert.Null(swid.TagVersion);
@@ -144,7 +144,7 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
                 var xml = XDocument.Parse(swid.SwidTagText);
                 Console.WriteLine("SWID: {0} ", swid.SwidTagText);
 
-                // assertions 
+                // assertions
                 Assert.Empty(swid.Payload.Files);
                 Assert.Empty(swid.Payload.Directories);
                 Assert.Empty(swid.Payload.Processes);
@@ -181,7 +181,7 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
 
                 // add some data
                 swid.AddEntity("garrett", "http://fearthecowboy.com/", "author");
-                
+
                 var entity = swid.AddEntity("bob", "http://bob.com/", "contributor");
                 entity.AddRole("consultant");
 
@@ -214,7 +214,7 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
                 var xml = XDocument.Parse(swid.SwidTagText);
                 Console.WriteLine("SWID: {0} ", swid.SwidTagText);
 
-                // assertions 
+                // assertions
             }
         }
 
@@ -253,12 +253,12 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
                 regkey.AddAttribute("value", "chocolate");
 
                 var payload2 = swid.AddPayload();
-                    
+
                 // to xml
                 var xml = XDocument.Parse(swid.SwidTagText);
                 Console.WriteLine("SWID: {0} ", swid.SwidTagText);
 
-                // assertions 
+                // assertions
                 // verify only one element is actually created.
                 Assert.Equal(payload.ElementUniqueId, payload2.ElementUniqueId);
 
@@ -269,7 +269,7 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
 
                 Assert.Empty( dir1.Files);
                 Assert.Empty( dir1.Directories);
-             
+
                 Assert.Equal(1,dir2.Directories.Count());
                 Assert.Empty(dir2.Files);
                 Assert.Equal(1, dir2.Directories.FirstOrDefault().Files.Count());
@@ -295,7 +295,7 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
                 // try via indexing accessor
                 Assert.Equal("chocolate", swid.Payload.Resources.FirstOrDefault().Attributes["value"]);
 
-                // 
+                //
                 Assert.Equal(3, swid.Payload.Resources.FirstOrDefault().Attributes.Count);
                 Assert.Contains("type", swid.Payload.Resources.FirstOrDefault().Attributes.Keys);
                 Assert.Contains("key", swid.Payload.Resources.FirstOrDefault().Attributes.Keys);
@@ -339,18 +339,18 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
                 dir1.Root = "PROGRAMFILES";
                 dir1.IsKey = false;
 
-                
+
 
                 // to xml
                 var xml = XDocument.Parse(swid.SwidTagText);
                 Console.WriteLine("SWID: {0} ", swid.SwidTagText);
 
-                // assertions 
+                // assertions
 
                 // verify only one element is actually created.
                 Assert.Equal(evidence.ElementUniqueId, swid.AddEvidence().ElementUniqueId);
 
-                // most is the same code as Payload... 
+                // most is the same code as Payload...
 
                 // check to make sure the object we got back is the same as we put in.
                 dir1 = evidence.Directories.FirstOrDefault();
@@ -367,7 +367,7 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
 
                 // check for the device id
                 Assert.Equal("someid", xml.XPathToAttribute("/swid:SoftwareIdentity/swid:Evidence/@deviceId").Value);
-                
+
                 // validate the format of the date
                 Assert.Equal(now.ToUniversalTime().ToString("o"), xml.XPathToAttribute("/swid:SoftwareIdentity/swid:Evidence/@date").Value);
             }
@@ -398,12 +398,12 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
                 var xml = XDocument.Parse(swid.SwidTagText);
                 Console.WriteLine("SWID: {0} ", swid.SwidTagText);
 
-                // assertions 
+                // assertions
                 Assert.Equal(3, swid.Links.Count());
                 Assert.Equal("http://foo.com/", link.HRef.ToString());
                 Assert.Equal("homepage", link.Relationship);
                 Assert.Equal( 2, link.Attributes.Count);
-                
+
                 Assert.Equal( link3.Artifact , link2.Artifact);
 
                 // some xml-based assertions:
@@ -434,19 +434,19 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
 
                 var meta2 = swid.AddMeta();
                 meta2.AddAttribute(XNamespace.Get("http://oneget.org/swidtag") + "other2", "somevalue2");
-                
+
                 // to xml
                 var xml = XDocument.Parse(swid.SwidTagText);
                 Console.WriteLine("SWID: {0} ", swid.SwidTagText);
 
-                // assertions 
+                // assertions
                 Assert.Equal( 3, meta1.Attributes.Keys.Count());
                 Assert.Equal(1, meta2.Attributes.Keys.Count());
 
                 Assert.Equal("Value", xml.XPathToAttribute("/swid:SoftwareIdentity/swid:Meta[1]/@Key").Value);
                 Assert.Equal("Value", xml.XPathToAttribute("/swid:SoftwareIdentity/swid:Meta[1]/@Key2").Value);
                 Assert.Equal("somevalue", xml.XPathToAttribute("/swid:SoftwareIdentity/swid:Meta[1]/@oneget:other").Value);
-                
+
             }
 
         }
@@ -463,13 +463,13 @@ namespace Microsoft.OneGet.Test.Core.Packaging {
                 var xml = XDocument.Parse(swid.SwidTagText);
                 Console.WriteLine("SWID: {0} ", swid.SwidTagText);
 
-                // assertions 
+                // assertions
 
             }
 
         }
 */
-        
+
 
     }
 }

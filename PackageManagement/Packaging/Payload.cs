@@ -1,18 +1,18 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Packaging {
+namespace Microsoft.PackageManagement.Packaging {
     using System;
     using System.Xml.Linq;
 
@@ -22,8 +22,8 @@ namespace Microsoft.OneGet.Packaging {
     ///     installed.  Note that Payload may be a superset of the items
     ///     installed and, depending on optimization systems for a device,
     ///     may or may not include every item that could be created or
-    ///     executed on a device when software is installed.  
-    ///     
+    ///     executed on a device when software is installed.
+    ///
     ///     In general, payload will be used to indicate the files that
     ///     may be installed with a software product and will often be a
     ///     superset of those files (i.e. if a particular optional

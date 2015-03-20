@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -52,7 +52,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
             try
             {
                 session = new Session((IntPtr) sessionHandle, false);
-                
+
                 if (string.IsNullOrWhiteSpace(uiClass))
                 {
                     throw new ArgumentNullException("uiClass");

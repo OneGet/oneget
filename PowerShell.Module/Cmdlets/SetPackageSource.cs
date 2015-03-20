@@ -1,28 +1,28 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PowerShell.OneGet.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Api;
-    using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Async;
-    using Microsoft.OneGet.Utility.Extensions;
-    using Microsoft.OneGet.Utility.Plugin;
+    using Microsoft.PackageManagement.Api;
+    using Microsoft.PackageManagement.Packaging;
+    using Microsoft.PackageManagement.Utility.Async;
+    using Microsoft.PackageManagement.Utility.Extensions;
+    using Microsoft.PackageManagement.Utility.Plugin;
     using Utility;
 
     [Cmdlet(VerbsCommon.Set, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.ParameterSets.SourceBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517141")]
@@ -89,7 +89,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         public override IEnumerable<string> Sources {
             get {
                 if (string.IsNullOrWhiteSpace(Name) && string.IsNullOrWhiteSpace(Location)) {
-                    return Microsoft.OneGet.Constants.Empty;
+                    return Microsoft.PackageManagement.Constants.Empty;
                 }
 
                 return new[] {
@@ -116,7 +116,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                             if (key != null && key.EqualsIgnoreCase("IsUpdatePackageSource")) {
                                 return "true".SingleItemAsEnumerable();
                             }
-                            return GetOptionValues(key);                        
+                            return GetOptionValues(key);
                         })
                     },
                     this,
@@ -126,7 +126,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
         private void UpdatePackageSource(PackageSource source) {
             if (WhatIf) {
-                
+
                 var p = new PSObject(source);
 
                 if (!string.IsNullOrWhiteSpace(NewName)) {
@@ -155,10 +155,10 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 }
 
             } else {
-                // we're renaming a source. 
+                // we're renaming a source.
                 // a bit more messy at this point
                 // create a new package source first
-                
+
                 foreach (var src in source.Provider.AddPackageSource(NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted.IsPresent ? Trusted.ToBool() : source.IsTrusted, this)) {
                     WriteObject(src);
                 }

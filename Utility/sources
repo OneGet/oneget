@@ -6,7 +6,7 @@
 
 !include ..\common.inc
 
-TARGETNAME          = Microsoft.OneGet.Utility
+TARGETNAME          = Microsoft.PackageManagement.Utility
 TARGETTYPE          = DYNLINK
 
 ## !include $(PROJECT_ROOT)\monad\nttargets\build\sources.inc
@@ -20,7 +20,7 @@ SOURCES_PATH = .\
 ###       you have to either *always* pre-gen the .cs files or figure another
 ###       way.
 ###
-RESOURCES_NAMESPACE=Microsoft.OneGet.Utility.Resources
+RESOURCES_NAMESPACE=Microsoft.PackageManagement.Utility.Resources
 GENERATED_RESOURCES_SOURCE=$(OUTPUT_PATH)\Messages.cs
 RESGEN_FLAGS = /str:cs,$(RESOURCES_NAMESPACE),Messages,$(OUTPUT_PATH)\Messages.cs
 
@@ -130,6 +130,6 @@ SOURCES=\
 #endregion
 
 INTERNALS_VISIBLE_TO=\
-	Microsoft.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
-	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
-	Microsoft.OneGet.Utility.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
+	Microsoft.PackageManagement, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+	Microsoft.PackageManagement.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+	Microsoft.PackageManagement.Utility.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);

@@ -1,18 +1,18 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Test.Core.TestProviders {
+namespace Microsoft.PackageManagement.Test.Core.TestProviders {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -21,18 +21,18 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
     using System.Security.Cryptography.X509Certificates;
     using Api;
     using Implementation;
-    using OneGet.Packaging;
-    using OneGet.Utility.Plugin;
+    using PackageManagement.Packaging;
+    using PackageManagement.Utility.Plugin;
     using Sdk;
     using Request = Sdk.Request;
 
     /// <summary>
-    /// A Package provider for OneGet.
-    /// 
+    /// A Package provider for PackageManagement.
+    ///
     /// Important notes:
     ///    - Required Methods: Not all methods are required; some package providers do not support some features. If the methods isn't used or implemented it should be removed (or commented out)
     ///    - Error Handling: Avoid throwing exceptions from these methods. To properly return errors to the user, use the request.Error(...) method to notify the user of an error conditionm and then return.
-    /// 
+    ///
     /// todo: Give this class a proper name
     /// </summary>
     public class Chained1Provider {
@@ -43,7 +43,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         protected static Dictionary<string, string[]> Features = new Dictionary<string, string[]> {
             { Constants.Features.Test, Constants.FeaturePresent },
 
-#if FOR_EXAMPLE 
+#if FOR_EXAMPLE
             // add this if you want to 'hide' your provider by default.
             { Constants.Features.AutomationOnly, Constants.FeaturePresent },
 
@@ -53,7 +53,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
             // you can list the URL schemes that you support searching for packages with
             { Constants.Features.SupportedSchemes, new [] {"http", "https", "file"}},
 
-            // you can list the magic signatures (bytes at the beginning of a file) that we can use 
+            // you can list the magic signatures (bytes at the beginning of a file) that we can use
             // to peek and see if a given file is yours.
             { Constants.Features.MagicSignatures, Constants.Signatures.ZipVariants},
 #endif
@@ -61,8 +61,8 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
 
 
         /// <summary>
-        /// Returns the name of the Provider. 
-        /// todo: Change this to the common name for your package provider. 
+        /// Returns the name of the Provider.
+        /// todo: Change this to the common name for your package provider.
         /// </summary>
         /// <returns>The name of this provider </returns>
         public string PackageProviderName {
@@ -70,8 +70,8 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         }
 
         /// <summary>
-        /// Returns the version of the Provider. 
-        /// todo: Change this to the version for your package provider. 
+        /// Returns the version of the Provider.
+        /// todo: Change this to the version for your package provider.
         /// </summary>
         /// <returns>The version of this provider </returns>
         public string ProviderVersion {
@@ -116,8 +116,8 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         }
 
         /// <summary>
-        /// Searches package sources given name and version information 
-        /// 
+        /// Searches package sources given name and version information
+        ///
         /// Package information must be returned using <c>request.YieldPackage(...)</c> function.
         /// </summary>
         /// <param name="name">a name or partial name of the package(s) requested</param>
@@ -135,7 +135,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
                 new { GetSources = new Func<IEnumerable<string>>(() => new string[] {"http://nuget.org/api/v2"}) }
                 , request
             };
-            
+
 
             if (string.IsNullOrEmpty(name)  || name == "zlib") {
                 var pkgs = request.ProviderServices.FindPackageByCanonicalId("nuget:zlib/1.2.8.7", supplySourceToChainedProvider).ToArray();

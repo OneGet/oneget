@@ -1,18 +1,18 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Packaging {
+namespace Microsoft.PackageManagement.Packaging {
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -21,7 +21,7 @@ namespace Microsoft.OneGet.Packaging {
     using Utility.Extensions;
 
     /// <summary>
-    /// 
+    ///
     /// From the schema:
     ///   Specifies the organizations related to the software component
     ///   referenced by this SWID tag.
@@ -60,16 +60,16 @@ namespace Microsoft.OneGet.Packaging {
 
         /// <summary>
         /// An enumeration of the Roles for a given entity.
-        /// 
+        ///
         /// From the schema:
         ///     The relationship between this organization and this tag e.g. tag,
         ///     softwareCreator, licensor, tagCreator, etc.  The role of
         ///     tagCreator is required for every SWID tag.
-        ///     
-        ///     Role may include any role value, but the pre-defined roles 
-        ///     include: aggregator, distributor, licensor, softwareCreator, 
+        ///
+        ///     Role may include any role value, but the pre-defined roles
+        ///     include: aggregator, distributor, licensor, softwareCreator,
         ///     tagCreator
-        ///     
+        ///
         ///     Other roles will be defined as the market uses the SWID tags.
         /// </summary>
         public IEnumerable<string> Roles {
@@ -99,7 +99,7 @@ namespace Microsoft.OneGet.Packaging {
             if (string.IsNullOrWhiteSpace(role)) {
                 role = string.Empty;
             }
-            
+
             var attr = GetAttribute(Iso19770_2.RoleAttribute.LocalName);
             if (attr != null) {
                 var roles = attr.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries).ConcatSingleItem(role).Distinct();
@@ -129,7 +129,7 @@ namespace Microsoft.OneGet.Packaging {
 
         /// <summary>
         ///   The regid of the organization.  If the regid is unknown, the
-        ///   value "invalid.unavailable" is assumed by default (see 
+        ///   value "invalid.unavailable" is assumed by default (see
         ///   RFC 6761 for more details on the default value).
         /// </summary>
         public string RegId {

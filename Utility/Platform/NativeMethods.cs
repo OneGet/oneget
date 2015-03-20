@@ -12,7 +12,7 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.OneGet.Utility.Platform {
+namespace Microsoft.PackageManagement.Utility.Platform {
     using System;
     using System.Runtime.InteropServices;
     using System.Text;

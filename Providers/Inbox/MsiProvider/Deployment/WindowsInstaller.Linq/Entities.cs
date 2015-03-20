@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Linq
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
 {
     // Silence warnings about style and doc-comments
     #if !CODE_ANALYSIS

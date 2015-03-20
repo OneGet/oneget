@@ -1,18 +1,18 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Utility.Platform {
+namespace Microsoft.PackageManagement.Utility.Platform {
     using System.Security.Principal;
 
     public class AdminPrivilege {
@@ -56,12 +56,12 @@ namespace Microsoft.OneGet.Utility.Platform {
                     throw new Win32Exception(Marshal.GetLastWin32Error());
                 }
 
-                // Determine whether system is running Windows Vista or later operating 
-                // systems (major version >= 6) because they support linked tokens, but 
+                // Determine whether system is running Windows Vista or later operating
+                // systems (major version >= 6) because they support linked tokens, but
                 // previous versions (major version < 6) do not.
                 if (Environment.OSVersion.Version.Major >= 6) {
-                    // Running Windows Vista or later (major version >= 6). 
-                    // Determine token type: limited, elevated, or default. 
+                    // Running Windows Vista or later (major version >= 6).
+                    // Determine token type: limited, elevated, or default.
 
                     // Allocate a buffer for the elevation type information.
                     //cbSize = sizeof(TOKEN_ELEVATION_TYPE); // TODO: is this ok?
@@ -99,9 +99,9 @@ namespace Microsoft.OneGet.Utility.Platform {
                     }
                 }
 
-                // CheckTokenMembership requires an impersonation token. If we just got 
-                // a linked token, it already is an impersonation token.  If we did not 
-                // get a linked token, duplicate the original into an impersonation 
+                // CheckTokenMembership requires an impersonation token. If we just got
+                // a linked token, it already is an impersonation token.  If we did not
+                // get a linked token, duplicate the original into an impersonation
                 // token for CheckTokenMembership.
                 if (hTokenToCheck == null) {
                     if (!Advapi32.DuplicateToken(hToken, SecurityImpersonationLevel.SecurityIdentification, out hTokenToCheck)) {
@@ -115,7 +115,7 @@ namespace Microsoft.OneGet.Utility.Platform {
                 fInAdminGroup = principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
             finally {
-                // Centralized cleanup for all allocated resources. 
+                // Centralized cleanup for all allocated resources.
                 if (hToken != null) {
                     hToken.Close();
                     hToken = null;
@@ -175,9 +175,9 @@ namespace Microsoft.OneGet.Utility.Platform {
 
                 // Retrieve token elevation information.
                 if (!Advapi32.GetTokenInformation(hToken, TokenInformationClass.TokenElevation, pTokenElevation, cbTokenElevation, out cbTokenElevation)) {
-                    // When the process is run on operating systems prior to Windows 
-                    // Vista, GetTokenInformation returns false with the error code 
-                    // ERROR_INVALID_PIsProcessElevatedARAMETER because TokenElevation is not supported 
+                    // When the process is run on operating systems prior to Windows
+                    // Vista, GetTokenInformation returns false with the error code
+                    // ERROR_INVALID_PIsProcessElevatedARAMETER because TokenElevation is not supported
                     // on those operating systems.
                     throw new Win32Exception(Marshal.GetLastWin32Error());
                 }
@@ -185,7 +185,7 @@ namespace Microsoft.OneGet.Utility.Platform {
                 // Marshal the TOKEN_ELEVATION struct from native to .NET object.
                 var elevation = (TokenElevation)Marshal.PtrToStructure(pTokenElevation, typeof(TokenElevation));
 
-                // TOKEN_ELEVATION.TokenIsElevated is a non-zero value if the token 
+                // TOKEN_ELEVATION.TokenIsElevated is a non-zero value if the token
                 // has elevated privileges; otherwise, a zero value.
                 fIsElevated = (elevation.TokenIsElevated != 0);
             }
@@ -193,7 +193,7 @@ namespace Microsoft.OneGet.Utility.Platform {
                 return false;
             }
             finally {
-                // Centralized cleanup for all allocated resources. 
+                // Centralized cleanup for all allocated resources.
                 /* if (hToken != null) {
                     hToken.Close();
                     hToken = null;
@@ -229,17 +229,17 @@ namespace Microsoft.OneGet.Utility.Platform {
                     throw new Win32Exception(Marshal.GetLastWin32Error());
                 }
 
-                // Then we must query the size of the integrity level information 
-                // associated with the token. Note that we expect GetTokenInformation 
-                // to return false with the ERROR_INSUFFICIENT_BUFFER error code 
-                // because we've given it a null buffer. On exit cbTokenIL will tell 
+                // Then we must query the size of the integrity level information
+                // associated with the token. Note that we expect GetTokenInformation
+                // to return false with the ERROR_INSUFFICIENT_BUFFER error code
+                // because we've given it a null buffer. On exit cbTokenIL will tell
                 // the size of the group information.
                 if (!Advapi32.GetTokenInformation(hToken, TokenInformationClass.TokenIntegrityLevel, IntPtr.Zero, 0, out cbTokenIL)) {
                     var error = Marshal.GetLastWin32Error();
                     if (error != Advapi32.ERROR_INSUFFICIENT_BUFFER) {
-                        // When the process is run on operating systems prior to 
-                        // Windows Vista, GetTokenInformation returns false with the 
-                        // ERROR_INVALID_PARAMETER error code because 
+                        // When the process is run on operating systems prior to
+                        // Windows Vista, GetTokenInformation returns false with the
+                        // ERROR_INVALID_PARAMETER error code because
                         // TokenIntegrityLevel is not supported on those OS's.
                         throw new Win32Exception(error);
                     }
@@ -251,8 +251,8 @@ namespace Microsoft.OneGet.Utility.Platform {
                     throw new Win32Exception(Marshal.GetLastWin32Error());
                 }
 
-                // Now we ask for the integrity level information again. This may fail 
-                // if an administrator has added this account to an additional group 
+                // Now we ask for the integrity level information again. This may fail
+                // if an administrator has added this account to an additional group
                 // between our first call to GetTokenInformation and this one.
                 if (!Advapi32.GetTokenInformation(hToken, TokenInformationClass.TokenIntegrityLevel, pTokenIL, cbTokenIL, out cbTokenIL)) {
                     throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -261,14 +261,14 @@ namespace Microsoft.OneGet.Utility.Platform {
                 // Marshal the TOKEN_MANDATORY_LABEL struct from native to .NET object.
                 var tokenIL = (TokenMandatoryLabel)Marshal.PtrToStructure(pTokenIL, typeof(TokenMandatoryLabel));
 
-                // Integrity Level SIDs are in the form of S-1-16-0xXXXX. (e.g. 
-                // S-1-16-0x1000 stands for low integrity level SID). There is one 
+                // Integrity Level SIDs are in the form of S-1-16-0xXXXX. (e.g.
+                // S-1-16-0x1000 stands for low integrity level SID). There is one
                 // and only one subauthority.
                 var pIL = Advapi32.GetSidSubAuthority(tokenIL.Label.Sid, 0);
                 IL = Marshal.ReadInt32(pIL);
             }
             finally {
-                // Centralized cleanup for all allocated resources. 
+                // Centralized cleanup for all allocated resources.
                 if (hToken != null) {
                     hToken.Close();
                     hToken = null;

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -78,7 +78,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         /// expected to contain only the path without the filename.</param>
         /// <remarks><p>
         /// If this method is called with a new source, the installer adds the source
-        /// to the end of the source list. 
+        /// to the end of the source list.
         /// </p><p>
         /// If this method is called with a source already existing in the source
         /// list, it has no effect.
@@ -105,7 +105,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         /// will be inserted</param>
         /// <remarks><p>
         /// If this method is called with a new source and <paramref name="index"/>
-        /// is set to 0, the installer adds the source to the end of the source list. 
+        /// is set to 0, the installer adds the source to the end of the source list.
         /// </p><p>
         /// If this method is called with a source already existing in the source
         /// list and <paramref name="index"/> is set to 0, the installer retains the

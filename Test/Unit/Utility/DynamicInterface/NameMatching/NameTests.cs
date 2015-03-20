@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.OneGet.Test.Utility.DynamicInterface.NameMatching {
+namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.NameMatching {
     using System.Security.Policy;
-    using OneGet.Utility.Plugin;
+    using PackageManagement.Utility.Plugin;
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
@@ -30,7 +30,7 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.NameMatching {
     public class HasProperty2 {
         public string Name {
             get {
-                return "Name";            
+                return "Name";
             }
         }
 

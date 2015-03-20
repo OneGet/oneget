@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="OneGet" Manufacturer="Microsoft Corporation" Language="1033"
-           Version="!(bind.FileVersion.Microsoft.OneGet.exe)"
+  <Product Id="*" Name="OneGet" Manufacturer="Outercurve Foundation" Language="1033"
+           Version="!(bind.FileVersion.Microsoft.PackageManagement.dll)"
            UpgradeCode="0298D025-D727-485A-8691-5ECCCA27F424">
     <Package InstallScope="perMachine" Compressed="yes" />
 
@@ -9,44 +9,35 @@
 
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
-        <Directory Id="WindowsPowerShellFolder" Name="WindowsPowerShell">
-          <Directory Id="ModulesFolder" Name="Modules">
-            <Directory Id="OneGetFolder" Name="OneGet">
-            </Directory>
-            <Directory Id="OneGetEdgeFolder" Name="OneGet-Edge">
-            </Directory>
-            <Directory Id="PowerShellGetFolder" Name="PowerShellGet">
-              <Directory Id="PSGetEnUsFolder" Name="en-US" />
+        <Directory Id="OutercurveFoundationFolder" Name="OutercurveFoundation">
+          <Directory Id="VersionFolder" Name="!(bind.FileVersion.Microsoft.PackageManagement.dll)">
+            <Directory Id="ModulesFolder" Name="Modules">
+              <Directory Id="OneGetFolder" Name="OneGet">
+              </Directory>
+              <Directory Id="PowerShellGetFolder" Name="PowerShellGet">
+                <Directory Id="PSGetEnUsFolder" Name="en-US" />
+              </Directory>
             </Directory>
           </Directory>
         </Directory>
       </Directory>
     </Directory>
 
-    <Feature Id="OneGetFeature">
+    <Feature Id="PackageManagementFeature">
+      <ComponentGroupRef Id="PackageManagementComponents" />
       <ComponentGroupRef Id="OneGetComponents" />
       <ComponentGroupRef Id="PSGetComponents" />
       <ComponentGroupRef Id="PSGetEnUsComponents" />
-      <ComponentGroupRef Id="OneGetEdgeComponents" />
-      <!--
-      <ComponentGroupRef Id="ProviderComponents" />
-      <ComponentGroupRef Id="PdbComponents" />
-      -->
     </Feature>
   
-    <CustomAction Id="RunPowerShellScript" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no" />
-
+    <CustomAction Id="RunScript" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no" />
   
   <InstallExecuteSequence>
 
-    <!--Invoke PowerShell script -->
-    <Custom Action="RunPowerShellScript" After="InstallFiles"><![CDATA[NOT Installed]]></Custom>
+    <!--Invoke script -->
+    <Custom Action="RunScript" After="InstallFiles"><![CDATA[NOT Installed]]></Custom>
   </InstallExecuteSequence>
-
-  
   </Product>
-
-
     
   <Fragment>
 
@@ -61,10 +52,10 @@
       <![CDATA[Installed OR POWERSHELLEXE]]>
     </Condition>
 
-      <SetProperty Id="RunPowerShellScript"
+      <SetProperty Id="RunScript"
            Before ="InstallFiles"
            Sequence="execute"
-           Value ="&quot;[POWERSHELLEXE]&quot; -NoProfile -NonInteractive &quot;[\[]System.Environment[\]]::SetEnvironmentVariable('PSModulePath',((((($env:PSModulePath).Split(';'))+'[ModulesFolder]').Trim('\')|Where-object{$_.Length -gt 0}|select -uniq) -join ';') ,'Machine')&quot;" />
+           Value ="&quot;[SystemFolder]cmd.exe&quot; &quot;[OneGetFolder]\install-oneget.cmd&quot;" />
       
     <ComponentGroup Id="PSGetComponents" Directory="PowerShellGetFolder">
       <Component><File Source="Providers\Inbox\PowerShellGet\PowerShellGet.psd1" /></Component>
@@ -77,79 +68,46 @@
       <Component><File Source="Providers\Inbox\PowerShellGet\en-Us\PSGet.Resource.psd1" Id="enuspsgetresourcepsd1" /></Component>
     </ComponentGroup >
     
-    <ComponentGroup Id="OneGetComponents" Directory="OneGetFolder">
-      <Component>
-        <File Source="readme.md" />
-      </Component>
+    <ComponentGroup Id="PackageManagementComponents" Directory="OneGetFolder">
+      <Component><File Source="readme.md" /></Component>
 
       <Component>
-        <File Source="release-notes.md" />
-      </Component>
-
-      <Component>
-        <File Id="Microsoft.OneGet.exe" Source="Microsoft.OneGet.exe" />
+        <File Id="Microsoft.PackageManagement.dll" Source="Microsoft.PackageManagement.dll" />
         <Environment Id="UpdatePsModulePath" Action="set" Name="PSModulePath" Value="[ModulesFolder]" Part="last" System="yes" /> 
       </Component>
 
-      <Component><File Source="Microsoft.OneGet.MetaProvider.PowerShell.dll" /></Component>
-      <Component><File Source="Microsoft.OneGet.ArchiverProviders.dll" /></Component>
-      <Component><File Source="Microsoft.OneGet.MsiProvider.dll" /></Component>
-      <Component><File Source="Microsoft.OneGet.MsuProvider.dll" /></Component>
-      
-      <Component><File Source="Microsoft.OneGet.NuGetProvider.dll" /></Component> 
+      <Component><File Source="Microsoft.PackageManagement.MetaProvider.PowerShell.dll" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.ArchiverProviders.dll" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.MsiProvider.dll" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.MsuProvider.dll" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.CoreProviders.dll" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.Utility.dll" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.Utility.PowerShell.dll" /></Component>
+      <Component><File Source="Microsoft.PowerShell.PackageManagement.dll" /></Component>
+
+      <Component><File Source="Microsoft.PackageManagement.NuGetProvider.dll" /></Component> 
       <Component><File Source="nuget.exe" /></Component> 
-      
-      <!-- <Component><File Source="nuget-anycpu.exe" /></Component>  -->
-      <Component><File Source="Microsoft.OneGet.CoreProviders.dll" /></Component>
 
-      <Component><File Source="Microsoft.OneGet.Utility.dll" /></Component>
-      <Component><File Source="Microsoft.OneGet.Utility.PowerShell.dll" /></Component>
-      <Component><File Source="Microsoft.PowerShell.OneGet.dll" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.pdb" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.MetaProvider.PowerShell.pdb" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.ArchiverProviders.pdb" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.MsiProvider.pdb" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.MsuProvider.pdb" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.NuGetProvider.pdb" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.CoreProviders.pdb" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.Utility.pdb" /></Component>
+      <Component><File Source="Microsoft.PackageManagement.Utility.PowerShell.pdb" /></Component>
+      <Component><File Source="Microsoft.PowerShell.PackageManagement.pdb" /></Component>
       
-      <Component><File Source="Microsoft.OneGet.pdb" /></Component>
-      <Component><File Source="Microsoft.OneGet.MetaProvider.PowerShell.pdb" /></Component>
-      <Component><File Source="Microsoft.OneGet.ArchiverProviders.pdb" /></Component>
-      <Component><File Source="Microsoft.OneGet.MsiProvider.pdb" /></Component>
-      <Component><File Source="Microsoft.OneGet.MsuProvider.pdb" /></Component>
-      <Component><File Source="Microsoft.OneGet.NuGetProvider.pdb" /></Component>
-      <Component><File Source="Microsoft.OneGet.CoreProviders.pdb" /></Component>
-
-      <Component><File Source="Microsoft.OneGet.Utility.pdb" /></Component>
-      <Component><File Source="Microsoft.OneGet.Utility.PowerShell.pdb" /></Component>
-      <Component><File Source="Microsoft.PowerShell.OneGet.pdb" /></Component>
-      
-      <Component><File Source="OneGet.format.ps1xml" /></Component>
-      <Component><File Source="OneGet.psd1" /></Component>
+      <Component><File Source="PackageManagement.format.ps1xml" /></Component>
       <Component><File Source="PackageProviderFunctions.psm1" /></Component>
       
+      <Component><File Source="PackageManagement.psd1" /></Component>
+      <Component><File Source="OneGet-Edge.psd1" /></Component>
+      <Component><File Source="OneGet.psd1" /></Component>
     </ComponentGroup>
     
-    <ComponentGroup Id="OneGetEdgeComponents" Directory="OneGetEdgeFolder">
-      <Component><File Source="OneGet-Edge.psd1" /></Component>
-    </ComponentGroup>
   </Fragment>
 
-  <Fragment>
-    <ComponentGroup Id="PdbComponents" Directory="OneGetFolder">
-      <Component>
-        <File Source="Microsoft.OneGet.pdb" />
-      </Component>
-
-      <Component>
-        <File Source="Microsoft.OneGet.MetaProvider.PowerShell.pdb" />
-      </Component>
-
-      <Component>
-        <File Source="Microsoft.OneGet.Utility.pdb" />
-      </Component>
-
-      <Component>
-        <File Source="Microsoft.OneGet.Utility.PowerShell.pdb" />
-      </Component>
-
-      <Component>
-        <File Source="Microsoft.PowerShell.OneGet.pdb" />
-      </Component>
-    </ComponentGroup>
-  </Fragment>
+  
 </Wix>

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -121,7 +121,7 @@ internal static class NativeMethods
 
 [DllImport("msi.dll", CharSet=CharSet.Unicode)] internal static extern uint MsiSetInternalUI(uint dwUILevel, ref IntPtr phWnd);
 [DllImport("msi.dll", CharSet=CharSet.Unicode)] internal static extern uint MsiSetInternalUI(uint dwUILevel, IntPtr phWnd);
-[DllImport("msi.dll", CharSet=CharSet.Unicode)] internal static extern NativeExternalUIHandler MsiSetExternalUI([MarshalAs(UnmanagedType.FunctionPtr)] NativeExternalUIHandler puiHandler, uint dwMessageFilter, IntPtr pvContext); 
+[DllImport("msi.dll", CharSet=CharSet.Unicode)] internal static extern NativeExternalUIHandler MsiSetExternalUI([MarshalAs(UnmanagedType.FunctionPtr)] NativeExternalUIHandler puiHandler, uint dwMessageFilter, IntPtr pvContext);
 [DllImport("msi.dll", CharSet=CharSet.Unicode)] internal static extern uint MsiEnableLog(uint dwLogMode, string szLogFile, uint dwLogAttributes);
 //[DllImport("msi.dll", CharSet=CharSet.Unicode)] internal static extern uint MsiEnumProducts(uint iProductIndex, StringBuilder lpProductBuf);
 [DllImport("msi.dll", CharSet=CharSet.Unicode)] internal static extern uint MsiGetProductInfo(string szProduct, string szProperty, StringBuilder lpValueBuf, ref uint pcchValueBuf);

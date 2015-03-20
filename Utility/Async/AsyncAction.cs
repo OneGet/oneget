@@ -12,7 +12,7 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.OneGet.Utility.Async {
+namespace Microsoft.PackageManagement.Utility.Async {
     using System;
     using System.Diagnostics;
     using System.Threading;

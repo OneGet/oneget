@@ -1,18 +1,18 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.MetaProvider.PowerShell {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -167,17 +167,17 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         internal object CallPowerShell(PsRequest request, params object[] args) {
-            // the lock ensures that we're not re-entrant into the same powershell runspace 
+            // the lock ensures that we're not re-entrant into the same powershell runspace
             lock (_lock) {
                 if (!_reentrancyLock.WaitOne(0)) {
                     // this lock is set to false, meaning we're still in a call **ON THIS THREAD**
                     // this is bad karma -- powershell won't let us call into the runspace again
                     // we're going to throw an error here because this indicates that the currently
-                    // running powershell call is calling back into OneGet, and it has called back 
+                    // running powershell call is calling back into PM, and it has called back
                     // into this provider. That's just bad bad bad.
                     throw new Exception("Re-entrancy Violation in powershell module");
                 }
-                
+
                 try {
                     // otherwise, this is the first time we've been here during this call.
                     _reentrancyLock.Reset();
@@ -228,7 +228,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     _reentrancyLock.Set();
                 }
 
-                
+
 
                 return null;
             }

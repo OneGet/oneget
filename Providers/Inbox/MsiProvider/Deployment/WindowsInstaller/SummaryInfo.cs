@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Globalization;
@@ -201,7 +201,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         /// <summary>Gets or sets the RevisionNumber summary information property.</summary>
         /// <remarks><p>
         /// The Revision Number summary information property contains the package code for the installer package. The
-        /// package code is a unique identifier of the installer package. 
+        /// package code is a unique identifier of the installer package.
         /// </p><p>
         /// The Revision Number summary information  property of a patch package specifies the GUID patch code for
         /// the patch. This is followed by a list of patch code GUIDs for obsolete patches that are removed when this
@@ -251,7 +251,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
         public DateTime LastPrintTime
-        { 
+        {
             get { return (DateTime) this[11, typeof(DateTime)]; }
             set { this[11, typeof(DateTime)] = value; }
         }

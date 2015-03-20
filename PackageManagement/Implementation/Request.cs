@@ -12,7 +12,7 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.OneGet.Implementation {
+namespace Microsoft.PackageManagement.Implementation {
     using System;
     using System.Collections.Generic;
     using System.Globalization;

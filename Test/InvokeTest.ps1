@@ -7,6 +7,16 @@ param( [switch]$IsSandboxed )
 $origDir = (pwd)
 cd $PSScriptRoot
 
+if (test-path $Env:ProgramFiles/OneGet/ProviderAssemblies/nuget-anycpu.exe) {
+    ren $Env:ProgramFiles/OneGet/ProviderAssemblies/nuget-anycpu.exe "nuget-anycpu.$(Get-Random).old"
+    rm -force $Env:ProgramFiles/OneGet/ProviderAssemblies/*.old -ea silentlycontinue
+}
+
+if (test-path $Env:LocalAppData/OneGet/ProviderAssemblies/nuget-anycpu.exe) {
+    ren $Env:LocalAppData/OneGet/ProviderAssemblies/nuget-anycpu.exe "nuget-anycpu.$(Get-Random).old"
+    rm -force $Env:LocalAppData/OneGet/ProviderAssemblies/*.old  -ea silentlycontinue
+}
+
 # ensure that we're only picking up the modules that we really want to.
 $env:PSModulePath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules;$PSScriptRoot\tools\;" 
 
@@ -37,6 +47,8 @@ if( -not $IsSandboxed  ) {
 }
 
 Import-Module DispatchLayer
+Write-Host -fore White "Running xUnit test wrapper"
 InvokeComponent @args -Directory $PSScriptRoot\output\debug\bin
-InvokeComponent @args -Directory $PSScriptRoot\bvt\cmdlet-testsuite\tests
 
+Write-Host -fore White "Running powershell pester tests "
+InvokeComponent @args -Directory $PSScriptRoot\ModuleTests\tests

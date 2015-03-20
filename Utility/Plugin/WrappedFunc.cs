@@ -11,7 +11,7 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.OneGet.Utility.Plugin {
+namespace Microsoft.PackageManagement.Utility.Plugin {
     using System;
     using System.Globalization;
 

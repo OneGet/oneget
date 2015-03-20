@@ -1,30 +1,30 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PowerShell.OneGet.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Api;
-    using Microsoft.OneGet.Implementation;
-    using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Collections;
-    using Microsoft.OneGet.Utility.Extensions;
-    using Microsoft.OneGet.Utility.Plugin;
+    using Microsoft.PackageManagement.Api;
+    using Microsoft.PackageManagement.Implementation;
+    using Microsoft.PackageManagement.Packaging;
+    using Microsoft.PackageManagement.Utility.Collections;
+    using Microsoft.PackageManagement.Utility.Extensions;
+    using Microsoft.PackageManagement.Utility.Plugin;
     using Utility;
 
     public abstract class CmdletWithProvider : CmdletBase {
@@ -88,7 +88,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
                     if (!filteredproviders.Any()) {
                         // we've filtered out everthing!
-                        
+
                         if (!didUserSpecifyProviders) {
                             if (IsInvocation) {
                                 // user didn't actually specify provider(s), the sources can't be tied to any particular provider
@@ -119,7 +119,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     // make this the new subset.
                     providers = filteredproviders;
                 }
-                
+
 
                 // filter on: dynamic options - if they specify any dynamic options, limit the provider set to providers with those options.
                 var result = FilterProvidersUsingDynamicParameters(providers, didUserSpecifyProviders, didUserSpecifySources).ToArray();
@@ -127,7 +127,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 /* todo : return error messages when dynamic parameters filter everything out. Either here or in the FPUDP fn.
 
                 if (!result.Any()) {
-                    // they specified dynamic parameters that implicitly select providers 
+                    // they specified dynamic parameters that implicitly select providers
                     // that don't fit with the providers and sources that they initially asked for.
 
                     if (didUserSpecifyProviders) {
@@ -151,7 +151,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     }
 
                     if (didUserSpecifySources) {
-                        // user gave sources which implied some providers but the dynamic parameters implied different providers 
+                        // user gave sources which implied some providers but the dynamic parameters implied different providers
                         if (IsInvocation) {
                             // error
                         }
@@ -167,16 +167,16 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
                     if (IsInvocation) {
                         // error
-    
+
                     }
-                    
+
                 }
                 */
                 return result;
             }
         }
 
-       
+
         protected IEnumerable<PackageProvider> FilterProvidersUsingDynamicParameters(MutableEnumerable<PackageProvider> providers, bool didUserSpecifyProviders, bool didUserSpecifySources) {
             var excluded = new Dictionary<string, IEnumerable<string>>();
 
@@ -205,12 +205,12 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
 
             /* TODO: provide errors in the case where everything got filtered out. Or maybe warnings?
-             * 
+             *
             var mismatchedProviders = (setparameters.Any() ? providers.Where(each => !matchedProviders.Contains(each)).Where(p => setparameters.Any(each => each.Options.Any(opt => opt.ProviderName == p.ProviderName))) : Enumerable.Empty<PackageProvider>()).ReEnumerable();
 
             if (!found) {
-                // we didn't find anything that matched 
-                // they specified dynamic parameters that implicitly select providers 
+                // we didn't find anything that matched
+                // they specified dynamic parameters that implicitly select providers
                 // that don't fit with the providers and sources that they initially asked for.
 
                 if (didUserSpecifyProviders || didUserSpecifySources) {
@@ -224,7 +224,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 }
 
                 if (didUserSpecifySources) {
-                    // user gave sources which implied some providers but the dynamic parameters implied different providers 
+                    // user gave sources which implied some providers but the dynamic parameters implied different providers
                     if (IsInvocation) {
                         // error
                     }
@@ -242,7 +242,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     // error
 
                 }
-                    
+
             }
             */
             // these warnings only show for providers that would have otherwise be selected.
@@ -290,7 +290,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
                 unboundArguments = unboundArguments ?? new Dictionary<string, object>();
 
-                // if there are unbound arguments that are owned by a provider, we can narrow the rest of the 
+                // if there are unbound arguments that are owned by a provider, we can narrow the rest of the
                 // arguments to just ones that are connected with that provider
                 var dynamicOptions = CachedDynamicOptions;
 
@@ -301,7 +301,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                         dynamicOptions = dynamicOptions.Where(option => acceptableProviders.Contains(option.ProviderName)).ToArray();
                     }
                 }
-                // generate the common parameters for our cmdlets (timeout, messagehandler, etc) 
+                // generate the common parameters for our cmdlets (timeout, messagehandler, etc)
                 GenerateCommonDynamicParameters();
 
                 // generate parameters that are specific to the cmdlet being implemented.
@@ -311,13 +311,13 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
                 foreach (var md in dynamicOptions) {
                     if (DynamicParameterDictionary.ContainsKey(md.Name)) {
-                        // todo: if the dynamic parameters from two providers aren't compatible, then what? 
+                        // todo: if the dynamic parameters from two providers aren't compatible, then what?
 
                         // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
                         var crdp = DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter;
 
                         if (crdp == null) {
-                            // the package provider is trying to overwrite a parameter that is already dynamically defined by the BaseCmdlet. 
+                            // the package provider is trying to overwrite a parameter that is already dynamically defined by the BaseCmdlet.
                             // just ignore it.
                             continue;
                         }
@@ -332,23 +332,23 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     } else {
                         // check if the dynamic parameter is a static parameter first.
 
-                        // this can happen if we make a common dynamic parameter into a proper static one 
+                        // this can happen if we make a common dynamic parameter into a proper static one
                         // and a provider didn't know that yet.
 
                         if (staticParameters != null && staticParameters.ContainsKey(md.Name)) {
                             // don't add it.
                             continue;
                         }
-                        
+
                         DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
                     }
                 }
 #if DUNNO_YET
                 DynamicParameterDictionary.Values.Where( param => param.Attributes.Select(each => each as ParameterAttribute).All( each => each))
                  if (ParameterSets.Count() > 1 && staticParameters != null) {
-                    // for every parameter set 
+                    // for every parameter set
                     foreach (var p in ParameterSets) {
-                        // for every provider who has dynamic parameters 
+                        // for every provider who has dynamic parameters
                         foreach (var option in dynamicOptions) {
                             var parameterSetName = !string.IsNullOrWhiteSpace(p) ? option.ProviderName + ":" + p : option.ProviderName;
                             var mandatoryParameters = staticParameters.Values.Where(param => param.Attributes.Select(each => each as ParameterAttribute).Any(each => each != null && each.Mandatory && each.ParameterSetName == p));
@@ -361,7 +361,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                                 });
                             }
                         }
-                        
+
                     }
                 }
 #endif
@@ -382,7 +382,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         protected DynamicOption[] CachedDynamicOptions {
             get {
                 return GetType().GetOrAdd(() => CachedSelectedProviders.SelectMany(provider => _optionCategories.SelectMany(category => provider.GetDynamicOptions(category, this.SuppressErrorsAndWarnings(IsProcessing)))).ToArray(), "CachedDynamicOptions");
-            } 
+            }
         }
 
         protected Dictionary<string, ParameterMetadata> CachedStaticParameters {
@@ -400,16 +400,16 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     thisIsFirstObject = true;
 
                     try {
-                        // do all the work that we need to during the lock 
+                        // do all the work that we need to during the lock
                         // this includes:
                         //      one-time-per-call work
                         //      any access to MyInvocation.MyCommand.*
                         //      modifying parameter validation sets
-                        // 
+                        //
 
                         if (MyInvocation != null && MyInvocation.MyCommand != null && MyInvocation.MyCommand.Parameters != null) {
                             GetType().AddOrSet(MyInvocation.MyCommand.Parameters, "MyInvocation.MyCommand.Parameters");
-                        } 
+                        }
 #if DEEP_DEBUG
                         else {
                             if (MyInvocation == null) {
@@ -422,8 +422,8 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                                 }
                             }
                         }
-#endif                         
-                        
+#endif
+
 
                         // the second time, it will generate all the parameters, including the dynamic ones.
                         // (not that we currently need it, but if you do, you gotta do it here!)
@@ -432,8 +432,8 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                         // ask for the unbound arguments.
                           var unbound = UnboundArguments;
                           if (unbound.ContainsKey("ProviderName") || unbound.ContainsKey("Provider"))
-                          {                                                                  
-                            var pName = unbound.ContainsKey("ProviderName")?unbound["ProviderName"]:unbound["Provider"] ;                                                     
+                          {
+                            var pName = unbound.ContainsKey("ProviderName")?unbound["ProviderName"]:unbound["Provider"] ;
                             if (pName != null)
                             {
                                 if (pName.GetType().IsArray)
@@ -447,8 +447,8 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                             }
                         }
 
-                        // we've now got a copy of the arguments that aren't bound 
-                        // and we can potentially narrow the provider selection based 
+                        // we've now got a copy of the arguments that aren't bound
+                        // and we can potentially narrow the provider selection based
                         // on arguments the user specified.
 
                         if (null== CachedSelectedProviders || IsFailingEarly || IsCanceled ) {
@@ -457,8 +457,8 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 #endif
                             // this happens if there is a serious failure early in the cmdlet
                             // i.e. - if the SelectedProviders comes back empty (due to agressive filtering)
-                            
-                            // in this case, we just want to provide a catch-all for remaining arguments so that we can make 
+
+                            // in this case, we just want to provide a catch-all for remaining arguments so that we can make
                             // output the error that we really want to (that the user specified conditions that filtered them all out)
 
                             DynamicParameterDictionary.Add("RemainingArguments", new RuntimeDefinedParameter("RemainingArguments", typeof(object), new Collection<Attribute> {
@@ -466,7 +466,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                             }));
                         }
 
-                        // at this point, we're actually calling to have the dynamic parameters generated 
+                        // at this point, we're actually calling to have the dynamic parameters generated
                         // that are expected to be used.
                         return ActualGenerateDynamicParameters(unbound);
 
@@ -477,8 +477,8 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
                 // otherwise just call the AGDP because we're in a reentrant call.
                 // and this might be needed if the original call had some strange need
-                // to know what the parameters that it's about to generate would be. 
-                // Yeah, you heard me. 
+                // to know what the parameters that it's about to generate would be.
+                // Yeah, you heard me.
                 return ActualGenerateDynamicParameters(null);
 
             } finally

@@ -1,18 +1,18 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Packaging {
+namespace Microsoft.PackageManagement.Packaging {
     using System;
     using System.Xml.Linq;
     using Utility.Extensions;
@@ -28,7 +28,7 @@ namespace Microsoft.OneGet.Packaging {
         internal static readonly XName Meta = Namespace + "Meta";
         internal static readonly XName Evidence = Namespace + "Evidence";
         internal static readonly XName Payload = Namespace + "Payload";
-                        
+
         internal static readonly XName Directory = Namespace + "Directory";
         internal static readonly XName File = Namespace + "File";
         internal static readonly XName Process = Namespace + "Process";
@@ -37,10 +37,10 @@ namespace Microsoft.OneGet.Packaging {
         internal static readonly XName[] MetaElements = {
             Meta, Directory, File, Process, Resource
         };
-      
+
         // ISO 19770-2/2015 attributes
         internal static readonly XName XmlLang = XmlNamespace + "lang";
-                        
+
         internal static readonly XName NameAttribute = "name";
         internal static readonly XName PatchAttribute = "patch";
         internal static readonly XName MediaAttribute = "media";
@@ -50,7 +50,7 @@ namespace Microsoft.OneGet.Packaging {
         internal static readonly XName VersionAttribute = "version";
         internal static readonly XName VersionSchemeAttribute = "versionScheme";
         internal static readonly XName CorpusAttribute = "corpus";
-                        
+
         internal static readonly XName SummaryAttribute = "summary";
         internal static readonly XName DescriptionAttribute = "description";
         internal static readonly XName ActivationStatusAttribute = "activationStatus";
@@ -66,27 +66,27 @@ namespace Microsoft.OneGet.Packaging {
         internal static readonly XName RevisionAttribute = "revision";
         internal static readonly XName UnspscCodeAttribute = "unspscCode";
         internal static readonly XName UnspscVersionAttribute = "unspscVersion";
-                        
+
         internal static readonly XName RegIdAttribute = "regId";
         internal static readonly XName RoleAttribute = "role";
         internal static readonly XName ThumbprintAttribute = "thumbprint";
-                        
+
         internal static readonly XName HRefAttribute = "href";
         internal static readonly XName RelationshipAttribute = "rel";
         internal static readonly XName MediaTypeAttribute = "type";
         internal static readonly XName OwnershipAttribute = "ownership";
         internal static readonly XName UseAttribute = "use";
         internal static readonly XName ArtifactAttribute = "artifact";
-                        
+
         internal static readonly XName TypeAttribute = "type";
-                        
+
         internal static readonly XName KeyAttribute = "key";
         internal static readonly XName RootAttribute = "root";
         internal static readonly XName LocationAttribute = "location";
-                        
+
         internal static readonly XName SizeAttribute = "size";
         internal static readonly XName PidAttribute = "pid";
-                        
+
         internal static readonly XName DateAttribute = "date";
         internal static readonly XName DeviceIdAttribute = "deviceId";
 
@@ -152,9 +152,9 @@ namespace Microsoft.OneGet.Packaging {
 
         /// <summary>
         /// Adds a new attribute to the element
-        /// 
+        ///
         /// Does not permit modification of an existing attribute.
-        /// 
+        ///
         /// Does not add empty or null attributes or values.
         /// </summary>
         /// <param name="element">The element to add the attribute to</param>
@@ -165,7 +165,7 @@ namespace Microsoft.OneGet.Packaging {
             if (element == null) {
                 return null;
             }
-            
+
             // we quietly ignore attempts to add empty data or attributes.
             if (string.IsNullOrWhiteSpace(value) || attribute == null || string.IsNullOrWhiteSpace(attribute.ToString())) {
                 return element;

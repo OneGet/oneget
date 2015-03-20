@@ -1,12 +1,12 @@
 # Copyright (C) 2014 Microsoft Corporation
 
 ###
-### OneGet/OneGet/sources
+### OneGet/PackageManagement/sources
 ###
 
 !include ..\common.inc
 
-TARGETNAME          = Microsoft.OneGet
+TARGETNAME          = Microsoft.PackageManagement
 TARGETTYPE          = PROGRAM
 GENERATE_METADATA_EXE=1
 
@@ -21,7 +21,7 @@ SOURCES_PATH = .\
 ###       you have to either *always* pre-gen the .cs files or figure another
 ###       way.
 ###
-RESOURCES_NAMESPACE=Microsoft.OneGet.Resources
+RESOURCES_NAMESPACE=Microsoft.PackageManagement.Resources
 GENERATED_RESOURCES_SOURCE=$(OUTPUT_PATH)\Messages.cs
 RESGEN_FLAGS = /str:cs,$(RESOURCES_NAMESPACE),Messages,$(OUTPUT_PATH)\Messages.cs
 
@@ -44,7 +44,7 @@ PASS2_BINPLACE=\
 ### Referenced assemblies
 
 REFERENCES=\
-	$(ONEGET_UTILITY) \
+	$(PACKAGEMANAGEMENT_UTILITY) \
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
 	$(CLR_REF_PATH)\System.Runtime.Remoting.metadata_dll; \
@@ -116,11 +116,11 @@ SOURCES=\
 #endregion
 
 INTERNALS_VISIBLE_TO=\
-    Microsoft.PowerShell.OneGet, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
-    Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
-    Microsoft.OneGet.MetaProvider.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
-    Microsoft.OneGet.CoreProviders, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
-    Microsoft.OneGet.ArchiverProviders, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
-    Microsoft.OneGet.MsiProvider, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
-    Microsoft.OneGet.MsuProvider, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
+    Microsoft.PowerShell.PackageManagement, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
+    Microsoft.PackageManagement.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
+    Microsoft.PackageManagement.MetaProvider.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
+    Microsoft.PackageManagement.CoreProviders, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
+    Microsoft.PackageManagement.ArchiverProviders, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
+    Microsoft.PackageManagement.MsiProvider, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);\
+    Microsoft.PackageManagement.MsuProvider, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
 

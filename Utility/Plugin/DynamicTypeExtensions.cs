@@ -1,18 +1,18 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Utility.Plugin {
+namespace Microsoft.PackageManagement.Utility.Plugin {
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
@@ -68,10 +68,10 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
             var ret = hasReturn ? il.DeclareLocal(method.ReturnType) : null;
             var exc = hasOue ? il.DeclareLocal(typeof (Exception)) : null;
-        
+
 
             il.BeginExceptionBlock();
-            
+
             il.LoadThis();
             il.LoadField(backingField);
 
@@ -81,7 +81,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             for (var i = 0; i < dmTypes.Length; i++) {
                 il.LoadArgument(i + 1);
 
-                // if the types are assignable, 
+                // if the types are assignable,
                 if (imTypes[i].IsAssignableFrom(dmTypes[i])) {
                     // it assigns straight across.
                 } else {
@@ -98,7 +98,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
             il.CallVirutal(instanceMethod);
 
             if (hasReturn) {
-                // copy the return value in the return 
+                // copy the return value in the return
                 // check to see if we need to ducktype the return value here.
                 if (method.ReturnType.IsAssignableFrom(instanceMethod.ReturnType)) {
                     // it can store it directly.
@@ -106,7 +106,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
                     // it doesn't assign directly, let's ducktype it.
                     if (instanceMethod.ReturnType.IsPrimitive) {
                         il.Emit(OpCodes.Box,instanceMethod.ReturnType);
-                    } 
+                    }
                     il.Call(AsMethod.MakeGenericMethod(method.ReturnType));
                 }
                 il.StoreLocation(ret);
@@ -114,7 +114,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
                 // this method isn't returning anything.
                 if (instanceMethod.ReturnType != typeof (void)) {
-                    // pop the return value beacuse the generated method is void and the 
+                    // pop the return value beacuse the generated method is void and the
                     // method we called actually gave us a result.
                     il.Emit(OpCodes.Pop);
                 }
@@ -166,7 +166,7 @@ namespace Microsoft.OneGet.Utility.Plugin {
 
             // the target object has a property or field that matches the signature we're looking for.
             // let's use that.
-            
+
             var delegateType = WrappedDelegate.GetFuncOrActionType(method.GetParameterTypes(), method.ReturnType);
 
             il.LoadThis();

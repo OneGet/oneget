@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -417,7 +417,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
             StringBuilder buf = new StringBuilder();
             uint bufSize = (uint) buf.Capacity;
             uint ret = NativeMethods.MsiGetProductProperty((int) this.Handle, property, buf, ref bufSize);
-            
+
             if (ret == (uint) NativeMethods.Error.MORE_DATA)
             {
                 buf.Capacity = (int) ++bufSize;

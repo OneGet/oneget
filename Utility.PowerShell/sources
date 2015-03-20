@@ -6,11 +6,11 @@
 
 !include ..\common.inc
 
-TARGETNAME          = Microsoft.OneGet.Utility.PowerShell
+TARGETNAME          = Microsoft.PackageManagement.Utility.PowerShell
 TARGETTYPE          = DYNLINK
 
 REFERENCES=\
-	$(ONEGET_UTILITY) \
+	$(PACKAGEMANAGEMENT_UTILITY) \
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
 	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll;
@@ -33,6 +33,6 @@ SOURCES=\
 
 
 INTERNALS_VISIBLE_TO=\
-	Microsoft.OneGet.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
-	Microsoft.OneGet.MetaProvider.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
+	Microsoft.PackageManagement.Test, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING); \
+	Microsoft.PackageManagement.MetaProvider.PowerShell, PublicKey=$(WINDOWS_PUBLIC_KEY_STRING);
 

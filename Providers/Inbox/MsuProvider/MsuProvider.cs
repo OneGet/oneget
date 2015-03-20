@@ -1,23 +1,23 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Microsoft.OneGet.Packaging;
+using Microsoft.PackageManagement.Packaging;
 
-namespace Microsoft.OneGet.Msu {
+namespace Microsoft.PackageManagement.Msu {
     using System;
     using System.Collections.Generic;
     using Archivers.Compression.Cab;
@@ -58,8 +58,8 @@ namespace Microsoft.OneGet.Msu {
         public void InitializeProvider(Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InitializeProvider'", ProviderName);
         }
@@ -74,8 +74,8 @@ namespace Microsoft.OneGet.Msu {
         public void GetFeatures(Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
             foreach (var feature in _features) {
@@ -94,8 +94,8 @@ namespace Microsoft.OneGet.Msu {
         public void GetDynamicOptions(string category, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetDynamicOptions' '{1}'", ProviderName, category);
 
@@ -113,7 +113,7 @@ namespace Microsoft.OneGet.Msu {
                     break;
 
                 case "package":
-                    // options used when searching for packages 
+                    // options used when searching for packages
                     break;
             }
         }
@@ -135,11 +135,11 @@ namespace Microsoft.OneGet.Msu {
         public void FindPackageByFile(string file, int id, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
+            }
             if( string.IsNullOrWhiteSpace(file) ) {
                 throw new ArgumentNullException("file");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::FindPackageByFile' '{1}','{2}'", ProviderName, file, id);
 
@@ -180,8 +180,8 @@ namespace Microsoft.OneGet.Msu {
         public void GetInstalledPackages(string name, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", ProviderName, name);
         }
@@ -197,11 +197,11 @@ namespace Microsoft.OneGet.Msu {
         public void InstallPackage(string fastPackageReference, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
+            }
             if( string.IsNullOrWhiteSpace(fastPackageReference) ) {
                 throw new ArgumentNullException("fastPackageReference");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InstallPackage' '{1}'", ProviderName, fastPackageReference);
 
@@ -228,11 +228,11 @@ namespace Microsoft.OneGet.Msu {
         public void UninstallPackage(string fastPackageReference, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
+            }
             if( string.IsNullOrWhiteSpace(fastPackageReference) ) {
                 throw new ArgumentNullException("fastPackageReference");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::UninstallPackage' '{1}'", ProviderName, fastPackageReference);
         }

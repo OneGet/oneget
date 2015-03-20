@@ -1,18 +1,18 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Implementation {
+namespace Microsoft.PackageManagement.Implementation {
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace Microsoft.OneGet.Implementation {
 
     /// <summary>
     ///     The Client API is designed for use by installation hosts:
-    ///     - OneGet Powershell Cmdlets
+    ///     - PackageManagement Powershell Cmdlets
     ///     - WMI/OMI Management interfaces
     ///     - DSC Interfaces
     ///     - WiX's Burn
@@ -47,12 +47,12 @@ namespace Microsoft.OneGet.Implementation {
         private static readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location), // already in autload list
             "CSharpTest.Net.RpcLibrary", // doesn't have any
-            "Microsoft.OneGet.Utility", // doesn't have any
-            "Microsoft.OneGet.Utility.PowerShell", // doesn't have any
-            "Microsoft.PowerShell.OneGet", // doesn't have any
+            "Microsoft.PackageManagement.Utility", // doesn't have any
+            "Microsoft.PackageManagement.Utility.PowerShell", // doesn't have any
+            "Microsoft.PowerShell.PackageManagement", // doesn't have any
             "Microsoft.Web.XmlTransform", // doesn't have any
             "NuGet.Core", // doesn't have any
-            "OneGet.PowerShell.Module.Test", // doesn't have any
+            "PackageManagement.PowerShell.Module.Test", // doesn't have any
             "System.Management.Automation", // doesn't have any
             "xunit", // doesn't have any
             "xunit.extensions", // doesn't have any
@@ -67,7 +67,7 @@ namespace Microsoft.OneGet.Implementation {
         // well known, built in provider assemblies.
         private readonly string[] _defaultProviders = {
             Path.GetFullPath(Assembly.GetExecutingAssembly().Location), // load the providers from this assembly
-            "Microsoft.OneGet.MetaProvider.PowerShell.dll"
+            "Microsoft.PackageManagement.MetaProvider.PowerShell.dll"
         };
 
         private readonly object _lockObject = new object();
@@ -101,7 +101,7 @@ namespace Microsoft.OneGet.Implementation {
                 if (string.IsNullOrWhiteSpace(basepath)) {
                     return null;
                 }
-                var path = Path.Combine(basepath, "OneGet", "ProviderAssemblies");
+                var path = Path.Combine(basepath, "PackageManagement", "ProviderAssemblies");
                 if (!Directory.Exists(path)) {
                     try {
                         Directory.CreateDirectory(path);
@@ -119,7 +119,7 @@ namespace Microsoft.OneGet.Implementation {
                 if (string.IsNullOrWhiteSpace(basepath)) {
                     return null;
                 }
-                var path = Path.Combine(basepath, "OneGet", "ProviderAssemblies");
+                var path = Path.Combine(basepath, "PackageManagement", "ProviderAssemblies");
 
                 try {
                     if (!Directory.Exists(path)) {
@@ -150,7 +150,7 @@ namespace Microsoft.OneGet.Implementation {
 
         public int Version {
             get {
-                return Constants.OneGetVersion;
+                return Constants.PackageManagementVersion;
             }
         }
 
@@ -214,10 +214,10 @@ namespace Microsoft.OneGet.Implementation {
                         var version = (segments.Length > 1) ? Uri.UnescapeDataString(segments[1]) : null;
                         var source = pkgId.Fragment.TrimStart('#');
                         var sources = (string.IsNullOrWhiteSpace(source) ? hostApi.Sources : Uri.UnescapeDataString(source).SingleItemAsEnumerable()).ToArray();
-                        
+
                         var host = new object[] {
                             new {
-                                GetSources = new Func<IEnumerable<string>>(() => sources), 
+                                GetSources = new Func<IEnumerable<string>>(() => sources),
                                 GetOptionValues = new Func<string, IEnumerable<string>>(key => key.EqualsIgnoreCase("FindByCanonicalId") ? new[] { "true" } : hostApi.GetOptionValues(key)),
                                 GetOptionKeys = new Func<IEnumerable<string>>(() => hostApi.OptionKeys.ConcatSingleItem("FindByCanonicalId")),
                             },
@@ -333,8 +333,8 @@ namespace Microsoft.OneGet.Implementation {
             var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             var providerAssemblies = (_initialized ? Enumerable.Empty<string>() : _defaultProviders)
-                .Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\ONEGET"))
-                .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\ONEGET"))
+                .Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\PACKAGEMANAGEMENT"))
+                .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\PACKAGEMANAGEMENT"))
                 .Concat(AutoloadedAssemblyLocations.SelectMany(location => {
                     if (Directory.Exists(location)) {
                         return Directory.EnumerateFiles(location).Where(each => !IsExcluded(each) && (each.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase) || each.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase)));
@@ -350,25 +350,25 @@ namespace Microsoft.OneGet.Implementation {
             }
 #endif
 
-            // find modules that have manifests 
-            // todo: expand this out to validate the assembly is ok for this instance of OneGet.
+            // find modules that have manifests
+            // todo: expand this out to validate the assembly is ok for this instance of PackageManagement.
             providerAssemblies = providerAssemblies.Where(each => Manifest.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
 
             // add inbox assemblies (don't require manifests, because they are versioned with the core)
-            
+
 #if !COMMUNITY_BUILD
             // todo: these should just be strong-named references. for now, just load them from the same directory.
             providerAssemblies = providerAssemblies.Concat(new[] {
-                Path.Combine( baseDir, "Microsoft.OneGet.MetaProvider.PowerShell.dll"),
-                Path.Combine( baseDir, "Microsoft.OneGet.ArchiverProviders.dll" ),
-                Path.Combine( baseDir, "Microsoft.OneGet.CoreProviders.dll"),
-                Path.Combine( baseDir, "Microsoft.OneGet.MsuProvider.dll"),
+                Path.Combine( baseDir, "Microsoft.PackageManagement.MetaProvider.PowerShell.dll"),
+                Path.Combine( baseDir, "Microsoft.PackageManagement.ArchiverProviders.dll" ),
+                Path.Combine( baseDir, "Microsoft.PackageManagement.CoreProviders.dll"),
+                Path.Combine( baseDir, "Microsoft.PackageManagement.MsuProvider.dll"),
 #if !CORE_CLR
                 // can't load these providers here.
-                Path.Combine( baseDir, "Microsoft.OneGet.MsiProvider.dll"),
+                Path.Combine( baseDir, "Microsoft.PackageManagement.MsiProvider.dll"),
 #endif
             });
-#endif 
+#endif
 
 #if DEEP_DEBUG
             providerAssemblies = providerAssemblies.ToArray();
@@ -425,7 +425,7 @@ namespace Microsoft.OneGet.Implementation {
             });
 #if DEEP_DEBUG
             WaitForDebugger();
-#endif 
+#endif
         }
 
 #if DEEP_DEBUG
@@ -438,7 +438,7 @@ namespace Microsoft.OneGet.Implementation {
                 }
             }
         }
-#endif 
+#endif
 
         private static IEnumerator<string> GetProvidersFromRegistry(RegistryKey registryKey, string p) {
             RegistryKey key;
@@ -632,7 +632,7 @@ namespace Microsoft.OneGet.Implementation {
                 }
 
                 if (result == 0) {
-                    // still no version? 
+                    // still no version?
                     // I give up. call it 0.0.0.1
                     result = "0.0.0.1";
                 }

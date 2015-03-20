@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -242,7 +242,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         }
 
         /// <summary>
-        /// Gets a short string defining the type and size of the column. 
+        /// Gets a short string defining the type and size of the column.
         /// </summary>
         /// <value>
         /// The definition string consists

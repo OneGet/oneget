@@ -12,7 +12,7 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.OneGet.Test.Support {
+namespace Microsoft.PackageManagement.Test.Support {
     using System;
     using System.Collections.Generic;
     using System.Linq;

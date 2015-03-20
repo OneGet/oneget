@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.Resources
+namespace Microsoft.PackageManagement.Msi.Deployment.Resources
 {
     using System;
     using System.Collections;
@@ -58,7 +58,7 @@ namespace Microsoft.OneGet.Msi.Deployment.Resources
             {
                 return this.isString;
             }
-            
+
             set
             {
                 this.isString = value;

@@ -1,27 +1,27 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PowerShell.OneGet.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Async;
-    using Microsoft.OneGet.Utility.Collections;
-    using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.PackageManagement.Packaging;
+    using Microsoft.PackageManagement.Utility.Async;
+    using Microsoft.PackageManagement.Utility.Collections;
+    using Microsoft.PackageManagement.Utility.Extensions;
     using Utility;
 
     [Cmdlet(VerbsLifecycle.Register, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517139")]
@@ -87,7 +87,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
             _reentrancyLock.Set();
 
-            // generate the common parameters for our cmdlets (timeout, messagehandler, etc) 
+            // generate the common parameters for our cmdlets (timeout, messagehandler, etc)
             GenerateCommonDynamicParameters();
 
             var providers = SelectProviders(ProviderName).ReEnumerable();
@@ -114,7 +114,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                         // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
                         var crdp = DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter;
                         if (crdp == null) {
-                            // the provider is trying to overwrite a parameter that is already dynamically defined by the BaseCmdlet. 
+                            // the provider is trying to overwrite a parameter that is already dynamically defined by the BaseCmdlet.
                             // just ignore it.
                             continue;
                         }
@@ -137,7 +137,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
             return true;
         }
-#endif 
+#endif
 
         public override bool ProcessRecordAsync() {
             if (Stopping) {
@@ -157,7 +157,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                         Error(Constants.Errors.MatchesMultipleProviders, packageProvider.Select(p => p.ProviderName).JoinWithComma());
                         return false;
                 }
-            
+
 
             var provider = packageProvider.First();
 
@@ -169,7 +169,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     // if there is, and the user has said -Force, then let's remove it.
                     foreach (var existingSource in existingSources) {
                         if (Force) {
-                            
+
                             if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, existingSource.Name, existingSource.Location, existingSource.ProviderName), Constants.Messages.ActionReplacePackageSource).Result) {
                                 var removedSources = provider.RemovePackageSource(existingSource.Name, this).CancelWhen(_cancellationEvent.Token);
                                 foreach (var removedSource in removedSources) {

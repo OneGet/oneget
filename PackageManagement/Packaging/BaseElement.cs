@@ -1,18 +1,18 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Packaging {
+namespace Microsoft.PackageManagement.Packaging {
     using System;
     using System.Linq;
     using System.Xml.Linq;
@@ -20,8 +20,8 @@ namespace Microsoft.OneGet.Packaging {
 
     /// <summary>
     /// The base element that is common to all elements in a Swidtag.
-    /// 
-    /// Swidtag classes are intended to be constructed, but are not mutatable 
+    ///
+    /// Swidtag classes are intended to be constructed, but are not mutatable
     /// (ie, can't be created and have values modified or removed)
     /// </summary>
     public class BaseElement {
@@ -88,8 +88,8 @@ namespace Microsoft.OneGet.Packaging {
         }
 
         /// <summary>
-        /// Internal method to gain access to attributes. 
-        /// 
+        /// Internal method to gain access to attributes.
+        ///
         /// Returns Null if the attribute is not present.
         /// </summary>
         /// <param name="attribute"></param>
@@ -100,7 +100,7 @@ namespace Microsoft.OneGet.Packaging {
 
         /// <summary>
         /// Adds an attribute to this element.
-        /// 
+        ///
         /// </summary>
         /// <param name="attribute">name of the attribute</param>
         /// <param name="value">value of the attribute</param>

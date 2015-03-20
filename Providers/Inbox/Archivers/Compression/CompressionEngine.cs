@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Compression
 {
     using System;
     using System.Collections.Generic;
@@ -290,7 +290,7 @@ namespace Microsoft.OneGet.Archivers.Compression
                     return String.Compare(
                         match, path, StringComparison.OrdinalIgnoreCase) == 0;
                 });
-            
+
             Stream extractStream = streamContext.FileStream;
             if (extractStream != null)
             {
