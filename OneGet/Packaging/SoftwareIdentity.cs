@@ -46,7 +46,7 @@ namespace Microsoft.OneGet.Packaging {
 
         public IEnumerable<string> Dependencies {
             get {
-                return Links.Where(each => Iso19770_2.Relationship.Requires == each.Relationship).Select(each => each.HRef).WhereNotNull().Select( each => each.ToString()).ReEnumerable();
+                return Links.Where(each => Iso19770_2.Relationship.Requires == each.Relationship).Select(each => each.HRef).WhereNotNull().Select( each => Uri.UnescapeDataString(each.ToString())).ReEnumerable();
             }
         }
 

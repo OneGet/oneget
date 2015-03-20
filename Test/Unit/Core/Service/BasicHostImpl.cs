@@ -135,7 +135,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
 
         public virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
             Console.WriteLine("[ShouldContinueWithUntrustedPackageSource],<{0}>,<{1}>", package, packageSource);
-            return false;
+            return true;
         }
 
         public virtual bool AskPermission(string permission) {

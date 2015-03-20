@@ -178,9 +178,13 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
 
             string result = null;
-            if (MessageResolver != null) {
+            if (MessageResolver != null && MyInvocation.PipelineLength == 1 ) {
                 // if the consumer has specified a MessageResolver delegate, we need to call it on the main thread
                 // because powershell won't let us use the default runspace from another thread.
+
+                // if we are anywhere but the end of the pipeline, the delegate here would block on stuff later in the pipe
+                // and since we're blocking *that* based on the the resolution of this, we're better off just skipping
+                // the message resoluion for things earlier in the pipeline. 
                 ExecuteOnMainThread(() => {
                     result = MessageResolver(messageText, defaultText);
                     if (string.IsNullOrWhiteSpace(result)) {

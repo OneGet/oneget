@@ -326,7 +326,7 @@
     <comment>provider names</comment>
   </data>
   <data name="UnknownProviders" xml:space="preserve">
-    <value>Unable to find package providers ({0}.</value>
+    <value>Unable to find package providers ({0}).</value>
     <comment>provider names</comment>
   </data>
   <data name="PackageFileExists" xml:space="preserve">
@@ -349,5 +349,9 @@
   </data>
   <data name="MustSpecifyCriteria" xml:space="preserve">
     <value>Install-Package requires parameters to select a package to install.</value>
+  </data>
+  <data name="UnableToFindDependencyPackage" xml:space="preserve">
+    <value>Unable to find dependent package(s) ({0})</value>
+    <comment>{0} canonical  package id(s).</comment>
   </data>
 </root>

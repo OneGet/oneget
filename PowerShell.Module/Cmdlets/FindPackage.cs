@@ -18,6 +18,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System.Management.Automation;
     using Microsoft.OneGet.Implementation;
     using Microsoft.OneGet.Packaging;
+    using Microsoft.OneGet.Utility.Extensions;
     using Utility;
 
     [Cmdlet(VerbsCommon.Find, Constants.Nouns.PackageNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517132"), OutputType(typeof(SoftwareIdentity))]
@@ -47,13 +48,22 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             WriteObject(package);
 
             if (IncludeDependencies) {
+                var  missingDependencies = new HashSet<string>();
                 foreach (var dep in package.Dependencies) {
                     // note: future work may be needed if the package sources currently selected by the user don't
                     // contain the dependencies. 
                     var dependendcies = PackageManagementService.FindPackageByCanonicalId(dep, this);
-                    foreach (var depPackage in dependendcies) {
-                        ProcessPackage(depPackage.Provider, searchKey.Select(each => each + depPackage.Name).ToArray(), depPackage);
+                    var depPkg = dependendcies.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).FirstOrDefault();
+
+                    if (depPkg == null) {
+                        missingDependencies.Add(dep);
+                        Warning(Constants.Messages.UnableToFindDependencyPackage, dep);
+                    } else {
+                        ProcessPackage(depPkg.Provider, searchKey.Select(each => each + depPkg.Name).ToArray(), depPkg);
                     }
+                }
+                if (missingDependencies.Any()) {
+                    Error(Constants.Errors.UnableToFindDependencyPackage, missingDependencies.JoinWithComma());
                 }
             }
         }

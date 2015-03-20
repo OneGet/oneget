@@ -75,6 +75,7 @@ namespace Microsoft.PowerShell.OneGet {
             public static ErrorMessage UnableToOverwrite = new ErrorMessage(Messages.UnableToOverwrite, ErrorCategory.InvalidResult);
             public static ErrorMessage FilePathMustBeFileSystemPath = new ErrorMessage(Messages.FilePathMustBeFileSystemPath, ErrorCategory.ObjectNotFound);
             public static ErrorMessage SavePackageError = new ErrorMessage(Messages.SavePackageError, ErrorCategory.InvalidArgument);
+            public static ErrorMessage UnableToFindDependencyPackage = new ErrorMessage(Messages.UnableToFindDependencyPackage, ErrorCategory.ObjectNotFound);
             // ReSharper restore InconsistentNaming
         }
 
@@ -138,6 +139,7 @@ namespace Microsoft.PowerShell.OneGet {
             internal const string UnknownProviders = "MSG:UnknownProviders";
             internal const string PackageFileExists = "MSG:PackageFileExists";
             internal const string UnableToOverwrite = "MSG:UnableToOverwrite";
+            internal const string UnableToFindDependencyPackage = "MSG:UnableToFindDependencyPackage";
         }
 
         internal static class Nouns {

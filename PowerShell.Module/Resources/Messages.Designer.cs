@@ -539,6 +539,15 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to find dependent package(s) ({0}).
+        /// </summary>
+        internal static string UnableToFindDependencyPackage {
+            get {
+                return ResourceManager.GetString("UnableToFindDependencyPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to find package provider for package source &apos;{0}&apos;..
         /// </summary>
         internal static string UnableToFindProviderForSource {
@@ -575,7 +584,7 @@ namespace Microsoft.PowerShell.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to find package providers ({0}..
+        ///   Looks up a localized string similar to Unable to find package providers ({0})..
         /// </summary>
         internal static string UnknownProviders {
             get {

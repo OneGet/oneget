@@ -210,10 +210,10 @@ namespace Microsoft.OneGet.Implementation {
                 if (segments.Length > 0) {
                     var provider = SelectProviders(pkgId.Scheme, hostApi).FirstOrDefault();
                     if (provider != null) {
-                        var name = segments[0].Trim('/','\\');
-                        var version = (segments.Length > 1) ? segments[1] : null;
+                        var name = Uri.UnescapeDataString(segments[0].Trim('/','\\'));
+                        var version = (segments.Length > 1) ? Uri.UnescapeDataString(segments[1]) : null;
                         var source = pkgId.Fragment.TrimStart('#');
-                        var sources = (string.IsNullOrWhiteSpace(source) ? hostApi.Sources : source.SingleItemAsEnumerable()).ToArray();
+                        var sources = (string.IsNullOrWhiteSpace(source) ? hostApi.Sources : Uri.UnescapeDataString(source).SingleItemAsEnumerable()).ToArray();
                         
                         var host = new object[] {
                             new {
@@ -221,7 +221,6 @@ namespace Microsoft.OneGet.Implementation {
                                 GetOptionValues = new Func<string, IEnumerable<string>>(key => key.EqualsIgnoreCase("FindByCanonicalId") ? new[] { "true" } : hostApi.GetOptionValues(key)),
                                 GetOptionKeys = new Func<IEnumerable<string>>(() => hostApi.OptionKeys.ConcatSingleItem("FindByCanonicalId")),
                             },
-                            
                             hostApi,
                         }.As<IHostApi>();
 
