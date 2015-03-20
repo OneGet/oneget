@@ -4,30 +4,15 @@
     <!-- Common Build Settings -->
 
     <!-- Defaults to .Net 4.0 -->
-    <TargetFrameworkVersion Condition="$(TargetFrameworkVersion) == '' Or $(TargetFrameworkVersion) == '*Undefined*'">v4.0</TargetFrameworkVersion>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition="$(TargetFrameworkVersion) == '' Or $(TargetFrameworkVersion) == '*Undefined*'">v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
 
     <Prefer32Bit>false</Prefer32Bit>
     <NoWarn>1591,3002,3003,3008,3009</NoWarn>
     <RestorePackages>true</RestorePackages>
     <DefineConstants>FRAMEWORK$(TargetFrameworkVersion.Replace(".",""))</DefineConstants>
     <OutputRelativePath>output\$(Configuration)\bin\</OutputRelativePath>
-  </PropertyGroup>
 
-<!-- HMM, this isn't working right 
-  <PropertyGroup Condition="$(BuildingWithBuildExe) == 'true'">
-    <CommunityBuild>false</CommunityBuild>
-    <InternalBuild>true</InternalBuild>
-    <SignAssembly>true</SignAssembly>  
-    <DelaySign>true</DelaySign>  
-    <AssemblyOriginatorKeyFile>$(PUBLIC_ROOT)\internal\strongnamekeys\fake\windows.snk</AssemblyOriginatorKeyFile>
-    <SET_MT_EXE>set MTEXE=mt.exe</SET_MT_EXE>
-  </PropertyGroup>
--->  
-  
- <!-- Condition="$(BuildingWithBuildExe) == '' Or $(BuildingWithBuildExe) == '*Undefined*' Or $(BuildingWithBuildExe) =='false' " -->
-  <PropertyGroup >
-    <!-- Community Build Settings -->
     <SolutionDir Condition=" '$(SolutionDir)'=='' ">$(MSBuildThisFileDirectory)</SolutionDir>
 
     <CommunityBuild>true</CommunityBuild>

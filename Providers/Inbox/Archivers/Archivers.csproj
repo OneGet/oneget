@@ -7,8 +7,8 @@
     <ProjectGuid>{B4ED8E4C-01B6-4440-AFC7-DC73D08201B5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.OneGet.Archivers</RootNamespace>
-    <AssemblyName>Microsoft.OneGet.ArchiverProviders</AssemblyName>
+    <RootNamespace>Microsoft.PackageManagement.Archivers</RootNamespace>
+    <AssemblyName>Microsoft.PackageManagement.ArchiverProviders</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), OneGet.sln))\</SolutionDir>
     <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>

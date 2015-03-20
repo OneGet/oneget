@@ -12,7 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShell.Module", "PowerS
 		{51DD1DE7-25FA-44EF-92C4-F475E6F6DDC0} = {51DD1DE7-25FA-44EF-92C4-F475E6F6DDC0}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneGet", "OneGet\OneGet.csproj", "{7044B856-6D51-498F-90F9-01F219909F79}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement", "PackageManagement\PackageManagement.csproj", "{7044B856-6D51-498F-90F9-01F219909F79}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "Utility\Utility.csproj", "{7044B856-6D51-498F-8192-01F219908192}"
 EndProject
