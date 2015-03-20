@@ -76,6 +76,11 @@ namespace Microsoft.OneGet.Test.Core.Service {
                 Assert.Equal(1, pkg1.Payload.Directories.FirstOrDefault().Files.Count());
                 Assert.Equal(1, pkg1.Payload.Resources.Count());
 
+
+                Assert.Equal(1, packages[1].Dependencies.Count());
+                Assert.Equal("swidtest:third/[1.0]", packages[1].Dependencies.FirstOrDefault());
+
+
                 foreach (var pkg in packages) {
                     Console.WriteLine("PKG : {0}", pkg.SwidTagText);
                 }
@@ -142,13 +147,6 @@ namespace Microsoft.OneGet.Test.Core.Service {
 
         [Fact]
         public void GetInstalledPackagesTest() {
-            using (CaptureConsole) {
-
-            }
-        }
-
-        [Fact]
-        public void GetPackageDependenciesTest() {
             using (CaptureConsole) {
 
             }

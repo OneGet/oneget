@@ -269,12 +269,14 @@ namespace Microsoft.OneGet.Utility.Extensions {
         }
 
         public static byte[] ReadBytes(this string path, int maxLength) {
-            if (!path.FileExists()) {
+            if (path.FileExists()) {
                 try {
                     var buffer = new byte[Math.Min(new FileInfo(path).Length, maxLength)];
                     using (var file = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read)) {
                         file.Read(buffer, 0, buffer.Length);
                     }
+
+                    return buffer;
                 }
                 catch {
                     // not openable. whatever.

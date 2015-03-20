@@ -75,6 +75,21 @@ namespace Microsoft.OneGet.Utility.PowerShell {
             }
         }
 
+#if DEEP_DEBUG
+        private static object __lock = new object();
+        private void Log(string category, string text) {
+            lock (__lock) {
+                using (var s = File.AppendText("c:\\tmp\\oneget.log")) {
+                    s.WriteLine("[Cmdlet:{0}][Thread:{1}][{2}] {3}".format(GetType().Name, Thread.CurrentThread.ManagedThreadId , category, text));
+                }
+
+                if (text.IndexOf("HOBGOBLIN") > -1 ) {
+                    Console.Beep(1000,200);
+                }
+            }
+        }
+#endif
+
         /// <summary>
         ///     Manages the re-entrancy lock for cmdlets
         ///     This is abstracted here because (at this point)
@@ -314,6 +329,9 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                             errorCategory = ErrorCategory.NotSpecified;
                         }
                         try {
+#if DEEP_DEBUG
+                            Log("ERROR",errorMessage);
+#endif 
                             WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrWhiteSpace(targetObjectValue) ? (object)this : targetObjectValue)).Wait();
                         } catch {
                             // this will throw if the provider thread abends before we get back our result.
@@ -338,6 +356,10 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 //  QueueMessage(() => Host.UI.WriteLine("{0}::{1}".format(code, message.formatWithIEnumerable(objects))));
                 // Message is going to go to the verbose channel
                 // and Verbose will only be output if VeryVerbose is true.
+#if DEEP_DEBUG
+                Log("Message",FormatMessageString(messageText, args));
+#endif
+
                 WriteVerbose(FormatMessageString(messageText, args));
             }
             // rather than wait on the result of the async WriteVerbose,
@@ -354,6 +376,10 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                 // Message is going to go to the verbose channel
                 // and Verbose will only be output if VeryVerbose is true.
                 WriteVerbose(FormatMessageString(messageText, args));
+#if DEEP_DEBUG
+                Log("Verbose",FormatMessageString(messageText, args));
+#endif
+
             }
             // rather than wait on the result of the async WriteVerbose,
             // we'll just return the stopping state.
@@ -370,6 +396,10 @@ namespace Microsoft.OneGet.Utility.PowerShell {
                     _stopwatch = new Stopwatch();
                     _stopwatch.Start();
                 }
+
+#if DEEP_DEBUG
+                Log("Debug",FormatMessageString(messageText, args));
+#endif
 
                 WriteDebug("{0} {1}".format(_stopwatch.Elapsed, FormatMessageString(messageText, args)));
             }
@@ -643,6 +673,9 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         protected override sealed void BeginProcessing() {
+#if DEEP_DEBUG
+            Log("BeginProcessing","[{0}/{1}] «{2}»".format( MyInvocation.PipelineLength, MyInvocation.PipelinePosition, MyInvocation.Line));
+#endif
             try {
                 _asyncCmdletState = AsyncCmdletState.BeginProcess;
 
@@ -672,6 +705,10 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         protected override sealed void ProcessRecord() {
+#if DEEP_DEBUG
+            Log("ProcessRecord", "[{0}/{1}] «{2}»".format(  MyInvocation.PipelineLength, MyInvocation.PipelinePosition, MyInvocation.Line));
+#endif
+
             try {
                 _asyncCmdletState = AsyncCmdletState.ProcessRecord;
 
@@ -696,6 +733,10 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         protected override sealed void EndProcessing() {
+#if DEEP_DEBUG
+            Log("EndProcessing","[{0}/{1}] «{2}»".format(  MyInvocation.PipelineLength, MyInvocation.PipelinePosition, MyInvocation.Line));
+#endif
+
             try {
                 _asyncCmdletState = AsyncCmdletState.EndProcess;
                 // let's not even bother doing all this if they didn't even
@@ -724,6 +765,10 @@ namespace Microsoft.OneGet.Utility.PowerShell {
         }
 
         protected override sealed void StopProcessing() {
+#if DEEP_DEBUG
+            Log("StopProcessing","[{0}/{1}] «{2}»".format(  MyInvocation.PipelineLength, MyInvocation.PipelinePosition, MyInvocation.Line));
+#endif
+
             try {
                 _asyncCmdletState = AsyncCmdletState.StopProcess;
                 Cancel();

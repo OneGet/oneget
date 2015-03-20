@@ -269,13 +269,6 @@ namespace Microsoft.OneGet.Test.Core.Service {
         }
 
         [Fact]
-        public void GetPackageDependenciesTest() {
-            using (CaptureConsole) {
-                Reset();
-            }
-        }
-
-        [Fact]
         public void InstallPackageTest() {
             using (CaptureConsole) {
                 Reset();
@@ -334,8 +327,6 @@ namespace Microsoft.OneGet.Test.Core.Service {
             a.FindPackagesByUris();
              
             a.GetInstalledPackages();
-             
-            a.GetPackageDependencies();
             
             a.InstallPackage();
             a.UninstallPackage();

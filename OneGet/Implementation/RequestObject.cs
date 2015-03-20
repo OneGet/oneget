@@ -115,35 +115,35 @@ namespace Microsoft.OneGet.Implementation {
 
         public bool Warning(string messageText) {
             if (CanCallHost) {
-                return _hostApi.Warning(messageText);
+                return _hostApi.Warning(GetMessageString(messageText, null) ?? messageText);
             }
             return true;
         }
 
         public bool Error(string id, string category, string targetObjectValue, string messageText) {
             if (CanCallHost) {
-                return _hostApi.Error(id, category, targetObjectValue, messageText);
+                return _hostApi.Error(id, category, targetObjectValue, GetMessageString(messageText, null) ?? messageText);
             }
             return true;
         }
 
         public bool Message(string messageText) {
             if (CanCallHost) {
-                return _hostApi.Message(messageText);
+                return _hostApi.Message(GetMessageString(messageText, null) ?? messageText);
             }
             return true;
         }
 
         public bool Verbose(string messageText) {
             if (CanCallHost) {
-                return _hostApi.Verbose(messageText);
+                return _hostApi.Verbose(GetMessageString(messageText, null) ?? messageText);
             }
             return true;
         }
 
         public bool Debug(string messageText) {
             if (CanCallHost) {
-                return _hostApi.Debug(messageText);
+                return _hostApi.Debug(GetMessageString(messageText, null) ?? messageText);
             }
             return true;
         }
@@ -157,7 +157,7 @@ namespace Microsoft.OneGet.Implementation {
 
         public bool Progress(int activityId, int progressPercentage, string messageText) {
             if (CanCallHost) {
-                return _hostApi.Progress(activityId, progressPercentage, messageText);
+                return _hostApi.Progress(activityId, progressPercentage, GetMessageString(messageText, null) ?? messageText);
             }
             return true;
         }

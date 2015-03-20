@@ -155,7 +155,7 @@
     <value>Provider '{0}' failed to load.</value>
   </data>
   <data name="ProviderSwidtagUnavailable" xml:space="preserve">
-    <value>Unable to download the list of available providers.</value>
+    <value>Unable to download the list of available providers. Check your internet connection.</value>
   </data>
   <data name="RemoveEnvironmentVariableRequiresElevation" xml:space="preserve">
     <value>Removal of the environment variable '{0}' requires elevation</value>

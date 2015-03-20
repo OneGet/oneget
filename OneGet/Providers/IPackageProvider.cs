@@ -78,11 +78,11 @@ namespace Microsoft.OneGet.Providers {
         void FindPackageByFile(string file, int id, IRequest requestObject);
         void FindPackageByUri(Uri uri, int id, IRequest requestObject);
 
-        void GetInstalledPackages(string name, IRequest requestObject);
+        void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, IRequest requestObject);
 
         // --- operations on a package ---------------------------------------------------------------------------------------------------
         void DownloadPackage(string fastPath, string location, IRequest requestObject);
-        void GetPackageDependencies(string fastPath, IRequest requestObject);
+
         void GetPackageDetails(string fastPath, IRequest requestObject);
 
         void InstallPackage(string fastPath, IRequest requestObject);

@@ -203,6 +203,34 @@ namespace Microsoft.OneGet.Implementation {
             return PackageProviders;
         }
 
+        public IEnumerable<SoftwareIdentity> FindPackageByCanonicalId(string packageId, IHostApi hostApi) {
+            Uri pkgId;
+            if (Uri.TryCreate(packageId, UriKind.Absolute, out pkgId)) {
+                var segments = pkgId.Segments;
+                if (segments.Length > 0) {
+                    var provider = SelectProviders(pkgId.Scheme, hostApi).FirstOrDefault();
+                    if (provider != null) {
+                        var name = Uri.UnescapeDataString(segments[0].Trim('/','\\'));
+                        var version = (segments.Length > 1) ? Uri.UnescapeDataString(segments[1]) : null;
+                        var source = pkgId.Fragment.TrimStart('#');
+                        var sources = (string.IsNullOrWhiteSpace(source) ? hostApi.Sources : Uri.UnescapeDataString(source).SingleItemAsEnumerable()).ToArray();
+                        
+                        var host = new object[] {
+                            new {
+                                GetSources = new Func<IEnumerable<string>>(() => sources), 
+                                GetOptionValues = new Func<string, IEnumerable<string>>(key => key.EqualsIgnoreCase("FindByCanonicalId") ? new[] { "true" } : hostApi.GetOptionValues(key)),
+                                GetOptionKeys = new Func<IEnumerable<string>>(() => hostApi.OptionKeys.ConcatSingleItem("FindByCanonicalId")),
+                            },
+                            hostApi,
+                        }.As<IHostApi>();
+
+                        return provider.FindPackage(name, version, null, null, 0, host).Select( each => {each.Status = Constants.PackageStatus.Dependency; return each;}).ReEnumerable();
+                    }
+                }
+            }
+            return new SoftwareIdentity[0];
+        }
+
         public bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IHostApi hostApi) {
             // check if the package provider is already installed
             if (_packageProviders.ContainsKey(packageProviderName)) {
@@ -395,7 +423,22 @@ namespace Microsoft.OneGet.Implementation {
                     request.Error(Constants.Messages.ProviderPluginLoadFailure, ErrorCategory.InvalidOperation.ToString(), providerAssemblyName, request.FormatMessageString(Constants.Messages.ProviderPluginLoadFailure, providerAssemblyName));
                 }
             });
+#if DEEP_DEBUG
+            WaitForDebugger();
+#endif 
         }
+
+#if DEEP_DEBUG
+        internal void WaitForDebugger() {
+            if (!System.Diagnostics.Debugger.IsAttached) {
+                Console.Beep(500, 2000);
+                while (!System.Diagnostics.Debugger.IsAttached) {
+                    System.Threading.Thread.Sleep(1000);
+                    Console.Beep(500, 200);
+                }
+            }
+        }
+#endif 
 
         private static IEnumerator<string> GetProvidersFromRegistry(RegistryKey registryKey, string p) {
             RegistryKey key;

@@ -339,10 +339,32 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                             // don't add it.
                             continue;
                         }
-
+                        
                         DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
                     }
                 }
+#if DUNNO_YET
+                DynamicParameterDictionary.Values.Where( param => param.Attributes.Select(each => each as ParameterAttribute).All( each => each))
+                 if (ParameterSets.Count() > 1 && staticParameters != null) {
+                    // for every parameter set 
+                    foreach (var p in ParameterSets) {
+                        // for every provider who has dynamic parameters 
+                        foreach (var option in dynamicOptions) {
+                            var parameterSetName = !string.IsNullOrWhiteSpace(p) ? option.ProviderName + ":" + p : option.ProviderName;
+                            var mandatoryParameters = staticParameters.Values.Where(param => param.Attributes.Select(each => each as ParameterAttribute).Any(each => each != null && each.Mandatory && each.ParameterSetName == p));
+                            foreach (var pp in mandatoryParameters) {
+
+                                pp.ParameterSets.Add(parameterSetName,);
+                                pp.Attributes.Add(new ParameterAttribute() {
+                                    ParameterSetName = parameterSetName,
+                                    Mandatory = true
+                                });
+                            }
+                        }
+                        
+                    }
+                }
+#endif
             } catch (Exception e) {
                 e.Dump();
             }

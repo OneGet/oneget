@@ -90,7 +90,10 @@ function Find-PackageByUri {
 #>
 function Get-InstalledPackage { 
     param(
-        [string] $name
+        [string] $name,
+		[string] $requiredVersion,
+		[string] $minimumVersion,
+		[string] $maximumVersion
     )
     # TODO: Fill in implementation
     # Delete this method if you do not need to implement it
@@ -320,22 +323,6 @@ function Download-Package {
     # return  $null;
 }
 
-<# 
-
-#>
-function Get-PackageDependencie { 
-    param(
-        [string] $fastPath
-    )
-    # TODO: Fill in implementation
-    # Delete this method if you do not need to implement it
-
-    # use the request object to interact with the OneGet core:
-    $request.Debug("Calling 'GetPackageDependencies'" );
-
-    # expected return type : bool
-    # return  $null;
-}
 
 <# 
 

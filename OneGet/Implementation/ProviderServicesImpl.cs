@@ -15,17 +15,19 @@
 namespace Microsoft.OneGet.Implementation {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
     using Api;
+    using Packaging;
     using Utility.Extensions;
     using Utility.Platform;
     using Utility.Plugin;
+    using Directory = System.IO.Directory;
+    using File = System.IO.File;
 
     internal class ProviderServicesImpl : IProviderServices {
         internal static IProviderServices Instance = new ProviderServicesImpl();
-        private static readonly Regex _canonicalPackageRegex = new Regex("(.*?):(.*?)/(.*)");
+        private static readonly Regex _canonicalPackageRegex = new Regex(@"([^:]*?):([^/\#]*)/?([^#]*)\#?(.*)");
 
         private PackageManagementService PackageManagementService {
             get {
@@ -39,8 +41,16 @@ namespace Microsoft.OneGet.Implementation {
             }
         }
 
-        public string GetCanonicalPackageId(string providerName, string packageName, string version) {
-            return "{0}:{1}/{2}".format(providerName, packageName, version);
+        public IEnumerable<SoftwareIdentity> FindPackageByCanonicalId(string canonicalId, IRequest requestObject) {
+            if (requestObject == null) {
+                throw new ArgumentNullException("requestObject");
+            }
+
+            return PackageManagementService.FindPackageByCanonicalId(canonicalId, requestObject);
+        }
+
+        public string GetCanonicalPackageId(string providerName, string packageName, string version, string source) {
+            return SoftwareIdentity.CreateCanonicalId(providerName, packageName, version, source);
         }
 
         public string ParseProviderName(string canonicalPackageId) {
@@ -53,6 +63,10 @@ namespace Microsoft.OneGet.Implementation {
 
         public string ParsePackageVersion(string canonicalPackageId) {
             return _canonicalPackageRegex.Match(canonicalPackageId).Groups[3].Value;
+        }
+
+        public string ParsePackageSource(string canonicalPackageId) {
+            return _canonicalPackageRegex.Match(canonicalPackageId).Groups[4].Value;
         }
 
         public bool IsSupportedArchive(string localFilename, IRequest request) {
@@ -525,6 +539,44 @@ namespace Microsoft.OneGet.Implementation {
 #endif
             }
             return false;
+        }
+
+        public int StartProcess(string filename, string arguments, bool requiresElevation, out string standardOutput, IRequest requestObject)
+        {
+            System.Diagnostics.Process p = new System.Diagnostics.Process();
+
+            if (requiresElevation)
+            {
+                p.StartInfo.UseShellExecute = true;
+            }
+            else
+            {
+                p.StartInfo.UseShellExecute = false;
+                p.StartInfo.RedirectStandardOutput = true;
+            }
+
+            p.StartInfo.CreateNoWindow = true;
+            p.StartInfo.FileName = filename;
+
+            if (!String.IsNullOrEmpty(arguments))
+            {
+                p.StartInfo.Arguments = arguments;
+            }
+
+            p.Start();
+
+            if (p.StartInfo.RedirectStandardOutput)
+            {
+                standardOutput = p.StandardOutput.ReadToEnd();
+            }
+            else
+            {
+                standardOutput = String.Empty;
+            }
+
+            p.WaitForExit();
+
+            return p.ExitCode;
         }
     }
 }

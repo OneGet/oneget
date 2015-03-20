@@ -107,6 +107,13 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             if (IsPackageByObject) {
                 return InstallPackages(InputObject);
             }
+            if (MyInvocation.BoundParameters.Count == 0 || (MyInvocation.BoundParameters.Count == 1 &&  MyInvocation.BoundParameters.ContainsKey("ProviderName")) ) {
+                // didn't pass in anything, (except maybe Providername)
+                // that's no ok -- we need some criteria 
+                Error(Constants.Errors.MustSpecifyCriteria);
+                return false;
+            }
+
             // otherwise, just do the search right now.
             return base.ProcessRecordAsync();
         }
@@ -137,8 +144,14 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
             if (WhatIf) {
                 // grab the dependencies and return them *first*
-                foreach (var dep in provider.GetPackageDependencies(package, this.ProviderSpecific(provider))) {
-                    ProcessPackage(provider, searchKey.Select( each => each+dep.Name).ToArray() , dep);
+             
+                 foreach (var dep in package.Dependencies) {
+                    // note: future work may be needed if the package sources currently selected by the user don't
+                    // contain the dependencies. 
+                    var dependendcies = PackageManagementService.FindPackageByCanonicalId(dep, this);
+                    foreach (var depPackage in dependendcies) {
+                        ProcessPackage( depPackage.Provider,  searchKey.Select( each => each+depPackage.Name).ToArray(), depPackage);
+                    }
                 }
             }
             base.ProcessPackage(provider, searchKey, package);
@@ -180,7 +193,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 }
 
                 // quickly check to see if this package is already installed.
-                var installedPkgs = provider.GetInstalledPackages(pkg.Name, this.ProviderSpecific(provider)).CancelWhen(_cancellationEvent.Token).ToArray();
+                var installedPkgs = provider.GetInstalledPackages(pkg.Name,pkg.Version,null,null, this.ProviderSpecific(provider)).CancelWhen(_cancellationEvent.Token).ToArray();
                 if (IsCanceled) {
                     // if we're stopping, just get out asap.
                     return false;

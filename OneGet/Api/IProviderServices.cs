@@ -15,19 +15,24 @@
 namespace Microsoft.OneGet.Api {
     using System;
     using System.Collections.Generic;
+    using Packaging;
 
     public interface IProviderServices {
         #region declare service-apis
 
         bool IsElevated {get;}
 
-        string GetCanonicalPackageId(string providerName, string packageName, string version);
+        IEnumerable<SoftwareIdentity> FindPackageByCanonicalId(string canonicalId, IRequest requestObject);
+
+        string GetCanonicalPackageId(string providerName, string packageName, string version, string source);
 
         string ParseProviderName(string canonicalPackageId);
 
         string ParsePackageName(string canonicalPackageId);
 
         string ParsePackageVersion(string canonicalPackageId);
+
+        string ParsePackageSource(string canonicalPackageId);
 
         void DownloadFile(Uri remoteLocation, string localFilename, IRequest requestObject);
 
@@ -69,6 +74,8 @@ namespace Microsoft.OneGet.Api {
 
         bool ExecuteElevatedAction(string provider, string payload, IRequest requestObject);
 
+        int StartProcess(string filename, string arguments, bool requiresElevation, out string standardOutput, IRequest requestObject);
+
         #endregion
 
 #if NOT_ADDED_YET
@@ -84,8 +91,6 @@ namespace Microsoft.OneGet.Api {
         void AddFolderToPath();
 
         void RemoveFolderFromPath();
-
-        void StartProcess();
 
         void InstallVSIX();
 

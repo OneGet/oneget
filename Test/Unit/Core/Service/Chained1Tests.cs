@@ -11,24 +11,28 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //  
+
 namespace Microsoft.OneGet.Test.Core.Service {
+    using System;
     using System.Linq;
+    using System.Xml.Linq;
     using Implementation;
-    
+    using OneGet.Packaging;
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
 
-    public class ProviderTestTemplate : BasePmsServiceTests {
-        public ProviderTestTemplate(ITestOutputHelper outputHelper)
+    public class Chained1Tests : BasePmsServiceTests {
+        public Chained1Tests(ITestOutputHelper outputHelper)
             : base(outputHelper) {
         }
 
         private PackageProvider _provider;
+
         public PackageProvider Provider {
             get {
                 if (_provider == null) {
-                    var packageProviders = PackageManagementService.SelectProviders("TargetProviderNameGoesHere", new BasicHostImpl()).ToArray();
+                    var packageProviders = PackageManagementService.SelectProviders("Chained1", new BasicHostImpl()).ToArray();
                     Assert.NotNull(packageProviders);
                     Assert.Equal(1, packageProviders.Length);
                     _provider = packageProviders[0];
@@ -37,7 +41,33 @@ namespace Microsoft.OneGet.Test.Core.Service {
                 return _provider;
             }
         }
-        
+
+        [Fact]
+        public void FindPackageTest() {
+            using (CaptureConsole) {
+                var packages = Provider.FindPackage("zlib", null, null, null, 0, new BasicHostImpl()).ToArray();
+
+                Assert.Equal(1, packages.Length);
+                var pkg1 = packages[0];
+              
+                foreach (var pkg in packages) {
+                    Console.WriteLine("PKG : {0}", pkg.SwidTagText);
+                }
+
+                Assert.Equal(1, pkg1.Dependencies.Count());
+
+                packages = PackageManagementService.FindPackageByCanonicalId(pkg1.Dependencies.FirstOrDefault(), new BasicHostImpl()).ToArray();
+                Assert.Equal(1, packages.Length);
+                
+                var pkg2 = packages[0];
+
+                foreach (var pkg in packages) {
+                    Console.WriteLine("PKG : {0}", pkg.SwidTagText);
+                }
+            }
+        }
+
+
 #if grab_what_you_need
         [Fact]
         public void TestInitialized() {
@@ -81,13 +111,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
             }
         }
 
-        [Fact]
-        public void FindPackageTest() {
-            using (CaptureConsole) {
-
-            }
-        }
-
+      
         [Fact]
         public void FindPackageByUriTest() {
             using (CaptureConsole) {
@@ -138,6 +162,6 @@ namespace Microsoft.OneGet.Test.Core.Service {
             }
         }
 
-#endif       
+#endif
     }
 }

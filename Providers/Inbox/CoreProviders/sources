@@ -61,7 +61,6 @@ SOURCES=\
  	ProgramsProvider.cs \
  	BootstrapProvider.cs \
  	BootstrapRequest.cs \
- 	SwidProvider.cs \
  	WebDownloader.cs \
 	$(GENERATED_RESOURCES_SOURCE)
 

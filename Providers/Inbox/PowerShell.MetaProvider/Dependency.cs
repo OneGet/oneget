@@ -10,14 +10,14 @@
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
+//  
 
-using System.Reflection;
-
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-[assembly: AssemblyVersion("1.15.69.22059")]
-[assembly: AssemblyFileVersion("1.15.69.22059")]
+namespace Microsoft.OneGet.MetaProvider.PowerShell {
+    public class Dependency {
+        public string ProviderName {get; set;}
+        public string PackageName {get; set;}
+        public string Version {get; set;}
+        public string Source {get; set;}
+        public string AppliesTo {get; set;}
+    }
+}

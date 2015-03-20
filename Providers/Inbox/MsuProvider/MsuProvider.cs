@@ -12,6 +12,11 @@
 //  limitations under the License.
 //  
 
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using Microsoft.OneGet.Packaging;
+
 namespace Microsoft.OneGet.Msu {
     using System;
     using System.Collections.Generic;
@@ -24,6 +29,11 @@ namespace Microsoft.OneGet.Msu {
         ///     The name of this Package Provider
         /// </summary>
         internal const string ProviderName = "msu";
+
+        /// <summary>
+        /// Windows Update executable
+        /// </summary>
+        private readonly string WusaExecutableLocation = Path.Combine(Environment.SystemDirectory, "wusa.exe");
 
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
             {Constants.Features.SupportedExtensions, new[] {"msu"}},
@@ -132,11 +142,30 @@ namespace Microsoft.OneGet.Msu {
         
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::FindPackageByFile' '{1}','{2}'", ProviderName, file, id);
-            if (file.FileExists()) {
+
+            if (file.FileExists())
+            {
                 var info = new CabInfo(file);
+
+                request.YieldSoftwareIdentity(file, info.Name, null, null, null, null, null, file, info.Name);
+
                 var files = info.GetFiles();
                 foreach (var i in files) {
-                    request.Verbose("File {0}", i.FullName);
+                    // read the properties file
+                    if (i.FullNameExtension == ".txt")
+                    {
+                        request.Debug("Reading properties file {0}", i.FullName);
+                        using (var reader = i.OpenText())
+                        {
+                            var contents = reader.ReadToEnd();
+                            Dictionary<string, string> keyValuePairs = contents.Split('\n').Select(line => line.Split('=')).Where(v => v.Count() == 2).ToDictionary(pair => pair[0], pair => pair[1]);
+
+                            foreach (var pair in keyValuePairs)
+                            {
+                                request.AddMetadata(pair.Key.Replace(' ', '_'), pair.Value.Replace("\"", "").Replace("\r", ""));
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -175,6 +204,17 @@ namespace Microsoft.OneGet.Msu {
         
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InstallPackage' '{1}'", ProviderName, fastPackageReference);
+
+            string output;
+            int exitCode = request.ProviderServices.StartProcess(WusaExecutableLocation, fastPackageReference + " /quiet /norestart", true, out output, request);
+            if (exitCode == 0)
+            {
+                request.Verbose("Provider '{0}', Package '{1}': Installation succeeded", ProviderName, fastPackageReference);
+            }
+            else
+            {
+                request.Verbose("Provider '{0}', Package '{1}': Installation failed with Windows Update error code '{2}'.", ProviderName, fastPackageReference, String.Format(CultureInfo.CurrentCulture, "0x{0:X}", exitCode));
+            }
         }
 
         /// <summary>

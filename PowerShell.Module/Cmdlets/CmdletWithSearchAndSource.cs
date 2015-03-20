@@ -131,9 +131,9 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         private IEnumerable<string> _names;
 
         private bool IsUri(string name) {
-            if (Uri.IsWellFormedUriString(name, UriKind.Absolute)) {
+            Uri packageUri;
+            if (Uri.TryCreate(name, UriKind.Absolute, out packageUri)) { 
                 // if it's an uri, then we search via uri or file!
-                var packageUri = new Uri(name, UriKind.Absolute);
                 if (!packageUri.IsFile) {
                     _uris.Add( packageUri );
                     return true;
@@ -170,7 +170,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
 
             // filter the items into three types of searches
-            _names = Name.IsNullOrEmpty() ? string.Empty.SingleItemAsEnumerable() : Name.Where(each => !IsUri(each) && !IsFile(each));
+            _names = Name.IsNullOrEmpty() ? string.Empty.SingleItemAsEnumerable() : Name.Where(each => !IsUri(each) && !IsFile(each)).ToArray();
 
 
            var requests = SelectedProviders.SelectMany(pv => {

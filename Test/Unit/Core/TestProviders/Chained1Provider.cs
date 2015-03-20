@@ -17,9 +17,14 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
+    using System.Resources;
     using System.Security.Cryptography.X509Certificates;
+    using Api;
+    using Implementation;
     using OneGet.Packaging;
+    using OneGet.Utility.Plugin;
     using Sdk;
+    using Request = Sdk.Request;
 
     /// <summary>
     /// A Package provider for OneGet.
@@ -30,7 +35,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
     /// 
     /// todo: Give this class a proper name
     /// </summary>
-    public class SwidTestProvider {
+    public class Chained1Provider {
         /// <summary>
         /// The features that this package supports.
         /// todo: fill in the feature strings for this provider
@@ -61,7 +66,7 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         /// </summary>
         /// <returns>The name of this provider </returns>
         public string PackageProviderName {
-            get { return "SwidTest"; }
+            get { return "Chained1"; }
         }
 
         /// <summary>
@@ -124,66 +129,36 @@ namespace Microsoft.OneGet.Test.Core.TestProviders {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, Request request) {
             // Nice-to-have put a debug message in that tells what's going on.
-            request.Debug("Calling '{0}::FindPackage' '{1}','{2}','{3}','{4}'", PackageProviderName, requiredVersion, minimumVersion, maximumVersion, id);
+            request.Debug("Calling '{0}::FindPackage' '{1}','{2}','{3}','{4}','{5}'", PackageProviderName, name, requiredVersion, minimumVersion, maximumVersion, id);
 
-            if (name == "test") {
-                // this just returns packages so we can test the calls for creating software identity objects back in the core.
-                var pkg = request.YieldSoftwareIdentity("firstpackage", "first", "1.0", "multipartnumeric", "first package", "built-in", "test", "", "");
-                if ( pkg != null) {
-                    if (request.IsCanceled) { return; } // check early, check often.
+            var supplySourceToChainedProvider = new object[] {
+                new { GetSources = new Func<IEnumerable<string>>(() => new string[] {"http://nuget.org/api/v2"}) }
+                , request
+            };
+            
 
-                    // add a dependency to another package.
-                    var link = request.AddDependency(PackageProviderName, "second", "1.1", null, null);
-                    if (request.IsCanceled) { return; } // check early, check often.
+            if (string.IsNullOrEmpty(name)  || name == "zlib") {
+                var pkgs = request.ProviderServices.FindPackageByCanonicalId("nuget:zlib/1.2.8.7", supplySourceToChainedProvider).ToArray();
+                if (pkgs.Length > 0) {
+                    var p = pkgs[0];
+                    request.YieldSoftwareIdentity("zlib", p.Name, p.Version, p.VersionScheme, p.Summary, "built-in", "zlib", "", "");
+                    foreach (var d in p.Dependencies) {
+                        request.AddDependency(PackageProviderName, request.ProviderServices.ParsePackageName(d), request.ProviderServices.ParsePackageVersion(d), "built-in",null);
+                    }
+                }
+            }
 
-                    var entity = request.AddEntity("garrett", "http://fearthecowboy.com", Iso19770_2.Role.Publisher, null);
-                    if (request.IsCanceled) { return; } // check early, check often.
+            if (!string.IsNullOrEmpty(name) && name == "zlib.redist" && requiredVersion == "1.2.8.7") {
 
-                    var icon = request.AddLink(new Uri("http://contoso.com/icon.png"), "icon", "image/icon", null, null, null, null);
-                    if (request.IsCanceled) { return; } // check early, check often.
-
-                    request.AddMetadata( "Something", "Shiny");
-                    request.AddMetadata(pkg, "SomeKey", "SomeValue");
-                    request.AddMetadata(pkg, new Uri("http://oneget.org/oneget"), "testkey", "testvalue");
-                    if (request.IsCanceled) { return; } // check early, check often.
-
-                    // some expected payload data 
-                    var payload= request.AddPayload();
-                    request.Debug("Payload:{0}", payload);
-                    if (request.IsCanceled) { return; } // check early, check often.
-
-
-                    var dir = request.AddDirectory(payload, "installDir", "", "PROGRAMFILES", false);
-                    request.Debug("Directory:{0}", dir);
-                    if (request.IsCanceled) { return; } // check early, check often.
-
-                    var file = request.AddFile(dir, "foo.txt", null, null, true, 10240, "1.0");
-                    request.Debug("File:{0}", file);
-                    if (request.IsCanceled) { return; } // check early, check often.
-
-                    var regkey = request.AddResource(payload, "regkey");
-                    request.AddMetadata(regkey, "key", "hklm/software/testing/foo");
-                    request.AddMetadata(regkey, "value", "hklm/software/testing/foo");
-                    if (request.IsCanceled) { return; } // check early, check often.
+                var pkgs = request.ProviderServices.FindPackageByCanonicalId("nuget:zlib.redist/1.2.8.7", supplySourceToChainedProvider).ToArray();
+                if (pkgs.Length > 0) {
+                    var p = pkgs[0];
+                    request.YieldSoftwareIdentity("zlib.redist", p.Name, p.Version, p.VersionScheme, p.Summary, "built-in", "zlib", "", "");
+                    foreach (var d in p.Dependencies) {
+                        request.AddDependency(PackageProviderName, request.ProviderServices.ParsePackageName(d), request.ProviderServices.ParsePackageVersion(d), "built-in", null);
+                    }
                 }
 
-                pkg = request.YieldSoftwareIdentity("secondpackage", "second", "1.1", "multipartnumeric", "second package", "built-in", "test", "", "");
-                if (pkg != null) {
-                    if (request.IsCanceled) { return; } // check early, check often.
-
-                    var entity = request.AddEntity("garrett", "http://fearthecowboy.com", Iso19770_2.Role.Publisher, null);
-                    if (request.IsCanceled) { return; } // check early, check often.
-
-                    // show some evidence (yeah, this should have been in the getinstalledpackages but ... lazy.)
-                    var evidence = request.AddEvidence(DateTime.Now, "thispc");
-                    request.AddProcess(evidence, "foo.exe", 100);
-
-                    var meta = request.AddMeta(pkg);
-                    request.AddMetadata(meta, "sample", "value");
-                    request.AddMetadata(meta, new Uri("http://oneget.org/oneget"), "testkey", "testvalue");
-
-                    var link = request.AddDependency(PackageProviderName, "third", "[1.0]", null, null);
-                }
             }
 
         }

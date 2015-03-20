@@ -139,7 +139,11 @@ function Find-PackageByUri {
 #>
 function Get-InstalledPackage { 
     param(
-        [string] $name
+        [string] $name,
+		[string] $requiredVersion,
+		[string] $minimumVersion,
+		[string] $maximumVersion
+
     )
     write-debug "In TestPackageProvider - Get-InstalledPackage {0} {1}" $InstalledPackages.Count $name
 
@@ -311,15 +315,6 @@ function Download-Package {
     write-debug "In TestPackageProvider - Download-Package"
 }
 
-<# 
-
-#>
-function Get-PackageDependencies { 
-    param(
-        [string] $fastPackageReference
-    )
-    write-debug "In TestPackageProvider - Get-PackageDependencies"
-}
 
 <# 
 

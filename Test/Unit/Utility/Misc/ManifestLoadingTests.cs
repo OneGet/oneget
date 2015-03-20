@@ -14,6 +14,7 @@
 
 namespace Microsoft.OneGet.Test.Utility.Misc {
     using System.Linq;
+    using System.Reflection;
     using OneGet.Utility.Platform;
     using Packaging;
     using Support;
@@ -27,7 +28,7 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
         [Fact]
         public void LoadManifests() {
             using (CaptureConsole) {
-                var manifests = Manifest.LoadFrom("Microsoft.OneGet.NuGetProvider.dll").Where( Swidtag.IsSwidtag ).ToArray();
+                var manifests = Manifest.LoadFrom(Assembly.GetExecutingAssembly().Location).Where( Swidtag.IsSwidtag ).ToArray();
                 
                 Assert.NotEmpty(manifests);
 

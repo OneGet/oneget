@@ -114,7 +114,7 @@
     <EmbeddedResource Include="Resources\Messages.resx" />
   </ItemGroup>
   <ItemGroup>
-    <Fakes Include="Deployment\WindowsInstaller\Errors.txt" />
+    <None Include="Deployment\WindowsInstaller\Errors.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Archivers\Archivers.csproj">

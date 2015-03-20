@@ -151,7 +151,7 @@ namespace Microsoft.OneGet.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to download the list of available providers..
+        ///   Looks up a localized string similar to Unable to download the list of available providers. Check your internet connection..
         /// </summary>
         internal static string ProviderSwidtagUnavailable {
             get {

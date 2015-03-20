@@ -56,10 +56,6 @@ namespace Microsoft.OneGet.Implementation {
             return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackageByUri(uri, id, request), Constants.PackageStatus.Available);
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> GetPackageDependencies(SoftwareIdentity package, IHostApi requestObject) {
-            return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.GetPackageDependencies(package.FastPackageReference, request), Constants.PackageStatus.Dependency);
-        }
-
         public IAsyncEnumerable<SoftwareIdentity> FindPackageByFile(string filename, int id, IHostApi requestObject) {
             if (!IsSupportedFile(filename)) {
                 return new EmptyAsyncEnumerable<SoftwareIdentity>();
@@ -162,8 +158,8 @@ namespace Microsoft.OneGet.Implementation {
             return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, request), Constants.PackageStatus.Available);
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> GetInstalledPackages(string name, IHostApi requestObject) {
-            return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.GetInstalledPackages(name, request), Constants.PackageStatus.Installed);
+        public IAsyncEnumerable<SoftwareIdentity> GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, IHostApi requestObject) {
+            return new SoftwareIdentityRequestObject(this,  requestObject ?? new object().As<IHostApi>(), request => Provider.GetInstalledPackages(name, requiredVersion, minimumVersion, maximumVersion,request), Constants.PackageStatus.Installed);
         }
 
         public SoftwareIdentity GetPackageDetails(SoftwareIdentity softwareIdentity, IHostApi requestObject) {

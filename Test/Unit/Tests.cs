@@ -52,14 +52,15 @@ namespace Microsoft.OneGet.Test {
         }
 
         private static ThreadLocal<ITestOutputHelper> _out = new ThreadLocal<ITestOutputHelper>();
-        private static ITestOutputHelper _tmp;
+        // private static ITestOutputHelper _tmp;
         internal static ITestOutputHelper CurrentOut {
             get {
                 if (_out.IsValueCreated) {
                     return _out.Value;
                 }
                 
-                return _tmp;
+                //return _tmp;
+                return null;
             }
         }
 

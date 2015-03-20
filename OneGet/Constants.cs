@@ -16,7 +16,7 @@ namespace Microsoft.OneGet {
     using System;
 
     internal static class Constants {
-        internal const int OneGetVersion = 2;
+        internal const int OneGetVersion = 3;
         internal const int TimeoutUnspecified = 0;
         internal const int TimeoutHostNotAvailable = -1;
 

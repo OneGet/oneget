@@ -78,6 +78,7 @@ SOURCES=\
  	Implementation\SoftwareIdentityRequestObject.cs \
         Implementation\PackageDetailsRequestObject.cs \
  	Packaging\AttributeIndexer.cs \
+ 	Packaging\MetadataIndexer.cs \
  	Packaging\BaseElement.cs \
  	Packaging\Directory.cs \
  	Packaging\DynamicOption.cs \

@@ -198,6 +198,17 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             return PackageManagementService.SelectProviders(providerName, Extend());
         }
 
+
+        public  object Services {
+            get {
+                return ProviderServices;
+            }
+        }
+
+        public IEnumerable<object> FindPackageByCanonicalId(string packageId, object requestObject) {
+            return ProviderServices.FindPackageByCanonicalId(packageId, (requestObject ?? new object()) .As<IRequest>());
+        }
+
         public bool RequirePackageProvider(string packageProviderName, string minimumVersion) {
             var pp = (_provider as PowerShellPackageProvider);
             return PackageManagementService.RequirePackageProvider(pp == null ? Constants.ProviderNameUnknown : pp.GetPackageProviderName(), packageProviderName, minimumVersion, Extend());

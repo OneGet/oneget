@@ -138,8 +138,20 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
             Call("FindPackageByUri",requestObject, uri);
         }
-        public void GetInstalledPackages(string name, IRequest requestObject) {
-            Call("GetInstalledPackages",requestObject, name);
+
+        /// <summary>
+        /// Returns the packages that are installed
+        /// </summary>
+        /// <param name="name">the package name to match. Empty or null means match everything</param>
+        /// <param name="requiredVersion">the specific version asked for. If this parameter is specified (ie, not null or empty string) then the minimum and maximum values are ignored</param>
+        /// <param name="minimumVersion">the minimum version of packages to return . If the <code>requiredVersion</code> parameter is specified (ie, not null or empty string) this should be ignored</param>
+        /// <param name="maximumVersion">the maximum version of packages to return . If the <code>requiredVersion</code> parameter is specified (ie, not null or empty string) this should be ignored</param>
+        /// <param name="requestObject">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
+        public void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, IRequest requestObject) {
+            Call("GetInstalledPackages",requestObject, name,requiredVersion,minimumVersion,maximumVersion);
         }
 
         public void GetDynamicOptions(string category, IRequest requestObject) {
@@ -203,9 +215,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public void DownloadPackage(string fastPath, string location, IRequest requestObject) {
             Call("DownloadPackage", requestObject, fastPath, location);
         }
-        public void GetPackageDependencies(string fastPath, IRequest requestObject) {
-            Call("GetPackageDependencies", requestObject, fastPath);
-        }
+    
         public void GetPackageDetails(string fastPath, IRequest requestObject) {
             Call("GetPackageDetails", requestObject, fastPath);
         }

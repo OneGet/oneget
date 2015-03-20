@@ -46,7 +46,7 @@ namespace Microsoft.OneGet.Packaging {
 
         public IEnumerable<string> Dependencies {
             get {
-                return Links.Where(each => Iso19770_2.Relationship.Requires == each.Relationship && each.HRef != null).Select(each => each.HRef.ToString() ).ReEnumerable();
+                return Links.Where(each => Iso19770_2.Relationship.Requires == each.Relationship).Select(each => each.HRef).WhereNotNull().Select( each => Uri.UnescapeDataString(each.ToString())).ReEnumerable();
             }
         }
 
@@ -56,7 +56,7 @@ namespace Microsoft.OneGet.Packaging {
         public string FullPath {get; internal set;}
         public string PackageFilename {get; internal set;}
         public bool FromTrustedSource {get; internal set;}
-        
+
         public string Summary {
             get {
                 return Element.Elements(Iso19770_2.Meta).Select(each => each.GetAttribute(Iso19770_2.SummaryAttribute)).WhereNotNull().FirstOrDefault();
@@ -74,7 +74,7 @@ namespace Microsoft.OneGet.Packaging {
             }
         }
 
-        private static string CreateCanonicalId(string provider, string name, string version, string source ) {
+        internal static string CreateCanonicalId(string provider, string name, string version, string source) {
 
             if (provider == null || name == null) {
                 return null;
@@ -325,14 +325,9 @@ namespace Microsoft.OneGet.Packaging {
             return AddLink(new Uri(CreateCanonicalId(providerName, packageName, version, source)), Iso19770_2.Relationship.Requires, null, null, null, appliesTo, null);
         }
 
-        /// <summary>
-        /// Accessor to grab Meta attribute values in an aggregate fashion.
-        /// </summary>
-        /// <param name="key">Meta attribute name</param>
-        /// <returns>a collection of strings with the values from all Meta elements that match</returns>
-        public IEnumerable<string> this[string key] {
+        public MetadataIndexer Metadata {
             get {
-                return Element.Elements(Iso19770_2.Meta).Where(each => each.Attribute(key) != null).Select(each => each.Attribute(key).Value).ReEnumerable();
+                return new MetadataIndexer(this);
             }
         }
     }

@@ -36,7 +36,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
         private int NextNumber {
             get {
                 lock (lockObject) {
-                    return _count ++;
+                    return ++_count;
                 }
             }
         }
@@ -130,12 +130,12 @@ namespace Microsoft.OneGet.Test.Core.Service {
 
         public virtual bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination) {
             Console.WriteLine("[ShouldBootstrapProvider],<{0}>,<{1}>,<{2}>,<{3}>,<{4}>,<{5}>", requestor, providerName, providerVersion, providerType, location, destination);
-            return false;
+            return true;
         }
 
         public virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
             Console.WriteLine("[ShouldContinueWithUntrustedPackageSource],<{0}>,<{1}>", package, packageSource);
-            return false;
+            return true;
         }
 
         public virtual bool AskPermission(string permission) {
@@ -146,7 +146,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
         public virtual bool IsInteractive {
             get {
                 Console.WriteLine("[IsInteractive]");
-                return false;
+                return true; // this way, it tries to bootstrap when asked.
             }
         }
 

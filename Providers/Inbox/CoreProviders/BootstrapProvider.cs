@@ -183,13 +183,24 @@ namespace Microsoft.OneGet.Providers {
 
         }
 
+        /// <summary>
+        /// Returns the packages that are installed
+        /// </summary>
+        /// <param name="name">the package name to match. Empty or null means match everything</param>
+        /// <param name="requiredVersion">the specific version asked for. If this parameter is specified (ie, not null or empty string) then the minimum and maximum values are ignored</param>
+        /// <param name="minimumVersion">the minimum version of packages to return . If the <code>requiredVersion</code> parameter is specified (ie, not null or empty string) this should be ignored</param>
+        /// <param name="maximumVersion">the maximum version of packages to return . If the <code>requiredVersion</code> parameter is specified (ie, not null or empty string) this should be ignored</param>
+        /// <param name="request">
+        ///     An object passed in from the CORE that contains functions that can be used to interact with
+        ///     the CORE and HOST
+        /// </param>
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Plugin requirement.")]
-        public void GetInstalledPackages(string name, BootstrapRequest request) {
+        public void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, BootstrapRequest request) {
             if (request == null) {
                 throw new ArgumentNullException("request");
             }
 
-            request.Debug("Calling 'Bootstrap::GetInstalledPackages'");
+            request.Debug("Calling '{0}::GetInstalledPackages' '{1}','{2}','{3}','{4}'", GetPackageProviderName(), name, requiredVersion, minimumVersion, maximumVersion);
             // return all the dynamic package providers as packages
         }
 

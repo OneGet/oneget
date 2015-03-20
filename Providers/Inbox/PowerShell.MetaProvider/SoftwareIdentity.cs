@@ -42,6 +42,15 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             FromTrustedSource = fromTrustedSource;
         }
 
+        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, string fullPath, string filename, Hashtable details, ArrayList entities, ArrayList links, bool fromTrustedSource, ArrayList dependencies)
+            : this(fastPackageReference, name, version, versionScheme, source, summary, searchKey, fullPath, filename) {
+            _details = details;
+            _entities = entities;
+            _links = links;
+            FromTrustedSource = fromTrustedSource;
+            _dependencies = dependencies;
+        }
+
         public string FastPackageReference {get; set;}
         public string Name {get; set;}
         public string Version {get; set;}
@@ -61,11 +70,12 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 throw new ArgumentNullException("r");
             }
 
-            return r.YieldSoftwareIdentity(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey, FullPath, Filename) != null && YieldDetails(r) && YieldEntities(r) && YieldLinks(r) && r.AddMetadata(FastPackageReference, "FromTrustedSource", FromTrustedSource.ToString()) != null;
+            return r.YieldSoftwareIdentity(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey, FullPath, Filename) != null && YieldDetails(r) && YieldEntities(r) && YieldLinks(r) && YieldDependencies(r) && r.AddMetadata(FastPackageReference, "FromTrustedSource", FromTrustedSource.ToString()) != null;
         }
 
         private ArrayList _links;
         private ArrayList _entities;
+        private ArrayList _dependencies;
 
         protected override bool YieldDetails(PsRequest r) {
             if (_details != null && _details.Count > 0) {
@@ -81,6 +91,14 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
             }
             return true;
         }
+
+        protected virtual bool YieldDependencies(PsRequest r) {
+            if (_dependencies != null) {
+                return _dependencies.OfType<Dependency>().All(dep => r.AddDependency(dep.ProviderName, dep.PackageName, dep.Version, dep.Source, dep.AppliesTo ) != null);
+            }
+            return true;
+        }
+
 
         protected virtual bool YieldEntities(PsRequest r) {
             if (_links != null) {

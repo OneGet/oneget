@@ -99,8 +99,9 @@ namespace Microsoft.OneGet.Packaging {
         public Uri HRef {
             get {
                 var v = GetAttribute(Iso19770_2.HRefAttribute);
-                if (v != null && Uri.IsWellFormedUriString(v, UriKind.RelativeOrAbsolute)) {
-                    return new Uri(v);
+                Uri result;
+                if (v != null && Uri.TryCreate(v, UriKind.Absolute, out result)) {
+                    return result;
                 }
                 return null;
             }
