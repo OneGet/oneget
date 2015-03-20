@@ -7,11 +7,11 @@
     <ProjectGuid>{F2133AC2-39DD-4321-A3B1-8BDBCDFF743E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.PowerShell.OneGet</RootNamespace>
-    <AssemblyName>Microsoft.PowerShell.OneGet</AssemblyName>
+    <RootNamespace>Microsoft.PowerShell.PackageManagement</RootNamespace>
+    <AssemblyName>Microsoft.PowerShell.PackageManagement</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), OneGet.sln))\</SolutionDir>
-    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), PackageManagement.sln))\</SolutionDir>
+    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\PackageManagement.sln</SolutionPath>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props')" />
@@ -80,21 +80,18 @@
     <None Include="OneGet-edge.psd1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="OneGet.format.ps1xml">
+    <None Include="PackageManagement.format.ps1xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
-    <None Include="OneGet.psd1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="OneGetTabExpansion.psm1">
+    <None Include="PackageManagement.psd1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OneGet\OneGet.csproj">
+    <ProjectReference Include="..\PackageManagement\PackageManagement.csproj">
       <Project>{7044b856-6d51-498f-90f9-01f219909f79}</Project>
-      <Name>OneGet</Name>
+      <Name>PackageManagement</Name>
     </ProjectReference>
     <ProjectReference Include="..\Utility.PowerShell\Utility.PowerShell.csproj">
       <Project>{3F9D75F9-A4AD-46C1-8937-B55604E8D5D9}</Project>

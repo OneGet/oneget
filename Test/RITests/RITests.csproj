@@ -8,11 +8,11 @@
     <ProjectGuid>{879436B2-5911-44E1-A46B-366CC9F34A7F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.OneGet.Test</RootNamespace>
-    <AssemblyName>Microsoft.OneGet.Test.RI</AssemblyName>
+    <RootNamespace>Microsoft.PackageManagement.Test</RootNamespace>
+    <AssemblyName>Microsoft.PackageManagement.Test.RI</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), OneGet.sln))\</SolutionDir>
-    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), PackageManagement.sln))\</SolutionDir>
+    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\PackageManagement.sln</SolutionPath>
     <RestorePackages>true</RestorePackages>
     <NuGetPackageImportStamp>7c580595</NuGetPackageImportStamp>
   </PropertyGroup>
@@ -64,9 +64,9 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\OneGet\OneGet.csproj">
+    <ProjectReference Include="..\..\PackageManagement\PackageManagement.csproj">
       <Project>{7044b856-6d51-498f-90f9-01f219909f79}</Project>
-      <Name>OneGet</Name>
+      <Name>PackageManagement</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Utility.PowerShell\Utility.PowerShell.csproj">
       <Project>{3f9d75f9-a4ad-46c1-8937-b55604e8d5d9}</Project>
@@ -78,7 +78,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

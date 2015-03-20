@@ -10,8 +10,8 @@
     <RootNamespace>Microsoft.PackageManagement.Archivers</RootNamespace>
     <AssemblyName>Microsoft.PackageManagement.ArchiverProviders</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), OneGet.sln))\</SolutionDir>
-    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), PackageManagement.sln))\</SolutionDir>
+    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\PackageManagement.sln</SolutionPath>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props')" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -88,15 +88,15 @@
     <EmbeddedResource Include="Resources\Messages.resx" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\OneGet\OneGet.csproj">
+    <ProjectReference Include="..\..\..\PackageManagement\PackageManagement.csproj">
       <Project>{7044b856-6d51-498f-90f9-01f219909f79}</Project>
-      <Name>OneGet</Name>
+      <Name>PackageManagement</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>:Locate MT.EXE Tool:
-for /f "delims=" %25%25a in ('powershell "$p = ((Get-ItemProperty -Path HKCU:\Software\OneGet\tools\MT.EXE -Name Path -ea 0).Path) ;  if( -not $p ) { $p = ((dir ${env:ProgramFiles(x86)} -recurse -ea 0|  where -property name -eq mt.exe | select -first 1 ).FullName) ;    $null = mkdir -Path HKCU:\Software\OneGet\tools\MT.EXE -Force ;    $null = New-ItemProperty -Path HKCU:\Software\OneGet\tools\MT.EXE -Name Path -Value $p -force } ; $p"') do @set MTEXE=%25%25a
+for /f "delims=" %25%25a in ('powershell "$p = ((Get-ItemProperty -Path HKCU:\Software\PackageManagement\Tools\MT.EXE -Name Path -ea 0).Path) ;  if( -not $p ) { $p = ((dir ${env:ProgramFiles(x86)} -recurse -ea 0|  where -property name -eq mt.exe | select -first 1 ).FullName) ;    $null = mkdir -Path HKCU:\Software\PackageManagement\Tools\MT.EXE -Force ;    $null = New-ItemProperty -Path HKCU:\Software\PackageManagement\Tools\MT.EXE -Name Path -Value $p -force } ; $p"') do @set MTEXE=%25%25a
 
 :Run the tool to add the manifest to the binary.
 "%25MTEXE%25" -manifest $(ProjectDir)provider.manifest -outputresource:$(TargetPath);#101</PostBuildEvent>

@@ -11,8 +11,8 @@
     <ProjectGuid>{B953E5C8-ECBB-489E-A5A4-6AC64ABDCB2E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.OneGet.Test</RootNamespace>
-    <AssemblyName>Microsoft.OneGet.Test</AssemblyName>
+    <RootNamespace>Microsoft.PackageManagement.Test</RootNamespace>
+    <AssemblyName>Microsoft.PackageManagement.Test</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -37,22 +37,22 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup Condition="$(InternalBuild) == 'true'">
-    <Reference Include="Microsoft.OneGet">
-      <HintPath>..\Microsoft.OneGet.exe</HintPath>
+    <Reference Include="Microsoft.PackageManagement">
+      <HintPath>..\Microsoft.PackageManagement.exe</HintPath>
     </Reference>
-    <Reference Include="Microsoft.OneGet.Utility">
-      <HintPath>..\Microsoft.OneGet.Utility.dll</HintPath>
+    <Reference Include="Microsoft.PackageManagement.Utility">
+      <HintPath>..\Microsoft.PackageManagement.Utility.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.OneGet.Utility.PowerShell">
-      <HintPath>..\Microsoft.OneGet.Utility.PowerShell.dll</HintPath>
+    <Reference Include="Microsoft.PackageManagement.Utility.PowerShell">
+      <HintPath>..\Microsoft.PackageManagement.Utility.PowerShell.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup Condition="$(InternalBuild) != 'true'">
-    <Reference Include="Microsoft.OneGet">
+    <Reference Include="Microsoft.PackageManagement">
     </Reference>
-    <Reference Include="Microsoft.OneGet.Utility">
+    <Reference Include="Microsoft.PackageManagement.Utility">
     </Reference>
-    <Reference Include="Microsoft.OneGet.Utility.PowerShell">
+    <Reference Include="Microsoft.PackageManagement.Utility.PowerShell">
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -149,9 +149,9 @@
       <Project>{ebeb46b5-3683-4d9f-939b-b1b2bbeea369}</Project>
       <Name>PowerShell.MetaProvider</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\OneGet\OneGet.csproj" Condition="$(CommunityBuild)">
+    <ProjectReference Include="..\..\PackageManagement\PackageManagement.csproj" Condition="$(CommunityBuild)">
       <Project>{7044b856-6d51-498f-90f9-01f219909f79}</Project>
-      <Name>OneGet</Name>
+      <Name>PackageManagement</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\PowerShell.Module\PowerShell.Module.csproj" Condition="$(CommunityBuild)">
       <Project>{f2133ac2-39dd-4321-a3b1-8bdbcdff743e}</Project>
@@ -184,7 +184,7 @@ $(SET_MT_EXE)
     <PostBuildEvent Condition="$(InternalBuild)">
 
 :Run the tool to add the manifest to the binary.
-"$(ProjectDir)..\tools\mt.exe" -manifest $(ProjectDir)provider.manifest -outputresource:$(OutputPath)Microsoft.OneGet.Test.dll;#101</PostBuildEvent>
+"$(ProjectDir)..\tools\mt.exe" -manifest $(ProjectDir)provider.manifest -outputresource:$(OutputPath)Microsoft.PackageManagement.Test.dll;#101</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>
