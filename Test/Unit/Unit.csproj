@@ -120,7 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Examples\TemplatePackageProvider.psm1" />
-    <None Include="oneget.manifest" />
+    <None Include="provider.manifest" />
     <None Include="packages.config" />
     <None Include="Providers\PSChained1Provider.psm1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -180,18 +180,18 @@
 $(SET_MT_EXE)
 
 :Run the tool to add the manifest to the binary.
-"%25MTEXE%25" -manifest $(ProjectDir)oneget.manifest -outputresource:$(TargetPath);#101</PostBuildEvent>
+"%25MTEXE%25" -manifest $(ProjectDir)provider.manifest -outputresource:$(TargetPath);#101</PostBuildEvent>
     <PostBuildEvent Condition="$(InternalBuild)">
 
 :Run the tool to add the manifest to the binary.
-"$(ProjectDir)..\tools\mt.exe" -manifest $(ProjectDir)oneget.manifest -outputresource:$(OutputPath)Microsoft.OneGet.Test.dll;#101</PostBuildEvent>
+"$(ProjectDir)..\tools\mt.exe" -manifest $(ProjectDir)provider.manifest -outputresource:$(OutputPath)Microsoft.OneGet.Test.dll;#101</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>
 $(SET_MT_EXE)
 
 :Run the tool to add the manifest to the binary.
-"%25MTEXE%25" -manifest $(ProjectDir)oneget.manifest -outputresource:$(TargetPath);#101
+"%25MTEXE%25" -manifest $(ProjectDir)provider.manifest -outputresource:$(TargetPath);#101
 
 
 if exist $(SolutionDir)deploy_debug.cmd (
