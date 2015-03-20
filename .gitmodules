@@ -4,3 +4,6 @@
 [submodule "ProviderSdk"]
 	path = Providers/Sdk/ProviderSdk
 	url = https://github.com/OneGet/ProviderSdk
+[submodule "Test/ModuleTests/Pester"]
+	path = Test/ModuleTests/Pester
+	url = https://github.com/pester/Pester.git
