@@ -42,15 +42,8 @@ namespace Microsoft.PackageManagement.Providers {
             "http://go.microsoft.com/fwlink/?LinkID=517832",
             "https://oneget.org/providers.swidtag"
 #endif
-
-#if _2015_01
-            // starting in 2015/01 builds, we bootstrap from here:
-            "https://oneget.org/providers.1501.swidtag"
-#endif
-
-            // starting in 2015/03 builds, we bootstrap from here:
-            "https://oneget.org/providers.1503.swidtag"
-
+            // starting in 2015/04 builds, we bootstrap from here:
+            "https://oneget.org/providers.1504.swidtag"
         };
 
 

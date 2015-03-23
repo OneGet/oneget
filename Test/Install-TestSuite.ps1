@@ -11,7 +11,7 @@ if( -not (test-path $outputPath) ) {
 }
 
 # put all the binaries into output path
-copy -force .\*oneget* $outputPath
+copy -force .\*PackageManagement* $outputPath
 copy -force .\*.psm1 $outputPath
 
 # copy the xunit test runner
@@ -21,8 +21,7 @@ copy -force  ".\packages\xunit.runner.console.2*\tools\*" $outputPath
 & "$env:SystemRoot\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe" /p:Configuration=Debug .\unit.sln
 
 # remove the strongname from the binaries -- xUnit is giving me nothing but pain from that
-tools\snremove.exe -r "$outputPath\*oneget*.exe"
-tools\snremove.exe -r "$outputPath\*oneget*.dll"
+tools\snremove.exe -r "$outputPath\*PackageManagement*.dll"
 
 # Running the xunit tests 
 <# 
@@ -31,7 +30,7 @@ tools\snremove.exe -r "$outputPath\*oneget*.dll"
     
     cd $outputPath
 
-    .\xunit.console  .\Microsoft.OneGet.Test.dll -noshadow -xml output.xml
+    .\xunit.console  .\Microsoft.PackageManagement.Test.dll -noshadow -xml output.xml
 #>
 
 

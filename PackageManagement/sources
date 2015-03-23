@@ -1,14 +1,13 @@
 # Copyright (C) 2014 Microsoft Corporation
 
 ###
-### OneGet/PackageManagement/sources
+### PackageManagement/sources
 ###
 
 !include ..\common.inc
 
 TARGETNAME          = Microsoft.PackageManagement
-TARGETTYPE          = PROGRAM
-GENERATE_METADATA_EXE=1
+TARGETTYPE          = DYNLINK
 
 ## !include $(PROJECT_ROOT)\monad\nttargets\build\sources.inc
 OUTPUT_PATH=$(OBJ_PATH)\$(O)
