@@ -31,6 +31,9 @@
     <BindInputPaths Include="$(SolutionDir)">
       <InProject>false</InProject>
     </BindInputPaths>
+    <BindInputPaths Include="$(MSBuildThisFileDirectory)">
+      <InProject>false</InProject>
+    </BindInputPaths>
   </ItemGroup>
   <ItemGroup>
     <Content Include="install-oneget.cmd" />

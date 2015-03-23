@@ -9,11 +9,9 @@
 
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
-        <Directory Id="OutercurveFoundationFolder" Name="OutercurveFoundation">
-          <Directory Id="VersionFolder" Name="!(bind.FileVersion.Microsoft.PackageManagement.dll)">
-            <Directory Id="ModulesFolder" Name="Modules">
-              <Directory Id="OneGetFolder" Name="OneGet">
-              </Directory>
+        <Directory Id="OutercurveFoundationFolder" Name="Outercurve Foundation">
+          <Directory Id="ProdFolder" Name="OneGet">
+            <Directory Id="OneGetFolder" Name="!(bind.FileVersion.Microsoft.PackageManagement.dll)">
               <Directory Id="PowerShellGetFolder" Name="PowerShellGet">
                 <Directory Id="PSGetEnUsFolder" Name="en-US" />
               </Directory>
@@ -25,12 +23,11 @@
 
     <Feature Id="PackageManagementFeature">
       <ComponentGroupRef Id="PackageManagementComponents" />
-      <ComponentGroupRef Id="OneGetComponents" />
       <ComponentGroupRef Id="PSGetComponents" />
       <ComponentGroupRef Id="PSGetEnUsComponents" />
     </Feature>
   
-    <CustomAction Id="RunScript" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no" />
+    <CustomAction Id="RunScript" BinaryKey="WixCA" DllEntry="CAQuietExec64" Execute="deferred" Return="ignore" Impersonate="no" />
   
   <InstallExecuteSequence>
 
@@ -40,7 +37,6 @@
   </Product>
     
   <Fragment>
-
     <Property Id="POWERSHELLEXE">
     <RegistrySearch Id="POWERSHELLEXE"
                     Type="raw"
@@ -53,9 +49,9 @@
     </Condition>
 
       <SetProperty Id="RunScript"
-           Before ="InstallFiles"
+           After="InstallFiles"
            Sequence="execute"
-           Value ="&quot;[SystemFolder]cmd.exe&quot; &quot;[OneGetFolder]\install-oneget.cmd&quot;" />
+           Value="&quot;[SystemFolder]cmd.exe&quot; &quot;[OneGetFolder]\install-oneget.cmd&quot;" />
       
     <ComponentGroup Id="PSGetComponents" Directory="PowerShellGetFolder">
       <Component><File Source="Providers\Inbox\PowerShellGet\PowerShellGet.psd1" /></Component>
@@ -70,12 +66,7 @@
     
     <ComponentGroup Id="PackageManagementComponents" Directory="OneGetFolder">
       <Component><File Source="readme.md" /></Component>
-
-      <Component>
-        <File Id="Microsoft.PackageManagement.dll" Source="Microsoft.PackageManagement.dll" />
-        <Environment Id="UpdatePsModulePath" Action="set" Name="PSModulePath" Value="[ModulesFolder]" Part="last" System="yes" /> 
-      </Component>
-
+      <Component><File Id="Microsoft.PackageManagement.dll" Source="Microsoft.PackageManagement.dll" /></Component>
       <Component><File Source="Microsoft.PackageManagement.MetaProvider.PowerShell.dll" /></Component>
       <Component><File Source="Microsoft.PackageManagement.ArchiverProviders.dll" /></Component>
       <Component><File Source="Microsoft.PackageManagement.MsiProvider.dll" /></Component>
@@ -105,6 +96,7 @@
       <Component><File Source="PackageManagement.psd1" /></Component>
       <Component><File Source="OneGet-Edge.psd1" /></Component>
       <Component><File Source="OneGet.psd1" /></Component>
+      <Component><File Source="install-oneGet.cmd" /></Component>
     </ComponentGroup>
     
   </Fragment>
