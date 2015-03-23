@@ -49,9 +49,9 @@
     </Condition>
 
       <SetProperty Id="RunScript"
-           After="InstallFiles"
+           Before="InstallFiles"
            Sequence="execute"
-           Value="&quot;[SystemFolder]cmd.exe&quot; &quot;[OneGetFolder]\install-oneget.cmd&quot;" />
+           Value="&quot;[System64Folder]cmd.exe&quot; /c &quot;[OneGetFolder]\install-oneget.cmd&quot;" />
       
     <ComponentGroup Id="PSGetComponents" Directory="PowerShellGetFolder">
       <Component><File Source="Providers\Inbox\PowerShellGet\PowerShellGet.psd1" /></Component>
