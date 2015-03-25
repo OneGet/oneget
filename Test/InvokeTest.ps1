@@ -17,6 +17,17 @@ if (test-path $Env:LocalAppData/OneGet/ProviderAssemblies/nuget-anycpu.exe) {
     rm -force $Env:LocalAppData/OneGet/ProviderAssemblies/*.old  -ea silentlycontinue
 }
 
+if (test-path $Env:ProgramFiles/PackageManagement/ProviderAssemblies/nuget-anycpu.exe) {
+    ren $Env:ProgramFiles/PackageManagement/ProviderAssemblies/nuget-anycpu.exe "nuget-anycpu.$(Get-Random).old"
+    rm -force $Env:ProgramFiles/PackageManagement/ProviderAssemblies/*.old -ea silentlycontinue
+}
+
+if (test-path $Env:LocalAppData/PackageManagement/ProviderAssemblies/nuget-anycpu.exe) {
+    ren $Env:LocalAppData/PackageManagement/ProviderAssemblies/nuget-anycpu.exe "nuget-anycpu.$(Get-Random).old"
+    rm -force $Env:LocalAppData/PackageManagement/ProviderAssemblies/*.old  -ea silentlycontinue
+}
+
+
 # ensure that we're only picking up the modules that we really want to.
 $env:PSModulePath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules;$PSScriptRoot\tools\;" 
 
