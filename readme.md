@@ -107,9 +107,9 @@ There are some exceptions to the where I can take Pull Requests immediately:
 
 I'm eager to work with anyone who wants to help shape the future of Package Management on Windows -- your opinions, feedback and code can help everyone. 
 
-### Weekly Online Meeeting 
+### Weekly Online Meeting 
 
-We have an online weekly meeting Friday mornings @ 10:00PDT [via Lync](http://oneget.org/weekly/meeting.html)* (everyone welcome!)
+We used to have an online weekly meeting Friday mornings @ 10:00PDT [via Lync](http://oneget.org/weekly/meeting.html)* (everyone welcome!)
 
 You can see archives of the previous meetings available on [YouTube](https://www.youtube.com/playlist?list=PLeKWr5Ekac1SEEvHqIh3g051OyioFwOXN&feature=c4-feed-u)
 
