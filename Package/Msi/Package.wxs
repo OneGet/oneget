@@ -72,8 +72,6 @@
       <Component><File Source="Microsoft.PackageManagement.MsiProvider.dll" /></Component>
       <Component><File Source="Microsoft.PackageManagement.MsuProvider.dll" /></Component>
       <Component><File Source="Microsoft.PackageManagement.CoreProviders.dll" /></Component>
-      <Component><File Source="Microsoft.PackageManagement.Utility.dll" /></Component>
-      <Component><File Source="Microsoft.PackageManagement.Utility.PowerShell.dll" /></Component>
       <Component><File Source="Microsoft.PowerShell.PackageManagement.dll" /></Component>
 
       <Component><File Source="Microsoft.PackageManagement.NuGetProvider.dll" /></Component> 
@@ -86,8 +84,6 @@
       <Component><File Source="Microsoft.PackageManagement.MsuProvider.pdb" /></Component>
       <Component><File Source="Microsoft.PackageManagement.NuGetProvider.pdb" /></Component>
       <Component><File Source="Microsoft.PackageManagement.CoreProviders.pdb" /></Component>
-      <Component><File Source="Microsoft.PackageManagement.Utility.pdb" /></Component>
-      <Component><File Source="Microsoft.PackageManagement.Utility.PowerShell.pdb" /></Component>
       <Component><File Source="Microsoft.PowerShell.PackageManagement.pdb" /></Component>
       
       <Component><File Source="PackageManagement.format.ps1xml" /></Component>

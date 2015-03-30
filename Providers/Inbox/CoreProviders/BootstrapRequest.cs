@@ -86,7 +86,7 @@ namespace Microsoft.PackageManagement.Providers {
             return null;
         }
 
-        private string DownloadContent(Uri location) {
+        private string DownloadContent(Uri location, bool tryAgain = true) {
             string result = null;
             try {
                 var client = new WebClient();
@@ -109,7 +109,17 @@ namespace Microsoft.PackageManagement.Providers {
                     // Progress(c, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
                 };
                 client.DownloadStringAsync(location);
-                done.WaitOne();
+
+                // eight second timeout.
+                if(!done.WaitOne(1000*8) ) {
+                    Debug("No response for downloading Swidag");
+                    client.CancelAsync();
+
+                    if (tryAgain) {
+                        Debug("Trying Once More...");
+                        return DownloadContent(location, false);
+                    }
+                }
             } catch (Exception e) {
                 e.Dump();
             }
