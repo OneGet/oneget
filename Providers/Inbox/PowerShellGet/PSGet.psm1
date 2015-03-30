@@ -36,6 +36,11 @@ $Script:PSGalleryV3SourceUri = 'https://go.microsoft.com/fwlink/?LinkId=528403&c
 
 $Script:PSGalleryV2ApiAvailable = $true
 $Script:PSGalleryV3ApiAvailable = $false
+$Script:PSGalleryApiChecked = $false
+
+$Script:ResponseUri = "ResponseUri"
+$Script:StatusCode = "StatusCode"
+$Script:Exception = "Exception"
 
 $script:PSModuleProviderName = "PSModule"
 $script:PackageManagementProviderParam  = "PackageManagementProvider"
@@ -1445,6 +1450,62 @@ function Get-PSRepository
 
 
 #region Utility functions
+function Check-PSGalleryApiAvailability
+{
+    param
+    (
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string[]]
+        $PSGalleryV2ApiUri,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string[]]
+        $PSGalleryV3ApiUri
+    )
+    
+    
+    # check internet availability first
+    $connected = Microsoft.PowerShell.Management\Test-Connection -ComputerName "www.microsoft.com" -Count 1 -Quiet
+    if ( -not $connected )
+    {
+        return
+    }
+
+    $statusCode_v2 = $null
+    $resolvedUri_v2 = $null
+    $statusCode_v3 = $null
+    $resolvedUri_v3 = $null
+
+    # ping V2
+    $res_v2 = Ping-Endpoint -Endpoint $PSGalleryV2ApiUri 
+    if ($res_v2.ContainsKey($Script:ResponseUri))
+    {
+        $resolvedUri_v2 = $res_v2[$Script:ResponseUri]
+    }
+    if ($res_v2.ContainsKey($Script:StatusCode))
+    {
+        $statusCode_v2 = $res_v2[$Script:StatusCode]
+    }
+    
+
+    # ping V3
+    $res_v3 = Ping-Endpoint -Endpoint $PSGalleryV3ApiUri
+    if ($res_v3.ContainsKey($Script:ResponseUri))
+    {
+        $resolvedUri_v3 = $res_v3[$Script:ResponseUri]
+    }
+    if ($res_v3.ContainsKey($Script:StatusCode))
+    {
+        $statusCode_v3 = $res_v3[$Script:StatusCode]
+    }
+    
+
+    $Script:PSGalleryV2ApiAvailable = (($statusCode_v2 -eq 200) -and ($resolvedUri_v2))
+    $Script:PSGalleryV3ApiAvailable = (($statusCode_v3 -eq 200) -and ($resolvedUri_v3))
+    $Script:PSGalleryApiChecked = $true
+}
 
 function Get-PSGalleryApiAvailability
 {
@@ -1466,6 +1527,11 @@ function Get-PSGalleryApiAvailability
         return
     }
 
+    # run check only once 
+    if( !$Script:PSGalleryApiChecked)
+    {
+        $null = Check-PSGalleryApiAvailability -PSGalleryV2ApiUri $Script:PSGallerySourceUri -PSGalleryV3ApiUri $Script:PSGalleryV3SourceUri
+    }
 
     if ($Script:PSGalleryV3ApiAvailable)
     {
@@ -1485,6 +1551,42 @@ function Get-PSGalleryApiAvailability
     }
 
     # if V3 is not available, v2 must be 
+}
+
+function Ping-Endpoint
+{
+    param
+    (
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string[]]
+        $Endpoint
+    )
+
+    $results = @{}
+
+    try 
+    {
+        $request = [System.Net.WebRequest]::Create("$Endpoint")
+        $request.Method = 'GET'
+        $request.Timeout = 30000
+        $response = [System.Net.HttpWebResponse]$request.GetResponse()
+        $results.Add($Script:ResponseUri,$response.ResponseUri.ToString())
+        $results.Add($Script:StatusCode,$response.StatusCode.value__)
+        $response.Close()
+    }
+    catch [System.Net.WebException]
+    {
+        $results.Add($Script:Exception,$_.Exception)
+
+        if ($_.Exception.Response)
+        {
+            $results.Add($Script:ResponseUri,$_.Exception.Response.ResponseUri.ToString())
+            $results.Add($Script:StatusCode,$_.Exception.Response.StatusCode.value__)
+        }
+    }
+    
+    return $results
 }
 
 function Validate-VersionParameters
@@ -4466,24 +4568,14 @@ function Get-ValidModuleLocation
         $ParameterName
     )
 
-    $Exception = $null
-
     # Get the actual Uri from the Location
     if(-not (Microsoft.PowerShell.Management\Test-Path $LocationString))
     {
-        try
+        $results = Ping-Endpoint -Endpoint $LocationString
+    
+        if ($results.ContainsKey("Exception"))
         {
-            $request = [System.Net.WebRequest]::Create($LocationString)
-            $request.Method = 'GET'
-            $response = $request.GetResponse()               
-            $LocationString = $response.ResponseUri.ToString()
-            $response.Close()
-        }
-        catch
-        {
-            $Exception = $_             
-        }
-
+            $Exception = $results["Exception"]
         if($Exception)
         {
             $message = $LocalizedData.InvalidWebUri -f ($LocationString, $ParameterName)
@@ -4493,6 +4585,12 @@ function Get-ValidModuleLocation
                         -ExceptionObject $Exception `
                         -CallerPSCmdlet $PSCmdlet `
                         -ErrorCategory InvalidArgument
+        }
+    }
+
+        if ($results.ContainsKey("ResponseUri"))
+        {
+            $LocationString = $results["ResponseUri"]
         }
     }
 
@@ -4758,63 +4856,6 @@ if((Test-RunningAsElevated) -and ($PSVersionTable.PSVersion -lt [Version]"4.0"))
         $env:PSModulePath = "$env:PSModulePath;$script:ProgramFilesModulesPath"
     }
 }
-
-function Check-PSGalleryApiAvailability
-{
-    param
-    (
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [string[]]
-        $PSGalleryV2ApiUri,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [string[]]
-        $PSGalleryV3ApiUri
-    )
-    
-    
-    # check internet availability first
-    $connected = Microsoft.PowerShell.Management\Test-Connection -ComputerName "www.microsoft.com" -Count 1 -Quiet
-    if ( -not $connected )
-    {
-        return
-    }
-
-
-    # ping V2
-    try 
-    {
-        $request_v2 = Microsoft.PowerShell.Utility\Invoke-WebRequest -Uri ([System.Uri]"$PSGalleryV2ApiUri") -TimeoutSec 30 -UseBasicParsing -ErrorAction SilentlyContinue
-        $resolvedUri_v2 = $request_v2.BaseResponse.ResponseUri
-        $statusCode_v2 = [int] $request_v2.StatusCode
-    }
-    catch
-    {
-        $resolvedUri_v2 = $_.Exception.Response.ResponseUri
-        $statusCode_v2 = [int] $_.Exception.Response.StatusCode.Value__
-    }
-
-
-    # ping V3
-    try 
-    {
-        $request_v3 = Microsoft.PowerShell.Utility\Invoke-WebRequest -Uri ([System.Uri]"$PSGalleryV3ApiUri") -TimeoutSec 30 -UseBasicParsing -ErrorAction SilentlyContinue
-        $resolvedUri_v3 = $request_v3.BaseResponse.ResponseUri
-        $statusCode_v3 = [int] $request_v3.StatusCode
-    }
-    catch
-    {
-        $resolvedUri_v3 = $_.Exception.Response.ResponseUri
-        $statusCode_v3 = [int] $_.Exception.Response.StatusCode.Value__
-    }
-
-    $Script:PSGalleryV2ApiAvailable = (($statusCode_v2 -eq 200) -and ($resolvedUri_v2))
-    $Script:PSGalleryV3ApiAvailable = (($statusCode_v3 -eq 200) -and ($resolvedUri_v3))
-}
-
-$null = Check-PSGalleryApiAvailability -PSGalleryV2ApiUri $Script:PSGallerySourceUri -PSGalleryV3ApiUri $Script:PSGalleryV3SourceUri
 
 
 Set-Alias -Name fimo -Value Find-Module
