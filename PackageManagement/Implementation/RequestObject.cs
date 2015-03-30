@@ -1,16 +1,16 @@
-//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Implementation {
     using System;
@@ -23,7 +23,7 @@ namespace Microsoft.PackageManagement.Implementation {
     using Utility.Async;
     using Utility.Extensions;
 
-    public abstract class RequestObject : AsyncAction , IRequest, IHostApi {
+    public abstract class RequestObject : AsyncAction, IRequest, IHostApi {
         private static int _c;
         protected Action<RequestObject> _action;
         private IHostApi _hostApi;
@@ -61,15 +61,15 @@ namespace Microsoft.PackageManagement.Implementation {
 
         public override void WarnBeforeResponsivenessCancellation() {
             if (CanCallHost) {
-                _hostApi.Warning((GetMessageString("MSG:ProviderNotResponsive", null) ?? "Provider '{0}' is not respecting the responsiveness threshold in a timely fashion; Canceling request." ).format(Provider.ProviderName));
-            }
-        }
-        public override void WarnBeforeTimeoutCancellation() {
-            if (CanCallHost) {
-                _hostApi.Warning((GetMessageString("MSG:ProviderTimeoutExceeded",null) ??  "Provider '{0}' is not completing the request in the time allowed; Canceling request.").format(Provider.ProviderName));
+                _hostApi.Warning((GetMessageString("MSG:ProviderNotResponsive", null) ?? "Provider '{0}' is not respecting the responsiveness threshold in a timely fashion; Canceling request.").format(Provider.ProviderName));
             }
         }
 
+        public override void WarnBeforeTimeoutCancellation() {
+            if (CanCallHost) {
+                _hostApi.Warning((GetMessageString("MSG:ProviderTimeoutExceeded", null) ?? "Provider '{0}' is not completing the request in the time allowed; Canceling request.").format(Provider.ProviderName));
+            }
+        }
 
         protected void InvokeImpl() {
             _invocationTask = Task.Factory.StartNew(() => {
@@ -88,13 +88,14 @@ namespace Microsoft.PackageManagement.Implementation {
                 } finally {
                     Complete();
                 }
-            }, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);// .ContinueWith(antecedent => Complete());
+            }, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default); // .ContinueWith(antecedent => Complete());
 
             // start thread, call function
             StartCall();
         }
 
         #region HostApi Wrapper
+
         public string DropMsgPrefix(string messageText) {
             if (string.IsNullOrWhiteSpace(messageText)) {
                 return messageText;
@@ -263,8 +264,6 @@ namespace Microsoft.PackageManagement.Implementation {
             }
         }
 
-
-
         #endregion
 
         #region response api implementation
@@ -303,6 +302,7 @@ namespace Microsoft.PackageManagement.Implementation {
             Debug("Unexpected call to AddEvidence in RequestObject");
             return null;
         }
+
         public virtual string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey) {
             Debug("Unexpected call to AddDirectory in RequestObject");
             return null;
@@ -363,7 +363,5 @@ namespace Microsoft.PackageManagement.Implementation {
         }
 
         #endregion
-
-
     }
 }

@@ -14,7 +14,7 @@
 
 namespace Microsoft.PowerShell.PackageManagement {
     using System.Management.Automation;
-    using Microsoft.PackageManagement.Utility.PowerShell;
+    using Utility;
 
     internal static class Constants {
         internal const int DefaultTimeout = 60*60; // 60 minutes
@@ -76,6 +76,11 @@ namespace Microsoft.PowerShell.PackageManagement {
             public static ErrorMessage FilePathMustBeFileSystemPath = new ErrorMessage(Messages.FilePathMustBeFileSystemPath, ErrorCategory.ObjectNotFound);
             public static ErrorMessage SavePackageError = new ErrorMessage(Messages.SavePackageError, ErrorCategory.InvalidArgument);
             public static ErrorMessage UnableToFindDependencyPackage = new ErrorMessage(Messages.UnableToFindDependencyPackage, ErrorCategory.ObjectNotFound);
+
+            public static ErrorMessage FileNotFound = new ErrorMessage(Messages.FileNotFound, ErrorCategory.ObjectNotFound);
+            public static ErrorMessage FolderNotFound = new ErrorMessage(Messages.FolderNotFound, ErrorCategory.ObjectNotFound);
+            public static ErrorMessage MoreThanOneFolderMatched = new ErrorMessage(Messages.MoreThanOneFolderMatched, ErrorCategory.ObjectNotFound);
+            public static ErrorMessage MoreThanOneFileMatched = new ErrorMessage(Messages.MoreThanOneFileMatched, ErrorCategory.ObjectNotFound);
             // ReSharper restore InconsistentNaming
         }
 
@@ -83,7 +88,10 @@ namespace Microsoft.PowerShell.PackageManagement {
 #if DEBUG
             internal const string NotImplemented = "MSG:NotImplemented";
 #endif
-
+            internal const string MoreThanOneFileMatched = "MSG:MoreThanOneFileMatched";
+            internal const string FileNotFound = "MSG:FileNotFound";
+            internal const string FolderNotFound = "MSG:FolderNotFound";
+            internal const string MoreThanOneFolderMatched = "MSG:MoreThanOneFolderMatched";
             internal const string ActionInstallPackage = "MSG:ActionInstallPackage";
             internal const string ActionRegisterPackageSource = "MSG:ActionRegisterPackageSource";
             internal const string ActionReplacePackageSource = "MSG:ActionReplacePackageSource";
@@ -147,5 +155,19 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string PackageSourceNoun = "PackageSource";
             internal const string PackageProviderNoun = "PackageProvider";
         }
+
+        internal static class Methods {
+            internal const string StopProcessingAsyncMethod = "StopProcessingAsync";
+            internal const string ProcessRecordAsyncMethod = "ProcessRecordAsync";
+            internal const string GenerateDynamicParametersMethod = "GenerateDynamicParameters";
+            internal const string BeginProcessingAsyncMethod = "BeginProcessingAsync";
+            internal const string EndProcessingAsyncMethod = "EndProcessingAsync";
+        }
+
+        internal static class Parameters {
+            internal const string ConfirmParameter = "Confirm";
+            internal const string WhatIfParameter = "WhatIf";
+        }
+
     }
 }

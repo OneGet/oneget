@@ -1,29 +1,25 @@
-//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Implementation {
     using System;
-    using System.Collections.Generic;
-    using System.Security.Cryptography;
-    using System.Xml.Linq;
     using Api;
     using Packaging;
-    using Utility.Extensions;
 
     public class SoftwareIdentityRequestObject : EnumerableRequestObject<SoftwareIdentity> {
-        private readonly string _status;
         private SoftwareIdentity _currentItem;
+        private readonly string _status;
 
         public SoftwareIdentityRequestObject(ProviderBase provider, IHostApi request, Action<RequestObject> action, string status)
             : base(provider, request, action) {
@@ -60,7 +56,7 @@ namespace Microsoft.PackageManagement.Implementation {
         }
 
         /// <summary>
-        /// Adds a metadata key/value pair to the Swidtag.
+        ///     Adds a metadata key/value pair to the Swidtag.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
@@ -73,14 +69,14 @@ namespace Microsoft.PackageManagement.Implementation {
         }
 
         /// <summary>
-        /// Adds an attribute to a 'Meta' object. If called for a Swidtag or Entity, it implicitly adds a child Meta object.
-        ///
-        /// Any other elementPath is an error and will be ignored.
+        ///     Adds an attribute to a 'Meta' object. If called for a Swidtag or Entity, it implicitly adds a child Meta object.
+        ///     Any other elementPath is an error and will be ignored.
         /// </summary>
-        /// <param name="elementPath"> the string that represents one of :
-        ///   a Swidtag (the fastPackageReference) (passing null as the elementPath will default to the swidtag)
-        ///   an Entity (the result gained from an YieldEntity(...) call )
-        ///   a Meta object (the result from previously calling AddMetadataValue(...) )
+        /// <param name="elementPath">
+        ///     the string that represents one of :
+        ///     a Swidtag (the fastPackageReference) (passing null as the elementPath will default to the swidtag)
+        ///     an Entity (the result gained from an YieldEntity(...) call )
+        ///     a Meta object (the result from previously calling AddMetadataValue(...) )
         /// </param>
         /// <param name="name">the name of the attribute to add</param>
         /// <param name="value">the value of the attribute to add</param>
@@ -131,14 +127,14 @@ namespace Microsoft.PackageManagement.Implementation {
             Activity();
 
             var swid = _currentItem;
-            return swid != null ? swid.AddFile(elementPath, fileName, location, root, isKey, size, version ) : null;
+            return swid != null ? swid.AddFile(elementPath, fileName, location, root, isKey, size, version) : null;
         }
 
         public override string AddProcess(string elementPath, string processName, int pid) {
             Activity();
 
             var swid = _currentItem;
-            return swid != null ? swid.AddProcess(elementPath, processName, pid ) : null;
+            return swid != null ? swid.AddProcess(elementPath, processName, pid) : null;
         }
 
         public override string AddResource(string elementPath, string type) {
@@ -152,7 +148,7 @@ namespace Microsoft.PackageManagement.Implementation {
             Activity();
 
             var swid = _currentItem;
-            return swid != null ? swid.AddEntity(name,regid,role,thumbprint) : null;
+            return swid != null ? swid.AddEntity(name, regid, role, thumbprint) : null;
         }
 
         public override string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact) {
@@ -165,7 +161,7 @@ namespace Microsoft.PackageManagement.Implementation {
         public override string AddDependency(string providerName, string packageName, string version, string source, string appliesTo) {
             Activity();
             var swid = _currentItem;
-            return swid != null ? swid.AddDependency(providerName, packageName, version, source, appliesTo): null;
+            return swid != null ? swid.AddDependency(providerName, packageName, version, source, appliesTo) : null;
         }
 
         protected override void Complete() {

@@ -1,16 +1,16 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Packaging {
     using System;
@@ -47,11 +47,12 @@ namespace Microsoft.PackageManagement.Packaging {
             get {
                 var stringBuilder = new StringBuilder();
 
-                var settings = new XmlWriterSettings();
-                settings.OmitXmlDeclaration = false;
-                settings.Indent = true;
-                settings.NewLineOnAttributes = true;
-                settings.NamespaceHandling = NamespaceHandling.OmitDuplicates;
+                var settings = new XmlWriterSettings {
+                    OmitXmlDeclaration = false,
+                    Indent = true,
+                    NewLineOnAttributes = true,
+                    NamespaceHandling = NamespaceHandling.OmitDuplicates
+                };
 
                 using (var xmlWriter = XmlWriter.Create(stringBuilder, settings)) {
                     _swidTag.Save(xmlWriter);
@@ -61,7 +62,16 @@ namespace Microsoft.PackageManagement.Packaging {
             }
         }
 
+        public static bool IsSwidtag(XElement xmlDocument) {
+            return xmlDocument.Name == Iso19770_2.SoftwareIdentity;
+        }
+
+        public bool IsApplicable(Hashtable environment) {
+            return MediaQuery.IsApplicable(AppliesToMedia, environment);
+        }
+
         #region Attributes
+
         public bool? IsCorpus {
             get {
                 return GetAttribute(Iso19770_2.CorpusAttribute).IsTruePreserveNull();
@@ -148,9 +158,11 @@ namespace Microsoft.PackageManagement.Packaging {
                 AddAttribute(Iso19770_2.MediaAttribute, value);
             }
         }
+
         #endregion
 
         #region Elements
+
         public IEnumerable<SoftwareMetadata> Meta {
             get {
                 return Element.Elements(Iso19770_2.Meta).Select(each => new SoftwareMetadata(each)).ReEnumerable();
@@ -178,7 +190,7 @@ namespace Microsoft.PackageManagement.Packaging {
         }
 
         internal Entity AddEntity(string name, string regId, string role) {
-            return AddElement(new Entity(name, regId ,role));
+            return AddElement(new Entity(name, regId, role));
         }
 
         /// <summary>
@@ -202,6 +214,7 @@ namespace Microsoft.PackageManagement.Packaging {
                 return Element.Elements(Iso19770_2.Payload).Select(each => new Payload(each)).FirstOrDefault();
             }
         }
+
         /// <summary>
         ///     Adds a Payload resource collection element.
         /// </summary>
@@ -244,15 +257,7 @@ namespace Microsoft.PackageManagement.Packaging {
             }
             return AddElement(new Evidence());
         }
+
         #endregion
-
-
-        public static bool IsSwidtag(XElement xmlDocument) {
-            return xmlDocument.Name == Iso19770_2.SoftwareIdentity;
-        }
-
-        public bool IsApplicable(Hashtable environment) {
-            return MediaQuery.IsApplicable(AppliesToMedia, environment);
-        }
     }
 }

@@ -1,26 +1,23 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Test.Core.Service {
-    using System;
     using System.Linq;
-    using System.Xml.Linq;
     using Implementation;
-    using PackageManagement.Packaging;
+    using Support;
     using Xunit;
     using Xunit.Abstractions;
-    using Console = Support.Console;
 
     public class PSChained1Tests : BasePmsServiceTests {
         public PSChained1Tests(ITestOutputHelper outputHelper)
@@ -69,7 +66,6 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
                 }
             }
         }
-
 
 #if grab_what_you_need
         [Fact]

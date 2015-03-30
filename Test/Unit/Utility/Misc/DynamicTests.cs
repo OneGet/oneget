@@ -1,16 +1,16 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Test.Utility.Misc {
     using System;
@@ -24,15 +24,12 @@ namespace Microsoft.PackageManagement.Test.Utility.Misc {
     using Console = Support.Console;
 
     public class DynamicTests : Tests {
-
         public DynamicTests(ITestOutputHelper output) : base(output) {
-
         }
 
         [Fact]
         public void TestAssumptionAboutParams() {
             using (CaptureConsole) {
-
                 var a = ItemsViaParams("very", "happy", "person");
                 var b = ItemsWithoutParams(new[] {
                     "very", "happy", "person"
@@ -44,7 +41,6 @@ namespace Microsoft.PackageManagement.Test.Utility.Misc {
                 Assert.True(c.SequenceEqual(b));
 
                 var items = Flatten(a, "more").ToArray();
-
 
                 foreach (var i in items) {
                     Console.WriteLine(i);
@@ -61,7 +57,6 @@ namespace Microsoft.PackageManagement.Test.Utility.Misc {
                 }
             }
         }
-
 
         private IEnumerable<object> Flatten(IEnumerable<object> items) {
             if (items == null) {
@@ -85,9 +80,9 @@ namespace Microsoft.PackageManagement.Test.Utility.Misc {
         }
 
         internal static object[] ItemsViaParams(params object[] items) {
-
             return items;
         }
+
         internal static object[] ItemsWithoutParams(object[] items) {
             return items;
         }
@@ -118,7 +113,6 @@ namespace Microsoft.PackageManagement.Test.Utility.Misc {
         }
 
         public void SampleMethod(int a, int b, string c, Func<object, Int32> d) {
-
         }
 
         [Fact]
@@ -132,6 +126,7 @@ namespace Microsoft.PackageManagement.Test.Utility.Misc {
                 // IOneAndTwo iBoth = foobar;
             }
         }
+
         public interface IOne {
             void Foo();
         }
@@ -141,31 +136,26 @@ namespace Microsoft.PackageManagement.Test.Utility.Misc {
         }
 
         public interface IOneAndTwo : IOne, ITwo {
-
         }
 
         public class FooBar : IOne, ITwo {
             public void Foo() {
-
             }
 
             public void Bar() {
-
             }
         }
     }
 
-
     public class PackageProviderProxy {
-        public readonly Func<string, string, bool > AddPackageSource;
+        public delegate bool AddPackageSourceDelegate(string name, string location);
+
+        public readonly Func<string, string, bool> AddPackageSource;
         public readonly AddPackageSourceDelegate AddPackageSource2;
         public readonly AddPackageSourceDelegate AddPackageSource3;
         public readonly AddPackageSourceDelegate AddPackageSource4;
 
-        public delegate bool AddPackageSourceDelegate(string name, string location);
-
         public PackageProviderProxy(object instance) {
-
 #if OLD_SAD_WAY
             var createDelegate = instance.CreateProxiedDelegate<CreateDelegate>("CreateDelegate" );
 
@@ -181,20 +171,11 @@ namespace Microsoft.PackageManagement.Test.Utility.Misc {
 #endif
         }
 
-        public PackageProviderProxy(Type type): this(Activator.CreateInstance(type)) {
+        public PackageProviderProxy(Type type) : this(Activator.CreateInstance(type)) {
         }
-
-
-
-
     }
 
     public class PPInstance {
-        public bool AddPackageSource(string name, string location) {
-            Console.WriteLine("name: {0}, location: {1}",name, location);
-            return true;
-        }
-
         public Func<string, string, bool> AddPackageSourceFunc {
             get {
                 return (s, s1) => {
@@ -202,6 +183,11 @@ namespace Microsoft.PackageManagement.Test.Utility.Misc {
                     return true;
                 };
             }
+        }
+
+        public bool AddPackageSource(string name, string location) {
+            Console.WriteLine("name: {0}, location: {1}", name, location);
+            return true;
         }
 
         public Delegate CreateDelegate(string method, string[] parameterNames, Type[] parameterTypes, Type returnType) {
@@ -213,7 +199,6 @@ namespace Microsoft.PackageManagement.Test.Utility.Misc {
             }
             return null;
         }
-
     }
 
     // So:
@@ -221,9 +206,7 @@ namespace Microsoft.PackageManagement.Test.Utility.Misc {
     // and then generate the Constructor which takes an object instance.
 
     public interface IPretendProvider {
-
         bool AddPackageSource(string name, string location);
-
     }
 
     //internal delegate Delegate CreateDelegate(string memberName);
@@ -231,7 +214,4 @@ namespace Microsoft.PackageManagement.Test.Utility.Misc {
     public interface IDelegateCreator {
         Delegate CreateDelegate(string memberName, IEnumerable<string> pNames, IEnumerable<Type> pTypes, Type returnType);
     }
-
-
-
 }

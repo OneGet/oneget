@@ -1,21 +1,20 @@
-//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Packaging {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using Utility.Extensions;
 
     public class SoftwareIdentityVersionComparer : IComparer<SoftwareIdentity> {
@@ -57,7 +56,6 @@ namespace Microsoft.PackageManagement.Packaging {
                 return 1;
             }
 
-
             switch ((versionScheme ?? "unknown").ToLowerInvariant()) {
                 case "alphanumeric":
                     // string sort
@@ -98,7 +96,7 @@ namespace Microsoft.PackageManagement.Packaging {
             }
 
             // if they both start with numbers, we're going to treat them as multipart numeric with suffix.
-            if (xVersion.IndexWhere(ch => ch >= '0' && ch <= '9') == 0 && yVersion.IndexWhere(ch => ch >= '0' && ch <= '9') == 0  ) {
+            if (xVersion.IndexWhere(ch => ch >= '0' && ch <= '9') == 0 && yVersion.IndexWhere(ch => ch >= '0' && ch <= '9') == 0) {
                 return CompareMultipartNumericSuffix(xVersion, yVersion);
             }
 
@@ -187,7 +185,7 @@ namespace Microsoft.PackageManagement.Packaging {
         }
 
         private static int IndexOfNonNumericWithDots(string version) {
-            return string.IsNullOrEmpty(version) ? -1 : version.IndexWhere(ch => (ch < '0' || ch > '9') && ch != '.' );
+            return string.IsNullOrEmpty(version) ? -1 : version.IndexWhere(ch => (ch < '0' || ch > '9') && ch != '.');
         }
     }
 }

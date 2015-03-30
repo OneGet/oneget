@@ -33,9 +33,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
@@ -43,7 +45,6 @@
     <Compile Include="ErrorCategory.cs" />
     <Compile Include="Implementation\ActionRequestObject.cs" />
     <Compile Include="Implementation\EnumerableRequestObject.cs" />
-    <Compile Include="Implementation\Delegates.cs" />
     <Compile Include="Implementation\DictionaryRequestObject.cs" />
     <Compile Include="Implementation\DynamicOptionRequestObject.cs" />
     <Compile Include="Implementation\FuncRequestObject.cs" />
@@ -84,7 +85,6 @@
     <Compile Include="Api\IHostAPI.cs" />
     <Compile Include="Packaging\Entity.cs" />
     <Compile Include="Packaging\Evidence.cs" />
-    <Compile Include="Packaging\InstallationOptions.cs" />
     <Compile Include="Packaging\Link.cs" />
     <Compile Include="Packaging\Meta.cs" />
     <Compile Include="Packaging\SoftwareIdentity.cs" />
@@ -105,21 +105,84 @@
       <DependentUpon>Messages.resx</DependentUpon>
     </Compile>
     <Compile Include="Packaging\Swidtag.cs" />
+    <Compile Include="Utility\Async\AsyncAction.cs" />
+    <Compile Include="Utility\Async\AsyncActionExtensions.cs" />
+    <Compile Include="Utility\Async\EmptyAsyncEnumerable.cs" />
+    <Compile Include="Utility\Async\IAsyncAction.cs" />
+    <Compile Include="Utility\Async\IAsyncEnumerable.cs" />
+    <Compile Include="Utility\Async\IAsyncValue.cs" />
+    <Compile Include="Utility\Collections\BlockingCollection.cs" />
+    <Compile Include="Utility\Collections\CancellableEnumerator.cs" />
+    <Compile Include="Utility\Collections\EnumerableExtensions.cs" />
+    <Compile Include="Utility\Collections\FilenameEqualityComparer.cs" />
+    <Compile Include="Utility\Collections\ICancellableEnumerator.cs" />
+    <Compile Include="Utility\Collections\List.cs" />
+    <Compile Include="Utility\Collections\MutableEnumerable.cs" />
+    <Compile Include="Utility\Collections\OrderedDictionary.cs" />
+    <Compile Include="Utility\Collections\PathEqualityComparer.cs" />
+    <Compile Include="Utility\Collections\ReEnumerable.cs" />
+    <Compile Include="Utility\Extensions\CollectionExtensions.cs" />
+    <Compile Include="Utility\Extensions\DelegateExtensions.cs" />
+    <Compile Include="Utility\Extensions\DictionaryExtensions.cs" />
+    <Compile Include="Utility\Extensions\ExceptionExtensions.cs" />
+    <Compile Include="Utility\Extensions\FilesystemExtensions.cs" />
+    <Compile Include="Utility\Extensions\HashtableExtensions.cs" />
+    <Compile Include="Utility\Extensions\Singleon.cs" />
+    <Compile Include="Utility\Extensions\StringExtensions.cs" />
+    <Compile Include="Utility\Extensions\TaskExtensions.cs" />
+    <Compile Include="Utility\Extensions\ThreadPerTaskScheduler.cs" />
+    <Compile Include="Utility\Extensions\TwoTypes.cs" />
+    <Compile Include="Utility\Extensions\Types.cs" />
+    <Compile Include="Utility\Extensions\XmlExtensions.cs" />
+    <Compile Include="Utility\Platform\AdminPrivilege.cs" />
+    <Compile Include="Utility\Platform\AsyncProcess.cs" />
+    <Compile Include="Utility\Platform\Manifest.cs" />
+    <Compile Include="Utility\Platform\MoveFileFlags.cs" />
+    <Compile Include="Utility\Platform\NativeMethods.cs" />
+    <Compile Include="Utility\Platform\WinTrustData.cs" />
+    <Compile Include="Utility\Platform\WinTrustFileInfo.cs" />
+    <Compile Include="Utility\Plugin\AssignableTypeComparer.cs" />
+    <Compile Include="Utility\Plugin\DynamicInterface.cs" />
+    <Compile Include="Utility\Plugin\DynamicInterfaceExtensions.cs" />
+    <Compile Include="Utility\Plugin\DynamicType.cs" />
+    <Compile Include="Utility\Plugin\DynamicTypeExtensions.cs" />
+    <Compile Include="Utility\Plugin\FluentIlExtensions.cs" />
+    <Compile Include="Utility\Plugin\RequiredAttribute.cs" />
+    <Compile Include="Utility\Plugin\WrappedAction.cs">
+      <DependentUpon>WrappedAction.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Utility\Plugin\WrappedDelegate.cs" />
+    <Compile Include="Utility\Plugin\WrappedFunc.cs">
+      <DependentUpon>WrappedFunc.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Utility\Versions\FourPartVersion.cs" />
+    <Compile Include="Utility\Versions\TwoPartVersion.cs" />
+    <Compile Include="Utility\Xml\DynamicAttributes.cs" />
+    <Compile Include="Utility\Xml\DynamicElement.cs" />
+    <Compile Include="Utility\Xml\DynamicElementEnumerable.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Utility\Utility.csproj">
-      <Project>{7044b856-6d51-498f-8192-01f219908192}</Project>
-      <Name>Utility</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Messages.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Messages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Utility\Plugin\WrappedAction.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>WrappedAction.cs</LastGenOutput>
+    </None>
+    <None Include="Utility\Plugin\WrappedFunc.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>WrappedFunc.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

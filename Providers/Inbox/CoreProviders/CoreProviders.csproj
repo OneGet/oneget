@@ -58,10 +58,6 @@
       <Project>{7044b856-6d51-498f-90f9-01f219909f79}</Project>
       <Name>PackageManagement</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Utility\Utility.csproj">
-      <Project>{7044B856-6D51-498F-8192-01F219908192}</Project>
-      <Name>Utility</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

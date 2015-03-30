@@ -22,7 +22,6 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using Api;
     using Utility.Collections;
     using Utility.Extensions;
-    using Utility.PowerShell;
     using Utility.Versions;
 
 
@@ -32,7 +31,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
         private readonly Lazy<Dictionary<int, List<string>>> _findByFileBatches = new Lazy<Dictionary<int, List<string>>>(() => new Dictionary<int, List<string>>());
         private readonly Lazy<Dictionary<int, List<Uri>>> _findByUriBatches = new Lazy<Dictionary<int, List<Uri>>>(() => new Dictionary<int, List<Uri>>());
 
-        public PowerShellPackageProvider(DynamicPowershell ps, PSModuleInfo module) : base(ps, module) {
+        public PowerShellPackageProvider(PowerShell ps, PSModuleInfo module) : base(ps, module) {
         }
 
         private bool IsFirstParameterType<T>(string function) {
@@ -277,13 +276,6 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 }
             }
         }
-        public void ExecuteElevatedAction(string payload, IRequest requestObject){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
-
-        }
-
         #endregion
 
     }

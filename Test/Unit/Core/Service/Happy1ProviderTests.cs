@@ -1,29 +1,30 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
+
 namespace Microsoft.PackageManagement.Test.Core.Service {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Host;
+    using PackageManagement.Packaging;
     using PackageManagement.Utility.Async;
     using PackageManagement.Utility.Extensions;
-    using Packaging;
+    using Sdk;
     using TestProviders;
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
-    using Microsoft.PackageManagement.Packaging;
+    using Constants = PackageManagement.Constants;
 
     public class Happy1ProviderTests : UsingOneProvider {
         public Happy1ProviderTests(ITestOutputHelper outputHelper) : base(outputHelper, "Happy1") {
@@ -63,17 +64,17 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
                 Assert.NotNull(Provider.Features);
 
                 // our test features should tell us they are for testing
-                Assert.True( Provider.Features.ContainsKey(Sdk.Constants.Features.Test));
+                Assert.True(Provider.Features.ContainsKey(Sdk.Constants.Features.Test));
             }
         }
 
         [Fact]
         public void TestDynamicOptions() {
             using (CaptureConsole) {
-                lock(Provider) {
+                lock (Provider) {
                     Reset();
 
-                    var opt_install = Provider.GetDynamicOptions(OptionCategory.Install,Host());
+                    var opt_install = Provider.GetDynamicOptions(OptionCategory.Install, Host());
 
                     opt_install.Wait();
                     var opts = opt_install.ToArray();
@@ -111,7 +112,6 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
                     Assert.Equal("provider_1", opts[0].Name);
                     Assert.Equal(new[] {"one", "two", "three"}, opts[0].PossibleValues);
 
-
                     var opt_source = Provider.GetDynamicOptions(OptionCategory.Source, Host());
                     AssertNoErrors();
                     opts = opt_source.ToArray();
@@ -130,7 +130,7 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
         [Fact]
         public void ResolvePackageSourceTest() {
             using (CaptureConsole) {
-                lock(Provider) {
+                lock (Provider) {
                     Reset();
 
                     Console.WriteLine("hi");
@@ -154,7 +154,6 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
                     Assert.Equal("location2", sources[0].Location);
                     Assert.Equal(_providerName, sources[0].ProviderName);
                     Assert.Equal(Provider, sources[0].Provider);
-
                 }
             }
         }
@@ -162,14 +161,14 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
         [Fact]
         public void AddPackageSourceTest() {
             using (CaptureConsole) {
-                lock(Provider) {
+                lock (Provider) {
                     Reset();
 
                     // simple add a package source
                     var addedSources = Provider.AddPackageSource("srcname", "srcLocation", false, Host()).ToArray();
                     AssertNoErrors();
-                    Assert.Equal(1, addedSources.Length );
-                    Assert.Equal( "srcname", addedSources[0].Name );
+                    Assert.Equal(1, addedSources.Length);
+                    Assert.Equal("srcname", addedSources[0].Name);
                     Assert.Equal("srcLocation", addedSources[0].Location);
                     Assert.True(addedSources[0].IsRegistered);
                     Assert.False(addedSources[0].IsTrusted);
@@ -177,14 +176,13 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
 
                     // simple update a package source
                     addedSources = Provider.AddPackageSource("srcname", "srcLocation2", true, Host(new {
-
                         // tell the client that it's an update
-                        GetOptionValues = new Func<string,IEnumerable<string>>(key => {
+                        GetOptionValues = new Func<string, IEnumerable<string>>(key => {
                             if (key == Constants.Parameters.IsUpdate) {
                                 return "true".SingleItemAsEnumerable();
                             }
                             return null;
-                        } )
+                        })
                     })).ToArray();
                     AssertNoErrors();
 
@@ -198,8 +196,7 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
                     // should error on overwrite without isUpdate
                     addedSources = Provider.AddPackageSource("srcname", "srcLocation2", true, Host()).ToArray();
                     Assert.Equal(1, ErrorCount);
-                    Assert.Equal(0, addedSources.Length );
-
+                    Assert.Equal(0, addedSources.Length);
                 }
             }
         }
@@ -243,7 +240,7 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
 
                 var packages = Provider.FindPackage(null, null, null, null, 0, Host()).ToArray();
                 AssertNoErrors();
-                Assert.Equal( 5, packages.Length );
+                Assert.Equal(5, packages.Length);
             }
         }
 
@@ -275,7 +272,6 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
             }
         }
 
-
         [Fact]
         public void UninstallPackageTest() {
             using (CaptureConsole) {
@@ -286,7 +282,7 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
         [Fact]
         public void IsSupportedFile() {
             using (CaptureConsole) {
-               Reset();
+                Reset();
             }
         }
 
@@ -302,55 +298,6 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
             using (CaptureConsole) {
                 Reset();
             }
-            /*
-
-
-             *
-            PackageProvider a;
-            a.AddPackageSource();
-            a.RemovePackageSource();
-
-            a.StartFind();
-            a.CompleteFind();
-
-            a.DownloadPackage();
-
-            a.ExecuteElevatedAction();
-
-
-            a.FindPackage();
-            a.FindPackageByFile();
-            a.FindPackageByUri();
-
-            a.FindPackages();
-            a.FindPackagesByFiles();
-            a.FindPackagesByUris();
-
-            a.GetInstalledPackages();
-
-            a.InstallPackage();
-            a.UninstallPackage();
-
-            a.IsSupportedFile();
-
-            a.IsSupportedFile();
-
-            a.IsSupportedFileName();
-
-            a.IsSupportedScheme();
-
-
-
-
-
-            a.Features;
-            a.DynamicOptions;
-            a.Initialize();
-            a.ResolvePackageSources();
-            a.Name;
-            a.ProviderName;
-
-            */
         }
     }
 }

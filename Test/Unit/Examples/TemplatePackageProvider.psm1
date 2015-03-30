@@ -421,18 +421,4 @@ function Resolve-PackageSource {
     #  $null;
 }
 
-<# 
-
-#>
-function Execute-ElevatedAction { 
-    param(
-        [string] $payload
-    )
-    # TODO: Fill in implementation
-    # Delete this method if you do not need to implement it
-
-    # expected return type : void
-    #  $null;
-}
-
 #endregion

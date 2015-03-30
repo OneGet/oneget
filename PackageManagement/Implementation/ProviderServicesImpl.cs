@@ -1,16 +1,16 @@
-//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Implementation {
     using System;
@@ -22,8 +22,7 @@ namespace Microsoft.PackageManagement.Implementation {
     using Utility.Extensions;
     using Utility.Platform;
     using Utility.Plugin;
-    using Directory = System.IO.Directory;
-    using File = System.IO.File;
+    using Process = System.Diagnostics.Process;
 
     internal class ProviderServicesImpl : IProviderServices {
         internal static IProviderServices Instance = new ProviderServicesImpl();
@@ -85,7 +84,6 @@ namespace Microsoft.PackageManagement.Implementation {
             }
 
             if (!request.IsCanceled) {
-
                 // check the Uri type, see if we have anyone who can handle that
                 // if so, call that provider's download file
                 if (remoteLocation == null) {
@@ -128,305 +126,12 @@ namespace Microsoft.PackageManagement.Implementation {
             return Enumerable.Empty<string>();
         }
 
-        public void AddPinnedItemToTaskbar(string item, IRequest request) {
-            if (request == null) {
-                throw new ArgumentNullException("request");
-            }
-
-            if (!request.IsCanceled) {
-                request.Debug("Calling 'ProviderService::AddPinnedItemToTaskbar'");
-                ShellApplication.Pin(item);
-            }
-        }
-
-        public void RemovePinnedItemFromTaskbar(string item, IRequest request) {
-            if (request == null) {
-                throw new ArgumentNullException("request");
-            }
-
-            if (!request.IsCanceled) {
-
-                request.Debug("Calling 'ProviderService::RemovePinnedItemFromTaskbar'");
-                ShellApplication.Unpin(item);
-            }
-        }
-
-        public void CreateShortcutLink(string linkPath, string targetPath, string description, string workingDirectory, string arguments, IRequest request) {
-            if (request == null) {
-                throw new ArgumentNullException("request");
-            }
-
-            if (!request.IsCanceled) {
-                request.Debug("Calling 'ProviderService::CreateShortcutLink'");
-
-                if (File.Exists(linkPath)) {
-                    Verbose(request,"Creating Shortcut '{0}' => '{1}'", linkPath, targetPath);
-                    ShellLink.CreateShortcut(linkPath, targetPath, description, workingDirectory, arguments);
-                }
-                Error(request, ErrorCategory.InvalidData, targetPath, Constants.Messages.UnableToCreateShortcutTargetDoesNotExist, targetPath);
-            }
-        }
-
-        public void SetEnvironmentVariable(string variable, string value, string context, IRequest request) {
-            if (request == null) {
-                throw new ArgumentNullException("request");
-            }
-
-            if (!request.IsCanceled) {
-                if (context == null) {
-                    throw new ArgumentNullException("context");
-                }
-
-                request.Debug("Calling 'ProviderService::SetEnvironmentVariable'");
-                if (String.IsNullOrWhiteSpace(value)) {
-                    RemoveEnvironmentVariable(variable, context, request);
-                }
-
-                switch (context.ToLowerInvariant()) {
-                    case "system":
-                        if (!IsElevated) {
-                            Warning(request,"SetEnvironmentVariable Failed - Admin Elevation required to set variable '{0}' in machine context", variable);
-                            return;
-                        }
-                        Verbose(request,"SetEnvironmentVariable (machine) '{0}' = '{1}'", variable, value);
-                        Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.Machine);
-                        break;
-
-                    default:
-                        Verbose(request,"SetEnvironmentVariable (user) '{0}' = '{1}'", variable, value);
-                        Environment.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User);
-                        break;
-                }
-                Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Process);
-            }
-        }
-
-        public void RemoveEnvironmentVariable(string variable, string context, IRequest request) {
-            if (request == null) {
-                throw new ArgumentNullException("request");
-            }
-
-            if (!request.IsCanceled) {
-
-                if (context == null) {
-                    throw new ArgumentNullException("context");
-                }
-
-                request.Debug("Calling 'ProviderService::RemoveEnvironmentVariable'");
-
-                if (String.IsNullOrWhiteSpace(variable)) {
-                    return;
-                }
-
-                switch (context.ToLowerInvariant()) {
-                    case "user":
-                        Verbose(request,"RemoveEnvironmentVariable (user)--'{0}'", variable);
-                        Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
-                        break;
-
-                    case "system":
-                        if (!IsElevated) {
-                            Warning(request, Constants.Messages.RemoveEnvironmentVariableRequiresElevation, variable);
-                            return;
-                        }
-                        Verbose(request,"RemoveEnvironmentVariable (machine)", "'{0}'", variable);
-                        Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Machine);
-                        break;
-
-                    default:
-                        Verbose(request,"RemoveEnvironmentVariable (all) '{0}'", variable);
-                        Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.User);
-                        Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Machine);
-                        break;
-                }
-                Environment.SetEnvironmentVariable(variable, null, EnvironmentVariableTarget.Process);
-            }
-        }
-
-        public void CopyFile(string sourcePath, string destinationPath, IRequest request) {
-            if (request == null) {
-                throw new ArgumentNullException("request");
-            }
-
-            if (!request.IsCanceled) {
-                request.Debug("Calling 'ProviderService::CopyFile'");
-                if (sourcePath == null) {
-                    throw new ArgumentNullException("sourcePath");
-                }
-                if (destinationPath == null) {
-                    throw new ArgumentNullException("destinationPath");
-                }
-                if (File.Exists(destinationPath)) {
-                    destinationPath.TryHardToDelete();
-                    if (File.Exists(destinationPath)) {
-                        Error(request, ErrorCategory.OpenError, destinationPath, Constants.Messages.UnableToOverwriteExistingFile, destinationPath);
-                    }
-                }
-                File.Copy(sourcePath, destinationPath);
-                if (!File.Exists(destinationPath)) {
-                    Error(request, ErrorCategory.InvalidResult, destinationPath, Constants.Messages.UnableToCopyFileTo, destinationPath);
-                }
-            }
-        }
-
-        public void Delete(string path, IRequest request) {
-            if (request == null) {
-                throw new ArgumentNullException("request");
-            }
-
-            if (!request.IsCanceled) {
-                request.Debug("Calling 'ProviderService::Delete'");
-                if (String.IsNullOrWhiteSpace(path)) {
-                    return;
-                }
-
-                path.TryHardToDelete();
-            }
-        }
-
-        public void DeleteFolder(string folder, IRequest request) {
-            if (request == null) {
-                throw new ArgumentNullException("request");
-            }
-
-            if (!request.IsCanceled) {
-                request.Debug("Calling 'ProviderService::DeleteFolder' {0}".format(folder));
-                if (String.IsNullOrWhiteSpace(folder)) {
-                    return;
-                }
-                if (Directory.Exists(folder)) {
-                    folder.TryHardToDelete();
-                }
-            }
-        }
-
-        public void CreateFolder(string folder, IRequest request) {
-            if (request == null) {
-                throw new ArgumentNullException("request");
-            }
-
-            if (!request.IsCanceled) {
-                request.Debug("Calling 'ProviderService::CreateFolder'");
-
-                if (!Directory.Exists(folder)) {
-                    try {
-                        Directory.CreateDirectory(folder);
-                        Verbose(request,"CreateFolder Success {0}" ,folder);
-                        return;
-                    } catch (Exception e) {
-                        Error(request, ErrorCategory.InvalidResult, folder, Constants.Messages.CreatefolderFailed, folder, e.Message);
-                        return;
-                    }
-                }
-                Verbose(request, "CreateFolder -- Already Exists {0}", folder);
-            }
-        }
-        public bool Error(IRequest request,ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
-            return request.Error(messageText, category.ToString(), targetObjectValue, request.FormatMessageString(messageText, args));
-        }
-
-        public bool Warning(IRequest request, string messageText, params object[] args) {
-            return request.Warning(request.FormatMessageString(messageText, args));
-        }
-
-        public bool Message(IRequest request, string messageText, params object[] args) {
-            return request.Message(request.FormatMessageString(messageText, args));
-        }
-
-        public bool Verbose(IRequest request, string messageText, params object[] args) {
-            return request.Verbose(request.FormatMessageString(messageText, args));
-        }
-
-        public bool Debug(IRequest request, string messageText, params object[] args) {
-            return request.Debug(request.FormatMessageString(messageText, args));
-        }
-
-        public void DeleteFile(string filename, IRequest request) {
-            if (request == null) {
-                throw new ArgumentNullException("request");
-            }
-
-            if (!request.IsCanceled) {
-
-                request.Debug("Calling 'ProviderService::DeleteFile'");
-                if (String.IsNullOrWhiteSpace(filename)) {
-                    return;
-                }
-
-                if (File.Exists(filename)) {
-                    filename.TryHardToDelete();
-                }
-            }
-        }
-
-        public string GetKnownFolder(string knownFolder, IRequest request) {
-            if (request == null) {
-                throw new ArgumentNullException("request");
-            }
-
-            if (!request.IsCanceled) {
-
-                request.Debug("Calling 'ProviderService::GetKnownFolder'");
-                if (!String.IsNullOrWhiteSpace(knownFolder)) {
-                    if (knownFolder.Equals("tmp", StringComparison.OrdinalIgnoreCase) || knownFolder.Equals("temp", StringComparison.OrdinalIgnoreCase)) {
-                        return FilesystemExtensions.TempPath;
-                    }
-
-                    if (knownFolder.Equals("SystemAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
-                        return PackageManagementService.SystemAssemblyLocation;
-                    }
-
-                    if (knownFolder.Equals("UserAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
-                        return PackageManagementService.UserAssemblyLocation;
-                    }
-
-                    if (knownFolder.Equals("ProviderAssemblyLocation", StringComparison.OrdinalIgnoreCase)) {
-                        return AdminPrivilege.IsElevated ? PackageManagementService.SystemAssemblyLocation : PackageManagementService.UserAssemblyLocation;
-                    }
-
-                    KnownFolder folder;
-                    if (Enum.TryParse(knownFolder, true, out folder)) {
-                        return KnownFolders.GetFolderPath(folder);
-                    }
-                }
-
-                Error(request,ErrorCategory.InvalidArgument, knownFolder, Constants.Messages.UnknownFolderId, knownFolder);
-            }
-            return null;
-        }
-
-        public string CanonicalizePath(string path, string currentDirectory) {
-            if (String.IsNullOrWhiteSpace(path)) {
-                return null;
-            }
-
-            return path.CanonicalizePath(!String.IsNullOrWhiteSpace(currentDirectory));
-        }
-
-        public bool FileExists(string path) {
-            if (String.IsNullOrWhiteSpace(path)) {
-                return false;
-            }
-
-            return path.FileExists();
-        }
-
-        public bool DirectoryExists(string path) {
-            if (String.IsNullOrWhiteSpace(path)) {
-                return false;
-            }
-            return path.DirectoryExists();
-        }
-
         public bool Install(string fileName, string additionalArgs, IRequest request) {
             if (request == null) {
                 throw new ArgumentNullException("request");
             }
 
             if (!request.IsCanceled) {
-
-
-
                 if (String.IsNullOrWhiteSpace(fileName)) {
                     return false;
                 }
@@ -448,7 +153,7 @@ namespace Microsoft.PackageManagement.Implementation {
                                     return request.GetOptionValues(key);
                                 })
                             }))) {
-                                Debug(request,"Installed internal package {0}", installedPackage.Name);
+                                Debug(request, "Installed internal package {0}", installedPackage.Name);
                             }
                         }
                         return true;
@@ -464,12 +169,11 @@ namespace Microsoft.PackageManagement.Implementation {
             }
 
             if (!request.IsCanceled) {
-
-                if (String.IsNullOrWhiteSpace(filename) || !FileExists(filename)) {
+                if (String.IsNullOrWhiteSpace(filename) || !filename.FileExists()) {
                     return false;
                 }
 
-                Debug(request,"Calling 'ProviderService::IsSignedAndTrusted, '{0}'", filename);
+                Debug(request, "Calling 'ProviderService::IsSignedAndTrusted, '{0}'", filename);
 
                 var wtd = new WinTrustData(filename);
                 var result = NativeMethods.WinVerifyTrust(new IntPtr(-1), new Guid("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}"), wtd);
@@ -478,79 +182,12 @@ namespace Microsoft.PackageManagement.Implementation {
             return false;
         }
 
-        public bool ExecuteElevatedAction(string provider, string payload, IRequest request) {
-            if (request == null) {
-                throw new ArgumentNullException("request");
-            }
+        public int StartProcess(string filename, string arguments, bool requiresElevation, out string standardOutput, IRequest requestObject) {
+            Process p = new Process();
 
-            if (!request.IsCanceled) {
-#if WHAT_DO_WE_DO_TO_REMOTE_BETWEEN_PROCESSES_WITHOUT_REMOTING_HUH
-            if (request == null) {
-                throw new ArgumentNullException("request");
-
-            }
-
-            // launches a new elevated host that
-            // talks back to this (unelevated) host for everything in HostApi
-            // everything else should be handled in the new process.
-            var guid = Guid.NewGuid();
-
-            var properties = new Hashtable();
-            properties.Add("portName", "PackageManagement_" + guid);
-            properties.Add("authorizedGroup", "Administrators");
-            properties.Add("secure", "true");
-            properties.Add("exclusiveAddressUse", "true");
-            properties.Add("strictBinding", "false");
-            properties.Add("name", "PackageManagementHost");
-
-            // set up the server IPC channel
-            var serverChannel = new IpcServerChannel(properties, new BinaryServerFormatterSinkProvider(properties, null));
-
-            ChannelServices.RegisterChannel(serverChannel, true);
-
-            var instance = new RemotableHostApi(requestObject.As<IHostApi>());
-
-            var objRef = RemotingServices.Marshal(instance, "Host", typeof (IHostApi));
-            var remoteUris = serverChannel.GetUrlsForUri("Host");
-            var uri = remoteUris[0];
-            // Create the client elevated
-            try {
-                var process = AsyncProcess.Start(new ProcessStartInfo {
-                    FileName = Assembly.GetExecutingAssembly().Location,
-                    Arguments = "{0} {1} {2}".format( uri, provider, (string.IsNullOrWhiteSpace(payload) ? "null" : payload).ToBase64()),
-#if !DEBUG
-                    WindowStyle = ProcessWindowStyle.Hidden,
-#endif
-                    Verb = "runas",
-                });
-
-                process.WaitForExit();
-                if (process.ExitCode != 0) {
-                    return false;
-                }
-            } catch (Exception e) {
-                e.Dump();
-                return false;
-            } finally {
-                RemotingServices.Disconnect(instance);
-                ChannelServices.UnregisterChannel(serverChannel);
-            }
-            return true;
-#endif
-            }
-            return false;
-        }
-
-        public int StartProcess(string filename, string arguments, bool requiresElevation, out string standardOutput, IRequest requestObject)
-        {
-            System.Diagnostics.Process p = new System.Diagnostics.Process();
-
-            if (requiresElevation)
-            {
+            if (requiresElevation) {
                 p.StartInfo.UseShellExecute = true;
-            }
-            else
-            {
+            } else {
                 p.StartInfo.UseShellExecute = false;
                 p.StartInfo.RedirectStandardOutput = true;
             }
@@ -558,25 +195,41 @@ namespace Microsoft.PackageManagement.Implementation {
             p.StartInfo.CreateNoWindow = true;
             p.StartInfo.FileName = filename;
 
-            if (!String.IsNullOrEmpty(arguments))
-            {
+            if (!String.IsNullOrEmpty(arguments)) {
                 p.StartInfo.Arguments = arguments;
             }
 
             p.Start();
 
-            if (p.StartInfo.RedirectStandardOutput)
-            {
+            if (p.StartInfo.RedirectStandardOutput) {
                 standardOutput = p.StandardOutput.ReadToEnd();
-            }
-            else
-            {
+            } else {
                 standardOutput = String.Empty;
             }
 
             p.WaitForExit();
 
             return p.ExitCode;
+        }
+
+        public bool Error(IRequest request, ErrorCategory category, string targetObjectValue, string messageText, params object[] args) {
+            return request.Error(messageText, category.ToString(), targetObjectValue, request.FormatMessageString(messageText, args));
+        }
+
+        public bool Warning(IRequest request, string messageText, params object[] args) {
+            return request.Warning(request.FormatMessageString(messageText, args));
+        }
+
+        public bool Message(IRequest request, string messageText, params object[] args) {
+            return request.Message(request.FormatMessageString(messageText, args));
+        }
+
+        public bool Verbose(IRequest request, string messageText, params object[] args) {
+            return request.Verbose(request.FormatMessageString(messageText, args));
+        }
+
+        public bool Debug(IRequest request, string messageText, params object[] args) {
+            return request.Debug(request.FormatMessageString(messageText, args));
         }
     }
 }

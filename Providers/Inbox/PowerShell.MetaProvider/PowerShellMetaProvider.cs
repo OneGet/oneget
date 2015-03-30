@@ -1,32 +1,26 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
     using System.Reflection;
-    using System.Threading.Tasks;
-    using Api;
     using Utility.Extensions;
-    using Utility.Plugin;
-    using Utility.PowerShell;
 
     /// <summary>
     ///     A  MetaProvider class that loads Providers implemented as a PowerShell Module.
@@ -98,9 +92,10 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             "OneGet-Edge" // dont' search ourselves.
         };
 
+        private static string _baseFolder;
+        private static string _powersehllProviderFunctionsPath;
         private readonly Dictionary<string, PowerShellPackageProvider> _packageProviders = new Dictionary<string, PowerShellPackageProvider>(StringComparer.OrdinalIgnoreCase);
 
-        private static string _baseFolder;
         internal static string BaseFolder {
             get {
                 if (_baseFolder == null) {
@@ -113,7 +108,6 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             }
         }
 
-        private static string _powersehllProviderFunctionsPath;
         internal static string PowerShellProviderFunctions {
             get {
                 if (_powersehllProviderFunctionsPath == null) {
@@ -176,14 +170,6 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             }
         }
 
-        private IEnumerable<PSModuleInfo> ModulesFromResult(DynamicPowershellResult result) {
-            if (result.Success && result.Value != null) {
-                foreach (var module in result.OfType<PSModuleInfo>()) {
-                    yield return module;
-                }
-            }
-        }
-
         private IEnumerable<string> GetPackageManagementModules(PSModuleInfo module) {
             // skip modules that we know don't contain any PM modules
             if (!_exclusionList.Contains(module.Name)) {
@@ -202,31 +188,25 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             // 2. modules in the PSMODULEPATH
             //
             // Import each one of those, and check to see if they have a PackageManagementProviders section in their private data
-
-            using (var ps = new DynamicPowershell()) {
-
-                // load the powershell functions into this runspace in case something needed it on module load.
-                var psf = ps.ImportModule(PowerShellProviderFunctions, true);
-
-                // scan all the ps modules in the folders provided
-                foreach (var each in AlternativeModuleScan(request)) {
-                    foreach (var ogModule in ps.TestModuleManifest(each).SelectMany(GetPackageManagementModules)) {
-                        yield return ogModule;
-                    }
+            using (var ps1 = PowerShell.Create()) {
+                if (ps1.ImportModule(PowerShellProviderFunctions) != null) {
+                    return AlternativeModuleScan(request).SelectMany(each => ps1.TestModuleManifest(each).SelectMany(GetPackageManagementModules)).ToArray();
                 }
             }
+
+            return Enumerable.Empty<string>();
         }
 
         private IEnumerable<string> AlternativeModuleScan(PsRequest request) {
             var psModulePath = Environment.GetEnvironmentVariable("PSModulePath") ?? "";
 
-            IEnumerable<string> paths = psModulePath.Split(new char[]{';'} , StringSplitOptions.RemoveEmptyEntries);
+            IEnumerable<string> paths = psModulePath.Split(new char[] {';'}, StringSplitOptions.RemoveEmptyEntries);
 
             var sysRoot = Environment.GetEnvironmentVariable("systemroot");
             var userProfile = Environment.GetEnvironmentVariable("userprofile");
 
             // add assumed paths just in case the environment variable isn't really set.
-            paths = paths.ConcatSingleItem( Path.Combine(sysRoot, @"system32\WindowsPowerShell\v1.0\Modules"));
+            paths = paths.ConcatSingleItem(Path.Combine(sysRoot, @"system32\WindowsPowerShell\v1.0\Modules"));
             paths = paths.ConcatSingleItem(Path.Combine(userProfile, @"Documents\WindowsPowerShell\Modules"));
 
             if (!string.IsNullOrWhiteSpace(BaseFolder) && BaseFolder.DirectoryExists()) {
@@ -235,7 +215,10 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
 
             paths = paths.Distinct().ToArray();
 
-            return paths.Where(each => each.DirectoryExists()).SelectMany(each => Directory.EnumerateDirectories(each).Where(dir => !_exclusionList.Contains(Path.GetFileName(dir))), (p, child) => Path.Combine(child, Path.GetFileName(child) + ".psd1")).Where(moduleName => File.Exists(moduleName) && File.ReadAllText(moduleName).IndexOf("PackageManagementProviders", StringComparison.OrdinalIgnoreCase) > -1);
+            return
+                paths.Where(each => each.DirectoryExists())
+                    .SelectMany(each => Directory.EnumerateDirectories(each).Where(dir => !_exclusionList.Contains(Path.GetFileName(dir))), (p, child) => Path.Combine(child, Path.GetFileName(child) + ".psd1"))
+                    .Where(moduleName => File.Exists(moduleName) && File.ReadAllText(moduleName).IndexOf("PackageManagementProviders", StringComparison.OrdinalIgnoreCase) > -1);
         }
 
         public object CreateProvider(string name) {
@@ -261,17 +244,14 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
         }
 
         private PowerShellPackageProvider Create(PsRequest req, string psModule) {
-            var ps = new DynamicPowershell();
+            var ps = PowerShell.Create();
             try {
                 // load the powershell provider functions into this runspace.
-                var psf = ps.ImportModule(PowerShellProviderFunctions, true);
-                DynamicPowershellResult result = ps.ImportModule(psModule, true);
-
-                if (!result.LastIsTerminatingError) {
-                    var providerModule = result.Value as PSModuleInfo;
-                    if (result.Success && providerModule != null) {
+                if (ps.ImportModule(PowerShellProviderFunctions) != null) {
+                    var result = ps.ImportModule(psModule);
+                    if (result != null) {
                         try {
-                            return new PowerShellPackageProvider(ps, providerModule);
+                            return new PowerShellPackageProvider(ps, result);
                         } catch (Exception e) {
                             e.Dump();
                         }
@@ -301,7 +281,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             // try to create each module at least once.
             modules.ParallelForEach(modulePath => {
                 request.Debug("Attempting to load PowerShell Provider Module [{0}]", modulePath);
-                var provider = Create(request,modulePath);
+                var provider = Create(request, modulePath);
                 if (provider != null) {
                     if (provider.GetPackageProviderName() != null) {
                         request.Debug("Loaded PowerShell Package Provider Module: [{0}]", modulePath);
@@ -312,7 +292,6 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                         provider = null;
                     }
                 }
-
             });
 
             request.Debug("Loaded PowerShell Provider Modules ");

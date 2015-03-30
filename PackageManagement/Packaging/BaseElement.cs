@@ -1,16 +1,16 @@
-//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Packaging {
     using System;
@@ -19,23 +19,40 @@ namespace Microsoft.PackageManagement.Packaging {
     using Utility.Extensions;
 
     /// <summary>
-    /// The base element that is common to all elements in a Swidtag.
-    ///
-    /// Swidtag classes are intended to be constructed, but are not mutatable
-    /// (ie, can't be created and have values modified or removed)
+    ///     The base element that is common to all elements in a Swidtag.
+    ///     Swidtag classes are intended to be constructed, but are not mutatable
+    ///     (ie, can't be created and have values modified or removed)
     /// </summary>
     public class BaseElement {
+        private AttributeIndexer _attributeIndexer;
+        private string _uniqueId;
         protected internal readonly XElement Element;
 
         protected internal BaseElement(XElement element) {
             Element = element;
         }
 
-        private string _uniqueId;
-
         internal string ElementUniqueId {
             get {
                 return _uniqueId ?? (_uniqueId = PathToElement(Element));
+            }
+        }
+
+        /// <summary>
+        ///     All Swidtag elements can explicity support the xml:lang attribute.
+        /// </summary>
+        public string XmlLang {
+            get {
+                return GetAttribute(Iso19770_2.XmlLang);
+            }
+            internal set {
+                AddAttribute(Iso19770_2.XmlLang, value);
+            }
+        }
+
+        public AttributeIndexer Attributes {
+            get {
+                return _attributeIndexer ?? (_attributeIndexer = new AttributeIndexer(Element));
             }
         }
 
@@ -61,7 +78,7 @@ namespace Microsoft.PackageManagement.Packaging {
                     return each;
                 }
 
-                if (elementId.StartsWith(eId,StringComparison.CurrentCulture)) {
+                if (elementId.StartsWith(eId, StringComparison.CurrentCulture)) {
                     return FindChildElementViaPath(eId, each, elementId);
                 }
             }
@@ -76,21 +93,8 @@ namespace Microsoft.PackageManagement.Packaging {
         }
 
         /// <summary>
-        /// All Swidtag elements can explicity support the xml:lang attribute.
-        /// </summary>
-        public string XmlLang {
-            get {
-                return GetAttribute(Iso19770_2.XmlLang);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.XmlLang, value);
-            }
-        }
-
-        /// <summary>
-        /// Internal method to gain access to attributes.
-        ///
-        /// Returns Null if the attribute is not present.
+        ///     Internal method to gain access to attributes.
+        ///     Returns Null if the attribute is not present.
         /// </summary>
         /// <param name="attribute"></param>
         /// <returns></returns>
@@ -99,8 +103,7 @@ namespace Microsoft.PackageManagement.Packaging {
         }
 
         /// <summary>
-        /// Adds an attribute to this element.
-        ///
+        ///     Adds an attribute to this element.
         /// </summary>
         /// <param name="attribute">name of the attribute</param>
         /// <param name="value">value of the attribute</param>
@@ -110,7 +113,7 @@ namespace Microsoft.PackageManagement.Packaging {
         }
 
         /// <summary>
-        /// Adds a new element as a child to the current element
+        ///     Adds a new element as a child to the current element
         /// </summary>
         /// <param name="swidElement">the swid element to add</param>
         /// <returns>The newly added element</returns>
@@ -120,7 +123,7 @@ namespace Microsoft.PackageManagement.Packaging {
         }
 
         /// <summary>
-        /// Checks if the element contains an attribute with the given key
+        ///     Checks if the element contains an attribute with the given key
         /// </summary>
         /// <param name="key">the key to find</param>
         /// <returns>True if the element contains the key.</returns>
@@ -129,14 +132,6 @@ namespace Microsoft.PackageManagement.Packaging {
                 return false;
             }
             return Element.Attribute(key) != null;
-        }
-
-        private AttributeIndexer _attributeIndexer;
-
-        public AttributeIndexer Attributes {
-            get {
-                return _attributeIndexer ?? (_attributeIndexer = new AttributeIndexer(Element));
-            }
         }
     }
 }

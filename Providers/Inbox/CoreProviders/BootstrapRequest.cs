@@ -23,10 +23,12 @@ namespace Microsoft.PackageManagement.Providers {
     using System.Xml.Linq;
     using Implementation;
     using Utility.Extensions;
+    using Utility.Platform;
     using Utility.Versions;
     using Utility.Xml;
 
     public abstract class BootstrapRequest : Request {
+
         private static XmlNamespaceManager _namespaceManager;
 
         internal static XmlNamespaceManager NamespaceManager {
@@ -43,10 +45,12 @@ namespace Microsoft.PackageManagement.Providers {
 
         internal string DestinationPath {
             get {
+                var pms = PackageManagementService as PackageManagementService;
+
                 var v = GetValue("DestinationPath");
                 if (string.IsNullOrWhiteSpace(v)) {
                     // use a well-known path.
-                    v = ProviderServices.GetKnownFolder("ProviderAssemblyLocation", this);
+                    v = AdminPrivilege.IsElevated ? pms.SystemAssemblyLocation : pms.UserAssemblyLocation;
                     if (string.IsNullOrWhiteSpace(v)) {
                         return null;
                     }

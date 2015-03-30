@@ -1,19 +1,20 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.Simple {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Reflection;
     using CSharp.RuntimeBinder;
@@ -88,11 +89,12 @@ namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.Simple {
     }
 
     public class DynamicInterfaceTest : Tests {
-          public DynamicInterfaceTest(ITestOutputHelper outputHelper) : base (outputHelper) {
-        }
         public delegate object ReturnsAnObject();
 
         public delegate string ReturnsAString();
+
+        public DynamicInterfaceTest(ITestOutputHelper outputHelper) : base(outputHelper) {
+        }
 
         [Fact]
         public void TestDynamicInterfaceAgainstClass() {
@@ -199,7 +201,6 @@ namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.Simple {
 
                     fThree.As<Two>()();
                 });
-
             }
         }
 
@@ -226,7 +227,6 @@ namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.Simple {
                 dynamicInstance.Four(100);
                 dynamicInstance.Five(100, "hi");
             }
-
         }
 
         [Fact]
@@ -444,7 +444,7 @@ namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.Simple {
                 return s != null;
             }
 
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
+            [SuppressMessage("Microsoft.Usage", "#pw26506")]
             public bool TakesAFileStream(FileStream ms) {
                 Console.WriteLine("HUH?");
                 Console.WriteLine("Type of stream is {0}", ms.GetType().Name);

@@ -1,16 +1,16 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Test.Support {
     using System;
@@ -43,6 +43,7 @@ namespace Microsoft.PackageManagement.Test.Support {
             XTask.CurrentExecutingTask.RemoveEventHandler(eventHandlerDelegate);
             return eventSource;
         }
+
         public static EventSource Subtract(EventSource eventSource, Delegate eventHandlerDelegate) {
             XTask.CurrentExecutingTask.RemoveEventHandler(eventHandlerDelegate);
             return eventSource;
@@ -64,6 +65,11 @@ namespace Microsoft.PackageManagement.Test.Support {
             }
         }
 
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         protected virtual void Dispose(bool disposing) {
             if (Delegates != null) {
                 foreach (var i in Delegates) {
@@ -76,11 +82,6 @@ namespace Microsoft.PackageManagement.Test.Support {
                 // todo: uh, what in the world is this?
                 Task.Factory.StartNew(XTask.Collect);
             }
-        }
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         public static LocalEventSource operator +(LocalEventSource eventSource, Delegate eventHandlerDelegate) {
@@ -100,6 +101,7 @@ namespace Microsoft.PackageManagement.Test.Support {
             eventSource.Delegates.Remove(eventHandlerDelegate);
             return eventSource;
         }
+
         public static LocalEventSource Subtract(LocalEventSource eventSource, Delegate eventHandlerDelegate) {
             XTask.CurrentExecutingTask.RemoveEventHandler(eventHandlerDelegate);
             eventSource.Delegates.Remove(eventHandlerDelegate);

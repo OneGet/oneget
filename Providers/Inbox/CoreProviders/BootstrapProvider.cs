@@ -38,10 +38,6 @@ namespace Microsoft.PackageManagement.Providers {
 #if LOCAL_DEBUG
             "http://localhost:81/providers.swidtag",
 #endif
-#if M2_PROVIDER
-            "http://go.microsoft.com/fwlink/?LinkID=517832",
-            "https://oneget.org/providers.swidtag"
-#endif
             // starting in 2015/04 builds, we bootstrap from here:
             "https://oneget.org/providers.1504.swidtag"
         };

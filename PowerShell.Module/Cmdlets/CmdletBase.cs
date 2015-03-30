@@ -27,7 +27,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using Microsoft.PackageManagement.Utility.Async;
     using Microsoft.PackageManagement.Utility.Extensions;
     using Microsoft.PackageManagement.Utility.Plugin;
-    using Microsoft.PackageManagement.Utility.PowerShell;
     using Resources;
     using Utility;
     using Constants = PackageManagement.Constants;

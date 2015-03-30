@@ -1,24 +1,24 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.ParameterCoercion {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using PackageManagement.Utility.Plugin;
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
-    using System.Diagnostics.CodeAnalysis;
 
     public class HostImplementationOfRequest : IRequestInterface {
         public string CallBackToTheHost(string someText) {
@@ -28,7 +28,7 @@ namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.ParameterCoe
     }
 
     /// <summary>
-    ///  the host's idea of what the plugin should look like.
+    ///     the host's idea of what the plugin should look like.
     /// </summary>
     public interface IPluginInterface {
         string DoSomething(string someText, object theRequest);
@@ -38,15 +38,12 @@ namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.ParameterCoe
         void DoSomething(string someText, object theRequest);
     }
 
-
     public interface IPluginInterfaceWithHandler {
         string DoSomething(string someText, object theRequest);
         void OnUnhandledException(string methodName, Exception e);
     }
 
-
     public class ThePluginImplementation {
-
         [SuppressMessage("Microsoft.Usage", "#pw26506")]
         public string DoSomething(string someText, ThePluginImplementationOfTheRequest theRequest) {
             // since we're able to use the request object as the plugin's strongly type version
@@ -58,13 +55,12 @@ namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.ParameterCoe
     }
 
     public abstract class ThePluginImplementationOfTheRequest {
-
         // when the host calls our method that takes this, it should create a duck-typed version on the fly.
         public abstract string CallBackToTheHost(string someText);
     }
 
     /// <summary>
-    ///  the host's idea of what the request should look like.
+    ///     the host's idea of what the request should look like.
     /// </summary>
     public interface IRequestInterface {
         string CallBackToTheHost(string someText);
@@ -91,18 +87,16 @@ namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.ParameterCoe
             throw new Exception("ha ha");
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
+        [SuppressMessage("Microsoft.Usage", "#pw26506")]
         public void OnUnhandledException(string methodName, Exception e) {
             Console.WriteLine("Method : {0}", methodName);
             Console.WriteLine("Exception: {0}/{1}/{2}", e.GetType().Name, e.Message, e.StackTrace);
             Tests.Set("UnhandledExceptionCalled");
         }
-
     }
 
     public class AdvancedDynamicInterfaceTests : Tests {
-        public AdvancedDynamicInterfaceTests(ITestOutputHelper outputHelper) : base (outputHelper) {
-
+        public AdvancedDynamicInterfaceTests(ITestOutputHelper outputHelper) : base(outputHelper) {
         }
 
         [Fact]
@@ -168,7 +162,6 @@ namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.ParameterCoe
         [Fact]
         public void ExceptionWithHandler() {
             using (CaptureConsole) {
-
                 // create the plugin object:
                 var plugin = new BadImplementationwithHandler();
 
@@ -190,15 +183,10 @@ namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.ParameterCoe
             }
         }
 
-
         [Fact]
         public void testx() {
             // Assert.True(DynamicInterface.CanCreateFrom(typeof(int), typeof(string)));
             // Assert.True( DynamicInterface.CanCreateFrom(typeof (string), typeof (int)));
-
         }
-
     }
-
-
 }

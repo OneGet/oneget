@@ -19,9 +19,9 @@ namespace Microsoft.PowerShell.PackageManagement.Utility {
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
+    using Cmdlets;
     using Microsoft.PackageManagement.Packaging;
     using Microsoft.PackageManagement.Utility.Extensions;
-    using Microsoft.PackageManagement.Utility.PowerShell;
 
     internal class CustomRuntimeDefinedParameter : RuntimeDefinedParameter {
         internal HashSet<DynamicOption> Options = new HashSet<DynamicOption>();

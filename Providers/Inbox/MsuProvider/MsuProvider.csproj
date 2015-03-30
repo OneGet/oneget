@@ -53,10 +53,6 @@
       <Project>{7044B856-6D51-498F-90F9-01F219909F79}</Project>
       <Name>PackageManagement</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Utility\Utility.csproj">
-      <Project>{7044b856-6d51-498f-8192-01f219908192}</Project>
-      <Name>Utility</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Messages.resx" />

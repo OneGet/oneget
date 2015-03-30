@@ -1,16 +1,16 @@
-//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Implementation {
     using System;
@@ -97,7 +97,7 @@ namespace Microsoft.PackageManagement.Implementation {
 
         internal string UserAssemblyLocation {
             get {
-                var basepath = KnownFolders.GetFolderPath(KnownFolder.LocalApplicationData);
+                var basepath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 if (string.IsNullOrWhiteSpace(basepath)) {
                     return null;
                 }
@@ -115,7 +115,7 @@ namespace Microsoft.PackageManagement.Implementation {
 
         internal string SystemAssemblyLocation {
             get {
-                var basepath = KnownFolders.GetFolderPath(KnownFolder.ProgramFiles);
+                var basepath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
                 if (string.IsNullOrWhiteSpace(basepath)) {
                     return null;
                 }
@@ -210,7 +210,7 @@ namespace Microsoft.PackageManagement.Implementation {
                 if (segments.Length > 0) {
                     var provider = SelectProviders(pkgId.Scheme, hostApi).FirstOrDefault();
                     if (provider != null) {
-                        var name = Uri.UnescapeDataString(segments[0].Trim('/','\\'));
+                        var name = Uri.UnescapeDataString(segments[0].Trim('/', '\\'));
                         var version = (segments.Length > 1) ? Uri.UnescapeDataString(segments[1]) : null;
                         var source = pkgId.Fragment.TrimStart('#');
                         var sources = (string.IsNullOrWhiteSpace(source) ? hostApi.Sources : Uri.UnescapeDataString(source).SingleItemAsEnumerable()).ToArray();
@@ -218,13 +218,16 @@ namespace Microsoft.PackageManagement.Implementation {
                         var host = new object[] {
                             new {
                                 GetSources = new Func<IEnumerable<string>>(() => sources),
-                                GetOptionValues = new Func<string, IEnumerable<string>>(key => key.EqualsIgnoreCase("FindByCanonicalId") ? new[] { "true" } : hostApi.GetOptionValues(key)),
+                                GetOptionValues = new Func<string, IEnumerable<string>>(key => key.EqualsIgnoreCase("FindByCanonicalId") ? new[] {"true"} : hostApi.GetOptionValues(key)),
                                 GetOptionKeys = new Func<IEnumerable<string>>(() => hostApi.OptionKeys.ConcatSingleItem("FindByCanonicalId")),
                             },
                             hostApi,
                         }.As<IHostApi>();
 
-                        return provider.FindPackage(name, version, null, null, 0, host).Select( each => {each.Status = Constants.PackageStatus.Dependency; return each;}).ReEnumerable();
+                        return provider.FindPackage(name, version, null, null, 0, host).Select(each => {
+                            each.Status = Constants.PackageStatus.Dependency;
+                            return each;
+                        }).ReEnumerable();
                     }
                 }
             }
@@ -359,13 +362,13 @@ namespace Microsoft.PackageManagement.Implementation {
 #if !COMMUNITY_BUILD
             // todo: these should just be strong-named references. for now, just load them from the same directory.
             providerAssemblies = providerAssemblies.Concat(new[] {
-                Path.Combine( baseDir, "Microsoft.PackageManagement.MetaProvider.PowerShell.dll"),
-                Path.Combine( baseDir, "Microsoft.PackageManagement.ArchiverProviders.dll" ),
-                Path.Combine( baseDir, "Microsoft.PackageManagement.CoreProviders.dll"),
-                Path.Combine( baseDir, "Microsoft.PackageManagement.MsuProvider.dll"),
+                Path.Combine(baseDir, "Microsoft.PackageManagement.MetaProvider.PowerShell.dll"),
+                Path.Combine(baseDir, "Microsoft.PackageManagement.ArchiverProviders.dll"),
+                Path.Combine(baseDir, "Microsoft.PackageManagement.CoreProviders.dll"),
+                Path.Combine(baseDir, "Microsoft.PackageManagement.MsuProvider.dll"),
 #if !CORE_CLR
                 // can't load these providers here.
-                Path.Combine( baseDir, "Microsoft.PackageManagement.MsiProvider.dll"),
+                Path.Combine(baseDir, "Microsoft.PackageManagement.MsiProvider.dll"),
 #endif
             });
 #endif
@@ -388,23 +391,6 @@ namespace Microsoft.PackageManagement.Implementation {
                 }
             });
             providerAssemblies = providerAssemblies.Distinct(new PathEqualityComparer(PathCompareOption.FileWithoutExtension));
-
-#if BEFORE_WE_HAD_MANIFESTS
-            // hack to make sure we don't load the old version of the nuget provider
-            // when we have the ability to examine a plugin without dragging it into the
-            // primary appdomain, this won't be needed.
-            FourPartVersion minimumnugetversion = "2.8.3.6";
-
-            providerAssemblies = providerAssemblies.Where(assemblyFile => {
-                try {
-                    if ("nuget-anycpu".EqualsIgnoreCase(Path.GetFileNameWithoutExtension(assemblyFile)) && ((FourPartVersion)FileVersionInfo.GetVersionInfo(assemblyFile)) < minimumnugetversion) {
-                        return false;
-                    }
-                } catch {
-                }
-                return true;
-            });
-#endif
 
             // there is no trouble with loading providers concurrently.
 #if DEBUG
@@ -654,8 +640,7 @@ namespace Microsoft.PackageManagement.Implementation {
                             // we'll have to do that later.
 
                             _packageProviders.Remove(name);
-                        }
-                        else {
+                        } else {
                             return false;
                         }
                     }
@@ -686,8 +671,7 @@ namespace Microsoft.PackageManagement.Implementation {
                             // we'll have to do that later.
 
                             Archivers.Remove(name);
-                        }
-                        else {
+                        } else {
                             return false;
                         }
                     }
@@ -718,8 +702,7 @@ namespace Microsoft.PackageManagement.Implementation {
                             // we'll have to do that later.
 
                             Downloaders.Remove(name);
-                        }
-                        else {
+                        } else {
                             return false;
                         }
                     }

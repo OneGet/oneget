@@ -1,27 +1,27 @@
-//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
 namespace Microsoft.PackageManagement.Packaging {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Xml.Linq;
     using Api;
     using Implementation;
     using Utility.Collections;
     using Utility.Extensions;
-    using System.Globalization;
 
     /// <summary>
     ///     This class represents a package (retrieved from Find-SoftwareIdentity or Get-SoftwareIdentity)
@@ -46,7 +46,7 @@ namespace Microsoft.PackageManagement.Packaging {
 
         public IEnumerable<string> Dependencies {
             get {
-                return Links.Where(each => Iso19770_2.Relationship.Requires == each.Relationship).Select(each => each.HRef).WhereNotNull().Select( each => Uri.UnescapeDataString(each.ToString())).ReEnumerable();
+                return Links.Where(each => Iso19770_2.Relationship.Requires == each.Relationship).Select(each => each.HRef).WhereNotNull().Select(each => Uri.UnescapeDataString(each.ToString())).ReEnumerable();
             }
         }
 
@@ -74,8 +74,19 @@ namespace Microsoft.PackageManagement.Packaging {
             }
         }
 
-        internal static string CreateCanonicalId(string provider, string name, string version, string source) {
+        public string CanonicalId {
+            get {
+                return CreateCanonicalId(ProviderName, Name, Version, Source);
+            }
+        }
 
+        public MetadataIndexer Metadata {
+            get {
+                return new MetadataIndexer(this);
+            }
+        }
+
+        internal static string CreateCanonicalId(string provider, string name, string version, string source) {
             if (provider == null || name == null) {
                 return null;
             }
@@ -90,12 +101,6 @@ namespace Microsoft.PackageManagement.Packaging {
             }
 
             return "{0}:{1}/{2}#{3}".format(provider.ToLower(CultureInfo.CurrentCulture), name, version, source);
-        }
-
-        public string CanonicalId {
-            get {
-                return CreateCanonicalId(ProviderName, Name, Version, Source);
-            }
         }
 
         public void FetchPackageDetails(IHostApi api) {
@@ -323,12 +328,6 @@ namespace Microsoft.PackageManagement.Packaging {
 
         public string AddDependency(string providerName, string packageName, string version, string source, string appliesTo) {
             return AddLink(new Uri(CreateCanonicalId(providerName, packageName, version, source)), Iso19770_2.Relationship.Requires, null, null, null, appliesTo, null);
-        }
-
-        public MetadataIndexer Metadata {
-            get {
-                return new MetadataIndexer(this);
-            }
         }
     }
 }
