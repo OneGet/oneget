@@ -627,10 +627,18 @@ namespace Microsoft.PackageManagement.Implementation {
         }
 
         private bool RegisterPackageProvider(IPackageProvider provider, FourPartVersion asmVersion, IHostApi request) {
+            string name = null;
             try {
                 FourPartVersion ver = provider.GetProviderVersion();
                 var version = ver == 0 ? asmVersion : ver;
-                var name = provider.GetPackageProviderName();
+                name = provider.GetPackageProviderName();
+
+                // Initialize the provider before locking the collection
+                // that way we're not blocking others on non-deterministic actions.
+                request.Debug("Initializing provider '{0}'".format(name));
+                provider.InitializeProvider(request.As<IRequest>());
+                request.Debug("Provider '{0}' Initialized".format(name));
+
 
                 lock (_packageProviders) {
                     if (_packageProviders.ContainsKey(name)) {
@@ -644,24 +652,33 @@ namespace Microsoft.PackageManagement.Implementation {
                             return false;
                         }
                     }
-                    request.Debug("Loading provider {0}".format(name, provider.GetPackageProviderName()));
-                    provider.InitializeProvider(request.As<IRequest>());
+                    request.Debug("Using Package Provider {0}".format(name));
+
                     _packageProviders.AddOrSet(name, new PackageProvider(provider) {
                         Version = version
                     }).Initialize(request);
                 }
                 return true;
             } catch (Exception e) {
+                request.Debug("Provider '{0}' Failed".format(name));
                 e.Dump();
             }
             return false;
         }
 
         private bool RegisterArchiver(IArchiver provider, FourPartVersion asmVersion, IHostApi request) {
+            string name = null;
+
             try {
                 FourPartVersion ver = provider.GetProviderVersion();
                 var version = ver == 0 ? asmVersion : ver;
-                var name = provider.GetArchiverName();
+                name = provider.GetArchiverName();
+
+                // Initialize the provider before locking the collection
+                // that way we're not blocking others on non-deterministic actions.
+                request.Debug("Initializing provider '{0}'".format(name));
+                provider.InitializeProvider(request.As<IRequest>());
+                request.Debug("Provider '{0}' Initialized".format(name));
 
                 lock (Archivers) {
                     if (Archivers.ContainsKey(name)) {
@@ -675,24 +692,32 @@ namespace Microsoft.PackageManagement.Implementation {
                             return false;
                         }
                     }
-                    request.Debug("Loading Archiver {0}".format(name, provider.GetArchiverName()));
-                    provider.InitializeProvider(request.As<IRequest>());
+                    request.Debug("Using Archiver Provider {0}".format(name));
+                    
                     Archivers.AddOrSet(name, new Archiver(provider) {
                         Version = version
                     }).Initialize(request);
                 }
                 return true;
             } catch (Exception e) {
+                request.Debug("Provider '{0}' Failed".format(name));
                 e.Dump();
             }
             return false;
         }
 
         private bool RegisterDownloader(IDownloader provider, FourPartVersion asmVersion, IHostApi request) {
+            string name = null;
             try {
                 FourPartVersion ver = provider.GetProviderVersion();
                 var version = ver == 0 ? asmVersion : ver;
-                var name = provider.GetDownloaderName();
+                name = provider.GetDownloaderName();
+
+                // Initialize the provider before locking the collection
+                // that way we're not blocking others on non-deterministic actions.
+                request.Debug("Initializing provider '{0}'".format(name));
+                provider.InitializeProvider(request.As<IRequest>());
+                request.Debug("Provider '{0}' Initialized".format(name));
 
                 lock (Downloaders) {
                     if (Downloaders.ContainsKey(name)) {
@@ -706,14 +731,15 @@ namespace Microsoft.PackageManagement.Implementation {
                             return false;
                         }
                     }
-                    request.Debug("Loading Downloader {0}".format(name, provider.GetDownloaderName()));
-                    provider.InitializeProvider(request.As<IRequest>());
+                    request.Debug("Using Downloader Provider {0}".format(name));
+
                     Downloaders.AddOrSet(name, new Downloader(provider) {
                         Version = version
                     }).Initialize(request);
                 }
                 return true;
             } catch (Exception e) {
+                request.Debug("Provider '{0}' Failed".format(name));
                 e.Dump();
             }
             return false;
