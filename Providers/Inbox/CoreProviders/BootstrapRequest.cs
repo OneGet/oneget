@@ -28,7 +28,6 @@ namespace Microsoft.PackageManagement.Providers {
     using Utility.Xml;
 
     public abstract class BootstrapRequest : Request {
-
         private static XmlNamespaceManager _namespaceManager;
 
         internal static XmlNamespaceManager NamespaceManager {
@@ -112,13 +111,14 @@ namespace Microsoft.PackageManagement.Providers {
 
                 // eight second timeout.
                 if(!done.WaitOne(1000*8) ) {
-                    Debug("No response for downloading Swidag");
                     client.CancelAsync();
+                    Debug("Timeout downloading Swidtag");
 
-                    if (tryAgain) {
-                        Debug("Trying Once More...");
+                    if (tryAgain && !IsCanceled) {
+                        Debug("Trying Once More to download Swidtag...");
                         return DownloadContent(location, false);
                     }
+                    Warning("Unable to download provider list");
                 }
             } catch (Exception e) {
                 e.Dump();
@@ -220,7 +220,17 @@ namespace Microsoft.PackageManagement.Providers {
                 // Progress(c, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
             };
             client.DownloadFileAsync(uri, targetFile);
-            done.WaitOne();
+            
+            // check periodically to see if the request has been canceled 
+            while (!IsCanceled) {
+                if (done.WaitOne(1000)) {
+                    break;
+                }
+            }
+            
+            if (IsCanceled) {
+                client.CancelAsync();
+            }
             return result;
         }
     }

@@ -63,8 +63,8 @@ namespace Microsoft.PackageManagement.Utility.Collections {
                 if (!IsAddingCompleted) {
                     base.Add(item);
                 }
-                SetActivity();
             }
+            SetActivity();
         }
 
         public new void Add(T item, CancellationToken cancellationToken) {
@@ -72,8 +72,8 @@ namespace Microsoft.PackageManagement.Utility.Collections {
                 if (!IsAddingCompleted) {
                     base.Add(item, cancellationToken);
                 }
-                SetActivity();
             }
+            SetActivity();
         }
 
         public new IEnumerable<T> GetConsumingEnumerable() {
@@ -115,14 +115,18 @@ namespace Microsoft.PackageManagement.Utility.Collections {
                 if (SafeTryTake(out item, -1, cancellationToken)) {
                     yield return item;
                 }
+                else {
+                    _activity.Wait(cancellationToken);
+                    //cancellationToken.WaitHandle.WaitOne(10);
+                }
             }
         }
 
         public new void CompleteAdding() {
             lock (_lock) {
                 base.CompleteAdding();
-                SetActivity();
             }
+            SetActivity();
         }
     }
 }

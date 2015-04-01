@@ -189,6 +189,7 @@ namespace Microsoft.PackageManagement.Test.Core.TestProviders {
             request.Debug("Calling '{0}::InitializeProvider'", PackageProviderName);
             Initialized = true;
             TestInstance = this;
+            Reset();
         }
 
         /// <summary>

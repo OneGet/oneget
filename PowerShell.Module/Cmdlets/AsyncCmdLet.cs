@@ -654,9 +654,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         return false;
                     }, TaskCreationOptions.LongRunning);
 
+
                     // process the queue of messages back in the main thread so that they
                     // can properly access the non-thread-safe-things in cmdlet
-                    foreach (var message in _messages) {
+                    foreach (var message in _messages.GetBlockingEnumerable(_cancellationEvent.Token)) {
                         InvokeMessage(message);
                     }
                 }
@@ -668,6 +669,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 _messages = null;
                 _pipelineStopped = null;
             }
+
         }
 
         private bool IsOverridden(string functionName) {

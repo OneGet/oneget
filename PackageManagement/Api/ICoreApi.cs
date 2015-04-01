@@ -15,6 +15,7 @@
 namespace Microsoft.PackageManagement.Api {
     public interface ICoreApi {
         IPackageManagementService PackageManagementService {get;}
+
         IProviderServices ProviderServices {get;}
     }
 }

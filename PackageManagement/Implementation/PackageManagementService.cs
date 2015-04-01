@@ -64,6 +64,7 @@ namespace Microsoft.PackageManagement.Implementation {
         private static HashSet<string> _providersTriedThisCall;
         private string[] _bootstrappableProviderNames;
         private bool _initialized;
+        System.Security.Cryptography.MD5 _md5 = System.Security.Cryptography.MD5.Create();
         // well known, built in provider assemblies.
         private readonly string[] _defaultProviders = {
             Path.GetFullPath(Assembly.GetExecutingAssembly().Location), // load the providers from this assembly
@@ -75,6 +76,7 @@ namespace Microsoft.PackageManagement.Implementation {
         private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>(StringComparer.OrdinalIgnoreCase);
         internal readonly IDictionary<string, Archiver> Archivers = new Dictionary<string, Archiver>(StringComparer.OrdinalIgnoreCase);
         internal readonly IDictionary<string, Downloader> Downloaders = new Dictionary<string, Downloader>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, byte[]> _providerFiles = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
 
         internal string[] BootstrappableProviderNames {
             get {
@@ -461,12 +463,40 @@ namespace Microsoft.PackageManagement.Implementation {
             if (assemblyPath == null) {
                 return false;
             }
+            
+            try {
+                byte[] hash = null;
+                using (var stream = File.Open(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
+                    hash = _md5.ComputeHash(stream);
+                }
 
-            if (!AcquireProviders(assemblyPath, request)) {
-                return false;
+                if (_providerFiles.ContainsKey(assemblyPath)) {
+                    // have we tried this file before?
+                    if (_providerFiles[assemblyPath].SequenceEqual(hash)) {
+                        // and it's the exact same file?
+                        request.Debug(request.FormatMessageString("Skipping previously processed assembly: {0}", assemblyPath));
+                        return false;
+                    }
+                    request.Debug(request.FormatMessageString("New assembly in location: {0}", assemblyPath));
+                    // it's a different file in the same path? 
+                    // we're gonna let it try the new file. 
+                    _providerFiles.Remove(assemblyPath);
+                } else {
+                    request.Debug(request.FormatMessageString("Attempting loading of assembly: {0}", assemblyPath));
+                }
+                
+                // record that this file is being loaded.
+                _providerFiles.Add(assemblyPath, hash);
+                return AcquireProviders(assemblyPath, request);
+            } catch {
+                // can't create hash from file? 
+                // we're not going to try and load this.
+                // all we can do is record the name.
+                if (!_providerFiles.ContainsKey(assemblyPath)) {
+                    _providerFiles.Add(assemblyPath, new byte[0]);
+                }
             }
-
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -632,7 +662,9 @@ namespace Microsoft.PackageManagement.Implementation {
                 FourPartVersion ver = provider.GetProviderVersion();
                 var version = ver == 0 ? asmVersion : ver;
                 name = provider.GetPackageProviderName();
-
+                if (string.IsNullOrWhiteSpace(name)) {
+                    return false;
+                }
                 // Initialize the provider before locking the collection
                 // that way we're not blocking others on non-deterministic actions.
                 request.Debug("Initializing provider '{0}'".format(name));
@@ -673,6 +705,9 @@ namespace Microsoft.PackageManagement.Implementation {
                 FourPartVersion ver = provider.GetProviderVersion();
                 var version = ver == 0 ? asmVersion : ver;
                 name = provider.GetArchiverName();
+                if (string.IsNullOrWhiteSpace(name)) {
+                    return false;
+                }
 
                 // Initialize the provider before locking the collection
                 // that way we're not blocking others on non-deterministic actions.
@@ -712,6 +747,9 @@ namespace Microsoft.PackageManagement.Implementation {
                 FourPartVersion ver = provider.GetProviderVersion();
                 var version = ver == 0 ? asmVersion : ver;
                 name = provider.GetDownloaderName();
+                if (string.IsNullOrWhiteSpace(name)) {
+                    return false;
+                }
 
                 // Initialize the provider before locking the collection
                 // that way we're not blocking others on non-deterministic actions.

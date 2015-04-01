@@ -17,6 +17,7 @@ namespace Microsoft.PackageManagement.Api {
     using System.Security;
 
     public interface IHostApi {
+
         bool IsCanceled {get;}
 
         #region declare host-apis

@@ -190,7 +190,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         result = null;
                     }
                     return true;
-                }).Wait();
+                }).Wait(1000); // you don't get a lot of time to get back to me on this...
             }
 
             return result ?? Messages.ResourceManager.GetString(messageText) ?? defaultText;
