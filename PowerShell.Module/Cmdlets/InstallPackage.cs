@@ -221,7 +221,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     // ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source);
                     //} else {
                     if (ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source)) {
-                        foreach (var installedPkg in provider.InstallPackage(pkg, this.ProviderSpecific(provider)).CancelWhen(_cancellationEvent.Token)) {
+                        foreach (var installedPkg in provider.InstallPackage(pkg, this).CancelWhen(_cancellationEvent.Token)) {
                             if (IsCanceled) {
                                 // if we're stopping, just get out asap.
                                 return false;
