@@ -64,7 +64,7 @@ namespace Microsoft.PackageManagement.Implementation {
         private static HashSet<string> _providersTriedThisCall;
         private string[] _bootstrappableProviderNames;
         private bool _initialized;
-        System.Security.Cryptography.MD5 _md5 = System.Security.Cryptography.MD5.Create();
+        
         // well known, built in provider assemblies.
         private readonly string[] _defaultProviders = {
             Path.GetFullPath(Assembly.GetExecutingAssembly().Location), // load the providers from this assembly
@@ -464,11 +464,12 @@ namespace Microsoft.PackageManagement.Implementation {
                 return false;
             }
 
-            lock (_providerFiles) {
-                try {
+
+            try {
+                lock (_providerFiles) {
                     byte[] hash = null;
                     using (var stream = File.Open(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
-                        hash = _md5.ComputeHash(stream);
+                        hash = System.Security.Cryptography.MD5.Create().ComputeHash(stream);
                     }
 
                     if (_providerFiles.ContainsKey(assemblyPath)) {
@@ -488,9 +489,12 @@ namespace Microsoft.PackageManagement.Implementation {
 
                     // record that this file is being loaded.
                     _providerFiles.Add(assemblyPath, hash);
-                    return AcquireProviders(assemblyPath, request);
-                } catch (Exception e) {
-                    e.Dump();
+                }
+                return AcquireProviders(assemblyPath, request);
+            } catch (Exception e) {
+                e.Dump();
+
+                lock (_providerFiles) {
                     // can't create hash from file? 
                     // we're not going to try and load this.
                     // all we can do is record the name.
