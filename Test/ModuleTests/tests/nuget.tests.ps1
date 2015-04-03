@@ -25,6 +25,9 @@ $packageNames = @("Azurecontrib", "AWSSDK", "TestLib");
 $minimumVersions = @("1.0", "1.3", "1.5");
 $maximumVersions = @("2.0", "2.5", "3.0");
 $destination = "$env:tmp\nugettests"
+if( test-path $destination ) {
+    rmdir -recurse -force $destination -ea silentlycontinue
+}
 mkdir $destination -ea silentlycontinue
 
 $pkgSources = @("NUGETTEST101", "NUGETTEST202", "NUGETTEST303");
@@ -35,7 +38,7 @@ Describe "Find-Package" {
     import-packagemanagement
 
     It "EXPECTED: Finds 'Zlib' Package" {
-        (find-package -name "zlib" -provider "nuget" -source $source).name | should match "zlib"
+        (find-package -name "zlib" -provider "nuget" -source $source -forcebootstrap).name | should match "zlib"
     }
 	It "EXPECTED: Finds A Combination Of Packages With Various Versions" {
 		foreach ($x in $packageNames) {

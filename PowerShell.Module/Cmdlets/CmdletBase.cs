@@ -177,7 +177,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
 
             string result = null;
-            if (MessageResolver != null && MyInvocation.PipelineLength == 1 ) {
+            if (MessageResolver != null) {
                 // if the consumer has specified a MessageResolver delegate, we need to call it on the main thread
                 // because powershell won't let us use the default runspace from another thread.
 
@@ -190,7 +190,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         result = null;
                     }
                     return true;
-                }).Wait(1000); // you don't get a lot of time to get back to me on this...
+                }).Wait(5000); // you don't get a lot of time to get back to me on this...
             }
 
             return result ?? Messages.ResourceManager.GetString(messageText) ?? defaultText;
