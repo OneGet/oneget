@@ -463,13 +463,14 @@ namespace Microsoft.PackageManagement.Implementation {
             if (assemblyPath == null) {
                 return false;
             }
-            
-            try {
-                byte[] hash = null;
-                using (var stream = File.Open(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
-                    hash = _md5.ComputeHash(stream);
-                }
-                lock (_providerFiles) {
+
+            lock (_providerFiles) {
+                try {
+                    byte[] hash = null;
+                    using (var stream = File.Open(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
+                        hash = _md5.ComputeHash(stream);
+                    }
+
                     if (_providerFiles.ContainsKey(assemblyPath)) {
                         // have we tried this file before?
                         if (_providerFiles[assemblyPath].SequenceEqual(hash)) {
@@ -488,10 +489,8 @@ namespace Microsoft.PackageManagement.Implementation {
                     // record that this file is being loaded.
                     _providerFiles.Add(assemblyPath, hash);
                     return AcquireProviders(assemblyPath, request);
-                }
-            } catch (Exception e) {
-                e.Dump();
-                lock (_providerFiles) {
+                } catch (Exception e) {
+                    e.Dump();
                     // can't create hash from file? 
                     // we're not going to try and load this.
                     // all we can do is record the name.
