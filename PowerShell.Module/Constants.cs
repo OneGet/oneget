@@ -139,8 +139,10 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string SourceFoundInMultipleProviders = "MSG:SourceFoundInMultipleProviders";
             internal const string SourceNotFound = "MSG:SourceNotFound";
             internal const string SourceNotFoundForLocation = "MSG:SourceNotFoundForLocation";
+            internal const string SourceNotFoundForNameAndLocation = "MSG:SourceNotFoundForNameAndLocation";
             internal const string SourceNotFoundNoCriteria = "MSG:SourceNotFoundNoCriteria";
             internal const string TargetPackage = "MSG:TargetPackage";
+            internal const string TargetPackageVersion = "MSG:TargetPackageVersion";            
             internal const string TargetPackageSource = "MSG:TargetPackageSource";
             internal const string UnableToFindProviderForSource = "MSG:UnableToFindProviderForSource";
             internal const string UninstallationFailure = "MSG:UninstallationFailure";

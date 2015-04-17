@@ -312,7 +312,7 @@ namespace Microsoft.PackageManagement.Providers {
                         })
                     });
 
-                    var packages = providers[0].FindPackage(packageId, packageVersion, null, null, 0,customRequest).Wait(60);
+                    var packages = providers[0].FindPackage(packageId, packageVersion, null, null,customRequest).Wait(60);
 
                     var pkgs = packages.ToArray();
                     if (pkgs.Length < 1) {

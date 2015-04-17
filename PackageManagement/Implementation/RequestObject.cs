@@ -64,12 +64,12 @@ namespace Microsoft.PackageManagement.Implementation {
                 _hostApi.Warning((GetMessageString("MSG:ProviderNotResponsive", null) ?? "Provider '{0}' is not respecting the responsiveness threshold in a timely fashion; Canceling request.").format(Provider.ProviderName));
             }
         }
-
         public override void WarnBeforeTimeoutCancellation() {
             if (CanCallHost) {
                 _hostApi.Warning((GetMessageString("MSG:ProviderTimeoutExceeded", null) ?? "Provider '{0}' is not completing the request in the time allowed; Canceling request.").format(Provider.ProviderName));
             }
         }
+
 
         protected void InvokeImpl() {
             _invocationTask = Task.Factory.StartNew(() => {
@@ -95,7 +95,6 @@ namespace Microsoft.PackageManagement.Implementation {
         }
 
         #region HostApi Wrapper
-
         public string DropMsgPrefix(string messageText) {
             if (string.IsNullOrWhiteSpace(messageText)) {
                 return messageText;
@@ -264,6 +263,8 @@ namespace Microsoft.PackageManagement.Implementation {
             }
         }
 
+
+
         #endregion
 
         #region response api implementation
@@ -302,7 +303,6 @@ namespace Microsoft.PackageManagement.Implementation {
             Debug("Unexpected call to AddEvidence in RequestObject");
             return null;
         }
-
         public virtual string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey) {
             Debug("Unexpected call to AddDirectory in RequestObject");
             return null;
@@ -363,5 +363,7 @@ namespace Microsoft.PackageManagement.Implementation {
         }
 
         #endregion
+
+
     }
 }

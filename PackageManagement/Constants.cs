@@ -19,14 +19,17 @@ namespace Microsoft.PackageManagement {
         internal const int PackageManagementVersion = 3;
         internal const int TimeoutUnspecified = 0;
         internal const int TimeoutHostNotAvailable = -1;
+
         internal const int HostNotAvailableTimeout = 5*60; // time when host not around
         internal const int HostNotAvailableResponsiveness = 5; // five seconds
+
         internal const int TimeoutAfterCancel = 60;
         internal const int ResponsivenessAfterCancel = 1;
         internal static TimeSpan DefaultCallTimeout = TimeSpan.FromMinutes(60);
         // TODO: Setting responsiveness to 15 minutes until we know that
         // we're handling it all right.
         internal static TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(15*60);
+
         internal static TimeSpan Zero = new TimeSpan(0);
 
         #region declare common-constants-implementation

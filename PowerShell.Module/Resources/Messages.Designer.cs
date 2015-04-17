@@ -512,6 +512,15 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Unable to find package source for name &apos;{0}&apos; location &apos;{1}&apos;..
+        /// </summary>
+        internal static string SourceNotFoundForNameAndLocation {
+            get {
+                return ResourceManager.GetString("SourceNotFoundForNameAndLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to find package sources..
         /// </summary>
         internal static string SourceNotFoundNoCriteria {

@@ -226,7 +226,7 @@ namespace Microsoft.PackageManagement.Implementation {
                             hostApi,
                         }.As<IHostApi>();
 
-                        return provider.FindPackage(name, version, null, null, 0, host).Select(each => {
+                        return provider.FindPackage(name, version, null, null, host).Select(each => {
                             each.Status = Constants.PackageStatus.Dependency;
                             return each;
                         }).ReEnumerable();
@@ -279,7 +279,7 @@ namespace Microsoft.PackageManagement.Implementation {
                 return false;
             }
 
-            var pkg = bootstrap.FindPackage(packageProviderName, null, minimumVersion, null, 0, hostApi).ToArray();
+            var pkg = bootstrap.FindPackage(packageProviderName, null, minimumVersion, null, hostApi).ToArray();
             if (pkg.Length == 1) {
                 // Yeah? Install it.
                 var package = pkg[0];
@@ -395,7 +395,7 @@ namespace Microsoft.PackageManagement.Implementation {
             providerAssemblies = providerAssemblies.Distinct(new PathEqualityComparer(PathCompareOption.FileWithoutExtension));
 
             // there is no trouble with loading providers concurrently.
-#if DEBUG
+#if DEEP_DEBUG
             providerAssemblies.SerialForEach(providerAssemblyName => {
 #else
             providerAssemblies.ParallelForEach(providerAssemblyName => {
@@ -466,29 +466,28 @@ namespace Microsoft.PackageManagement.Implementation {
 
 
             try {
+                byte[] hash = null;
+                using (var stream = File.Open(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
+                    hash = System.Security.Cryptography.MD5.Create().ComputeHash(stream);
+                }
                 lock (_providerFiles) {
-                    byte[] hash = null;
-                    using (var stream = File.Open(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
-                        hash = System.Security.Cryptography.MD5.Create().ComputeHash(stream);
+                if (_providerFiles.ContainsKey(assemblyPath)) {
+                    // have we tried this file before?
+                    if (_providerFiles[assemblyPath].SequenceEqual(hash)) {
+                        // and it's the exact same file?
+                        request.Debug(request.FormatMessageString("Skipping previously processed assembly: {0}", assemblyPath));
+                        return false;
                     }
-
-                    if (_providerFiles.ContainsKey(assemblyPath)) {
-                        // have we tried this file before?
-                        if (_providerFiles[assemblyPath].SequenceEqual(hash)) {
-                            // and it's the exact same file?
-                            request.Debug(request.FormatMessageString("Skipping previously processed assembly: {0}", assemblyPath));
-                            return false;
-                        }
-                        request.Debug(request.FormatMessageString("New assembly in location: {0}", assemblyPath));
-                        // it's a different file in the same path? 
-                        // we're gonna let it try the new file. 
-                        _providerFiles.Remove(assemblyPath);
-                    } else {
-                        request.Debug(request.FormatMessageString("Attempting loading of assembly: {0}", assemblyPath));
-                    }
-
-                    // record that this file is being loaded.
-                    _providerFiles.Add(assemblyPath, hash);
+                    request.Debug(request.FormatMessageString("New assembly in location: {0}", assemblyPath));
+                    // it's a different file in the same path? 
+                    // we're gonna let it try the new file. 
+                    _providerFiles.Remove(assemblyPath);
+                } else {
+                    request.Debug(request.FormatMessageString("Attempting loading of assembly: {0}", assemblyPath));
+                }
+                
+                // record that this file is being loaded.
+                _providerFiles.Add(assemblyPath, hash);
                 }
                 return AcquireProviders(assemblyPath, request);
             } catch (Exception e) {

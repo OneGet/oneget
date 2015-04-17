@@ -13,9 +13,17 @@
 //  
 
 namespace Microsoft.PackageManagement.Api {
+
+    /// <summary>
+    /// Provides access to CORE functionality to PROVIDERs as part of the current request object.
+    /// </summary>
     public interface ICoreApi {
+        /// <summary>
+        /// Returns a reference to the PackageManagementService object.
+        /// </summary>
         IPackageManagementService PackageManagementService {get;}
 
-        IProviderServices ProviderServices {get;}
+        /// Returns a reference to the Provider Services object.
+        IProviderServices ProviderServices { get; }
     }
 }

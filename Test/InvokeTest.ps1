@@ -39,18 +39,23 @@ if( -not $IsSandboxed  ) {
     if( .\scripts\test-sandbox.ps1 ) {
         cd $PSScriptRoot
         .\scripts\stop-sandbox.ps1
+        start-sleep 2
     }
 
     cd $PSScriptRoot
     .\scripts\start-sandbox.ps1 
     
     # wait for a moment for it to start.
-    start-sleep 5
+    cd $PSScriptRoot
+    while( -not (& .\scripts\test-sandbox.ps1) ) {
+        cd $PSScriptRoot
+        Write-Host -fore Yellow "Waiting for sandbox..."
+        start-sleep 2
+    }
     
     # re-run the this script with the DNS shim.
     . $PSScriptRoot\tools\DnsShim.exe  /i:$PSScriptRoot\tools\hosts.txt /v powershell.exe "$($MyInvocation.MyCommand.Definition) -IsSandboxed" 
 
-    
     cd $PSScriptRoot
     .\scripts\stop-sandbox.ps1 
 

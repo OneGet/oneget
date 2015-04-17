@@ -21,25 +21,6 @@ namespace Microsoft.PackageManagement.Implementation {
     using Api;
 
     public abstract class Request : IRequest {
-        private string FormatMessageString(string messageText, params object[] args) {
-            if (string.IsNullOrWhiteSpace(messageText)) {
-                return string.Empty;
-            }
-
-            if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
-                // check with the caller first, then with the local resources, and fallback to using the messageText itself.
-                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length), messageText) ?? messageText;
-            }
-
-            // if it doesn't look like we have the correct number of parameters
-            // let's return a fix-me-format string.
-            var c = messageText.ToCharArray().Where(each => each == '{').Count();
-            if (c < args.Length) {
-                return FixMeFormat(messageText, args);
-            }
-            return string.Format(CultureInfo.CurrentCulture, messageText, args);
-        }
-
         #region core-apis
 
         public abstract IPackageManagementService PackageManagementService {get;}
@@ -173,8 +154,8 @@ namespace Microsoft.PackageManagement.Implementation {
 
         #endregion
 
-        #region declare Request-implementation
 
+        #region declare Request-implementation
         /// <summary>
         ///     Yield values in a dictionary as key/value pairs. (one pair for each value in each key)
         /// </summary>
@@ -236,5 +217,24 @@ namespace Microsoft.PackageManagement.Implementation {
         }
 
         #endregion
+
+        private string FormatMessageString(string messageText, params object[] args) {
+            if (string.IsNullOrWhiteSpace(messageText)) {
+                return string.Empty;
+            }
+
+            if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
+                // check with the caller first, then with the local resources, and fallback to using the messageText itself.
+                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length), messageText) ?? messageText;
+            }
+
+            // if it doesn't look like we have the correct number of parameters
+            // let's return a fix-me-format string.
+            var c = messageText.ToCharArray().Where(each => each == '{').Count();
+            if (c < args.Length) {
+                return FixMeFormat(messageText, args);
+            }
+            return string.Format(CultureInfo.CurrentCulture, messageText, args);
+        }
     }
 }

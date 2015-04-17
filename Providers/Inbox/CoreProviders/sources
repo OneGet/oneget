@@ -15,7 +15,6 @@ OUTPUT_PATH=$(OBJ_PATH)\$(O)
 SOURCES_PATH = .\
 
 PACKAGEMANAGEMENT_CORE=$(OBJ_PATH)\..\..\..\PackageManagement\$(O)\Microsoft.PackageManagement.metadata_dll;
-PACKAGEMANAGEMENT_UTILITY=$(OBJ_PATH)\..\..\..\Utility\$(O)\Microsoft.PackageManagement.Utility.metadata_dll;
 
 ###
 ### Note: This really only works if you have a single .resx file.
@@ -47,7 +46,6 @@ PASS2_BINPLACE=\
 
 REFERENCES=\
     $(PACKAGEMANAGEMENT_CORE) \
-    $(PACKAGEMANAGEMENT_UTILITY) \
     $(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \

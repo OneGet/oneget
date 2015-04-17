@@ -13,6 +13,7 @@
 //  
 
 namespace Microsoft.PackageManagement.Packaging {
+    using System;
     using System.Collections.Generic;
     using Implementation;
 
@@ -48,5 +49,19 @@ namespace Microsoft.PackageManagement.Packaging {
                 return DetailsCollection;
             }
         }
+        
+        public override bool Equals(Object obj)
+        {
+            PackageSource packageSource = obj as PackageSource;
+            if (packageSource == null)
+                return false;
+            else
+                return ((Name.Equals(packageSource.Name) && Location.Equals(packageSource.Location)));
+        }
+        
+        public override int GetHashCode()
+        {
+            return ((Name ?? String.Empty) + (Location ?? String.Empty)).GetHashCode();            
+        }        
     }
 }

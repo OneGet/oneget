@@ -180,19 +180,19 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                var a = _uris.Select(uri => new {
                    query = new List<string>{uri.AbsolutePath},
                    provider = pv,
-                   packages = pv.FindPackageByUri(uri, 0, host).CancelWhen(_cancellationEvent.Token)
+                   packages = pv.FindPackageByUri(uri, host).CancelWhen(_cancellationEvent.Token)
                });
 
                var b = _files.Keys.Where(file => pv.IsSupportedFile(_files[file].Item2)).Select(file => new {
                    query = _files[file].Item1,
                    provider = pv,
-                   packages =  pv.FindPackageByFile(file, 0, host)
+                   packages =  pv.FindPackageByFile(file, host)
                });
 
                var c = _names.Select(name => new {
                    query = new List<string>{name},
                    provider = pv,
-                   packages = pv.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, 0, host)
+                   packages = pv.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion,host)
                });
 
                return a.Concat(b).Concat(c);

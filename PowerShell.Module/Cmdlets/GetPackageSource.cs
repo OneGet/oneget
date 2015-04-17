@@ -86,7 +86,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     return false;
                 }
 
-                using (var sources = provider.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).CancelWhen(_cancellationEvent.Token)) {
+                using (var src = provider.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).CancelWhen(_cancellationEvent.Token)) {
+                    var sources = src.Distinct();
                     if (noCriteria) {
                         // no criteria means just return whatever we found
                         if (WriteSources(sources)) {
@@ -95,14 +96,25 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         var all = sources.ToArray();
                         var registered = all.Where(each => each.IsRegistered);
 
-                        if (noName) {
+                        if (noName)
+                        {
                             // just location was specified
                             if (WriteSources(registered.Where(each => each.Location.EqualsIgnoreCase(Location)))) {
                                 continue;
                             }
-                        } else {
-                            // source was specified (check both name and location fields for match)
-                            if (WriteSources(registered.Where(each => each.Name.EqualsIgnoreCase(Name) || each.Location.EqualsIgnoreCase(Name)))) {
+                        }
+                        else if (noLocation)
+                        {
+                            // just name was specified
+                            if (WriteSources(registered.Where(each => each.Name.EqualsIgnoreCase(Name))))
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            // name and location were specified
+                            if (WriteSources(registered.Where(each => each.Name.EqualsIgnoreCase(Name) && each.Location.EqualsIgnoreCase(Location)))) {
                                 continue;
                             }
                         }
@@ -136,11 +148,23 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     return true;
                 }
 
-                // source was specified (check both name and location fields for match)
-                if (WriteSources(_unregistered.Where(each => each.Name.EqualsIgnoreCase(Name) || each.Location.EqualsIgnoreCase(Name)))) {
+                if (_noLocation)
+                {
+                    // just name was specified
+                    if (WriteSources(_unregistered.Where(each => each.Name.EqualsIgnoreCase(Name))))
+                    {
                     return true;
                 }
                 Warning(Constants.Messages.SourceNotFound, Name);
+                return true;
+            }
+
+                // both Name and Location were specified
+                if (WriteSources(_unregistered.Where(each => each.Name.EqualsIgnoreCase(Name) && each.Location.EqualsIgnoreCase(Location)))) {
+                    return true;
+                }
+
+                Warning(Constants.Messages.SourceNotFoundForNameAndLocation, Name, Location);
                 return true;
             }
             return true;

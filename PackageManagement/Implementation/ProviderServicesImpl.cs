@@ -139,7 +139,7 @@ namespace Microsoft.PackageManagement.Implementation {
                 // high-level api for simply installing a file
                 // returns false if unsuccessful.
                 foreach (var provider in PackageManager.Instance.PackageProviders) {
-                    var packages = provider.FindPackageByFile(fileName, 0, request).ToArray();
+                    var packages = provider.FindPackageByFile(fileName, request).ToArray();
                     if (packages.Length > 0) {
                         // found a provider that can handle this package.
                         // install with this provider

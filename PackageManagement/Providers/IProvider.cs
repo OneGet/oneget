@@ -18,10 +18,6 @@ namespace Microsoft.PackageManagement.Providers {
     using Utility.Plugin;
 
     public interface IProvider {
-        #region declare Provider-interface
-
-        /* Synced/Generated code =================================================== */
-
         /// <summary>
         ///     Allows the Provider to do one-time initialization.
         ///     This is called after the Provider is instantiated .
@@ -57,8 +53,13 @@ namespace Microsoft.PackageManagement.Providers {
         /// <returns>The version of the provider</returns>
         string GetProviderVersion();
 
-        void OnUnhandledException(string methodName, Exception exception);
 
-        #endregion
-    }
+        /// <summary>
+        /// By declaring this, the DuckTyper will write isolation code that ensures that functions can't throw exceptions, instead
+        /// Exceptions can be directed to the OnUnhandledException function.
+        /// </summary>
+        /// <param name="methodName"></param>
+        /// <param name="exception"></param>
+        void OnUnhandledException(string methodName, Exception exception);
+   }
 }

@@ -14,10 +14,15 @@
 
 namespace Microsoft.PackageManagement.Implementation {
     using System;
+    using System.Collections.Generic;
+    using System.Security;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Api;
     using Packaging;
     using Providers;
     using Utility.Async;
+    using Utility.Collections;
     using Utility.Plugin;
 
     public class PackageProvider : ProviderBase<IPackageProvider> {
@@ -48,32 +53,19 @@ namespace Microsoft.PackageManagement.Implementation {
             return new PackageSourceRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.RemovePackageSource(name, request));
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> FindPackageByUri(Uri uri, int id, IHostApi requestObject) {
+        public IAsyncEnumerable<SoftwareIdentity> FindPackageByUri(Uri uri, IHostApi requestObject) {
             if (!IsSupportedScheme(uri)) {
                 return new EmptyAsyncEnumerable<SoftwareIdentity>();
             }
 
-            return new SoftwareIdentityRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackageByUri(uri, id, request), Constants.PackageStatus.Available);
+            return new SoftwareIdentityRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackageByUri(uri, 0, request), Constants.PackageStatus.Available);
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> FindPackageByFile(string filename, int id, IHostApi requestObject) {
+        public IAsyncEnumerable<SoftwareIdentity> FindPackageByFile(string filename,  IHostApi requestObject) {
             if (!IsSupportedFile(filename)) {
                 return new EmptyAsyncEnumerable<SoftwareIdentity>();
             }
-
-            return new SoftwareIdentityRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackageByFile(filename, id, request), Constants.PackageStatus.Available);
-        }
-
-        public IAsyncValue<int> StartFind(IHostApi requestObject) {
-            if (requestObject == null) {
-                throw new ArgumentNullException("requestObject");
-            }
-
-            return new FuncRequestObject<int>(this, requestObject, request => Provider.StartFind(request));
-        }
-
-        public IAsyncEnumerable<SoftwareIdentity> CompleteFind(int i, IHostApi requestObject) {
-            return new SoftwareIdentityRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.CompleteFind(i, request), Constants.PackageStatus.Available);
+            return new SoftwareIdentityRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackageByFile(filename, 0, request), Constants.PackageStatus.Available);
         }
 
         public IAsyncEnumerable<SoftwareIdentity> FindPackages(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, IHostApi requestObject) {
@@ -86,19 +78,17 @@ namespace Microsoft.PackageManagement.Implementation {
             }
 
             if (names.Length == 0) {
-                return FindPackage(null, requiredVersion, minimumVersion, maximumVersion, 0, requestObject);
+                return FindPackage(null, requiredVersion, minimumVersion, maximumVersion, requestObject);
             }
 
             if (names.Length == 1) {
-                return FindPackage(names[0], requiredVersion, minimumVersion, maximumVersion, 0, requestObject);
+                return FindPackage(names[0], requiredVersion, minimumVersion, maximumVersion, requestObject);
             }
 
             return new SoftwareIdentityRequestObject(this, requestObject, request => {
-                var id = StartFind(request);
                 foreach (var name in names) {
-                    Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id.Value, request);
+                    Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, 0, request);
                 }
-                Provider.CompleteFind(id.Value, request);
             }, Constants.PackageStatus.Available);
         }
 
@@ -116,15 +106,13 @@ namespace Microsoft.PackageManagement.Implementation {
             }
 
             if (uris.Length == 1) {
-                return FindPackageByUri(uris[0], 0, requestObject);
+                return FindPackageByUri(uris[0],requestObject);
             }
 
             return new SoftwareIdentityRequestObject(this, requestObject, request => {
-                var id = StartFind(request);
                 foreach (var uri in uris) {
-                    Provider.FindPackageByUri(uri, id.Value, request);
+                    Provider.FindPackageByUri(uri, 0, request);
                 }
-                Provider.CompleteFind(id.Value, request);
             }, Constants.PackageStatus.Available);
         }
 
@@ -142,20 +130,18 @@ namespace Microsoft.PackageManagement.Implementation {
             }
 
             if (filenames.Length == 1) {
-                return FindPackageByFile(filenames[0], 0, requestObject);
+                return FindPackageByFile(filenames[0], requestObject);
             }
 
             return new SoftwareIdentityRequestObject(this, requestObject, request => {
-                var id = StartFind(request);
                 foreach (var file in filenames) {
-                    Provider.FindPackageByFile(file, id.Value, request);
+                    Provider.FindPackageByFile(file, 0, request);
                 }
-                Provider.CompleteFind(id.Value, request);
             }, Constants.PackageStatus.Available);
         }
 
-        public IAsyncEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IHostApi requestObject) {
-            return new SoftwareIdentityRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion, id, request), Constants.PackageStatus.Available);
+        public IAsyncEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, IHostApi requestObject) {
+            return new SoftwareIdentityRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion,0, request), Constants.PackageStatus.Available);
         }
 
         public IAsyncEnumerable<SoftwareIdentity> GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, IHostApi requestObject) {

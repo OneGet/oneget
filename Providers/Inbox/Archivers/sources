@@ -15,7 +15,6 @@ OUTPUT_PATH=$(OBJ_PATH)\$(O)
 SOURCES_PATH = .\
 
 PACKAGEMANAGEMENT_CORE=$(OBJ_PATH)\..\..\..\PackageManagement\$(O)\Microsoft.PackageManagement.metadata_dll;
-PACKAGEMANAGEMENT_UTILITY=$(OBJ_PATH)\..\..\..\Utility\$(O)\Microsoft.PackageManagement.Utility.metadata_dll;
 
 ###
 ### Note: This really only works if you have a single .resx file.

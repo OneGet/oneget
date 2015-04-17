@@ -27,6 +27,18 @@ if( (dir "Cert:\LocalMachine\my\" | Where-Object Subject -eq "CN=pmtestcert" ).L
     return;
 }
 
+# Make sure the sandbox can run
+if (get-command remove-iissite -ea silentlycontinue) { 
+
+    if (get-iissite -Name "Default Web Site" ) { 
+        remove-iissite -Name "Default Web Site" -Confirm:$false
+        
+        if (get-iissite -Name "Default Web Site" ) { 
+            throw "UNABLE TO REMOVE DEFAULT WEBSITE"
+        }
+    }
+}
+
 if( (.\test-sandbox.ps1) ) {
     write-warning "Sandbox is already running"
     cd $origdir

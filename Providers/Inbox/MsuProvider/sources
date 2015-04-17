@@ -15,7 +15,6 @@ OUTPUT_PATH=$(OBJ_PATH)\$(O)
 SOURCES_PATH = .\
 
 PACKAGEMANAGEMENT_CORE=$(OBJ_PATH)\..\..\..\PackageManagement\$(O)\Microsoft.PackageManagement.metadata_dll;
-PACKAGEMANAGEMENT_UTILITY=$(OBJ_PATH)\..\..\..\Utility\$(O)\Microsoft.PackageManagement.Utility.metadata_dll;
 PACKAGEMANAGEMENT_ARCHIVERS=$(OBJ_PATH)\..\Archivers\$(O)\Microsoft.PackageManagement.ArchiverProviders.metadata_dll;
 
 ###
@@ -48,7 +47,6 @@ PASS2_BINPLACE=\
 
 REFERENCES=\
     $(PACKAGEMANAGEMENT_CORE) \
-    $(PACKAGEMANAGEMENT_UTILITY) \
     $(PACKAGEMANAGEMENT_ARCHIVERS) \
     $(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
 	$(CLR_REF_PATH)\System.metadata_dll; \
@@ -57,7 +55,8 @@ REFERENCES=\
 	$(CLR_REF_PATH)\System.Data.metadata_dll; \
 	$(CLR_REF_PATH)\System.Data.DataSetExtensions.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
-	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll;
+	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll; \
+	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll;
 
 #region sourcefiles
 SOURCES=\

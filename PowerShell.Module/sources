@@ -44,8 +44,6 @@ PASS2_BINPLACE=\
 
 REFERENCES=\
 	$(PACKAGEMANAGEMENT_CORE) \
-	$(PACKAGEMANAGEMENT_UTILITY) \
-	$(PACKAGEMANAGEMENT_UTILITY_POWERSHELL) \
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
     $(CLR_REF_PATH)\System.Xml.Linq.metadata_dll; \
@@ -54,6 +52,7 @@ REFERENCES=\
 
 #region sourcefiles
 SOURCES=\
+	Cmdlets\AsyncCmdlet.cs \
 	Cmdlets\CmdletBase.cs \
  	Cmdlets\CmdletWithProvider.cs \
  	Cmdlets\CmdletWithSearch.cs \
@@ -70,7 +69,9 @@ SOURCES=\
  	Cmdlets\UninstallPackage.cs \
  	Cmdlets\UnregisterPackageSource.cs \
  	Utility\CustomRuntimeDefinedParameter.cs \
+ 	Utility\ErrorMessage.cs \
  	Utility\HostApiExtensions.cs \
+ 	Utility\ProgressTracker.cs \
  	Constants.cs \
 	$(GENERATED_RESOURCES_SOURCE)
 

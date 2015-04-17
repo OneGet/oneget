@@ -23,6 +23,7 @@ namespace Microsoft.PackageManagement.Msu {
     using Archivers.Compression.Cab;
     using Implementation;
     using Utility.Extensions;
+    using System.Management.Automation;
 
     public class MsuProvider {
         /// <summary>
@@ -177,13 +178,35 @@ namespace Microsoft.PackageManagement.Msu {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetInstalledPackages(string name, Request request) {
+        public void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request)
+        {
             if( request == null ) {
                 throw new ArgumentNullException("request");
             }
 
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", ProviderName, name);
+
+            using (PowerShell ps = PowerShell.Create())
+            {
+                ps.AddScript(@"$updateSession = new-object -com Microsoft.Update.Session
+                $updateSearcher = $updateSession.CreateUpdateSearcher()
+                $updateSearcher.queryhistory(1, $updateSearcher.GetTotalHistoryCount()) | select Title, SupportUrl, Date, ResultCode, Description");
+                var output = ps.Invoke();
+                foreach (var obj in output)
+                {
+                    if (obj != null)
+                    {
+                        var title = obj.Properties["Title"] != null ? obj.Properties["Title"].Value as string : null;
+                        var supportUrl = obj.Properties["SupportUrl"] != null ? obj.Properties["SupportUrl"].Value as string : null;
+                        var date = obj.Properties["Date"] != null ? obj.Properties["Date"].Value as DateTime? : null;
+                        var resultCode = obj.Properties["ResultCode"] != null ? obj.Properties["ResultCode"].Value as int? : null;
+                        var description = obj.Properties["Description"] != null ? obj.Properties["Description"].Value as string : null;
+
+                        YieldPackage(name, request, title, supportUrl, date, resultCode, description);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -235,6 +258,40 @@ namespace Microsoft.PackageManagement.Msu {
 
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::UninstallPackage' '{1}'", ProviderName, fastPackageReference);
+        }
+
+        /// <summary>
+        /// Yields package information to OneGet Core
+        /// </summary>
+        /// <param name="searchKey"></param>
+        /// <param name="request"></param>
+        /// <param name="title"></param>
+        /// <param name="supportUrl"></param>
+        /// <param name="date"></param>
+        /// <param name="resultCode"></param>
+        /// <param name="description"></param>
+        /// <returns>Whether operation succeeded or was interrupted</returns>
+        private bool YieldPackage(string searchKey, Request request, string title, string supportUrl, DateTime? date, int? resultCode, string description)
+        {
+            if (request.YieldSoftwareIdentity(title, title, null, null, description, null, searchKey, "?", "?") != null)
+            {
+                if (request.AddMetadata("SupportUrl", supportUrl) == null)
+                {
+                    return false;
+                }
+
+                if (date != null && request.AddMetadata("Date", ((DateTime)date).ToString(CultureInfo.CurrentCulture)) == null)
+                {
+                    return false;
+                }
+
+                if (resultCode != null && request.AddMetadata("ResultCode", resultCode.ToString()) == null)
+                {
+                    return false;
+                }
+                return true;
+            }
+            return false;
         }
     }
 }

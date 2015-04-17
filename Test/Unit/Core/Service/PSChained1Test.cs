@@ -42,7 +42,7 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
         [Fact]
         public void FindPackageTest() {
             using (CaptureConsole) {
-                var packages = Provider.FindPackage("zlib", null, null, null, 0, new BasicHostImpl()).ToArray();
+                var packages = Provider.FindPackage("zlib", null, null, null, new BasicHostImpl()).ToArray();
 
                 Assert.Equal(1, packages.Length);
                 var pkg1 = packages[0];

@@ -135,11 +135,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 }
 
                 try {
+                    if (ShouldProcessPackageUninstall(pkg.Name, pkg.Version)) {
                     foreach (var installedPkg in provider.UninstallPackage(pkg, this).CancelWhen(_cancellationEvent.Token)) {
                         if (IsCanceled) {
                             return false;
                         }
                         WriteObject(installedPkg);
+                    }
                     }
                 } catch (Exception e) {
                     e.Dump();
@@ -151,7 +153,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
         public bool ShouldProcessPackageUninstall(string packageName, string version) {
-            return Force || ShouldProcess(FormatMessageString(Constants.Messages.TargetPackage, packageName), FormatMessageString(Constants.Messages.ActionUninstallPackage)).Result;
+            return Force || ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageVersion, packageName, version), FormatMessageString(Constants.Messages.ActionUninstallPackage)).Result;
         }
     }
 }

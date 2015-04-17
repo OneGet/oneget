@@ -15,11 +15,10 @@
 namespace Microsoft.PackageManagement.Api {
     using System;
 
+    /// <summary>
+    /// These functions are implemented by the CORE and passed to the PROVIDER so data can be returned from a given call.
+    /// </summary>
     public interface IResponseApi {
-        #region declare response-apis
-
-        /* Synced/Generated code =================================================== */
-
         /// <summary>
         ///     Used by a provider to return fields for a SoftwareIdentity.
         /// </summary>
@@ -35,30 +34,130 @@ namespace Microsoft.PackageManagement.Api {
         /// <returns></returns>
         string YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
 
+        /// <summary>
+        /// Adds an arbitrary key/value pair of metadata to a SoftwareIdentity
+        /// 
+        /// This adds the metadata to the first Meta element in the swidtag.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns>a string to a Meta element path. If null, this function did not succeed.</returns>
         string AddMetadata(string name, string value);
 
+        /// <summary>
+        /// Adds arbitrary key/value pair of metadata to a specific element in a Swidtag.
+        /// </summary>
+        /// <param name="elementPath"></param>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns>a string to a Meta element path. If null, this function did not succeed.</returns>
         string AddMetadata(string elementPath, string name, string value);
 
+        /// <summary>
+        /// Adds arbitrary key/value pair of metadata to a specific element in a Swidtag, using a specific namespace.
+        /// </summary>
+        /// <param name="elementPath"></param>
+        /// <param name="namespace"></param>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns>a string to a Meta element path. If null, this function did not succeed.</returns>
         string AddMetadata(string elementPath, Uri @namespace, string name, string value);
 
+        /// <summary>
+        /// Adds a new Meta Element to the Swidtag. 
+        /// </summary>
+        /// <param name="elementPath"></param>
+        /// <returns>a string to the newly created Meta element. If null, this function did not succeed.</returns>
         string AddMeta(string elementPath);
 
+        /// <summary>
+        /// Adds a new Entity element to the Swidtag
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="regid"></param>
+        /// <param name="role"></param>
+        /// <param name="thumbprint"></param>
+        /// <returns>a string to a Entity element path. If null, this function did not succeed.</returns>
         string AddEntity(string name, string regid, string role, string thumbprint);
 
+        /// <summary>
+        /// Adds a new Link element to the swidtag
+        /// </summary>
+        /// <param name="referenceUri"></param>
+        /// <param name="relationship"></param>
+        /// <param name="mediaType"></param>
+        /// <param name="ownership"></param>
+        /// <param name="use"></param>
+        /// <param name="appliesToMedia"></param>
+        /// <param name="artifact"></param>
+        /// <returns>a string to a Link element path. If null, this function did not succeed.</returns>
         string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
 
+        /// <summary>
+        /// Adds a new Dependency (ie, Link, rel="requires") to the swidtag
+        /// </summary>
+        /// <param name="providerName"></param>
+        /// <param name="packageName"></param>
+        /// <param name="version"></param>
+        /// <param name="source"></param>
+        /// <param name="appliesTo"></param>
+        /// <returns>a string to a Link element path. If null, this function did not succeed.</returns>
         string AddDependency(string providerName, string packageName, string version, string source, string appliesTo);
 
+
+        /// <summary>
+        /// Adds a Payload element to the Swidtag
+        /// </summary>
+        /// <returns>a string to a new (or the existing one) Payload element</returns>
         string AddPayload();
 
+        /// <summary>
+        /// Adds an Evidence element to the Swidtag
+        /// </summary>
+        /// <param name="date"></param>
+        /// <param name="deviceId"></param>
+        /// <returns>a string to a new (or the existing one) Evidence element</returns>
         string AddEvidence(DateTime date, string deviceId);
 
+        /// <summary>
+        /// Adds a Directory element to a Payload, Evidence or Directory element
+        /// </summary>
+        /// <param name="elementPath"></param>
+        /// <param name="directoryName"></param>
+        /// <param name="location"></param>
+        /// <param name="root"></param>
+        /// <param name="isKey"></param>
+        /// <returns>a string to a new Directory element. If null, this function did not succeed.</returns>
         string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey);
 
+        /// <summary>
+        /// Adds a File element to a Payload, Evidence or Directory element
+        /// </summary>
+        /// <param name="elementPath"></param>
+        /// <param name="fileName"></param>
+        /// <param name="location"></param>
+        /// <param name="root"></param>
+        /// <param name="isKey"></param>
+        /// <param name="size"></param>
+        /// <param name="version"></param>
+        /// <returns>a string to a new File element. If null, this function did not succeed.</returns>
         string AddFile(string elementPath, string fileName, string location, string root, bool isKey, long size, string version);
 
+        /// <summary>
+        /// Adds a Process element to a Payload or Evidence element
+        /// </summary>
+        /// <param name="elementPath"></param>
+        /// <param name="processName"></param>
+        /// <param name="pid"></param>
+        /// <returns>a string to a new Process element. If null, this function did not succeed.</returns>
         string AddProcess(string elementPath, string processName, int pid);
 
+        /// <summary>
+        /// Adds a Resource element to a Payload or Evidence element
+        /// </summary>
+        /// <param name="elementPath"></param>
+        /// <param name="type"></param>
+        /// <returns>a string to a new Resource element. If null, this function did not succeed.</returns>
         string AddResource(string elementPath, string type);
 
         /// <summary>
@@ -69,7 +168,7 @@ namespace Microsoft.PackageManagement.Api {
         /// <param name="isTrusted"></param>
         /// <param name="isRegistered"></param>
         /// <param name="isValidated"></param>
-        /// <returns></returns>
+        /// <returns>A boolean indicating the IsCanceled state. (if the result is false, the provider should exit quickly)</returns>
         bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
 
         /// <summary>
@@ -79,13 +178,22 @@ namespace Microsoft.PackageManagement.Api {
         /// <param name="name">the provider-defined name of the option</param>
         /// <param name="expectedType"> one of ['string','int','path','switch']</param>
         /// <param name="isRequired">if the parameter is mandatory</param>
-        /// <returns></returns>
+        /// <returns>A boolean indicating the IsCanceled state. (if the result is false, the provider should exit quickly)</returns>
         bool YieldDynamicOption(string name, string expectedType, bool isRequired);
 
+        /// <summary>
+        /// Yields a key/value pair 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns>A boolean indicating the IsCanceled state. (if the result is false, the provider should exit quickly)</returns>
         bool YieldKeyValuePair(string key, string value);
 
+        /// <summary>
+        /// Yields a value 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>A boolean indicating the IsCanceled state. (if the result is false, the provider should exit quickly)</returns>
         bool YieldValue(string value);
-
-        #endregion
-    }
+   }
 }

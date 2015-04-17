@@ -238,7 +238,7 @@ namespace Microsoft.PackageManagement.Test.Core.Service {
             using (CaptureConsole) {
                 Reset();
 
-                var packages = Provider.FindPackage(null, null, null, null, 0, Host()).ToArray();
+                var packages = Provider.FindPackage(null, null, null, null, Host()).ToArray();
                 AssertNoErrors();
                 Assert.Equal(5, packages.Length);
             }
