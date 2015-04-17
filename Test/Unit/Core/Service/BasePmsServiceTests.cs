@@ -12,10 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Core.Service {
+namespace Microsoft.PackageManagement.Test.Core.Service {
     using System;
     using System.IO;
-    using OneGet.Utility.Extensions;
+    using PackageManagement.Utility.Extensions;
     using Xunit;
     using Xunit.Abstractions;
 
@@ -24,22 +24,6 @@ namespace Microsoft.OneGet.Test.Core.Service {
         private static IPackageManagementService _service;
 
         public BasePmsServiceTests(ITestOutputHelper outputHelper) : base(outputHelper) {
-        }
-
-        private static void EmptyFolder(string path) {
-            try {
-                if (Directory.Exists(path)) {
-                    var files = Directory.EnumerateFiles(path);
-                    foreach (var file in files) {
-                        try {
-                            file.TryHardToDelete();
-                        } catch {
-
-                        }
-                    }
-                }
-            } catch {
-            }
         }
 
         public static IPackageManagementService PackageManagementService {
@@ -52,14 +36,13 @@ namespace Microsoft.OneGet.Test.Core.Service {
                         var appdata = Environment.GetEnvironmentVariable("APPDATA");
                         var localappdata = Environment.GetEnvironmentVariable("LOCALAPPDATA");
 
-                        EmptyFolder(Path.Combine(appdata, "OneGet", "ProviderAssemblies"));
-                        EmptyFolder(Path.Combine(localappdata, "OneGet", "ProviderAssemblies"));
-
+                        EmptyFolder(Path.Combine(appdata, "PackageManagement", "ProviderAssemblies"));
+                        EmptyFolder(Path.Combine(localappdata, "PackageManagement", "ProviderAssemblies"));
 
                         // set the PSModulePath to just this folder so we don't pick up any other PSModules outside the system ones and the test ones
                         Environment.SetEnvironmentVariable("PSModulePath", Environment.CurrentDirectory);
 
-                        // first time you acess this, it will test the initialization of the service 
+                        // first time you acess this, it will test the initialization of the service
                         var svc = PackageManager.Instance;
 
                         // should not permit null host object during init
@@ -71,12 +54,26 @@ namespace Microsoft.OneGet.Test.Core.Service {
                         _service = svc;
 
                         // now, get nuget installed.
-                        Assert.True( svc.RequirePackageProvider("testing", "nuget", "2.8.4.47", new BasicHostImpl()));
-
+                        Assert.True(svc.RequirePackageProvider("testing", "nuget", "2.8.4.47", new BasicHostImpl()));
                     }
                 }
 
                 return _service;
+            }
+        }
+
+        private static void EmptyFolder(string path) {
+            try {
+                if (Directory.Exists(path)) {
+                    var files = Directory.EnumerateFiles(path);
+                    foreach (var file in files) {
+                        try {
+                            file.TryHardToDelete();
+                        } catch {
+                        }
+                    }
+                }
+            } catch {
             }
         }
     }

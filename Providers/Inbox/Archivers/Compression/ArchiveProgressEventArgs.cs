@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Compression
 {
     using System;
 
@@ -241,7 +241,7 @@ namespace Microsoft.OneGet.Archivers.Compression
         }
 
         /// <summary>
-        /// Gets the number of uncompressed bytes processed so far among all files. Valid for all message types.  
+        /// Gets the number of uncompressed bytes processed so far among all files. Valid for all message types.
         /// </summary>
         /// <value>The number of uncompressed file bytes processed so far among all files.</value>
         /// <remarks>

@@ -1,18 +1,18 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.MetaProvider.PowerShell {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -22,9 +22,8 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
     using Api;
     using Utility.Collections;
     using Utility.Extensions;
-    using Utility.PowerShell;
     using Utility.Versions;
-    
+
 
     public class PowerShellPackageProvider : PowerShellProviderBase {
         private static int _findId = 1;
@@ -32,7 +31,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         private readonly Lazy<Dictionary<int, List<string>>> _findByFileBatches = new Lazy<Dictionary<int, List<string>>>(() => new Dictionary<int, List<string>>());
         private readonly Lazy<Dictionary<int, List<Uri>>> _findByUriBatches = new Lazy<Dictionary<int, List<Uri>>>(() => new Dictionary<int, List<Uri>>());
 
-        public PowerShellPackageProvider(DynamicPowershell ps, PSModuleInfo module) : base(ps, module) {
+        public PowerShellPackageProvider(PowerShell ps, PSModuleInfo module) : base(ps, module) {
         }
 
         private bool IsFirstParameterType<T>(string function) {
@@ -75,7 +74,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequest requestObject) {
             // special case.
             // if FindPackage is implemented taking an array of strings
-            // and the id > 0 then we need to hold onto the collection until 
+            // and the id > 0 then we need to hold onto the collection until
             // CompleteFind is called.
 
             // if it expects multiples...
@@ -98,7 +97,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public void FindPackageByFile(string file, int id, IRequest requestObject) {
             // special case.
             // if FindPackageByFile is implemented taking an array of strings
-            // and the id > 0 then we need to hold onto the collection until 
+            // and the id > 0 then we need to hold onto the collection until
             // CompleteFind is called.
 
             // if it expects multiples...
@@ -120,7 +119,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public void FindPackageByUri(Uri uri, int id, IRequest requestObject) {
             // special case.
             // if FindPackageByUri is implemented taking an array of strings
-            // and the id > 0 then we need to hold onto the collection until 
+            // and the id > 0 then we need to hold onto the collection until
             // CompleteFind is called.
 
             // if it expects multiples...
@@ -165,7 +164,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
 
         private string _providerName;
         /// <summary>
-        ///     Returns the name of the Provider. 
+        ///     Returns the name of the Provider.
         /// </summary>
         /// <required />
         /// <returns>the name of the package provider</returns>
@@ -191,7 +190,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                         // use the latest date as a version number
                         return (FourPartVersion) _module.FileList.Max(each => new FileInfo(each).LastWriteTime);
                     } catch {
-                        // I give up. 
+                        // I give up.
                         return "0.0.0.1";
                     }
                 }
@@ -215,7 +214,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         public void DownloadPackage(string fastPath, string location, IRequest requestObject) {
             Call("DownloadPackage", requestObject, fastPath, location);
         }
-    
+
         public void GetPackageDetails(string fastPath, IRequest requestObject) {
             Call("GetPackageDetails", requestObject, fastPath);
         }
@@ -277,13 +276,6 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 }
             }
         }
-        public void ExecuteElevatedAction(string payload, IRequest requestObject){
-             // TODO: Fill in implementation
-             // Delete this method if you do not need to implement it
-             // Please don't throw an not implemented exception, it's not optimal.
-
-        }
-
         #endregion
 
     }

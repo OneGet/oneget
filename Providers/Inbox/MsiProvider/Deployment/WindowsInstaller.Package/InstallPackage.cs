@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Package
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
 {
     using System;
     using System.Collections;
@@ -630,7 +630,7 @@ public class InstallPackage : Database
               "FROM `File` ORDER BY `Sequence`"))
         {
             fileView.Execute();
-            
+
             foreach (Record fileRec in fileView) using(fileRec)
             {
                 files.Add(fileRec[1]);
@@ -689,7 +689,7 @@ public class InstallPackage : Database
         using (View view = this.OpenView("SELECT `Cabinet` FROM `Media` WHERE `Cabinet` <> ''"))
         {
             view.Execute();
-            
+
             foreach (Record rec in view) using(rec)
             {
                 string cab = rec.GetString(1);
@@ -781,7 +781,7 @@ public class InstallPackage : Database
             {
                 patchView.Execute();
                 Hashtable extractedPatchCabs = new Hashtable();
-                
+
                 foreach (Record patchRec in patchView) using(patchRec)
                 {
                     string fileKey = (string) patchRec[1];
@@ -811,7 +811,7 @@ public class InstallPackage : Database
               "FROM `Media` ORDER BY `DiskId`"))
         {
             mediaView.Execute();
-            
+
             foreach (Record mediaRec in mediaView) using(mediaRec)
             {
                 int mediaMaxSequence = mediaRec.GetInteger(2);
@@ -1095,7 +1095,7 @@ public class InstallPackage : Database
                   "FROM `File` ORDER BY `Sequence`"))
             {
                 fileView.Execute();
-                
+
                 foreach (Record fileRec in fileView) using(fileRec)
                 {
                     int fileAttributes = fileRec.GetInteger(2);

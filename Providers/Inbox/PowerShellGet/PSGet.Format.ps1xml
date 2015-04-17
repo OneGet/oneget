@@ -64,7 +64,7 @@
                                 <PropertyName>Name</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
-                                <PropertyName>OneGetProvider</PropertyName>
+                                <PropertyName>PackageManagementProvider</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
                                 <PropertyName>InstallationPolicy</PropertyName>

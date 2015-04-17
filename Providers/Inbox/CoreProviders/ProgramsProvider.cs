@@ -12,7 +12,7 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.OneGet.Providers {
+namespace Microsoft.PackageManagement.Providers {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -133,7 +133,7 @@ namespace Microsoft.OneGet.Providers {
             request.Debug("Calling '{0}::GetInstalledPackages' '{1}','{2}','{3}','{4}'", ProviderName, name, requiredVersion, minimumVersion, maximumVersion);
 
             // dump out results.
-            
+
             if (Environment.Is64BitOperatingSystem) {
                 using (var hklm64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
                     if (!YieldPackages("hklm64", hklm64, name,requiredVersion, minimumVersion,maximumVersion, request)) {

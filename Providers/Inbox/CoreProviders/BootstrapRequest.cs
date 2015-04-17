@@ -1,18 +1,18 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Providers {
+namespace Microsoft.PackageManagement.Providers {
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -23,6 +23,7 @@ namespace Microsoft.OneGet.Providers {
     using System.Xml.Linq;
     using Implementation;
     using Utility.Extensions;
+    using Utility.Platform;
     using Utility.Versions;
     using Utility.Xml;
 
@@ -43,10 +44,12 @@ namespace Microsoft.OneGet.Providers {
 
         internal string DestinationPath {
             get {
+                var pms = PackageManagementService as PackageManagementService;
+
                 var v = GetValue("DestinationPath");
                 if (string.IsNullOrWhiteSpace(v)) {
                     // use a well-known path.
-                    v = ProviderServices.GetKnownFolder("ProviderAssemblyLocation", this);
+                    v = AdminPrivilege.IsElevated ? pms.SystemAssemblyLocation : pms.UserAssemblyLocation;
                     if (string.IsNullOrWhiteSpace(v)) {
                         return null;
                     }
@@ -82,7 +85,7 @@ namespace Microsoft.OneGet.Providers {
             return null;
         }
 
-        private string DownloadContent(Uri location) {
+        private string DownloadContent(Uri location, bool tryAgain = true) {
             string result = null;
             try {
                 var client = new WebClient();
@@ -105,7 +108,18 @@ namespace Microsoft.OneGet.Providers {
                     // Progress(c, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
                 };
                 client.DownloadStringAsync(location);
-                done.WaitOne();
+
+                // eight second timeout.
+                if(!done.WaitOne(1000*8) ) {
+                    client.CancelAsync();
+                    Debug("Timeout downloading Swidtag");
+
+                    if (tryAgain && !IsCanceled) {
+                        Debug("Trying Once More to download Swidtag...");
+                        return DownloadContent(location, false);
+                    }
+                    Warning("Unable to download provider list");
+                }
             } catch (Exception e) {
                 e.Dump();
             }
@@ -206,7 +220,17 @@ namespace Microsoft.OneGet.Providers {
                 // Progress(c, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
             };
             client.DownloadFileAsync(uri, targetFile);
-            done.WaitOne();
+            
+            // check periodically to see if the request has been canceled 
+            while (!IsCanceled) {
+                if (done.WaitOne(1000)) {
+                    break;
+                }
+            }
+            
+            if (IsCanceled) {
+                client.CancelAsync();
+            }
             return result;
         }
     }

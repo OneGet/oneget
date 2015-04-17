@@ -12,12 +12,12 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Core.Service {
+namespace Microsoft.PackageManagement.Test.Core.Service {
     using System;
     using System.Linq;
     using System.Xml.Linq;
     using Implementation;
-    using OneGet.Packaging;
+    using PackageManagement.Packaging;
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
@@ -45,7 +45,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
         [Fact]
         public void FindPackageTest() {
             using (CaptureConsole) {
-                var packages = Provider.FindPackage("test", null, null, null, 0, new BasicHostImpl()).ToArray();
+                var packages = Provider.FindPackage("test", null, null, null, new BasicHostImpl()).ToArray();
 
                 Assert.Equal(2, packages.Length);
                 var pkg1 = packages[0];
@@ -76,10 +76,8 @@ namespace Microsoft.OneGet.Test.Core.Service {
                 Assert.Equal(1, pkg1.Payload.Directories.FirstOrDefault().Files.Count());
                 Assert.Equal(1, pkg1.Payload.Resources.Count());
 
-
                 Assert.Equal(1, packages[1].Dependencies.Count());
                 Assert.Equal("swidtest:third/[1.0]", packages[1].Dependencies.FirstOrDefault());
-
 
                 foreach (var pkg in packages) {
                     Console.WriteLine("PKG : {0}", pkg.SwidTagText);
@@ -91,21 +89,21 @@ namespace Microsoft.OneGet.Test.Core.Service {
         [Fact]
         public void TestInitialized() {
             using (CaptureConsole) {
-             
+
             }
         }
 
         [Fact]
         public void TestFeatures() {
             using (CaptureConsole) {
-             
+
             }
         }
 
         [Fact]
         public void DynamicOptionsTest() {
             using (CaptureConsole) {
-               
+
             }
         }
 
@@ -130,7 +128,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
             }
         }
 
-      
+
         [Fact]
         public void FindPackageByUriTest() {
             using (CaptureConsole) {
@@ -170,7 +168,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
         [Fact]
         public void IsSupportedFile() {
             using (CaptureConsole) {
-               
+
             }
         }
 

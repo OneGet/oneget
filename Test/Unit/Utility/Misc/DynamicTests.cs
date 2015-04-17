@@ -12,27 +12,24 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Utility.Misc {
+namespace Microsoft.PackageManagement.Test.Utility.Misc {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using OneGet.Utility.Extensions;
-    using OneGet.Utility.Plugin;
+    using PackageManagement.Utility.Extensions;
+    using PackageManagement.Utility.Plugin;
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
 
     public class DynamicTests : Tests {
-  
         public DynamicTests(ITestOutputHelper output) : base(output) {
-            
         }
 
         [Fact]
         public void TestAssumptionAboutParams() {
             using (CaptureConsole) {
-
                 var a = ItemsViaParams("very", "happy", "person");
                 var b = ItemsWithoutParams(new[] {
                     "very", "happy", "person"
@@ -44,7 +41,6 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
                 Assert.True(c.SequenceEqual(b));
 
                 var items = Flatten(a, "more").ToArray();
-
 
                 foreach (var i in items) {
                     Console.WriteLine(i);
@@ -61,7 +57,6 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
                 }
             }
         }
-
 
         private IEnumerable<object> Flatten(IEnumerable<object> items) {
             if (items == null) {
@@ -85,9 +80,9 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
         }
 
         internal static object[] ItemsViaParams(params object[] items) {
-            
             return items;
         }
+
         internal static object[] ItemsWithoutParams(object[] items) {
             return items;
         }
@@ -118,7 +113,6 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
         }
 
         public void SampleMethod(int a, int b, string c, Func<object, Int32> d) {
-            
         }
 
         [Fact]
@@ -132,6 +126,7 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
                 // IOneAndTwo iBoth = foobar;
             }
         }
+
         public interface IOne {
             void Foo();
         }
@@ -141,31 +136,26 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
         }
 
         public interface IOneAndTwo : IOne, ITwo {
-            
         }
 
         public class FooBar : IOne, ITwo {
             public void Foo() {
-                
             }
 
             public void Bar() {
-                
             }
         }
     }
 
-
     public class PackageProviderProxy {
-        public readonly Func<string, string, bool > AddPackageSource;
+        public delegate bool AddPackageSourceDelegate(string name, string location);
+
+        public readonly Func<string, string, bool> AddPackageSource;
         public readonly AddPackageSourceDelegate AddPackageSource2;
         public readonly AddPackageSourceDelegate AddPackageSource3;
         public readonly AddPackageSourceDelegate AddPackageSource4;
 
-        public delegate bool AddPackageSourceDelegate(string name, string location);
-
         public PackageProviderProxy(object instance) {
-
 #if OLD_SAD_WAY
             var createDelegate = instance.CreateProxiedDelegate<CreateDelegate>("CreateDelegate" );
 
@@ -181,20 +171,11 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
 #endif
         }
 
-        public PackageProviderProxy(Type type): this(Activator.CreateInstance(type)) {
+        public PackageProviderProxy(Type type) : this(Activator.CreateInstance(type)) {
         }
-
-     
-        
-
     }
 
     public class PPInstance {
-        public bool AddPackageSource(string name, string location) {
-            Console.WriteLine("name: {0}, location: {1}",name, location);
-            return true;
-        }
-
         public Func<string, string, bool> AddPackageSourceFunc {
             get {
                 return (s, s1) => {
@@ -202,6 +183,11 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
                     return true;
                 };
             }
+        }
+
+        public bool AddPackageSource(string name, string location) {
+            Console.WriteLine("name: {0}, location: {1}", name, location);
+            return true;
         }
 
         public Delegate CreateDelegate(string method, string[] parameterNames, Type[] parameterTypes, Type returnType) {
@@ -213,17 +199,14 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
             }
             return null;
         }
-
     }
 
     // So:
     // Take the Interface, generate a proxy class that has the <Member>Delegates and instances of the Delegates
     // and then generate the Constructor which takes an object instance.
-    
+
     public interface IPretendProvider {
-
         bool AddPackageSource(string name, string location);
-
     }
 
     //internal delegate Delegate CreateDelegate(string memberName);
@@ -231,7 +214,4 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
     public interface IDelegateCreator {
         Delegate CreateDelegate(string memberName, IEnumerable<string> pNames, IEnumerable<Type> pTypes, Type returnType);
     }
-
-    
-   
 }

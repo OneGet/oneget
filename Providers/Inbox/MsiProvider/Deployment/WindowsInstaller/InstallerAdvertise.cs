@@ -8,7 +8,7 @@
 //---------------------------------------------------------------------
 
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -54,7 +54,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         }
 
         /// <summary>
-        /// Generates an advertise script. The method enables the installer to write to a 
+        /// Generates an advertise script. The method enables the installer to write to a
         /// script the registry and shortcut information used to assign or publish a product.
         /// </summary>
         /// <param name="packagePath">Path to the package of the product being advertised</param>
@@ -88,7 +88,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         }
 
         /// <summary>
-        /// Generates an advertise script. The method enables the installer to write to a 
+        /// Generates an advertise script. The method enables the installer to write to a
         /// script the registry and shortcut information used to assign or publish a product.
         /// </summary>
         /// <param name="packagePath">Path to the package of the product being advertised</param>

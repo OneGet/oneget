@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -56,7 +56,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         public CustomActionData(string keyValueList)
         {
             this.data = new Dictionary<string, string>();
-            
+
             if (keyValueList != null)
             {
                 this.Parse(keyValueList);

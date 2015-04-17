@@ -12,8 +12,8 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Core.Service {
-    using OneGet.Utility.Collections;
+namespace Microsoft.PackageManagement.Test.Core.Service {
+    using PackageManagement.Utility.Collections;
     using Support;
     using Xunit;
     using Xunit.Abstractions;

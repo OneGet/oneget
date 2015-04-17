@@ -1,18 +1,18 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PowerShell.OneGet.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -20,13 +20,13 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
     using System.Management.Automation;
     using System.Security;
     using System.Threading;
-    using Microsoft.OneGet.Implementation;
-    using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Async;
-    using Microsoft.OneGet.Utility.Collections;
-    using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.PackageManagement.Implementation;
+    using Microsoft.PackageManagement.Packaging;
+    using Microsoft.PackageManagement.Utility.Async;
+    using Microsoft.PackageManagement.Utility.Collections;
+    using Microsoft.PackageManagement.Utility.Extensions;
     using Utility;
-    using Constants = OneGet.Constants;
+    using Constants = PackageManagement.Constants;
     using Directory = System.IO.Directory;
 
     public abstract class CmdletWithSearchAndSource : CmdletWithSearch {
@@ -42,14 +42,14 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public virtual string[] Source {get; set;}
-            
+
         [Parameter]
         public virtual PSCredential Credential {get; set;}
 
         public override IEnumerable<string> Sources {
             get {
                 if (Source.IsNullOrEmpty()) {
-                    return Microsoft.OneGet.Constants.Empty;
+                    return Microsoft.PackageManagement.Constants.Empty;
                 }
                 return Source;
             }
@@ -98,27 +98,27 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 }
             }
 
-            // it's searching for packages. 
+            // it's searching for packages.
             // we need to do the actual search for the packages now,
-            // and hold the results until EndProcessingAsync() 
+            // and hold the results until EndProcessingAsync()
             // where we can determine if we we have no ambiguity left.
             SearchForPackages();
 
             return true;
         }
 
-       
+
 
         private MutableEnumerable<string> FindFiles(string path) {
             if (path.LooksLikeAFilename()) {
                 ProviderInfo providerInfo;
                 var paths = GetResolvedProviderPathFromPSPath(path, out providerInfo).ReEnumerable();
-                return paths.SelectMany(each => each.FileExists() ? each.SingleItemAsEnumerable() : each.DirectoryExists() ? Directory.GetFiles(each) : Microsoft.OneGet.Constants.Empty).ReEnumerable();
+                return paths.SelectMany(each => each.FileExists() ? each.SingleItemAsEnumerable() : each.DirectoryExists() ? Directory.GetFiles(each) : Microsoft.PackageManagement.Constants.Empty).ReEnumerable();
             }
-            return Microsoft.OneGet.Constants.Empty.ReEnumerable();
+            return Microsoft.PackageManagement.Constants.Empty.ReEnumerable();
         }
 
-       
+
         protected bool SpecifiedMinimumOrMaximum {
             get {
                 return !string.IsNullOrWhiteSpace(MaximumVersion) || !string.IsNullOrWhiteSpace(MinimumVersion);
@@ -132,7 +132,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
         private bool IsUri(string name) {
             Uri packageUri;
-            if (Uri.TryCreate(name, UriKind.Absolute, out packageUri)) { 
+            if (Uri.TryCreate(name, UriKind.Absolute, out packageUri)) {
                 // if it's an uri, then we search via uri or file!
                 if (!packageUri.IsFile) {
                     _uris.Add( packageUri );
@@ -142,7 +142,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             return false;
         }
 
-        
+
         private bool IsFile(string name) {
             var files = FindFiles(name);
             if (files.Any()) {
@@ -152,18 +152,18 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                         // keep track that we've somehow got it twice.
                         _files[f].Item1.Add(name);
                     } else {
-                        // otherwise, lets' grab the first chunk of this file so we can check what providers 
+                        // otherwise, lets' grab the first chunk of this file so we can check what providers
                         // can handle it (later)
                         _files.Add(f, new List<string> { name }, f.ReadBytes(1024));
                     }
                 }
-                
+
                 return true;
             }
             return false;
         }
 
-        
+
 
         protected void SearchForPackages() {
             var providers = SelectedProviders.ToArray();
@@ -180,19 +180,19 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                var a = _uris.Select(uri => new {
                    query = new List<string>{uri.AbsolutePath},
                    provider = pv,
-                   packages = pv.FindPackageByUri(uri, 0, host).CancelWhen(_cancellationEvent.Token)
+                   packages = pv.FindPackageByUri(uri, host).CancelWhen(_cancellationEvent.Token)
                });
 
                var b = _files.Keys.Where(file => pv.IsSupportedFile(_files[file].Item2)).Select(file => new {
                    query = _files[file].Item1,
                    provider = pv,
-                   packages =  pv.FindPackageByFile(file, 0, host)
+                   packages =  pv.FindPackageByFile(file, host)
                });
 
                var c = _names.Select(name => new {
                    query = new List<string>{name},
                    provider = pv,
-                   packages = pv.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, 0, host)
+                   packages = pv.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion,host)
                });
 
                return a.Concat(b).Concat(c);
@@ -201,7 +201,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             if (AllVersions || !SpecifiedMinimumOrMaximum) {
                 // the user asked for every version or they didn't specify any version ranges
                 // either way, that means that we can just return everything that we're finding.
-                
+
                 while(WaitForActivity(requests.Select(each => each.packages))) {
                     // keep processing while any of the the queries is still going.
 
@@ -217,10 +217,10 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     // filter out whatever we're done with.
                     requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
                 }
-                
+
 
             } else {
-                // now this is where it gets a bit funny. 
+                // now this is where it gets a bit funny.
                 // the user specified a min or max
                 // and so we have to only return the highest one in the set for a given package.
 
@@ -237,7 +237,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                                     select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()) {
                                     ProcessPackage(perProvider.Key, perQuery.Key, pkg);
                                 }
-                            } 
+                            }
                         }
                     }
                     // filter out whatever we're done with.
@@ -265,7 +265,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 // whine about things not matched.
                 foreach (var name in unmatched) {
                     if (name == string.Empty) {
-                        // no name 
+                        // no name
                         result = false;
                         Error(Constants.Errors.NoPackagesFoundForProvider, _providersNotFindingAnything.Select(each => each.ProviderName).JoinWithComma());
                     } else {
@@ -318,7 +318,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                         }
                     } else {
                         // found across multiple providers
-                        // must specify -provider 
+                        // must specify -provider
                         // todo: make a resource for this
                         suggestion = "Please specify a single -ProviderName.";
                     }

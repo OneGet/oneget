@@ -1,28 +1,29 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Microsoft.OneGet.Packaging;
+using Microsoft.PackageManagement.Packaging;
 
-namespace Microsoft.OneGet.Msu {
+namespace Microsoft.PackageManagement.Msu {
     using System;
     using System.Collections.Generic;
     using Archivers.Compression.Cab;
     using Implementation;
     using Utility.Extensions;
+    using System.Management.Automation;
 
     public class MsuProvider {
         /// <summary>
@@ -58,8 +59,8 @@ namespace Microsoft.OneGet.Msu {
         public void InitializeProvider(Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InitializeProvider'", ProviderName);
         }
@@ -74,8 +75,8 @@ namespace Microsoft.OneGet.Msu {
         public void GetFeatures(Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
             foreach (var feature in _features) {
@@ -94,8 +95,8 @@ namespace Microsoft.OneGet.Msu {
         public void GetDynamicOptions(string category, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetDynamicOptions' '{1}'", ProviderName, category);
 
@@ -113,7 +114,7 @@ namespace Microsoft.OneGet.Msu {
                     break;
 
                 case "package":
-                    // options used when searching for packages 
+                    // options used when searching for packages
                     break;
             }
         }
@@ -135,11 +136,11 @@ namespace Microsoft.OneGet.Msu {
         public void FindPackageByFile(string file, int id, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
+            }
             if( string.IsNullOrWhiteSpace(file) ) {
                 throw new ArgumentNullException("file");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::FindPackageByFile' '{1}','{2}'", ProviderName, file, id);
 
@@ -177,13 +178,35 @@ namespace Microsoft.OneGet.Msu {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetInstalledPackages(string name, Request request) {
+        public void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request)
+        {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetInstalledPackages' '{1}'", ProviderName, name);
+
+            using (PowerShell ps = PowerShell.Create())
+            {
+                ps.AddScript(@"$updateSession = new-object -com Microsoft.Update.Session
+                $updateSearcher = $updateSession.CreateUpdateSearcher()
+                $updateSearcher.queryhistory(1, $updateSearcher.GetTotalHistoryCount()) | select Title, SupportUrl, Date, ResultCode, Description");
+                var output = ps.Invoke();
+                foreach (var obj in output)
+                {
+                    if (obj != null)
+                    {
+                        var title = obj.Properties["Title"] != null ? obj.Properties["Title"].Value as string : null;
+                        var supportUrl = obj.Properties["SupportUrl"] != null ? obj.Properties["SupportUrl"].Value as string : null;
+                        var date = obj.Properties["Date"] != null ? obj.Properties["Date"].Value as DateTime? : null;
+                        var resultCode = obj.Properties["ResultCode"] != null ? obj.Properties["ResultCode"].Value as int? : null;
+                        var description = obj.Properties["Description"] != null ? obj.Properties["Description"].Value as string : null;
+
+                        YieldPackage(name, request, title, supportUrl, date, resultCode, description);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -197,11 +220,11 @@ namespace Microsoft.OneGet.Msu {
         public void InstallPackage(string fastPackageReference, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
+            }
             if( string.IsNullOrWhiteSpace(fastPackageReference) ) {
                 throw new ArgumentNullException("fastPackageReference");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InstallPackage' '{1}'", ProviderName, fastPackageReference);
 
@@ -228,13 +251,47 @@ namespace Microsoft.OneGet.Msu {
         public void UninstallPackage(string fastPackageReference, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
+            }
             if( string.IsNullOrWhiteSpace(fastPackageReference) ) {
                 throw new ArgumentNullException("fastPackageReference");
-            }        
-        
+            }
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::UninstallPackage' '{1}'", ProviderName, fastPackageReference);
+        }
+
+        /// <summary>
+        /// Yields package information to OneGet Core
+        /// </summary>
+        /// <param name="searchKey"></param>
+        /// <param name="request"></param>
+        /// <param name="title"></param>
+        /// <param name="supportUrl"></param>
+        /// <param name="date"></param>
+        /// <param name="resultCode"></param>
+        /// <param name="description"></param>
+        /// <returns>Whether operation succeeded or was interrupted</returns>
+        private bool YieldPackage(string searchKey, Request request, string title, string supportUrl, DateTime? date, int? resultCode, string description)
+        {
+            if (request.YieldSoftwareIdentity(title, title, null, null, description, null, searchKey, "?", "?") != null)
+            {
+                if (request.AddMetadata("SupportUrl", supportUrl) == null)
+                {
+                    return false;
+                }
+
+                if (date != null && request.AddMetadata("Date", ((DateTime)date).ToString(CultureInfo.CurrentCulture)) == null)
+                {
+                    return false;
+                }
+
+                if (resultCode != null && request.AddMetadata("ResultCode", resultCode.ToString()) == null)
+                {
+                    return false;
+                }
+                return true;
+            }
+            return false;
         }
     }
 }

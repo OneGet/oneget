@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -607,7 +607,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
                         column.Capacity = (int) ++bufSize;
                         error = RemotableNativeMethods.MsiViewGetError((int) this.Handle, column, ref bufSize);
                     }
-                    
+
                     if (error == -3 /*MSIDBERROR_INVALIDARG*/)
                     {
                         throw InstallerException.ExceptionFromReturnCode((uint) NativeMethods.Error.INVALID_PARAMETER);

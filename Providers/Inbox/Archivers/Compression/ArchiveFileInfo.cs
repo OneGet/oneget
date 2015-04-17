@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Compression
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -151,7 +151,7 @@ namespace Microsoft.OneGet.Archivers.Compression
             get
             {
                 string fullName = System.IO.Path.Combine(this.Path, this.Name);
-                
+
                 if (this.Archive != null)
                 {
                     fullName = System.IO.Path.Combine(this.ArchiveName, fullName);

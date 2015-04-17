@@ -1,0 +1,100 @@
+ 
+ New-SelfSignedCertificate -DnsName www.fabrikam.com, www.contoso.com -CertStoreLocation cert:\LocalMachine\My
+ 
+ netsh http add sslcert ipport=127.0.0.1:443 certhash=ADA9396523C57570DC5A898A5D57E8BDD8F83450 appid='{df8c8073-5a4b-4810-b469-5975a9c95230}'
+ 
+ New-SelfsignedCertificateEx -Subject "CN=Test Root CA, OU=Sandbox" -IsCA $true -ProviderName "Microsoft Software Key Storage Provider" -Exportable
+
+
+New-SelfsignedCertificateEx -Subject "CN=localhost" -EKU "Server Authentication", "Client authentication" -KeyUsage "KeyEncipherment, DigitalSignature" -SAN "*","127.0.0.1" -AllowSMIME -Exportable -StoreLocation "LocalMachine" -StoreName "Root"
+
+-Path C:\test\ssl.pfx -Password (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force) 
+
+
+
+New-SelfSignedCertificate -DnsName www.fabrikam.com, www.contoso.com -CertStoreLocation cert:\LocalMachine\My
+
+
+
+
+
+New-SelfSignedCertificate -DnsName www.google.com,google.com -CertStoreLocation cert:\LocalMachine\My
+
+
+(New-SelfSignedCertificate -DnsName www.google.com,google.com,go.microsoft.com,nuget.org,www.nuget.org,microsoft.com,localhost,127.0.0.1,*,*.com,*.org,*.net -CertStoreLocation cert:\LocalMachine\Root).Thumbprint
+
+
+netsh http add sslcert ipport=127.0.0.1:443 certhash=1367FED534F43E9E5B1C5AFD3DFC4BA9E72CED5F appid='{df8c8073-5a4b-4810-b469-5975a9c95230}'
+
+netsh http delete sslcert  hostnameport=www.google.com:443
+netsh http delete sslcert  hostnameport=google.com:443
+netsh http delete sslcert ipport=127.0.0.1:443 
+
+
+#create the certificate
+$thumb = (New-SelfSignedCertificate -DnsName www.google.com,google.com,go.microsoft.com,nuget.org,www.nuget.org,microsoft.com,localhost,127.0.0.1,*,*.com,*.org,*.net -CertStoreLocation cert:\LocalMachine\My).Thumbprint
+
+#copy to the root store(?)
+
+netsh http add sslcert ipport=127.0.0.1:443 certhash=$thumb appid='{df8c8073-5a4b-4810-b469-5975a9c95230}'
+netsh http add sslcert ipport=127.0.0.1:443 certhash=$thumb appid='{df8c8073-5a4b-4810-b469-5975a9c95230}'
+
+@( "www.google.com","google.com","go.microsoft.com","nuget.org","www.nuget.org","microsoft.com","localhost","chocolatey.org","www.chocolatey.org","oneget.org","www.oneget.org" ) | netsh http add sslcert ipport=$_:443 certhash=$thumb appid='{df8c8073-5a4b-4810-b469-5975a9c95230}'
+
+
+ @( "www.google.com","google.com","go.microsoft.com","nuget.org","www.nuget.org","microsoft.com","localhost","chocolatey.org","www.chocolatey.org","oneget.org","www.oneget.org" ) | foreach { echo 'netsh http add sslcert ipport=$_:443 certhash=$thumb appid={df8c8073-5a4b-4810-b469-5975a9c95230}' }
+
+
+ @( "www.google.com","google.com","go.microsoft.com","nuget.org","www.nuget.org","microsoft.com","localhost","chocolatey.org","www.chocolatey.org","oneget.org","www.oneget.org" ) | foreach { $v ="$_"+":443" ; netsh http delete sslcert  hostnameport=$v }
+ 
+@( "www.google.com","google.com","go.microsoft.com","nuget.org","www.nuget.org","microsoft.com","localhost","chocolatey.org","www.chocolatey.org","oneget.org","www.oneget.org" ) | foreach { $v ="$_"+":443" ;  netsh http add sslcert hostnameport=$v certhash=$thumb appid='{df8c8073-5a4b-4810-b469-5975a9c95230}' }
+
+
+
+#================================================================================
+#setup script
+
+
+# aribtrary app id
+$appid = '{df8c8073-5a4b-4810-b469-5975a9c95230}'
+
+# which servers to fake out
+$Servers = @( "onegettestcert","www.google.com","google.com","go.microsoft.com","nuget.org","www.nuget.org","microsoft.com","localhost","chocolatey.org","www.chocolatey.org","oneget.org","www.oneget.org","127.0.0.1","*","*.com","*.org","*.net" ) 
+
+# create the certificate
+$cert = New-SelfSignedCertificate -DnsName $Servers -CertStoreLocation cert:\LocalMachine\My
+
+$thumb = $cert.thumbprint
+
+#export to file
+Export-Certificate -cert $cert -FilePath .\$thumb.cer
+
+#copy to the root store(?)
+.\Import-certificate.ps1 -store root -LocalMachine -certfile .\$thumb.cer
+
+# clean up the file
+erase .\$thumb.cer
+
+# register the cert for each server name
+# some errors are ok (IP and Wildcards don't bind like that)
+$Servers | foreach { $v ="$_"+":443" ; netsh http add sslcert hostnameport=$v certhash=$thumb appid=$appid certstorename=MY }
+
+# and once for the IP port too
+netsh http add sslcert ipport=127.0.0.1:443 certhash=$thumb appid=$appid certstorename=MY 
+
+
+
+#================================================================================
+# cleanup script
+
+# aribtrary app id
+$appid = '{df8c8073-5a4b-4810-b469-5975a9c95230}'
+
+# which servers to fake out
+$Servers = @( "onegettestcert","www.google.com","google.com","go.microsoft.com","nuget.org","www.nuget.org","microsoft.com","localhost","chocolatey.org","www.chocolatey.org","oneget.org","www.oneget.org","127.0.0.1","*","*.com","*.org","*.net" ) 
+
+$Servers | foreach { $v ="$_"+":443" ; netsh http delete sslcert hostnameport=$v  }
+netsh http delete sslcert  ipport=127.0.0.1:443
+
+
+dir "Cert:\LocalMachine\my\" | Where-Object Subject -eq "CN=onegettestcert" | erase

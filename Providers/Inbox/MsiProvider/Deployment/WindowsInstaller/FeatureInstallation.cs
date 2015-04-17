@@ -8,7 +8,7 @@
 //---------------------------------------------------------------------
 
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

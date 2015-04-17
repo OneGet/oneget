@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression.Zip
+namespace Microsoft.PackageManagement.Archivers.Compression.Zip
 {
     using System;
     using System.Collections.Generic;
@@ -43,7 +43,7 @@ namespace Microsoft.OneGet.Archivers.Compression.Zip
 
         public const uint SPANSIG  = 0x08074b50;
         public const uint SPANSIG2 = 0x30304b50;
-        
+
         public const uint LFH_FIXEDSIZE = 30;
         public const uint CFH_FIXEDSIZE = 46;
 
@@ -183,7 +183,7 @@ namespace Microsoft.OneGet.Archivers.Compression.Zip
             this.crc32 = reader.ReadUInt32();
             this.compressedSize = reader.ReadUInt32();
             this.uncompressedSize = reader.ReadUInt32();
-            
+
             this.zip64 = this.uncompressedSize == UInt32.MaxValue;
 
             int fileNameLength = reader.ReadUInt16();
@@ -270,7 +270,7 @@ namespace Microsoft.OneGet.Archivers.Compression.Zip
             writer.Write(this.crc32);
             writer.Write(this.compressedSize);
             writer.Write(this.uncompressedSize);
-            
+
             ushort extraFieldLength = 0;
             if (this.extraFields != null)
             {
@@ -348,7 +348,7 @@ namespace Microsoft.OneGet.Archivers.Compression.Zip
         public ZipFileInfo ToZipFileInfo()
         {
             string name = this.fileName;
-            
+
             long compressedSizeL;
             long uncompressedSizeL;
             long localHeaderOffsetL;

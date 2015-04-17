@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression.Cab
+namespace Microsoft.PackageManagement.Archivers.Compression.Cab
 {
     using System;
     using System.Collections.Generic;

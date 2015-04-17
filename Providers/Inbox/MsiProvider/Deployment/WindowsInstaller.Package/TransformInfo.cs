@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Package
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
 {
     using System;
     using System.Globalization;

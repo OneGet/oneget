@@ -1,24 +1,24 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PowerShell.OneGet.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Async;
-    using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.PackageManagement.Packaging;
+    using Microsoft.PackageManagement.Utility.Async;
+    using Microsoft.PackageManagement.Utility.Extensions;
     using Utility;
 
     [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageSourceNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517137")]
@@ -86,7 +86,8 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     return false;
                 }
 
-                using (var sources = provider.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).CancelWhen(_cancellationEvent.Token)) {
+                using (var src = provider.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).CancelWhen(_cancellationEvent.Token)) {
+                    var sources = src.Distinct();
                     if (noCriteria) {
                         // no criteria means just return whatever we found
                         if (WriteSources(sources)) {
@@ -95,14 +96,25 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                         var all = sources.ToArray();
                         var registered = all.Where(each => each.IsRegistered);
 
-                        if (noName) {
+                        if (noName)
+                        {
                             // just location was specified
                             if (WriteSources(registered.Where(each => each.Location.EqualsIgnoreCase(Location)))) {
                                 continue;
                             }
-                        } else {
-                            // source was specified (check both name and location fields for match)
-                            if (WriteSources(registered.Where(each => each.Name.EqualsIgnoreCase(Name) || each.Location.EqualsIgnoreCase(Name)))) {
+                        }
+                        else if (noLocation)
+                        {
+                            // just name was specified
+                            if (WriteSources(registered.Where(each => each.Name.EqualsIgnoreCase(Name))))
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            // name and location were specified
+                            if (WriteSources(registered.Where(each => each.Name.EqualsIgnoreCase(Name) && each.Location.EqualsIgnoreCase(Location)))) {
                                 continue;
                             }
                         }
@@ -136,11 +148,23 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     return true;
                 }
 
-                // source was specified (check both name and location fields for match)
-                if (WriteSources(_unregistered.Where(each => each.Name.EqualsIgnoreCase(Name) || each.Location.EqualsIgnoreCase(Name)))) {
+                if (_noLocation)
+                {
+                    // just name was specified
+                    if (WriteSources(_unregistered.Where(each => each.Name.EqualsIgnoreCase(Name))))
+                    {
                     return true;
                 }
                 Warning(Constants.Messages.SourceNotFound, Name);
+                return true;
+            }
+
+                // both Name and Location were specified
+                if (WriteSources(_unregistered.Where(each => each.Name.EqualsIgnoreCase(Name) && each.Location.EqualsIgnoreCase(Location)))) {
+                    return true;
+                }
+
+                Warning(Constants.Messages.SourceNotFoundForNameAndLocation, Name, Location);
                 return true;
             }
             return true;

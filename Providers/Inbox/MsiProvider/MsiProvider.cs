@@ -1,18 +1,18 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.OneGet.Msi {
+namespace Microsoft.PackageManagement.Msi {
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -69,7 +69,7 @@ namespace Microsoft.OneGet.Msi {
         public void GetFeatures(Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
+            }
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
 
@@ -89,7 +89,7 @@ namespace Microsoft.OneGet.Msi {
         public void GetDynamicOptions(string category, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
+            }
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetDynamicOptions' '{1}'", ProviderName, category);
 
@@ -108,7 +108,7 @@ namespace Microsoft.OneGet.Msi {
                     break;
 
                 case "package":
-                    // options used when searching for packages 
+                    // options used when searching for packages
                     break;
             }
         }
@@ -130,10 +130,10 @@ namespace Microsoft.OneGet.Msi {
         public void FindPackageByFile(string file, int id, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }        
+            }
             if( string.IsNullOrWhiteSpace(file) ) {
                 throw new ArgumentNullException("file");
-            }        
+            }
 
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::FindPackageByFile' '{1}','{2}'", ProviderName, file, id);
@@ -148,7 +148,7 @@ namespace Microsoft.OneGet.Msi {
                 package.Close();
             } catch (Exception e) {
                 e.Dump();
-                // any exception at this point really just means that 
+                // any exception at this point really just means that
                 request.Error(ErrorCategory.OpenError, file, Constants.Messages.UnableToResolvePackage, file);
             }
         }
@@ -168,7 +168,7 @@ namespace Microsoft.OneGet.Msi {
             if( request == null ) {
                 throw new ArgumentNullException("request");
             }
-                    
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetInstalledPackages' '{1}','{2}','{3}','{4}'", ProviderName, name, requiredVersion, minimumVersion, maximumVersion);
             var products = ProductInstallation.AllProducts;
@@ -259,10 +259,10 @@ namespace Microsoft.OneGet.Msi {
         public void UninstallPackage(string fastPackageReference, Request request) {
             if( request == null ) {
                 throw new ArgumentNullException("request");
-            }  
+            }
             if( string.IsNullOrWhiteSpace(fastPackageReference) ) {
                 throw new ArgumentNullException("fastPackageReference");
-            }      
+            }
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::UninstallPackage' '{1}'", ProviderName, fastPackageReference);
 

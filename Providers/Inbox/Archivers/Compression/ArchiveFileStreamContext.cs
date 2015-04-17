@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Compression
 {
     using System;
     using System.Collections.Generic;
@@ -304,7 +304,7 @@ namespace Microsoft.OneGet.Archivers.Compression
                 // Truncate the stream, in case a larger old archive starts here.
                 stream.SetLength(0);
             }
-            
+
             return stream;
         }
 

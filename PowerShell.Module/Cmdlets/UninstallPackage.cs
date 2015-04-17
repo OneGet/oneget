@@ -1,26 +1,26 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PowerShell.OneGet.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Async;
-    using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.PackageManagement.Packaging;
+    using Microsoft.PackageManagement.Utility.Async;
+    using Microsoft.PackageManagement.Utility.Extensions;
 
     [Cmdlet(VerbsLifecycle.Uninstall, Constants.Nouns.PackageNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517142")]
     public sealed class UninstallPackage : GetPackage {
@@ -108,7 +108,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
 
             foreach (var n in _resultsPerName.Keys) {
-                // check if we have a 1 package per name 
+                // check if we have a 1 package per name
                 if (_resultsPerName[n].Count > 1) {
                     Error(Constants.Errors.DisambiguateForUninstall, n, _resultsPerName[n]);
                     return false;
@@ -135,11 +135,13 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 }
 
                 try {
+                    if (ShouldProcessPackageUninstall(pkg.Name, pkg.Version)) {
                     foreach (var installedPkg in provider.UninstallPackage(pkg, this).CancelWhen(_cancellationEvent.Token)) {
                         if (IsCanceled) {
                             return false;
                         }
                         WriteObject(installedPkg);
+                    }
                     }
                 } catch (Exception e) {
                     e.Dump();
@@ -151,7 +153,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         }
 
         public bool ShouldProcessPackageUninstall(string packageName, string version) {
-            return Force || ShouldProcess(FormatMessageString(Constants.Messages.TargetPackage, packageName), FormatMessageString(Constants.Messages.ActionUninstallPackage)).Result;
+            return Force || ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageVersion, packageName, version), FormatMessageString(Constants.Messages.ActionUninstallPackage)).Result;
         }
     }
 }

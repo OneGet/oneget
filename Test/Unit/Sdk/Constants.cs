@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Sdk {
+namespace Microsoft.PackageManagement.Test.Sdk {
     public static partial class Constants {
         #region copy common-constants-implementation /internal/public
 

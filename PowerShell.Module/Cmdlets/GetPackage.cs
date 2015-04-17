@@ -1,25 +1,25 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PowerShell.OneGet.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Async;
-    using Microsoft.OneGet.Utility.Collections;
-    using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.PackageManagement.Packaging;
+    using Microsoft.PackageManagement.Utility.Async;
+    using Microsoft.PackageManagement.Utility.Collections;
+    using Microsoft.PackageManagement.Utility.Extensions;
     using Utility;
     using System.Diagnostics.CodeAnalysis;
 
@@ -77,7 +77,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
 
             var requests = (Name.IsNullOrEmpty() ?
 
-                // if the user didn't specify any names 
+                // if the user didn't specify any names
                 SelectedProviders.Select(pv => new {
                     query = "?",
                     packages = pv.GetInstalledPackages("",RequiredVersion, MinimumVersion, MaximumVersion, this.ProviderSpecific(pv)).CancelWhen(_cancellationEvent.Token)
@@ -121,7 +121,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         }
 
         protected virtual void ProcessPackage(string query, SoftwareIdentity package) {
-            // Check for duplicates 
+            // Check for duplicates
             if (!IsDuplicate(package)) {
                 WriteObject(package);
             }

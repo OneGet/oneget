@@ -11,17 +11,20 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //  
- 
-namespace Microsoft.OneGet.Test.Utility.Concpetual {
+
+namespace Microsoft.PackageManagement.Test.Utility.Concpetual {
     using System;
     using System.Runtime.InteropServices;
     using System.Security;
-    using OneGet.Utility.Extensions;
+    using PackageManagement.Utility.Extensions;
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
 
     public class MiscTests : Tests {
+        public MiscTests(ITestOutputHelper outputHelper) : base(outputHelper) {
+        }
+
         [Fact]
         public void TestSecureString() {
             using (CaptureConsole) {
@@ -54,9 +57,6 @@ namespace Microsoft.OneGet.Test.Utility.Concpetual {
                     Marshal.ZeroFreeBSTR(bstr);
                 }
             }
-        }
-
-        public MiscTests(ITestOutputHelper outputHelper) : base(outputHelper) {
         }
     }
 

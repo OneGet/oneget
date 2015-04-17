@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Compression
 {
     using System;
     using System.IO;
@@ -103,7 +103,7 @@ namespace Microsoft.OneGet.Archivers.Compression
         /// </summary>
         public override long Length
         {
-            get { return this.source.Length - this.sourceOffset; } 
+            get { return this.source.Length - this.sourceOffset; }
         }
 
         /// <summary>

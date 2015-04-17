@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -81,10 +81,10 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiclosehandle.asp">MsiCloseHandle</a>
         /// </p></remarks>
         /// <seealso cref="Close"/>
-        public void Dispose() 
+        public void Dispose()
         {
             this.Dispose(true);
-            GC.SuppressFinalize(this); 
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -146,12 +146,12 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         /// Closes the handle.  After closing a handle, further method calls may throw an <see cref="InvalidHandleException"/>.
         /// </summary>
         /// <param name="disposing">If true, the method has been called directly or indirectly by a user's code,
-        /// so managed and unmanaged resources will be disposed. If false, the method has been called by the 
+        /// so managed and unmanaged resources will be disposed. If false, the method has been called by the
         /// runtime from inside the finalizer, and only unmanaged resources will be disposed.</param>
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        protected virtual void Dispose(bool disposing) 
+        protected virtual void Dispose(bool disposing)
         {
-            if (disposing) 
+            if (disposing)
             {
                 this.handle.Dispose();
             }

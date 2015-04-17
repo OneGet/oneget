@@ -1,12 +1,12 @@
 # Copyright (C) 2014 Microsoft Corporation
 
 ###
-### OneGet/Providers/Inbox/MsuProvider
+### Providers/Inbox/MsuProvider
 ###
 
 !include ..\..\..\common.inc
 
-TARGETNAME          = Microsoft.OneGet.MsuProvider
+TARGETNAME          = Microsoft.PackageManagement.MsuProvider
 TARGETTYPE          = DYNLINK
 
 ## !include $(PROJECT_ROOT)\monad\nttargets\build\sources.inc
@@ -14,9 +14,8 @@ OUTPUT_PATH=$(OBJ_PATH)\$(O)
 
 SOURCES_PATH = .\
 
-ONEGET_CORE=$(OBJ_PATH)\..\..\..\OneGet\$(O)\Microsoft.OneGet.metadata_exe;
-ONEGET_UTILITY=$(OBJ_PATH)\..\..\..\Utility\$(O)\Microsoft.OneGet.Utility.metadata_dll;
-ONEGET_ARCHIVERS=$(OBJ_PATH)\..\Archivers\$(O)\Microsoft.OneGet.ArchiverProviders.metadata_dll;
+PACKAGEMANAGEMENT_CORE=$(OBJ_PATH)\..\..\..\PackageManagement\$(O)\Microsoft.PackageManagement.metadata_dll;
+PACKAGEMANAGEMENT_ARCHIVERS=$(OBJ_PATH)\..\Archivers\$(O)\Microsoft.PackageManagement.ArchiverProviders.metadata_dll;
 
 ###
 ### Note: This really only works if you have a single .resx file.
@@ -24,7 +23,7 @@ ONEGET_ARCHIVERS=$(OBJ_PATH)\..\Archivers\$(O)\Microsoft.OneGet.ArchiverProvider
 ###       you have to either *always* pre-gen the .cs files or figure another
 ###       way.
 ###
-RESOURCES_NAMESPACE=Microsoft.OneGet.MsuProvider.Resources
+RESOURCES_NAMESPACE=Microsoft.PackageManagement.MsuProvider.Resources
 GENERATED_RESOURCES_SOURCE=$(OUTPUT_PATH)\Messages.cs
 RESGEN_FLAGS = /str:cs,$(RESOURCES_NAMESPACE),Messages,$(OUTPUT_PATH)\Messages.cs
 
@@ -47,9 +46,8 @@ PASS2_BINPLACE=\
 ### Referenced assemblies
 
 REFERENCES=\
-    $(ONEGET_CORE) \
-    $(ONEGET_UTILITY) \
-    $(ONEGET_ARCHIVERS) \
+    $(PACKAGEMANAGEMENT_CORE) \
+    $(PACKAGEMANAGEMENT_ARCHIVERS) \
     $(CLR_REF_PATH)\Microsoft.CSharp.metadata_dll; \
 	$(CLR_REF_PATH)\System.metadata_dll; \
     $(CLR_REF_PATH)\System.Configuration.metadata_dll; \
@@ -57,7 +55,8 @@ REFERENCES=\
 	$(CLR_REF_PATH)\System.Data.metadata_dll; \
 	$(CLR_REF_PATH)\System.Data.DataSetExtensions.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
-	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll;
+	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll; \
+	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll;
 
 #region sourcefiles
 SOURCES=\

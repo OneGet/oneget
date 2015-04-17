@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Linq
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
 {
     using System;
     using System.Collections.Generic;
@@ -349,7 +349,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Linq
         /// </summary>
         /// <remarks>
         /// The record (primary keys) may not already exist in the table.
-        /// <para>Use <see cref="QTable&lt;TRecord&gt;.NewRecord()"/> to get a new 
+        /// <para>Use <see cref="QTable&lt;TRecord&gt;.NewRecord()"/> to get a new
         /// record. Prmary keys and all required fields
         /// must be filled in before insertion.</para>
         /// </remarks>
@@ -365,7 +365,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller.Linq
         /// inserted, to be visible only as long as the database is open</param>
         /// <remarks>
         /// The record (primary keys) may not already exist in the table.
-        /// <para>Use <see cref="QTable&lt;TRecord&gt;.NewRecord()"/> to get a new 
+        /// <para>Use <see cref="QTable&lt;TRecord&gt;.NewRecord()"/> to get a new
         /// record. Prmary keys and all required fields
         /// must be filled in before insertion.</para>
         /// </remarks>

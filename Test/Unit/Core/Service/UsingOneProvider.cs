@@ -12,12 +12,11 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Core.Service {
-    using System.Collections.Generic;
+namespace Microsoft.PackageManagement.Test.Core.Service {
     using System.Linq;
     using Api;
     using Implementation;
-    using OneGet.Utility.Plugin;
+    using PackageManagement.Utility.Plugin;
     using Support;
     using Xunit;
     using Xunit.Abstractions;
@@ -78,7 +77,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
             if (args.Length == 0) {
                 return _lastCall;
             }
-            
+
             return new object[] {
                 args,
                 // everything else just pull from the basic impl

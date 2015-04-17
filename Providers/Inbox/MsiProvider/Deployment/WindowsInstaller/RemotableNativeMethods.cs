@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -93,7 +93,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         private const int MAX_REQUEST_FIELDS = 4;
         private static int requestFieldDataOffset;
         private static int requestFieldSize;
-        
+
         [SuppressMessage("Microsoft.Reliability", "CA2006:UseSafeHandleToEncapsulateNativeResources")]
         private static IntPtr requestBuf;
 
@@ -161,7 +161,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
             {
                 return handle;
             }
-            
+
             if (!RemotableNativeMethods.IsRemoteHandle(handle))
             {
                 throw new InvalidOperationException("Handle does not have the remote bit set.");
@@ -521,8 +521,8 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
             {
                 return unchecked ((int) RemotableNativeMethods.MsiFunc_III(
                     RemoteMsiFunctionId.MsiRecordGetInteger,
-                    RemotableNativeMethods.GetRemoteHandle(hRecord), 
-                    (int) iField, 
+                    RemotableNativeMethods.GetRemoteHandle(hRecord),
+                    (int) iField,
                     0));
             }
         }

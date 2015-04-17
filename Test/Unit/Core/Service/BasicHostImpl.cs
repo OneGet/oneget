@@ -12,14 +12,12 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Core.Service {
+namespace Microsoft.PackageManagement.Test.Core.Service {
     using System.Collections.Generic;
-    using System.Linq;
     using System.Security;
     using Api;
-    using OneGet.Utility.Extensions;
+    using PackageManagement.Utility.Extensions;
     using Support;
-    using Utility.Misc;
 
     public class BasicHostImpl : IHostApi {
         private static object lockObject = new object();
@@ -31,7 +29,6 @@ namespace Microsoft.OneGet.Test.Core.Service {
         public BasicHostImpl() {
             _callCount = NextNumber;
         }
-
 
         private int NextNumber {
             get {
@@ -60,7 +57,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
         }
 
         public virtual bool Error(string id, string category, string targetObjectValue, string messageText) {
-            Errors.Add("<{0}>,<{1}>,<{2}>,<{3}>".format( id, category, targetObjectValue, messageText));
+            Errors.Add("<{0}>,<{1}>,<{2}>,<{3}>".format(id, category, targetObjectValue, messageText));
             Console.WriteLine("[Error],<{0}>,<{1}>,<{2}>,<{3}>", id, category, targetObjectValue, messageText);
             return false;
         }

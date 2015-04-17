@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression.Cab
+namespace Microsoft.PackageManagement.Archivers.Compression.Cab
 {
     using System;
     using System.Collections.Generic;
@@ -120,7 +120,7 @@ namespace Microsoft.OneGet.Archivers.Compression.Cab
                     {
                         this.Erf.Clear();
                         this.CabNumbers[this.NextCabinetName] = cabNumber;
-                        
+
                         var result = NativeMethods.FDI.Copy(
                             this.fdiHandle,
                             this.NextCabinetName,
@@ -332,7 +332,7 @@ namespace Microsoft.OneGet.Archivers.Compression.Cab
         /// Disposes of resources allocated by the cabinet engine.
         /// </summary>
         /// <param name="disposing">If true, the method has been called directly or indirectly by a user's code,
-        /// so managed and unmanaged resources will be disposed. If false, the method has been called by the 
+        /// so managed and unmanaged resources will be disposed. If false, the method has been called by the
         /// runtime from inside the finalizer, and only unmanaged resources will be disposed.</param>
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         protected override void Dispose(bool disposing)

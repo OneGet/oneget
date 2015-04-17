@@ -12,28 +12,24 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.MetaProvider.PowerShell {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
     using System.Threading;
-    using System.Threading.Tasks;
     using Resources;
-    using Utility.Collections;
     using Utility.Extensions;
-    using Utility.PowerShell;
 
     public class PowerShellProviderBase : IDisposable {
-        private readonly Dictionary<string, CommandInfo> _allCommands = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, CommandInfo> _methods = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
         private object _lock = new Object();
         protected PSModuleInfo _module;
-        private DynamicPowershell _powershell;
+        private PowerShell _powershell;
         private ManualResetEvent _reentrancyLock = new ManualResetEvent(true);
-        private DynamicPowershellResult _result;
+        private readonly Dictionary<string, CommandInfo> _allCommands = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, CommandInfo> _methods = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
 
-        public PowerShellProviderBase(DynamicPowershell ps, PSModuleInfo module) {
+        public PowerShellProviderBase(PowerShell ps, PSModuleInfo module) {
             if (module == null) {
                 throw new ArgumentNullException("module");
             }
@@ -65,10 +61,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     _powershell.Dispose();
                     _powershell = null;
                 }
-                if (_result != null) {
-                    _result.Dispose();
-                    _result = null;
-                }
+
                 if (_reentrancyLock != null) {
                     _reentrancyLock.Dispose();
                     _reentrancyLock = null;
@@ -138,7 +131,7 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                 return null;
             }
 
-            var result = _powershell.NewTryInvokeMemberEx(cmdInfo.Name, new string[0], args);
+            var result = _powershell.InvokeFunction<object>(cmdInfo.Name, args);
             if (result == null) {
                 // failure!
                 throw new Exception(Messages.PowershellScriptFunctionFailed.format(_module.Name, method));
@@ -167,28 +160,27 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
         }
 
         internal object CallPowerShell(PsRequest request, params object[] args) {
-            // the lock ensures that we're not re-entrant into the same powershell runspace 
+            // the lock ensures that we're not re-entrant into the same powershell runspace
             lock (_lock) {
                 if (!_reentrancyLock.WaitOne(0)) {
                     // this lock is set to false, meaning we're still in a call **ON THIS THREAD**
                     // this is bad karma -- powershell won't let us call into the runspace again
                     // we're going to throw an error here because this indicates that the currently
-                    // running powershell call is calling back into OneGet, and it has called back 
+                    // running powershell call is calling back into PM, and it has called back
                     // into this provider. That's just bad bad bad.
                     throw new Exception("Re-entrancy Violation in powershell module");
                 }
-                
+
                 try {
                     // otherwise, this is the first time we've been here during this call.
                     _reentrancyLock.Reset();
 
-                    _powershell["request"] = request;
-
-                    DynamicPowershellResult result = null;
+                    _powershell.SetVariable("request", request);
+                    _powershell.Streams.ClearStreams();
 
                     // request.Debug("INVOKING PowerShell Fn {0} in {1}", request.CommandInfo.Name, _module.Name);
                     // make sure we don't pass the request to the function.
-                    result = _powershell.NewTryInvokeMemberEx(request.CommandInfo.Name, new string[0], args);
+                    var result = _powershell.InvokeFunction<object>(request.CommandInfo.Name, args);
 
                     // instead, loop thru results and get
                     if (result == null) {
@@ -199,9 +191,9 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                     object finalValue = null;
 
                     foreach (var value in result) {
-                        if (result.ContainsErrors) {
-                            ReportErrors(request, result.Errors);
-                            return null;
+                        if (_powershell.Streams.Error.Any()) {
+                            ReportErrors(request, _powershell.Streams.Error);
+                            _powershell.Streams.Error.Clear();
                         }
 
                         var y = value as Yieldable;
@@ -212,23 +204,25 @@ namespace Microsoft.OneGet.MetaProvider.PowerShell {
                         }
                     }
 
-                    if (result.ContainsErrors) {
-                        ReportErrors(request, result.Errors);
+                    if (_powershell.Streams.Error.Any()) {
+                        ReportErrors(request, _powershell.Streams.Error);
+                        _powershell.Streams.Error.Clear();
                         return null;
                     }
 
                     return finalValue;
-                } catch (Exception e) {
+                } catch (CmdletInvocationException cie) {
+                    var error = cie.ErrorRecord;
+                    request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject == null ? null : error.TargetObject.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
+                }catch (Exception e) {
                     e.Dump();
                 } finally {
-                    _powershell.WaitForAvailable();
-                    _powershell["request"] = null;
+                    _powershell.WaitForReady();
+                    _powershell.SetVariable("request", null);
 
                     // it's ok if someone else calls into this module now.
                     _reentrancyLock.Set();
                 }
-
-                
 
                 return null;
             }
