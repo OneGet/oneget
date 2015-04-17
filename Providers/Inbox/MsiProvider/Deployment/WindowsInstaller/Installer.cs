@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
 /// <see cref="Installer.DetermineApplicablePatches(string,string[],InapplicablePatchHandler,string,UserContexts)"/>
 /// indicating the reason a particular patch is not applicable to a product.
 /// </summary>
-/// <param name="patch">MSP file path, XML file path, or XML blob that was passed to 
+/// <param name="patch">MSP file path, XML file path, or XML blob that was passed to
 /// <see cref="Installer.DetermineApplicablePatches(string,string[],InapplicablePatchHandler,string,UserContexts)"/></param>
 /// <param name="exception">exception indicating the reason the patch is not applicable</param>
 /// <remarks><p>
@@ -83,7 +83,7 @@ public static partial class Installer
     {
         return (InstallUIOptions) NativeMethods.MsiSetInternalUI((uint) uiOptions, ref windowHandle);
     }
-    
+
     /// <summary>
     /// Enables the installer's internal user interface. Then this user interface is used
     /// for all subsequent calls to user-interface-generating installer functions in this process.
@@ -729,7 +729,7 @@ public static partial class Installer
             sequenceData[i].dwOrder = -1;
             sequenceData[i].dwStatus = 0;
         }
-        
+
         uint ret;
         if (context == UserContexts.None)
         {

@@ -120,7 +120,7 @@ function New-PackageSource {
 		[System.Collections.Hashtable] $details = $null
 	)
 
-	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.PackageSource -ArgumentList $name,$location,$trusted,$registered,$valid,$details
+	return New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.PackageSource -ArgumentList $name,$location,$trusted,$registered,$valid,$details
 }
 
 <#
@@ -143,7 +143,7 @@ function New-SoftwareIdentity {
 		[bool] $fromTrustedSource = $false,
 		[System.Collections.ArrayList] $dependencies = $null
 	)
-	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links, $fromTrustedSource, $dependencies
+	return New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links, $fromTrustedSource, $dependencies
 }
 
 <#
@@ -151,17 +151,17 @@ function New-SoftwareIdentity {
 #>
 function New-DynamicOption {
 	param(
-		[Parameter(Mandatory=$true)][Microsoft.OneGet.MetaProvider.PowerShell.OptionCategory] $category,
+		[Parameter(Mandatory=$true)][Microsoft.PackageManagement.MetaProvider.PowerShell.OptionCategory] $category,
 		[Parameter(Mandatory=$true)][string] $name,
-		[Parameter(Mandatory=$true)][Microsoft.OneGet.MetaProvider.PowerShell.OptionType] $expectedType,
+		[Parameter(Mandatory=$true)][Microsoft.PackageManagement.MetaProvider.PowerShell.OptionType] $expectedType,
 		[Parameter(Mandatory=$true)][bool] $isRequired,
 		[System.Collections.ArrayList] $permittedValues = $null
 	)
 
 	if( -not $permittedValues ) {
-		return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.DynamicOption -ArgumentList $category,$name,  $expectedType, $isRequired
+		return New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.DynamicOption -ArgumentList $category,$name,  $expectedType, $isRequired
 	}
-	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.DynamicOption -ArgumentList $category,$name,  $expectedType, $isRequired, $permittedValues.ToArray()
+	return New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.DynamicOption -ArgumentList $category,$name,  $expectedType, $isRequired, $permittedValues.ToArray()
 }
 
 <#
@@ -174,9 +174,9 @@ function New-Feature {
 	)
 
 	if( -not $values ) {
-		return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Feature -ArgumentList $name
+		return New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.Feature -ArgumentList $name
 	}
-	return New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Feature -ArgumentList $name, $values.ToArray()
+	return New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.Feature -ArgumentList $name, $values.ToArray()
 }
 
 <#
@@ -201,7 +201,7 @@ function New-Entity {
         [string] $thumbprint= $null
 	)
 
-	$o = New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Entity
+	$o = New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.Entity
 	$o.Name = $name
 
 	# support role as a NMTOKENS string or an array of strings
@@ -228,7 +228,7 @@ function New-Link {
 		[string] $artifact = $null
 	)
 
-	$o = New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Link
+	$o = New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.Link
 
 	$o.HRef = $HRef
 	$o.Relationship =$relationship
@@ -250,7 +250,7 @@ function New-Dependency {
 		[string] $appliesTo = $null
 	)
 
-	$o = New-Object -TypeName Microsoft.OneGet.MetaProvider.PowerShell.Dependency
+	$o = New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.Dependency
 
 	$o.ProviderName = $providerName
 	$o.PackageName =$packageName

@@ -12,10 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Utility.Misc {
+namespace Microsoft.PackageManagement.Test.Utility.Misc {
     using System.Linq;
     using System.Reflection;
-    using OneGet.Utility.Platform;
+    using PackageManagement.Utility.Platform;
     using Packaging;
     using Support;
     using Xunit;
@@ -28,13 +28,13 @@ namespace Microsoft.OneGet.Test.Utility.Misc {
         [Fact]
         public void LoadManifests() {
             using (CaptureConsole) {
-                var manifests = Manifest.LoadFrom(Assembly.GetExecutingAssembly().Location).Where( Swidtag.IsSwidtag ).ToArray();
-                
+                var manifests = Manifest.LoadFrom(Assembly.GetExecutingAssembly().Location).Where(Swidtag.IsSwidtag).ToArray();
+
                 Assert.NotEmpty(manifests);
 
                 foreach (var manifest in manifests) {
                     Console.WriteLine("Manifest Found:\r\n{0}", manifest.ToString());
-                    
+
                     Console.WriteLine(manifest.Name);
                 }
             }

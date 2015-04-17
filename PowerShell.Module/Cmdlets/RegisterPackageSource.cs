@@ -1,27 +1,27 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PowerShell.OneGet.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Async;
-    using Microsoft.OneGet.Utility.Collections;
-    using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.PackageManagement.Packaging;
+    using Microsoft.PackageManagement.Utility.Async;
+    using Microsoft.PackageManagement.Utility.Collections;
+    using Microsoft.PackageManagement.Utility.Extensions;
     using Utility;
 
     [Cmdlet(VerbsLifecycle.Register, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517139")]
@@ -77,68 +77,6 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         [Parameter]
         public SwitchParameter Trusted {get; set;}
 
-#if OLD_WAY
-        public override bool GenerateDynamicParameters() {
-            if (_reentrancyLock.WaitOne(0)) {
-                // we're in here already.
-                // this happens because we're asking for the parameters below, and it creates a new instance to get them.
-                // we don't want dynamic parameters for that call, so let's get out.
-                return true;
-            }
-            _reentrancyLock.Set();
-
-            // generate the common parameters for our cmdlets (timeout, messagehandler, etc) 
-            GenerateCommonDynamicParameters();
-
-            var providers = SelectProviders(ProviderName).ReEnumerable();
-
-            // if more than one provider is selected, this will never work
-            if (providers.Count() != 1) {
-                return false;
-            }
-
-            var provider = providers.First();
-
-            try {
-
-                // if the provider is selected, we can get package metadata keys from the provider
-                foreach (var md in provider.GetDynamicOptions(OptionCategory.Source, this)) {
-
-                    if (MyInvocation.MyCommand.Parameters.ContainsKey(md.Name)) {
-                        // don't add it.
-                        continue;
-                    }
-
-                    if (DynamicParameterDictionary.ContainsKey(md.Name)) {
-
-                        // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
-                        var crdp = DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter;
-                        if (crdp == null) {
-                            // the provider is trying to overwrite a parameter that is already dynamically defined by the BaseCmdlet. 
-                            // just ignore it.
-                            continue;
-                        }
-
-                        if (IsInvocation) {
-                            crdp.Options.Add(md);
-                        }
-                        else {
-                            crdp.IncludeInParameterSet(md, IsInvocation, ParameterSets);
-                        }
-
-                    }
-                    else {
-                        DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
-                    }
-                }
-            }
-            finally {
-                _reentrancyLock.Reset();
-            }
-            return true;
-        }
-#endif 
-
         public override bool ProcessRecordAsync() {
             if (Stopping) {
                 return false;
@@ -157,7 +95,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                         Error(Constants.Errors.MatchesMultipleProviders, packageProvider.Select(p => p.ProviderName).JoinWithComma());
                         return false;
                 }
-            
+
 
             var provider = packageProvider.First();
 
@@ -169,7 +107,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     // if there is, and the user has said -Force, then let's remove it.
                     foreach (var existingSource in existingSources) {
                         if (Force) {
-                            
+
                             if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, existingSource.Name, existingSource.Location, existingSource.ProviderName), Constants.Messages.ActionReplacePackageSource).Result) {
                                 var removedSources = provider.RemovePackageSource(existingSource.Name, this).CancelWhen(_cancellationEvent.Token);
                                 foreach (var removedSource in removedSources) {

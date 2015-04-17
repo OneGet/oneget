@@ -253,10 +253,15 @@
     <comment>{0} -provider name</comment>
   </data>
   <data name="TargetPackage" xml:space="preserve">
-    <value>Package '{0}' v'{1}' from '{2}'</value>
+    <value>Package '{0}' version '{1}' from '{2}'</value>
     <comment>0- name
 1 - version
 2 - package source</comment>
+  </data>
+  <data name="TargetPackageVersion" xml:space="preserve">
+    <value>Package '{0}' with version '{1}'</value>
+    <comment>0- version
+	1 - package</comment>
   </data>
   <data name="ActionRegisterPackageSource" xml:space="preserve">
     <value>Register Package Source</value>
@@ -288,6 +293,10 @@
   <data name="SourceNotFoundForLocation" xml:space="preserve">
     <value>Unable to find package source for location '{0}'.</value>
     <comment>{0} location</comment>
+  </data>
+  <data name="SourceNotFoundForNameAndLocation" xml:space="preserve">
+    <value>Unable to find package source for name '{0}' location '{1}'.</value>
+    <comment>{0} name, {1} location</comment>
   </data>
   <data name="SourceNotFoundNoCriteria" xml:space="preserve">
     <value>Unable to find package sources.</value>

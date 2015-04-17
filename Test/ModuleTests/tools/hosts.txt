@@ -1,0 +1,5 @@
+*.microsoft.com
+www.powershellgallery.com
+*.chocolatey.org
+oneget.org
+*

@@ -1,12 +1,12 @@
 # Copyright (C) 2014 Microsoft Corporation
 
 ###
-### OneGet/PowerShell.Module/sources
+### PowerShell.Module/sources
 ###
 
 !include ..\common.inc
 
-TARGETNAME          = Microsoft.PowerShell.OneGet
+TARGETNAME          = Microsoft.PowerShell.PackageManagement
 TARGETTYPE          = DYNLINK
 
 ## !include $(PROJECT_ROOT)\monad\nttargets\build\sources.inc
@@ -20,7 +20,7 @@ SOURCES_PATH = .\
 ###       you have to either *always* pre-gen the .cs files or figure another
 ###       way.
 ###
-RESOURCES_NAMESPACE=Microsoft.PowerShell.OneGet.Resources
+RESOURCES_NAMESPACE=Microsoft.PowerShell.PackageManagement.Resources
 GENERATED_RESOURCES_SOURCE=$(OUTPUT_PATH)\Messages.cs
 RESGEN_FLAGS = /str:cs,$(RESOURCES_NAMESPACE),Messages,$(OUTPUT_PATH)\Messages.cs
 
@@ -43,9 +43,7 @@ PASS2_BINPLACE=\
 ### Referenced assemblies
 
 REFERENCES=\
-	$(ONEGET_CORE) \
-	$(ONEGET_UTILITY) \
-	$(ONEGET_UTILITY_POWERSHELL) \
+	$(PACKAGEMANAGEMENT_CORE) \
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
     $(CLR_REF_PATH)\System.Xml.Linq.metadata_dll; \
@@ -54,6 +52,7 @@ REFERENCES=\
 
 #region sourcefiles
 SOURCES=\
+	Cmdlets\AsyncCmdlet.cs \
 	Cmdlets\CmdletBase.cs \
  	Cmdlets\CmdletWithProvider.cs \
  	Cmdlets\CmdletWithSearch.cs \
@@ -70,7 +69,9 @@ SOURCES=\
  	Cmdlets\UninstallPackage.cs \
  	Cmdlets\UnregisterPackageSource.cs \
  	Utility\CustomRuntimeDefinedParameter.cs \
+ 	Utility\ErrorMessage.cs \
  	Utility\HostApiExtensions.cs \
+ 	Utility\ProgressTracker.cs \
  	Constants.cs \
 	$(GENERATED_RESOURCES_SOURCE)
 
@@ -78,8 +79,6 @@ SOURCES=\
 
 
 PASS0_BINPLACE=\
-	OneGet.format.ps1xml \
-	OneGet.psd1
+	PackageManagement.format.ps1xml \
+	PackageManagement.psd1
 
-# future:
-#   OneGetTabExpansion.psm1

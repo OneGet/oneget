@@ -12,15 +12,15 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Support {
+namespace Microsoft.PackageManagement.Test.Support {
     using System.Collections.Generic;
-    using OneGet.Utility.Collections;
-    using OneGet.Utility.Extensions;
+    using PackageManagement.Utility.Extensions;
 
     public delegate void WriteLine(string format, params object[] args);
 
     public static class Console {
         private static List<string> _queue = new List<string>();
+
         public static void WriteLine(string format, params object[] args) {
             try {
                 // System.Console.Beep(3000, 26);
@@ -36,7 +36,6 @@ namespace Microsoft.OneGet.Test.Support {
                     }
                 }
             } catch {
-                
             }
         }
 
@@ -57,8 +56,7 @@ namespace Microsoft.OneGet.Test.Support {
                 if (Tests.CurrentOut != null) {
                     Flush();
                     Tests.CurrentOut.WriteLine((output ?? "«null»").ToString());
-                }
-                else {
+                } else {
                     lock (_queue) {
                         _queue.Add((output ?? "«null»").ToString());
                     }
@@ -69,4 +67,4 @@ namespace Microsoft.OneGet.Test.Support {
             }
         }
     }
-} 
+}

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections;
@@ -320,7 +320,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
                 int count = rec.FieldCount;
                 IList<string> columnsList = new List<string>(count);
 
-                // Since we must be getting all strings of limited length, 
+                // Since we must be getting all strings of limited length,
                 // this code is faster than calling rec.GetString(field).
                 for (int field = 1; field <= count; field++)
                 {

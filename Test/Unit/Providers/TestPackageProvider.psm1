@@ -331,7 +331,7 @@ function Get-PackageDetail {
 #>
 function Get-DynamicOptions { 
     param(
-        [Microsoft.OneGet.MetaProvider.PowerShell.OptionCategory] $category
+        [Microsoft.PackageManagement.MetaProvider.PowerShell.OptionCategory] $category
     )
     write-debug "In TestPackageProvider - Get-DynamicOption for category $category"
 

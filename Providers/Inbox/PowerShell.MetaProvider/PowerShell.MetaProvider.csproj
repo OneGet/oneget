@@ -7,11 +7,11 @@
     <ProjectGuid>{EBEB46B5-3683-4D9F-939B-B1B2BBEEA369}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.OneGet.MetaProvider.PowerShell</RootNamespace>
-    <AssemblyName>Microsoft.OneGet.MetaProvider.PowerShell</AssemblyName>
+    <RootNamespace>Microsoft.PackageManagement.MetaProvider.PowerShell</RootNamespace>
+    <AssemblyName>Microsoft.PackageManagement.MetaProvider.PowerShell</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), OneGet.sln))\</SolutionDir>
-    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\OneGet.sln</SolutionPath>
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), PackageManagement.sln))\</SolutionDir>
+    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\PackageManagement.sln</SolutionPath>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props')" />
@@ -50,6 +50,7 @@
     <Compile Include="DynamicOption.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="PackageSource.cs" />
+    <Compile Include="PowerShellExtensions.cs" />
     <Compile Include="PowerShellMetaProvider.cs" />
     <Compile Include="PowerShellPackageProvider.cs" />
     <Compile Include="PowerShellProviderBase.cs" />
@@ -65,17 +66,9 @@
     <Compile Include="$(SolutionDir)assembly-version.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\OneGet\OneGet.csproj">
+    <ProjectReference Include="..\..\..\PackageManagement\PackageManagement.csproj">
       <Project>{7044B856-6D51-498F-90F9-01F219909F79}</Project>
-      <Name>OneGet</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Utility.PowerShell\Utility.PowerShell.csproj">
-      <Project>{3f9d75f9-a4ad-46c1-8937-b55604e8d5d9}</Project>
-      <Name>Utility.PowerShell</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Utility\Utility.csproj">
-      <Project>{7044b856-6d51-498f-8192-01f219908192}</Project>
-      <Name>Utility</Name>
+      <Name>PackageManagement</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -85,7 +78,7 @@
     <None Include="PackageProviderFunctions.psm1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="oneget.manifest" />
+    <None Include="provider.manifest" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Messages.resx">
@@ -96,10 +89,10 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>:Locate MT.EXE Tool:
-for /f "delims=" %25%25a in ('powershell "$p = ((Get-ItemProperty -Path HKCU:\Software\OneGet\tools\MT.EXE -Name Path -ea 0).Path) ;  if( -not $p ) { $p = ((dir ${env:ProgramFiles(x86)} -recurse -ea 0|  where -property name -eq mt.exe | select -first 1 ).FullName) ;    $null = mkdir -Path HKCU:\Software\OneGet\tools\MT.EXE -Force ;    $null = New-ItemProperty -Path HKCU:\Software\OneGet\tools\MT.EXE -Name Path -Value $p -force } ; $p"') do @set MTEXE=%25%25a
+for /f "delims=" %25%25a in ('powershell "$p = ((Get-ItemProperty -Path HKCU:\Software\PackageManagement\Tools\MT.EXE -Name Path -ea 0).Path) ;  if( -not $p ) { $p = ((dir ${env:ProgramFiles(x86)} -recurse -ea 0|  where -property name -eq mt.exe | select -first 1 ).FullName) ;    $null = mkdir -Path HKCU:\Software\PackageManagement\Tools\MT.EXE -Force ;    $null = New-ItemProperty -Path HKCU:\Software\PackageManagement\Tools\MT.EXE -Name Path -Value $p -force } ; $p"') do @set MTEXE=%25%25a
 
 :Run the tool to add the manifest to the binary.
-"%25MTEXE%25" -manifest $(ProjectDir)oneget.manifest -outputresource:$(TargetPath);#101</PostBuildEvent>
+"%25MTEXE%25" -manifest $(ProjectDir)provider.manifest -outputresource:$(TargetPath);#101</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

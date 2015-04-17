@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -217,26 +217,26 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
             {
                 case (uint) NativeMethods.Error.FILE_NOT_FOUND:
                 case (uint) NativeMethods.Error.PATH_NOT_FOUND: return new FileNotFoundException(msg);
-                
+
                 case (uint) NativeMethods.Error.INVALID_PARAMETER:
                 case (uint) NativeMethods.Error.DIRECTORY:
                 case (uint) NativeMethods.Error.UNKNOWN_PROPERTY:
                 case (uint) NativeMethods.Error.UNKNOWN_PRODUCT:
                 case (uint) NativeMethods.Error.UNKNOWN_FEATURE:
                 case (uint) NativeMethods.Error.UNKNOWN_COMPONENT: return new ArgumentException(msg);
-                
+
                 case (uint) NativeMethods.Error.BAD_QUERY_SYNTAX: return new BadQuerySyntaxException(msg);
-                
+
                 case (uint) NativeMethods.Error.INVALID_HANDLE_STATE:
                 case (uint) NativeMethods.Error.INVALID_HANDLE:
                     InvalidHandleException ihex = new InvalidHandleException(msg);
                     ihex.errorCode = (int) errorCode;
                     return ihex;
-                
+
                 case (uint) NativeMethods.Error.INSTALL_USEREXIT: return new InstallCanceledException(msg);
-                
+
                 case (uint) NativeMethods.Error.CALL_NOT_IMPLEMENTED: return new NotImplementedException(msg);
-                
+
                 default: return new InstallerException((int) errorCode, msg);
             }
         }

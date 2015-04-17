@@ -2,7 +2,7 @@
 $origdir = (pwd)
 cd $PSScriptRoot
 
-.\xunit.console.exe .\Microsoft.OneGet.Test.dll  -noshadow -xml .\xunit-results.xml
+.\xunit.console.exe .\Microsoft.PackageManagement.Test.dll  -noshadow -xml .\xunit-results.xml -parallel none
 
 $results = [xml](get-content -raw .\xunit-results.xml)
 

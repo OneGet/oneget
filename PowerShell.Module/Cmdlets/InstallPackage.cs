@@ -1,27 +1,27 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PowerShell.OneGet.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.OneGet.Implementation;
-    using Microsoft.OneGet.Packaging;
-    using Microsoft.OneGet.Utility.Async;
-    using Microsoft.OneGet.Utility.Extensions;
+    using Microsoft.PackageManagement.Implementation;
+    using Microsoft.PackageManagement.Packaging;
+    using Microsoft.PackageManagement.Utility.Async;
+    using Microsoft.PackageManagement.Utility.Extensions;
     using Utility;
 
     [Cmdlet(VerbsLifecycle.Install, Constants.Nouns.PackageNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.ParameterSets.PackageBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517138")]
@@ -59,7 +59,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Source {get; set;}
 
-      
+
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
 #if DEEP_DEBUG
             Console.WriteLine("»» Entering GCSP ");
@@ -67,7 +67,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             if (!IsInvocation) {
 #if DEEP_DEBUG
                 Console.WriteLine("»»» Does not appear to be Invocation (locked:{0})", IsReentrantLocked);
-#endif 
+#endif
                 var providerNames = PackageManagementService.AllProviderNames;
                 var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
                 if (whatsOnCmdline != null) {
@@ -109,7 +109,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
             if (MyInvocation.BoundParameters.Count == 0 || (MyInvocation.BoundParameters.Count == 1 &&  MyInvocation.BoundParameters.ContainsKey("ProviderName")) ) {
                 // didn't pass in anything, (except maybe Providername)
-                // that's no ok -- we need some criteria 
+                // that's no ok -- we need some criteria
                 Error(Constants.Errors.MustSpecifyCriteria);
                 return false;
             }
@@ -132,7 +132,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             }
 
             if (!CheckMatchedDuplicates()) {
-                // there are duplicate packages 
+                // there are duplicate packages
                 // not going to install.
                 return false;
             }
@@ -144,10 +144,10 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
         protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
             if (WhatIf) {
                 // grab the dependencies and return them *first*
-             
+
                  foreach (var dep in package.Dependencies) {
                     // note: future work may be needed if the package sources currently selected by the user don't
-                    // contain the dependencies. 
+                    // contain the dependencies.
                     var dependendcies = PackageManagementService.FindPackageByCanonicalId(dep, this);
                     foreach (var depPackage in dependendcies) {
                         ProcessPackage( depPackage.Provider,  searchKey.Select( each => each+depPackage.Name).ToArray(), depPackage);
@@ -164,7 +164,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                 var pkg = package;
                 foreach (var parameter in DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>()
                     .Where(param => param.IsSet == false && param.Options.Any(option => option.ProviderName == pkg.ProviderName && option.Category == OptionCategory.Install && option.IsRequired))) {
-                    // this is not good. there is a required parameter for the package 
+                    // this is not good. there is a required parameter for the package
                     // and the user didn't specify it. We should return the error to the user
                     // and they can try again.
                     Error(Constants.Errors.PackageInstallRequiresOption, package.Name, package.ProviderName, parameter.Name);
@@ -221,7 +221,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
                     // ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source);
                     //} else {
                     if (ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source)) {
-                        foreach (var installedPkg in provider.InstallPackage(pkg, this.ProviderSpecific(provider)).CancelWhen(_cancellationEvent.Token)) {
+                        foreach (var installedPkg in provider.InstallPackage(pkg, this).CancelWhen(_cancellationEvent.Token)) {
                             if (IsCanceled) {
                                 // if we're stopping, just get out asap.
                                 return false;
@@ -243,7 +243,7 @@ namespace Microsoft.PowerShell.OneGet.Cmdlets {
             return true;
         }
 
-       
+
 
         public bool ShouldProcessPackageInstall(string packageName, string version, string source) {
             try {

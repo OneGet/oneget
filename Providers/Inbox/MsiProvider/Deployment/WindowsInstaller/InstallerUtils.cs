@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -35,7 +35,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
                 {
                     Marshal.ThrowExceptionForHR(hr);
                 }
-                
+
                 return new Version((int) dllVersionInfo[1], (int) dllVersionInfo[2], (int) dllVersionInfo[3]);
             }
         }

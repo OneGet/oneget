@@ -11,13 +11,12 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //  
-namespace Microsoft.OneGet.Test.Core.Service {
+
+namespace Microsoft.PackageManagement.Test.Core.Service {
     using System.Linq;
     using Implementation;
-
     using Xunit;
     using Xunit.Abstractions;
-    using Console = Support.Console;
 
     public class MsiProviderTest : BasePmsServiceTests {
         public MsiProviderTest(ITestOutputHelper outputHelper)
@@ -25,6 +24,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
         }
 
         private PackageProvider _provider;
+
         public PackageProvider Provider {
             get {
                 if (_provider == null) {
@@ -49,21 +49,21 @@ namespace Microsoft.OneGet.Test.Core.Service {
         [Fact]
         public void TestInitialized() {
             using (CaptureConsole) {
-             
+
             }
         }
 
         [Fact]
         public void TestFeatures() {
             using (CaptureConsole) {
-             
+
             }
         }
 
         [Fact]
         public void DynamicOptionsTest() {
             using (CaptureConsole) {
-               
+
             }
         }
 
@@ -134,7 +134,7 @@ namespace Microsoft.OneGet.Test.Core.Service {
         [Fact]
         public void IsSupportedFile() {
             using (CaptureConsole) {
-               
+
             }
         }
 

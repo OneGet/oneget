@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression.Zip
+namespace Microsoft.PackageManagement.Archivers.Compression.Zip
 {
     using System.Diagnostics.CodeAnalysis;
 
@@ -25,12 +25,12 @@ namespace Microsoft.OneGet.Archivers.Compression.Zip
         /// The file is stored (no compression)
         /// </summary>
         Store = 0,
-        
+
         /// <summary>
         /// The file is Shrunk
         /// </summary>
         Shrink = 1,
-        
+
         /// <summary>
         /// The file is Reduced with compression factor 1
         /// </summary>
@@ -50,18 +50,18 @@ namespace Microsoft.OneGet.Archivers.Compression.Zip
         /// The file is Reduced with compression factor 4
         /// </summary>
         Reduce4 = 5,
-        
+
         /// <summary>
         /// The file is Imploded
         /// </summary>
         Implode = 6,
-        
+
         /// <summary>
         /// The file is Deflated;
         /// the most common and widely-compatible form of zip compression.
         /// </summary>
         Deflate = 8,
-        
+
         /// <summary>
         /// The file is Deflated using the enhanced Deflate64 method.
         /// </summary>

@@ -12,12 +12,13 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
+namespace Microsoft.PackageManagement.Test.Utility.DynamicInterface.Simple {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Reflection;
     using CSharp.RuntimeBinder;
-    using OneGet.Utility.Plugin;
+    using PackageManagement.Utility.Plugin;
     using Xunit;
     using Xunit.Abstractions;
     using Console = Support.Console;
@@ -88,11 +89,12 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
     }
 
     public class DynamicInterfaceTest : Tests {
-          public DynamicInterfaceTest(ITestOutputHelper outputHelper) : base (outputHelper) {
-        }
         public delegate object ReturnsAnObject();
 
         public delegate string ReturnsAString();
+
+        public DynamicInterfaceTest(ITestOutputHelper outputHelper) : base(outputHelper) {
+        }
 
         [Fact]
         public void TestDynamicInterfaceAgainstClass() {
@@ -199,7 +201,6 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
 
                     fThree.As<Two>()();
                 });
-
             }
         }
 
@@ -226,7 +227,6 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
                 dynamicInstance.Four(100);
                 dynamicInstance.Five(100, "hi");
             }
-
         }
 
         [Fact]
@@ -444,7 +444,7 @@ namespace Microsoft.OneGet.Test.Utility.DynamicInterface.Simple {
                 return s != null;
             }
 
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
+            [SuppressMessage("Microsoft.Usage", "#pw26506")]
             public bool TakesAFileStream(FileStream ms) {
                 Console.WriteLine("HUH?");
                 Console.WriteLine("Type of stream is {0}", ms.GetType().Name);

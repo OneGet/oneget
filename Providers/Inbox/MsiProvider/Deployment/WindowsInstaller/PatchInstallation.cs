@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -346,7 +346,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         }
 
         /// <summary>
-        /// Gets information about a specific patch installation. 
+        /// Gets information about a specific patch installation.
         /// </summary>
         /// <param name="propertyName">The property being retrieved; see remarks for valid properties.</param>
         /// <returns>The property value, or an empty string if the property is not set for the patch.</returns>

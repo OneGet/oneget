@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Core.Host {
+namespace Microsoft.PackageManagement.Test.Core.Host {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;

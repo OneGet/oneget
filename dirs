@@ -2,7 +2,7 @@
 DIRS=\
 	Utility \
 	Utility.PowerShell \
-	OneGet \
+	PackageManagement \
     Providers \
 	PowerShell.Module \
     Test 

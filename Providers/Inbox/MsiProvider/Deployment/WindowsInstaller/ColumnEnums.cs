@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -21,7 +21,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
     public enum ComponentAttributes : int
     {
         /// <summary>
-        /// Local only - Component cannot be run from source. 
+        /// Local only - Component cannot be run from source.
         /// </summary>
         /// <remarks><p>
         /// Set this value for all components belonging to a feature to prevent the feature from being run-from-network or
@@ -165,7 +165,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
 
         /// <summary>This is a combination of the RightToLeftReadingOrder, RightAligned, and LeftScroll attributes.</summary>
         Bidirectional     = RightToLeftReadingOrder | RightAligned | LeftScroll,
-    
+
         /// <summary>If this bit is set on a text control, the control is displayed transparently with the background showing through the control where there are no characters.</summary>
         Transparent       = 0x00010000,
 
@@ -186,10 +186,10 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
 
         /// <summary>This attribute creates an edit control for entering passwords. The control displays each character as an asterisk (*) as they are typed into the control.</summary>
         PasswordInput     = 0x00200000,
-    
+
         /// <summary>If this bit is set on a ProgressBar control, the bar is drawn as a series of small rectangles in Microsoft Windows 95-style. Otherwise it is drawn as a single continuous rectangle.</summary>
         Progress95        = 0x00010000,
-    
+
         /// <summary>If this bit is set, the control shows removable volumes.</summary>
         RemovableVolume   = 0x00010000,
 
@@ -208,16 +208,16 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
 
         /// <summary>If this bit is set, the control shows floppy volumes.</summary>
         FloppyVolume      = 0x00200000,
-        
+
         /// <summary>Specifies whether or not the rollback backup files are included in the costs displayed by the VolumeCostList control.</summary>
         ShowRollbackCost  = 0x00400000,
-    
+
         /// <summary>If this bit is set, the items listed in the control are displayed in a specified order. Otherwise, items are displayed in alphabetical order.</summary>
         Sorted            = 0x00010000,
 
         /// <summary>If this bit is set on a combo box, the edit field is replaced by a static text field. This prevents a user from entering a new value and requires the user to choose only one of the predefined values.</summary>
         ComboList         = 0x00020000,
-    
+
         //ImageHandle       = 0x00010000,
 
         /// <summary>If this bit is set on a check box or a radio button group, the button is drawn with the appearance of a push button, but its logic stays the same.</summary>
@@ -454,7 +454,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
 
         /// <summary>
         /// Set this attribute and advertising is disabled for the feature if the operating system shell does not
-        /// support Windows Installer descriptors. 
+        /// support Windows Installer descriptors.
         /// </summary>
         NoUnsupportedAdvertise = 0x0020,
     }

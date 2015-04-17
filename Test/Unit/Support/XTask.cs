@@ -1,20 +1,21 @@
-﻿//
-//  Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// 
+//  Copyright (c) Microsoft Corporation. All rights reserved. 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
+//  
 
-namespace Microsoft.OneGet.Test.Support {
+namespace Microsoft.PackageManagement.Test.Support {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using System.Threading;
@@ -24,11 +25,25 @@ namespace Microsoft.OneGet.Test.Support {
         // necessary evil: I needed the parent task and the current task to do what I did here.
         // since they were private, I went around them and accessed the fields via reflection.
         // if you have a better idea, I'm all for it.
-        private static readonly FieldInfo _parentTaskField = typeof(Task).GetField("m_parent", BindingFlags.NonPublic | BindingFlags.DeclaredOnly | BindingFlags.Instance);
-        private static readonly PropertyInfo _currentTaskProperty = typeof(Task).GetProperty("InternalCurrent", BindingFlags.NonPublic | BindingFlags.DeclaredOnly | BindingFlags.Static);
+        private static readonly FieldInfo _parentTaskField = typeof (Task).GetField("m_parent", BindingFlags.NonPublic | BindingFlags.DeclaredOnly | BindingFlags.Instance);
+        private static readonly PropertyInfo _currentTaskProperty = typeof (Task).GetProperty("InternalCurrent", BindingFlags.NonPublic | BindingFlags.DeclaredOnly | BindingFlags.Static);
         private static readonly IDictionary<Task, List<Delegate>> _tasks = new Dictionary<Task, List<Delegate>>();
         private static readonly IDictionary<Task, Task> _parentTasks = new Dictionary<Task, Task>();
         private static readonly List<Delegate> _nullTaskDelegates = new List<Delegate>();
+        private static Task _rootTask = new TaskCompletionSource<int>().Task;
+
+        internal static Task CurrentExecutingTask {
+            get {
+                return (_currentTaskProperty.GetValue(null, null) as Task); // ?? _rootTask;
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Still in development.")]
+        internal static Task ParentTask {
+            get {
+                return CurrentExecutingTask.GetParentTask();
+            }
+        }
 
         public static Task<T> AsResultTask<T>(this T result) {
             var x = new TaskCompletionSource<T>(TaskCreationOptions.AttachedToParent);
@@ -93,18 +108,10 @@ namespace Microsoft.OneGet.Test.Support {
             return task;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "No. I want the generic type passed back.")]
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "No. I want the generic type passed back.")]
         public static Task<T> AutoManage<T>(this Task<T> task) {
             AutoManage((Task)task);
             return task;
-        }
-
-        private static Task _rootTask = new TaskCompletionSource<int>().Task;
-
-        internal static Task CurrentExecutingTask {
-            get {
-                return (_currentTaskProperty.GetValue(null, null) as Task); // ?? _rootTask;
-            }
         }
 
         internal static Task GetParentTask(this Task task) {
@@ -113,13 +120,6 @@ namespace Microsoft.OneGet.Test.Support {
             }
 
             return _parentTaskField.GetValue(task) as Task ?? (_parentTasks.ContainsKey(task) ? _parentTasks[task] : null);
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Still in development.")]
-        internal static Task ParentTask {
-            get {
-                return CurrentExecutingTask.GetParentTask();
-            }
         }
 
         /// <summary>
@@ -163,8 +163,7 @@ namespace Microsoft.OneGet.Test.Support {
                 if (task == null) {
                     _nullTaskDelegates.Insert(0, handler);
                     // _nullTaskDelegates.Add(handler);
-                }
-                else {
+                } else {
                     if (!_tasks.ContainsKey(task)) {
                         _tasks.Add(task, new List<Delegate>());
                     }
@@ -182,8 +181,7 @@ namespace Microsoft.OneGet.Test.Support {
                         if (_nullTaskDelegates.Contains(handler)) {
                             _nullTaskDelegates.Remove(handler);
                         }
-                    }
-                    else {
+                    } else {
                         if (_tasks.ContainsKey(task) && _tasks[task].Contains(handler)) {
                             _tasks[task].Remove(handler);
                         }
@@ -199,11 +197,9 @@ namespace Microsoft.OneGet.Test.Support {
                 if (completedTask != null && completedTask.IsFaulted) {
                     tcs.TrySetException(completedTask.Exception.InnerExceptions);
                     enumerator.Dispose();
-                }
-                else if (enumerator.MoveNext()) {
+                } else if (enumerator.MoveNext()) {
                     enumerator.Current.ContinueWith(recursiveBody, TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously);
-                }
-                else {
+                } else {
                     enumerator.Dispose();
                 }
             };

@@ -12,31 +12,25 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test {
+namespace Microsoft.PackageManagement.Test {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
-    using Support;
-    using OneGet.Utility.Extensions;
+    using PackageManagement.Utility.Extensions;
     using Xunit;
     using Xunit.Abstractions;
+    using Console = Support.Console;
     using TestCodeAttribute = System.CodeDom.Compiler.GeneratedCodeAttribute;
 
-    [TestCode("TestCode","")]
+    [TestCode("TestCode", "")]
     public class Tests {
         private static readonly HashSet<string> _flags = new HashSet<string>();
+        private static ThreadLocal<ITestOutputHelper> _out = new ThreadLocal<ITestOutputHelper>();
         public readonly ITestOutputHelper Out;
 
         public Tests(ITestOutputHelper outputHelper) {
             Out = outputHelper;
-        }
-
-        public class OnDispose : IDisposable {
-            public void Dispose() {
-                Support.Console.Flush();
-                // CurrentOut.WriteLine("Setting Null!");
-                // CurrentOut = null;
-            }
         }
 
         static Tests() {
@@ -51,14 +45,13 @@ namespace Microsoft.OneGet.Test {
              * */
         }
 
-        private static ThreadLocal<ITestOutputHelper> _out = new ThreadLocal<ITestOutputHelper>();
         // private static ITestOutputHelper _tmp;
         internal static ITestOutputHelper CurrentOut {
             get {
                 if (_out.IsValueCreated) {
                     return _out.Value;
                 }
-                
+
                 //return _tmp;
                 return null;
             }
@@ -67,7 +60,7 @@ namespace Microsoft.OneGet.Test {
         public IDisposable CaptureConsole {
             get {
                 _out.Value = Out;
-              
+
                 // var lve = CurrentTask.Local;
                 //var writeLine = new WriteLine((format, args) => {Out.WriteLine(format.format(args));});
 
@@ -76,6 +69,12 @@ namespace Microsoft.OneGet.Test {
                 // XTask.AddEventHandler(null, writeLine);
                 // return lve;
                 return new OnDispose();
+            }
+        }
+
+        protected static CaseInsensitiveEqualityComparer IgnoreCase {
+            get {
+                return CaseInsensitiveEqualityComparer.Instance;
             }
         }
 
@@ -92,21 +91,24 @@ namespace Microsoft.OneGet.Test {
             }
         }
 
+        public class OnDispose : IDisposable {
+            public void Dispose() {
+                Console.Flush();
+                // CurrentOut.WriteLine("Setting Null!");
+                // CurrentOut = null;
+            }
+        }
+
         public class CaseInsensitiveEqualityComparer : IEqualityComparer<string> {
             internal static CaseInsensitiveEqualityComparer Instance = new CaseInsensitiveEqualityComparer();
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "#pw26506")]
+
+            [SuppressMessage("Microsoft.Usage", "#pw26506")]
             public bool Equals(string x, string y) {
                 return x.EqualsIgnoreCase(y);
             }
 
             public int GetHashCode(string obj) {
                 return -1;
-            }
-        }
-
-        protected static CaseInsensitiveEqualityComparer IgnoreCase {
-            get {
-                return CaseInsensitiveEqualityComparer.Instance;
             }
         }
     }

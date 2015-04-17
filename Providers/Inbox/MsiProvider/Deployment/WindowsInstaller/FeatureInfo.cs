@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections;
@@ -295,7 +295,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         /// does not contain an equivalent flag for <see cref="FeatureAttributes.UIDisallowAbsent"/>, this flag will
         /// not be retrieved.
         /// </p><p>
-        /// Since the dwAttributes parameter of 
+        /// Since the dwAttributes parameter of
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisetfeatureattributes.asp">MsiSetFeatureAttributes</a>
         /// does not contain an equivalent flag for <see cref="FeatureAttributes.UIDisallowAbsent"/>, the presence
         /// of this flag will be ignored.
@@ -322,13 +322,13 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
                     throw InstallerException.ExceptionFromReturnCode(ret);
                 }
 
-                // Values for attributes that MsiGetFeatureInfo returns are 
+                // Values for attributes that MsiGetFeatureInfo returns are
                 // double the values in the Attributes column of the Feature Table.
                 attributes = (FeatureAttributes) (attr >> 1);
 
-                // MsiGetFeatureInfo MSDN documentation indicates 
+                // MsiGetFeatureInfo MSDN documentation indicates
                 // NOUNSUPPORTEDADVERTISE is 32.  Conversion above changes this to 16
-                // which is UIDisallowAbsent.  MsiGetFeatureInfo isn't documented to 
+                // which is UIDisallowAbsent.  MsiGetFeatureInfo isn't documented to
                 // return an attribute for 'UIDisallowAbsent', so if UIDisallowAbsent
                 // is set, change it to NoUnsupportedAdvertise which then maps correctly
                 // to NOUNSUPPORTEDADVERTISE.
@@ -348,11 +348,11 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
                 FeatureAttributes attributes = value;
                 attributes &= ~FeatureAttributes.UIDisallowAbsent;
 
-                // Values for attributes that MsiSetFeatureAttributes uses are 
+                // Values for attributes that MsiSetFeatureAttributes uses are
                 // double the values in the Attributes column of the Feature Table.
                 uint attr = ((uint) attributes) << 1;
 
-                // MsiSetFeatureAttributes MSDN documentation indicates 
+                // MsiSetFeatureAttributes MSDN documentation indicates
                 // NOUNSUPPORTEDADVERTISE is 32.  Conversion above changes this to 64
                 // which is undefined.  Change this back to 32.
                 uint noUnsupportedAdvertiseDbl = ((uint)FeatureAttributes.NoUnsupportedAdvertise) << 1;
@@ -363,7 +363,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
                 }
 
                 uint ret = RemotableNativeMethods.MsiSetFeatureAttributes((int) this.session.Handle, this.name, attr);
-                
+
                 if (ret != (uint)NativeMethods.Error.SUCCESS)
                 {
                     if (ret == (uint)NativeMethods.Error.UNKNOWN_FEATURE)

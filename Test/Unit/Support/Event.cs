@@ -12,26 +12,26 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Support {
+namespace Microsoft.PackageManagement.Test.Support {
     using System.Linq;
-    using OneGet.Utility.Extensions;
+    using PackageManagement.Utility.Extensions;
 
     public static class Event<T> where T : class {
         private static T EmptyDelegate {
             get {
-                return typeof(T).CreateEmptyDelegate() as T;
+                return typeof (T).CreateEmptyDelegate() as T;
             }
         }
 
         public static T Raise {
             get {
-                return (XTask.CurrentExecutingTask.GetEventHandler(typeof(T)) as T) ?? EmptyDelegate;
+                return (XTask.CurrentExecutingTask.GetEventHandler(typeof (T)) as T) ?? EmptyDelegate;
             }
         }
 
         public static T RaiseFirst {
             get {
-                var dlg = XTask.CurrentExecutingTask.GetEventHandler(typeof(T));
+                var dlg = XTask.CurrentExecutingTask.GetEventHandler(typeof (T));
                 return dlg != null ? dlg.GetInvocationList().FirstOrDefault() as T : EmptyDelegate;
             }
         }

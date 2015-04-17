@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.Resources
+namespace Microsoft.PackageManagement.Msi.Deployment.Resources
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

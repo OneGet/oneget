@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.OneGet.Test.Support {
+namespace Microsoft.PackageManagement.Test.Support {
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -23,8 +23,8 @@ namespace Microsoft.OneGet.Test.Support {
     using Packaging;
 
     internal static class XmlExtensions {
-
         private static XmlNamespaceManager _namespaceManager;
+
         internal static XmlNamespaceManager NamespaceManager {
             get {
                 if (_namespaceManager == null) {
@@ -36,7 +36,6 @@ namespace Microsoft.OneGet.Test.Support {
                 return _namespaceManager;
             }
         }
-
 
         internal static XAttribute XPathToAttribute(this XDocument xmlDocument, string xpath) {
             return ((xmlDocument.XPathEvaluate(xpath, NamespaceManager) as IEnumerable) ?? new XAttribute[0]).Cast<XAttribute>().FirstOrDefault();

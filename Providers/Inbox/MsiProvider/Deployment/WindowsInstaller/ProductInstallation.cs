@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -581,7 +581,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         }
 
         /// <summary>
-        /// Gets information about an installation of a product. 
+        /// Gets information about an installation of a product.
         /// </summary>
         /// <param name="propertyName">Name of the property being retrieved.</param>
         /// <exception cref="ArgumentOutOfRangeException">An unknown product or property was requested</exception>

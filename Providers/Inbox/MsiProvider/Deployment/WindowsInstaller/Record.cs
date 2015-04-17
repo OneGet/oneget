@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -181,7 +181,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
                 {
                     return this.GetString(0);
                 }
-                
+
                 Type valueType = null;
                 if (this.view != null)
                 {
@@ -203,7 +203,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
                     int? value = this.GetNullableInteger(field);
                     return value.HasValue ? (object) value.Value : null;
                 }
-                
+
             }
 
             set
@@ -255,7 +255,7 @@ namespace Microsoft.OneGet.Msi.Deployment.WindowsInstaller
         {
             return new Record(handle, ownsHandle, (View) null);
         }
-        
+
         /// <summary>
         /// Sets all fields in a record to null.
         /// </summary>

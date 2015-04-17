@@ -7,6 +7,27 @@ param( [switch]$IsSandboxed )
 $origDir = (pwd)
 cd $PSScriptRoot
 
+if (test-path $Env:ProgramFiles/OneGet/ProviderAssemblies/nuget-anycpu.exe) {
+    ren $Env:ProgramFiles/OneGet/ProviderAssemblies/nuget-anycpu.exe "nuget-anycpu.$(Get-Random).old"
+    rm -force $Env:ProgramFiles/OneGet/ProviderAssemblies/*.old -ea silentlycontinue
+}
+
+if (test-path $Env:LocalAppData/OneGet/ProviderAssemblies/nuget-anycpu.exe) {
+    ren $Env:LocalAppData/OneGet/ProviderAssemblies/nuget-anycpu.exe "nuget-anycpu.$(Get-Random).old"
+    rm -force $Env:LocalAppData/OneGet/ProviderAssemblies/*.old  -ea silentlycontinue
+}
+
+if (test-path $Env:ProgramFiles/PackageManagement/ProviderAssemblies/nuget-anycpu.exe) {
+    ren $Env:ProgramFiles/PackageManagement/ProviderAssemblies/nuget-anycpu.exe "nuget-anycpu.$(Get-Random).old"
+    rm -force $Env:ProgramFiles/PackageManagement/ProviderAssemblies/*.old -ea silentlycontinue
+}
+
+if (test-path $Env:LocalAppData/PackageManagement/ProviderAssemblies/nuget-anycpu.exe) {
+    ren $Env:LocalAppData/PackageManagement/ProviderAssemblies/nuget-anycpu.exe "nuget-anycpu.$(Get-Random).old"
+    rm -force $Env:LocalAppData/PackageManagement/ProviderAssemblies/*.old  -ea silentlycontinue
+}
+
+
 # ensure that we're only picking up the modules that we really want to.
 $env:PSModulePath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\Modules;$PSScriptRoot\tools\;" 
 
@@ -18,18 +39,23 @@ if( -not $IsSandboxed  ) {
     if( .\scripts\test-sandbox.ps1 ) {
         cd $PSScriptRoot
         .\scripts\stop-sandbox.ps1
+        start-sleep 2
     }
 
     cd $PSScriptRoot
     .\scripts\start-sandbox.ps1 
     
     # wait for a moment for it to start.
-    start-sleep 5
+    cd $PSScriptRoot
+    while( -not (& .\scripts\test-sandbox.ps1) ) {
+        cd $PSScriptRoot
+        Write-Host -fore Yellow "Waiting for sandbox..."
+        start-sleep 2
+    }
     
     # re-run the this script with the DNS shim.
     . $PSScriptRoot\tools\DnsShim.exe  /i:$PSScriptRoot\tools\hosts.txt /v powershell.exe "$($MyInvocation.MyCommand.Definition) -IsSandboxed" 
 
-    
     cd $PSScriptRoot
     .\scripts\stop-sandbox.ps1 
 
@@ -37,6 +63,8 @@ if( -not $IsSandboxed  ) {
 }
 
 Import-Module DispatchLayer
+Write-Host -fore White "Running xUnit test wrapper"
 InvokeComponent @args -Directory $PSScriptRoot\output\debug\bin
-InvokeComponent @args -Directory $PSScriptRoot\bvt\cmdlet-testsuite\tests
 
+Write-Host -fore White "Running powershell pester tests "
+InvokeComponent @args -Directory $PSScriptRoot\ModuleTests\tests

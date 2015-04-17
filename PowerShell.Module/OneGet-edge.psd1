@@ -25,5 +25,5 @@
     ClrVersion = "4.0"
 
     # force loading of the community build of OneGet and the PowerShellGet that goes along with it.
-    NestedModules = @('..\oneget\oneget.psd1','..\powershellget\powershellget.psd1')
+    NestedModules = @('.\PackageManagement.psd1','.\powershellget\powershellget.psd1')
 }

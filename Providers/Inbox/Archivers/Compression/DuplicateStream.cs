@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.OneGet.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Compression
 {
     using System;
     using System.IO;
@@ -138,7 +138,7 @@ namespace Microsoft.OneGet.Archivers.Compression
         /// </summary>
         /// <param name="value">The desired length of the stream in bytes.</param>
         public override void SetLength(long value)
-        { 
+        {
             this.source.SetLength(value);
         }
 

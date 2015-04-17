@@ -1,0 +1,5 @@
+# ignore stuff
+
+PackageManagement.Results.XML
+buildchk*
+/websites/
