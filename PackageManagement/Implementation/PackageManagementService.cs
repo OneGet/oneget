@@ -464,7 +464,6 @@ namespace Microsoft.PackageManagement.Implementation {
                 return false;
             }
 
-
             try {
                 byte[] hash = null;
                 using (var stream = File.Open(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {

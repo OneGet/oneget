@@ -43,10 +43,10 @@ PASS2_BINPLACE=\
 ### Referenced assemblies
 
 REFERENCES=\
-	$(PACKAGEMANAGEMENT_UTILITY) \
 	$(CLR_REF_PATH)\System.metadata_dll; \
 	$(CLR_REF_PATH)\System.Core.metadata_dll; \
 	$(CLR_REF_PATH)\System.Runtime.Remoting.metadata_dll; \
+    $(CLR_REF_PATH)\System.Security.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
 	$(CLR_REF_PATH)\System.Xml.Linq.metadata_dll;
 
@@ -59,13 +59,13 @@ SOURCES=\
  	Api\IResponseApi.cs \
  	Implementation\ActionRequestObject.cs \
  	Implementation\Archiver.cs \
- 	Implementation\Delegates.cs \
  	Implementation\DictionaryRequestObject.cs \
  	Implementation\Downloader.cs \
  	Implementation\DynamicOptionRequestObject.cs \
  	Implementation\EnumerableRequestObject.cs \
  	Implementation\Extensions.cs \
  	Implementation\FuncRequestObject.cs \
+ 	Implementation\PackageDetailsRequestObject.cs \
  	Implementation\PackageManagementService.cs \
  	Implementation\PackageProvider.cs \
  	Implementation\PackageSourceRequestObject.cs \
@@ -75,9 +75,7 @@ SOURCES=\
  	Implementation\Request.cs \
  	Implementation\RequestObject.cs \
  	Implementation\SoftwareIdentityRequestObject.cs \
-        Implementation\PackageDetailsRequestObject.cs \
  	Packaging\AttributeIndexer.cs \
- 	Packaging\MetadataIndexer.cs \
  	Packaging\BaseElement.cs \
  	Packaging\Directory.cs \
  	Packaging\DynamicOption.cs \
@@ -85,11 +83,11 @@ SOURCES=\
  	Packaging\Evidence.cs \
  	Packaging\File.cs \
  	Packaging\FilesystemItem.cs \
- 	Packaging\InstallationOptions.cs \
  	Packaging\Iso19770_2.cs \
  	Packaging\Link.cs \
  	Packaging\MediaQuery.cs \
  	Packaging\Meta.cs \
+ 	Packaging\MetadataIndexer.cs \
  	Packaging\OptionCategory.cs \
  	Packaging\OptionType.cs \
  	Packaging\PackageSource.cs \
@@ -106,6 +104,57 @@ SOURCES=\
  	Providers\IMetaProvider.cs \
  	Providers\IPackageProvider.cs \
  	Providers\IProvider.cs \
+ 	Utility\Async\AsyncAction.cs \
+ 	Utility\Async\AsyncActionExtensions.cs \
+ 	Utility\Async\EmptyAsyncEnumerable.cs \
+ 	Utility\Async\IAsyncAction.cs \
+ 	Utility\Async\IAsyncEnumerable.cs \
+ 	Utility\Async\IAsyncValue.cs \
+ 	Utility\Collections\BlockingCollection.cs \
+ 	Utility\Collections\CancellableEnumerator.cs \
+ 	Utility\Collections\EnumerableExtensions.cs \
+ 	Utility\Collections\FilenameEqualityComparer.cs \
+ 	Utility\Collections\ICancellableEnumerator.cs \
+ 	Utility\Collections\List.cs \
+ 	Utility\Collections\MutableEnumerable.cs \
+ 	Utility\Collections\OrderedDictionary.cs \
+ 	Utility\Collections\PathEqualityComparer.cs \
+ 	Utility\Collections\ReEnumerable.cs \
+ 	Utility\Extensions\CollectionExtensions.cs \
+ 	Utility\Extensions\DelegateExtensions.cs \
+ 	Utility\Extensions\DictionaryExtensions.cs \
+ 	Utility\Extensions\ExceptionExtensions.cs \
+ 	Utility\Extensions\FilesystemExtensions.cs \
+ 	Utility\Extensions\HashtableExtensions.cs \
+ 	Utility\Extensions\Singleon.cs \
+ 	Utility\Extensions\StringExtensions.cs \
+ 	Utility\Extensions\TaskExtensions.cs \
+ 	Utility\Extensions\ThreadPerTaskScheduler.cs \
+ 	Utility\Extensions\TwoTypes.cs \
+ 	Utility\Extensions\Types.cs \
+ 	Utility\Extensions\XmlExtensions.cs \
+ 	Utility\Platform\AdminPrivilege.cs \
+ 	Utility\Platform\AsyncProcess.cs \
+ 	Utility\Platform\Manifest.cs \
+ 	Utility\Platform\MoveFileFlags.cs \
+ 	Utility\Platform\NativeMethods.cs \
+ 	Utility\Platform\WinTrustData.cs \
+ 	Utility\Platform\WinTrustFileInfo.cs \
+ 	Utility\Plugin\AssignableTypeComparer.cs \
+ 	Utility\Plugin\DynamicInterface.cs \
+ 	Utility\Plugin\DynamicInterfaceExtensions.cs \
+ 	Utility\Plugin\DynamicType.cs \
+ 	Utility\Plugin\DynamicTypeExtensions.cs \
+ 	Utility\Plugin\FluentIlExtensions.cs \
+ 	Utility\Plugin\RequiredAttribute.cs \
+ 	Utility\Plugin\WrappedAction.cs \
+ 	Utility\Plugin\WrappedDelegate.cs \
+ 	Utility\Plugin\WrappedFunc.cs \
+ 	Utility\Versions\FourPartVersion.cs \
+ 	Utility\Versions\TwoPartVersion.cs \
+ 	Utility\Xml\DynamicAttributes.cs \
+ 	Utility\Xml\DynamicElement.cs \
+ 	Utility\Xml\DynamicElementEnumerable.cs \
  	Constants.cs \
  	ErrorCategory.cs \
  	IPackageManagementService.cs \
