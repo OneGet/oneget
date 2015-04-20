@@ -45,7 +45,7 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
 
         internal static object Create(Type tInterface, OrderedDictionary<Type, List<MethodInfo, MethodInfo>> instanceMethods, List<Delegate, MethodInfo> delegateMethods, List<MethodInfo> stubMethods, List<Type, object> usedInstances) {
             // now we can calculate the key based on the content of the *Methods collections
-            var key = tInterface.FullName + ":::" + instanceMethods.Keys.Select(each => each.FullName + "." + instanceMethods[each].Select(mi => mi.Value.ToSignatureString()).JoinWithComma()).JoinWith(";\r\n") +
+            var key = tInterface.Assembly.FullName + "::" + tInterface.Name + ":::" + instanceMethods.Keys.Select(each => each.Assembly.FullName + "." + each.FullName + "." + instanceMethods[each].Select(mi => mi.Value.ToSignatureString()).JoinWithComma()).JoinWith(";\r\n") +
                       "::" + delegateMethods.Select(each => each.GetType().FullName).JoinWith(";\r\n") +
                       "::" + stubMethods.Select(mi => mi.ToSignatureString()).JoinWithComma();
             // + "!->" + (onUnhandledExceptionMethod == null ? (onUnhandledExceptionDelegate == null ? "GenerateOnUnhandledException" : onUnhandledExceptionDelegate.ToString()) : onUnhandledExceptionMethod.ToSignatureString());
