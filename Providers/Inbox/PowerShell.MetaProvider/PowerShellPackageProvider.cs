@@ -30,8 +30,10 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
         private readonly Lazy<Dictionary<int, List<string, string, string, string>>> _findByNameBatches = new Lazy<Dictionary<int, List<string, string, string, string>>>(() => new Dictionary<int, List<string, string, string, string>>());
         private readonly Lazy<Dictionary<int, List<string>>> _findByFileBatches = new Lazy<Dictionary<int, List<string>>>(() => new Dictionary<int, List<string>>());
         private readonly Lazy<Dictionary<int, List<Uri>>> _findByUriBatches = new Lazy<Dictionary<int, List<Uri>>>(() => new Dictionary<int, List<Uri>>());
+        private string _version;
 
-        public PowerShellPackageProvider(PowerShell ps, PSModuleInfo module) : base(ps, module) {
+        public PowerShellPackageProvider(PowerShell ps, PSModuleInfo module, string version) : base(ps, module) {
+            _version = version;
         }
 
         private bool IsFirstParameterType<T>(string function) {
@@ -48,7 +50,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 throw new ArgumentNullException("methodName");
             }
 
-            if (methodName.EqualsIgnoreCase("startfind") || methodName.EqualsIgnoreCase("completeFind")) {
+            if (methodName.EqualsIgnoreCase("startfind") || methodName.EqualsIgnoreCase("completeFind") || methodName.EqualsIgnoreCase("GetProviderVersion")) {
                 return true;
             }
 #if DEEP_DEBUG
@@ -181,12 +183,18 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
 
         public string GetProviderVersion() {
             var result= (string)CallPowerShellWithoutRequest("GetProviderVersion");
+            
             if (string.IsNullOrWhiteSpace(result)) {
+
+                if (!string.IsNullOrEmpty(_version)) {
+                    return _version;
+                }
 
                 if (_module.Version != new Version(0, 0, 0, 0)) {
                     result = _module.Version.ToString();
                 } else {
-                    try {
+                    try 
+{
                         // use the latest date as a version number
                         return (FourPartVersion) _module.FileList.Max(each => new FileInfo(each).LastWriteTime);
                     } catch {

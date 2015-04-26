@@ -797,7 +797,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         public void Cancel() {
             // notify anyone listening that we're stopping this call.
-            _cancellationEvent.Cancel();
+            if (_cancellationEvent != null) {
+                _cancellationEvent.Cancel();
+            }
         }
 
         #endregion

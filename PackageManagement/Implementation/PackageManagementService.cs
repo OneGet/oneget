@@ -38,9 +38,6 @@ namespace Microsoft.PackageManagement.Implementation {
     /// <summary>
     ///     The Client API is designed for use by installation hosts:
     ///     - PackageManagement Powershell Cmdlets
-    ///     - WMI/OMI Management interfaces
-    ///     - DSC Interfaces
-    ///     - WiX's Burn
     ///     The Client API provides high-level consumer functions to support SDII functionality.
     /// </summary>
     internal class PackageManagementService : IPackageManagementService {
@@ -76,7 +73,14 @@ namespace Microsoft.PackageManagement.Implementation {
         private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>(StringComparer.OrdinalIgnoreCase);
         internal readonly IDictionary<string, Archiver> Archivers = new Dictionary<string, Archiver>(StringComparer.OrdinalIgnoreCase);
         internal readonly IDictionary<string, Downloader> Downloaders = new Dictionary<string, Downloader>(StringComparer.OrdinalIgnoreCase);
+
         private readonly Dictionary<string, byte[]> _providerFiles = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        private string _baseDir;
+        internal string BaseDir {
+            get {
+                return _baseDir ?? ( _baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) );
+            }
+        }
 
         internal string[] BootstrappableProviderNames {
             get {
@@ -335,8 +339,6 @@ namespace Microsoft.PackageManagement.Implementation {
                 throw new ArgumentNullException("request");
             }
 
-            var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
             var providerAssemblies = (_initialized ? Enumerable.Empty<string>() : _defaultProviders)
                 .Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\PACKAGEMANAGEMENT"))
                 .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\PACKAGEMANAGEMENT"))
@@ -364,13 +366,13 @@ namespace Microsoft.PackageManagement.Implementation {
 #if !COMMUNITY_BUILD
             // todo: these should just be strong-named references. for now, just load them from the same directory.
             providerAssemblies = providerAssemblies.Concat(new[] {
-                Path.Combine(baseDir, "Microsoft.PackageManagement.MetaProvider.PowerShell.dll"),
-                Path.Combine(baseDir, "Microsoft.PackageManagement.ArchiverProviders.dll"),
-                Path.Combine(baseDir, "Microsoft.PackageManagement.CoreProviders.dll"),
-                Path.Combine(baseDir, "Microsoft.PackageManagement.MsuProvider.dll"),
+                Path.Combine(BaseDir, "Microsoft.PackageManagement.MetaProvider.PowerShell.dll"),
+                Path.Combine(BaseDir, "Microsoft.PackageManagement.ArchiverProviders.dll"),
+                Path.Combine(BaseDir, "Microsoft.PackageManagement.CoreProviders.dll"),
+                Path.Combine(BaseDir, "Microsoft.PackageManagement.MsuProvider.dll"),
 #if !CORE_CLR
                 // can't load these providers here.
-                Path.Combine(baseDir, "Microsoft.PackageManagement.MsiProvider.dll"),
+                Path.Combine(BaseDir, "Microsoft.PackageManagement.MsiProvider.dll"),
 #endif
             });
 #endif
@@ -400,16 +402,7 @@ namespace Microsoft.PackageManagement.Implementation {
 #else
             providerAssemblies.ParallelForEach(providerAssemblyName => {
 #endif
-                try {
-                    request.Debug(request.FormatMessageString("Trying provider assembly: {0}", providerAssemblyName));
-                    if (TryToLoadProviderAssembly(providerAssemblyName, request)) {
-                        request.Debug(request.FormatMessageString("SUCCESS provider assembly: {0}", providerAssemblyName));
-                    } else {
-                        request.Debug(request.FormatMessageString("FAILED provider assembly: {0}", providerAssemblyName));
-                    }
-                } catch {
-                    request.Error(Constants.Messages.ProviderPluginLoadFailure, ErrorCategory.InvalidOperation.ToString(), providerAssemblyName, request.FormatMessageString(Constants.Messages.ProviderPluginLoadFailure, providerAssemblyName));
-                }
+                TryToLoadProviderAssembly(providerAssemblyName, request);
             });
 #if DEEP_DEBUG
             WaitForDebugger();
@@ -427,6 +420,14 @@ namespace Microsoft.PackageManagement.Implementation {
             }
         }
 #endif
+        /// <summary>
+        /// Dynamic providers are the ones that are not installed with the core itself.
+        /// </summary>
+        internal IEnumerable<PackageProvider> DynamicProviders {
+            get {
+                return _packageProviders.Values.Where(each => !each.ProviderPath.StartsWith(BaseDir, StringComparison.InvariantCultureIgnoreCase));
+            }
+        }
 
         private static IEnumerator<string> GetProvidersFromRegistry(RegistryKey registryKey, string p) {
             RegistryKey key;
@@ -455,52 +456,54 @@ namespace Microsoft.PackageManagement.Implementation {
         /// <param name="request"></param>
         /// <param name="providerAssemblyName"></param>
         /// <returns></returns>
-        private bool TryToLoadProviderAssembly(string providerAssemblyName, IHostApi request) {
-            // find all the matches for the assembly specified, order by version (descending)
+        internal bool TryToLoadProviderAssembly(string providerAssemblyName, IHostApi request) {
+            request.Debug(request.FormatMessageString("Trying provider assembly: {0}", providerAssemblyName));
 
             var assemblyPath = FindAssembly(providerAssemblyName);
+            if (assemblyPath != null) {
 
-            if (assemblyPath == null) {
-                return false;
-            }
-
-            try {
-                byte[] hash = null;
-                using (var stream = File.Open(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
-                    hash = System.Security.Cryptography.MD5.Create().ComputeHash(stream);
-                }
-                lock (_providerFiles) {
-                if (_providerFiles.ContainsKey(assemblyPath)) {
-                    // have we tried this file before?
-                    if (_providerFiles[assemblyPath].SequenceEqual(hash)) {
-                        // and it's the exact same file?
-                        request.Debug(request.FormatMessageString("Skipping previously processed assembly: {0}", assemblyPath));
-                        return false;
+                try {
+                    byte[] hash = null;
+                    using (var stream = File.Open(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
+                        hash = System.Security.Cryptography.MD5.Create().ComputeHash(stream);
                     }
-                    request.Debug(request.FormatMessageString("New assembly in location: {0}", assemblyPath));
-                    // it's a different file in the same path? 
-                    // we're gonna let it try the new file. 
-                    _providerFiles.Remove(assemblyPath);
-                } else {
-                    request.Debug(request.FormatMessageString("Attempting loading of assembly: {0}", assemblyPath));
-                }
-                
-                // record that this file is being loaded.
-                _providerFiles.Add(assemblyPath, hash);
-                }
-                return AcquireProviders(assemblyPath, request);
-            } catch (Exception e) {
-                e.Dump();
+                    lock (_providerFiles) {
+                        if (_providerFiles.ContainsKey(assemblyPath)) {
+                            // have we tried this file before?
+                            if (_providerFiles[assemblyPath].SequenceEqual(hash)) {
+                                // and it's the exact same file?
+                                request.Debug(request.FormatMessageString("Skipping previously processed assembly: {0}", assemblyPath));
+                                return false;
+                            }
+                            request.Debug(request.FormatMessageString("New assembly in location: {0}", assemblyPath));
+                            // it's a different file in the same path? 
+                            // we're gonna let it try the new file. 
+                            _providerFiles.Remove(assemblyPath);
+                        } else {
+                            request.Debug(request.FormatMessageString("Attempting loading of assembly: {0}", assemblyPath));
+                        }
 
-                lock (_providerFiles) {
-                    // can't create hash from file? 
-                    // we're not going to try and load this.
-                    // all we can do is record the name.
-                    if (!_providerFiles.ContainsKey(assemblyPath)) {
-                        _providerFiles.Add(assemblyPath, new byte[0]);
+                        // record that this file is being loaded.
+                        _providerFiles.Add(assemblyPath, hash);
+                    }
+                    if (AcquireProviders(assemblyPath, request)) {
+                        request.Debug(request.FormatMessageString("SUCCESS provider assembly: {0}", providerAssemblyName));
+                        return true;
+                    }
+                } catch (Exception e) {
+                    e.Dump();
+
+                    lock (_providerFiles) {
+                        // can't create hash from file? 
+                        // we're not going to try and load this.
+                        // all we can do is record the name.
+                        if (!_providerFiles.ContainsKey(assemblyPath)) {
+                            _providerFiles.Add(assemblyPath, new byte[0]);
+                        }
                     }
                 }
             }
+            request.Debug(request.FormatMessageString("FAILED provider assembly: {0}", providerAssemblyName));
             return false;
         }
 
@@ -574,54 +577,54 @@ namespace Microsoft.PackageManagement.Implementation {
 
                 var asmVersion = GetAssemblyVersion(assembly);
 
-                var t1 = Task.Factory.StartNew(() => {
-                    // process Meta Providers
-                    foreach (var metaProviderClass in assembly.FindCompatibleTypes<IMetaProvider>()) {
-                        try {
-                            found = found | RegisterProvidersViaMetaProvider(metaProviderClass.Create<IMetaProvider>(), asmVersion, request);
-                        } catch {
-                            // ignore stuff that doesn't load.
+                foreach (var serviceProviderClass in assembly.FindCompatibleTypes<IArchiver>()) {
+                    try {
+                        var archiver = RegisterArchiver(serviceProviderClass.Create<IArchiver>(), asmVersion, request);
+                        if (archiver != null) {
+                            found = true;
+                            archiver.ProviderPath = assemblyPath;
                         }
                     }
-                }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
+                    catch {
+                        // ignore stuff that doesn't load.
+                    }
+                }
 
-                var t2 = Task.Factory.StartNew(() => {
-                    // process Package Providers
-                    foreach (var packageProviderClass in assembly.FindCompatibleTypes<IPackageProvider>()) {
-                        try {
-                            found = found | RegisterPackageProvider(packageProviderClass.Create<IPackageProvider>(), asmVersion, request);
-                        } catch {
-                            // ignore stuff that doesn't load.
+                foreach (var serviceProviderClass in assembly.FindCompatibleTypes<IDownloader>()) {
+                    try {
+                        var downloader = RegisterDownloader(serviceProviderClass.Create<IDownloader>(), asmVersion, request);
+                        if (downloader != null) {
+                            found = true;
+                            downloader.ProviderPath = assemblyPath;
                         }
                     }
-                }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
+                    catch {
+                        // ignore stuff that doesn't load`
+                    }
+                }
 
-                var t3 = Task.Factory.StartNew(() => {
-                    // Process archiver Providers
-                    foreach (var serviceProviderClass in assembly.FindCompatibleTypes<IArchiver>()) {
-                        try {
-                            found = found | RegisterArchiver(serviceProviderClass.Create<IArchiver>(), asmVersion, request);
-                        } catch {
-                            // ignore stuff that doesn't load.
+                foreach (var metaProviderClass in assembly.FindCompatibleTypes<IMetaProvider>()) {
+                    try {
+                        found = found | RegisterProvidersViaMetaProvider(metaProviderClass.Create<IMetaProvider>(), asmVersion, request);
+                    }
+                    catch {
+                        // ignore stuff that doesn't load.
+                    }
+                }
+
+                foreach (var packageProviderClass in assembly.FindCompatibleTypes<IPackageProvider>()) {
+                    try {
+                        var packageProvider = RegisterPackageProvider(packageProviderClass.Create<IPackageProvider>(), asmVersion, request);
+                        if (packageProvider != null) {
+                            found = true;
+                            packageProvider.ProviderPath = assemblyPath;
                         }
                     }
-                }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
-
-                var t4 = Task.Factory.StartNew(() => {
-                    // Process downloader Providers
-                    foreach (var serviceProviderClass in assembly.FindCompatibleTypes<IDownloader>()) {
-                        try {
-                            found = found | RegisterDownloader(serviceProviderClass.Create<IDownloader>(), asmVersion, request);
-                        } catch {
-                            // ignore stuff that doesn't load`
-                        }
+                    catch {
+                        // ignore stuff that doesn't load.
                     }
-                }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
+                }
 
-                t1.Wait();
-                t2.Wait();
-                t3.Wait();
-                t4.Wait();
             } catch (Exception e) {
                 e.Dump();
             }
@@ -661,15 +664,16 @@ namespace Microsoft.PackageManagement.Implementation {
             return result;
         }
 
-        private bool RegisterPackageProvider(IPackageProvider provider, FourPartVersion asmVersion, IHostApi request) {
+        private PackageProvider RegisterPackageProvider(IPackageProvider provider, FourPartVersion asmVersion, IHostApi request) {
             string name = null;
             try {
                 FourPartVersion ver = provider.GetProviderVersion();
                 var version = ver == 0 ? asmVersion : ver;
                 name = provider.GetPackageProviderName();
                 if (string.IsNullOrWhiteSpace(name)) {
-                    return false;
+                    return null;
                 }
+
                 // Initialize the provider before locking the collection
                 // that way we're not blocking others on non-deterministic actions.
                 request.Debug("Initializing provider '{0}'".format(name));
@@ -686,32 +690,33 @@ namespace Microsoft.PackageManagement.Implementation {
 
                             _packageProviders.Remove(name);
                         } else {
-                            return false;
+                            return null;
                         }
                     }
                     request.Debug("Using Package Provider {0}".format(name));
-
-                    _packageProviders.AddOrSet(name, new PackageProvider(provider) {
+                    var packageProvider = new PackageProvider(provider) {
                         Version = version
-                    }).Initialize(request);
+                    };
+                    _packageProviders.AddOrSet(name, packageProvider);
+                    packageProvider.Initialize(request);
+                    return packageProvider;
                 }
-                return true;
+                
             } catch (Exception e) {
                 request.Debug("Provider '{0}' Failed".format(name));
                 e.Dump();
             }
-            return false;
+            return null;
         }
 
-        private bool RegisterArchiver(IArchiver provider, FourPartVersion asmVersion, IHostApi request) {
+        private Archiver RegisterArchiver(IArchiver provider, FourPartVersion asmVersion, IHostApi request) {
             string name = null;
-
             try {
                 FourPartVersion ver = provider.GetProviderVersion();
                 var version = ver == 0 ? asmVersion : ver;
                 name = provider.GetArchiverName();
                 if (string.IsNullOrWhiteSpace(name)) {
-                    return false;
+                    return null;
                 }
 
                 // Initialize the provider before locking the collection
@@ -728,32 +733,36 @@ namespace Microsoft.PackageManagement.Implementation {
                             // we'll have to do that later.
 
                             Archivers.Remove(name);
-                        } else {
-                            return false;
+                        }
+                        else {
+                            return null;
                         }
                     }
                     request.Debug("Using Archiver Provider {0}".format(name));
-                    
-                    Archivers.AddOrSet(name, new Archiver(provider) {
+                    var archiver = new Archiver(provider) {
                         Version = version
-                    }).Initialize(request);
+                    };
+
+                    archiver.Initialize(request);
+                    Archivers.AddOrSet(name, archiver);
+                    return archiver;
                 }
-                return true;
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 request.Debug("Provider '{0}' Failed".format(name));
                 e.Dump();
             }
-            return false;
+            return null;
         }
 
-        private bool RegisterDownloader(IDownloader provider, FourPartVersion asmVersion, IHostApi request) {
+        private Downloader RegisterDownloader(IDownloader provider, FourPartVersion asmVersion, IHostApi request) {
             string name = null;
             try {
                 FourPartVersion ver = provider.GetProviderVersion();
                 var version = ver == 0 ? asmVersion : ver;
                 name = provider.GetDownloaderName();
                 if (string.IsNullOrWhiteSpace(name)) {
-                    return false;
+                    return null;
                 }
 
                 // Initialize the provider before locking the collection
@@ -771,27 +780,41 @@ namespace Microsoft.PackageManagement.Implementation {
 
                             Downloaders.Remove(name);
                         } else {
-                            return false;
+                            return null;
                         }
                     }
                     request.Debug("Using Downloader Provider {0}".format(name));
 
-                    Downloaders.AddOrSet(name, new Downloader(provider) {
+                    var downloader = new Downloader(provider) {
                         Version = version
-                    }).Initialize(request);
+                    };
+
+                    downloader.Initialize(request);
+                    Downloaders.AddOrSet(name, downloader);
+                    return downloader;
                 }
-                return true;
             } catch (Exception e) {
                 request.Debug("Provider '{0}' Failed".format(name));
                 e.Dump();
             }
+            return null;
+        }
+
+        internal bool TryLoadProviderViaMetaProvider(string metaproviderName, string providerNameOrPath, IHostApi request ) {
+            if (_metaProviders.ContainsKey(metaproviderName)) {
+                var metaProvider = _metaProviders[metaproviderName];
+
+                request.Debug("Using MetaProvider '{0}' to attempt to load provider from '{1}'".format(metaproviderName, providerNameOrPath));
+
+                return LoadViaMetaProvider( _metaProviders[metaproviderName], providerNameOrPath, metaProvider.GetProviderVersion(),request);
+            }
+            request.Debug("MetaProvider '{0}' is not recognized".format(metaproviderName));
             return false;
         }
 
         internal bool RegisterProvidersViaMetaProvider(IMetaProvider provider, FourPartVersion asmVersion, IHostApi request) {
             var found = false;
             var metaProviderName = provider.GetMetaProviderName();
-            FourPartVersion metaProviderVersion = provider.GetProviderVersion();
 
             if (!_metaProviders.ContainsKey(metaProviderName)) {
                 // Meta Providers can't be replaced at this point
@@ -800,40 +823,57 @@ namespace Microsoft.PackageManagement.Implementation {
 
             try {
                 provider.InitializeProvider(request.As<IRequest>());
-                var metaProvider = provider;
                 provider.GetProviderNames().ParallelForEach(name => {
-                    // foreach (var name in provider.GetProviderNames()) {
-                    var instance = metaProvider.CreateProvider(name);
-                    if (instance != null) {
-                        // check if it's a Package Provider
-                        if (typeof (IPackageProvider).CanDynamicCastFrom(instance)) {
-                            try {
-                                found = found | RegisterPackageProvider(instance.As<IPackageProvider>(), asmVersion, request);
-                            } catch (Exception e) {
-                                e.Dump();
-                            }
-                        }
-
-                        // check if it's a Services Provider
-                        if (typeof (IArchiver).CanDynamicCastFrom(instance)) {
-                            try {
-                                found = found | RegisterArchiver(instance.As<IArchiver>(), asmVersion, request);
-                            } catch (Exception e) {
-                                e.Dump();
-                            }
-                        }
-
-                        if (typeof (IDownloader).CanDynamicCastFrom(instance)) {
-                            try {
-                                found = found | RegisterDownloader(instance.As<IDownloader>(), asmVersion, request);
-                            } catch (Exception e) {
-                                e.Dump();
-                            }
-                        }
-                    }
+                    found = LoadViaMetaProvider(provider, name,asmVersion, request);
                 });
             } catch (Exception e) {
                 e.Dump();
+            }
+            return found;
+        }
+
+        private bool LoadViaMetaProvider(IMetaProvider metaProvider, string name, FourPartVersion asmVersion, IHostApi request ) {
+            var found = false;
+
+            var instance = metaProvider.CreateProvider(name);
+            if (instance != null) {
+                // check if it's a Package Provider
+                if (typeof (IPackageProvider).CanDynamicCastFrom(instance)) {
+                    try {
+                        var packageProvider = RegisterPackageProvider(instance.As<IPackageProvider>(), asmVersion, request);
+                        if (packageProvider != null) {
+                            found = true;
+                            packageProvider.ProviderPath = metaProvider.GetProviderPath(name);
+                        }
+                    } catch (Exception e) {
+                        e.Dump();
+                    }
+                }
+
+                // check if it's a Services Provider
+                if (typeof (IArchiver).CanDynamicCastFrom(instance)) {
+                    try {
+                        var archiver = RegisterArchiver(instance.As<IArchiver>(), asmVersion, request);
+                        if (archiver != null) {
+                            found = true;
+                            archiver.ProviderPath = metaProvider.GetProviderPath(name);
+                        }
+                    } catch (Exception e) {
+                        e.Dump();
+                    }
+                }
+
+                if (typeof (IDownloader).CanDynamicCastFrom(instance)) {
+                    try {
+                        var downloader = RegisterDownloader(instance.As<IDownloader>(), asmVersion, request);
+                        if (downloader != null) {
+                            found = true;
+                            downloader.ProviderPath = metaProvider.GetProviderPath(name);
+                        }
+                    } catch (Exception e) {
+                        e.Dump();
+                    }
+                }
             }
             return found;
         }

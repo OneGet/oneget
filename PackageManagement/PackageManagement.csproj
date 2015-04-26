@@ -132,6 +132,7 @@
     <Compile Include="Utility\Extensions\CollectionExtensions.cs" />
     <Compile Include="Utility\Extensions\DelegateExtensions.cs" />
     <Compile Include="Utility\Extensions\DictionaryExtensions.cs" />
+    <Compile Include="Utility\Extensions\EqualityComparer.cs" />
     <Compile Include="Utility\Extensions\ExceptionExtensions.cs" />
     <Compile Include="Utility\Extensions\FilesystemExtensions.cs" />
     <Compile Include="Utility\Extensions\HashtableExtensions.cs" />
@@ -207,7 +208,7 @@
         public string ScriptBlock {set { EchoOff=true; Command = string.Format( "@powershell \"Invoke-Command -ScriptBlock {{ $errorActionPreference='Stop'; {0} ; exit $LASTEXITCODE }} \"",  value.Replace("\"","\\\"").Replace("\r\n",";").Replace("\n",";").Replace("\r",";")); } }
     }]]></Code>
     </Task>
-  </UsingTask>  
+  </UsingTask>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

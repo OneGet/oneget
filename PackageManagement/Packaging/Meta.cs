@@ -31,7 +31,7 @@ namespace Microsoft.PackageManagement.Packaging {
         }
 
         internal Meta()
-            : base(new XElement(Iso19770_2.Meta)) {
+            : base(new XElement(Iso19770_2.Elements.Meta)) {
         }
 
         public string this[string key] {

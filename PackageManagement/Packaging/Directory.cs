@@ -28,13 +28,13 @@ namespace Microsoft.PackageManagement.Packaging {
     public class Directory : FilesystemItem {
         internal Directory(XElement element)
             : base(element) {
-            if (element.Name != Iso19770_2.Directory) {
+            if (element.Name != Iso19770_2.Elements.Directory) {
                 throw new ArgumentException("Element is not of type 'Directory'", "element");
             }
         }
 
         internal Directory(string name)
-            : base(new XElement(Iso19770_2.Directory)) {
+            : base(new XElement(Iso19770_2.Elements.Directory)) {
             Name = name;
         }
 
@@ -43,7 +43,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public IEnumerable<Directory> Directories {
             get {
-                return Element.Elements(Iso19770_2.Directory).Select(each => new Directory(each)).ReEnumerable();
+                return Element.Elements(Iso19770_2.Elements.Directory).Select(each => new Directory(each)).ReEnumerable();
             }
         }
 
@@ -52,7 +52,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public IEnumerable<File> Files {
             get {
-                return Element.Elements(Iso19770_2.File).Select(each => new File(each)).ReEnumerable();
+                return Element.Elements(Iso19770_2.Elements.File).Select(each => new File(each)).ReEnumerable();
             }
         }
 

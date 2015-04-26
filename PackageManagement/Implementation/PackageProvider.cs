@@ -203,7 +203,7 @@ namespace Microsoft.PackageManagement.Implementation {
                 throw new ArgumentNullException("softwareIdentity");
             }
 
-            return new ActionRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, request));
+            return new ActionRequestObject(this, requestObject, request => Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, request));
         }
     }
 }

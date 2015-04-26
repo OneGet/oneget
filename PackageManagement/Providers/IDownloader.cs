@@ -26,6 +26,6 @@ namespace Microsoft.PackageManagement.Providers {
         string GetDownloaderName();
 
         [Required]
-        void DownloadFile(Uri remoteLocation, string localFilename, IHostApi requestObject);
+        string DownloadFile(Uri remoteLocation, string localFilename, int timeoutMilliseconds, bool showProgress, IHostApi requestObject);
     }
 }

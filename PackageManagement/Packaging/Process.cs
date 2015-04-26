@@ -19,13 +19,13 @@ namespace Microsoft.PackageManagement.Packaging {
     public class Process : Meta {
         internal Process(XElement element)
             : base(element) {
-            if (element.Name != Iso19770_2.Process) {
+            if (element.Name != Iso19770_2.Elements.Process) {
                 throw new ArgumentException("Element is not of type 'Process'", "element");
             }
         }
 
         internal Process(string processName)
-            : base(new XElement(Iso19770_2.Process)) {
+            : base(new XElement(Iso19770_2.Elements.Process)) {
             Name = processName;
         }
 
@@ -35,10 +35,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string Name {
             get {
-                return GetAttribute(Iso19770_2.NameAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Name);
             }
             internal set {
-                AddAttribute(Iso19770_2.NameAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Name, value);
             }
         }
 
@@ -48,7 +48,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public int? Pid {
             get {
-                var sz = GetAttribute(Iso19770_2.SizeAttribute);
+                var sz = GetAttribute(Iso19770_2.Attributes.Size);
                 if (sz != null) {
                     int result;
                     if (Int32.TryParse(sz, out result)) {
@@ -59,7 +59,7 @@ namespace Microsoft.PackageManagement.Packaging {
             }
             internal set {
                 if (value != null) {
-                    AddAttribute(Iso19770_2.PidAttribute, value.ToString());
+                    AddAttribute(Iso19770_2.Attributes.Pid, value.ToString());
                 }
             }
         }

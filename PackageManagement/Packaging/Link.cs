@@ -30,13 +30,13 @@ namespace Microsoft.PackageManagement.Packaging {
     public class Link : BaseElement {
         internal Link(XElement element)
             : base(element) {
-            if (element.Name != Iso19770_2.Link) {
+            if (element.Name != Iso19770_2.Elements.Link) {
                 throw new ArgumentException("Element is not of type 'Link'", "element");
             }
         }
 
         internal Link(Uri href, string relationship)
-            : base(new XElement(Iso19770_2.Link)) {
+            : base(new XElement(Iso19770_2.Elements.Link)) {
             HRef = href;
             Relationship = relationship;
         }
@@ -49,10 +49,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string Artifact {
             get {
-                return GetAttribute(Iso19770_2.ArtifactAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Artifact);
             }
             internal set {
-                AddAttribute(Iso19770_2.ArtifactAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Artifact, value);
             }
         }
 
@@ -83,7 +83,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public Uri HRef {
             get {
-                var v = GetAttribute(Iso19770_2.HRefAttribute);
+                var v = GetAttribute(Iso19770_2.Attributes.HRef);
                 Uri result;
                 if (v != null && Uri.TryCreate(v, UriKind.Absolute, out result)) {
                     return result;
@@ -91,7 +91,7 @@ namespace Microsoft.PackageManagement.Packaging {
                 return null;
             }
             internal set {
-                AddAttribute(Iso19770_2.HRefAttribute, value.ToString());
+                AddAttribute(Iso19770_2.Attributes.HRef, value.ToString());
             }
         }
 
@@ -103,10 +103,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string Media {
             get {
-                return GetAttribute(Iso19770_2.MediaAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Media);
             }
             internal set {
-                AddAttribute(Iso19770_2.MediaAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Media, value);
             }
         }
 
@@ -115,10 +115,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string Ownership {
             get {
-                return GetAttribute(Iso19770_2.OwnershipAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Ownership);
             }
             internal set {
-                AddAttribute(Iso19770_2.OwnershipAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Ownership, value);
             }
         }
 
@@ -127,10 +127,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string Relationship {
             get {
-                return GetAttribute(Iso19770_2.RelationshipAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Relationship);
             }
             internal set {
-                AddAttribute(Iso19770_2.RelationshipAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Relationship, value);
             }
         }
 
@@ -142,10 +142,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string MediaType {
             get {
-                return GetAttribute(Iso19770_2.MediaTypeAttribute);
+                return GetAttribute(Iso19770_2.Attributes.MediaType);
             }
             internal set {
-                AddAttribute(Iso19770_2.MediaTypeAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.MediaType, value);
             }
         }
 
@@ -154,10 +154,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string Use {
             get {
-                return GetAttribute(Iso19770_2.UseAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Use);
             }
             internal set {
-                AddAttribute(Iso19770_2.UseAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Use, value);
             }
         }
 

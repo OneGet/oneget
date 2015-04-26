@@ -78,7 +78,11 @@ namespace Microsoft.PackageManagement.Implementation {
             return false;
         }
 
-        public void DownloadFile(Uri remoteLocation, string localFilename, IRequest request) {
+        public string DownloadFile(Uri remoteLocation, string localFilename, IRequest request) {
+            return DownloadFile(remoteLocation, localFilename, -1, true, request);
+        }
+
+        public string DownloadFile(Uri remoteLocation, string localFilename, int timeoutMilliseconds, bool showProgress, IRequest request) {
             if (request == null) {
                 throw new ArgumentNullException("request");
             }
@@ -89,19 +93,16 @@ namespace Microsoft.PackageManagement.Implementation {
                 if (remoteLocation == null) {
                     throw new ArgumentNullException("remoteLocation");
                 }
-                if (request == null) {
-                    throw new ArgumentNullException("request");
-                }
 
                 foreach (var downloader in PackageManagementService.Downloaders.Values) {
                     if (downloader.SupportedUriSchemes.Contains(remoteLocation.Scheme, StringComparer.OrdinalIgnoreCase)) {
-                        downloader.DownloadFile(remoteLocation, localFilename, request);
-                        return;
+                        return downloader.DownloadFile(remoteLocation, localFilename,timeoutMilliseconds, showProgress, request);
                     }
                 }
 
                 Error(request, ErrorCategory.NotImplemented, Constants.Messages.ProtocolNotSupported, remoteLocation.Scheme, Constants.Messages.ProtocolNotSupported, remoteLocation.Scheme);
             }
+            return null;
         }
 
         public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, IRequest request) {

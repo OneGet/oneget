@@ -50,6 +50,12 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             }
         }
 
+        public string ModulePath {
+            get {
+                return _module.Path;
+            }
+        }
+
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);

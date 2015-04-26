@@ -57,11 +57,11 @@ namespace Microsoft.PackageManagement.Packaging {
             }
 
             switch ((versionScheme ?? "unknown").ToLowerInvariant()) {
-                case "alphanumeric":
+                case Iso19770_2.VersionScheme.Alphanumeric:
                     // string sort
                     return String.Compare(xVersion, yVersion, StringComparison.Ordinal);
 
-                case "decimal":
+                case Iso19770_2.VersionScheme.Decimal:
                     double xDouble;
                     double yDouble;
                     if (double.TryParse(xVersion, out xDouble) && double.TryParse(yVersion, out yDouble)) {
@@ -69,16 +69,16 @@ namespace Microsoft.PackageManagement.Packaging {
                     }
                     return 0;
 
-                case "multipartnumeric":
+                case Iso19770_2.VersionScheme.MultipartNumeric:
                     return CompareMultipartNumeric(xVersion, yVersion);
 
-                case "multipartnumeric+suffix":
+                case Iso19770_2.VersionScheme.MultipartNumericPlusSuffix:
                     return CompareMultipartNumericSuffix(xVersion, yVersion);
 
-                case "semver":
+                case Iso19770_2.VersionScheme.SemVer:
                     return CompareSemVer(xVersion, yVersion);
 
-                case "unknown":
+                case Iso19770_2.VersionScheme.Unknown:
                     return GuessComparison(xVersion, yVersion);
 
                 default:

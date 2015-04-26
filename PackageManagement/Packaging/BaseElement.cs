@@ -43,10 +43,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string XmlLang {
             get {
-                return GetAttribute(Iso19770_2.XmlLang);
+                return GetAttribute(Iso19770_2.Attributes.XmlLang);
             }
             internal set {
-                AddAttribute(Iso19770_2.XmlLang, value);
+                AddAttribute(Iso19770_2.Attributes.XmlLang, value);
             }
         }
 
@@ -57,7 +57,7 @@ namespace Microsoft.PackageManagement.Packaging {
         }
 
         protected static bool IsMetaElement(XElement element) {
-            return Iso19770_2.MetaElements.Contains(element.Name);
+            return Iso19770_2.Elements.MetaElements.Contains(element.Name);
         }
 
         private static string PathToElement(string parent, XElement element) {

@@ -19,139 +19,139 @@ namespace Microsoft.PackageManagement.Packaging {
 
     public class SoftwareMetadata : Meta {
         internal SoftwareMetadata(XElement element) : base(element) {
-            if (element.Name != Iso19770_2.Meta) {
+            if (element.Name != Iso19770_2.Elements.Meta) {
                 throw new ArgumentException("Element is not of type 'SoftwareMetadata'", "element");
             }
         }
 
         internal SoftwareMetadata()
-            : base(new XElement(Iso19770_2.Meta)) {
+            : base(new XElement(Iso19770_2.Elements.Meta)) {
         }
 
         public string ActivationStatus {
             get {
-                return GetAttribute(Iso19770_2.ActivationStatusAttribute);
+                return GetAttribute(Iso19770_2.Attributes.ActivationStatus);
             }
             internal set {
-                AddAttribute(Iso19770_2.ActivationStatusAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.ActivationStatus, value);
             }
         }
 
         public string ChannelType {
             get {
-                return GetAttribute(Iso19770_2.ChannelTypeAttribute);
+                return GetAttribute(Iso19770_2.Attributes.ChannelType);
             }
             internal set {
-                AddAttribute(Iso19770_2.ChannelTypeAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.ChannelType, value);
             }
         }
 
         public string Description {
             get {
-                return GetAttribute(Iso19770_2.DescriptionAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Description);
             }
             internal set {
-                AddAttribute(Iso19770_2.DescriptionAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Description, value);
             }
         }
 
         public string ColloquialVersion {
             get {
-                return GetAttribute(Iso19770_2.ColloquialVersionAttribute);
+                return GetAttribute(Iso19770_2.Attributes.ColloquialVersion);
             }
             internal set {
-                AddAttribute(Iso19770_2.ColloquialVersionAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.ColloquialVersion, value);
             }
         }
 
         public string Edition {
             get {
-                return GetAttribute(Iso19770_2.EditionAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Edition);
             }
             internal set {
-                AddAttribute(Iso19770_2.EditionAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Edition, value);
             }
         }
 
         public string EntitlementKey {
             get {
-                return GetAttribute(Iso19770_2.EntitlementKeyAttribute);
+                return GetAttribute(Iso19770_2.Attributes.EntitlementKey);
             }
             internal set {
-                AddAttribute(Iso19770_2.EntitlementKeyAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.EntitlementKey, value);
             }
         }
 
         public string Generator {
             get {
-                return GetAttribute(Iso19770_2.GeneratorAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Generator);
             }
             internal set {
-                AddAttribute(Iso19770_2.GeneratorAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Generator, value);
             }
         }
 
         public string PersistentId {
             get {
-                return GetAttribute(Iso19770_2.PersistentIdAttribute);
+                return GetAttribute(Iso19770_2.Attributes.PersistentId);
             }
             internal set {
-                AddAttribute(Iso19770_2.PersistentIdAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.PersistentId, value);
             }
         }
 
         public string Product {
             get {
-                return GetAttribute(Iso19770_2.ProductAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Product);
             }
             internal set {
-                AddAttribute(Iso19770_2.ProductAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Product, value);
             }
         }
 
         public string ProductFamily {
             get {
-                return GetAttribute(Iso19770_2.ProductFamilyAttribute);
+                return GetAttribute(Iso19770_2.Attributes.ProductFamily);
             }
             internal set {
-                AddAttribute(Iso19770_2.ProductFamilyAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.ProductFamily, value);
             }
         }
 
         public string Revision {
             get {
-                return GetAttribute(Iso19770_2.RevisionAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Revision);
             }
             internal set {
-                AddAttribute(Iso19770_2.RevisionAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Revision, value);
             }
         }
 
         public string UnspscCode {
             get {
-                return GetAttribute(Iso19770_2.UnspscCodeAttribute);
+                return GetAttribute(Iso19770_2.Attributes.UnspscCode);
             }
             internal set {
-                AddAttribute(Iso19770_2.UnspscCodeAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.UnspscCode, value);
             }
         }
 
         public string UnspscVersion {
             get {
-                return GetAttribute(Iso19770_2.UnspscVersionAttribute);
+                return GetAttribute(Iso19770_2.Attributes.UnspscVersion);
             }
             internal set {
-                AddAttribute(Iso19770_2.UnspscVersionAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.UnspscVersion, value);
             }
         }
 
         public bool? EntitlementDataRequired {
             get {
-                return GetAttribute(Iso19770_2.EntitlementDataRequiredAttribute).IsTruePreserveNull();
+                return GetAttribute(Iso19770_2.Attributes.EntitlementDataRequired).IsTruePreserveNull();
             }
             internal set {
                 if (value != null) {
-                    AddAttribute(Iso19770_2.EntitlementDataRequiredAttribute, value.ToString());
+                    AddAttribute(Iso19770_2.Attributes.EntitlementDataRequired, value.ToString());
                 }
             }
         }

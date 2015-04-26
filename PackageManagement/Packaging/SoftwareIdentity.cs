@@ -59,10 +59,10 @@ namespace Microsoft.PackageManagement.Packaging {
 
         public string Summary {
             get {
-                return Element.Elements(Iso19770_2.Meta).Select(each => each.GetAttribute(Iso19770_2.SummaryAttribute)).WhereNotNull().FirstOrDefault();
+                return Element.Elements(Iso19770_2.Elements.Meta).Select(each => each.GetAttribute(Iso19770_2.Attributes.Summary)).WhereNotNull().FirstOrDefault();
             }
             internal set {
-                (Meta.FirstOrDefault() ?? AddMeta()).AddAttribute(Iso19770_2.SummaryAttribute, value);
+                (Meta.FirstOrDefault() ?? AddMeta()).AddAttribute(Iso19770_2.Attributes.Summary, value);
             }
         }
 
@@ -118,7 +118,7 @@ namespace Microsoft.PackageManagement.Packaging {
                 return;
             }
 
-            var metaElements = Element.Elements(Iso19770_2.Meta).ReEnumerable();
+            var metaElements = Element.Elements(Iso19770_2.Elements.Meta).ReEnumerable();
             var currentValue = metaElements.Select(each => each.GetAttribute(metaKey)).WhereNotNull().FirstOrDefault();
 
             // if the current value is already the value, then don't worry about it.
@@ -129,7 +129,7 @@ namespace Microsoft.PackageManagement.Packaging {
             if (metaElements.Any() && currentValue == null) {
                 // value has not been set (and we have at least one metadata element)
                 // let's set it in the first meta element.
-                Element.Elements(Iso19770_2.Meta).FirstOrDefault().AddAttribute(metaKey, value);
+                Element.Elements(Iso19770_2.Elements.Meta).FirstOrDefault().AddAttribute(metaKey, value);
             } else {
                 // add a new metadata object at the end and set the value in that element.
                 AddElement(new Meta())
@@ -227,7 +227,7 @@ namespace Microsoft.PackageManagement.Packaging {
                 return meta.ElementUniqueId;
             }
 
-            if (element.Name == Iso19770_2.Entity) {
+            if (element.Name == Iso19770_2.Elements.Entity) {
                 // metadata values on entities go to the first Meta in the entity
                 var entity = new Entity(element);
                 var meta = (entity.Meta.FirstOrDefault() ?? entity.AddMeta());
@@ -250,7 +250,7 @@ namespace Microsoft.PackageManagement.Packaging {
             if (element == null || string.IsNullOrWhiteSpace(type)) {
                 return null;
             }
-            if (element.Name == Iso19770_2.Payload || element.Name == Iso19770_2.Evidence) {
+            if (element.Name == Iso19770_2.Elements.Payload || element.Name == Iso19770_2.Elements.Evidence) {
                 return new ResourceCollection(element).AddResource(type).ElementUniqueId;
             }
             return null;
@@ -261,7 +261,7 @@ namespace Microsoft.PackageManagement.Packaging {
             if (element == null || string.IsNullOrWhiteSpace(processName)) {
                 return null;
             }
-            if (element.Name == Iso19770_2.Payload || element.Name == Iso19770_2.Evidence) {
+            if (element.Name == Iso19770_2.Elements.Payload || element.Name == Iso19770_2.Elements.Evidence) {
                 var process = new ResourceCollection(element).AddProcess(processName);
                 if (pid != 0) {
                     process.Pid = pid;
@@ -276,7 +276,7 @@ namespace Microsoft.PackageManagement.Packaging {
             if (element == null || string.IsNullOrWhiteSpace(fileName)) {
                 return null;
             }
-            if (element.Name == Iso19770_2.Payload || element.Name == Iso19770_2.Evidence || element.Name == Iso19770_2.Directory) {
+            if (element.Name == Iso19770_2.Elements.Payload || element.Name == Iso19770_2.Elements.Evidence || element.Name == Iso19770_2.Elements.Directory) {
                 var file = new ResourceCollection(element).AddFile(fileName);
                 if (!string.IsNullOrWhiteSpace(location)) {
                     file.Location = location;
@@ -303,7 +303,7 @@ namespace Microsoft.PackageManagement.Packaging {
             if (element == null || string.IsNullOrWhiteSpace(directoryName)) {
                 return null;
             }
-            if (element.Name == Iso19770_2.Payload || element.Name == Iso19770_2.Evidence || element.Name == Iso19770_2.Directory) {
+            if (element.Name == Iso19770_2.Elements.Payload || element.Name == Iso19770_2.Elements.Evidence || element.Name == Iso19770_2.Elements.Directory) {
                 var file = new ResourceCollection(element).AddDirectory(directoryName);
                 if (!string.IsNullOrWhiteSpace(location)) {
                     file.Location = location;

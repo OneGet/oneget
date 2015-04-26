@@ -34,7 +34,9 @@ namespace Microsoft.PackageManagement.Api {
 
         string ParsePackageSource(string canonicalPackageId);
 
-        void DownloadFile(Uri remoteLocation, string localFilename, IRequest requestObject);
+        string DownloadFile(Uri remoteLocation, string localFilename, IRequest requestObject);
+
+        string DownloadFile(Uri remoteLocation, string localFilename,int timeoutMilliseconds, bool showProgress, IRequest requestObject);
 
         bool IsSupportedArchive(string localFilename, IRequest requestObject);
 

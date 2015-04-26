@@ -29,7 +29,7 @@ Describe "PSGet Message Resolver" {
         
         $msg = powershell 'find-module -repository asdasdasd -ea silentlycontinue ; $ERROR[0].Exception.Message'
         $msg | Should match 'PSRepository' 
-        $msg | Should match'module' 
-        $msg | Should not match'package' 
+        $msg | Should match 'module' 
+        $msg | Should not match 'package' 
     }
 }

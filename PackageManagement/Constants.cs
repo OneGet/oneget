@@ -84,6 +84,10 @@ namespace Microsoft.PackageManagement {
             internal const string UserDeclinedUntrustedPackageInstall = "MSG:UserDeclinedUntrustedPackageInstall";
         }
 
+        internal static class Status {
+            internal const string TimedOut = "TimedOut";
+        }
+
         internal static class PackageStatus {
             internal const string Available = "Available";
             internal const string Dependency = "Dependency";

@@ -30,7 +30,7 @@ namespace Microsoft.PackageManagement.Test.Support {
                 if (_namespaceManager == null) {
                     XmlNameTable nameTable = new NameTable();
                     _namespaceManager = new XmlNamespaceManager(nameTable);
-                    _namespaceManager.AddNamespace("swid", Iso19770_2.Namespace.NamespaceName);
+                    _namespaceManager.AddNamespace("swid", Iso19770_2.Namespace.Iso19770_2.NamespaceName);
                     _namespaceManager.AddNamespace("oneget", "http://oneget.org/swidtag");
                 }
                 return _namespaceManager;

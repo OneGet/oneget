@@ -36,11 +36,11 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public bool? IsKey {
             get {
-                return GetAttribute(Iso19770_2.KeyAttribute).IsTruePreserveNull();
+                return GetAttribute(Iso19770_2.Attributes.Key).IsTruePreserveNull();
             }
             internal set {
                 if (value != null) {
-                    AddAttribute(Iso19770_2.KeyAttribute, value.ToString());
+                    AddAttribute(Iso19770_2.Attributes.Key, value.ToString());
                 }
             }
         }
@@ -53,10 +53,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string Location {
             get {
-                return GetAttribute(Iso19770_2.LocationAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Location);
             }
             internal set {
-                AddAttribute(Iso19770_2.LocationAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Location, value);
             }
         }
 
@@ -66,10 +66,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string Name {
             get {
-                return GetAttribute(Iso19770_2.NameAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Name);
             }
             internal set {
-                AddAttribute(Iso19770_2.NameAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Name, value);
             }
         }
 
@@ -82,10 +82,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string Root {
             get {
-                return GetAttribute(Iso19770_2.RootAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Root);
             }
             internal set {
-                AddAttribute(Iso19770_2.RootAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Root, value);
             }
         }
     }

@@ -21,10 +21,10 @@ namespace Microsoft.PackageManagement.Packaging {
     using Utility.Extensions;
 
     public class MetadataIndexer {
-        private readonly SoftwareIdentity _softwareIdentity;
+        private readonly Swidtag _swidtag;
 
-        public MetadataIndexer(SoftwareIdentity softwareIdentity) {
-            _softwareIdentity = softwareIdentity;
+        public MetadataIndexer(Swidtag swidtag) {
+            _swidtag = swidtag;
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Microsoft.PackageManagement.Packaging {
                 if (string.IsNullOrWhiteSpace(key)) {
                     return null;
                 }
-                return _softwareIdentity.Meta.Where(each => {
+                return _swidtag.Meta.Where(each => {
                     try {
                         return (each.Attributes[key] != null);
                     } catch {
@@ -54,7 +54,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public IEnumerable<XName> Keys {
             get {
-                return _softwareIdentity.Meta.SelectMany(each => each.Attributes.Keys).ReEnumerable();
+                return _swidtag.Meta.SelectMany(each => each.Attributes.Keys).ReEnumerable();
             }
         }
 
@@ -63,7 +63,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public IEnumerable<string> Values {
             get {
-                return _softwareIdentity.Meta.SelectMany(each => each.Attributes.Values).ReEnumerable();
+                return _swidtag.Meta.SelectMany(each => each.Attributes.Values).ReEnumerable();
             }
         }
 
