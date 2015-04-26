@@ -24,13 +24,27 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
     using Utility.Plugin;
 
     internal class Swid {
-        internal BootstrapRequest _request;
-        internal Swidtag _swidtag;
+        private const int SwidDownloadTimeout = 8000;
+        internal readonly BootstrapRequest _request;
+        internal readonly Swidtag _swidtag;
+        private bool _timedOut;
+
+        internal Swid(BootstrapRequest request, Swidtag swidtag) {
+            _request = request;
+            _swidtag = swidtag;
+        }
+
+        internal Swid(BootstrapRequest request, IEnumerable<Link> mirrors) {
+            _request = request;
+            _swidtag = DownloadSwidtag(mirrors);
+        }
+
+        internal Swid(BootstrapRequest request, IEnumerable<Uri> mirrors) {
+            _request = request;
+            _swidtag = DownloadSwidtag(mirrors);
+        }
 
         internal Uri Location {get; private set;}
-
-        private const int SwidDownloadTimeout = 8000;
-        private bool _timedOut;
 
         private IRequest DownloadRequest {
             get {
@@ -48,6 +62,39 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                     },
                     this
                 }.As<IRequest>();
+            }
+        }
+
+        protected IEnumerable<IGrouping<string, Link>> Artifacts {
+            get {
+                return IsValid ? _swidtag.Links.GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
+            }
+        }
+
+        protected IEnumerable<IGrouping<string, Link>> Feeds {
+            get {
+                return IsValid
+                    ? _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Feed).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
+            }
+        }
+
+        protected IEnumerable<IGrouping<string, Link>> Packages {
+            get {
+                return IsValid
+                    ? _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Package).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() : link.Artifact)
+                    : Enumerable.Empty<IGrouping<string, Link>>();
+            }
+        }
+
+        protected IEnumerable<IGrouping<string, Link>> More {
+            get {
+                return _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Supplemental).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() : link.Artifact);
+            }
+        }
+
+        internal virtual bool IsValid {
+            get {
+                return _swidtag != null;
             }
         }
 
@@ -69,8 +116,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                             return new Swidtag(document);
                         }
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.Dump();
                 }
             }
@@ -82,8 +128,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                 // during initialization, the pluggable downloader isn't available.
                 // luckily, it's built into this assembly, so we'll create and use it directly.
                 filename = new WebDownloader().DownloadFile(location, filename, SwidDownloadTimeout, false, DownloadRequest.As<Request>());
-            }
-            else {
+            } else {
                 // otherwise, we can just use the pluggable one.
                 filename = _request.ProviderServices.DownloadFile(location, filename, SwidDownloadTimeout, false, DownloadRequest);
             }
@@ -92,39 +137,6 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
 
         internal Swidtag DownloadSwidtag(IEnumerable<Link> locations) {
             return DownloadSwidtag(locations.Where(link => link != null && link.HRef != null).Select(link => link.HRef));
-        }
-
-        internal Swid(BootstrapRequest request, Swidtag swidtag) {
-            _request = request;
-            _swidtag = swidtag;
-        }
-
-        internal Swid(BootstrapRequest request, IEnumerable<Link> mirrors) {
-            _request = request;
-            _swidtag = DownloadSwidtag(mirrors);
-        }
-
-        internal Swid(BootstrapRequest request, IEnumerable<Uri> mirrors) {
-            _request = request;
-            _swidtag = DownloadSwidtag(mirrors);
-        }
-
-        protected IEnumerable<IGrouping<string, Link>> Artifacts {
-            get {
-                return IsValid ? _swidtag.Links.GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
-            }
-        }
-
-        protected IEnumerable<IGrouping<string, Link>> Feeds {
-            get {
-                return IsValid ? _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Feed).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() :link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
-            }
-        }
-
-        protected IEnumerable<IGrouping<string, Link>> Packages {
-            get {
-                return IsValid ? _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Package).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
-            }
         }
 
         protected IEnumerable<IGrouping<string, Link>> PackagesFilteredByName(string name) {
@@ -136,18 +148,6 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                 var n = packageGroup.FirstOrDefault().Attributes[Iso19770_2.Discovery.Name];
                 return (string.IsNullOrEmpty(n) || name.EqualsIgnoreCase(n));
             });
-        }
-
-        protected IEnumerable<IGrouping<string, Link>> More {
-            get {
-                return _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Supplemental).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() : link.Artifact);
-            }
-        }
-
-        internal virtual bool IsValid {
-            get {
-                return _swidtag != null;
-            }
         }
     }
 }

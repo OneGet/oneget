@@ -15,7 +15,6 @@
 namespace Microsoft.PackageManagement.Providers.Bootstrap {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
@@ -28,7 +27,6 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
     using File = System.IO.File;
 
     public class BootstrapProvider {
-
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
             // {Constants.Features.SupportedSchemes, new[] {"http", "https", "file"}},
             // {Constants.Features.SupportedExtensions, new[] {"exe", "msi"}},
@@ -122,18 +120,18 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                         FindPackage(p.Name, null, "0.0", null, 0, request);
                     }
                     return;
-                } else {
-                    if (request.Providers.Distinct(PackageEqualityComparer).Any(p => !request.YieldFromSwidtag(p, requiredVersion, minimumVersion, maximumVersion, name))) {
-                        // if there is a problem, exit.
-                        return;
-                    }
+                }
+
+                if (request.Providers.Distinct(PackageEqualityComparer).Any(p => !request.YieldFromSwidtag(p, requiredVersion, minimumVersion, maximumVersion, name))) {
+                    // if there is a problem, exit.
+                    return;
                 }
             } else {
                 // return just the one they asked for.
 
                 // asked for a specific version?
                 if (!string.IsNullOrWhiteSpace(requiredVersion)) {
-                    request.YieldFromSwidtag(request.GetProvider(name,requiredVersion), name);
+                    request.YieldFromSwidtag(request.GetProvider(name, requiredVersion), name);
                     return;
                 }
 
@@ -190,7 +188,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                 // for each package manager, match it's name and version with the swidtag from the remote feed
                 var p = request.GetProvider(provider.Name, provider.Version);
                 if (p == null) {
-                    request.Debug("Dynamic provider '{0}' from '{1}' is not listed in a bootstrap feed.", provider.Name ,provider.ProviderPath);
+                    request.Debug("Dynamic provider '{0}' from '{1}' is not listed in a bootstrap feed.", provider.Name, provider.ProviderPath);
                     // we didn't find it. It's possible that the provider is listed elsewhere.
                     // well, we'll return as much info as we have.
                     continue;
@@ -260,7 +258,6 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                 installRequest = new object[] {
                     new {
                         GetOptionKeys = new Func<IEnumerable<string>>(() => request.OptionKeys.ConcatSingleItem("Scope")),
-
                         GetOptionValues = new Func<string, IEnumerable<string>>((key) => {
                             if (key != null && key.EqualsIgnoreCase("Scope")) {
                                 return "CurrentUser".SingleItemAsEnumerable();
@@ -271,16 +268,16 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                     , installRequest
                 }.As<IHostApi>();
             }
-            
+
             var installing = packages[0].Provider.InstallPackage(packages[0], installRequest);
-            
+
             SoftwareIdentity lastPackage = null;
 
             foreach (var i in installing) {
                 lastPackage = i;
                 // should we echo each package back as it comes back? 
                 request.YieldSoftwareIdentity(i.FastPackageReference, i.Name, i.Version, i.VersionScheme, i.Summary, i.Source, i.SearchKey, i.FullPath, i.PackageFilename);
-                
+
                 if (request.IsCanceled) {
                     installing.Cancel();
                 }
@@ -297,7 +294,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
 
                 // looks like it installed ok.
                 request.YieldFromSwidtag(provider, fastPath);
-                
+
                 // rescan providers
                 PackageManagementService.LoadProviders(request.As<IRequest>());
                 return true;
@@ -342,7 +339,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                     // since we only installed a single assembly, we can just ask to load that specific assembly.
                     if (PackageManagementService.TryToLoadProviderAssembly(targetFile, request)) {
                         // looks good to me.
-                        request.YieldFromSwidtag(provider,fastPath);
+                        request.YieldFromSwidtag(provider, fastPath);
                         return true;
                     }
                 }
@@ -374,7 +371,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             foreach (var artifact in artifacts) {
                 // first time we succeed, we're good to go.
                 foreach (var link in artifact) {
-                    switch (link.Attributes[Iso19770_2.Discovery.Type ]) {
+                    switch (link.Attributes[Iso19770_2.Discovery.Type]) {
                         case "assembly":
                             if (InstallAssemblyProvider(provider, link, fastPath, request)) {
                                 return;

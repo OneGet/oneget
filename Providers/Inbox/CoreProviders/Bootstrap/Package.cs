@@ -25,10 +25,10 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
         internal Package(BootstrapRequest request, IEnumerable<Link> mirrors) : base(request, mirrors) {
         }
 
-
         internal Package(BootstrapRequest request, IEnumerable<Uri> mirrors)
             : base(request, mirrors) {
         }
+
         internal string Name {
             get {
                 if (IsValid) {

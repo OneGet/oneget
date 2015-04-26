@@ -17,26 +17,23 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Xml.Linq;
-    using Api;
     using Implementation;
     using Packaging;
     using Utility.Collections;
     using Utility.Extensions;
     using Utility.Platform;
-    using Utility.Plugin;
 
     public abstract class BootstrapRequest : Request {
-
         private static readonly Uri[] _urls = {
-#if DEBUG
+#if LOCAL_DEBUG
             new Uri("http://localhost:81/providers.swidtag"),
 #endif
             // starting in 2015/05 builds, we bootstrap from here:
-            // new Uri("https://oneget.org/providers.1505.swidtag")
+            new Uri("https://oneget.org/providers.1505.swidtag")
         };
 
         private IEnumerable<Feed> _feeds;
+
         private IEnumerable<Feed> Feeds {
             get {
                 if (_feeds == null) {
@@ -71,7 +68,11 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             }
         }
 
-      
+        internal IEnumerable<Package> Providers {
+            get {
+                return Feeds.SelectMany(feed => feed.Query());
+            }
+        }
 
         private string GetValue(string name) {
             // get the value from the request
@@ -87,17 +88,11 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
         }
 
         internal Package GetProvider(string name, string version) {
-            return Feeds.SelectMany(feed => feed.Query(name,version)).FirstOrDefault();
+            return Feeds.SelectMany(feed => feed.Query(name, version)).FirstOrDefault();
         }
 
         internal IEnumerable<Package> GetProvider(string name, string minimumversion, string maximumversion) {
             return Feeds.SelectMany(feed => feed.Query(name, minimumversion, maximumversion));
-        }
-
-        internal IEnumerable<Package> Providers {
-            get {
-                return Feeds.SelectMany(feed => feed.Query());
-            }
         }
 
         internal string DownloadAndValidateFile(string name, IEnumerable<Link> links) {
@@ -148,8 +143,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                 if (provider.Version != requiredVersion) {
                     return !IsCanceled;
                 }
-            }
-            else {
+            } else {
                 if (!String.IsNullOrWhiteSpace(minimumVersion) && SoftwareIdentityVersionComparer.CompareVersions(provider.VersionScheme, provider.Version, minimumVersion) < 0) {
                     return !IsCanceled;
                 }
@@ -166,7 +160,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                 return !IsCanceled;
             }
 
-            var provider= pkg._swidtag;
+            var provider = pkg._swidtag;
             var targetFilename = provider.Links.Select(each => each.Attributes[Iso19770_2.Discovery.TargetFilename]).WhereNotNull().FirstOrDefault();
             var summary = new MetadataIndexer(provider)[Iso19770_2.Attributes.Summary.LocalName].FirstOrDefault();
 
@@ -187,7 +181,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                             return AddMetadata(element, new Uri(nspace), key.LocalName, attributes[key]) == null;
                         });
                     })) {
-                        return !IsCanceled;
+                    return !IsCanceled;
                 }
 
                 if (provider.Links.Any(link => AddLink(link.HRef, link.Relationship, link.MediaType, link.Ownership, link.Use, link.Media, link.Artifact) == null)) {
