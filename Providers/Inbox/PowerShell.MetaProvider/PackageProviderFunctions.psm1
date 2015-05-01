@@ -45,6 +45,17 @@ function Write-Debug {
 	$request.Debug($message,$args);
 }
 
+function Write-Error {
+	param( 
+		[Parameter(Mandatory=$true)][string] $Message,
+		[Parameter()][string] $Category,
+		[Parameter()][string] $ErrorId,
+		[Parameter()][string] $TargetObject
+	)
+
+	$request.Warning($Message);
+}
+
 <#
 	Overrides the default Write-Verbose so that the output gets routed back thru the
 	$request.Verbose() function

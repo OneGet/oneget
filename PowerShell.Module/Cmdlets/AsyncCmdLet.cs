@@ -27,11 +27,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Threading.Tasks;
     using Microsoft.PackageManagement.Utility.Collections;
     using Microsoft.PackageManagement.Utility.Extensions;
+    using Microsoft.PackageManagement.Utility.Platform;
     using Utility;
 
     public delegate bool OnMainThread(Func<bool> onMainThreadDelegate);
 
-    internal enum AsyncCmdletState {
+    public abstract class AsyncCmdlet : PSCmdlet, IDynamicParameters, IDisposable {
+        protected enum AsyncCmdletState {
         Unknown,
         GenerateParameters,
         BeginProcess,
@@ -44,14 +46,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         StopProcessCompleted
     }
 
-    public abstract class AsyncCmdlet : PSCmdlet, IDynamicParameters, IDisposable {
         private const BindingFlags BindingFlags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public;
         private ProgressTracker _activeProgressId;
-        private AsyncCmdletState _asyncCmdletState = AsyncCmdletState.Unknown;
-        protected CancellationTokenSource _cancellationEvent = new CancellationTokenSource();
+        protected AsyncCmdletState CmdletState = AsyncCmdletState.Unknown;
+        protected CancellationTokenSource CancellationEvent = new CancellationTokenSource();
         private bool _consumedDynamicParameters;
         private RuntimeDefinedParameterDictionary _dynamicParameters;
-        protected bool _errorState;
+        protected bool ErrorState;
         private BlockingCollection<TaskCompletionSource<bool>> _heldMessages;
         private BlockingCollection<TaskCompletionSource<bool>> _messages;
         private int _nextProgressId = 1;
@@ -77,17 +78,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-#if DEEP_DEBUG
+#if DEBUG
         private static object __lock = new object();
         private void Log(string category, string text) {
             lock (__lock) {
-                using (var s = File.AppendText("c:\\tmp\\PackageManagement.log")) {
-                    s.WriteLine("[Cmdlet:{0}][Thread:{1}][{2}] {3}".format(GetType().Name, Thread.CurrentThread.ManagedThreadId , category, text));
-                }
-
-                if (text.IndexOf("HOBGOBLIN") > -1 ) {
-                    Console.Beep(1000,200);
-                }
+                NativeMethods.OutputDebugString("[Cmdlet:{0}][Thread:{1}][{2}] {3}".format(GetType().Name, Thread.CurrentThread.ManagedThreadId, category, text));
             }
         }
 #endif
@@ -139,7 +134,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         /// <value>returns TRUE if the operation has been cancelled.</value>
         public bool IsCanceled {
             get {
-                return Stopping || _cancellationEvent == null || _cancellationEvent.IsCancellationRequested;
+                return Stopping || CancellationEvent == null || CancellationEvent.IsCancellationRequested;
             }
         }
 
@@ -331,7 +326,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                             errorCategory = ErrorCategory.NotSpecified;
                         }
                         try {
-#if DEEP_DEBUG
+#if DEBUG
                             Log("ERROR",errorMessage);
 #endif
                             WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrWhiteSpace(targetObjectValue) ? (object)this : targetObjectValue)).Wait();
@@ -343,6 +338,49 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 }
             }
             Cancel();
+
+            // rather than wait on the result of the async'd message,
+            // we'll just return the stopping state.
+            return IsCanceled;
+        }
+
+        protected bool NonTerminatingError(ErrorMessage errorMessage)
+        {
+            return NonTerminatingError(errorMessage.Resource, errorMessage.Category.ToString(), null, errorMessage.Resource);
+        }
+
+        protected bool NonTerminatingError(ErrorMessage errorMessage, params object[] args)
+        {
+            return NonTerminatingError(errorMessage.Resource, errorMessage.Category.ToString(), null, FormatMessageString(errorMessage.Resource, args));
+        }
+
+        public bool NonTerminatingError(string id, string category, string targetObjectValue, string messageText)
+        {
+            return NonTerminatingError(id, category, targetObjectValue, messageText, Constants.NoParameters);
+        }
+
+        public bool NonTerminatingError(string id, string category, string targetObjectValue, string messageText, params object[] args)
+        {
+            if (IsInvocation) {
+                var errorMessage = FormatMessageString(messageText, args);
+
+                if (!_errors.Contains(errorMessage)) {
+                    ErrorCategory errorCategory;
+                    if (!Enum.TryParse(category, true, out errorCategory)) {
+                        errorCategory = ErrorCategory.NotSpecified;
+                    }
+                    try {
+#if DEBUG
+                        Log("NON TERMINATING ERROR", errorMessage);
+#endif
+                        WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrWhiteSpace(targetObjectValue) ? (object)this : targetObjectValue));
+                    }
+                    catch {
+                       // this will throw if the provider thread abends before we get back our result.
+                    }
+               }
+               _errors.Add(errorMessage);
+            }
             // rather than wait on the result of the async'd message,
             // we'll just return the stopping state.
             return IsCanceled;
@@ -358,7 +396,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 //  QueueMessage(() => Host.UI.WriteLine("{0}::{1}".format(code, message.formatWithIEnumerable(objects))));
                 // Message is going to go to the verbose channel
                 // and Verbose will only be output if VeryVerbose is true.
-#if DEEP_DEBUG
+#if DEBUG
                 Log("Message",FormatMessageString(messageText, args));
 #endif
 
@@ -378,7 +416,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 // Message is going to go to the verbose channel
                 // and Verbose will only be output if VeryVerbose is true.
                 WriteVerbose(FormatMessageString(messageText, args));
-#if DEEP_DEBUG
+#if DEBUG
                 Log("Verbose",FormatMessageString(messageText, args));
 #endif
             }
@@ -398,7 +436,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     _stopwatch.Start();
                 }
 
-#if DEEP_DEBUG
+#if DEBUG
                 Log("Debug",FormatMessageString(messageText, args));
 #endif
 
@@ -539,9 +577,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         protected virtual void Dispose(bool disposing) {
             if (disposing) {
-                if (_cancellationEvent != null) {
-                    _cancellationEvent.Dispose();
-                    _cancellationEvent = null;
+                if (CancellationEvent != null) {
+                    CancellationEvent.Dispose();
+                    CancellationEvent = null;
                 }
 
                 // According to http://msdn.microsoft.com/en-us/library/windows/desktop/ms714463(v=vs.85).aspx
@@ -657,7 +695,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                     // process the queue of messages back in the main thread so that they
                     // can properly access the non-thread-safe-things in cmdlet
-                    foreach (var message in _messages.GetBlockingEnumerable(_cancellationEvent.Token)) {
+                    foreach (var message in _messages.GetBlockingEnumerable(CancellationEvent.Token)) {
                         InvokeMessage(message);
                     }
                 }
@@ -677,11 +715,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
         protected override sealed void BeginProcessing() {
-#if DEEP_DEBUG
+#if DEBUG
             Log("BeginProcessing","[{0}/{1}] «{2}»".format( MyInvocation.PipelineLength, MyInvocation.PipelinePosition, MyInvocation.Line));
 #endif
             try {
-                _asyncCmdletState = AsyncCmdletState.BeginProcess;
+                CmdletState = AsyncCmdletState.BeginProcess;
 
                 ProcessHeldMessages();
 
@@ -701,20 +739,20 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     AsyncRun(BeginProcessingAsync);
                 }
             } finally {
-                if (_asyncCmdletState == AsyncCmdletState.BeginProcess) {
+                if (CmdletState == AsyncCmdletState.BeginProcess) {
                     // If the state was changed elsewhere, don't assume that we're in the next state
-                    _asyncCmdletState = AsyncCmdletState.BeginProcessCompleted;
+                    CmdletState = AsyncCmdletState.BeginProcessCompleted;
                 }
             }
         }
 
         protected override sealed void ProcessRecord() {
-#if DEEP_DEBUG
+#if DEBUG
             Log("ProcessRecord", "[{0}/{1}] «{2}»".format(  MyInvocation.PipelineLength, MyInvocation.PipelinePosition, MyInvocation.Line));
 #endif
 
             try {
-                _asyncCmdletState = AsyncCmdletState.ProcessRecord;
+                CmdletState = AsyncCmdletState.ProcessRecord;
                 ProcessHeldMessages();
 
                 // let's not even bother doing all this if they didn't even
@@ -730,20 +768,20 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     AsyncRun(ProcessRecordAsync);
                 }
             } finally {
-                if (_asyncCmdletState == AsyncCmdletState.ProcessRecord) {
+                if (CmdletState == AsyncCmdletState.ProcessRecord) {
                     // If the state was changed elsewhere, don't assume that we're in the next state
-                    _asyncCmdletState = AsyncCmdletState.ProcessRecordCompleted;
+                    CmdletState = AsyncCmdletState.ProcessRecordCompleted;
                 }
             }
         }
 
         protected override sealed void EndProcessing() {
-#if DEEP_DEBUG
+#if DEBUG
             Log("EndProcessing","[{0}/{1}] «{2}»".format(  MyInvocation.PipelineLength, MyInvocation.PipelinePosition, MyInvocation.Line));
 #endif
 
             try {
-                _asyncCmdletState = AsyncCmdletState.EndProcess;
+                CmdletState = AsyncCmdletState.EndProcess;
                 ProcessHeldMessages();
 
                 // let's not even bother doing all this if they didn't even
@@ -764,20 +802,20 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     AllProgressComplete();
                 }
             } finally {
-                if (_asyncCmdletState == AsyncCmdletState.EndProcess) {
+                if (CmdletState == AsyncCmdletState.EndProcess) {
                     // If the state was changed elsewhere, don't assume that we're in the next state
-                    _asyncCmdletState = AsyncCmdletState.EndProcessCompleted;
+                    CmdletState = AsyncCmdletState.EndProcessCompleted;
                 }
             }
         }
 
         protected override sealed void StopProcessing() {
-#if DEEP_DEBUG
+#if DEBUG
             Log("StopProcessing","[{0}/{1}] «{2}»".format(  MyInvocation.PipelineLength, MyInvocation.PipelinePosition, MyInvocation.Line));
 #endif
 
             try {
-                _asyncCmdletState = AsyncCmdletState.StopProcess;
+                CmdletState = AsyncCmdletState.StopProcess;
                 Cancel();
                 // let's not even bother doing all this if they didn't even
                 // override the method.
@@ -789,16 +827,16 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     AllProgressComplete();
                 }
             } finally {
-                if (_asyncCmdletState == AsyncCmdletState.StopProcess) {
-                    _asyncCmdletState = AsyncCmdletState.StopProcessCompleted;
+                if (CmdletState == AsyncCmdletState.StopProcess) {
+                    CmdletState = AsyncCmdletState.StopProcessCompleted;
                 }
             }
         }
 
         public void Cancel() {
             // notify anyone listening that we're stopping this call.
-            if (_cancellationEvent != null) {
-                _cancellationEvent.Cancel();
+            if (CancellationEvent != null) {
+                CancellationEvent.Cancel();
             }
         }
 
@@ -829,19 +867,19 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         protected bool IsProcessing {
             get {
-                return _asyncCmdletState == AsyncCmdletState.BeginProcess || _asyncCmdletState == AsyncCmdletState.ProcessRecord || _asyncCmdletState == AsyncCmdletState.EndProcess;
+                return CmdletState == AsyncCmdletState.BeginProcess || CmdletState == AsyncCmdletState.ProcessRecord || CmdletState == AsyncCmdletState.EndProcess;
             }
         }
 
         protected bool IsBeforeProcessing {
             get {
-                return _asyncCmdletState < AsyncCmdletState.BeginProcess;
+                return CmdletState < AsyncCmdletState.BeginProcess;
             }
         }
 
         protected bool IsAfterProcessing {
             get {
-                return _asyncCmdletState > AsyncCmdletState.EndProcess;
+                return CmdletState > AsyncCmdletState.EndProcess;
             }
         }
 

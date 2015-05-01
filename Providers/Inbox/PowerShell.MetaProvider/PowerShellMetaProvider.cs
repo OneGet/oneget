@@ -248,9 +248,10 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             if (_packageProviders.ContainsKey(name)) {
                 return _packageProviders[name];
             } 
-            // it's possible that this is a path passed in. Let's see if it's a provider.
-            if (name.FileExists()) {
                 
+            // it's possible that this is a path passed in. Let's see if it's a provider.
+            if (!string.IsNullOrEmpty(name) && name.FileExists()) {
+                // MUST DO: load provider from filepath.
             }
             // create the instance
             throw new Exception("No provider by name '{0}' registered.".format(name));

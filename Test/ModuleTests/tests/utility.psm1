@@ -58,3 +58,5 @@ function Import-PackageManagement {
     ipmo $env:PMModuleTest
     return $true
 }
+
+Export-ModuleMember *

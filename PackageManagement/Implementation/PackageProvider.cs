@@ -14,15 +14,10 @@
 
 namespace Microsoft.PackageManagement.Implementation {
     using System;
-    using System.Collections.Generic;
-    using System.Security;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Api;
     using Packaging;
     using Providers;
     using Utility.Async;
-    using Utility.Collections;
     using Utility.Plugin;
 
     public class PackageProvider : ProviderBase<IPackageProvider> {

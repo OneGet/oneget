@@ -62,6 +62,7 @@ namespace Microsoft.PowerShell.PackageManagement {
             public static ErrorMessage NameOrLocationRequired = new ErrorMessage(Messages.NameOrLocationRequired, ErrorCategory.InvalidArgument);
             public static ErrorMessage NoMatchForProvidersAndSources = new ErrorMessage(Messages.NoMatchForProvidersAndSources, ErrorCategory.InvalidArgument);
             public static ErrorMessage NoMatchFound = new ErrorMessage(Messages.NoMatchFound, ErrorCategory.ObjectNotFound);
+            public static ErrorMessage NoMatchFoundForCriteria = new ErrorMessage(Messages.NoMatchFoundForCriteria, ErrorCategory.ObjectNotFound);
             public static ErrorMessage NoPackagesFoundForProvider = new ErrorMessage(Messages.NoPackagesFoundForProvider, ErrorCategory.ObjectNotFound);
             public static ErrorMessage PackageInstallRequiresOption = new ErrorMessage(Messages.PackageInstallRequiresOption, ErrorCategory.InvalidArgument);
             public static ErrorMessage PackageSourceExists = new ErrorMessage(Messages.PackageSourceExists, ErrorCategory.ResourceExists);
@@ -76,7 +77,7 @@ namespace Microsoft.PowerShell.PackageManagement {
             public static ErrorMessage FilePathMustBeFileSystemPath = new ErrorMessage(Messages.FilePathMustBeFileSystemPath, ErrorCategory.ObjectNotFound);
             public static ErrorMessage SavePackageError = new ErrorMessage(Messages.SavePackageError, ErrorCategory.InvalidArgument);
             public static ErrorMessage UnableToFindDependencyPackage = new ErrorMessage(Messages.UnableToFindDependencyPackage, ErrorCategory.ObjectNotFound);
-
+            public static ErrorMessage ProviderNameNotSpecified = new ErrorMessage(Messages.ProviderNameNotSpecified, ErrorCategory.NotSpecified);
             public static ErrorMessage FileNotFound = new ErrorMessage(Messages.FileNotFound, ErrorCategory.ObjectNotFound);
             public static ErrorMessage FolderNotFound = new ErrorMessage(Messages.FolderNotFound, ErrorCategory.ObjectNotFound);
             public static ErrorMessage MoreThanOneFolderMatched = new ErrorMessage(Messages.MoreThanOneFolderMatched, ErrorCategory.ObjectNotFound);
@@ -109,6 +110,7 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string CaptionSourceNotTrusted = "MSG:CaptionSourceNotTrusted";
             internal const string CaptionPackageUninstallFailure = "MSG:CaptionPackageUninstallFailure";
             internal const string DestinationOrLiteralPathRequired = "MSG:DestinationOrLiteralPathRequired";
+            internal const string ProviderNameNotSpecified = "MSG:ProviderNameNotSpecified";
             internal const string DestinationPathInvalid = "MSG:DestinationPathInvalid";
             internal const string DisambiguateForInstall = "MSG:DisambiguateForInstall";
             internal const string DisambiguateForUninstall = "MSG:DisambiguateForUninstall";
@@ -122,6 +124,7 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string NoMatchesForWildcard = "MSG:NoMatchesForWildcard";
             internal const string NoMatchForProvidersAndSources = "MSG:NoMatchForProvidersAndSources";
             internal const string NoMatchFound = "MSG:NoMatchFound";
+            internal const string NoMatchFoundForCriteria = "MSG:NoMatchFoundForCriteria";            
             internal const string NoPackagesFoundForProvider = "MSG:NoPackagesFoundForProvider";
             internal const string OverwritingPackageSource = "MSG:OverwritingPackageSource";
             internal const string PackageInstallRequiresOption = "MSG:PackageInstallRequiresOption";

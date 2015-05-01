@@ -11,6 +11,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //  
+
+using Microsoft.PackageManagement.Utility.Extensions;
+
 namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
@@ -21,18 +24,18 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     internal static class PowerShellExtensions {
         internal static PowerShell Clear(this PowerShell powershell) {
             if (powershell != null) {
-                powershell.Commands.Clear();
+                powershell.WaitForReady();
+                powershell.Commands = new PSCommand();
             }
             return powershell;
         }
 
         internal static PSModuleInfo ImportModule(this PowerShell powershell, string name) {
             if (powershell != null) {
-                powershell.Commands.Clear();
-                return powershell.AddCommand("Import-Module")
+                return powershell.Clear().AddCommand("Import-Module")
                     .AddParameter("Name", name)
                     .AddParameter("PassThru")
-                    .Invoke<PSModuleInfo>().FirstOrDefault();
+                    .Invoke<PSModuleInfo>().ToArray().FirstOrDefault();
             }
             return null;
         }
@@ -66,30 +69,24 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 foreach (var arg in args) {
                     powershell.AddArgument(arg);
                 }
-
-                IAsyncResult async = powershell.BeginInvoke();
-                var result = powershell.EndInvoke(async);
-                if (result != null) {
-                    return result.Select(each => each.ImmediateBaseObject).Cast<T>();
-                }
+#if DEBUG
+                PackageManagement.Utility.Platform.NativeMethods.OutputDebugString("[Cmdlet:debugging] -- InvokeFunction ({0}, {1})".format(command, args.Select( each => (each ?? "<NULL>").ToString()).JoinWithComma(), powershell.InvocationStateInfo.Reason));
+#endif
+                return (powershell.EndInvoke(powershell.BeginInvoke()) ?? Enumerable.Empty<PSObject>()).Select( each => each.ImmediateBaseObject).Cast<T>();
             }
             return Enumerable.Empty<T>();
         }
 
         internal static PowerShell WaitForReady(this PowerShell powershell) {
+            try {
             if (powershell != null) {
                 switch (powershell.InvocationStateInfo.State) {
-                    case PSInvocationState.Completed:
-                        break;
-                    case PSInvocationState.Failed:
-                        break;
-                    case PSInvocationState.Stopped:
-                        break;
                     case PSInvocationState.Stopping:
                         while (powershell.InvocationStateInfo.State == PSInvocationState.Stopping) {
                             Thread.Sleep(10);
                         }
                         break;
+
                     case PSInvocationState.Running:
                         powershell.Stop();
                         while (powershell.InvocationStateInfo.State == PSInvocationState.Stopping) {
@@ -97,11 +94,23 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                         }
                         break;
 
+                        case PSInvocationState.Failed:
+                            break;
+                        case PSInvocationState.Completed:
+                            break;
+
+                        case PSInvocationState.Stopped:
+                            break;
+
                     case PSInvocationState.NotStarted:
                         break;
                     case PSInvocationState.Disconnected:
                         break;
                 }
+            }
+            }
+            catch (Exception e) {
+                e.Dump();
             }
             return powershell;
         }

@@ -20,6 +20,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
     using Utility.Extensions;
 
     internal class Feed : Swid {
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Feed(BootstrapRequest request, Swidtag swidtag)
             : base(request, swidtag) {
         }

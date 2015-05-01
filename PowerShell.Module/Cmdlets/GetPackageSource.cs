@@ -86,7 +86,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     return false;
                 }
 
-                using (var src = provider.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).CancelWhen(_cancellationEvent.Token)) {
+                using (var src = provider.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).CancelWhen(CancellationEvent.Token)) {
                     var sources = src.Distinct();
                     if (noCriteria) {
                         // no criteria means just return whatever we found

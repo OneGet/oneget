@@ -29,7 +29,8 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             new Uri("http://localhost:81/providers.swidtag"),
 #endif
             // starting in 2015/05 builds, we bootstrap from here:
-            new Uri("https://oneget.org/providers.1505.swidtag")
+            new Uri("http://go.microsoft.com/fwlink/?LinkID=535044&clcid=0x409"),
+            new Uri("http://go.microsoft.com/fwlink/?LinkID=535045&clcid=0x409")
         };
 
         private IEnumerable<Feed> _feeds;
@@ -37,6 +38,9 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
         private IEnumerable<Feed> Feeds {
             get {
                 if (_feeds == null) {
+                    if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable()) {
+                        Warning(Constants.Messages.NetworkNotAvailable);
+                    }
                     // right now, we only have one feed (can have many urls tho')
                     // so we just return a single feed in the collection
                     // but later, we can expand it to support multiple feeds.

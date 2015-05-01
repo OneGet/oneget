@@ -158,9 +158,20 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             }
         }
 
+        private IAsyncResult _stopResult;
+        private object _stopLock = new object();
+
         internal void CancelRequest() {
             if (!_reentrancyLock.WaitOne(0)) {
                 // it's running right now.
+#if DEBUG
+                    PackageManagement.Utility.Platform.NativeMethods.OutputDebugString("[Cmdlet:debugging] -- Stopping powershell script.");
+#endif
+                lock (_stopLock) {
+                    if (_stopResult == null) {
+                        _stopResult = _powershell.BeginStop(ar => { }, null);
+                    }
+                }
                 _powershell.Stop();
             }
         }
@@ -213,7 +224,6 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                     if (_powershell.Streams.Error.Any()) {
                         ReportErrors(request, _powershell.Streams.Error);
                         _powershell.Streams.Error.Clear();
-                        return null;
                     }
 
                     return finalValue;
@@ -223,9 +233,14 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 }catch (Exception e) {
                     e.Dump();
                 } finally {
-                    _powershell.WaitForReady();
+                    lock (_stopLock) {
+                        if (_stopResult != null){
+                            _powershell.EndStop(_stopResult);
+                            _stopResult = null;
+                        }
+                    }
+                    _powershell.Clear();
                     _powershell.SetVariable("request", null);
-
                     // it's ok if someone else calls into this module now.
                     _reentrancyLock.Set();
                 }

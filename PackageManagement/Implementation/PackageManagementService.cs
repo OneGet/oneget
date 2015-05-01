@@ -41,22 +41,7 @@ namespace Microsoft.PackageManagement.Implementation {
     ///     The Client API provides high-level consumer functions to support SDII functionality.
     /// </summary>
     internal class PackageManagementService : IPackageManagementService {
-        private static readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-            Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location), // already in autload list
-            "CSharpTest.Net.RpcLibrary", // doesn't have any
-            "Microsoft.PackageManagement.Utility", // doesn't have any
-            "Microsoft.PackageManagement.Utility.PowerShell", // doesn't have any
-            "Microsoft.PowerShell.PackageManagement", // doesn't have any
-            "Microsoft.Web.XmlTransform", // doesn't have any
-            "NuGet.Core", // doesn't have any
-            "PackageManagement.PowerShell.Module.Test", // doesn't have any
-            "System.Management.Automation", // doesn't have any
-            "xunit", // doesn't have any
-            "xunit.extensions", // doesn't have any
-            "CustomCodeGenerator", // doesn't have any
-            "NuGet", // doesn't have any
-        };
-
+       
         private static int _lastCallCount;
         private static HashSet<string> _providersTriedThisCall;
         private string[] _bootstrappableProviderNames;
@@ -95,46 +80,59 @@ namespace Microsoft.PackageManagement.Implementation {
 
         internal IEnumerable<string> AutoloadedAssemblyLocations {
             get {
-                return new[] {
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), SystemAssemblyLocation, UserAssemblyLocation
-                };
+                var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                if (!string.IsNullOrWhiteSpace(folder) && folder.DirectoryExists()) {
+                    yield return folder;
+                }
+
+                folder = SystemAssemblyLocation;
+                if (!string.IsNullOrWhiteSpace(folder) && folder.DirectoryExists()) {
+                    yield return folder;
+                }
+
+                folder = UserAssemblyLocation;
+                if (!string.IsNullOrWhiteSpace(folder) && folder.DirectoryExists()) {
+                    yield return folder;
+                }
             }
         }
 
         internal string UserAssemblyLocation {
             get {
-                var basepath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                if (string.IsNullOrWhiteSpace(basepath)) {
-                    return null;
-                }
-                var path = Path.Combine(basepath, "PackageManagement", "ProviderAssemblies");
-                if (!Directory.Exists(path)) {
-                    try {
-                        Directory.CreateDirectory(path);
-                    } catch {
-                        // if it can't be created, it's not the end of the world.
+                try {
+                    var basepath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                    if (string.IsNullOrWhiteSpace(basepath)) {
+                        return null;
                     }
+                    var path = Path.Combine(basepath, "PackageManagement", "ProviderAssemblies");
+                    if (!Directory.Exists(path)) {
+                        Directory.CreateDirectory(path);
+                    }
+                    return path;
+                } catch {
+                    // if it can't be created, it's not the end of the world.
                 }
-                return path;
+                return null;
             }
         }
 
         internal string SystemAssemblyLocation {
             get {
-                var basepath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-                if (string.IsNullOrWhiteSpace(basepath)) {
-                    return null;
-                }
-                var path = Path.Combine(basepath, "PackageManagement", "ProviderAssemblies");
-
                 try {
+                    var basepath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                    if (string.IsNullOrWhiteSpace(basepath)) {
+                        return null;
+                    }
+                    var path = Path.Combine(basepath, "PackageManagement", "ProviderAssemblies");
+
                     if (!Directory.Exists(path)) {
                         Directory.CreateDirectory(path);
                     }
+                    return path;
                 } catch {
                     // ignore non-existant directory for now.
                 }
-                return path;
+                return null;
             }
         }
 
@@ -325,10 +323,6 @@ namespace Microsoft.PackageManagement.Implementation {
             return false;
         }
 
-        private bool IsExcluded(string assemblyPath) {
-            return _excludes.Contains(Path.GetFileNameWithoutExtension(assemblyPath));
-        }
-
         /// <summary>
         ///     This initializes the provider registry with the list of package providers.
         ///     (currently a hardcoded list, soon, registry driven)
@@ -344,7 +338,7 @@ namespace Microsoft.PackageManagement.Implementation {
                 .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\PACKAGEMANAGEMENT"))
                 .Concat(AutoloadedAssemblyLocations.SelectMany(location => {
                     if (Directory.Exists(location)) {
-                        return Directory.EnumerateFiles(location).Where(each => !IsExcluded(each) && (each.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase) || each.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase)));
+                        return Directory.EnumerateFiles(location).Where(each => (each.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || each.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)));
                     }
                     return Enumerable.Empty<string>();
                 }));
@@ -425,7 +419,7 @@ namespace Microsoft.PackageManagement.Implementation {
         /// </summary>
         internal IEnumerable<PackageProvider> DynamicProviders {
             get {
-                return _packageProviders.Values.Where(each => !each.ProviderPath.StartsWith(BaseDir, StringComparison.InvariantCultureIgnoreCase));
+                return _packageProviders.Values.Where(each => !each.ProviderPath.StartsWith(BaseDir, StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -523,7 +517,7 @@ namespace Microsoft.PackageManagement.Implementation {
                 }
 
                 // is it a path?
-                if (assemblyName.Contains('\\') || assemblyName.Contains('/') || assemblyName.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase) || assemblyName.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase)) {
+                if (assemblyName.Contains('\\') || assemblyName.Contains('/') || assemblyName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || assemblyName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) {
                     fullPath = Path.GetFullPath(assemblyName);
                     if (File.Exists(fullPath)) {
                         return fullPath;
@@ -816,9 +810,11 @@ namespace Microsoft.PackageManagement.Implementation {
             var found = false;
             var metaProviderName = provider.GetMetaProviderName();
 
-            if (!_metaProviders.ContainsKey(metaProviderName)) {
-                // Meta Providers can't be replaced at this point
-                _metaProviders.AddOrSet(metaProviderName, provider);
+            lock (_metaProviders) {
+                if (!_metaProviders.ContainsKey(metaProviderName)) {
+                    // Meta Providers can't be replaced at this point
+                    _metaProviders.AddOrSet(metaProviderName, provider);
+                }
             }
 
             try {

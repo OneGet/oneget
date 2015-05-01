@@ -29,6 +29,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
         internal readonly Swidtag _swidtag;
         private bool _timedOut;
 
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Swid(BootstrapRequest request, Swidtag swidtag) {
             _request = request;
             _swidtag = swidtag;
@@ -60,11 +61,12 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                             return _request.Warning(messageText);
                         })
                     },
-                    this
+                    _request
                 }.As<IRequest>();
             }
         }
 
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         protected IEnumerable<IGrouping<string, Link>> Artifacts {
             get {
                 return IsValid ? _swidtag.Links.GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();

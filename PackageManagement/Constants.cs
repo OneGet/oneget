@@ -60,6 +60,7 @@ namespace Microsoft.PackageManagement {
             internal const string FileFailedVerification = "MSG:FileFailedVerification";
             internal const string InvalidFilename = "MSG:InvalidFilename";
             internal const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
+            internal const string NetworkNotAvailable = "MSG:NetworkNotAvailable";
             internal const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
             internal const string PackageSourceExists = "MSG:PackageSourceExists";
             internal const string ProtocolNotSupported = "MSG:ProtocolNotSupported";

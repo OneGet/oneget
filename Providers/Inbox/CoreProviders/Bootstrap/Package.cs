@@ -18,6 +18,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
     using Packaging;
 
     internal class Package : Swid {
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Package(BootstrapRequest request, Swidtag swidtag)
             : base(request, swidtag) {
         }

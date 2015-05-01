@@ -344,7 +344,9 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                     }
                 }
             }
-            file.TryHardToDelete();
+            if (file != null) {
+                file.TryHardToDelete();
+            }
             return false;
         }
 

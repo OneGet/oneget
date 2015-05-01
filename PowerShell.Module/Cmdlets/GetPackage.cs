@@ -80,7 +80,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 // if the user didn't specify any names
                 SelectedProviders.Select(pv => new {
                     query = "?",
-                    packages = pv.GetInstalledPackages("",RequiredVersion, MinimumVersion, MaximumVersion, this.ProviderSpecific(pv)).CancelWhen(_cancellationEvent.Token)
+                    packages = pv.GetInstalledPackages("",RequiredVersion, MinimumVersion, MaximumVersion, this.ProviderSpecific(pv)).CancelWhen(CancellationEvent.Token)
                 }) :
 
                 // if the user specified a name,
@@ -90,7 +90,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                     return Name.Select(name => new {
                         query = name,
-                        packages = pv.GetInstalledPackages(name, RequiredVersion, MinimumVersion, MaximumVersion, host).CancelWhen(_cancellationEvent.Token)
+                        packages = pv.GetInstalledPackages(name, RequiredVersion, MinimumVersion, MaximumVersion, host).CancelWhen(CancellationEvent.Token)
                     });
                 })).ToArray();
 

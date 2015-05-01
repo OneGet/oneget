@@ -180,7 +180,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                var a = _uris.Select(uri => new {
                    query = new List<string>{uri.AbsolutePath},
                    provider = pv,
-                   packages = pv.FindPackageByUri(uri, host).CancelWhen(_cancellationEvent.Token)
+                   packages = pv.FindPackageByUri(uri, host).CancelWhen(CancellationEvent.Token)
                });
 
                var b = _files.Keys.Where(file => pv.IsSupportedFile(_files[file].Item2)).Select(file => new {
@@ -274,7 +274,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                             result = false; // even tho' it's not an 'error' it is still enough to know not to actually install.
                         } else {
                             result = false;
-                            Error(Constants.Errors.NoMatchFound, name);
+                            NonTerminatingError(Constants.Errors.NoMatchFoundForCriteria, name);
                         }
                     }
                 }

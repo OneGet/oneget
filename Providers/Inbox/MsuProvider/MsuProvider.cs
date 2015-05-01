@@ -198,12 +198,16 @@ namespace Microsoft.PackageManagement.Msu {
                     if (obj != null)
                     {
                         var title = obj.Properties["Title"] != null ? obj.Properties["Title"].Value as string : null;
-                        var supportUrl = obj.Properties["SupportUrl"] != null ? obj.Properties["SupportUrl"].Value as string : null;
-                        var date = obj.Properties["Date"] != null ? obj.Properties["Date"].Value as DateTime? : null;
-                        var resultCode = obj.Properties["ResultCode"] != null ? obj.Properties["ResultCode"].Value as int? : null;
-                        var description = obj.Properties["Description"] != null ? obj.Properties["Description"].Value as string : null;
 
-                        YieldPackage(name, request, title, supportUrl, date, resultCode, description);
+                        if (title != null && title.IndexOf(name, StringComparison.OrdinalIgnoreCase) > -1)
+                        {
+                            var supportUrl = obj.Properties["SupportUrl"] != null ? obj.Properties["SupportUrl"].Value as string : null;
+                            var date = obj.Properties["Date"] != null ? obj.Properties["Date"].Value as DateTime? : null;
+                            var resultCode = obj.Properties["ResultCode"] != null ? obj.Properties["ResultCode"].Value as int? : null;
+                            var description = obj.Properties["Description"] != null ? obj.Properties["Description"].Value as string : null;
+
+                            YieldPackage(name, request, title, supportUrl, date, resultCode, description);
+                        }
                     }
                 }
             }
