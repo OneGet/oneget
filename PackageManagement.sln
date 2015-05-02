@@ -77,6 +77,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppsProvider", "Providers\D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Swidtag", "Providers\Dynamic\Apps\swidtag\Swidtag.csproj", "{8299BA69-5D1E-4FC2-BB8C-C97AC5958995}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwidtagTests", "Providers\Dynamic\Apps\swidtag\Test\SwidtagTests.csproj", "{A46DEF9D-BCD3-4F8C-9ADF-095EDD19FA36}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -193,6 +195,14 @@ Global
 		{8299BA69-5D1E-4FC2-BB8C-C97AC5958995}.Publish|Any CPU.Build.0 = Release|Any CPU
 		{8299BA69-5D1E-4FC2-BB8C-C97AC5958995}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8299BA69-5D1E-4FC2-BB8C-C97AC5958995}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A46DEF9D-BCD3-4F8C-9ADF-095EDD19FA36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A46DEF9D-BCD3-4F8C-9ADF-095EDD19FA36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A46DEF9D-BCD3-4F8C-9ADF-095EDD19FA36}.Debug-Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{A46DEF9D-BCD3-4F8C-9ADF-095EDD19FA36}.Debug-Publish|Any CPU.Build.0 = Debug|Any CPU
+		{A46DEF9D-BCD3-4F8C-9ADF-095EDD19FA36}.Publish|Any CPU.ActiveCfg = Release|Any CPU
+		{A46DEF9D-BCD3-4F8C-9ADF-095EDD19FA36}.Publish|Any CPU.Build.0 = Release|Any CPU
+		{A46DEF9D-BCD3-4F8C-9ADF-095EDD19FA36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A46DEF9D-BCD3-4F8C-9ADF-095EDD19FA36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -213,5 +223,6 @@ Global
 		{80518357-8AA5-4A02-8598-68E6C6C226EE} = {1D6B52CB-403F-4A0C-9F7A-C933EBD613BE}
 		{12BC926F-8192-47DB-A490-21E8686514F6} = {DE4F22A7-4B16-42D3-9FC5-88B966330CC1}
 		{8299BA69-5D1E-4FC2-BB8C-C97AC5958995} = {80518357-8AA5-4A02-8598-68E6C6C226EE}
+		{A46DEF9D-BCD3-4F8C-9ADF-095EDD19FA36} = {80518357-8AA5-4A02-8598-68E6C6C226EE}
 	EndGlobalSection
 EndGlobal
