@@ -281,11 +281,11 @@ namespace Microsoft.PackageManagement.Implementation {
                 return false;
             }
 
-            var pkg = bootstrap.FindPackage(packageProviderName, null, minimumVersion, null, hostApi).ToArray();
+            var pkg = bootstrap.FindPackage(packageProviderName, null, minimumVersion, null, hostApi).OrderByDescending(p =>  p, SoftwareIdentityVersionComparer.Instance).GroupBy(package => package.Name).ToArray();
             if (pkg.Length == 1) {
                 // Yeah? Install it.
-                var package = pkg[0];
-                var metaWithProviderType = pkg[0].Meta.FirstOrDefault(each => each.ContainsKey("providerType"));
+                var package = pkg[0].FirstOrDefault();
+                var metaWithProviderType = package.Meta.FirstOrDefault(each => each.ContainsKey("providerType"));
                 var providerType = metaWithProviderType == null ? "unknown" : metaWithProviderType.GetAttribute("providerType");
                 var destination = providerType == "assembly" ? (AdminPrivilege.IsElevated ? SystemAssemblyLocation : UserAssemblyLocation) : string.Empty;
                 var link = package.Links.FirstOrDefault(each => each.Relationship == "installationmedia");
@@ -296,7 +296,7 @@ namespace Microsoft.PackageManagement.Implementation {
 
                 // what can't find an installationmedia link?
                 // todo: what should we say here?
-                if (hostApi.ShouldBootstrapProvider(requestor, pkg[0].Name, pkg[0].Version, providerType, location, destination)) {
+                if (hostApi.ShouldBootstrapProvider(requestor, package.Name, package.Version, providerType, location, destination)) {
                     var newRequest = hostApi.Extend<IHostApi>(new {
                         GetOptionValues = new Func<string, IEnumerable<string>>(key => {
                             if (key == "DestinationPath") {
@@ -307,7 +307,7 @@ namespace Microsoft.PackageManagement.Implementation {
                             return new string[0];
                         })
                     });
-                    var packagesInstalled = bootstrap.InstallPackage(pkg[0], newRequest).LastOrDefault();
+                    var packagesInstalled = bootstrap.InstallPackage(package, newRequest).LastOrDefault();
                     if (packagesInstalled == null) {
                         // that's sad.
                         hostApi.Error(Constants.Messages.FailedProviderBootstrap, ErrorCategory.InvalidOperation.ToString(), package.Name, hostApi.FormatMessageString(Constants.Messages.FailedProviderBootstrap, package.Name));
