@@ -47,10 +47,13 @@ check out the source code
 > cd providers\dynamic\NuGetProvider 
 > git checkout master
 > cd ..
-> cd providers\sdk\ProviderSdk
+> cd providers\dynamic\Apps 
 > git checkout master
 > cd ..
-> cd test\bvt\cmdlet-testsuite
+> cd providers\dynamic\Apps\swidtag
+> git checkout master
+> cd ..
+> cd providers\sdk\ProviderSdk
 > git checkout master
 > cd ..
 
