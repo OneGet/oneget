@@ -59,7 +59,7 @@ check out the source code
 
 # BUILD using Visual Studio, or from the command line:
 
-> msbuild OneGet.sln /p:Configuration=Release "/p:Platform=Any CPU"
+> msbuild PackageManagement.sln /p:Configuration=Release "/p:Platform=Any CPU"
     
 # If you want to send me changes, you should fork the project into your own 
 # account first, and use that URL to clone it.
