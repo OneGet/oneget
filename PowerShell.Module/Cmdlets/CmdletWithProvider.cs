@@ -90,7 +90,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         // we've filtered out everthing!
 
                         if (!didUserSpecifyProviders) {
-                            if (IsInvocation) {
+                            if (IsInvocation && CmdletState > AsyncCmdletState.GenerateParameters ) {
+                                
                                 // user didn't actually specify provider(s), the sources can't be tied to any particular provider
                                 QueueHeldMessage(() => Error(Constants.Errors.SourceNotFound, userSpecifiedSources.JoinWithComma()));
                                 IsFailingEarly = true;
@@ -102,7 +103,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         // they gave us both provider name(s) and source(s)
                         // and the source(s) aren't found in the providers they listed
 
-                        if (IsInvocation) {
+                        if (IsInvocation&&  CmdletState > AsyncCmdletState.GenerateParameters ) {
                             if (providers.Count() < 2) {
                                 QueueHeldMessage(() => Error(Constants.Errors.SourceNotFound, userSpecifiedSources.JoinWithComma()));
                                 IsFailingEarly = true;

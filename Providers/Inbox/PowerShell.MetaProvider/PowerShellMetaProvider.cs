@@ -20,7 +20,9 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System.Linq;
     using System.Management.Automation;
     using System.Reflection;
+    using Utility.Collections;
     using Utility.Extensions;
+    using Utility.Versions;
 
     /// <summary>
     ///     A  MetaProvider class that loads Providers implemented as a PowerShell Module.
@@ -146,7 +148,11 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             GC.SuppressFinalize(this);
         }
 
-        internal IEnumerable<string> ScanPrivateDataForProviders(string baseFolder, Hashtable privateData) {
+        public string GetProviderPath(string providername) {
+            return _packageProviders.ContainsKey(providername) ? _packageProviders[providername].ModulePath : null;
+        }
+
+        internal IEnumerable<KeyValuePair<string,string>> ScanPrivateDataForProviders(string baseFolder, Hashtable privateData, Version moduleVersion) {
             var providers = privateData.GetStringCollection("PackageManagementProviders").ToArray();
             if (providers.Length > 0) {
                 // found a module that is advertizing one or more  Providers.
@@ -164,24 +170,24 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                     if (Directory.Exists(fullPath) || File.Exists(fullPath)) {
                         // looks like we have something that could definitely be a
                         // a module path.
-                        yield return fullPath;
+                        yield return new KeyValuePair<string, string>(fullPath, (moduleVersion ?? new Version(0,0)).ToString());
                     }
                 }
             }
         }
 
-        private IEnumerable<string> GetPackageManagementModules(PSModuleInfo module) {
+        private IEnumerable<KeyValuePair<string,string>> GetPackageManagementModules(PSModuleInfo module) {
             // skip modules that we know don't contain any PM modules
             if (!_exclusionList.Contains(module.Name)) {
                 var privateData = module.PrivateData as Hashtable;
                 if (privateData != null) {
-                    return ScanPrivateDataForProviders(Path.GetDirectoryName(module.Path), privateData);
+                    return ScanPrivateDataForProviders(Path.GetDirectoryName(module.Path), privateData, module.Version);
                 }
             }
-            return Enumerable.Empty<string>();
+            return Enumerable.Empty<KeyValuePair<string,string>>();
         }
 
-        internal IEnumerable<string> ScanForModules(PsRequest request) {
+        internal IEnumerable<KeyValuePair<string,string>> ScanForModules(PsRequest request) {
             // two places we search for modules
             // 1. in this assembly's folder, look for all psd1 and psm1 files.
             //
@@ -194,7 +200,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 }
             }
 
-            return Enumerable.Empty<string>();
+            return Enumerable.Empty<KeyValuePair<string,string>>();
         }
 
         private IEnumerable<string> AlternativeModuleScan(PsRequest request) {
@@ -202,34 +208,53 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
 
             IEnumerable<string> paths = psModulePath.Split(new char[] {';'}, StringSplitOptions.RemoveEmptyEntries);
 
-            var sysRoot = Environment.GetEnvironmentVariable("systemroot");
-            var userProfile = Environment.GetEnvironmentVariable("userprofile");
-
             // add assumed paths just in case the environment variable isn't really set.
-            paths = paths.ConcatSingleItem(Path.Combine(sysRoot, @"system32\WindowsPowerShell\v1.0\Modules"));
-            paths = paths.ConcatSingleItem(Path.Combine(userProfile, @"Documents\WindowsPowerShell\Modules"));
+            try {
+                paths = paths.ConcatSingleItem(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), @"WindowsPowerShell\v1.0\Modules"));
+            } catch {
+                // skip the folder if it's not valid
+            }
+            try {
+                paths = paths.ConcatSingleItem(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"WindowsPowerShell\Modules"));
+            }
+            catch {
+                // skip the folder if it's not valid
+            }
 
             if (!string.IsNullOrWhiteSpace(BaseFolder) && BaseFolder.DirectoryExists()) {
                 paths = paths.ConcatSingleItem(BaseFolder);
             }
 
-            paths = paths.Distinct().ToArray();
+            paths = paths.Distinct(new PathEqualityComparer(PathCompareOption.Full)).ToArray();
 
-            return
-                paths.Where(each => each.DirectoryExists())
-                    .SelectMany(each => Directory.EnumerateDirectories(each).Where(dir => !_exclusionList.Contains(Path.GetFileName(dir))), (p, child) => Path.Combine(child, Path.GetFileName(child) + ".psd1"))
-                    .Where(moduleName => File.Exists(moduleName) && File.ReadAllText(moduleName).IndexOf("PackageManagementProviders", StringComparison.OrdinalIgnoreCase) > -1);
+            var moduleFolders = paths.Where(each => each.DirectoryExists()).SelectMany(each => Directory.EnumerateDirectories(each).Where(dir => !_exclusionList.Contains(Path.GetFileName(dir))));
+
+            var modules = moduleFolders.Select(module => {
+
+                var moduleManifest = Path.Combine(module, Path.GetFileName(module) + ".psd1");
+                if (File.Exists(moduleManifest)) {
+                    return moduleManifest;
+                }
+
+                var versions = Directory.EnumerateDirectories(module).Select(dir => new {folder = dir, ver=(FourPartVersion)Path.GetFileName(dir)}).Where(each => each.ver > 0L).OrderByDescending(each => each).Select(each => each.folder);
+
+                return versions.Select(version => Path.Combine(version, Path.GetFileName(Path.GetFileName(module)) + ".psd1")).FirstOrDefault(File.Exists);
+            }).WhereNotNull();
+
+            return modules.Where(moduleName => File.ReadAllText(moduleName).IndexOf("PackageManagementProviders", StringComparison.OrdinalIgnoreCase) > -1);
         }
 
         public object CreateProvider(string name) {
             if (_packageProviders.ContainsKey(name)) {
                 return _packageProviders[name];
+            } 
+                
+            // it's possible that this is a path passed in. Let's see if it's a provider.
+            if (!string.IsNullOrEmpty(name) && name.FileExists()) {
+                // MUST DO: load provider from filepath.
             }
             // create the instance
             throw new Exception("No provider by name '{0}' registered.".format(name));
-        }
-
-        internal void ReleaseProvider() {
         }
 
         protected virtual void Dispose(bool disposing) {
@@ -243,15 +268,15 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             }
         }
 
-        private PowerShellPackageProvider Create(PsRequest req, string psModule) {
+        private PowerShellPackageProvider Create(PsRequest req, KeyValuePair<string,string> psModule) {
             var ps = PowerShell.Create();
             try {
                 // load the powershell provider functions into this runspace.
                 if (ps.ImportModule(PowerShellProviderFunctions) != null) {
-                    var result = ps.ImportModule(psModule);
+                    var result = ps.ImportModule(psModule.Key);
                     if (result != null) {
                         try {
-                            return new PowerShellPackageProvider(ps, result);
+                            return new PowerShellPackageProvider(ps, result, psModule.Value);
                         } catch (Exception e) {
                             e.Dump();
                         }
@@ -275,26 +300,27 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
 
             request.Debug("Initializing PowerShell MetaProvider");
 
-            // to do : get modules to load (from configuration ?)
             var modules = ScanForModules(request).Distinct().ToArray();
 
             // try to create each module at least once.
-            modules.ParallelForEach(modulePath => {
-                request.Debug("Attempting to load PowerShell Provider Module [{0}]", modulePath);
-                var provider = Create(request, modulePath);
-                if (provider != null) {
-                    if (provider.GetPackageProviderName() != null) {
-                        request.Debug("Loaded PowerShell Package Provider Module: [{0}]", modulePath);
-                        // looks good to me, let's add this to the list of moduels this meta provider can create.
-                        _packageProviders.AddOrSet(provider.GetPackageProviderName(), provider);
-                    } else {
-                        provider.Dispose();
-                        provider = null;
-                    }
-                }
-            });
+            modules.ParallelForEach(modulePath => AnalyzeModule(request, modulePath));
 
             request.Debug("Loaded PowerShell Provider Modules ");
+        }
+
+        private void AnalyzeModule(PsRequest request, KeyValuePair<string,string> modulePath) {
+            request.Debug("Attempting to load PowerShell Provider Module [{0}]", modulePath);
+            var provider = Create(request, modulePath);
+            if (provider != null) {
+                if (provider.GetPackageProviderName() != null) {
+                    request.Debug("Loaded PowerShell Package Provider Module: [{0}]", modulePath);
+                    // looks good to me, let's add this to the list of moduels this meta provider can create.
+                    _packageProviders.AddOrSet(provider.GetPackageProviderName(), provider);
+                } else {
+                    provider.Dispose();
+                    provider = null;
+                }
+            }
         }
     }
 }

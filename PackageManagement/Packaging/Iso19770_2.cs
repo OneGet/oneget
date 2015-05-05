@@ -18,52 +18,10 @@ namespace Microsoft.PackageManagement.Packaging {
     using Utility.Extensions;
 
     internal static class Iso19770_2 {
-        internal static XNamespace XmlDsigNamespace = XNamespace.Get("http://www.w3.org/2000/09/xmldsig#");
-        internal static readonly XName NameAttribute = "name";
-        internal static readonly XName PatchAttribute = "patch";
-        internal static readonly XName MediaAttribute = "media";
-        internal static readonly XName SupplementalAttribute = "supplemental";
-        internal static readonly XName TagVersionAttribute = "tagVersion";
-        internal static readonly XName TagIdAttribute = "tagId";
-        internal static readonly XName VersionAttribute = "version";
-        internal static readonly XName VersionSchemeAttribute = "versionScheme";
-        internal static readonly XName CorpusAttribute = "corpus";
-        internal static readonly XName SummaryAttribute = "summary";
-        internal static readonly XName DescriptionAttribute = "description";
-        internal static readonly XName ActivationStatusAttribute = "activationStatus";
-        internal static readonly XName ChannelTypeAttribute = "channelType";
-        internal static readonly XName ColloquialVersionAttribute = "colloquialVersion";
-        internal static readonly XName EditionAttribute = "edition";
-        internal static readonly XName EntitlementDataRequiredAttribute = "entitlementDataRequired";
-        internal static readonly XName EntitlementKeyAttribute = "entitlementKey";
-        internal static readonly XName GeneratorAttribute = "generator";
-        internal static readonly XName PersistentIdAttribute = "persistentId";
-        internal static readonly XName ProductAttribute = "product";
-        internal static readonly XName ProductFamilyAttribute = "productFamily";
-        internal static readonly XName RevisionAttribute = "revision";
-        internal static readonly XName UnspscCodeAttribute = "unspscCode";
-        internal static readonly XName UnspscVersionAttribute = "unspscVersion";
-        internal static readonly XName RegIdAttribute = "regId";
-        internal static readonly XName RoleAttribute = "role";
-        internal static readonly XName ThumbprintAttribute = "thumbprint";
-        internal static readonly XName HRefAttribute = "href";
-        internal static readonly XName RelationshipAttribute = "rel";
-        internal static readonly XName MediaTypeAttribute = "type";
-        internal static readonly XName OwnershipAttribute = "ownership";
-        internal static readonly XName UseAttribute = "use";
-        internal static readonly XName ArtifactAttribute = "artifact";
-        internal static readonly XName TypeAttribute = "type";
-        internal static readonly XName KeyAttribute = "key";
-        internal static readonly XName RootAttribute = "root";
-        internal static readonly XName LocationAttribute = "location";
-        internal static readonly XName SizeAttribute = "size";
-        internal static readonly XName PidAttribute = "pid";
-        internal static readonly XName DateAttribute = "date";
-        internal static readonly XName DeviceIdAttribute = "deviceId";
 
         internal static XAttribute SwidtagNamespace {
             get {
-                return new XAttribute(XNamespace.Xmlns + "swid", Namespace);
+                return new XAttribute(XNamespace.Xmlns + "swid", Namespace.Iso19770_2);
             }
         }
 
@@ -116,6 +74,84 @@ namespace Microsoft.PackageManagement.Packaging {
             return element;
         }
 
+        internal static class Attributes {
+            internal static readonly XName Name = "name";
+            internal static readonly XName Patch = "patch";
+            internal static readonly XName Media = "media";
+            internal static readonly XName Supplemental = "supplemental";
+            internal static readonly XName TagVersion = "tagVersion";
+            internal static readonly XName TagId = "tagId";
+            internal static readonly XName Version = "version";
+            internal static readonly XName VersionScheme = "versionScheme";
+            internal static readonly XName Corpus = "corpus";
+            internal static readonly XName Summary = "summary";
+            internal static readonly XName Description = "description";
+            internal static readonly XName ActivationStatus = "activationStatus";
+            internal static readonly XName ChannelType = "channelType";
+            internal static readonly XName ColloquialVersion = "colloquialVersion";
+            internal static readonly XName Edition = "edition";
+            internal static readonly XName EntitlementDataRequired = "entitlementDataRequired";
+            internal static readonly XName EntitlementKey = "entitlementKey";
+            internal static readonly XName Generator = "generator";
+            internal static readonly XName PersistentId = "persistentId";
+            internal static readonly XName Product = "product";
+            internal static readonly XName ProductFamily = "productFamily";
+            internal static readonly XName Revision = "revision";
+            internal static readonly XName UnspscCode = "unspscCode";
+            internal static readonly XName UnspscVersion = "unspscVersion";
+            internal static readonly XName RegId = "regId";
+            internal static readonly XName Role = "role";
+            internal static readonly XName Thumbprint = "thumbprint";
+            internal static readonly XName HRef = "href";
+            internal static readonly XName Relationship = "rel";
+            internal static readonly XName MediaType = "type";
+            internal static readonly XName Ownership = "ownership";
+            internal static readonly XName Use = "use";
+            internal static readonly XName Artifact = "artifact";
+            internal static readonly XName Type = "type";
+            internal static readonly XName Key = "key";
+            internal static readonly XName Root = "root";
+            internal static readonly XName Location = "location";
+            internal static readonly XName Size = "size";
+            internal static readonly XName Pid = "pid";
+            internal static readonly XName Date = "date";
+            internal static readonly XName DeviceId = "deviceId";
+            internal static readonly XName XmlLang = Namespace.Xml + "lang";
+        }
+
+        internal static class Discovery {
+            internal static readonly XName Name = Namespace.Discovery + "name";
+
+            // Feed Link Extended attributes: 
+            internal static readonly XName MinimumName = Namespace.Discovery + "min-name";
+            internal static readonly XName MaximumName = Namespace.Discovery + "max-name";
+            internal static readonly XName MinimumVersion = Namespace.Discovery + "min-version";
+            internal static readonly XName MaximumVersion = Namespace.Discovery + "max-version";
+            internal static readonly XName Keyword = Namespace.Discovery + "keyword";
+
+            // Package Link Extended Attributes 
+            internal static readonly XName Version = Namespace.Discovery + "version";
+            internal static readonly XName Latest = Namespace.Discovery + "latest";
+            internal static readonly XName TargetFilename = Namespace.Discovery + "targetFilename";
+            internal static readonly XName Type = Namespace.Discovery + "type";
+
+        }
+
+        internal static class MediaType {
+            internal const string PackageReference = "application/vnd.packagemanagement-canonicalid";
+
+            internal const string SwidTagXml = "application/swid-tag+xml";
+            internal const string SwidTagJsonLd = "application/swid-tag+json-ld";
+
+            internal const string MsiPackage = "application/vnd.ms.msi-package";
+            internal const string MsuPackage  = "application/vnd.ms.msu-package";
+
+            internal const string ExePackage = "application/vnd.packagemanagement.exe-package";
+            internal const string NuGetPackage = "application/vnd.packagemanagement.nuget-package";
+            internal const string ChocolateyPackage = "application/vnd.packagemanagement.chocolatey-package";
+
+        }
+
         internal static class Relationship {
             internal const string Requires = "requires";
             internal const string InstallationMedia = "installationmedia";
@@ -123,6 +159,10 @@ namespace Microsoft.PackageManagement.Packaging {
             internal const string Supplemental = "supplemental";
             internal const string Parent = "parent";
             internal const string Ancestor = "ancestor";
+            
+            // Package Discovery Relationships:
+            internal const string Feed = "feed";        // should point to a swidtag the represents a feed of packages
+            internal const string Package = "package";  // should point ot a swidtag that represents an installation package
         }
 
         internal static class Role {
@@ -157,24 +197,29 @@ namespace Microsoft.PackageManagement.Packaging {
             internal const string Shared = "shared";
         }
 
-        internal static XNamespace Namespace = XNamespace.Get("http://standards.iso.org/iso/19770/-2/2015/schema.xsd");
-        internal static XNamespace XmlNamespace = XNamespace.Get("http://www.w3.org/XML/1998/namespace");
-        internal static readonly XName SoftwareIdentity = Namespace + "SoftwareIdentity";
-        internal static readonly XName Entity = Namespace + "Entity";
-        internal static readonly XName Link = Namespace + "Link";
-        internal static readonly XName Meta = Namespace + "Meta";
-        internal static readonly XName Evidence = Namespace + "Evidence";
-        internal static readonly XName Payload = Namespace + "Payload";
-        internal static readonly XName Directory = Namespace + "Directory";
-        internal static readonly XName File = Namespace + "File";
-        internal static readonly XName Process = Namespace + "Process";
-        internal static readonly XName Resource = Namespace + "Resource";
+        internal static class Namespace {
+            internal static readonly XNamespace Iso19770_2 = XNamespace.Get("http://standards.iso.org/iso/19770/-2/2015/schema.xsd");
+            internal static readonly XNamespace Discovery = XNamespace.Get("http://packagemanagement.org/discovery");
+            internal static readonly XNamespace OneGet = XNamespace.Get("http://oneget.org/packagemanagement");
+            internal static readonly XNamespace Xml = XNamespace.Get("http://www.w3.org/XML/1998/namespace");
+            internal static XNamespace XmlDsig = XNamespace.Get("http://www.w3.org/2000/09/xmldsig#");
+        }
 
-        internal static readonly XName[] MetaElements = {
-            Meta, Directory, File, Process, Resource
-        };
+        internal static class Elements {
+            internal static readonly XName SoftwareIdentity = Namespace.Iso19770_2 + "SoftwareIdentity";
+            internal static readonly XName Entity = Namespace.Iso19770_2 + "Entity";
+            internal static readonly XName Link = Namespace.Iso19770_2 + "Link";
+            internal static readonly XName Evidence = Namespace.Iso19770_2 + "Evidence";
+            internal static readonly XName Payload = Namespace.Iso19770_2 + "Payload";
+            internal static readonly XName Meta = Namespace.Iso19770_2 + "Meta";
+            internal static readonly XName Directory = Namespace.Iso19770_2 + "Directory";
+            internal static readonly XName File = Namespace.Iso19770_2 + "File";
+            internal static readonly XName Process = Namespace.Iso19770_2 + "Process";
+            internal static readonly XName Resource = Namespace.Iso19770_2 + "Resource";
 
-        // ISO 19770-2/2015 attributes
-        internal static readonly XName XmlLang = XmlNamespace + "lang";
+            internal static readonly XName[] MetaElements = {
+                Meta, Directory, File, Process, Resource
+            };
+        }
     }
 }

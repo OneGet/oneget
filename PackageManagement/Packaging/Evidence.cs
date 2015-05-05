@@ -30,13 +30,13 @@ namespace Microsoft.PackageManagement.Packaging {
     public class Evidence : ResourceCollection {
         internal Evidence(XElement element)
             : base(element) {
-            if (element.Name != Iso19770_2.Evidence) {
+            if (element.Name != Iso19770_2.Elements.Evidence) {
                 throw new ArgumentException("Element is not of type 'Evidence'", "element");
             }
         }
 
         internal Evidence()
-            : base(new XElement(Iso19770_2.Evidence)) {
+            : base(new XElement(Iso19770_2.Elements.Evidence)) {
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public DateTime? Date {
             get {
-                var v = GetAttribute(Iso19770_2.DateAttribute);
+                var v = GetAttribute(Iso19770_2.Attributes.Date);
                 if (v != null) {
                     try {
                         return XmlConvert.ToDateTime(v, XmlDateTimeSerializationMode.Utc);
@@ -59,7 +59,7 @@ namespace Microsoft.PackageManagement.Packaging {
                 }
                 var v = (DateTime)value;
 
-                AddAttribute(Iso19770_2.DateAttribute, v.ToUniversalTime().ToString("o", CultureInfo.CurrentCulture));
+                AddAttribute(Iso19770_2.Attributes.Date, v.ToUniversalTime().ToString("o", CultureInfo.CurrentCulture));
             }
         }
 
@@ -68,10 +68,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string DeviceId {
             get {
-                return GetAttribute(Iso19770_2.DeviceIdAttribute);
+                return GetAttribute(Iso19770_2.Attributes.DeviceId);
             }
             internal set {
-                AddAttribute(Iso19770_2.DeviceIdAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.DeviceId, value);
             }
         }
     }

@@ -54,7 +54,8 @@ namespace Microsoft.PackageManagement.Providers {
             return ProviderName;
         }
 
-        public void DownloadFile(Uri remoteLocation, string localFilename, Request request) {
+        public string DownloadFile(Uri remoteLocation, string localFilename,int timeoutMilliseconds, bool showProgress, Request request) {
+
             if (request == null) {
                 throw new ArgumentNullException("request");
             }
@@ -63,32 +64,43 @@ namespace Microsoft.PackageManagement.Providers {
                 throw new ArgumentNullException("remoteLocation");
             }
 
-            request.Debug("Calling 'WebDownloader::DownloadFile' '{0}','{1}'", remoteLocation, localFilename);
+            request.Debug("Calling 'WebDownloader::DownloadFile' '{0}','{1}','{2}','{3}'", remoteLocation, localFilename,timeoutMilliseconds,showProgress);
 
-            if (remoteLocation.Scheme.ToLowerInvariant() != "http" && remoteLocation.Scheme.ToLowerInvariant() != "https") {
+            if (remoteLocation.Scheme.ToLowerInvariant() != "http" && remoteLocation.Scheme.ToLowerInvariant() != "https" && remoteLocation.Scheme.ToLowerInvariant() != "ftp") {
                 request.Error(ErrorCategory.InvalidResult, remoteLocation.ToString(), Constants.Messages.SchemeNotSupported, remoteLocation.Scheme);
-                return;
+                return null;
             }
 
             if (localFilename == null) {
-                localFilename = Path.Combine(FilesystemExtensions.TempPath, "file.bin");
+                localFilename = "downloadedFile.tmp".GenerateTemporaryFilename();
             }
 
             localFilename = Path.GetFullPath(localFilename);
+
+            // did the caller pass us a directory name?
             if (Directory.Exists(localFilename)) {
-                localFilename = Path.Combine(localFilename, "file.bin");
+                localFilename = Path.Combine(localFilename, "downloadedFile.tmp");
             }
 
+            // make sure that the parent folder is created first.
             var folder = Path.GetDirectoryName(localFilename);
             if (!Directory.Exists(folder)) {
                 Directory.CreateDirectory(folder);
             }
+
+            // clobber an existing file if it's already there.
+            // todo: in the future, we could check the md5 of the file and if the remote server supports it
+            // todo: we could skip the download.
             if (File.Exists(localFilename)) {
                 localFilename.TryHardToDelete();
             }
 
-            // request.Verbose("Downloading", "'{0}' to '{1}'", remoteLocation, localFilename);
-            var pid = request.StartProgress(0, "Downloading '{0}'", remoteLocation);
+            // setup the progress tracker if the caller wanted one.
+            int pid = 0;
+            if (showProgress) {
+                pid = request.StartProgress(0, "Downloading '{0}'", remoteLocation);
+            }
+
             var webClient = new WebClient();
 
             // Apparently, places like Codeplex know to let this thru!
@@ -100,26 +112,50 @@ namespace Microsoft.PackageManagement.Providers {
                 if (args.Cancelled || args.Error != null) {
                     localFilename = null;
                 }
-
                 done.Set();
             };
+
             var lastPercent = 0;
 
-            webClient.DownloadProgressChanged += (sender, args) => {
-                // Progress(requestObject, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
-                var percent = (int)((args.BytesReceived*100)/args.TotalBytesToReceive);
-                if (percent > lastPercent) {
-                    lastPercent = percent;
-                    request.Progress(pid, (int)((args.BytesReceived*100)/args.TotalBytesToReceive), "To {0}", localFilename);
-                }
-            };
+            if (showProgress) {
+                webClient.DownloadProgressChanged += (sender, args) => {
+                    // Progress(requestObject, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
+                    var percent = (int)((args.BytesReceived*100)/args.TotalBytesToReceive);
+                    if (percent > lastPercent) {
+                        lastPercent = percent;
+                        request.Progress(pid, (int)((args.BytesReceived*100)/args.TotalBytesToReceive), "To {0}", localFilename);
+                    }
+                };
+            }
+
+            // start the download 
             webClient.DownloadFileAsync(remoteLocation, localFilename);
-            done.WaitOne();
-            if (!File.Exists(localFilename)) {
+
+            // wait for the completion 
+            if (timeoutMilliseconds > 0) {
+                if (!done.WaitOne(timeoutMilliseconds)) {
+                    webClient.CancelAsync();
+                    request.Warning(Constants.Status.TimedOut);
+                    request.Debug("Timed out downloading '{0}'", remoteLocation.AbsoluteUri);
+                    return null;
+                }
+            } else {
+                // wait until it completes or fails on it's own
+                done.WaitOne();
+            }
+            
+            // if we don't have the file by this point, we've failed.
+            if (localFilename == null || !File.Exists(localFilename)) {
                 request.CompleteProgress(pid, false);
                 request.Error(ErrorCategory.InvalidResult, remoteLocation.ToString(), Constants.Messages.UnableToDownload, remoteLocation.ToString(), localFilename);
+                return null;
             }
-            request.CompleteProgress(pid, true);
+
+            if (showProgress) {
+                request.CompleteProgress(pid, true);
+            }
+
+            return localFilename;
         }
 
     }

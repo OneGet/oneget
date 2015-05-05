@@ -136,7 +136,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                 try {
                     if (ShouldProcessPackageUninstall(pkg.Name, pkg.Version)) {
-                    foreach (var installedPkg in provider.UninstallPackage(pkg, this).CancelWhen(_cancellationEvent.Token)) {
+                        foreach (var installedPkg in provider.UninstallPackage(pkg, this).CancelWhen(CancellationEvent.Token)) {
                         if (IsCanceled) {
                             return false;
                         }

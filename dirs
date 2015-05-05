@@ -1,7 +1,5 @@
 
 DIRS=\
-	Utility \
-	Utility.PowerShell \
 	PackageManagement \
     Providers \
 	PowerShell.Module \

@@ -28,7 +28,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public IEnumerable<Directory> Directories {
             get {
-                return Element.Elements(Iso19770_2.Directory).Select(each => new Directory(each)).ReEnumerable();
+                return Element.Elements(Iso19770_2.Elements.Directory).Select(each => new Directory(each)).ReEnumerable();
             }
         }
 
@@ -37,7 +37,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public IEnumerable<File> Files {
             get {
-                return Element.Elements(Iso19770_2.File).Select(each => new File(each)).ReEnumerable();
+                return Element.Elements(Iso19770_2.Elements.File).Select(each => new File(each)).ReEnumerable();
             }
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public IEnumerable<Process> Processes {
             get {
-                return Element.Elements(Iso19770_2.Process).Select(each => new Process(each)).ReEnumerable();
+                return Element.Elements(Iso19770_2.Elements.Process).Select(each => new Process(each)).ReEnumerable();
             }
         }
 
@@ -55,7 +55,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public IEnumerable<Resource> Resources {
             get {
-                return Element.Elements(Iso19770_2.Resource).Select(each => new Resource(each)).ReEnumerable();
+                return Element.Elements(Iso19770_2.Elements.Resource).Select(each => new Resource(each)).ReEnumerable();
             }
         }
 

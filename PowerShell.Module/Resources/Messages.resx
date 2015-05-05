@@ -174,6 +174,10 @@
     <value>No package found for  '{0}'.</value>
     <comment>{0} - search criteria</comment>
   </data>
+  <data name="NoMatchFoundForCriteria" xml:space="preserve">
+    <value>No match was found for the specified search criteria and package name '{0}'.</value>
+    <comment>{0} - package name</comment>
+  </data>
   <data name="NoPackagesFoundForProvider" xml:space="preserve">
     <value>The package provider '{0}' did not return any packages.</value>
     <comment>{0} - provider name</comment>
@@ -312,6 +316,10 @@
     <value>Specified ProviderName parameter matches multiple providers: {0}</value>
     <comment>{0} - comma seperated list of providers matched</comment>
   </data>
+  <data name="ProviderNameNotSpecified" xml:space="preserve">
+    <value>ProviderName must be specified. Available Providers: {0}</value>
+    <comment>{0} - comma seperated list of available providers</comment>
+  </data>
   <data name="NameOrLocationRequired" xml:space="preserve">
     <value>Either -Name or -Location must be specified to select a package source.</value>
   </data>
@@ -362,5 +370,8 @@
   <data name="UnableToFindDependencyPackage" xml:space="preserve">
     <value>Unable to find dependent package(s) ({0})</value>
     <comment>{0} canonical  package id(s).</comment>
+  </data>
+  <data name="NetworkNotAvailable" xml:space="preserve">
+    <value>Network connectivity may not be available, unable to reach remote sources.</value>
   </data>
 </root>

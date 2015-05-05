@@ -83,6 +83,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
 
             var packageProvider = SelectProviders(ProviderName).ReEnumerable();
+
+            if (ProviderName.IsNullOrEmpty())
+            {
+                Error(Constants.Errors.ProviderNameNotSpecified, packageProvider.Select(p => p.ProviderName).JoinWithComma());
+                return false;
+            }
+
                 switch (packageProvider.Count()) {
                     case 0:
                         Error(Constants.Errors.UnknownProvider, ProviderName);
@@ -99,7 +106,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
             var provider = packageProvider.First();
 
-            using (var sources = provider.ResolvePackageSources(this).CancelWhen(_cancellationEvent.Token)) {
+            using (var sources = provider.ResolvePackageSources(this).CancelWhen(CancellationEvent.Token)) {
                 // first, check if there is a source by this name already.
                 var existingSources = sources.Where(each => each.IsRegistered && each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase)).ToArray();
 
@@ -109,7 +116,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         if (Force) {
 
                             if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, existingSource.Name, existingSource.Location, existingSource.ProviderName), Constants.Messages.ActionReplacePackageSource).Result) {
-                                var removedSources = provider.RemovePackageSource(existingSource.Name, this).CancelWhen(_cancellationEvent.Token);
+                                var removedSources = provider.RemovePackageSource(existingSource.Name, this).CancelWhen(CancellationEvent.Token);
                                 foreach (var removedSource in removedSources) {
                                     Verbose(Constants.Messages.OverwritingPackageSource, removedSource.Name);
                                 }
@@ -125,7 +132,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             string providerNameForProcessMessage = ProviderName.JoinWithComma();
             if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, Name, Location, providerNameForProcessMessage), FormatMessageString(Constants.Messages.ActionRegisterPackageSource)).Result)
             {
-                using (var added = provider.AddPackageSource(Name, Location, Trusted, this).CancelWhen(_cancellationEvent.Token)) {
+                using (var added = provider.AddPackageSource(Name, Location, Trusted, this).CancelWhen(CancellationEvent.Token)) {
                     foreach (var addedSource in added) {
                         WriteObject(addedSource);
                     }

@@ -14,6 +14,7 @@
 
 namespace Microsoft.PackageManagement.Providers {
     using System.Collections.Generic;
+    using Api;
     using Utility.Plugin;
 
     public interface IMetaProvider : IProvider {
@@ -22,7 +23,9 @@ namespace Microsoft.PackageManagement.Providers {
         /* Synced/Generated code =================================================== */
 
         /// <summary>
-        ///     Will instantiate an instance of a provider given it's name
+        ///     Will instantiate an instance of a provider given it's name.
+        /// 
+        ///     If the name is a filename, this will ask the provider to attempt to load it.
         /// </summary>
         /// <param name="name">the name of the provider to create</param>
         /// <returns>an instance of the provider.</returns>
@@ -42,6 +45,13 @@ namespace Microsoft.PackageManagement.Providers {
         /// <returns>a collection of all the names of Providers this MetaProvider can create</returns>
         [Required]
         IEnumerable<string> GetProviderNames();
+
+        /// <summary>
+        ///     Returns the path to the file that defines a given provider.
+        /// </summary>
+        /// <returns>the path of the provider</returns>
+        [Required]
+        string GetProviderPath(string name);
 
         #endregion
     }

@@ -33,13 +33,13 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         /// <param name="element"></param>
         internal Entity(XElement element) : base(element) {
-            if (element.Name != Iso19770_2.Entity) {
+            if (element.Name != Iso19770_2.Elements.Entity) {
                 throw new ArgumentException("Element is not of type 'Entity'", "element");
             }
         }
 
         internal Entity(string name, string regId, string role)
-            : base(new XElement(Iso19770_2.Entity)) {
+            : base(new XElement(Iso19770_2.Elements.Entity)) {
             Name = name;
             RegId = string.IsNullOrWhiteSpace(regId) ? "invalid.unavailable" : regId;
             AddRole(role);
@@ -50,10 +50,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string Name {
             get {
-                return GetAttribute(Iso19770_2.NameAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Name);
             }
             internal set {
-                AddAttribute(Iso19770_2.NameAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Name, value);
             }
         }
 
@@ -70,7 +70,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public IEnumerable<string> Roles {
             get {
-                var attr = GetAttribute(Iso19770_2.RoleAttribute.LocalName);
+                var attr = GetAttribute(Iso19770_2.Attributes.Role.LocalName);
                 if (attr != null) {
                     return attr.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
                 }
@@ -80,10 +80,10 @@ namespace Microsoft.PackageManagement.Packaging {
 
         public string Role {
             get {
-                return GetAttribute(Iso19770_2.RoleAttribute.LocalName);
+                return GetAttribute(Iso19770_2.Attributes.Role.LocalName);
             }
             internal set {
-                AddAttribute(Iso19770_2.RoleAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Role, value);
             }
         }
 
@@ -93,10 +93,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string Thumbprint {
             get {
-                return GetAttribute(Iso19770_2.ThumbprintAttribute.LocalName);
+                return GetAttribute(Iso19770_2.Attributes.Thumbprint.LocalName);
             }
             internal set {
-                AddAttribute(Iso19770_2.ThumbprintAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Thumbprint, value);
             }
         }
 
@@ -107,10 +107,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string RegId {
             get {
-                return GetAttribute(Iso19770_2.RegIdAttribute.LocalName);
+                return GetAttribute(Iso19770_2.Attributes.RegId.LocalName);
             }
             internal set {
-                AddAttribute(Iso19770_2.RegIdAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.RegId, value);
             }
         }
 
@@ -119,7 +119,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public IEnumerable<Meta> Meta {
             get {
-                return Element.Elements(Iso19770_2.Meta).Select(each => new Meta(each)).ReEnumerable();
+                return Element.Elements(Iso19770_2.Elements.Meta).Select(each => new Meta(each)).ReEnumerable();
             }
         }
 
@@ -132,7 +132,7 @@ namespace Microsoft.PackageManagement.Packaging {
                 role = string.Empty;
             }
 
-            var attr = GetAttribute(Iso19770_2.RoleAttribute.LocalName);
+            var attr = GetAttribute(Iso19770_2.Attributes.Role.LocalName);
             if (attr != null) {
                 var roles = attr.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries).ConcatSingleItem(role).Distinct();
                 role = roles.JoinWith(" ");
@@ -143,7 +143,7 @@ namespace Microsoft.PackageManagement.Packaging {
                 role = "unknown";
             }
 
-            Element.SetAttributeValue(Iso19770_2.RoleAttribute, role.Trim());
+            Element.SetAttributeValue(Iso19770_2.Attributes.Role, role.Trim());
         }
 
         /// <summary>

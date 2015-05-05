@@ -10,8 +10,8 @@
 
 namespace Microsoft.PowerShell.PackageManagement.Resources {
     using System;
-
-
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -23,15 +23,15 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Messages {
-
+        
         private static global::System.Resources.ResourceManager resourceMan;
-
+        
         private static global::System.Globalization.CultureInfo resourceCulture;
-
+        
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Messages() {
         }
-
+        
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -45,7 +45,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return resourceMan;
             }
         }
-
+        
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
@@ -59,7 +59,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 resourceCulture = value;
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Install Package.
         /// </summary>
@@ -68,7 +68,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("ActionInstallPackage", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Register Package Source.
         /// </summary>
@@ -77,7 +77,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("ActionRegisterPackageSource", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Replace Package Source.
         /// </summary>
@@ -86,7 +86,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("ActionReplacePackageSource", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Uninstall Package.
         /// </summary>
@@ -95,7 +95,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("ActionUninstallPackage", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Unregister Package Source.
         /// </summary>
@@ -104,7 +104,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("ActionUnregisterPackageSource", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; may be manually downloaded from &apos;{1}&apos; and copied to &apos;{2}&apos;..
         /// </summary>
@@ -113,7 +113,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("BootstrapManualAssembly", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to {0} may be manually downloaded from {1} and installed..
         /// </summary>
@@ -122,7 +122,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("BootstrapManualInstall", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to {0}
         ///{1}.
@@ -132,7 +132,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("BootstrapProvider", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to The provider &apos;{0}&apos; requires provider &apos;{1} v{2}&apos; to continue..
         /// </summary>
@@ -141,7 +141,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("BootstrapProviderProviderRequested", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to The provider &apos;{0} v{1}&apos; is not installed..
         /// </summary>
@@ -150,7 +150,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("BootstrapProviderUserRequested", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; contains an installation script.
         /// </summary>
@@ -159,7 +159,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("CaptionPackageContainsInstallationScript", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; contains an uninstallation script.
         /// </summary>
@@ -168,7 +168,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("CaptionPackageContainsUninstallationScript", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; failed to install..
         /// </summary>
@@ -177,7 +177,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("CaptionPackageInstallFailure", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to The package &apos;{0}&apos; comes from a package source that is not marked as trusted..
         /// </summary>
@@ -186,7 +186,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("CaptionPackageNotTrusted", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; failed to uninstall..
         /// </summary>
@@ -195,7 +195,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("CaptionPackageUninstallFailure", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to The package(s) come from a package source that is not marked as trusted..
         /// </summary>
@@ -204,7 +204,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("CaptionSourceNotTrusted", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Saving a packge requires either a -DestinationPath or -LiteralPath parameter.
         /// </summary>
@@ -213,7 +213,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("DestinationOrLiteralPathRequired", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to The desintation path  &apos;{0}&apos; for package &apos;{1}&apos; is invalid..
         /// </summary>
@@ -222,7 +222,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("DestinationPathInvalid", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Unable to install, multiple packages matched &apos;{0}&apos;. {1}.
         /// </summary>
@@ -231,7 +231,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("DisambiguateForInstall", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Unable to uninstall, multiple packages matched &apos;{0}&apos;..
         /// </summary>
@@ -240,7 +240,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("DisambiguateForUninstall", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to File &apos;{0}&apos; is not recognized as a valid package..
         /// </summary>
@@ -249,7 +249,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("FileNotRecognized", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to The path &apos;{0}&apos; must refer to a single file system path..
         /// </summary>
@@ -258,7 +258,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("FilePathMustBeFileSystemPath", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; failed to install..
         /// </summary>
@@ -267,7 +267,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("InstallationFailure", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; matched package &apos;{2}/{3}&apos; from provider: &apos;{1}&apos;, source &apos;{4}&apos;.
         /// </summary>
@@ -276,7 +276,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("MatchesMultiplePackages", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Specified ProviderName parameter matches multiple providers: {0}.
         /// </summary>
@@ -285,7 +285,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("MatchesMultipleProviders", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Install-Package requires parameters to select a package to install..
         /// </summary>
@@ -294,7 +294,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("MustSpecifyCriteria", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Either -Name or -Location must be specified to select a package source..
         /// </summary>
@@ -303,7 +303,16 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("NameOrLocationRequired", resourceCulture);
             }
         }
-
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Network connectivity may not be available, unable to reach remote sources..
+        /// </summary>
+        internal static string NetworkNotAvailable {
+            get {
+                return ResourceManager.GetString("NetworkNotAvailable", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to No package found matching &apos;{0}&apos; ..
         /// </summary>
@@ -312,7 +321,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("NoMatchesForWildcard", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to No combination of providers ({0}) match sources specified ({1}).
         /// </summary>
@@ -321,7 +330,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("NoMatchForProvidersAndSources", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to No package found for  &apos;{0}&apos;..
         /// </summary>
@@ -330,7 +339,16 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("NoMatchFound", resourceCulture);
             }
         }
-
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No match was found for the specified search criteria and package name &apos;{0}&apos;..
+        /// </summary>
+        internal static string NoMatchFoundForCriteria {
+            get {
+                return ResourceManager.GetString("NoMatchFoundForCriteria", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to The package provider &apos;{0}&apos; did not return any packages..
         /// </summary>
@@ -339,7 +357,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("NoPackagesFoundForProvider", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Not Implemented..
         /// </summary>
@@ -348,7 +366,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("NotImplemmented", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Overwriting package source &apos;{0}&apos;..
         /// </summary>
@@ -357,7 +375,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("OverwritingPackageSource", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Package file &apos;{0}&apos; exists. Remove the file first or use -Force to overwrite.
         /// </summary>
@@ -366,7 +384,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("PackageFileExists", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; from package provider &apos;{1}&apos; requires the &apos;{2}&apos; parameter to install..
         /// </summary>
@@ -375,7 +393,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("PackageInstallRequiresOption", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Package Source &apos;{0}&apos; exists..
         /// </summary>
@@ -384,7 +402,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("PackageSourceExists", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Unable to download the list of available providers. Check your internet connection..
         /// </summary>
@@ -393,7 +411,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("ProviderSwidtagUnavailable", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Would you like PackageManagement to automatically download and install &apos;{0}&apos; now?.
         /// </summary>
@@ -402,7 +420,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("QueryBootstrap", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Do you wish to continue installing packages?.
         /// </summary>
@@ -411,7 +429,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("QueryContinueInstallingAfterFailing", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Do you wish to continue uninstalling packages?.
         /// </summary>
@@ -420,7 +438,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("QueryContinueUninstallingAfterFailing", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Are you sure you want to install software from &apos;{1}&apos;?.
         /// </summary>
@@ -429,7 +447,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("QueryInstallUntrustedPackage", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Should the package install script at &apos;{0}&apos; be processed?.
         /// </summary>
@@ -438,7 +456,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("QueryShouldThePackageScriptAtBeProcessed", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Should the package uninstall script at &apos;{0}&apos; be processed?.
         /// </summary>
@@ -447,7 +465,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("QueryShouldThePackageUninstallScriptAtBeProcessed", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Save Package.
         /// </summary>
@@ -456,7 +474,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("SavePackage", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Error running Save-Package cmdlet: {0}.
         /// </summary>
@@ -465,7 +483,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("SavePackageError", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to ??? not used ???.
         /// </summary>
@@ -474,7 +492,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("ShouldContinueWithUntrustedPackageSource", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Skipping package provider provider &apos;{0}&apos;-- missing required option &apos;{1}&apos;.
         /// </summary>
@@ -483,7 +501,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("SkippedProviderMissingRequiredOption", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to The package source &apos;{0}&apos; was found in multiple providers ({1})..
         /// </summary>
@@ -492,7 +510,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("SourceFoundInMultipleProviders", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Unable to find package source &apos;{0}&apos;. Use Get-PackageSource to see all available package sources..
         /// </summary>
@@ -501,7 +519,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("SourceNotFound", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Unable to find package source for location &apos;{0}&apos;..
         /// </summary>
@@ -510,7 +528,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("SourceNotFoundForLocation", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Unable to find package source for name &apos;{0}&apos; location &apos;{1}&apos;..
         /// </summary>
@@ -528,16 +546,16 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("SourceNotFoundNoCriteria", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; v&apos;{1}&apos; from &apos;{2}&apos;.
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; version &apos;{1}&apos; from &apos;{2}&apos;.
         /// </summary>
         internal static string TargetPackage {
             get {
                 return ResourceManager.GetString("TargetPackage", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Package Source &apos;{0}&apos; ({1}) in provider &apos;{2}&apos;.
         /// </summary>
@@ -546,7 +564,16 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("TargetPackageSource", resourceCulture);
             }
         }
-
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; with version &apos;{1}&apos;.
+        /// </summary>
+        internal static string TargetPackageVersion {
+            get {
+                return ResourceManager.GetString("TargetPackageVersion", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to Unable to find dependent package(s) ({0}).
         /// </summary>
@@ -555,7 +582,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("UnableToFindDependencyPackage", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Unable to find package provider for package source &apos;{0}&apos;..
         /// </summary>
@@ -564,7 +591,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("UnableToFindProviderForSource", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Unable to remove package file &apos;{0}&apos;. .
         /// </summary>
@@ -573,7 +600,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("UnableToOverwrite", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Package {0} failed to uninstall..
         /// </summary>
@@ -582,7 +609,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("UninstallationFailure", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Unable to find package provider &apos;{0}&apos;..
         /// </summary>
@@ -591,7 +618,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("UnknownProvider", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Unable to find package providers ({0})..
         /// </summary>
@@ -600,7 +627,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
                 return ResourceManager.GetString("UnknownProviders", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to User declined to install untrusted package ({0})..
         /// </summary>

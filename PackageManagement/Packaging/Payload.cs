@@ -33,13 +33,13 @@ namespace Microsoft.PackageManagement.Packaging {
     public class Payload : ResourceCollection {
         internal Payload(XElement element)
             : base(element) {
-            if (element.Name != Iso19770_2.Payload) {
+            if (element.Name != Iso19770_2.Elements.Payload) {
                 throw new ArgumentException("Element is not of type 'Payload'", "element");
             }
         }
 
         internal Payload()
-            : base(new XElement(Iso19770_2.Payload)) {
+            : base(new XElement(Iso19770_2.Elements.Payload)) {
         }
     }
 }

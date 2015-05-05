@@ -22,13 +22,13 @@ namespace Microsoft.PackageManagement.Packaging {
     public class File : FilesystemItem {
         internal File(XElement element)
             : base(element) {
-            if (element.Name != Iso19770_2.File) {
+            if (element.Name != Iso19770_2.Elements.File) {
                 throw new ArgumentException("Element is not of type 'File'", "element");
             }
         }
 
         internal File(string filename)
-            : base(new XElement(Iso19770_2.File)) {
+            : base(new XElement(Iso19770_2.Elements.File)) {
             Name = filename;
         }
 
@@ -38,7 +38,7 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public long? Size {
             get {
-                var sz = GetAttribute(Iso19770_2.SizeAttribute);
+                var sz = GetAttribute(Iso19770_2.Attributes.Size);
                 if (sz != null) {
                     long result;
                     if (Int64.TryParse(sz, out result)) {
@@ -49,7 +49,7 @@ namespace Microsoft.PackageManagement.Packaging {
             }
             internal set {
                 if (value != null) {
-                    AddAttribute(Iso19770_2.SizeAttribute, value.ToString());
+                    AddAttribute(Iso19770_2.Attributes.Size, value.ToString());
                 }
             }
         }
@@ -60,10 +60,10 @@ namespace Microsoft.PackageManagement.Packaging {
         /// </summary>
         public string Version {
             get {
-                return GetAttribute(Iso19770_2.VersionAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Version);
             }
             internal set {
-                AddAttribute(Iso19770_2.VersionAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Version, value);
             }
         }
     }

@@ -27,13 +27,13 @@ namespace Microsoft.PackageManagement.Packaging {
     public class Resource : Meta {
         internal Resource(XElement element)
             : base(element) {
-            if (element.Name != Iso19770_2.Resource) {
+            if (element.Name != Iso19770_2.Elements.Resource) {
                 throw new ArgumentException("Element is not of type 'Resource'", "element");
             }
         }
 
         internal Resource(string type)
-            : base(new XElement(Iso19770_2.Resource)) {
+            : base(new XElement(Iso19770_2.Elements.Resource)) {
             Type = type;
         }
 
@@ -45,10 +45,10 @@ namespace Microsoft.PackageManagement.Packaging {
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethod", Justification = "ISO field name.")]
         public string Type {
             get {
-                return GetAttribute(Iso19770_2.TypeAttribute);
+                return GetAttribute(Iso19770_2.Attributes.Type);
             }
             internal set {
-                AddAttribute(Iso19770_2.TypeAttribute, value);
+                AddAttribute(Iso19770_2.Attributes.Type, value);
             }
         }
     }

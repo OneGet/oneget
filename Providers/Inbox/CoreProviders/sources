@@ -57,8 +57,11 @@ REFERENCES=\
 #region sourcefiles
 SOURCES=\
  	ProgramsProvider.cs \
- 	BootstrapProvider.cs \
- 	BootstrapRequest.cs \
+ 	Bootstrap\BootstrapProvider.cs \
+ 	Bootstrap\BootstrapRequest.cs \
+        Bootstrap\Feed.cs \
+        Bootstrap\Package.cs \
+        Bootstrap\Swid.cs \
  	WebDownloader.cs \
 	$(GENERATED_RESOURCES_SOURCE)
 

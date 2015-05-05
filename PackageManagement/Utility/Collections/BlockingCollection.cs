@@ -116,7 +116,7 @@ namespace Microsoft.PackageManagement.Utility.Collections {
                     yield return item;
                 }
                 else {
-                    _activity.Wait(cancellationToken);
+                    _activity.Wait(10,cancellationToken);
                     //cancellationToken.WaitHandle.WaitOne(10);
                 }
             }

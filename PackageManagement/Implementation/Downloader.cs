@@ -16,7 +16,6 @@ namespace Microsoft.PackageManagement.Implementation {
     using System;
     using Api;
     using Providers;
-    using Utility.Async;
 
     internal class Downloader : ProviderBase<IDownloader> {
         private string _name;
@@ -31,8 +30,8 @@ namespace Microsoft.PackageManagement.Implementation {
             }
         }
 
-        public void DownloadFile(Uri remoteLocation, string localFilename, IHostApi requestObject) {
-            new ActionRequestObject(this, requestObject, request => Provider.DownloadFile(remoteLocation, localFilename, request)).Wait();
+        public string DownloadFile(Uri remoteLocation, string localFilename, int timeoutMilliseconds, bool showProgress, IHostApi requestObject) {
+            return new FuncRequestObject<string>(this, requestObject, request => Provider.DownloadFile(remoteLocation, localFilename,timeoutMilliseconds,showProgress, request)).Value;
         }
     }
 }

@@ -53,7 +53,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
         protected bool WaitForActivity<T>(IEnumerable<IAsyncEnumerable<T>> enumerables) {
-            var handles = enumerables.Select(each => each.Ready).ConcatSingleItem(_cancellationEvent.Token.WaitHandle).ToArray();
+            var handles = enumerables.Select(each => each.Ready).ConcatSingleItem(CancellationEvent.Token.WaitHandle).ToArray();
             if (handles.Length > 1) {
                 WaitHandle.WaitAny(handles);
                 return !IsCanceled;

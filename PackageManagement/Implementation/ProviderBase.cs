@@ -67,6 +67,8 @@ namespace Microsoft.PackageManagement.Implementation {
             }
         }
 
+        public string ProviderPath {get; internal set;}
+
         public IEnumerable<string> SupportedFileExtensions {
             get {
                 return (_supportedFileExtensions ?? (_supportedFileExtensions = Features.ContainsKey(Constants.Features.SupportedExtensions) ? Features[Constants.Features.SupportedExtensions].ToArray() : Constants.Empty));
@@ -108,7 +110,7 @@ namespace Microsoft.PackageManagement.Implementation {
 
         public virtual bool IsSupportedFileName(string filename) {
             try {
-                var extension = Path.GetExtension(filename);
+                var extension = System.IO.Path.GetExtension(filename);
                 if (!string.IsNullOrWhiteSpace(extension)) {
                     return SupportedFileExtensions.ContainsIgnoreCase(extension);
                 }
