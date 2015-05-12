@@ -56,6 +56,31 @@ function Write-Error {
 	$request.Warning($Message);
 }
 
+function Start-Progress {
+	param( 
+		[Parameter()][int] $ParentActivityId = 0 ,
+		[Parameter()][string] $Message =""
+	)
+	return $request.StartProgress( $ParentActivityId , $Message);
+}
+
+function Complete-Progress {
+	param( 
+		[Parameter(Mandatory=$true)][int] $ActivityId,
+		[Parameter()][bool] $isSuccessful = $true
+	)
+	return $request.CompleteProgress($ActivityId, $isSuccessful);
+}
+
+function Write-Progress { 
+	param( 
+		[Parameter(Mandatory=$true)][string] $Activity,
+		[Parameter(Mandatory=$true)][int] $Id,
+		[Parameter(Mandatory=$true)][int] $PercentComplete
+	)
+	return $request.Progress($Id,$PercentComplete, $Activity);
+}
+
 <#
 	Overrides the default Write-Verbose so that the output gets routed back thru the
 	$request.Verbose() function

@@ -230,11 +230,12 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         foreach (var perQuery in perProvider.GroupBy(each => each.query)) {
                             if (perQuery.All(each => each.packages.IsCompleted && !each.packages.IsConsumed)) {
                                 foreach (var pkg in from p in perQuery.SelectMany(each => each.packages.GetConsumingEnumerable())
-                                    group p by p.Name
+                                                    group p by new { p.Name, p.Source }
                                     // for a given name
                                     into grouping
                                         // get the latest version only
-                                    select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()) {
+                                                    select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First())
+                                {
                                     ProcessPackage(perProvider.Key, perQuery.Key, pkg);
                                 }
                             }
