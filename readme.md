@@ -43,20 +43,6 @@ check out the source code
 # get the submodules for this branch
 > git submodule update --init
 
-# fix the detached HEADs
-> cd providers\dynamic\NuGetProvider 
-> git checkout master
-> cd ..
-> cd providers\dynamic\Apps 
-> git checkout master
-> cd ..
-> cd providers\dynamic\Apps\swidtag
-> git checkout master
-> cd ..
-> cd providers\sdk\ProviderSdk
-> git checkout master
-> cd ..
-
 # BUILD using Visual Studio, or from the command line:
 
 > msbuild PackageManagement.sln /p:Configuration=Release "/p:Platform=Any CPU"
