@@ -117,6 +117,9 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string FileNotRecognized = "MSG:FileNotRecognized";
             internal const string FilePathMustBeFileSystemPath = "MSG:FilePathMustBeFileSystemPath";
             internal const string InstallationFailure = "MSG:InstallationFailure";
+            internal const string InstalledPackageMultiple = "MSG:InstalledPackageMultiple";
+            internal const string InstallingPackageMultiple = "MSG:InstallingPackageMultiple";
+            internal const string InstallingPackagesCount = "MSG:InstallingPackagesCount";
             internal const string MatchesMultiplePackages = "MSG:MatchesMultiplePackages";
             internal const string MatchesMultipleProviders = "MSG:MatchesMultipleProviders";
             internal const string MustSpecifyCriteria = "MSG:MustSpecifyCriteria";
@@ -138,6 +141,8 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string SavePackage = "MSG:SavePackage";
             internal const string SavePackageError = "MSG:SavePackageError";
             internal const string ShouldContinueWithUntrustedPackageSource = "MSG:ShouldContinueWithUntrustedPackageSource";
+            internal const string SkippedInstalledPackage = "MSG:SkippedInstalledPackage";
+            internal const string SkippedInstalledPackageMultiple = "MSG:SkippedInstalledPackageMultiple";
             internal const string SkippedProviderMissingRequiredOption = "MSG:SkippedProviderMissingRequiredOption";
             internal const string SourceFoundInMultipleProviders = "MSG:SourceFoundInMultipleProviders";
             internal const string SourceNotFound = "MSG:SourceNotFound";

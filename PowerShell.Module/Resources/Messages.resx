@@ -253,7 +253,7 @@
     <comment>{0} provider name {1} provider version</comment>
   </data>
   <data name="QueryBootstrap" xml:space="preserve">
-    <value>Would you like OneGet to automatically download and install '{0}' now?</value>
+    <value>Would you like PackageManagement to automatically download and install '{0}' now?</value>
     <comment>{0} -provider name</comment>
   </data>
   <data name="TargetPackage" xml:space="preserve">
@@ -310,7 +310,7 @@
     <comment>{0} - package source name</comment>
   </data>
   <data name="DestinationOrLiteralPathRequired" xml:space="preserve">
-    <value>Saving a packge requires either a -DestinationPath or -LiteralPath parameter</value>
+    <value>Saving a packge requires either a -Path or -LiteralPath parameter</value>
   </data>
   <data name="MatchesMultipleProviders" xml:space="preserve">
     <value>Specified ProviderName parameter matches multiple providers: {0}</value>
@@ -373,5 +373,22 @@
   </data>
   <data name="NetworkNotAvailable" xml:space="preserve">
     <value>Network connectivity may not be available, unable to reach remote sources.</value>
+  </data>
+  <data name="InstalledPackageMultiple" xml:space="preserve">
+    <value>Installed Package '{0}' ({1} of {2}).</value>
+  </data>
+  <data name="InstallingPackageMultiple" xml:space="preserve">
+    <value>Installing Package '{0}' ({1} of {2}).</value>
+  </data>
+  <data name="InstallingPackagesCount" xml:space="preserve">
+    <value>Installing {0} packages.</value>
+    <comment>package count</comment>
+  </data>
+  <data name="SkippedInstalledPackage" xml:space="preserve">
+    <value>Skipping installed package {0} {1}.</value>
+    <comment>name, version</comment>
+  </data>
+  <data name="SkippedInstalledPackageMultiple" xml:space="preserve">
+    <value>Skipping Installed Package '{0}' ({1} of {2}).</value>
   </data>
 </root>
