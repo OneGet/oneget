@@ -94,9 +94,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     });
                 })).ToArray();
 
+            var potentialPackagesToProcess = new System.Collections.ObjectModel.Collection<SoftwareIdentity>();
             while (WaitForActivity(requests.Select(each => each.packages))) {
+                
                 // keep processing while any of the the queries is still going.
-
                 foreach (var result in requests.Where(each => each.packages.HasData)) {
                     // look only at requests that have data waiting.
 
@@ -108,15 +109,26 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                             // mark down that we found something for that query
                             _namesProcessed.AddOrSet(result.query, true);
-
-                            ProcessPackage(result.query, package);
+                            potentialPackagesToProcess.Add(package);
                         }
                     }
                 }
-
                 // just work with whatever is not yet consumed
                 requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
+            } // end of WaitForActivity()
+            
+            // post processing the potential packages as we have to display only
+            // 1 package per name (note multiple versions of the same package may be installed)
+            // In general, it is good practice to show only the latest one.
+            foreach (var potentialPackage in from p in potentialPackagesToProcess
+                                             group p by p.Name
+                                             into grouping
+                                             select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()
+                                             )
+            {
+                ProcessPackage(potentialPackage.CanonicalId, potentialPackage);
             }
+
             return true;
         }
 

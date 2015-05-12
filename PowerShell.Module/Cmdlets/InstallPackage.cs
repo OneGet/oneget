@@ -178,13 +178,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             var progressId = 0;
 
             if (packagesToInstall.Length > 1) {
-                progressId = StartProgress(0, "Installing {0} packages", packagesToInstall.Length);
+                progressId = StartProgress(0, Constants.Messages.InstallingPackagesCount, packagesToInstall.Length);
             }
             var n = 0;
 
             foreach (var pkg in packagesToInstall) {
                 if (packagesToInstall.Length > 1) {
-                    Progress(progressId, (n*100/packagesToInstall.Length) + 1, "Installing Package '{0}' ({1} of {2})", pkg.Name, ++n, packagesToInstall.Length);
+                    Progress(progressId, (n*100/packagesToInstall.Length) + 1, Constants.Messages.InstallingPackageMultiple, pkg.Name, ++n, packagesToInstall.Length);
                 }
                 var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
                 if (provider == null) {
@@ -204,10 +204,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     if (installedPkgs.Any(each => each.Name.EqualsIgnoreCase(pkg.Name) && each.Version.EqualsIgnoreCase(pkg.Version))) {
                         // it looks like it's already installed.
                         // skip it.
-                        Verbose("Skipping installed package {0} {1}", pkg.Name, pkg.Version);
+                        Verbose(Constants.Messages.SkippedInstalledPackage, pkg.Name, pkg.Version);
 
                         if (packagesToInstall.Length > 1) {
-                            Progress(progressId, (n*100/packagesToInstall.Length) + 1, "Skipping Installed Package '{0}' ({1} of {2})", pkg.Name, n, packagesToInstall.Length);
+                            Progress(progressId, (n*100/packagesToInstall.Length) + 1, Constants.Messages.SkippedInstalledPackageMultiple, pkg.Name, n, packagesToInstall.Length);
                         }
                         continue;
                     }
@@ -236,7 +236,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     return false;
                 }
                 if (packagesToInstall.Length > 1) {
-                    Progress(progressId, (n*100/packagesToInstall.Length) + 1, "Installed Package '{0}' ({1} of {2})", pkg.Name, n, packagesToInstall.Length);
+                    Progress(progressId, (n*100/packagesToInstall.Length) + 1, Constants.Messages.InstalledPackageMultiple, pkg.Name, n, packagesToInstall.Length);
                 }
             }
 
