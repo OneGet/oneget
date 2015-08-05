@@ -79,7 +79,7 @@ There are currently three branches in the git repository:
 
 ## Contributing to OneGet
 
-Contributions to the OneGet project will require the signing of a CLA -- contact @fearthecowboy for details...
+Contributions to the OneGet project will require the signing of a CLA -- contact [@fearthecowboy][1] for details...
 
 In the immediate time frame, we won't be taking pull requests to the core itself, as we still have many masters at Microsoft to keep happy, and I have a lot of release process stuff I have to go thru to make them happy. 
 
@@ -125,6 +125,8 @@ And *yes*, we're going to work with the Chocolatey project to have one single ch
 
 | Branch | Purpose |
 | ------- | ---------------------------|
-|@fearthecowboy|  Architect, Lead Developer, and gunslinger coalesced into human form. I'm a code-first, consequences-be-damned, software developer who likes feedback, and hates to over-engineer anything. If it sounds like too much pie-in-the-sky design, I'm probably not paying much attention. |
+|[@fearthecowboy][1]|  Architect, Lead Developer, and gunslinger coalesced into human form. I'm a code-first, consequences-be-damned, software developer who likes feedback, and hates to over-engineer anything. If it sounds like too much pie-in-the-sky design, I'm probably not paying much attention. |
 |@xumins|  Our new five-star Program Manager. Xumin is the sheriff, she keeps the law. If there are rules that we need to play by, Xumin make us follow them.   |
 |@bherila|  If Xumin is the sheriff, then Ben is the US Marshal -- he's hunted down and removed more blocking issues than I can even count. He's taken us from nothing to where we are today. If we want to connect with some group inside Microsoft, Ben knows who to talk to and who to have put down.  |
+
+[1]: https://github.com/fearthecowboy
