@@ -4,16 +4,17 @@
 
 ### Get Started!
 
-Download the latest 'experimental' release [here](http://oneget.org/install-oneget.exe) -- you can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notified of every new build.
+OneGet is shipped inside PowerShell in Win10 Client RTM! For downlevel OS, OneGet is included in WMF 5.0. Download the latest 'official' release [here](http://www.microsoft.com/en-us/download/details.aspx?id=48729) -- currently it's in the WMF 5.0 Production Preview (WMF 5.0 is where you get PowerShell 5.0 for donwn level OS!). 
 
-Download the latest 'official' release [here](https://www.microsoft.com/en-us/download/details.aspx?id=46889) -- currently it's in the WMF 5.0 CTP (WMF is where you get PowerShell!). This build does not currently contain the Chocolatey Provider.
+You can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notified of every new build.
+
 
 * Learn how to [use the powershell cmdlets](https://github.com/OneGet/oneget/wiki/cmdlets) 
 * Read our [General Q and A](https://github.com/OneGet/oneget/wiki/Q-and-A)
 * Learn about the [8 Laws of Software Installation](https://github.com/OneGet/oneget/wiki/8-Laws-of-Software-Installation)
 * See the [documentation](https://github.com/OneGet/oneget/wiki) tab for more info.
 
-OneGet should be shipping inside future versions of PowerShell, and by extension, would ship in future versions of Windows.
+
 
 
 ## Building the code
@@ -127,4 +128,3 @@ And *yes*, we're going to work with the Chocolatey project to have one single ch
 | ------- | ---------------------------|
 |@fearthecowboy|  Architect, Lead Developer, and gunslinger coalesced into human form. I'm a code-first, consequences-be-damned, software developer who likes feedback, and hates to over-engineer anything. If it sounds like too much pie-in-the-sky design, I'm probably not paying much attention. |
 |@xumins|  Our new five-star Program Manager. Xumin is the sheriff, she keeps the law. If there are rules that we need to play by, Xumin make us follow them.   |
-|@bherila|  If Xumin is the sheriff, then Ben is the US Marshal -- he's hunted down and removed more blocking issues than I can even count. He's taken us from nothing to where we are today. If we want to connect with some group inside Microsoft, Ben knows who to talk to and who to have put down.  |
