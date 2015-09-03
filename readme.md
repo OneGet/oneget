@@ -4,7 +4,7 @@
 
 ### Get Started!
 
-OneGet is shipped inside PowerShell in Win10 Client RTM! For downlevel OS, OneGet is included in WMF 5.0. Download the latest 'official' release [here](http://www.microsoft.com/en-us/download/details.aspx?id=48729) -- currently it's in the WMF 5.0 Production Preview (WMF 5.0 is where you get PowerShell 5.0 for donwn level OS!). 
+OneGet is shipped inside PowerShell in Win10 Client RTM! For downlevel OS, OneGet is included in WMF 5.0. Download the latest official release [here](http://www.microsoft.com/en-us/download/details.aspx?id=48729) -- currently it's in the WMF 5.0 Production Preview.
 
 You can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notified of every new build.
 
