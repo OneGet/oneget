@@ -97,9 +97,9 @@ There are some exceptions to the where I can take Pull Requests immediately:
 
 I'm eager to work with anyone who wants to help shape the future of Package Management on Windows -- your opinions, feedback and code can help everyone. 
 
-### Weekly Online Meeeting 
+### Online Meeeting 
 
-We have an online weekly meeting Friday mornings @ 10:00PDT [via Lync](http://oneget.org/weekly/meeting.html)* (everyone welcome!)
+We have an online monthly meeting at the beginning of each month on Tuesday from 10am - 11am (PST). Each month may have slight shift of either the first week or the second week.  We will twitter the exact time as well as put a note on GitHub site.  (everyone welcome!)
 
 You can see archives of the previous meetings available on [YouTube](https://www.youtube.com/playlist?list=PLeKWr5Ekac1SEEvHqIh3g051OyioFwOXN&feature=c4-feed-u)
 
@@ -117,7 +117,6 @@ With OneGet, you can
 
 We'll also be publishing standalone builds, once the source code is published.
 
-And *yes*, we're going to work with the Chocolatey project to have one single chocolatey plugin that meets everyone's needs : [see Rob's post](https://groups.google.com/forum/#!topic/chocolatey/a8WdEoF-M58)
 
 [Follow us on Twitter](https://twitter.com/PSOneGet)
 
@@ -127,4 +126,7 @@ And *yes*, we're going to work with the Chocolatey project to have one single ch
 | Branch | Purpose |
 | ------- | ---------------------------|
 |@fearthecowboy|  Architect, Lead Developer, and gunslinger coalesced into human form. I'm a code-first, consequences-be-damned, software developer who likes feedback, and hates to over-engineer anything. If it sounds like too much pie-in-the-sky design, I'm probably not paying much attention. |
-|@xumins|  Our new five-star Program Manager. Xumin is the sheriff, she keeps the law. If there are rules that we need to play by, Xumin make us follow them.   |
+|@Xumin|  Our new five-star Program Manager. Xumin is the sheriff, she keeps the law. If there are rules that we need to play by, Xumin make us follow them.   |
+|@Jianyun|  New engineer owner on OneGet. |
+|@Krishna|  Our Developer manager on OneGet, also owner for PowerShell Gallery.   |
+|@Quoc|  Our newest and freshest engineer.   |
