@@ -125,8 +125,8 @@ We'll also be publishing standalone builds, once the source code is published.
 
 | Branch | Purpose |
 | ------- | ---------------------------|
-|@fearthecowboy|  Architect, Lead Developer, and gunslinger coalesced into human form. I'm a code-first, consequences-be-damned, software developer who likes feedback, and hates to over-engineer anything. If it sounds like too much pie-in-the-sky design, I'm probably not paying much attention. |
-|@Xumin|  Our new five-star Program Manager. Xumin is the sheriff, she keeps the law. If there are rules that we need to play by, Xumin make us follow them.   |
+|@fearthecowboy|  Godfather of OneGet project, has moved on to some other exciting project. But will always stand by with OneGet to give us supports. |
+|@Xumin|  Program Manager on OneGet. Xumin is the sheriff, trying to keep the law. If there are rules that we need to play by, Xumin make us follow them.   |
 |@Jianyun|  New engineer owner on OneGet. |
-|@Krishna|  Our Developer manager on OneGet, also owner for PowerShell Gallery.   |
+|@Krishna|  Our engineer manager on OneGet, also owner for PowerShell Gallery.   |
 |@Quoc|  Our newest and freshest engineer.   |
