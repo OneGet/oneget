@@ -3,7 +3,7 @@
 <hr><hr>
 
 ### News Panel
-_9/8/2015_ (Please [twitter](http://twitter.com/PSOneGet) us to vote on the design proposal) Unify NuGet provider name as 'NuGet', use 'Version' field to distinguish different implementations, i.e. nuget-anycpu.exe that wraps around the original Version 2 nuget.exe, or OneGet team's own implementation of NuGet v2 client that was called NuGetLight provider, with NuGetLIght at higher version than nuget-anycpu.  In this approach, it will hide the detailed implementation of NuGet client and present the same provider name, so that providers or automated scripts relying on NuGet provider will not need to change their code. For users who want to choose a specific implementation it is still available by specifying the Version. By default, NuGetLight will be choose to be bootstrapped as it has higher version than nuget-anycpu. 
+_9/8/2015_ (Please [twitter](http://twitter.com/PSOneGet) us to vote on the design proposal) Unify NuGet provider name as 'NuGet', use 'Version' field to distinguish different implementations, i.e. nuget-anycpu.exe that wraps around the original Version 2 nuget.exe, or OneGet team's own implementation of NuGet v2 client that was called NuGetLight provider, with NuGetLIght at higher version than nuget-anycpu.  In this approach, it will hide the detailed implementation of NuGet client and present the same provider name, so that providers or automated scripts relying on NuGet provider will not need to change their code. For users who want to choose a specific implementation it is still available by specifying the Version. By default, NuGetLight will be bootstrapped as it has higher version than nuget-anycpu. 
 
 ### Get Started!
 
