@@ -2,6 +2,9 @@
 # OneGet
 <hr><hr>
 
+### News Panel
+9/8/2015 (Please twitter us to vote on the design proposal) Unify NuGet provider name as 'NuGet', use 'Version' field to distinguish different implementations, i.e. nuget-anycpu.exe that wraps around the original Version 2 nuget.exe, or OneGet team's own implementation of NuGet v2 client that was called NuGetLight provider. In this approach, it will hide the detailed implementation of NuGet client and present the same provider name, so that providers or automated scripts relying on NuGet provider will not need to change their code. For users who want to choose a specific implementation it is still available by specifying the Version.
+
 ### Get Started!
 
 OneGet is shipped inside PowerShell in Win10 Client RTM! For downlevel OS, OneGet is included in WMF 5.0. Download the latest official release [here](http://www.microsoft.com/en-us/download/details.aspx?id=48729) -- currently it's in the WMF 5.0 Production Preview.
