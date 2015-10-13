@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Cab
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 {
     using System;
     using System.Collections.Generic;

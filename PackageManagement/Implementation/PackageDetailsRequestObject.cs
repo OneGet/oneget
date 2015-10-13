@@ -12,10 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Implementation {
+namespace Microsoft.PackageManagement.Internal.Implementation {
     using System;
     using Api;
-    using Packaging;
+    using PackageManagement.Packaging;
 
     public class PackageDetailsRequestObject : RequestObject {
         private SoftwareIdentity _softwareIdentity;

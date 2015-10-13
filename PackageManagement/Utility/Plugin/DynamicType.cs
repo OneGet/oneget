@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Plugin {
+namespace Microsoft.PackageManagement.Internal.Utility.Plugin {
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -28,8 +28,8 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
         private readonly TypeBuilder _dynamicType;
         private readonly HashSet<string> _implementedMethods = new HashSet<string>();
         private readonly List<FieldBuilder> _storageFields = new List<FieldBuilder>();
-#if DEEP_DEBUG
-          private AssemblyBuilder _dynamicAssembly;
+#if DEEP_DEBUG || CORECLR
+        private AssemblyBuilder _dynamicAssembly;
 #else
         private static AssemblyBuilder _dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("DynamicClasses"), AssemblyBuilderAccess.Run);
 #endif
@@ -45,7 +45,7 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
 
         internal static object Create(Type tInterface, OrderedDictionary<Type, List<MethodInfo, MethodInfo>> instanceMethods, List<Delegate, MethodInfo> delegateMethods, List<MethodInfo> stubMethods, List<Type, object> usedInstances) {
             // now we can calculate the key based on the content of the *Methods collections
-            var key = tInterface.Assembly.FullName + "::" + tInterface.Name + ":::" + instanceMethods.Keys.Select(each => each.Assembly.FullName + "." + each.FullName + "." + instanceMethods[each].Select(mi => mi.Value.ToSignatureString()).JoinWithComma()).JoinWith(";\r\n") +
+            var key = tInterface.GetTypeInfo().Assembly.FullName + "::" + tInterface.Name + ":::" + instanceMethods.Keys.Select(each => each.GetTypeInfo().Assembly.FullName + "." + each.FullName + "." + instanceMethods[each].Select(mi => mi.Value.ToSignatureString()).JoinWithComma()).JoinWith(";\r\n") +
                       "::" + delegateMethods.Select(each => each.GetType().FullName).JoinWith(";\r\n") +
                       "::" + stubMethods.Select(mi => mi.ToSignatureString()).JoinWithComma();
             // + "!->" + (onUnhandledExceptionMethod == null ? (onUnhandledExceptionDelegate == null ? "GenerateOnUnhandledException" : onUnhandledExceptionDelegate.ToString()) : onUnhandledExceptionMethod.ToSignatureString());
@@ -92,7 +92,7 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
             _dynamicType.GenerateIsMethodImplemented();
 
             // generate the constructor for the class.
-            DefineConstructor(interfaceType.IsInterface ? typeof (Object) : interfaceType);
+            DefineConstructor(interfaceType.GetTypeInfo().IsInterface ? typeof (Object) : interfaceType);
         }
 
         internal Type Type {
@@ -100,7 +100,11 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
                 lock (_proxyClassDefinitions) {
                     try {
                         if (_type == null) {
+#if !CORECLR
                             _type = _dynamicType.CreateType();
+#else
+                            _type = _dynamicType.CreateTypeInfo().AsType();
+#endif
 #if DEEP_DEBUG
                             _dynamicAssembly.Save(_filename);
 #endif
@@ -130,6 +134,10 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
             lock (_proxyClassDefinitions) {
                 _proxyName = "{0}_proxy_{1}".format(interfaceType.NiceName().MakeSafeFileName(), _typeCounter++);
             }
+#if CORECLR
+            _dynamicAssembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(_proxyName), AssemblyBuilderAccess.Run);
+#endif
+
 #if DEEP_DEBUG
              _fullpath = (_proxyName + ".dll").GenerateTemporaryFilename();
              _directory = Path.GetDirectoryName(_fullpath);
@@ -141,7 +149,7 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
 #endif
 
             // Define a runtime class with specified name and attributes.
-            if (interfaceType.IsInterface) {
+            if (interfaceType.GetTypeInfo().IsInterface) {
                 var dynamicType = dynamicModule.DefineType(_proxyName, TypeAttributes.Public, typeof (Object));
                 dynamicType.AddInterfaceImplementation(interfaceType);
                 return dynamicType;
@@ -161,7 +169,12 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
             var il = constructor.GetILGenerator();
 
             if (parentClassType != null) {
+#if !CORECLR
                 var basector = parentClassType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, new Type[0], null);
+#else
+                var constructors = parentClassType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                var basector = constructors.FirstOrDefault(cons => cons.GetParameters() == null || cons.GetParameters().Length == 0);
+#endif
                 if (basector != null) {
                     il.LoadArgument(0);
                     il.Call(basector);

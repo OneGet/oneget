@@ -12,8 +12,8 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Collections {
-    public enum PathCompareOption {
+namespace Microsoft.PackageManagement.Internal.Utility.Collections {
+    internal enum PathCompareOption {
         Full,
         File,
         FileWithoutExtension,

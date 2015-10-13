@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Zip
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
 {
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
@@ -190,6 +190,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
             this.source.Flush();
         }
 
+#if !CORECLR
         /// <summary>
         /// Closes the underlying stream.
         /// </summary>
@@ -197,6 +198,20 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
         {
             this.source.Close();
             base.Close();
+        }
+#endif
+
+        /// <summary>
+        /// Disposes underlying stream.
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.source.Dispose();
+                base.Dispose();
+            }
         }
 
         /// <summary>

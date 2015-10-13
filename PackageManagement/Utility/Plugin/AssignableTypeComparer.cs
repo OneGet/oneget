@@ -12,11 +12,13 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Plugin {
+namespace Microsoft.PackageManagement.Internal.Utility.Plugin {
     using System;
+    using System.Reflection;
     using System.Collections.Generic;
+    using Extensions;
 
-    public class AssignableTypeComparer : IEqualityComparer<Type> {
+    internal class AssignableTypeComparer : IEqualityComparer<Type> {
         public static readonly AssignableTypeComparer Instance = new AssignableTypeComparer();
 
         public bool Equals(Type x, Type y) {
@@ -32,8 +34,8 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
             if (x == null) {
                 return y == null;
             }
-            // adding support to see if we can duck-type the target type to the correct type.
-            return x == y || x.IsAssignableFrom(y) || x.CanDynamicCastFrom(y);
+
+            return x == y || x.GetTypeInfo().IsAssignableFrom(y.GetTypeInfo()) || x.CanDynamicCastFrom(y);
         }
     }
 }

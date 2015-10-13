@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections;
@@ -17,7 +17,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <summary>
     /// Accessor for information about features within the context of an installation session.
     /// </summary>
-    public sealed class FeatureInfoCollection : ICollection<FeatureInfo>
+    internal sealed class FeatureInfoCollection : ICollection<FeatureInfo>
     {
         private Session session;
 
@@ -31,6 +31,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// </summary>
         /// <param name="feature">name of the feature</param>
         /// <returns>feature object</returns>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public FeatureInfo this[string feature]
         {
             get
@@ -133,7 +134,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <summary>
     /// Provides access to information about a feature within the context of an installation session.
     /// </summary>
-    public class FeatureInfo
+    internal class FeatureInfo
     {
         private Session session;
         private string name;
@@ -164,6 +165,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msigetfeaturestate.asp">MsiGetFeatureState</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public InstallState CurrentState
         {
             get
@@ -204,6 +206,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msigetfeaturestate.asp">MsiGetFeatureState</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisetfeaturestate.asp">MsiSetFeatureState</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public InstallState RequestState
         {
             get
@@ -250,6 +253,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msigetfeaturevalidstates.asp">MsiGetFeatureValidStates</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public ICollection<InstallState> ValidStates
         {
             get
@@ -300,6 +304,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// does not contain an equivalent flag for <see cref="FeatureAttributes.UIDisallowAbsent"/>, the presence
         /// of this flag will be ignored.
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public FeatureAttributes Attributes
         {
             get
@@ -387,6 +392,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msigetfeatureinfo.asp">MsiGetFeatureInfo</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string Title
         {
             get
@@ -435,6 +441,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msigetfeatureinfo.asp">MsiGetFeatureInfo</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string Description
         {
             get
@@ -485,6 +492,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msigetfeaturecost.asp">MsiGetFeatureCost</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public long GetCost(bool includeParents, bool includeChildren, InstallState installState)
         {
             const int MSICOSTTREE_CHILDREN = 1;

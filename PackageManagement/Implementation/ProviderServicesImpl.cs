@@ -12,13 +12,13 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Implementation {
+namespace Microsoft.PackageManagement.Internal.Implementation {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
     using Api;
-    using Packaging;
+    using PackageManagement.Packaging;
     using Utility.Extensions;
     using Utility.Platform;
     using Utility.Plugin;
@@ -100,7 +100,7 @@ namespace Microsoft.PackageManagement.Implementation {
                     }
                 }
 
-                Error(request, ErrorCategory.NotImplemented, Constants.Messages.ProtocolNotSupported, remoteLocation.Scheme, Constants.Messages.ProtocolNotSupported, remoteLocation.Scheme);
+                Error(request, ErrorCategory.NotImplemented, remoteLocation.Scheme, Constants.Messages.ProtocolNotSupported, remoteLocation.Scheme);
             }
             return null;
         }

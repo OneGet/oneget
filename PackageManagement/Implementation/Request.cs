@@ -1,24 +1,24 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement.Implementation {
+namespace Microsoft.PackageManagement.Internal.Implementation {
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
     using System.Security;
-    using Api;
+    using Internal.Api;
 
     public abstract class Request : IRequest {
         #region core-apis
@@ -32,7 +32,7 @@ namespace Microsoft.PackageManagement.Implementation {
         #region copy host-apis
 
         /* Synced/Generated code =================================================== */
-        public abstract bool IsCanceled {get;}
+        public abstract bool IsCanceled { get; }
 
         public abstract string GetMessageString(string messageText, string defaultText);
 
@@ -66,9 +66,9 @@ namespace Microsoft.PackageManagement.Implementation {
 
         public abstract IEnumerable<string> Sources {get;}
 
-        public abstract string CredentialUsername {get;}
+        public abstract string CredentialUsername { get; }
 
-        public abstract SecureString CredentialPassword {get;}
+        public abstract SecureString CredentialPassword { get; }
 
         public abstract bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination);
 
@@ -148,6 +148,10 @@ namespace Microsoft.PackageManagement.Implementation {
         /// <returns></returns>
         public abstract bool YieldDynamicOption(string name, string expectedType, bool isRequired);
 
+        public bool YieldDynamicOption(string name, string expectedType, bool isRequired, IEnumerable<string> permittedValues) {
+            return YieldDynamicOption(name, expectedType, isRequired) && (permittedValues ?? Enumerable.Empty<string>()).All(each => YieldKeyValuePair(name, each));
+        }
+
         public abstract bool YieldKeyValuePair(string key, string value);
 
         public abstract bool YieldValue(string value);
@@ -162,7 +166,7 @@ namespace Microsoft.PackageManagement.Implementation {
         /// <param name="dictionary"></param>
         /// <returns></returns>
         public bool Yield(Dictionary<string, string[]> dictionary) {
-            if (dictionary != null) {
+            if( dictionary != null ) {
                 return dictionary.All(Yield);
             }
             return true;
@@ -223,9 +227,9 @@ namespace Microsoft.PackageManagement.Implementation {
                 return string.Empty;
             }
 
-            if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
+            if (messageText.IndexOf(Constants.MSGPrefix, StringComparison.CurrentCultureIgnoreCase) == 0) {
                 // check with the caller first, then with the local resources, and fallback to using the messageText itself.
-                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length), messageText) ?? messageText;
+                messageText = GetMessageString(messageText.Substring(Constants.MSGPrefix.Length),messageText) ?? messageText;
             }
 
             // if it doesn't look like we have the correct number of parameters

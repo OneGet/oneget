@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Zip
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
 {
     using System;
     using System.Collections.Generic;
@@ -214,8 +214,12 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
                 return false;
             }
 
+#if CORECLR
+            Encoding headerEncoding = Encoding.UTF8;
+#else
             Encoding headerEncoding = ((this.flags | ZipFileFlags.UTF8) != 0 ?
                 Encoding.UTF8 : Encoding.GetEncoding(CultureInfo.CurrentCulture.TextInfo.OEMCodePage));
+#endif
 
             byte[] fileNameBytes = reader.ReadBytes(fileNameLength);
             this.fileName = headerEncoding.GetString(fileNameBytes).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);

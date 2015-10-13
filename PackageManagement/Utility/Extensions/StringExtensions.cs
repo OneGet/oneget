@@ -12,8 +12,9 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Extensions {
+namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
     using System;
+    using System.Reflection;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
@@ -24,7 +25,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
     using System.Text.RegularExpressions;
     using Collections;
 
-    public static class StringExtensions {
+    internal static class StringExtensions {
         private static readonly char[] _wildcardCharacters = new[] {
             '*', '?'
         };
@@ -55,6 +56,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
             return default(TSource);
         }
 
+#if !CORECLR
         /// <summary>
         ///     encrypts the given collection of bytes with the user key and salt
         /// </summary>
@@ -106,7 +108,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
             }
 
             return ss;
-        }
+        }  
 
         public static string ToProtectedString(this SecureString secureString, string salt) {
             return Convert.ToBase64String(secureString.ToBytes().ProtectBinaryForUser(salt).ToArray());
@@ -136,6 +138,16 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
             } while (true);
 
             Marshal.ZeroFreeGlobalAllocUnicode(unmanagedString);
+        }
+
+#endif
+
+        public static Version ToVersion(this string versionInput) {
+            if (string.IsNullOrWhiteSpace(versionInput)) {
+                return null;
+            }
+            Version result;
+            return Version.TryParse(versionInput, out result) ? result : null;
         }
 
         public static bool ContainsIgnoreCase(this IEnumerable<string> collection, string value) {
@@ -177,6 +189,13 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
         /// </remarks>
         public static bool ContainsWildcards(this string input) {
             return input.IndexOfAny(_wildcardCharacters) > -1;
+        }
+
+        /// <summary>
+        ///     Determines whether the input string contains the specified substring
+        /// </summary>
+        public static bool ContainsIgnoreCase(this string source, string input) {
+            return source.IndexOf(input, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         public static bool IsWildcardMatch(this string input, string wildcardMask) {

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -351,6 +351,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private static uint MsiFunc_IS_II(RemoteMsiFunctionId id, int in1, string in2, out int out1, out int out2)
         {
             lock (RemotableNativeMethods.remotingDelegate)
@@ -635,6 +636,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal static uint MsiViewModify(int hView, int iModifyMode, int hRecord)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hView))
@@ -649,6 +651,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal static int MsiViewGetError(int hView, StringBuilder szColumnNameBuffer, ref uint cchBuf)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hView))
@@ -695,6 +698,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal static uint MsiRecordClearData(int hRecord)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hRecord))
@@ -796,6 +800,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal static uint MsiGetComponentState(int hInstall, string szComponent, out int iInstalled, out int iAction)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
@@ -811,6 +816,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal static uint MsiGetFeatureCost(int hInstall, string szFeature, int iCostTree, int iState, out int iCost)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
@@ -827,6 +833,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal static uint MsiGetFeatureState(int hInstall, string szFeature, out int iInstalled, out int iAction)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
@@ -842,6 +849,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal static uint MsiGetFeatureValidStates(int hInstall, string szFeature, out uint dwInstalledState)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
@@ -1026,6 +1034,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal static uint MsiSetComponentState(int hInstall, string szComponent, int iState)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
@@ -1040,6 +1049,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal static uint MsiSetFeatureAttributes(int hInstall, string szFeature, uint dwAttributes)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
@@ -1054,6 +1064,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal static uint MsiSetFeatureState(int hInstall, string szFeature, int iState)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))

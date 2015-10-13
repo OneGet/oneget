@@ -1,4 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -127,7 +128,7 @@
   </data>
   <data name="DestinationPathInvalid" xml:space="preserve">
     <value>The desintation path  '{0}' for package '{1}' is invalid.</value>
-    <comment>{0} - path 
+    <comment>{0} - path
 {1} - package name</comment>
   </data>
   <data name="DisambiguateForInstall" xml:space="preserve">
@@ -390,5 +391,81 @@
   </data>
   <data name="SkippedInstalledPackageMultiple" xml:space="preserve">
     <value>Skipping Installed Package '{0}' ({1} of {2}).</value>
+  </data>
+  <data name="VersionRangeAndRequiredVersionCannotBeSpecifiedTogether" xml:space="preserve">
+    <value>You cannot use the parameters RequiredVersion and either MinimumVersion or MaximumVersion in the same command.</value>
+  </data>
+  <data name="SpecifiedProviderMissingRequiredOption" xml:space="preserve">
+    <value>The action with the specified provider '{0}' is missing one or more required parameters: {1}.</value>
+    <comment>0 -provider name, 1- comma seperated list of required missing parameters</comment>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>Cannot find file '{0}'.</value>
+    <comment>{0} - file name or path.</comment>
+  </data>
+  <data name="MinimumVersionMustBeLessThanMaximumVersion" xml:space="preserve">
+    <value>The specified MinimumVersion '{0}' is greater than the specified MaximumVersion '{1}'</value>
+  </data>
+  <data name="MultipleNamesWithVersionNotAllowed" xml:space="preserve">
+    <value>The version parameter is allowed only when a single module name is specified as the value of the Name parameter, without any wildcard characters.</value>
+  </data>
+  <data name="RequiredWithMaxOrMinimumVersionNotAllowed" xml:space="preserve">
+    <value>You cannot use the RequiredVersion and either MinimumVersion or MaximumVersion in the same command. Specify only one of these parameters in your command.</value>
+  </data>
+  <data name="FullProviderFilePathVersionNotAllowed" xml:space="preserve">
+    <value>The version parameter is allowed only when a single provider name is specified as the value of the Name parameter, without any wildcard characters. The file path is not allowed with version parameter.</value>
+  </data>
+  <data name="UnknownProviderFromActivatedList" xml:space="preserve">
+    <value>Unable to find package provider '{0}'. It may not be imported yet. Try 'Get-PackageProvider -ListAvailable'.</value>
+    <comment>{0} - provider name</comment>
+  </data>
+  <data name="AllVersionsCannotBeUsedWithOtherVersionParameters" xml:space="preserve">
+    <value>You cannot use the parameter AllVersions with RequiredVersion, MinimumVersion or MaximumVersion in the same command.</value>
+  </data>
+  <data name="NoMatchFoundForProvider" xml:space="preserve">
+    <value>No match was found for the specified search criteria for the provider '{0}'. The package provider requires 'PackageManagement' and 'Provider' tags. Please check if the specified package has the tags.</value>
+    <comment>{0} - provider name</comment>
+  </data>
+  <data name="DisambiguateForInstall_SpecifyName" xml:space="preserve">
+    <value>Please specify an exact Name and RequiredVersion parameter.</value>
+  </data>
+  <data name="DisambiguateForInstall_SpecifySource" xml:space="preserve">
+    <value>Please see Get-PackageSource for all available registered sources and try again by specifying a single Source parameter.</value>
+  </data>
+  <data name="RegisterPackageSourceRequired" xml:space="preserve">
+    <value>Unable to find repository with SourceLocation '{0}'. Please use Get-PSRepository to see all available repositories.</value>
+    <comment>{1} package source</comment>
+  </data>
+  <data name="InvalidVersion" xml:space="preserve">
+    <value>The specified version '{0}' is invalid. Error: '{1}'.</value>
+    <comment>0 - version string, 1 - error message</comment>
+  </data>
+  <data name="SelectedProviders" xml:space="preserve">
+    <value>Using the provider '{0}' for searching packages.</value>
+    <comment>0 - provider name</comment>
+  </data>
+  <data name="ProviderFailToDownloadFile" xml:space="preserve">
+    <value>Unable to save the package '{0}'.</value>
+    <comment>0 - package name</comment>
+  </data>
+  <data name="FolderNotFound" xml:space="preserve">
+    <value>Folder '{0}' cannot be found</value>
+  </data>
+  <data name="WildCardCharsAreNotSupported" xml:space="preserve">
+    <value>The specified name '{0}' should not contain any wildcard characters, please correct it and try again.</value>
+    <comment>0 - packge or provider name</comment>
+  </data>
+  <data name="SuggestRequiredVersion" xml:space="preserve">
+    <value>Please specify an exact -Name and -RequiredVersion.</value>
+  </data>
+  <data name="SuggestSingleProviderName" xml:space="preserve">
+    <value>Please specify a single -ProviderName.</value>
+  </data>
+  <data name="SuggestSingleSource" xml:space="preserve">
+    <value>Please specify a single -Source.</value>
+  </data>
+  <data name="MethodNotImplemented" xml:space="preserve">
+    <value>Provider '{0}' does not implement '{1}'.</value>
+    <comment>0 - provider name. 1 - method name (such as save-package)</comment>
   </data>
 </root>

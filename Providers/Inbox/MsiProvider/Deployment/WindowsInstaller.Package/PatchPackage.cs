@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.Package
 {
     using System;
     using System.Collections;
@@ -16,7 +16,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
     /// <summary>
     /// Provides access to convenient properties and operations on a patch package (.MSP).
     /// </summary>
-    public class PatchPackage : Database
+    internal class PatchPackage : Database
     {
         /// <summary>
         /// Creates a new patch package object; opening the patch database in read-only mode.

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.Resources
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 {
     using System;
     using System.Collections;
@@ -20,7 +20,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
     /// Represents a string table of a file version resource.
     /// </summary>
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public sealed class VersionStringTable : IDictionary<string, string>
+    internal sealed class VersionStringTable : IDictionary<string, string>
     {
         private VersionResource parent;
         private VersionInfo rawStringVersionInfo;
@@ -34,6 +34,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// <summary>
         /// Gets the locale (LCID) of the string table.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int Locale
         {
             get

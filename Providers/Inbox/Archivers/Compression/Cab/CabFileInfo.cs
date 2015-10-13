@@ -7,18 +7,15 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Cab
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 {
     using System;
     using System.IO;
-    using System.Runtime.Serialization;
-    using System.Security.Permissions;
 
     /// <summary>
     /// Object representing a compressed file within a cabinet package; provides operations for getting
     /// the file properties and extracting the file.
     /// </summary>
-    [Serializable]
     public class CabFileInfo : ArchiveFileInfo
     {
         private int cabFolder;
@@ -63,33 +60,6 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
         }
 
         /// <summary>
-        /// Initializes a new instance of the CabinetFileInfo class with serialized data.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        protected CabFileInfo(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            this.cabFolder = info.GetInt32("cabFolder");
-        }
-
-        /// <summary>
-        /// Sets the SerializationInfo with information about the archive.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data.</param>
-        /// <param name="context">The StreamingContext that contains contextual information
-        /// about the source or destination.</param>
-        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            if (info== null) {
-                throw new ArgumentNullException("info");
-            }
-            base.GetObjectData(info, context);
-            info.AddValue("cabFolder", this.cabFolder);
-        }
-
-        /// <summary>
         /// Gets or sets the cabinet that contains this file.
         /// </summary>
         /// <value>
@@ -101,7 +71,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
         {
             get
             {
-                return (CabInfo) this.Archive;
+                return (CabInfo)this.Archive;
             }
         }
 
@@ -147,7 +117,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
         protected override void Refresh(ArchiveFileInfo newFileInfo)
         {
             base.Refresh(newFileInfo);
-            this.cabFolder = ((CabFileInfo) newFileInfo).cabFolder;
+            this.cabFolder = ((CabFileInfo)newFileInfo).cabFolder;
         }
     }
 }

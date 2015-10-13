@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Zip
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
 {
     using System;
     using System.Collections.Generic;
@@ -20,9 +20,9 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
     /// </summary>
     public partial class ZipEngine : CompressionEngine
     {
-        private static Dictionary<ZipCompressionMethod, Converter<Stream, Stream>>
+        private static Dictionary<ZipCompressionMethod, Func<Stream, Stream>>
             compressionStreamCreators;
-        private static Dictionary<ZipCompressionMethod, Converter<Stream, Stream>>
+        private static Dictionary<ZipCompressionMethod, Func<Stream, Stream>>
             decompressionStreamCreators;
 
         private static void InitCompressionStreamCreators()
@@ -30,32 +30,36 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
             if (ZipEngine.compressionStreamCreators == null)
             {
                 ZipEngine.compressionStreamCreators = new
-                    Dictionary<ZipCompressionMethod, Converter<Stream, Stream>>();
+                    Dictionary<ZipCompressionMethod, Func<Stream, Stream>>();
                 ZipEngine.decompressionStreamCreators = new
-                    Dictionary<ZipCompressionMethod, Converter<Stream, Stream>>();
+                    Dictionary<ZipCompressionMethod, Func<Stream, Stream>>();
 
                 ZipEngine.RegisterCompressionStreamCreator(
                     ZipCompressionMethod.Store,
                     CompressionMode.Compress,
-                    delegate(Stream stream) {
+                    delegate(Stream stream)
+                    {
                         return stream;
                     });
                 ZipEngine.RegisterCompressionStreamCreator(
                     ZipCompressionMethod.Deflate,
                     CompressionMode.Compress,
-                    delegate(Stream stream) {
+                    delegate(Stream stream)
+                    {
                         return new DeflateStream(stream, CompressionMode.Compress, true);
                     });
                 ZipEngine.RegisterCompressionStreamCreator(
                     ZipCompressionMethod.Store,
                     CompressionMode.Decompress,
-                    delegate(Stream stream) {
+                    delegate(Stream stream)
+                    {
                         return stream;
                     });
                 ZipEngine.RegisterCompressionStreamCreator(
                     ZipCompressionMethod.Deflate,
                     CompressionMode.Decompress,
-                    delegate(Stream stream) {
+                    delegate(Stream stream)
+                    {
                         return new DeflateStream(stream, CompressionMode.Decompress, true);
                     });
             }
@@ -100,7 +104,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
         public static void RegisterCompressionStreamCreator(
             ZipCompressionMethod compressionMethod,
             CompressionMode compressionMode,
-            Converter<Stream, Stream> creator)
+            Func<Stream, Stream> creator)
         {
             ZipEngine.InitCompressionStreamCreators();
             if (compressionMode == CompressionMode.Compress)
@@ -198,7 +202,8 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
         /// <remarks>The archive must begin on a 4-byte boundary.</remarks>
         public override long FindArchiveOffset(Stream stream)
         {
-            if (stream == null) {
+            if (stream == null)
+            {
                 throw new ArgumentNullException("stream");
             }
 
@@ -296,7 +301,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
                     return headers;
                 }
 
-                headers.Capacity = (int) eocd.totalEntries;
+                headers.Capacity = (int)eocd.totalEntries;
 
                 if (eocd.dirOffset > archiveStream.Length - ZipFileHeader.CFH_FIXEDSIZE)
                 {
@@ -318,7 +323,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
 
                 if (archiveStream == null)
                 {
-                    this.currentArchiveNumber = (short) (eocd.dirStartDiskNumber + 1);
+                    this.currentArchiveNumber = (short)(eocd.dirStartDiskNumber + 1);
                     archiveStream = streamContext.OpenArchiveReadStream(
                         this.currentArchiveNumber, String.Empty, this);
 
@@ -407,7 +412,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
                 throw new ZipException("Invalid end of central directory record");
             }
 
-            if (eocd.dirOffset == (long) UInt32.MaxValue)
+            if (eocd.dirOffset == (long)UInt32.MaxValue)
             {
                 string saveComment = eocd.comment;
 

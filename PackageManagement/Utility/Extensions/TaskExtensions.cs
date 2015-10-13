@@ -12,12 +12,11 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Extensions {
+namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
     using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
 
-    public static class TaskExtensions {
-        [ExcludeFromCodeCoverage /* trivial code */]
+    internal static class TaskExtensions {
         public static Task<T> AsResultTask<T>(this T result) {
             var x = new TaskCompletionSource<T>(TaskCreationOptions.AttachedToParent);
             x.SetResult(result);

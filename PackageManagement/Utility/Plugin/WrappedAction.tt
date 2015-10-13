@@ -14,7 +14,7 @@
 <#@ template debug="true" hostspecific="true" #>
 <#@ assembly name="System.Core" #>
 <#@ assembly name="System.Xml" #>
-namespace Microsoft.PackageManagement.Utility.Plugin {
+namespace Microsoft.PackageManagement.Internal.Utility.Plugin {
     using System;
     using System.Globalization;
 

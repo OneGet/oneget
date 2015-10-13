@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Packaging {
+namespace Microsoft.PackageManagement.Internal.Packaging {
     using System;
     using System.Linq;
     using System.Xml.Linq;
@@ -78,7 +78,8 @@ namespace Microsoft.PackageManagement.Packaging {
                     return each;
                 }
 
-                if (elementId.StartsWith(eId, StringComparison.CurrentCulture)) {
+                if (elementId.IndexOf(eId, StringComparison.CurrentCulture) == 0)
+                {
                     return FindChildElementViaPath(eId, each, elementId);
                 }
             }

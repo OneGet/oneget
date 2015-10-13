@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression
 {
     using System;
 

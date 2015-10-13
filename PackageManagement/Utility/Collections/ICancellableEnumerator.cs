@@ -12,10 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Collections {
+namespace Microsoft.PackageManagement.Internal.Utility.Collections {
     using System.Collections.Generic;
 
-    public interface ICancellableEnumerator<out T> : IEnumerator<T> {
+    internal interface ICancellableEnumerator<out T> : IEnumerator<T> {
         void Cancel();
     }
 }

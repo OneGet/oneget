@@ -16,12 +16,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.PackageManagement.Packaging;
-    using Microsoft.PackageManagement.Utility.Async;
-    using Microsoft.PackageManagement.Utility.Collections;
-    using Microsoft.PackageManagement.Utility.Extensions;
     using Utility;
     using System.Diagnostics.CodeAnalysis;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Async;
+    using Microsoft.PackageManagement.Internal.Utility.Collections;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Packaging;
 
     [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517135")]
     public class GetPackage : CmdletWithSearch {
@@ -68,6 +69,29 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
         public override bool ProcessRecordAsync() {
+            
+            ValidateVersion(RequiredVersion);
+            ValidateVersion(MinimumVersion);
+            ValidateVersion(MaximumVersion);
+
+            // If AllVersions is specified, make sure other version parameters are not supplied
+            if (AllVersions.IsPresent)
+            {
+                if ((!string.IsNullOrWhiteSpace(RequiredVersion)) || (!string.IsNullOrWhiteSpace(MinimumVersion)) || (!string.IsNullOrWhiteSpace(MaximumVersion)))
+                {
+                    Error(Constants.Errors.AllVersionsCannotBeUsedWithOtherVersionParameters);
+                }
+            }
+
+            // Cannot have Max/Min version parameters with RequiredVersion
+            if (RequiredVersion != null)
+            {
+                if ((!string.IsNullOrWhiteSpace(MaximumVersion)) || (!string.IsNullOrWhiteSpace(MinimumVersion)))
+                {
+                    Error(Constants.Errors.VersionRangeAndRequiredVersionCannotBeSpecifiedTogether);
+                }
+            }
+
             // keep track of what package names the user asked for.
             if (!Name.IsNullOrEmpty()) {
                 foreach (var name in Name) {
@@ -109,7 +133,18 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                             // mark down that we found something for that query
                             _namesProcessed.AddOrSet(result.query, true);
-                            potentialPackagesToProcess.Add(package);
+
+                            // If AllVersions is specified, process the package immediately
+                            if (AllVersions)
+                            {
+                                // Process the package immediately if -AllVersions are required
+                                ProcessPackage(package);
+                            }
+                            else 
+                            { 
+                                // Save to perform post-processing to eliminate duplicate versions and group by Name
+                                potentialPackagesToProcess.Add(package);
+                            }
                         }
                     }
                 }
@@ -117,22 +152,26 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
             } // end of WaitForActivity()
             
-            // post processing the potential packages as we have to display only
-            // 1 package per name (note multiple versions of the same package may be installed)
-            // In general, it is good practice to show only the latest one.
-            foreach (var potentialPackage in from p in potentialPackagesToProcess
-                                             group p by p.Name
-                                             into grouping
-                                             select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()
-                                             )
+            // Peform post-processing only if -AllVersions is not specified            
+            if (!AllVersions)
             {
-                ProcessPackage(potentialPackage.CanonicalId, potentialPackage);
+                // post processing the potential packages as we have to display only
+                // 1 package per name (note multiple versions of the same package may be installed)
+                // In general, it is good practice to show only the latest one.
+                foreach (var potentialPackage in from p in potentialPackagesToProcess
+                                                 group p by p.Name
+                                                 into grouping
+                                                 select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()
+                                                 )
+                {
+                    ProcessPackage(potentialPackage);
+                }
             }
 
             return true;
         }
 
-        protected virtual void ProcessPackage(string query, SoftwareIdentity package) {
+        protected virtual void ProcessPackage(SoftwareIdentity package) {
             // Check for duplicates
             if (!IsDuplicate(package)) {
                 WriteObject(package);

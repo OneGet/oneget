@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Plugin {
+namespace Microsoft.PackageManagement.Internal.Utility.Plugin {
     using System;
     using System.Reflection;
     using System.Reflection.Emit;

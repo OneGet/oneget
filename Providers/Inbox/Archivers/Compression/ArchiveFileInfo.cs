@@ -7,20 +7,20 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
-    using System.Runtime.Serialization;
+#if !CORECLR
     using System.Security.Permissions;
+#endif
 
     /// <summary>
     /// Abstract object representing a compressed file within an archive;
     /// provides operations for getting the file properties and unpacking
     /// the file.
     /// </summary>
-    [Serializable]
     public abstract class ArchiveFileInfo : FileSystemInfo
     {
         private ArchiveInfo archiveInfo;
@@ -86,30 +86,6 @@ namespace Microsoft.PackageManagement.Archivers.Compression
             this.lastWriteTime = lastWriteTime;
             this.length = length;
             this.initialized = true;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the ArchiveFileInfo class with
-        /// serialized data.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized
-        /// object data about the exception being thrown.</param>
-        /// <param name="context">The StreamingContext that contains contextual
-        /// information about the source or destination.</param>
-        protected ArchiveFileInfo(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            this.archiveInfo = (ArchiveInfo) info.GetValue(
-                "archiveInfo", typeof(ArchiveInfo));
-            this.name = info.GetString("name");
-            this.path = info.GetString("path");
-            this.initialized = info.GetBoolean("initialized");
-            this.exists = info.GetBoolean("exists");
-            this.archiveNumber = info.GetInt32("archiveNumber");
-            this.attributes = (FileAttributes) info.GetValue(
-                "attributes", typeof(FileAttributes));
-            this.lastWriteTime = info.GetDateTime("lastWriteTime");
-            this.length = info.GetInt64("length");
         }
 
         /// <summary>
@@ -297,33 +273,6 @@ namespace Microsoft.PackageManagement.Archivers.Compression
 
                 return this.lastWriteTime;
             }
-        }
-
-        /// <summary>
-        /// Sets the SerializationInfo with information about the archive.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized
-        /// object data.</param>
-        /// <param name="context">The StreamingContext that contains contextual
-        /// information about the source or destination.</param>
-        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
-        public override void GetObjectData(
-            SerializationInfo info, StreamingContext context)
-        {
-            if (info == null)
-            {
-                throw new ArgumentNullException("info");
-            }
-            base.GetObjectData(info, context);
-            info.AddValue("archiveInfo", this.archiveInfo);
-            info.AddValue("name", this.name);
-            info.AddValue("path", this.path);
-            info.AddValue("initialized", this.initialized);
-            info.AddValue("exists", this.exists);
-            info.AddValue("archiveNumber", this.archiveNumber);
-            info.AddValue("attributes", this.attributes);
-            info.AddValue("lastWriteTime", this.lastWriteTime);
-            info.AddValue("length", this.length);
         }
 
         /// <summary>

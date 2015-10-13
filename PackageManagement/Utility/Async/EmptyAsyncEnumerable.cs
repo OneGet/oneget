@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Async {
+namespace Microsoft.PackageManagement.Internal.Utility.Async {
     using System;
     using System.Collections;
     using System.Collections.Generic;

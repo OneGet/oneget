@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.Package
 {
     using System;
     using System.Collections;
@@ -17,12 +17,13 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
     /// <summary>
     /// Represents the installation path of a file or directory from an installer product database.
     /// </summary>
-    public class InstallPath
+    internal class InstallPath
     {
         /// <summary>
         /// Creates a new InstallPath, specifying a filename.
         /// </summary>
         /// <param name="name">The name of the file or directory.  Not a full path.</param>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public InstallPath(string name) : this(name, false) { }
 
         /// <summary>
@@ -102,6 +103,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
         /// <summary>
         /// Gets or sets the source name of the InstallPath.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string SourceName
         {
             get
@@ -123,6 +125,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
         /// <summary>
         /// Gets or sets the target name of the install path.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string TargetName
         {
             get
@@ -242,7 +245,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
     /// <summary>
     /// Represents a collection of InstallPaths that are the child paths of the same parent directory.
     /// </summary>
-    public class InstallPathCollection : IList<InstallPath>
+    internal class InstallPathCollection : IList<InstallPath>
     {
         private InstallPath parentPath;
         private List<InstallPath> items;
@@ -421,7 +424,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
     /// Represents a mapping of install paths for all directories, components, or files in
     /// an installation database.
     /// </summary>
-    public class InstallPathMap : IDictionary<string, InstallPath>
+    internal class InstallPathMap : IDictionary<string, InstallPath>
     {
         /// <summary>
         /// Builds a mapping from File keys to installation paths.
@@ -621,6 +624,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
         /// <summary>
         /// Gets a mapping from keys to target paths.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public IDictionary<string, string> TargetPaths
         {
             get
@@ -946,6 +950,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
 
         private InstallPathMap map;
 
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal TargetPathMap(InstallPathMap map)
         {
             this.map = map;

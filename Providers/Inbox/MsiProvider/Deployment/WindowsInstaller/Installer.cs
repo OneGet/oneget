@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -38,7 +38,7 @@ public delegate void InapplicablePatchHandler(string patch, Exception exception)
 /// <summary>
 /// Provides static methods for installing and configuring products and patches.
 /// </summary>
-public static partial class Installer
+internal static partial class Installer
 {
     private static bool rebootRequired;
     private static bool rebootInitiated;

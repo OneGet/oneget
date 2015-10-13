@@ -12,16 +12,18 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Providers.Bootstrap {
+namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
     using System;
+    using System.Globalization;
     using System.Collections.Generic;
     using System.Linq;
     using System.Xml.Linq;
-    using Api;
-    using Implementation;
-    using Packaging;
-    using Utility.Extensions;
-    using Utility.Plugin;
+    using PackageManagement.Internal;
+    using PackageManagement.Internal.Api;
+    using PackageManagement.Internal.Implementation;
+    using PackageManagement.Internal.Packaging;
+    using PackageManagement.Internal.Utility.Extensions;
+    using PackageManagement.Internal.Utility.Plugin;
 
     internal class Swid {
         private const int SwidDownloadTimeout = 8000;
@@ -59,6 +61,10 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                                 return true;
                             }
                             return _request.Warning(messageText);
+                        }),
+                        Error = new Func<string,string,string,string, bool>((category, id, target, messageText ) => {
+                            // tag download errors don't count as "errors", at best, just a warning.
+                            return _request.Verbose(messageText);
                         })
                     },
                     _request
@@ -100,7 +106,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             }
         }
 
-        private Swidtag DownloadSwidtag(IEnumerable<Uri> locations) {
+        private Swidtag DownloadSwidtag(IEnumerable<Uri> locations) {            
             foreach (var location in locations.WhereNotNull()) {
                 try {
                     var filename = "swidtag.xml".GenerateTemporaryFilename();
@@ -126,15 +132,21 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
         }
 
         private string DownloadSwidtagToFile(string filename, Uri location) {
-            if (_request.ProviderServices == null) {
-                // during initialization, the pluggable downloader isn't available.
-                // luckily, it's built into this assembly, so we'll create and use it directly.
-                filename = new WebDownloader().DownloadFile(location, filename, SwidDownloadTimeout, false, DownloadRequest.As<Request>());
-            } else {
-                // otherwise, we can just use the pluggable one.
-                filename = _request.ProviderServices.DownloadFile(location, filename, SwidDownloadTimeout, false, DownloadRequest);
-            }
-            return filename;
+            return _request.RetryDownload(
+                    (uri) => 
+                        {
+                            if (_request.ProviderServices == null)
+                            {
+                                // during initialization, the pluggable downloader isn't available.
+                                // luckily, it's built into this assembly, so we'll create and use it directly.
+                                return new WebDownloader().DownloadFile(location, filename, SwidDownloadTimeout, false, DownloadRequest.As<Request>());
+                            }
+
+                            // otherwise, we can just use the pluggable one.
+                            return _request.ProviderServices.DownloadFile(location, filename, SwidDownloadTimeout, false, DownloadRequest);
+                        },
+                    location
+                );
         }
 
         internal Swidtag DownloadSwidtag(IEnumerable<Link> locations) {

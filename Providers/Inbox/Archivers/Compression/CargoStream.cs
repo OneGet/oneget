@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression
 {
     using System;
     using System.Collections.Generic;
@@ -141,6 +141,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression
             this.source.SetLength(value);
         }
 
+#if !CORECLR
         /// <summary>
         /// Closes the source stream and also closes the additional objects that are carried.
         /// </summary>
@@ -151,6 +152,25 @@ namespace Microsoft.PackageManagement.Archivers.Compression
             foreach (IDisposable cargoObject in this.cargo)
             {
                 cargoObject.Dispose();
+            }
+        }
+#endif
+
+        /// <summary>
+        /// Disposes source stream and additional objects carried
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.source.Dispose();
+
+                foreach (IDisposable cargoObject in this.cargo)
+                {
+                    cargoObject.Dispose();
+                }
+
             }
         }
 

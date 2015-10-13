@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.Linq
 {
     using System;
 
@@ -21,7 +21,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
     /// optional underscore suffix is stripped.)
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class DatabaseTableAttribute : Attribute
+    internal class DatabaseTableAttribute : Attribute
     {
         /// <summary>
         /// Creates a new DatabaseTableAttribute for the specified table.
@@ -47,7 +47,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
     /// column name will be the same as the property name.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public class DatabaseColumnAttribute : Attribute
+    internal class DatabaseColumnAttribute : Attribute
     {
         /// <summary>
         /// Creates a new DatabaseColumnAttribute which maps a

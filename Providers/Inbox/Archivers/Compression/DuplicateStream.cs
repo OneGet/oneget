@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression
 {
     using System;
     using System.IO;
@@ -142,12 +142,26 @@ namespace Microsoft.PackageManagement.Archivers.Compression
             this.source.SetLength(value);
         }
 
+#if !CORECLR
         /// <summary>
         /// Closes the underlying stream, effectively closing ALL duplicates.
         /// </summary>
         public override void Close()
         {
             this.source.Close();
+        }
+#endif
+
+        /// <summary>
+        /// Disposes the stream
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.source.Dispose();
+            }
         }
 
         /// <summary>

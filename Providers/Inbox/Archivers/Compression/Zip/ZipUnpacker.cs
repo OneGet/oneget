@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Zip
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
 {
     using System;
     using System.Collections.Generic;
@@ -76,7 +76,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
                     this.totalFileBytes += uncompressedSize;
                     if (archiveNumber >= this.totalArchives)
                     {
-                        this.totalArchives = (short) (archiveNumber + 1);
+                        this.totalArchives = (short)(archiveNumber + 1);
                     }
                 }
 
@@ -116,7 +116,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
             Stream fileStream = null;
             try
             {
-                Converter<Stream, Stream> compressionStreamCreator;
+                Func<Stream, Stream> compressionStreamCreator;
                 if (!ZipEngine.decompressionStreamCreators.TryGetValue(
                     header.compressionMethod, out compressionStreamCreator))
                 {
@@ -150,7 +150,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
                         this.currentArchiveName = null;
                     }
 
-                    this.currentArchiveNumber = (short) (archiveNumber + 1);
+                    this.currentArchiveNumber = (short)(archiveNumber + 1);
                     this.currentArchiveBytesProcessed = 0;
                     this.currentArchiveTotalBytes = 0;
 
@@ -263,7 +263,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
             long uncompressedSize,
             uint crc,
             Stream fileStream,
-            Converter<Stream, Stream> compressionStreamCreator,
+            Func<Stream, Stream> compressionStreamCreator,
             ref Stream archiveStream)
         {
             CrcStream crcStream = new CrcStream(fileStream);
@@ -308,7 +308,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
                 int counter = 0;
                 while (bytesRemaining > 0)
                 {
-                    int count = (int) Math.Min(buf.Length, bytesRemaining);
+                    int count = (int)Math.Min(buf.Length, bytesRemaining);
                     count = decompressionStream.Read(buf, 0, count);
                     crcStream.Write(buf, 0, count);
                     bytesRemaining -= count;

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.Resources
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 {
     using System;
     using System.Collections;
@@ -32,7 +32,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
     /// Resource class, or save them all at once (more efficient) with the <see cref="Save"/> method of the ResourceCollection.</item>
     /// </list>
     /// </remarks>
-    public class ResourceCollection : ICollection<Resource>
+    internal class ResourceCollection : ICollection<Resource>
     {
         private List<Resource> resources;
 

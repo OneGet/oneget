@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System.Diagnostics.CodeAnalysis;
 
@@ -17,7 +17,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <remarks>
     /// Classes which implement this interface must have a public constructor that takes no parameters.
     /// </remarks>
-    public interface IEmbeddedUI
+    internal interface IEmbeddedUI
     {
         /// <summary>
         /// Initializes the embedded UI.

@@ -12,10 +12,10 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
     using System.Collections;
     using System.Linq;
-    using Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
 
     public abstract class Yieldable {
         protected Hashtable _details;

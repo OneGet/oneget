@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Extensions {
+namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
@@ -20,6 +20,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
     using System.Reflection;
     using System.Reflection.Emit;
     using Plugin;
+    using Extensions;
 
     internal static class DelegateExtensions {
         private static readonly Dictionary<Type, Delegate> _emptyDelegates = new Dictionary<Type, Delegate>();
@@ -30,38 +31,38 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
         }
 
         internal static Type GetDelegateReturnType(this Type delegateType) {
-            if (delegateType.BaseType != typeof (MulticastDelegate)) {
-                throw new ApplicationException("Not a delegate.");
+            if (delegateType.GetTypeInfo().BaseType != typeof (MulticastDelegate)) {
+                throw new ArgumentException("Not a delegate.");
             }
 
             var invoke = delegateType.GetMethod("Invoke");
             if (invoke == null) {
-                throw new ApplicationException("Not a delegate.");
+                throw new ArgumentException("Not a delegate.");
             }
             return invoke.ReturnType;
         }
 
         internal static IEnumerable<Type> GetDelegateParameterTypes(this Type delegateType) {
-            if (delegateType.BaseType != typeof (MulticastDelegate)) {
-                throw new ApplicationException("Not a delegate.");
+            if (delegateType.GetTypeInfo().BaseType != typeof (MulticastDelegate)) {
+                throw new ArgumentException("Not a delegate.");
             }
 
             var invoke = delegateType.GetMethod("Invoke");
             if (invoke == null) {
-                throw new ApplicationException("Not a delegate.");
+                throw new ArgumentException("Not a delegate.");
             }
 
             return invoke.GetParameters().Select(each => each.ParameterType);
         }
 
         internal static IEnumerable<string> GetDelegateParameterNames(this Type delegateType) {
-            if (delegateType.BaseType != typeof (MulticastDelegate)) {
-                throw new ApplicationException("Not a delegate.");
+            if (delegateType.GetTypeInfo().BaseType != typeof (MulticastDelegate)) {
+                throw new ArgumentException("Not a delegate.");
             }
 
             var invoke = delegateType.GetMethod("Invoke");
             if (invoke == null) {
-                throw new ApplicationException("Not a delegate.");
+                throw new ArgumentException("Not a delegate.");
             }
 
             return invoke.GetParameters().Select(each => each.Name);
@@ -95,7 +96,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
             }
 
             // ensure both are actually delegates
-            if (delegateType.BaseType != typeof (MulticastDelegate) || candidateDelegateType.BaseType != typeof (MulticastDelegate)) {
+            if (delegateType.GetTypeInfo().BaseType != typeof (MulticastDelegate) || candidateDelegateType.GetTypeInfo().BaseType != typeof (MulticastDelegate)) {
                 return false;
             }
 
@@ -115,7 +116,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
             if (delegateType == null) {
                 throw new ArgumentNullException("delegateType");
             }
-            if (delegateType.BaseType != typeof (MulticastDelegate)) {
+            if (delegateType.GetTypeInfo().BaseType != typeof (MulticastDelegate)) {
                 throw new ArgumentException("must be a delegate", "delegateType");
             }
 
@@ -126,7 +127,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
                 var il = dynamicMethod.GetILGenerator();
 
                 if (delegateReturnType.FullName != "System.Void") {
-                    if (delegateReturnType.IsValueType) {
+                    if (delegateReturnType.GetTypeInfo().IsValueType) {
                         il.Emit(OpCodes.Ldc_I4, 0);
                     } else {
                         il.Emit(OpCodes.Ldnull);

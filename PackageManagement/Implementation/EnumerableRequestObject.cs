@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Implementation {
+namespace Microsoft.PackageManagement.Internal.Implementation {
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace Microsoft.PackageManagement.Implementation {
     using Utility.Async;
     using Utility.Collections;
 
-    public class EnumerableRequestObject<T> : RequestObject, IAsyncEnumerable<T> {
+    internal class EnumerableRequestObject<T> : RequestObject, IAsyncEnumerable<T> {
         protected readonly BlockingCollection<T> Results = new BlockingCollection<T>();
 
         internal EnumerableRequestObject(ProviderBase provider, IHostApi request, Action<RequestObject> action)
@@ -65,8 +65,11 @@ namespace Microsoft.PackageManagement.Implementation {
         }
 
         protected override void Complete() {
-            Results.CompleteAdding();
+            // we call base.Complete() before calling Results.CompleteAdding() because if a command like
+            // find-package xjea, xfirefox is run on nanoserver, only the first package will be found.
+            // It seems that the operation was cancelled early.
             base.Complete();
+            Results.CompleteAdding();
         }
     }
 }

@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Versions {
+namespace Microsoft.PackageManagement.Internal.Utility.Versions {
     using System;
     using System.Diagnostics;
     using System.Globalization;
@@ -34,6 +34,34 @@ namespace Microsoft.PackageManagement.Utility.Versions {
         }
 
         public int CompareTo(object obj) {
+#if CORECLR
+            uint compare = 0;
+            if (obj is TwoPartVersion)
+            {
+                compare = ((TwoPartVersion)obj)._version;
+            }
+            else if (obj is uint)
+            {
+                compare = (uint)obj;
+            }
+            else if (obj is string)
+            {
+                compare = ((TwoPartVersion)(string)obj)._version;
+            }
+
+            if (_version < compare)
+            {
+                return -1;
+            }
+            else if (_version > compare)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+#else
             return obj is TwoPartVersion
                 ? _version.CompareTo(((TwoPartVersion)obj)._version)
                 : obj is FourPartVersion
@@ -45,6 +73,7 @@ namespace Microsoft.PackageManagement.Utility.Versions {
                             : obj is string
                                 ? _version.CompareTo(((TwoPartVersion)(string)obj)._version)
                                 : 0;
+#endif
         }
 
         public int CompareTo(TwoPartVersion other) {

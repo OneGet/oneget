@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
 
@@ -20,7 +20,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// and return an <see cref="ActionResult"/> enumeration value.
     /// </p></remarks>
     [Serializable, AttributeUsage(AttributeTargets.Method)]
-    public sealed class CustomActionAttribute : Attribute
+    internal sealed class CustomActionAttribute : Attribute
     {
         /// <summary>
         /// Name of the custom action entrypoint, or null if the same as the method name.

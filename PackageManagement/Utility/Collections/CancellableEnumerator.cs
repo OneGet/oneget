@@ -12,13 +12,13 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Collections {
+namespace Microsoft.PackageManagement.Internal.Utility.Collections {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Threading;
 
-    public class CancellableEnumerator<T> : IEnumerator<T>, ICancellableEnumerator<T> {
+    internal class CancellableEnumerator<T> : IEnumerator<T>, ICancellableEnumerator<T> {
         private IEnumerator _enumerator;
         private readonly CancellationTokenSource _cancellationTokenSource;
 

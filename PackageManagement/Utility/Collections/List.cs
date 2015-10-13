@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Collections {
+namespace Microsoft.PackageManagement.Internal.Utility.Collections {
     using System;
     using System.Collections.Generic;
 

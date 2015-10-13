@@ -27,7 +27,7 @@ if( -not (.\test-sandbox.ps1) ) {
 
 try {
     Write-Host Shutting down sandbox webserver.
-    $null = wget http://localhost/quit
+    $null = wget -usebasicparsing http://localhost/quit
 } catch {
     
 }

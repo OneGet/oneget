@@ -12,18 +12,18 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
-    using Api;
-    using Utility.Collections;
-    using Utility.Extensions;
-    using Utility.Versions;
-
+    
+    using Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Utility.Versions;
+    using Microsoft.PackageManagement.Internal.Api;
+    using Microsoft.PackageManagement.Internal.Utility.Collections;
 
     public class PowerShellPackageProvider : PowerShellProviderBase {
         private static int _findId = 1;

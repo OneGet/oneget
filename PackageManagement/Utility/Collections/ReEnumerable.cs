@@ -12,11 +12,11 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Collections {
+namespace Microsoft.PackageManagement.Internal.Utility.Collections {
     using System.Collections.Generic;
     using System.Linq;
 
-    public class ReEnumerable<T> : MutableEnumerable<T> {
+    internal class ReEnumerable<T> : MutableEnumerable<T> {
         private IEnumerator<T> _sourceIterator;
         private readonly IEnumerable<T> _source;
 

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// A list of sources for an installed product or patch.
     /// </summary>
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public class SourceList : ICollection<string>
+    internal class SourceList : ICollection<string>
     {
         private Installation installation;
         private SourceMediaList mediaList;
@@ -173,6 +173,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisourcelistclearallex.asp">MsiSourceListClearAllEx</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void ClearNetworkSources()
         {
             this.ClearSourceType(NativeMethods.SourceType.Network);
@@ -185,6 +186,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisourcelistclearallex.asp">MsiSourceListClearAllEx</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void ClearUrlSources()
         {
             this.ClearSourceType(NativeMethods.SourceType.Url);
@@ -320,6 +322,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisourcelistforceresolution.asp">MsiSourceListForceResolution</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisourcelistforceresolutionex.asp">MsiSourceListForceResolutionEx</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void ForceResolution()
         {
             uint ret = NativeMethods.MsiSourceListForceResolutionEx(
@@ -336,6 +339,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets or sets the path relative to the root of the installation media.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string MediaPackagePath
         {
             get
@@ -352,6 +356,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Gets or sets the prompt template that is used when prompting the user
         /// for installation media.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string DiskPrompt
         {
             get
@@ -367,6 +372,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets or sets the most recently used source location for the product.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string LastUsedSource
         {
             get
@@ -383,6 +389,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Gets or sets the name of the Windows Installer package or patch package
         /// on the source.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string PackageName
         {
             get
@@ -406,6 +413,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <li>(empty string) = no last used source</li>
         /// </ul>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string LastUsedType
         {
             get
@@ -423,6 +431,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisourcelistgetinfo.asp">MsiSourceListGetInfo</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string this[string property]
         {
             get

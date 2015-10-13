@@ -27,7 +27,7 @@ try {
     }
     
     # see if it's the sandbox server listing.
-    $r = wget http://localhost/about-sandbox
+    $r = wget -usebasicparsing http://localhost/about-sandbox
     
 } catch {
     cd $origdir

@@ -25,9 +25,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.PackageManagement.Utility.Collections;
-    using Microsoft.PackageManagement.Utility.Extensions;
-    using Microsoft.PackageManagement.Utility.Platform;
+    using Microsoft.PackageManagement.Internal.Utility.Collections;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Utility.Platform;    
     using Utility;
 
     public delegate bool OnMainThread(Func<bool> onMainThreadDelegate);
@@ -240,7 +240,20 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         public string ResolveExistingFolderPath(string folderPath) {
             ProviderInfo providerInfo = null;
-            var files = GetResolvedProviderPathFromPSPath(folderPath, out providerInfo).ToArray();
+            string[] files = null;
+
+            // we may get an error if the path does not exist.
+            // we should not error out because the provider may want to create that path.
+            try
+            {
+                files = GetResolvedProviderPathFromPSPath(folderPath, out providerInfo).ToArray();
+            }
+            catch (ItemNotFoundException itemNotFoundEx)
+            {
+                // this means path does not exist but the provider may want to create it so we should allow
+                files = new string[1] { itemNotFoundEx.ItemName };
+            }
+            
             switch (files.Length) {
                 case 0:
                     // none found
@@ -248,11 +261,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     break;
 
                 case 1:
-                    if (Directory.Exists(files[0])) {
-                        return files[0];
+                    if (!Directory.Exists(files[0])) {
+                        Verbose(String.Format(CultureInfo.CurrentCulture, Resources.Messages.FolderNotFound, files[0]));
                     }
-                    Error(Constants.Errors.FolderNotFound, folderPath);
-                    break;
+                    return files[0];
 
                 default:
                     Error(Constants.Errors.MoreThanOneFolderMatched, folderPath, files.JoinWithComma());
@@ -269,21 +281,21 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             if (string.IsNullOrWhiteSpace(messageText)) {
                 return messageText;
             }
-            return messageText.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase) ? messageText.Substring(4) : messageText;
+            return messageText.IndexOf("MSG:", StringComparison.OrdinalIgnoreCase) == 0 ? messageText.Substring(4) : messageText;
         }
 
         public bool Warning(string messageText) {
             return Warning(messageText, Constants.NoParameters);
         }
 
-        public bool Warning(ErrorMessage message) {
+        internal bool Warning(ErrorMessage message) {
             if (message == null) {
                 throw new ArgumentNullException("message");
             }
             return Warning(message.Resource, Constants.NoParameters);
         }
 
-        public bool Warning(ErrorMessage message, params object[] args) {
+        internal bool Warning(ErrorMessage message, params object[] args) {
             if (message == null) {
                 throw new ArgumentNullException("message");
             }
@@ -300,11 +312,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return IsCanceled;
         }
 
-        protected bool Error(ErrorMessage errorMessage) {
+        internal bool Error(ErrorMessage errorMessage) {
             return Error(errorMessage.Resource, errorMessage.Category.ToString(), null, errorMessage.Resource);
         }
 
-        protected bool Error(ErrorMessage errorMessage, params object[] args) {
+        internal bool Error(ErrorMessage errorMessage, params object[] args) {
             return Error(errorMessage.Resource, errorMessage.Category.ToString(), null, FormatMessageString(errorMessage.Resource, args));
         }
 
@@ -317,6 +329,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 var errorMessage = FormatMessageString(messageText, args);
 
                 if (!_errors.Contains(errorMessage)) {
+
                     if (!HasErrors) {
                         // we only *show* the very first error we get.
                         // any more, we just toss them in the collection and
@@ -325,31 +338,32 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         if (!Enum.TryParse(category, true, out errorCategory)) {
                             errorCategory = ErrorCategory.NotSpecified;
                         }
+                        _errors.Add(errorMessage);
                         try {
 #if DEBUG
                             Log("ERROR",errorMessage);
 #endif
-                            WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrWhiteSpace(targetObjectValue) ? (object)this : targetObjectValue)).Wait();
+                            //Replaced Wait() with ConintueWith(Cancel) to avoid hang if the error message comes in too early, e.g. GetDyanamicParameters(), etc.
+                            WriteError(new ErrorRecord(new Exception(errorMessage), DropMsgPrefix(id), errorCategory, string.IsNullOrWhiteSpace(targetObjectValue) ? (object)this : targetObjectValue)).Wait(3000);
                         } catch {
                             // this will throw if the provider thread abends before we get back our result.
                         }
                     }
-                    _errors.Add(errorMessage);
                 }
             }
             Cancel();
 
             // rather than wait on the result of the async'd message,
             // we'll just return the stopping state.
-            return IsCanceled;
+            return true;
         }
 
-        protected bool NonTerminatingError(ErrorMessage errorMessage)
+        internal bool NonTerminatingError(ErrorMessage errorMessage)
         {
             return NonTerminatingError(errorMessage.Resource, errorMessage.Category.ToString(), null, errorMessage.Resource);
         }
 
-        protected bool NonTerminatingError(ErrorMessage errorMessage, params object[] args)
+        internal bool NonTerminatingError(ErrorMessage errorMessage, params object[] args)
         {
             return NonTerminatingError(errorMessage.Resource, errorMessage.Category.ToString(), null, FormatMessageString(errorMessage.Resource, args));
         }
@@ -565,8 +579,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 return string.Empty;
             }
 
-            if (messageText.StartsWith(Microsoft.PackageManagement.Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
-                messageText = GetMessageString(messageText.Substring(Microsoft.PackageManagement.Constants.MSGPrefix.Length), messageText) ?? messageText;
+            if (messageText.IndexOf(Microsoft.PackageManagement.Internal.Constants.MSGPrefix, StringComparison.CurrentCultureIgnoreCase) == 0) {
+                messageText = GetMessageString(messageText.Substring(Microsoft.PackageManagement.Internal.Constants.MSGPrefix.Length), messageText) ?? messageText;
             }
 
             return args == null || args.Length == 0 ? messageText : messageText.format(args);
@@ -602,6 +616,12 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         public object GetDynamicParameters() {
             if (DynamicParameterDictionary.IsNullOrEmpty()) {
+                // this is because in cmdletwith provider we check for the state to determine the error we should throw
+                // so this state should be at least generate parameters and not unknown.
+                // otherwise, command like: Install-Package -Provider nuget -Destination C:\test -Name jquery -Source wrongsource
+                // will give us wrong error that the dynamic parameter destination does not exist even though the real error is
+                // that the source is wrong.
+                CmdletState = AsyncCmdletState.GenerateParameters;
                 if (IsOverridden(Constants.Methods.GenerateDynamicParametersMethod)) {
                     AsyncRun(GenerateDynamicParameters);
                 }
@@ -1037,10 +1057,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
             return QueueMessage(() => {
                 try {
+                   // The cancel could be caused by Error.But this error can get lost because of the If(!IsCanceled) check.
+                   // So call WriteError directly.
+                    base.WriteError(errorRecord);
                     // if we're stopping, skip this call anyway.
-                    if (!IsCanceled) {
-                        base.WriteError(errorRecord);
-                    }
+                    //if (!IsCanceled) {
+                    //    base.WriteError(errorRecord);
+                    //}
                 } catch (PipelineStoppedException pipelineStoppedException) {
                     // this can throw if the pipeline is stopped
                     // but that's ok, because it just means
@@ -1077,6 +1100,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         #region CmdLet Interactivity
 
+        internal class ShouldContinueResult
+        {
+            internal bool result = false;
+            internal bool yesToAll = false;
+            internal bool noToAll = false;
+        }
+
         public new Task<bool> ShouldContinue(string query, string caption) {
             if (IsCanceled || !IsInvocation) {
                 return false.AsResultTask();
@@ -1085,14 +1115,40 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             // it is apparently OK to have this called during dynamic parameter generation
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", Justification = "MYOB.")]
-        public new Task<bool> ShouldContinue(string query, string caption, ref bool yesToAll, ref bool noToAll) {
-            if (IsCanceled || !IsInvocation) {
-                return false.AsResultTask();
+        internal Task<ShouldContinueResult> ShouldContinue(string query, string caption, bool hasSecurityimpact)
+        {
+            var shouldContinueResult = new ShouldContinueResult
+            {
+                yesToAll = false,
+                noToAll = false,
+                result = false
+            };
+
+            if (IsCanceled || !IsInvocation )
+            {
+                return shouldContinueResult.AsResultTask();
             }
 
-            // todo: Uh, this is gonna be tricky!?
-            return QueueMessage(() => base.ShouldContinue(query, caption));
+            return ExecuteOnMainThread(() =>
+            {                   
+                MethodInfo method = null;
+                try {
+                    method = base.GetType().GetMethod("ShouldContinue", new Type[] { typeof(string), typeof(string), typeof(bool), typeof(bool).MakeByRefType(), typeof(bool).MakeByRefType()});
+                } catch {                    
+                }                
+                if(method != null) {
+                    Object[] arguments = { query, caption, hasSecurityimpact, false, false };
+                    try {
+                        shouldContinueResult.result = (bool)method.Invoke(this, arguments);
+                        shouldContinueResult.yesToAll = (bool)arguments[3];
+                        shouldContinueResult.noToAll = (bool)arguments[4];
+                    } catch  {                 
+                    }
+                } else {                
+                    shouldContinueResult.result = base.ShouldContinue(query, caption, ref shouldContinueResult.yesToAll, ref shouldContinueResult.noToAll);
+                }
+                return shouldContinueResult.result;
+            }).ContinueWith((a) => shouldContinueResult);
         }
 
         public new Task<bool> ShouldProcess(string target) {
@@ -1139,7 +1195,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             if (instance == null || string.IsNullOrWhiteSpace(fieldName)) {
                 return null;
             }
-
+ 
             var propertyInfo = instance.GetType().GetProperty(fieldName, BindingFlags);
 
             if (propertyInfo != null) {

@@ -18,9 +18,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Async;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Packaging;
-    using Microsoft.PackageManagement.Utility.Async;
-    using Microsoft.PackageManagement.Utility.Extensions;
 
     [Cmdlet(VerbsLifecycle.Uninstall, Constants.Nouns.PackageNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517142")]
     public sealed class UninstallPackage : GetPackage {
@@ -87,9 +88,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return true;
         }
 
-        protected override void ProcessPackage(string query, SoftwareIdentity package) {
-            // mark down that we found something for that query
-            _resultsPerName.GetOrAdd(query, () => new List<SoftwareIdentity>()).Add(package);
+        protected override void ProcessPackage(SoftwareIdentity package) {
+            if (null != package && !package.CanonicalId.IsNullOrEmpty())
+            {
+                // mark down that we found something for that query
+                // Need a identifier for maintaining the list of packages to uninstall in a dictionary. 
+                // Canonical ID consists of packagename, version, repo which is unique
+                _resultsPerName.GetOrAdd(package.CanonicalId, () => new List<SoftwareIdentity>()).Add(package);
+            }
         }
 
         public override bool EndProcessingAsync() {
@@ -128,6 +134,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         private bool UninstallPackages(IEnumerable<SoftwareIdentity> packagesToUnInstall) {
             foreach (var pkg in packagesToUnInstall) {
                 var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
+                Debug("Uninstalling package {0} with provider {1}", pkg.Name, provider.ProviderName);
 
                 if (provider == null) {
                     Error(Constants.Errors.UnknownProvider, pkg.ProviderName);
@@ -137,11 +144,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 try {
                     if (ShouldProcessPackageUninstall(pkg.Name, pkg.Version)) {
                         foreach (var installedPkg in provider.UninstallPackage(pkg, this).CancelWhen(CancellationEvent.Token)) {
-                        if (IsCanceled) {
-                            return false;
+                            if (IsCanceled) {
+                                return false;
+                            }
+                            WriteObject(installedPkg);
                         }
-                        WriteObject(installedPkg);
-                    }
                     }
                 } catch (Exception e) {
                     e.Dump();

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -19,7 +19,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// Defines a single column of a table in an installer database.
     /// </summary>
     /// <remarks>Once created, a ColumnInfo object is immutable.</remarks>
-    public class ColumnInfo
+    internal class ColumnInfo
     {
         private string name;
         private Type type;
@@ -83,6 +83,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <param name="size">the maximum number of characters for String columns;
         /// ignored for other column types</param>
         /// <param name="isRequired">true if the column is required to have a non-null value</param>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public ColumnInfo(string name, Type type, int size, bool isRequired)
             : this(name, type, size, isRequired, false, false)
         {
@@ -161,6 +162,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Gets the type of the column as an integer that can be cast to a System.Data.DbType.  This is one of the following: Int16, Int32, String, or Binary
         /// </summary>
         /// <value>equivalent DbType of the column as an integer</value>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int DBType
         {
             get
@@ -177,6 +179,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// </summary>
         /// <value>The size of integer columns this is either 2 or 4.  For string columns this is the maximum
         /// recommended length of the string, or 0 for unlimited length.  For stream columns, 0 is returned.</value>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int Size
         {
             get { return this.size; }
@@ -186,6 +189,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Gets a value indicating whether the column must be non-null when inserting a record.
         /// </summary>
         /// <value>required status of the column</value>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool IsRequired
         {
             get { return this.isRequired; }
@@ -196,6 +200,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// when the database is saved to disk.
         /// </summary>
         /// <value>temporary status of the column</value>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool IsTemporary
         {
             get { return this.isTemporary; }
@@ -205,6 +210,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Gets a value indicating whether the column is a string column that is localizable.
         /// </summary>
         /// <value>localizable status of the column</value>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool IsLocalizable
         {
             get { return this.isLocalizable; }
@@ -264,6 +270,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <item>l0 - Localizable string, variable length</item>
         /// </list>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string ColumnDefinitionString
         {
             get

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.Package
 {
     using System;
     using System.Collections;
@@ -16,8 +16,8 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
     using System.Globalization;
     using System.IO;
     using System.Text.RegularExpressions;
-    using Archivers.Compression;
-    using Archivers.Compression.Cab;
+    using Archivers.Internal.Compression;
+    using Archivers.Internal.Compression.Cab;
     using FileAttributes = WindowsInstaller.FileAttributes;
 
     /// <summary>
@@ -33,7 +33,7 @@ public delegate void InstallPackageMessageHandler(string format, params object[]
 /// Provides access to powerful build, maintenance, and analysis operations on an
 /// installation package (.MSI or .MSM).
 /// </summary>
-public class InstallPackage : Database
+internal class InstallPackage : Database
 {
     private string cabName;
     private string cabMsg;
@@ -102,6 +102,7 @@ public class InstallPackage : Database
     /// the location of an original copy of the package that is not meant
     /// to be modified.
     /// </summary>
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public string SourceDirectory
     {
         get { return this.sourceDir; }
@@ -113,6 +114,7 @@ public class InstallPackage : Database
     /// Gets or sets the location where files will be extracted to/updated from. Also
     /// the location where a temporary folder is created during some operations.
     /// </summary>
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public string WorkingDirectory
     {
         get { return this.workingDir; }
@@ -133,6 +135,7 @@ public class InstallPackage : Database
     /// <param name="longFileName">File name to search for (case-insensitive)</param>
     /// <returns>Array of file keys, or a 0-length array if none are found</returns>
     [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase")]
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public string[] FindFiles(string longFileName)
     {
         if (longFileName == null) {
@@ -157,6 +160,7 @@ public class InstallPackage : Database
     /// </summary>
     /// <param name="pattern">Regular expression search pattern</param>
     /// <returns>Array of file keys, or a 0-length array if none are found</returns>
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public string[] FindFiles(Regex pattern)
     {
         if (pattern== null) {
@@ -179,6 +183,7 @@ public class InstallPackage : Database
     /// </summary>
     /// <remarks>If any files have the uncompressed attribute, they will be copied
     /// from the <see cref="SourceDirectory"/>.</remarks>
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public void ExtractFiles()
     {
         this.ExtractFiles(null);
@@ -190,12 +195,14 @@ public class InstallPackage : Database
     /// <param name="fileKeys">List of file key strings to extract</param>
     /// <remarks>If any files have the uncompressed attribute, they will be copied
     /// from the <see cref="SourceDirectory"/>.</remarks>
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public void ExtractFiles(ICollection<string> fileKeys)
     {
         this.ProcessFilesByMediaDisk(fileKeys,
             new ProcessFilesOnOneMediaDiskHandler(this.ExtractFilesOnOneMediaDisk));
     }
 
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     private bool IsMergeModule()
     {
         return this.CountRows("Media", "`LastSequence` >= 0") == 0 &&
@@ -205,6 +212,7 @@ public class InstallPackage : Database
     private delegate void ProcessFilesOnOneMediaDiskHandler(string mediaCab,
         InstallPathMap compressedFileMap, InstallPathMap uncompressedFileMap);
 
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     private void ProcessFilesByMediaDisk(ICollection<string> fileKeys,
         ProcessFilesOnOneMediaDiskHandler diskHandler)
     {
@@ -426,6 +434,7 @@ public class InstallPackage : Database
     /// The cabinet compression level used during re-cabbing can be configured with the
     /// <see cref="CompressionLevel"/> property.
     /// </remarks>
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public void UpdateFiles()
     {
         this.UpdateFiles(null);
@@ -443,6 +452,7 @@ public class InstallPackage : Database
     /// <p>The cabinet compression level used during re-cabbing can be configured with the
     /// <see cref="CompressionLevel"/> property.</p>
     /// </remarks>
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public void UpdateFiles(ICollection<string> fileKeys)
     {
         this.ProcessFilesByMediaDisk(fileKeys,
@@ -597,6 +607,7 @@ public class InstallPackage : Database
     /// <p>The cabinet compression level used during re-cabbing can be configured with the
     /// <see cref="CompressionLevel"/> property.</p>
     /// </remarks>
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public void Consolidate(string mediaCabinet)
     {
         this.LogMessage("Consolidating package");
@@ -684,6 +695,7 @@ public class InstallPackage : Database
         this.SummaryInfo.Persist();
     }
 
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     private void DeleteEmbeddedCabs()
     {
         using (View view = this.OpenView("SELECT `Cabinet` FROM `Media` WHERE `Cabinet` <> ''"))
@@ -772,6 +784,7 @@ public class InstallPackage : Database
         }
     }
 
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     private void ApplyFilePatchesForConsolidation()
     {
         if(this.Tables.Contains("Patch"))
@@ -803,6 +816,7 @@ public class InstallPackage : Database
         }
     }
 
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     private void ExtractFilePatch(string fileKey, int sequence, string extractPath,
         IDictionary extractedCabs)
     {
@@ -871,6 +885,7 @@ public class InstallPackage : Database
     /// should be done after modifying the File, Component, or Directory
     /// tables, or else the cached information may no longer be accurate.
     /// </summary>
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public void UpdateDirectories()
     {
         this.dirPathMap = null;
@@ -927,6 +942,7 @@ public class InstallPackage : Database
     /// If the Directory table is modified, this mapping will be outdated
     /// until you close and reopen the install package.
     /// </remarks>
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public CompressionLevel CompressionLevel
     {
         get { return this.compressionLevel; }
@@ -948,6 +964,7 @@ public class InstallPackage : Database
     /// <p>After calling this method you can use <see cref="Consolidate"/> to apply
     /// the file patches immediately and also discard any outdated files from the package.</p>
     /// </remarks>
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public void ApplyPatch(PatchPackage patchPackage, string transform)
     {
         if(patchPackage == null) throw new ArgumentNullException("patchPackage");
@@ -1143,7 +1160,7 @@ public class InstallPackage : Database
 /// <summary>
 /// Accessor for getting and setting properties of the <see cref="InstallPackage"/> database.
 /// </summary>
-public class InstallPackageProperties
+internal class InstallPackageProperties
 {
     internal InstallPackageProperties(InstallPackage installPackage)
     {
@@ -1160,6 +1177,7 @@ public class InstallPackageProperties
     /// This has the same results as direct SQL queries on the Property table; it's only
     /// meant to be a more convenient way of access.
     /// </remarks>
+    [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
     public string this[string name]
     {
         get

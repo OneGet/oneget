@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Implementation {
+namespace Microsoft.PackageManagement.Internal.Implementation {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
@@ -46,7 +46,7 @@ namespace Microsoft.PackageManagement.Implementation {
             Provider = provider;
         }
 
-        protected T Provider {get; private set;}
+        internal T Provider { get; private set; }
 
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
         public IDictionary<string, List<string>> Features {
@@ -66,6 +66,8 @@ namespace Microsoft.PackageManagement.Implementation {
                 }
             }
         }
+
+        internal bool IsLoaded {get; set;}
 
         public string ProviderPath {get; internal set;}
 
@@ -97,7 +99,7 @@ namespace Microsoft.PackageManagement.Implementation {
                     result.AddRange(GetDynamicOptions(OptionCategory.Package, nullHostApi));
                     result.AddRange(GetDynamicOptions(OptionCategory.Provider, nullHostApi));
                     result.AddRange(GetDynamicOptions(OptionCategory.Source, nullHostApi));
-                    if (Features.ContainsKey("IsChainingProvider")) {
+                    if ((Features != null) && Features.ContainsKey("IsChainingProvider")) {
                         // chaining package providers should not cache results
                         return result;
                     }

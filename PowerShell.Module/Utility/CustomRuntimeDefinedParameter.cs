@@ -20,8 +20,8 @@ namespace Microsoft.PowerShell.PackageManagement.Utility {
     using System.Management.Automation;
     using System.Security;
     using Cmdlets;
-    using Microsoft.PackageManagement.Packaging;
-    using Microsoft.PackageManagement.Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
 
     internal class CustomRuntimeDefinedParameter : RuntimeDefinedParameter {
         internal HashSet<DynamicOption> Options = new HashSet<DynamicOption>();
@@ -84,10 +84,12 @@ namespace Microsoft.PowerShell.PackageManagement.Utility {
                             cmdlet.ResolvePath(Value.ToString())
                         };
 
+#if !CORECLR
                     case OptionType.SecureString:
                         return new[] {
                             "SECURESTRING:" + ((SecureString)Value).ToProtectedString("salt")
                         };
+#endif
                 }
                 return new[] {
                     Value.ToString()

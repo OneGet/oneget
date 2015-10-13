@@ -1,3 +1,0 @@
-BUILD_PASS1_CONSUMES= \
-    admin\monad\src\oneget\packagemanagement|PASS1 \
-

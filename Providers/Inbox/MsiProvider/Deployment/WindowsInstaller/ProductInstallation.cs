@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// Represents a unique instance of a product that
     /// is either advertised, installed or unknown.
     /// </summary>
-    public class ProductInstallation : Installation
+    internal class ProductInstallation : Installation
     {
         /// <summary>
         /// Gets the set of all products with a specified upgrade code. This method lists the
@@ -224,6 +224,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets a value indicating whether this product is advertised on the current system.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool IsAdvertised
         {
             get
@@ -241,6 +242,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Note that this property does not take into account policies such as AlwaysInstallElevated,
         /// but verifies that the local system owns the product's registry data.
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool IsElevated
         {
             get
@@ -258,7 +260,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the source list of this product installation.
         /// </summary>
-        public override SourceList SourceList
+        internal override SourceList SourceList
         {
             get
             {
@@ -294,6 +296,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// The support link.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string HelpLink
         {
             get
@@ -305,6 +308,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// The support telephone.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string HelpTelephone
         {
             get
@@ -316,6 +320,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Date and time the product was installed.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public DateTime InstallDate
         {
             get
@@ -379,6 +384,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// The publisher.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string Publisher
         {
             get
@@ -390,6 +396,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// URL about information.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Uri UrlInfoAbout
         {
             get
@@ -411,6 +418,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// The URL update information.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Uri UrlUpdateInfo
         {
             get
@@ -448,6 +456,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// For more information, see
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/productid.asp">ProductID</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string ProductId
         {
             get
@@ -459,6 +468,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// The company that is registered to use the product.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string RegCompany
         {
             get
@@ -470,6 +480,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// The owner who is registered to use the product.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string RegOwner
         {
             get
@@ -481,6 +492,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Transforms.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string AdvertisedTransforms
         {
             get
@@ -492,6 +504,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Product language.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string AdvertisedLanguage
         {
             get
@@ -503,6 +516,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Human readable product name.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string AdvertisedProductName
         {
             get
@@ -515,6 +529,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// True if the product is advertised per-machine;
         /// false if it is per-user or not advertised.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool AdvertisedPerMachine
         {
             get
@@ -526,6 +541,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Identifier of the package that a product is installed from.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string AdvertisedPackageCode
         {
             get
@@ -537,6 +553,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Version of the advertised product.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Version AdvertisedVersion
         {
             get
@@ -549,6 +566,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Primary icon for the package.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string AdvertisedProductIcon
         {
             get
@@ -560,6 +578,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Name of the installation package for the advertised product.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string AdvertisedPackageName
         {
             get
@@ -572,6 +591,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// True if the advertised product can be serviced by
         /// non-administrators without elevation.
         /// </summary>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool PrivilegedPatchingAuthorized
         {
             get
@@ -671,6 +691,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiqueryfeaturestate.asp">MsiQueryFeatureState</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiqueryfeaturestateex.asp">MsiQueryFeatureStateEx</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public InstallState GetFeatureState(string feature)
         {
             if (this.properties != null)
@@ -705,6 +726,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiquerycomponnetstate.asp">MsiQueryComponentState</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public InstallState GetComponentState(string component)
         {
             if (this.properties != null)
@@ -745,6 +767,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msicollectuserinfo.asp">MsiCollectUserInfo</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void CollectUserInfo()
         {
             if (this.properties == null)

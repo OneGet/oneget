@@ -12,12 +12,12 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Collections {
+namespace Microsoft.PackageManagement.Internal.Utility.Collections {
     using System;
     using System.Collections.Generic;
     using System.Linq;
 
-    public static class EnumerableExtensions {
+    internal static class EnumerableExtensions {
         /// <summary>
         ///     Returns a ReEnumerable wrapper around the collection which timidly (cautiously) pulls items
         ///     but still allows you to to re-enumerate without re-running the query.

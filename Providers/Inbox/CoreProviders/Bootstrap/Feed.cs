@@ -12,12 +12,12 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Providers.Bootstrap {
+namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Packaging;
-    using Utility.Extensions;
+    using PackageManagement.Internal.Packaging;
+    using PackageManagement.Internal.Utility.Extensions;
 
     internal class Feed : Swid {
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]

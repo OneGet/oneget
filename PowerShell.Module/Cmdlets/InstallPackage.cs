@@ -19,15 +19,12 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.PackageManagement.Implementation;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Packaging;
-    using Microsoft.PackageManagement.Utility.Async;
-    using Microsoft.PackageManagement.Utility.Extensions;
-    using Utility;
 
     [Cmdlet(VerbsLifecycle.Install, Constants.Nouns.PackageNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.ParameterSets.PackageBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517138")]
     public sealed class InstallPackage : CmdletWithSearchAndSource {
-        private readonly HashSet<string> _sourcesTrusted = new HashSet<string>();
-        private HashSet<string> __sourcesDeniedTrust = new HashSet<string>();
 
         public InstallPackage()
             : base(new[] {
@@ -57,7 +54,17 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         public override string MaximumVersion {get; set;}
 
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
-        public override string[] Source {get; set;}
+        // Use the base Source property so relative path will be resolved
+        public override string[] Source {
+            get
+            {
+                return base.Source;
+            }
+            set
+            {
+                base.Source = value;
+            }
+        }
 
 
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
@@ -114,6 +121,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 return false;
             }
 
+            if (Name.Any(each => each.ContainsWildcards())) {
+                Error(Constants.Errors.WildCardCharsAreNotSupported, Name.JoinWithComma());
+                return false;
+            }
             // otherwise, just do the search right now.
             return base.ProcessRecordAsync();
         }
@@ -138,7 +149,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
 
             // good list. Let's roll...
-            return InstallPackages(_resultsPerName.Values.SelectMany(each => each).ToArray());
+            return base.InstallPackages(_resultsPerName.Values.SelectMany(each => each).ToArray());
         }
 
         protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
@@ -155,121 +166,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 }
             }
             base.ProcessPackage(provider, searchKey, package);
-        }
-
-        private bool InstallPackages(params SoftwareIdentity[] packagesToInstall) {
-            // first, check to see if we have all the required dynamic parameters
-            // for each package/provider
-            foreach (var package in packagesToInstall) {
-                var pkg = package;
-                foreach (var parameter in DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>()
-                    .Where(param => param.IsSet == false && param.Options.Any(option => option.ProviderName == pkg.ProviderName && option.Category == OptionCategory.Install && option.IsRequired))) {
-                    // this is not good. there is a required parameter for the package
-                    // and the user didn't specify it. We should return the error to the user
-                    // and they can try again.
-                    Error(Constants.Errors.PackageInstallRequiresOption, package.Name, package.ProviderName, parameter.Name);
-                    Cancel();
-                }
-            }
-
-            if (IsCanceled) {
-                return false;
-            }
-            var progressId = 0;
-
-            if (packagesToInstall.Length > 1) {
-                progressId = StartProgress(0, Constants.Messages.InstallingPackagesCount, packagesToInstall.Length);
-            }
-            var n = 0;
-
-            foreach (var pkg in packagesToInstall) {
-                if (packagesToInstall.Length > 1) {
-                    Progress(progressId, (n*100/packagesToInstall.Length) + 1, Constants.Messages.InstallingPackageMultiple, pkg.Name, ++n, packagesToInstall.Length);
-                }
-                var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
-                if (provider == null) {
-                    Error(Constants.Errors.UnknownProvider, pkg.ProviderName);
-                    return false;
-                }
-
-                // quickly check to see if this package is already installed.
-                var installedPkgs = provider.GetInstalledPackages(pkg.Name,pkg.Version,null,null, this.ProviderSpecific(provider)).CancelWhen(CancellationEvent.Token).ToArray();
-                if (IsCanceled) {
-                    // if we're stopping, just get out asap.
-                    return false;
-                }
-
-                // todo: this is a terribly simplistic way to do this, we'd better rethink this soon
-                if (!Force) {
-                    if (installedPkgs.Any(each => each.Name.EqualsIgnoreCase(pkg.Name) && each.Version.EqualsIgnoreCase(pkg.Version))) {
-                        // it looks like it's already installed.
-                        // skip it.
-                        Verbose(Constants.Messages.SkippedInstalledPackage, pkg.Name, pkg.Version);
-
-                        if (packagesToInstall.Length > 1) {
-                            Progress(progressId, (n*100/packagesToInstall.Length) + 1, Constants.Messages.SkippedInstalledPackageMultiple, pkg.Name, n, packagesToInstall.Length);
-                        }
-                        continue;
-                    }
-                }
-
-                try {
-                    // if (WhatIf) {
-                    // we should just tell it which packages will be installed.
-                    // todo: [M2] should we be checking the installed status before we show this
-                    // todo:      or should we rethink allowing the providers to willingly support -whatif?
-                    // ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source);
-                    //} else {
-                    if (ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source)) {
-                        foreach (var installedPkg in provider.InstallPackage(pkg, this).CancelWhen(CancellationEvent.Token)) {
-                            if (IsCanceled) {
-                                // if we're stopping, just get out asap.
-                                return false;
-                            }
-                            WriteObject(installedPkg);
-                        }
-                    }
-                    //}
-                } catch (Exception e) {
-                    e.Dump();
-                    Error(Constants.Errors.InstallationFailure, pkg.Name);
-                    return false;
-                }
-                if (packagesToInstall.Length > 1) {
-                    Progress(progressId, (n*100/packagesToInstall.Length) + 1, Constants.Messages.InstalledPackageMultiple, pkg.Name, n, packagesToInstall.Length);
-                }
-            }
-
-            return true;
-        }
-
-
-
-        public bool ShouldProcessPackageInstall(string packageName, string version, string source) {
-            try {
-                return Force || ShouldProcess(FormatMessageString(Constants.Messages.TargetPackage, packageName, version, source), FormatMessageString(Constants.Messages.ActionInstallPackage)).Result;
-            } catch {
-            }
-            return false;
-        }
-
-        public override bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
-            try {
-                if (_sourcesTrusted.Contains(packageSource) || Force || WhatIf) {
-                    return true;
-                }
-                    if(__sourcesDeniedTrust.Contains(packageSource)) {
-                        return false;
-                    }
-                    if (ShouldContinue(FormatMessageString(Constants.Messages.QueryInstallUntrustedPackage, package, packageSource), FormatMessageString(Constants.Messages.CaptionSourceNotTrusted)).Result) {
-                    _sourcesTrusted.Add(packageSource);
-                    return true;
-                    } else {
-                        __sourcesDeniedTrust.Add(packageSource);
-                }
-            } catch {
-            }
-            return false;
         }
     }
 }

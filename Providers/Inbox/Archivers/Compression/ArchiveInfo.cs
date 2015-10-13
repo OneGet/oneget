@@ -7,21 +7,19 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
-    using System.Runtime.Serialization;
     using System.Text.RegularExpressions;
 
     /// <summary>
     /// Abstract object representing a compressed archive on disk;
     /// provides access to file-based operations on the archive.
     /// </summary>
-    [Serializable]
     public abstract class ArchiveInfo : FileSystemInfo
     {
         /// <summary>
@@ -30,7 +28,8 @@ namespace Microsoft.PackageManagement.Archivers.Compression
         /// </summary>
         /// <param name="path">The path to the archive. When creating an archive,
         /// this file does not necessarily exist yet.</param>
-        protected ArchiveInfo(string path) : base()
+        protected ArchiveInfo(string path)
+            : base()
         {
             if (path == null)
             {
@@ -40,18 +39,6 @@ namespace Microsoft.PackageManagement.Archivers.Compression
             // protected instance members inherited from FileSystemInfo:
             this.OriginalPath = path;
             this.FullPath = Path.GetFullPath(path);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the ArchiveInfo class with serialized data.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object
-        /// data about the exception being thrown.</param>
-        /// <param name="context">The StreamingContext that contains contextual
-        /// information about the source or destination.</param>
-        protected ArchiveInfo(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
         }
 
         /// <summary>
@@ -188,7 +175,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression
         /// containing information about a file in the archive.</returns>
         public IList<ArchiveFileInfo> GetFiles()
         {
-            return this.InternalGetFiles((Predicate<string>) null);
+            return this.InternalGetFiles((Predicate<string>)null);
         }
 
         /// <summary>

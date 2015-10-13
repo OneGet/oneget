@@ -16,7 +16,8 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Utility.Extensions;
+    using Internal;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
 
     public class DynamicOption : Yieldable {
         public DynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired, IEnumerable<object> permittedValues) {

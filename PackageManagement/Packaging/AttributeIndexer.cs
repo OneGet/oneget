@@ -12,13 +12,13 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Packaging {
+namespace Microsoft.PackageManagement.Internal.Packaging {
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Xml.Linq;
     using Utility.Collections;
     using Utility.Extensions;
-    using System.Diagnostics.CodeAnalysis;
 
     public class AttributeIndexer {
         private XElement _element;

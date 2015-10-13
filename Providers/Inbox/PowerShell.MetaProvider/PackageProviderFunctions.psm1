@@ -39,10 +39,10 @@ function Write-Debug {
 	}
 
 	if( -not $args  ) {
-		$request.Debug($message);
+		$null = $request.Debug($message);
 		return
 	}
-	$request.Debug($message,$args);
+	$null = $request.Debug($message,$args);
 }
 
 function Write-Error {
@@ -53,32 +53,7 @@ function Write-Error {
 		[Parameter()][string] $TargetObject
 	)
 
-	$request.Warning($Message);
-}
-
-function Start-Progress {
-	param( 
-		[Parameter()][int] $ParentActivityId = 0 ,
-		[Parameter()][string] $Message =""
-	)
-	return $request.StartProgress( $ParentActivityId , $Message);
-}
-
-function Complete-Progress {
-	param( 
-		[Parameter(Mandatory=$true)][int] $ActivityId,
-		[Parameter()][bool] $isSuccessful = $true
-	)
-	return $request.CompleteProgress($ActivityId, $isSuccessful);
-}
-
-function Write-Progress { 
-	param( 
-		[Parameter(Mandatory=$true)][string] $Activity,
-		[Parameter(Mandatory=$true)][int] $Id,
-		[Parameter(Mandatory=$true)][int] $PercentComplete
-	)
-	return $request.Progress($Id,$PercentComplete, $Activity);
+	$null = $request.Warning($Message);
 }
 
 <#
@@ -106,10 +81,10 @@ function Write-Verbose{
 	}
 
 	if( -not $args ) {
-		$request.Verbose($message);
+		$null = $request.Verbose($message);
 		return
 	}
-	$request.Verbose($message,$args);
+	$null = $request.Verbose($message,$args);
 }
 
 <#
@@ -137,10 +112,10 @@ function Write-Warning{
 	}
 
 	if( -not $args ) {
-		$request.Warning($message);
+		$null = $request.Warning($message);
 		return
 	}
-	$request.Warning($message,$args);
+	$null = $request.Warning($message,$args);
 }
 
 <#

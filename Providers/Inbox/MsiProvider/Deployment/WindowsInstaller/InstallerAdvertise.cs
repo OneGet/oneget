@@ -8,7 +8,7 @@
 //---------------------------------------------------------------------
 
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     using System.Reflection;
     using System.Text;
 
-    public static partial class Installer
+    internal static partial class Installer
     {
         /// <summary>
         /// Advertises a product to the local computer.

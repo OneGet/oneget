@@ -12,18 +12,17 @@
 //  limitations under the License.
 //
 
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using Microsoft.PackageManagement.Packaging;
-
-namespace Microsoft.PackageManagement.Msu {
+namespace Microsoft.PackageManagement.Msu.Internal {
     using System;
     using System.Collections.Generic;
-    using Archivers.Compression.Cab;
-    using Implementation;
-    using Utility.Extensions;
+    using System.Globalization;
+    using System.IO;
+    using System.Linq;
     using System.Management.Automation;
+    using Archivers.Internal.Compression.Cab;
+    using PackageManagement.Internal;
+    using PackageManagement.Internal.Implementation;
+    using PackageManagement.Internal.Utility.Extensions;
 
     public class MsuProvider {
         /// <summary>
@@ -174,10 +173,13 @@ namespace Microsoft.PackageManagement.Msu {
         /// <summary>
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="maximumVersion"></param>
         /// <param name="request">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
+        /// <param name="requiredVersion"></param>
+        /// <param name="minimumVersion"></param>
         public void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request)
         {
             if( request == null ) {

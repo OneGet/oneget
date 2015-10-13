@@ -14,10 +14,11 @@
 namespace Microsoft.PowerShell.PackageManagement.Utility {
     using System;
     using System.Diagnostics.CodeAnalysis;
-    using Microsoft.PackageManagement.Api;
     using Microsoft.PackageManagement.Implementation;
-    using Microsoft.PackageManagement.Utility.Extensions;
-    using Microsoft.PackageManagement.Utility.Plugin;
+    using Microsoft.PackageManagement.Internal.Api;
+    using Microsoft.PackageManagement.Internal.Implementation;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Utility.Plugin;
 
     /// <summary>
     ///     This can be used when we want to override some of the functions that are passed
@@ -27,7 +28,7 @@ namespace Microsoft.PowerShell.PackageManagement.Utility {
     ///     they will get called instead of the implementation in the current class. ('this')
     /// </summary>
 
-    public static class HostApiExtensions {
+    internal static class HostApiExtensions {
         internal static IHostApi ProviderSpecific(this IHostApi parent, PackageProvider provider) {
             var thisProviderIsCanceled = false;
             return new object[] {

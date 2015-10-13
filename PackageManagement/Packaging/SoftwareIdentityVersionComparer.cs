@@ -12,9 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Packaging {
+namespace Microsoft.PackageManagement.Internal.Packaging {
     using System;
     using System.Collections.Generic;
+    using PackageManagement.Packaging;
     using Utility.Extensions;
 
     public class SoftwareIdentityVersionComparer : IComparer<SoftwareIdentity> {

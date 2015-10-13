@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Platform {
+namespace Microsoft.PackageManagement.Internal.Utility.Platform {
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
@@ -224,14 +224,17 @@ namespace Microsoft.PackageManagement.Utility.Platform {
 
     internal delegate bool EnumResourceLanguages(Module module, ResourceType type, ResourceId resourceId, LanguageId language, Unused unused);
 
-    public static class NativeMethods {
-        [DllImport("kernel32.dll", EntryPoint = "MoveFileEx", CharSet = CharSet.Unicode)]
-        internal static extern bool MoveFileEx(string lpExistingFileName, string lpNewFileName, MoveFileFlags dwFlags);
-
-
+    internal static class NativeMethods {
         [DllImport("mpr.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int WNetGetConnection([MarshalAs(UnmanagedType.LPTStr)] string localName, [MarshalAs(UnmanagedType.LPTStr)] StringBuilder remoteName, ref int length);
 
+        [DllImport("user32")]
+        internal static extern int LoadString(Module module, uint stringId, StringBuilder buffer, int bufferSize);
+
+        [DllImport("wintrust.dll", ExactSpelling = true, SetLastError = false, CharSet = CharSet.Unicode)]
+        internal static extern WinVerifyTrustResult WinVerifyTrust(IntPtr hwnd, [MarshalAs(UnmanagedType.LPStruct)] Guid pgActionID, WinTrustData pWVTData);
+
+#if !CORECLR
         /// <summary>
         ///     Loads the specified module into the address space of the calling process.
         /// </summary>
@@ -241,6 +244,9 @@ namespace Microsoft.PackageManagement.Utility.Platform {
         /// <returns></returns>
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern Module LoadLibraryEx(string filename, Unused unused, LoadLibraryFlags dwFlags);
+
+        [DllImport("kernel32.dll", EntryPoint = "MoveFileEx", CharSet = CharSet.Unicode)]
+        internal static extern bool MoveFileEx(string lpExistingFileName, string lpNewFileName, MoveFileFlags dwFlags);
 
         /// <summary>
         ///     Enumerates resource types within a binary.
@@ -272,16 +278,60 @@ namespace Microsoft.PackageManagement.Utility.Platform {
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern int SizeofResource(Module module, Resource hResInfo);
 
-        [DllImport("user32")]
-        internal static extern int LoadString(Module module, uint stringId, StringBuilder buffer, int bufferSize);
-
         [DllImport("kernel32")]
         internal static extern bool FreeLibrary(Module instance);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern void OutputDebugString(string debugMessageText);
+#else
+        [DllImport("api-ms-win-core-file-l2-1-1.dll", EntryPoint="MoveFileEx", CharSet=CharSet.Unicode)]
+        internal static extern bool MoveFileEx(string lpExistingFileName, string lpNewFileName, MoveFileFlags dwFlags);
+        /// <summary>
+        ///     Loads the specified module into the address space of the calling process.
+        /// </summary>
+        /// <param name="filename">The name of the module.</param>
+        /// <param name="unused">This parameter is reserved for future use.</param>
+        /// <param name="dwFlags">The action to be taken when loading the module.</param>
+        /// <returns></returns>
 
-        [DllImport("wintrust.dll", ExactSpelling = true, SetLastError = false, CharSet = CharSet.Unicode)]
-        internal static extern WinVerifyTrustResult WinVerifyTrust(IntPtr hwnd, [MarshalAs(UnmanagedType.LPStruct)] Guid pgActionID, WinTrustData pWVTData);
+        [DllImport("api-ms-win-core-libraryloader-l1-2-0.dll", EntryPoint="LoadLibraryExW", SetLastError=true, CharSet=CharSet.Unicode)]
+        internal static extern Module LoadLibraryEx(string filename, Unused unused, LoadLibraryFlags dwFlags);
+
+        /// <summary>
+        ///     Enumerates resource types within a binary.
+        /// </summary>
+        /// <param name="module">Handle to a module to search.</param>
+        /// <param name="callback">Pointer to the function to be called for each resource type.</param>
+        /// <param name="unused">Value passed to the callback function.</param>
+        /// <param name="flags">The type of file to be searched.</param>
+        /// <param name="langid">Language ID</param>
+        /// <returns>Returns TRUE if successful, otherwise, FALSE.</returns>
+        [DllImport("api-ms-win-core-libraryloader-l1-2-0.dll", EntryPoint = "EnumResourceTypesExW", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern bool EnumResourceTypesEx(Module module, EnumResourceTypes callback, Unused unused, ResourceEnumFlags flags, LanguageId langid);
+
+        [DllImport("api-ms-win-core-libraryloader-l1-2-0.dll", EntryPoint = "EnumResourceNamesExW", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern bool EnumResourceNamesEx(Module module, ResourceType resourceType, EnumResourceNames callback, Unused unused, ResourceEnumFlags flags, uint langid);
+
+        [DllImport("api-ms-win-core-libraryloader-l1-2-0.dll", EntryPoint = "EnumResourceLanguagesExW", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern bool EnumResourceLanguagesEx(Module module, ResourceType resourceType, ResourceId resourceId, EnumResourceLanguages callback, Unused unused, ResourceEnumFlags flags, LanguageId language);
+
+        [DllImport("api-ms-win-core-libraryloader-l1-2-0.dll", EntryPoint = "FindResourceExW", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern Resource FindResourceEx(Module module, ResourceType resourceType, ResourceId resourceId, LanguageId language);
+
+        [DllImport("api-ms-win-core-libraryloader-l1-2-0.dll", SetLastError = true)]
+        internal static extern ResourceData LoadResource(Module module, Resource resource);
+
+        [DllImport("api-ms-win-core-libraryloader-l1-2-0.dll", SetLastError = true)]
+        internal static extern IntPtr LockResource(ResourceData data);
+
+        [DllImport("api-ms-win-core-libraryloader-l1-2-0.dll", SetLastError = true)]
+        internal static extern int SizeofResource(Module module, Resource hResInfo);
+
+        [DllImport("api-ms-win-core-libraryloader-l1-2-0.dll")]
+        internal static extern bool FreeLibrary(Module instance);
+
+        [DllImport("api-ms-win-core-debug-l1-1-1", CharSet=CharSet.Unicode, EntryPoint="OutputDebugStringW")]
+        public static extern void OutputDebugString(string debugMessageText);
+#endif
     }
 }

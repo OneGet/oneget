@@ -15,7 +15,7 @@
 namespace Microsoft.PowerShell.PackageManagement.Utility {
     using System.Management.Automation;
 
-    public class ErrorMessage {
+    internal class ErrorMessage {
         public readonly ErrorCategory Category;
         public readonly string Resource;
 

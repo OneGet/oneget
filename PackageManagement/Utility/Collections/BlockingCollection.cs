@@ -12,12 +12,12 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Collections {
+namespace Microsoft.PackageManagement.Internal.Utility.Collections {
     using System.Collections;
     using System.Collections.Generic;
     using System.Threading;
 
-    public class BlockingCollection<T> : System.Collections.Concurrent.BlockingCollection<T>, IEnumerable<T> {
+    internal class BlockingCollection<T> : System.Collections.Concurrent.BlockingCollection<T>, IEnumerable<T> {
         private MutableEnumerable<T> _blockingEnumerable;
         private readonly ManualResetEventSlim _activity = new ManualResetEventSlim(false);
         private readonly object _lock = new object();

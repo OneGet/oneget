@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Implementation {
+namespace Microsoft.PackageManagement.Internal.Implementation {
     using System.Globalization;
     using Api;
     using Utility.Extensions;
@@ -23,7 +23,7 @@ namespace Microsoft.PackageManagement.Implementation {
                 return string.Empty;
             }
 
-            if (messageText.StartsWith(Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
+            if (messageText.IndexOf(Constants.MSGPrefix, System.StringComparison.CurrentCultureIgnoreCase) == 0) {
                 messageText = request.GetMessageString(messageText.Substring(Constants.MSGPrefix.Length), messageText) ?? messageText;
             }
 

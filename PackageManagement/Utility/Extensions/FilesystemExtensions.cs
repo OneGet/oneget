@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Extensions {
+namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
     using System;
     using System.Diagnostics;
     using System.Globalization;
@@ -23,7 +23,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
     using System.Text.RegularExpressions;
     using Platform;
 
-    public static class FilesystemExtensions {
+    internal static class FilesystemExtensions {
         private static readonly char[] _pathCharacters = "/\\".ToCharArray();
         private static int _counter = Process.GetCurrentProcess().Id << 16;
         public static string OriginalTempFolder;
@@ -145,7 +145,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
         public static void ResetTempFolder() {
             // set the temporary folder to be a child of the User temporary folder
             // based on the application name
-            var appName = (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName().Name;
+            var appName = typeof(FilesystemExtensions).GetTypeInfo().Assembly.GetName().Name;
             if (OriginalTempFolder.IndexOf(appName, StringComparison.CurrentCultureIgnoreCase) == -1) {
                 var appTempPath = Path.Combine(OriginalTempFolder, appName);
                 if (!Directory.Exists(appTempPath)) {

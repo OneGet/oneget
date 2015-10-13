@@ -12,11 +12,11 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Collections {
+namespace Microsoft.PackageManagement.Internal.Utility.Collections {
     using System.Collections;
     using System.Collections.Generic;
 
-    public abstract class MutableEnumerable<T> : IEnumerable<T> {
+    internal abstract class MutableEnumerable<T> : IEnumerable<T> {
         private List<T> _list;
 
         protected List<T> List {

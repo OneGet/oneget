@@ -7,13 +7,13 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
 
-    public partial class Database
+    internal partial class Database
     {
         /// <summary>
         /// Creates a transform that, when applied to the object database, results in the reference database.
@@ -38,6 +38,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msidatabasegeneratetransform.asp">MsiDatabaseGenerateTransform</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool GenerateTransform(Database referenceDatabase, string transformFile)
         {
             if (referenceDatabase == null)
@@ -80,6 +81,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msicreatetransformsummaryinfo.asp">MsiCreateTransformSummaryInfo</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void CreateTransformSummaryInfo(
             Database referenceDatabase,
             string transformFile,
@@ -118,6 +120,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msidatabaseapplytransform.asp">MsiDatabaseApplyTransform</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void ViewTransform(string transformFile)
         {
             TransformErrors transformErrors =
@@ -142,6 +145,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msidatabaseapplytransform.asp">MsiDatabaseApplyTransform</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void ApplyTransform(string transformFile)
         {
             if (string.IsNullOrWhiteSpace(transformFile))
@@ -169,6 +173,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msidatabaseapplytransform.asp">MsiDatabaseApplyTransform</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void ApplyTransform(string transformFile, TransformErrors errorConditionsToSuppress)
         {
             if (string.IsNullOrWhiteSpace(transformFile))
@@ -190,6 +195,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <returns>true if the transform can be validly applied to this Database; false otherwise</returns>
         /// <exception cref="InstallerException">the transform could not be applied</exception>
         /// <exception cref="InvalidHandleException">the Database handle is invalid</exception>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool IsTransformValid(string transformFile)
         {
             if (string.IsNullOrWhiteSpace(transformFile))
@@ -210,6 +216,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <returns>true if the transform can be validly applied to this Database; false otherwise</returns>
         /// <exception cref="InstallerException">error processing summary info</exception>
         /// <exception cref="InvalidHandleException">the Database or SummaryInfo handle is invalid</exception>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool IsTransformValid(SummaryInfo transformSummaryInfo)
         {
             if (transformSummaryInfo == null)

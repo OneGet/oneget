@@ -12,12 +12,12 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Extensions {
+namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
 
-    public static class HashtableExtensions {
+    internal static class HashtableExtensions {
         public static bool IsNullOrEmpty(this Hashtable hashtable) {
             return hashtable == null || hashtable.Count == 0;
         }

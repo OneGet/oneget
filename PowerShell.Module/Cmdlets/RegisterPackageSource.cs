@@ -18,10 +18,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.PackageManagement.Packaging;
-    using Microsoft.PackageManagement.Utility.Async;
-    using Microsoft.PackageManagement.Utility.Collections;
-    using Microsoft.PackageManagement.Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Async;
+    using Microsoft.PackageManagement.Internal.Utility.Collections;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Utility;
 
     [Cmdlet(VerbsLifecycle.Register, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517139")]

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.Linq
 {
     using System;
     using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
     /// useful: <see cref="DatabaseTableAttribute"/>,
     /// <see cref="DatabaseColumnAttribute"/></para>
     /// </remarks>
-    public class QRecord
+    internal class QRecord
     {
         /// <summary>
         /// Do not call. Use QTable.NewRecord() instead.

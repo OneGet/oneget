@@ -16,7 +16,8 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System;
     using System.Collections;
     using System.Linq;
-    using Utility.Extensions;
+    using Internal;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
 
     public class SoftwareIdentity : Yieldable {
         public SoftwareIdentity() {

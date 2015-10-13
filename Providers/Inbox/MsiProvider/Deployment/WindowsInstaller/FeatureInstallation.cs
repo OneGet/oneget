@@ -8,7 +8,7 @@
 //---------------------------------------------------------------------
 
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -17,7 +17,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <summary>
     /// Represents an instance of a feature of an installed product.
     /// </summary>
-    public class FeatureInstallation : InstallationPart
+    internal class FeatureInstallation : InstallationPart
     {
         /// <summary>
         /// Creates a new FeatureInstallation instance for a feature of a product.
@@ -68,6 +68,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Invocation of this property may be slightly costly for products with many features,
         /// because it involves an enumeration of all the features in the product.
         /// </remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public FeatureInstallation Parent
         {
             get
@@ -109,6 +110,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msigetfeatureusage.asp">MsiGetFeatureUsage</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public FeatureInstallation.UsageData Usage
         {
             get
@@ -149,6 +151,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             private int useCount;
             private DateTime lastUsedDate;
 
+            [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
             internal UsageData(int useCount, DateTime lastUsedDate)
             {
                 this.useCount = useCount;
@@ -158,6 +161,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             /// <summary>
             /// Gets count of the number of times the feature has been used.
             /// </summary>
+            [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
             public int UseCount
             {
                 get
@@ -169,6 +173,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             /// <summary>
             /// Gets the date the feature was last used.
             /// </summary>
+            [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
             public DateTime LastUsedDate
             {
                 get

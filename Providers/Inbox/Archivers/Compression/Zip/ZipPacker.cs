@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Zip
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
 {
     using System;
     using System.Collections.Generic;
@@ -135,7 +135,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
 
                         if (i == 0)
                         {
-                            centralDirStartArchiveNumber = (uint) this.currentArchiveNumber;
+                            centralDirStartArchiveNumber = (uint)this.currentArchiveNumber;
                             centralDirStartPosition = archiveStream.Position;
                         }
 
@@ -163,7 +163,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
 
                     int maxFooterSize = eocd.GetSize(false);
                     if (archiveStream != null && (zip64 || archiveStream.Position >
-                        ((long) UInt32.MaxValue) - eocd.GetSize(false)))
+                        ((long)UInt32.MaxValue) - eocd.GetSize(false)))
                     {
                         maxFooterSize += eocd.GetSize(true) + (int)
                             Zip64EndOfCentralDirectoryLocator.EOCDL64_SIZE;
@@ -175,7 +175,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
                         maxArchiveSize,
                         maxFooterSize,
                         ref archiveStream);
-                    eocd.diskNumber = (uint) this.currentArchiveNumber;
+                    eocd.diskNumber = (uint)this.currentArchiveNumber;
 
                     if (zip64)
                     {
@@ -183,8 +183,8 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
                         eocd.versionNeeded = 45;
                         eocd.zip64 = true;
                         eocdl.dirOffset = archiveStream.Position;
-                        eocdl.dirStartDiskNumber = (uint) this.currentArchiveNumber;
-                        eocdl.totalDisks = (uint) this.currentArchiveNumber + 1;
+                        eocdl.dirStartDiskNumber = (uint)this.currentArchiveNumber;
+                        eocdl.totalDisks = (uint)this.currentArchiveNumber + 1;
                         eocd.Write(archiveStream);
                         eocdl.Write(archiveStream);
 
@@ -291,7 +291,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
                     compressionMethod = ZipCompressionMethod.Store;
                 }
 
-                Converter<Stream, Stream> compressionStreamCreator;
+                Func<Stream, Stream> compressionStreamCreator;
                 if (!ZipEngine.compressionStreamCreators.TryGetValue(
                     compressionMethod, out compressionStreamCreator))
                 {
@@ -323,7 +323,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
                     0,
                     compressionMethod);
 
-                bool zip64 = forceZip64 || fileStream.Length >= (long) UInt32.MaxValue;
+                bool zip64 = forceZip64 || fileStream.Length >= (long)UInt32.MaxValue;
                 ZipFileHeader fileHeader = new ZipFileHeader(fileInfo, zip64);
 
                 this.CheckArchiveWriteStream(
@@ -409,7 +409,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
             IPackStreamContext streamContext,
             Stream fileStream,
             long maxArchiveSize,
-            Converter<Stream, Stream> compressionStreamCreator,
+            Func<Stream, Stream> compressionStreamCreator,
             ref Stream archiveStream,
             out uint crc)
         {
@@ -449,8 +449,8 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
                 int counter = 0;
                 while (bytesRemaining > 0)
                 {
-                    int count = (int) Math.Min(
-                        bytesRemaining, (long) buf.Length);
+                    int count = (int)Math.Min(
+                        bytesRemaining, (long)buf.Length);
 
                     count = fileCrcStream.Read(buf, 0, count);
                     if (count <= 0)
@@ -475,7 +475,11 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
 
                 if (compressionStream is DeflateStream)
                 {
+#if CORECLR
+                    compressionStream.Dispose();
+#else
                     compressionStream.Close();
+#endif
                 }
                 else
                 {

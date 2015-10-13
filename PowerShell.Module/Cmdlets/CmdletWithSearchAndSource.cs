@@ -14,43 +14,90 @@
 
 namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
+    using System.Globalization;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
+    using System.Management.Automation.Language;
     using System.Security;
     using System.Threading;
     using Microsoft.PackageManagement.Implementation;
+    using Microsoft.PackageManagement.Internal.Api;
+    using Microsoft.PackageManagement.Internal.Implementation;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Async;
+    using Microsoft.PackageManagement.Internal.Utility.Collections;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Packaging;
-    using Microsoft.PackageManagement.Utility.Async;
-    using Microsoft.PackageManagement.Utility.Collections;
-    using Microsoft.PackageManagement.Utility.Extensions;
     using Utility;
+    using CollectionExtensions = Microsoft.PackageManagement.Internal.Utility.Extensions.CollectionExtensions;
     using Constants = PackageManagement.Constants;
+    using DictionaryExtensions = Microsoft.PackageManagement.Internal.Utility.Extensions.DictionaryExtensions;
     using Directory = System.IO.Directory;
+    using FilesystemExtensions = Microsoft.PackageManagement.Internal.Utility.Extensions.FilesystemExtensions;
 
     public abstract class CmdletWithSearchAndSource : CmdletWithSearch {
         protected readonly List<string, string> _filesWithoutMatches = new List<string, string>();
-        protected readonly OrderedDictionary<string, List<SoftwareIdentity>> _resultsPerName = new OrderedDictionary<string, List<SoftwareIdentity>>();
+        internal readonly OrderedDictionary<string, List<SoftwareIdentity>> _resultsPerName = new OrderedDictionary<string, List<SoftwareIdentity>>();
         protected List<PackageProvider> _providersNotFindingAnything = new List<PackageProvider>();
+        protected readonly string[] ProviderFilters = new[] {"Packagemanagement", "Provider"};
+        protected const string Bootstrap = "Bootstrap";
+        protected const string PSModule = "PSModule";
+        protected readonly string[] RequiredProviders = new[] { Bootstrap, PSModule };
+        private readonly HashSet<string> _sourcesTrusted = new HashSet<string>();
+        private readonly HashSet<string> _sourcesDeniedTrust = new HashSet<string>();
+        private bool _yesToAll = false;
+        private bool _noToAll = false;
 
         protected CmdletWithSearchAndSource(OptionCategory[] categories)
             : base(categories) {
         }
 
-        public virtual SwitchParameter AllVersions {get; set;}
+        private string[] _sources;
 
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "It's a performance thing.")]
         [Parameter(ValueFromPipelineByPropertyName = true)]
-        public virtual string[] Source {get; set;}
+        public virtual string[] Source
+        {
+            get
+            {
+                return _sources;
+            }
+            set
+            {
+                _sources = value;
+
+                if (_sources != null && _sources.Length != 0) {
+                    ProviderInfo providerInfo;
+
+                    _sources = _sources.SelectMany(source => {
+                        if (source.Equals(".")) {
+                            source = ".\\";
+                        }
+                        if (Directory.Exists(source)) {
+                            return GetResolvedProviderPathFromPSPath(source, out providerInfo);
+                        } else {
+                            return CollectionExtensions.SingleItemAsEnumerable(source);
+                        }
+                    }).ToArray();
+                }
+            }
+        }
+
 
         [Parameter]
         public virtual PSCredential Credential {get; set;}
 
-        public override IEnumerable<string> Sources {
-            get {
-                if (Source.IsNullOrEmpty()) {
-                    return Microsoft.PackageManagement.Constants.Empty;
+        public override IEnumerable<string> Sources
+        {
+            get
+            {
+                if (CollectionExtensions.IsNullOrEmpty(Source)) {
+                    return Microsoft.PackageManagement.Internal.Constants.Empty;
                 }
+
                 return Source;
             }
         }
@@ -78,23 +125,27 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
         */
 
-        public override string CredentialUsername {
-            get {
+        public override string CredentialUsername
+        {
+            get
+            {
                 return Credential != null ? Credential.UserName : null;
             }
         }
 
-        public override  SecureString CredentialPassword {
-            get {
+        public override SecureString CredentialPassword
+        {
+            get
+            {
                 return Credential != null ? Credential.Password : null;
             }
         }
 
         public override bool ProcessRecordAsync() {
             // record the names in the collection.
-            if (!Name.IsNullOrEmpty()) {
+            if (!CollectionExtensions.IsNullOrEmpty(Name)) {
                 foreach (var name in Name) {
-                    _resultsPerName.GetOrAdd(name, () => null);
+                    DictionaryExtensions.GetOrAdd(_resultsPerName, name, () => null);
                 }
             }
 
@@ -110,17 +161,22 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
 
         private MutableEnumerable<string> FindFiles(string path) {
-            if (path.LooksLikeAFilename()) {
+            if (FilesystemExtensions.LooksLikeAFilename(path)) {
                 ProviderInfo providerInfo;
                 var paths = GetResolvedProviderPathFromPSPath(path, out providerInfo).ReEnumerable();
-                return paths.SelectMany(each => each.FileExists() ? each.SingleItemAsEnumerable() : each.DirectoryExists() ? Directory.GetFiles(each) : Microsoft.PackageManagement.Constants.Empty).ReEnumerable();
+                return
+                    paths.SelectMany(
+                        each => FilesystemExtensions.FileExists(each) ? CollectionExtensions.SingleItemAsEnumerable(each) : FilesystemExtensions.DirectoryExists(each) ? Directory.GetFiles(each) : Microsoft.PackageManagement.Internal.Constants.Empty)
+                        .ReEnumerable();
             }
-            return Microsoft.PackageManagement.Constants.Empty.ReEnumerable();
+            return Microsoft.PackageManagement.Internal.Constants.Empty.ReEnumerable();
         }
 
 
-        protected bool SpecifiedMinimumOrMaximum {
-            get {
+        protected bool SpecifiedMinimumOrMaximum
+        {
+            get
+            {
                 return !string.IsNullOrWhiteSpace(MaximumVersion) || !string.IsNullOrWhiteSpace(MinimumVersion);
             }
         }
@@ -135,7 +191,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             if (Uri.TryCreate(name, UriKind.Absolute, out packageUri)) {
                 // if it's an uri, then we search via uri or file!
                 if (!packageUri.IsFile) {
-                    _uris.Add( packageUri );
+                    _uris.Add(packageUri);
                     return true;
                 }
             }
@@ -154,7 +210,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     } else {
                         // otherwise, lets' grab the first chunk of this file so we can check what providers
                         // can handle it (later)
-                        _files.Add(f, new List<string> { name }, f.ReadBytes(1024));
+                        DictionaryExtensions.Add(_files, f, new List<string> {
+                            name
+                        }, FilesystemExtensions.ReadBytes(f, 1024));
                     }
                 }
 
@@ -163,97 +221,154 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return false;
         }
 
+        protected virtual IHostApi GetProviderSpecificOption(PackageProvider pv) {
+            return this.ProviderSpecific(pv);
+        }
 
+        protected virtual bool EnsurePackageIsProvider(SoftwareIdentity package) {
+            return true;
+        }
 
-        protected void SearchForPackages() {
-            var providers = SelectedProviders.ToArray();
+        /// <summary>
+        ///  Validate if the package is a provider package. 
+        /// </summary>
+        /// <param name="package"></param>
+        /// <returns></returns>
+        protected bool ValidatePackageProvider(SoftwareIdentity package) {
+            //no need to filter on the packages from the bootstrap site as only providers will be published out there.
+            if (package.ProviderName.EqualsIgnoreCase("Bootstrap")) {
+                return true;
+            }
 
+            //get the tags info from the package's swid
+            var tags = package.Metadata["tags"].ToArray();
 
-            // filter the items into three types of searches
-            _names = Name.IsNullOrEmpty() ? string.Empty.SingleItemAsEnumerable() : Name.Where(each => !IsUri(each) && !IsFile(each)).ToArray();
+            //Check if the provider has provider tags
+            var found = false;
+            foreach (var filter in ProviderFilters) {
+                found = false;
+                if (tags.Any(tag => tag.ContainsIgnoreCase(filter))) {
+                    found = true;
+                } else {
+                    break;
+                }
+            }
+            return found;
+        }
 
+        protected virtual void SearchForPackages() {
+            try {
 
-           var requests = SelectedProviders.SelectMany(pv => {
-                // for a given provider, if we get an error, we want just that provider to stop.
-                var host = this.ProviderSpecific(pv);
+                var providers = SelectedProviders.ToArray();
 
-               var a = _uris.Select(uri => new {
-                   query = new List<string>{uri.AbsolutePath},
-                   provider = pv,
-                   packages = pv.FindPackageByUri(uri, host).CancelWhen(CancellationEvent.Token)
-               });
+                // filter the items into three types of searches
+                _names = CollectionExtensions.IsNullOrEmpty(Name) ? CollectionExtensions.SingleItemAsEnumerable(string.Empty) : Name.Where(each => !IsUri(each) && !IsFile(each)).ToArray();
 
-               var b = _files.Keys.Where(file => pv.IsSupportedFile(_files[file].Item2)).Select(file => new {
-                   query = _files[file].Item1,
-                   provider = pv,
-                   packages =  pv.FindPackageByFile(file, host)
-               });
-
-               var c = _names.Select(name => new {
-                   query = new List<string>{name},
-                   provider = pv,
-                   packages = pv.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion,host)
-               });
-
-               return a.Concat(b).Concat(c);
-           }).ToArray();
-
-            if (AllVersions || !SpecifiedMinimumOrMaximum) {
-                // the user asked for every version or they didn't specify any version ranges
-                // either way, that means that we can just return everything that we're finding.
-
-                while(WaitForActivity(requests.Select(each => each.packages))) {
-                    // keep processing while any of the the queries is still going.
-
-                    foreach (var result in requests.Where(each => each.packages.HasData)) {
-                        // look only at requests that have data waiting.
-
-                        foreach (var package in result.packages.GetConsumingEnumerable()) {
-                            // process the results for that set.
-                            ProcessPackage(result.provider, result.query, package);
-                        }
-                    }
-
-                    // filter out whatever we're done with.
-                    requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
+                foreach (var n in _names) {
+                    Debug("Calling SearchForPackages. Name='{0}'", n);
                 }
 
+                var requests = providers.SelectMany(pv => {
+                    Verbose(Resources.Messages.SelectedProviders, pv.ProviderName);
+                    // for a given provider, if we get an error, we want just that provider to stop.
+                    var host = GetProviderSpecificOption(pv);
 
-            } else {
-                // now this is where it gets a bit funny.
-                // the user specified a min or max
-                // and so we have to only return the highest one in the set for a given package.
+                    var a = _uris.Select(uri => new {
+                        query = new List<string> {
+                            uri.AbsolutePath
+                        },
+                        provider = pv,
+                        packages = pv.FindPackageByUri(uri, host).CancelWhen(CancellationEvent.Token)
+                    });
 
-                while (WaitForActivity(requests.Select(each => each.packages))) {
-                    // keep processing while any of the the queries is still going.
-                    foreach (var perProvider in requests.GroupBy(each => each.provider)) {
-                        foreach (var perQuery in perProvider.GroupBy(each => each.query)) {
-                            if (perQuery.All(each => each.packages.IsCompleted && !each.packages.IsConsumed)) {
-                                foreach (var pkg in from p in perQuery.SelectMany(each => each.packages.GetConsumingEnumerable())
-                                                    group p by new { p.Name, p.Source }
-                                    // for a given name
-                                    into grouping
-                                        // get the latest version only
-                                                    select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First())
-                                {
-                                    ProcessPackage(perProvider.Key, perQuery.Key, pkg);
+                    var b = _files.Keys.Where(file => pv.IsSupportedFile(_files[file].Item2)).Select(file => new {
+                        query = _files[file].Item1,
+                        provider = pv,
+                        packages = pv.FindPackageByFile(file, host)
+                    });
+
+                    var c = _names.Select(name => new {
+                        query = new List<string> {
+                            name
+                        },
+                        provider = pv,
+                        packages = pv.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, host)
+                    });
+
+                    return a.Concat(b).Concat(c);
+                }).ToArray();
+
+                Debug("Calling SearchForPackages After Select {0}", requests.Length);
+
+                if (AllVersions || !SpecifiedMinimumOrMaximum) {
+                    // the user asked for every version or they didn't specify any version ranges
+                    // either way, that means that we can just return everything that we're finding.
+
+                    while (WaitForActivity(requests.Select(each => each.packages))) {
+
+                        // keep processing while any of the the queries is still going.
+
+                        foreach (var result in requests.Where(each => each.packages.HasData)) {
+                            // look only at requests that have data waiting.
+
+                            foreach (var package in result.packages.GetConsumingEnumerable()) {
+                                // process the results for that set.
+                                // check if the package is a provider package. If so we need to filter on the packages for the providers.
+                                if (EnsurePackageIsProvider(package)) {
+                                    ProcessPackage(result.provider, result.query, package);
                                 }
                             }
                         }
-                    }
-                    // filter out whatever we're done with.
-                    requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
-                }
-            }
 
-            // dispose of any requests that didn't get cleaned up earlier.
-            foreach (var i in requests) {
-                i.packages.Dispose();
+                        requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
+                    }
+
+
+                } else {
+                    // now this is where it gets a bit funny.
+                    // the user specified a min or max
+                    // and so we have to only return the highest one in the set for a given package.
+
+                    while (WaitForActivity(requests.Select(each => each.packages))) {
+                        // keep processing while any of the the queries is still going.
+                        foreach (var perProvider in requests.GroupBy(each => each.provider)) {
+                            foreach (var perQuery in perProvider.GroupBy(each => each.query)) {
+                                if (perQuery.All(each => each.packages.IsCompleted && !each.packages.IsConsumed)) {
+                                    foreach (var pkg in from p in perQuery.SelectMany(each => each.packages.GetConsumingEnumerable())
+                                        group p by new {
+                                            p.Name,
+                                            p.Source
+                                        }
+                                        // for a given name
+                                        into grouping
+                                            // get the latest version only
+                                        select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()) {
+
+                                        if (EnsurePackageIsProvider(pkg)) {
+                                            ProcessPackage(perProvider.Key, perQuery.Key, pkg);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        // filter out whatever we're done with.
+                        requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
+                    }
+                }
+
+                // dispose of any requests that didn't get cleaned up earlier.
+                foreach (var i in requests) {
+                    i.packages.Dispose();
+                }
+            } catch (Exception ex) {
+
+                Debug(ex.ToString());
             }
         }
 
         protected virtual void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
             foreach (var key in searchKey) {
+
                 _resultsPerName.GetOrSetIfDefault(key, () => new List<SoftwareIdentity>()).Add(package);
             }
         }
@@ -265,6 +380,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             if (unmatched.Any()) {
                 // whine about things not matched.
                 foreach (var name in unmatched) {
+
+                    Debug(string.Format(CultureInfo.CurrentCulture, "unmatched package name='{0}'", name));
+
                     if (name == string.Empty) {
                         // no name
                         result = false;
@@ -303,40 +421,187 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     var suggestion = "";
 
                     var providers = set.Select(each => each.ProviderName).Distinct().ToArray();
-                    var sources = set.Select(each => each.Source ).Distinct().ToArray();
+                    var sources = set.Select(each => each.Source).Distinct().ToArray();
                     if (providers.Length == 1) {
                         // it's matching this package multiple times in the same provider.
                         if (sources.Length == 1) {
                             // matching it from a single source.
                             // be more exact on matching name? or version?
-                            // todo: make a resource for this
-                            suggestion = "Please specify an exact -Name and -RequiredVersion.";
+                            suggestion = Resources.Messages.SuggestRequiredVersion;
                         } else {
                             // it's matching the same package from multiple sources
                             // tell them to use -source
-                            // todo: make a resource for this
-                            suggestion = "Please specify a single -Source.";
+                            suggestion = Resources.Messages.SuggestSingleSource;
                         }
                     } else {
                         // found across multiple providers
                         // must specify -provider
-                        // todo: make a resource for this
-                        suggestion = "Please specify a single -ProviderName.";
+                        suggestion = Resources.Messages.SuggestSingleProviderName;
                     }
 
                     string searchKey = null;
 
                     foreach (var pkg in set) {
-                        // todo : this is a temporary message
-                        // Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, pkg.CanonicalId);
-                        Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, pkg.ProviderName, pkg.Name, pkg.Version, pkg.Source);
+
+                        Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, pkg.ProviderName, pkg.Name, pkg.Version, GetPackageSourceNameOrLocation(pkg));                        
                         searchKey = pkg.SearchKey;
                     }
-                    Error(Constants.Errors.DisambiguateForInstall, searchKey, GetMessageString(suggestion,suggestion));
+                    Error(Constants.Errors.DisambiguateForInstall, searchKey, GetMessageString(suggestion, suggestion));
                 }
                 return false;
             }
             return true;
+        }
+
+        // Performs a reverse lookup from Package Source Location -> Source Name for a Provider
+        private string GetPackageSourceNameOrLocation(SoftwareIdentity package)
+        {
+            // Default to Source Location Url
+            string packageSourceName = package.Source;
+
+            // Get the package provider object            
+            var packageProvider = SelectProviders(package.ProviderName).ReEnumerable();
+
+            if (!packageProvider.Any())
+            {
+                return packageSourceName;
+            }
+
+            
+            // For any issues with reverse lookup (SourceLocation -> SourceName), return Source Location Url                        
+            try
+            {
+                var packageSource = packageProvider.Select(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered && (source.Location.EqualsIgnoreCase(package.Source)))).ReEnumerable();
+
+                if (packageSource.Any()) {
+                    var pkgSource = packageSource.FirstOrDefault();
+                    if (pkgSource != null) {
+                        var source = pkgSource.FirstOrDefault();
+                        if (source != null) {
+                            packageSourceName = source.Name;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                e.Dump();
+            }                        
+
+            return packageSourceName;
+        }
+
+        protected bool InstallPackages(params SoftwareIdentity[] packagesToInstall) {
+            // first, check to see if we have all the required dynamic parameters
+            // for each package/provider
+            foreach (var package in packagesToInstall) {
+                var pkg = package;
+                foreach (var parameter in DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>()
+                    .Where(param => param.IsSet == false && param.Options.Any(option => option.ProviderName == pkg.ProviderName && option.Category == OptionCategory.Install && option.IsRequired))) {
+                    // this is not good. there is a required parameter for the package
+                    // and the user didn't specify it. We should return the error to the user
+                    // and they can try again.
+                    Error(Constants.Errors.PackageInstallRequiresOption, package.Name, package.ProviderName, parameter.Name);
+                    Cancel();
+                }
+            }
+
+            if (IsCanceled) {
+                return false;
+            }
+            var progressId = 0;
+
+            if (packagesToInstall.Length > 1) {
+                progressId = StartProgress(0, Constants.Messages.InstallingPackagesCount, packagesToInstall.Length);
+            }
+            var n = 0;
+
+            foreach (var pkg in packagesToInstall) {
+                if (packagesToInstall.Length > 1) {
+                    Progress(progressId, (n*100/packagesToInstall.Length) + 1, Constants.Messages.InstallingPackageMultiple, pkg.Name, ++n, packagesToInstall.Length);
+                }
+                var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
+                if (provider == null) {
+                    Error(Constants.Errors.UnknownProvider, pkg.ProviderName);
+                    return false;
+                }
+
+                // quickly check to see if this package is already installed.
+                var installedPkgs = provider.GetInstalledPackages(pkg.Name, pkg.Version, null, null, this.ProviderSpecific(provider)).CancelWhen(CancellationEvent.Token).ToArray();
+                if (IsCanceled) {
+                    // if we're stopping, just get out asap.
+                    return false;
+                }
+
+                // todo: this is a terribly simplistic way to do this, we'd better rethink this soon
+                if (!Force) {
+                    if (installedPkgs.Any(each => each.Name.EqualsIgnoreCase(pkg.Name) && each.Version.EqualsIgnoreCase(pkg.Version))) {
+                        // it looks like it's already installed.
+                        // skip it.
+                        Verbose(Constants.Messages.SkippedInstalledPackage, pkg.Name, pkg.Version);
+
+                        if (packagesToInstall.Length > 1) {
+                            Progress(progressId, (n*100/packagesToInstall.Length) + 1, Constants.Messages.SkippedInstalledPackageMultiple, pkg.Name, n, packagesToInstall.Length);
+                        }
+                        continue;
+                    }
+                }
+
+                try {
+                    if (ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source)) {
+                        foreach (var installedPkg in provider.InstallPackage(pkg, this).CancelWhen(CancellationEvent.Token)) {
+                            if (IsCanceled) {
+                                // if we're stopping, just get out asap.
+                                return false;
+                            }
+
+
+                            WriteObject(installedPkg);
+
+                        }
+                    }
+                } catch (Exception e) {
+                    e.Dump();
+                    Error(Constants.Errors.InstallationFailure, pkg.Name);
+                    return false;
+                }
+                if (packagesToInstall.Length > 1) {
+                    Progress(progressId, (n*100/packagesToInstall.Length) + 1, Constants.Messages.InstalledPackageMultiple, pkg.Name, n, packagesToInstall.Length);
+                }
+            }
+
+            return true;
+        }
+
+        protected bool ShouldProcessPackageInstall(string packageName, string version, string source) {
+            try {
+                //-force is already handled before reaching this stage
+                return ShouldProcess(FormatMessageString(Constants.Messages.TargetPackage, packageName, version, source), FormatMessageString(Constants.Messages.ActionInstallPackage)).Result;
+            } catch {
+            }
+            return false;
+        }
+
+        public override bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
+            try {
+                if (_sourcesTrusted.Contains(packageSource) || Force || WhatIf || _yesToAll) {
+                    return true;
+                }
+                if (_sourcesDeniedTrust.Contains(packageSource) || _noToAll) {
+                    return false;
+                }
+                var shouldContinueResult = ShouldContinue(FormatMessageString(Constants.Messages.QueryInstallUntrustedPackage, package, packageSource), FormatMessageString(Constants.Messages.CaptionSourceNotTrusted), true).Result;
+                _yesToAll = shouldContinueResult.yesToAll;
+                _noToAll = shouldContinueResult.noToAll;
+                if (shouldContinueResult.result) {
+                    _sourcesTrusted.Add(packageSource);
+                    return true;
+                } else {
+                    _sourcesDeniedTrust.Add(packageSource);
+                }
+            } catch {
+            }
+            return false;
         }
     }
 }

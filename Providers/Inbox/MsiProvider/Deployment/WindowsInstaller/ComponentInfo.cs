@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections;
@@ -17,7 +17,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <summary>
     /// Accessor for information about components within the context of an installation session.
     /// </summary>
-    public sealed class ComponentInfoCollection : ICollection<ComponentInfo>
+    internal sealed class ComponentInfoCollection : ICollection<ComponentInfo>
     {
         private Session session;
 
@@ -31,6 +31,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// </summary>
         /// <param name="component">name of the component</param>
         /// <returns>component object</returns>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public ComponentInfo this[string component]
         {
             get
@@ -133,7 +134,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <summary>
     /// Provides access to information about a component within the context of an installation session.
     /// </summary>
-    public class ComponentInfo
+    internal class ComponentInfo
     {
         private Session session;
         private string name;
@@ -164,6 +165,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msigetcomponentstate.asp">MsiGetComponentState</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public InstallState CurrentState
         {
             get
@@ -196,6 +198,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msigetcomponentstate.asp">MsiGetComponentState</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisetcomponentstate.asp">MsiSetComponentState</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public InstallState RequestState
         {
             get
@@ -242,6 +245,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msienumcomponentcosts.asp">MsiEnumComponentCosts</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public IList<InstallCost> GetCost(InstallState installState)
         {
             IList<InstallCost> costs = new List<InstallCost>();

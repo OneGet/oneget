@@ -18,11 +18,12 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.PackageManagement.Api;
+    using Microsoft.PackageManagement.Internal.Api;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Async;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Utility.Plugin;
     using Microsoft.PackageManagement.Packaging;
-    using Microsoft.PackageManagement.Utility.Async;
-    using Microsoft.PackageManagement.Utility.Extensions;
-    using Microsoft.PackageManagement.Utility.Plugin;
     using Utility;
 
     [Cmdlet(VerbsCommon.Set, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.ParameterSets.SourceBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517141")]
@@ -89,7 +90,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         public override IEnumerable<string> Sources {
             get {
                 if (string.IsNullOrWhiteSpace(Name) && string.IsNullOrWhiteSpace(Location)) {
-                    return Microsoft.PackageManagement.Constants.Empty;
+                    return Microsoft.PackageManagement.Internal.Constants.Empty;
                 }
 
                 return new[] {
@@ -159,12 +160,18 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 // a bit more messy at this point
                 // create a new package source first
 
+                bool removed = false;
+
                 foreach (var src in source.Provider.AddPackageSource(NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted.IsPresent ? Trusted.ToBool() : source.IsTrusted, this)) {
                     WriteObject(src);
+                    if (!removed)
+                    {
+                        // if we are able to successfully add a source, then we remove the original source that was supposed to be replace.
+                        // This will only happen once (as there is only one original source)
+                        source.Provider.RemovePackageSource(source.Name, this);
+                        removed = true;
+                    }
                 }
-
-                // remove the old one.
-                source.Provider.RemovePackageSource(source.Name, this).Wait();
             }
         }
 

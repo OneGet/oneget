@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -40,7 +40,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     ///		</description></item>
     /// </list>
     /// </p></remarks>
-    public partial class Database : InstallerHandle
+    internal partial class Database : InstallerHandle
     {
         private string filePath;
         private DatabaseOpenMode openMode;
@@ -64,6 +64,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiopendatabase.asp">MsiOpenDatabase</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Database(string filePath)
             : this(filePath, DatabaseOpenMode.ReadOnly)
         {
@@ -92,6 +93,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiopendatabase.asp">MsiOpenDatabase</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Database(string filePath, string outputPath)
             : this((IntPtr) Database.Open(filePath, outputPath), true, outputPath, DatabaseOpenMode.CreateDirect)
         {
@@ -210,6 +212,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Getting or setting the code page is a slow operation because it involves an export or import
         /// of the codepage data to/from a temporary file.
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int CodePage
         {
             get
@@ -266,6 +269,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msigetsummaryinformation.asp">MsiGetSummaryInformation</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public SummaryInfo SummaryInfo
         {
             get
@@ -301,6 +305,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// </p></remarks>
         /// <param name="handle">Integer database handle</param>
         /// <param name="ownsHandle">true to close the handle when this object is disposed</param>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static Database FromHandle(IntPtr handle, bool ownsHandle)
         {
             return new Database(
@@ -373,6 +378,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msidatabasemerge.asp">MsiDatabaseMerge</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Merge(Database otherDatabase, string errorTable)
         {
             if (otherDatabase == null)
@@ -429,6 +435,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msidatabasemerge.asp">MsiDatabaseMerge</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Merge(Database otherDatabase) { this.Merge(otherDatabase, null); }
 
         /// <summary>
@@ -445,6 +452,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msidatabaseistablepersistent.asp">MsiDatabaseIsTablePersistent</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool IsTablePersistent(string table)
         {
             if (string.IsNullOrWhiteSpace(table))
@@ -471,6 +479,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// To check whether a column exists regardless of persistence,
         /// use <see cref="ColumnCollection.Contains"/>.
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool IsColumnPersistent(string table, string column)
         {
             if (string.IsNullOrWhiteSpace(table))
@@ -595,6 +604,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msidatabaseexport.asp">MsiDatabaseExport</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Export(string table, string exportFilePath)
         {
             if (table == null)
@@ -628,6 +638,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msidatabaseimport.asp">MsiDatabaseImport</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Import(string importFilePath)
         {
             if (string.IsNullOrWhiteSpace(importFilePath))
@@ -662,6 +673,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msidatabaseexport.asp">MsiDatabaseExport</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void ExportAll(string directoryPath)
         {
             if (string.IsNullOrWhiteSpace(directoryPath))
@@ -727,6 +739,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msidatabaseimport.asp">MsiDatabaseImport</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void ImportAll(string directoryPath)
         {
             if (string.IsNullOrWhiteSpace(directoryPath))
@@ -868,6 +881,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private static int Open(string filePath, string outputPath)
         {
             if (string.IsNullOrWhiteSpace(filePath))
@@ -918,6 +932,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Returns the value of the specified property.
         /// </summary>
         /// <param name="property">Name of the property to retrieve.</param>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string ExecutePropertyQuery(string property)
         {
             IList<string> values = this.ExecuteStringQuery("SELECT `Value` FROM `Property` WHERE `Property` = '{0}'", property);

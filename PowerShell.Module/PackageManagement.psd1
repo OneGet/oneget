@@ -20,7 +20,7 @@
     CompanyName = "Microsoft Corporation"
     Copyright = "(C) Microsoft Corporation. All rights reserved."
     HelpInfoUri = "http://go.microsoft.com/fwlink/?linkid=392040"
-    ModuleVersion = "1.0.0.0"
+    ModuleVersion = "1.0.0.1"
     PowerShellVersion = "3.0"
     ClrVersion = "4.0"
     RootModule = "Microsoft.PowerShell.PackageManagement.dll"
@@ -31,6 +31,9 @@
         'Get-PackageProvider', 
         'Get-PackageSource',
         'Install-Package',
+        'Import-PackageProvider'
+        'Find-PackageProvider'
+        'Install-PackageProvider'
         'Register-PackageSource',
 		'Set-PackageSource',
 		'Unregister-PackageSource',

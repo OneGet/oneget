@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Cab
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 {
     using System;
     using System.Collections.Generic;
@@ -15,7 +15,9 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
     using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
+#if !CORECLR
     using System.Security.Permissions;
+#endif
     using System.Text;
 
     internal class CabUnpacker : CabWorker
@@ -42,7 +44,9 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
 
         [SuppressMessage("Microsoft.Security", "CA2106:SecureAsserts")]
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+#if !CORECLR
         [SecurityPermission(SecurityAction.Assert, UnmanagedCode = true)]
+#endif
         public CabUnpacker(CabEngine cabEngine)
             : base(cabEngine)
         {
@@ -77,7 +81,9 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
         }
 
         [SuppressMessage("Microsoft.Security", "CA2106:SecureAsserts")]
+#if !CORECLR
         [SecurityPermission(SecurityAction.Assert, UnmanagedCode = true)]
+#endif
         public bool IsArchive(Stream stream)
         {
             if (stream == null)
@@ -94,7 +100,9 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
         }
 
         [SuppressMessage("Microsoft.Security", "CA2106:SecureAsserts")]
+#if !CORECLR
         [SecurityPermission(SecurityAction.Assert, UnmanagedCode = true)]
+#endif
         public IList<ArchiveFileInfo> GetFileInfo(
             IUnpackStreamContext streamContext,
             Predicate<string> fileFilter)
@@ -159,7 +167,9 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
         }
 
         [SuppressMessage("Microsoft.Security", "CA2106:SecureAsserts")]
+#if !CORECLR
         [SecurityPermission(SecurityAction.Assert, UnmanagedCode = true)]
+#endif
         public void Unpack(
             IUnpackStreamContext streamContext,
             Predicate<string> fileFilter)
@@ -360,7 +370,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
 
             // Non-utf8 names should be completely ASCII. But for compatibility with
             // legacy tools, interpret them using the current (Default) ANSI codepage.
-            Encoding nameEncoding = utf8Name ? Encoding.UTF8 : Encoding.Default;
+            Encoding nameEncoding = utf8Name ? Encoding.UTF8 : Encoding.GetEncoding(0);
 
             // Find how many bytes are in the string.
             // Unfortunately there is no faster way.

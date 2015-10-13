@@ -12,19 +12,27 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Platform {
+namespace Microsoft.PackageManagement.Internal.Utility.Platform {
     using System;
     using System.Runtime.InteropServices;
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     internal class WinTrustFileInfo {
-        private UInt32 StructSize = (UInt32)Marshal.SizeOf(typeof (WinTrustFileInfo));
+#if !CORECLR
+        private UInt32 StructSize = (UInt32)Marshal.SizeOf(typeof(WinTrustFileInfo));
+#else
+        private UInt32 StructSize = (UInt32)Marshal.SizeOf<WinTrustFileInfo>();
+#endif
         private IntPtr FilePath; // required, file name to be verified
         private IntPtr hFile = IntPtr.Zero; // optional, open handle to FilePath
         private IntPtr pgKnownSubject = IntPtr.Zero; // optional, subject type if it is known
 
         public WinTrustFileInfo(String filePath) {
+#if CORECLR
+            FilePath = Marshal.StringToCoTaskMemUni(filePath);
+#else
             FilePath = Marshal.StringToCoTaskMemAuto(filePath);
+#endif
         }
 
         ~WinTrustFileInfo() {

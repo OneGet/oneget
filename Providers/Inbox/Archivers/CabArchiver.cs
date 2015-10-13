@@ -12,10 +12,11 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.Archivers {
+namespace Microsoft.PackageManagement.Archivers.Internal {
     using System;
     using System.Collections.Generic;
-    using Implementation;
+    using PackageManagement.Internal;
+    using PackageManagement.Internal.Implementation;
 
     public class CabArchiver {
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {

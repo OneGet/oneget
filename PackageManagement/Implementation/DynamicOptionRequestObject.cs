@@ -12,13 +12,13 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Implementation {
+namespace Microsoft.PackageManagement.Internal.Implementation {
     using System;
     using System.Collections.Generic;
     using Api;
     using Packaging;
 
-    public class DynamicOptionRequestObject : EnumerableRequestObject<DynamicOption> {
+    internal class DynamicOptionRequestObject : EnumerableRequestObject<DynamicOption> {
         private DynamicOption _currentItem;
         private List<string> _list = new List<string>();
         private readonly OptionCategory _category;

@@ -12,16 +12,17 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.Providers {
+namespace Microsoft.PackageManagement.Providers.Internal {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
     using System.Security.AccessControl;
-    using Implementation;
-    using Packaging;
-    using Utility.Extensions;
-    using Utility.Platform;
+    using PackageManagement.Internal;
+    using PackageManagement.Internal.Implementation;
+    using PackageManagement.Internal.Packaging;
+    using PackageManagement.Internal.Utility.Platform;
+    using PackageManagement.Internal.Utility.Extensions;
     using Win32;
     using File = System.IO.File;
 

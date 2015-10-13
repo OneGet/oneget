@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     using System.Runtime.InteropServices;
     using System.Text;
 
-    public static partial class Installer
+    internal static partial class Installer
     {
         /// <summary>
         /// Gets the current version of the installer.

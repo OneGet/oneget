@@ -13,12 +13,15 @@
 //
 
 namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.PackageManagement.Implementation;
+    using Microsoft.PackageManagement.Internal.Implementation;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Packaging;
-    using Microsoft.PackageManagement.Utility.Extensions;
     using Utility;
 
     [Cmdlet(VerbsCommon.Find, Constants.Nouns.PackageNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517132"), OutputType(typeof(SoftwareIdentity))]
@@ -41,32 +44,53 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         [Parameter]
         public override SwitchParameter AllVersions {get; set;}
 
-        protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
-            base.ProcessPackage(provider, searchKey, package);
-
-            // return the object to the caller now.
-            WriteObject(package);
-
-            if (IncludeDependencies) {
-                var  missingDependencies = new HashSet<string>();
-                foreach (var dep in package.Dependencies) {
-                    // note: future work may be needed if the package sources currently selected by the user don't
-                    // contain the dependencies.
-                    var dependendcies = PackageManagementService.FindPackageByCanonicalId(dep, this);
-                    var depPkg = dependendcies.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).FirstOrDefault();
-
-                    if (depPkg == null) {
-                        missingDependencies.Add(dep);
-                        Warning(Constants.Messages.UnableToFindDependencyPackage, dep);
-                    } else {
-                        ProcessPackage(depPkg.Provider, searchKey.Select(each => each + depPkg.Name).ToArray(), depPkg);
-                    }
-                }
-                if (missingDependencies.Any()) {
-                    Error(Constants.Errors.UnableToFindDependencyPackage, missingDependencies.JoinWithComma());
+        public override bool BeginProcessingAsync()
+        {
+            if (!string.IsNullOrEmpty(RequiredVersion))
+            {
+                if ((!string.IsNullOrEmpty(MinimumVersion)) || (!string.IsNullOrEmpty(MaximumVersion)))
+                {
+                    Error(Constants.Errors.VersionRangeAndRequiredVersionCannotBeSpecifiedTogether);
                 }
             }
+
+            return true;
         }
+
+        protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
+
+            try {
+
+                base.ProcessPackage(provider, searchKey, package);
+            
+                // return the object to the caller now.
+                WriteObject(package);
+
+                if (IncludeDependencies) {
+                    var missingDependencies = new HashSet<string>();
+                    foreach (var dep in package.Dependencies) {
+                        // note: future work may be needed if the package sources currently selected by the user don't
+                        // contain the dependencies.
+                        var dependendcies = PackageManagementService.FindPackageByCanonicalId(dep, this);
+                        var depPkg = dependendcies.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).FirstOrDefault();
+
+                        if (depPkg == null) {
+                            missingDependencies.Add(dep);
+                            Warning(Constants.Messages.UnableToFindDependencyPackage, dep);
+                        } else {
+                            ProcessPackage(depPkg.Provider, searchKey.Select(each => each + depPkg.Name).ToArray(), depPkg);
+                        }
+                    }
+                    if (missingDependencies.Any()) {
+                        Error(Constants.Errors.UnableToFindDependencyPackage, missingDependencies.JoinWithComma());
+                    }
+                }
+            } catch (Exception ex) {
+
+                Debug("Calling ProcessPackage {0}", ex.ToString());
+            }
+        }
+
 
         public override bool EndProcessingAsync() {
             return CheckUnmatchedPackages();

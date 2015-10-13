@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System.Diagnostics.CodeAnalysis;
 
@@ -22,6 +22,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         private ValidationError error;
         private string column;
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal ValidationErrorInfo(ValidationError error, string column)
         {
             this.error = error;

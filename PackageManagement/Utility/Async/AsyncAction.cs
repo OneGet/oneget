@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Async {
+namespace Microsoft.PackageManagement.Internal.Utility.Async {
     using System;
     using System.Diagnostics;
     using System.Threading;
@@ -110,11 +110,6 @@ namespace Microsoft.PackageManagement.Utility.Async {
             // notify any listeners that we're about to kill this.
             if (OnAbort != null) {
                 OnAbort();
-            }
-
-            // now, foreably kill this thing
-            if (_invocationThread.IsAlive) {
-                _invocationThread.Abort();
             }
 
             lock (_lock) {

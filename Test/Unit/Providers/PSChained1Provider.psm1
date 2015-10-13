@@ -17,14 +17,14 @@
 	$req = New-Request -sources @( "http://nuget.org/api/v2" ) 
 
 	if( (-not $name) -or ($name -eq "zlib"))  {
-		$pkgs = $request.FindPackageByCanonicalId("nuget:zlib/1.2.8.7", $req);
+		$pkgs = $request.FindPackageByCanonicalId("nuget:zlib/1.2.8.7#http://nuget.org/api/v2", $req);
 		foreach( $pkg in $pkgs ) {
 
 			$deps = (new-Object -TypeName  System.Collections.ArrayList)
 			foreach( $d in $pkg.Dependencies ) {
 				write-debug "DEPENDENCY: $d"
 				# add each dependency, but say it's from us.
-				$deps.Add( (new-dependency "PSChained1" $request.Services.ParsePackageName($d) $request.Services.ParsePackageVersion($d) "my-source" $null) )
+				$deps.Add( (new-dependency "PSChained1Provider" $request.Services.ParsePackageName($d) $request.Services.ParsePackageVersion($d) "my-source" $null) )
 			
 			}
 
@@ -36,12 +36,12 @@
 
 	# return the redist package:
 	if( $name -eq "zlib.redist" -and $requiredVersion -eq "1.2.8.7" ) {
-		$pkgs = $request.FindPackageByCanonicalId("nuget:zlib.redist/1.2.8.7", $req);
+		$pkgs = $request.FindPackageByCanonicalId("nuget:zlib.redist/1.2.8.7#http://nuget.org/api/v2", $req);
 		foreach( $pkg in $pkgs ) {
 			$deps = (new-Object -TypeName  System.Collections.ArrayList)
 			foreach( $d in $pkg.Dependencies ) {
 				# add each dependency, but say it's from us.
-				$deps.Add( (new-dependency "PSChained1" $request.Services.ParsePackageName($d) $request.Services.ParsePackageVersion($d) "my-source" $null) )
+				$deps.Add( (new-dependency "PSChained1Provider" $request.Services.ParsePackageName($d) $request.Services.ParsePackageVersion($d) "my-source" $null) )
 			}
 
 			$p = new-softwareidentity "zlib.redist" $pkg.Name $pkg.Version $pkg.VersionScheme "my-source" $pkg.Summary -dependencies $deps
@@ -58,5 +58,5 @@ function Initialize-Provider {
 }
 
 function Get-PackageProviderName { 
-    return "PSChained1"
+    return "PSChained1Provider"
 }

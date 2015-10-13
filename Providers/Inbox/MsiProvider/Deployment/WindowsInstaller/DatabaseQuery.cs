@@ -7,14 +7,14 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Globalization;
 
-    public partial class Database
+    internal partial class Database
     {
         /// <summary>
         /// Gets a View object representing the query specified by a SQL string.
@@ -129,6 +129,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewexecute.asp">MsiViewExecute</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewfetch.asp">MsiViewFetch</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public IList ExecuteQuery(string sqlFormat, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(sqlFormat))
@@ -160,6 +161,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewexecute.asp">MsiViewExecute</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewfetch.asp">MsiViewFetch</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public IList ExecuteQuery(string sql, Record record)
         {
             if (string.IsNullOrWhiteSpace(sql))
@@ -206,6 +208,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewexecute.asp">MsiViewExecute</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewfetch.asp">MsiViewFetch</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public IList<int> ExecuteIntegerQuery(string sqlFormat, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(sqlFormat))
@@ -237,6 +240,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewexecute.asp">MsiViewExecute</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewfetch.asp">MsiViewFetch</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public IList<int> ExecuteIntegerQuery(string sql, Record record)
         {
             if (string.IsNullOrWhiteSpace(sql))
@@ -359,6 +363,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewexecute.asp">MsiViewExecute</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewfetch.asp">MsiViewFetch</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public object ExecuteScalar(string sqlFormat, params object[] args)
         {
             if (string.IsNullOrWhiteSpace(sqlFormat))
@@ -389,6 +394,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewexecute.asp">MsiViewExecute</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewfetch.asp">MsiViewFetch</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public object ExecuteScalar(string sql, Record record)
         {
             if (string.IsNullOrWhiteSpace(sql))

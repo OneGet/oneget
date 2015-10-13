@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// Base class for Windows Installer exceptions.
     /// </summary>
     [Serializable]
-    public class InstallerException : SystemException
+    internal class InstallerException : SystemException
     {
         private int errorCode;
         private object[] errorData;
@@ -87,6 +87,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the system error code that resulted in this exception, or 0 if not applicable.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int ErrorCode
         {
             get
@@ -299,7 +300,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// User Canceled the installation.
     /// </summary>
     [Serializable]
-    public class InstallCanceledException : InstallerException
+    internal class InstallCanceledException : InstallerException
     {
         /// <summary>
         /// Creates a new InstallCanceledException with a specified error message and a reference to the
@@ -346,7 +347,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// A bad SQL query string was passed to <see cref="Database.OpenView"/> or <see cref="Database.Execute(string,object[])"/>.
     /// </summary>
     [Serializable]
-    public class BadQuerySyntaxException : InstallerException
+    internal class BadQuerySyntaxException : InstallerException
     {
         /// <summary>
         /// Creates a new BadQuerySyntaxException with a specified error message and a reference to the
@@ -393,7 +394,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// A method was called on an invalid installer handle.  The handle may have been already closed.
     /// </summary>
     [Serializable]
-    public class InvalidHandleException : InstallerException
+    internal class InvalidHandleException : InstallerException
     {
         /// <summary>
         /// Creates a new InvalidHandleException with a specified error message and a reference to the
@@ -441,7 +442,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// details about the merge conflict.
     /// </summary>
     [Serializable]
-    public class MergeException : InstallerException
+    internal class MergeException : InstallerException
     {
         private IList<string> conflictTables;
         private IList<int> conflictCounts;
@@ -454,6 +455,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <param name="innerException">The exception that is the cause of the current exception. If the
         /// innerException parameter is not a null reference (Nothing in Visual Basic), the current exception
         /// is raised in a catch block that handles the inner exception.</param>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public MergeException(string msg, Exception innerException)
             : base(msg, innerException)
         {
@@ -463,6 +465,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Creates a new MergeException with a specified error message.
         /// </summary>
         /// <param name="msg">The message that describes the error.</param>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public MergeException(string msg)
             : base(msg)
         {
@@ -476,6 +479,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         {
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal MergeException(Database db, string conflictsTableName)
             : base("Merge failed.")
         {
@@ -520,6 +524,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Gets the number of merge conflicts in each table, corresponding to the tables returned by
         /// <see cref="ConflictTables"/>.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public IList<int> ConflictCounts
         {
             get
@@ -531,6 +536,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the list of tables containing merge conflicts.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public IList<string> ConflictTables
         {
             get

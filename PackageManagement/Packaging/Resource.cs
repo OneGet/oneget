@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Packaging {
+namespace Microsoft.PackageManagement.Internal.Packaging {
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Xml.Linq;

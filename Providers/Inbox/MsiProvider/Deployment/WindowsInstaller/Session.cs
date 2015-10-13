@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// </p><p>
     /// Note that only one Session object can be opened by a single process.
     /// </p></remarks>
-    public sealed class Session : InstallerHandle, IFormatProvider
+    internal sealed class Session : InstallerHandle, IFormatProvider
     {
         private Database database;
         private CustomActionData customActionData;

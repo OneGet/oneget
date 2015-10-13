@@ -12,13 +12,18 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Platform {
+namespace Microsoft.PackageManagement.Internal.Utility.Platform {
     using System;
     using System.Runtime.InteropServices;
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    internal class WinTrustData {
-        private UInt32 StructSize = (UInt32)Marshal.SizeOf(typeof (WinTrustData));
+    internal class WinTrustData
+    {
+#if !CORECLR
+        private UInt32 StructSize = (UInt32)Marshal.SizeOf(typeof(WinTrustData));
+#else
+        private UInt32 StructSize = (UInt32)Marshal.SizeOf<WinTrustData>();
+#endif
         private IntPtr PolicyCallbackData = IntPtr.Zero;
         private IntPtr SIPClientData = IntPtr.Zero;
         private uint UIChoice = 2;
@@ -34,7 +39,11 @@ namespace Microsoft.PackageManagement.Utility.Platform {
         // constructor for silent WinTrustDataChoice.File check
         public WinTrustData(String filename) {
             var wtfiData = new WinTrustFileInfo(filename);
-            FileInfoPtr = Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof (WinTrustFileInfo)));
+#if !CORECLR
+            FileInfoPtr = Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(WinTrustFileInfo)));
+#else
+            FileInfoPtr = Marshal.AllocCoTaskMem(Marshal.SizeOf<WinTrustFileInfo>());
+#endif
             Marshal.StructureToPtr(wtfiData, FileInfoPtr, false);
         }
 

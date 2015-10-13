@@ -1,21 +1,22 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement {
+namespace Microsoft.PackageManagement.Internal {
     using System;
 
     internal static class Constants {
+        internal static readonly string[] SupportedAssemblyTypes = {".dll", ".exe", ".psm1"};
         internal const int PackageManagementVersion = 3;
         internal const int TimeoutUnspecified = 0;
         internal const int TimeoutHostNotAvailable = -1;
@@ -28,7 +29,7 @@ namespace Microsoft.PackageManagement {
         internal static TimeSpan DefaultCallTimeout = TimeSpan.FromMinutes(60);
         // TODO: Setting responsiveness to 15 minutes until we know that
         // we're handling it all right.
-        internal static TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(15*60);
+        internal static TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(15 * 60);
 
         internal static TimeSpan Zero = new TimeSpan(0);
 
@@ -57,7 +58,14 @@ namespace Microsoft.PackageManagement {
             internal const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependency";
             internal const string DestinationPathNotSet = "MSG:DestinationPathNotSet";
             internal const string FailedProviderBootstrap = "MSG:FailedProviderBootstrap";
+            internal const string FailedPowerShellMetaProvider = "MSG:FailedPowerShellMetaProvider";
             internal const string FileFailedVerification = "MSG:FileFailedVerification";
+            internal const string HashNotEqual = "MSG:HashNotEqual";
+            internal const string MissingFileTag = "MSG:MissingFileTag";
+            internal const string MissingHashAttribute = "MSG:MissingHashAttribute";
+            internal const string MissingHashContent = "MSG:MissingHashContent";
+            internal const string UnsupportedHashAlgorithm = "MSG:UnsupportedHashAlgorithm";
+            internal const string InvalidHashFormat = "MSG:InvalidHashFormat";            
             internal const string InvalidFilename = "MSG:InvalidFilename";
             internal const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
             internal const string NetworkNotAvailable = "MSG:NetworkNotAvailable";
@@ -79,10 +87,24 @@ namespace Microsoft.PackageManagement {
             internal const string UnableToUninstallPackage = "MSG:UnableToUninstallPackage";
             internal const string UnknownFolderId = "MSG:UnknownFolderId";
             internal const string UnknownProvider = "MSG:UnknownProvider";
+            internal const string ProviderNameAndVersionNotAvailableFromFilePath = "MSG:ProviderNameAndVersionNotAvailableFromFilePath";
+            internal const string SingleAssemblyAllowed = "MSG:SingleAssemblyAllowed";
+            internal const string UnknownProviderFromActivatedList = "MSG:UnknownProviderFromActivatedList";
             internal const string UnsupportedArchive = "MSG:UnsupportedArchive";
             internal const string UnsupportedProviderType = "MSG:UnsupportedProviderType";
             internal const string UriSchemeNotSupported = "MSG:UriSchemeNotSupported_Scheme";
             internal const string UserDeclinedUntrustedPackageInstall = "MSG:UserDeclinedUntrustedPackageInstall";
+            internal const string UnableToFindPowerShellFunctionsFile = "MSG:UnableToFindPowerShellFunctionsFile";
+            internal const string FileNotFound = "MSG:FileNotFound";
+            internal const string InvalidFileType = "MSG:InvalidFileType";
+            internal const string ProviderNameIsNullOrEmpty = "MSG:ProviderNameIsNullOrEmpty";
+            internal const string UnableToImportModule = "MSG:UnableToImportModule";
+            internal const string FailedToImportProvider = "MSG:FailedToImportProvider";
+            internal const string ModuleNotFound = "MSG:ModuleNotFound";
+            internal const string NoMatchFoundForCriteria = "MSG:NoMatchFoundForCriteria";
+            internal const string InvalidParameter = "MSG:InvalidParameter";
+            internal const string InstallRequiresCurrentUserScopeParameterForNonAdminUser = "MSG:InstallRequiresCurrentUserScopeParameterForNonAdminUser";
+            
         }
 
         internal static class Status {
@@ -94,6 +116,7 @@ namespace Microsoft.PackageManagement {
             internal const string Dependency = "Dependency";
             internal const string Installed = "Installed";
             internal const string Uninstalled = "Uninstalled";
+            internal const string Downloaded = "Downloaded";
         }
 
         internal static class Parameters {

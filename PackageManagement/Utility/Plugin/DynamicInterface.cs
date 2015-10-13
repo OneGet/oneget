@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Plugin {
+namespace Microsoft.PackageManagement.Internal.Utility.Plugin {
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -20,8 +20,9 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
     using Async;
     using Collections;
     using Extensions;
+    using Api;
 
-    public static class DynamicInterface {
+    internal static class DynamicInterface {
         internal delegate void OnUnhandledException(string method, Exception exception);
 
         private static readonly Dictionary<Types, bool> _isCreatableFromTypesCache = new Dictionary<Types, bool>();
@@ -246,7 +247,7 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
                 var instanceType = instance.GetType();
                 // get all the public interfaces for the instances and place them at the top
                 // and let it try to bind against those.
-                return instanceType.GetInterfaces().Where(each => each.IsPublic).Select(each => new {
+                return instanceType.GetInterfaces().Where(each => each.GetTypeInfo().IsPublic).Select(each => new {
                     instance,
                     SupportsMethod = DynamicInterfaceExtensions.GenerateInstanceSupportsMethod(instance),
                     Type = each,
@@ -297,7 +298,7 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
                         }
                     }
                 }
-                if (!found && (tInterface.IsInterface || method.IsAbstract)) {
+                if (!found && (tInterface.GetTypeInfo().IsInterface || method.IsAbstract)) {
 #if xDEEPDEBUG
                     Console.WriteLine(" Generating stub method for {0} -> {1}".format(tInterface.NiceName(), method.ToSignatureString()));
 #endif

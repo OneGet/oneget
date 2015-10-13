@@ -12,11 +12,13 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement {
+namespace Microsoft.PackageManagement.Internal {
+    using System;
     using System.Collections.Generic;
     using Api;
     using Implementation;
-    using Packaging;
+    using PackageManagement.Implementation;
+    using PackageManagement.Packaging;
 
     /// <summary>
     ///     The current Package Management Service Interface
@@ -34,6 +36,11 @@ namespace Microsoft.PackageManagement {
         IEnumerable<string> AllProviderNames { get; }
 
         IEnumerable<PackageProvider> PackageProviders {get;}
+
+        IEnumerable<PackageProvider> GetAvailableProviders(IHostApi requestObject, string[] names);
+
+        IEnumerable<PackageProvider> ImportPackageProvider(IHostApi requestObject, string providerName, Version requiredVersion,
+            Version minimumVersion, Version maximumVersion, bool isRooted, bool force);
 
         bool Initialize(IHostApi requestObject);
 

@@ -12,15 +12,23 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Extensions {
+namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
     using System;
     using System.Collections.Generic;
 
-    public static class DictionaryExtensions {
+    internal static class DictionaryExtensions {
         public static Tuple<T1, T2> Add<TKey, T1, T2>(this IDictionary<TKey, Tuple<T1, T2>> dictionary, TKey key, T1 v1, T2 v2) {
             var item = new Tuple<T1, T2>(v1, v2);
             dictionary.Add(key, item);
             return item;
+        }
+
+        public static void RemoveSafe<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key) {
+            lock (dictionary) {
+                if (dictionary.ContainsKey(key)) {
+                    dictionary.Remove(key);
+                }
+            }
         }
 
         public static TValue AddOrSet<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value) {

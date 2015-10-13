@@ -12,12 +12,12 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Extensions {
+namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
     using System;
     using System.Globalization;
     using Platform;
 
-    public static class ExceptionExtensions {
+    internal static class ExceptionExtensions {
         public static void Dump(this Exception e) {
             var text = string.Format(CultureInfo.CurrentCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace);
             // for now, this is the only way we'll see exceptions in the wild.

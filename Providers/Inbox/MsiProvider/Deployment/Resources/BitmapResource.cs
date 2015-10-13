@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.Resources
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 {
     using System.IO;
 
@@ -17,7 +17,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
     /// <remarks>
     /// The resource is of type <see cref="ResourceType.Bitmap"/> (RT_GROUPICON).
     /// </remarks>
-    public sealed class BitmapResource : Resource
+    internal sealed class BitmapResource : Resource
     {
         private const int SizeOfBitmapFileHeader = 14; // this is the sizeof(BITMAPFILEHEADER)
 

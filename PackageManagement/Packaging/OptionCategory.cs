@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Packaging {
+namespace Microsoft.PackageManagement.Internal.Packaging {
     public enum OptionCategory {
         Package = 0,
         Provider = 1,

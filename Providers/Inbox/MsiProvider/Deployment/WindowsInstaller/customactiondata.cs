@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <seealso cref="Session.CustomActionData"/>
     /// <seealso cref="Session.DoAction(string,CustomActionData)"/>
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public sealed class CustomActionData : IDictionary<string, string>
+    internal sealed class CustomActionData : IDictionary<string, string>
     {
         /// <summary>
         /// "CustomActionData" literal property name.

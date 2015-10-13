@@ -18,7 +18,7 @@ ipmo "$PSScriptRoot\utility.psm1"
 # Actual Tests:
 
 
-Describe "test name goes here" {
+Describe "test name goes here" -Tags @('BVT', 'DRT'){
     # make sure that packagemanagement is loaded
     import-packagemanagement
 

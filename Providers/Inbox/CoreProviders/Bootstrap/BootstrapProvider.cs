@@ -12,19 +12,27 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Providers.Bootstrap {
+namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
-    using Api;
-    using Implementation;
-    using Packaging;
-    using Utility.Extensions;
-    using Utility.Plugin;
+    using System.Management.Automation;
+    using System.Threading.Tasks;
+    using PackageManagement.Internal;
+    using PackageManagement.Internal.Api;
+    using PackageManagement.Internal.Implementation;
+    using PackageManagement.Internal.Packaging;
+    using PackageManagement.Packaging;
+    using PackageManagement.Internal.Utility.Extensions;
+    using PackageManagement.Internal.Utility.Plugin;
+    using PackageManagement.Internal.Utility.Versions;
     using Directory = System.IO.Directory;
+    using ErrorCategory = PackageManagement.Internal.ErrorCategory;
     using File = System.IO.File;
+    using System.IO.Compression;
 
     public class BootstrapProvider {
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
@@ -33,8 +41,10 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             {Constants.Features.MagicSignatures, Constants.Empty},
             {Constants.Features.AutomationOnly, Constants.Empty}
         };
+        
+        private const WildcardOptions WildcardOptions = System.Management.Automation.WildcardOptions.CultureInvariant | System.Management.Automation.WildcardOptions.IgnoreCase;
 
-        private static IEqualityComparer<Package> PackageEqualityComparer = new Utility.Extensions.EqualityComparer<Package>(
+        private static IEqualityComparer<Package> PackageEqualityComparer = new PackageManagement.Internal.Utility.Extensions.EqualityComparer<Package>(
             (x, y) => x.Name.EqualsIgnoreCase(y.Name) && x.Version.EqualsIgnoreCase(y.Version), (x) => (x.Name + x.Version).GetHashCode());
 
         private PackageManagementService PackageManagementService {
@@ -60,7 +70,17 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             // we have a list
             try {
                 request.Debug("Initialize Bootstrapper");
-                PackageManagementService.BootstrappableProviderNames = request.Providers.Select(provider => provider.Name).ToArray();
+                Task.Factory.StartNew(() => {
+                    // we can do this asynchronously, it'll cut down on any startup delay when the network is slow or unavailable.
+                    try {
+                        PackageManagementService.BootstrappableProviderNames = request.Providers.Select(provider => provider.Name).ToArray();
+                    } catch (Exception e) {
+                        // if we have a serious problem, it just means we can't bootstrap those providers anyway.
+                        // in the event of a catastrophic failure, request isn't going to be valid anymore (and hence the user won't see it)
+                        // but we can send the error to the system debug output.
+                        e.Dump();
+                    }
+                });
             } catch (Exception e) {
                 e.Dump();
             }
@@ -95,7 +115,25 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
 
                 case "install":
                     request.YieldDynamicOption("DestinationPath", "Folder", false);
+                    request.YieldDynamicOption("Scope", "String", false, new[] { "CurrentUser", "AllUsers" });
                     break;
+            }
+        }
+
+        public void ResolvePackageSources(BootstrapRequest request) {
+            if (request == null) {
+                throw new ArgumentNullException("request");
+            }
+
+            request.Debug("Calling ResolvePackageSources");
+
+            try {
+                foreach (var source in request._urls) {
+
+                    request.YieldPackageSource(source.AbsoluteUri, source.AbsoluteUri, false, true, true);
+                }
+            } catch (Exception e) {
+                e.Dump();
             }
         }
 
@@ -104,7 +142,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                 throw new ArgumentNullException("request");
             }
 
-            request.Debug("Calling 'Bootstrap::FindPackage'");
+            request.Verbose(Resources.Messages.FindingPackage, string.Format(CultureInfo.CurrentCulture, "{0}::FindPackage' '{1}','{2}','{3}','{4}'", PackageProviderName, name, requiredVersion, minimumVersion, maximumVersion));
 
             if (name != null && name.EqualsIgnoreCase("PackageManagement")) {
                 // they are looking for PackageManagement itself.
@@ -113,16 +151,20 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             }
 
             // are they are looking for a specific provider?
-            if (string.IsNullOrWhiteSpace(name)) {
-                // no, return all providers that match the range.
-                if (request.GetOptionValue("AllVersions").IsTrue()) {
-                    foreach (var p in request.Providers.Distinct(PackageEqualityComparer)) {
+            if (string.IsNullOrWhiteSpace(name) || WildcardPattern.ContainsWildcardCharacters(name)) {
+                
+
+                // no, return all providers that match the range.                
+                var wildcardPattern = new WildcardPattern(name, WildcardOptions);
+
+                if (request.GetOptionValue("AllVersions").IsTrue()) {                  
+                    foreach (var p in request.Providers.Distinct(PackageEqualityComparer).Where(p => string.IsNullOrWhiteSpace(name) || wildcardPattern.IsMatch(p.Name))) {
                         FindPackage(p.Name, null, "0.0", null, 0, request);
                     }
                     return;
                 }
 
-                if (request.Providers.Distinct(PackageEqualityComparer).Any(p => !request.YieldFromSwidtag(p, requiredVersion, minimumVersion, maximumVersion, name))) {
+                if (request.Providers.Distinct(PackageEqualityComparer).Where(p => string.IsNullOrWhiteSpace(name) || wildcardPattern.IsMatch(p.Name)).Any(p => !request.YieldFromSwidtag(p, requiredVersion, minimumVersion, maximumVersion, name))) {
                     // if there is a problem, exit.
                     return;
                 }
@@ -135,8 +177,12 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                     return;
                 }
 
-                if (request.GetOptionValue("AllVersions").IsTrue() && string.IsNullOrWhiteSpace(minimumVersion)) {
-                    minimumVersion = "0.0";
+                if (request.GetOptionValue("AllVersions").IsTrue()) {
+                    if (request.GetProviderAll(name, minimumVersion, maximumVersion).Distinct(PackageEqualityComparer).Any(provider => !request.YieldFromSwidtag(provider, name))) {
+                        // if there is a problem, exit.
+                        return;
+                    }
+                    return;
                 }
 
                 // asked for a version range?
@@ -182,9 +228,48 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             }
 
             request.Debug("Calling '{0}::GetInstalledPackages' '{1}','{2}','{3}','{4}'", PackageProviderName, name, requiredVersion, minimumVersion, maximumVersion);
-            // return all the dynamic package providers as packages
 
-            foreach (var provider in PackageManagementService.DynamicProviders) {
+            //search under the providerAssembies folder for the installed providers
+            var providers = PackageManagementService.AllProvidersFromProviderAssembliesLocation(request).Select(providerFileAssembly => {
+                          
+                //get the provider's name\version
+                var versionFolder = Path.GetDirectoryName(providerFileAssembly);
+
+                if (string.IsNullOrWhiteSpace(versionFolder)) {
+                    return null;
+                }
+ 
+                Version ver;
+                if (!Version.TryParse(Path.GetFileName(versionFolder), out ver)) {
+                    //this will cover whether the providerFileAssembly is at top level as well as a bad version folder
+                    //skip if the provider is at the top level as they are imported already via LoadProviders() during the initialization. 
+                    //the provider will be handled PackageManagementService.DynamicProviders below.
+                    return null;
+                }
+                                              
+                var providerNameFolder = Path.GetDirectoryName(versionFolder);
+                if (!string.IsNullOrWhiteSpace(providerNameFolder)) {
+                    var providerName = Path.GetFileName(providerNameFolder);
+                    if (!string.IsNullOrWhiteSpace(providerName)) {
+                        return new {
+                            Name = providerName,
+                            Version = (FourPartVersion)ver,
+                            ProviderPath = providerFileAssembly
+                        };
+                    }
+                }
+                
+                return null;
+            }).WhereNotNull();
+
+            // return all the dynamic package providers as packages
+            providers = providers.Concat(PackageManagementService.DynamicProviders.Select(each => new {
+                Name = each.ProviderName,
+                each.Version,
+                each.ProviderPath
+            })).Distinct();
+
+            foreach (var provider in providers) {
                 // for each package manager, match it's name and version with the swidtag from the remote feed
                 var p = request.GetProvider(provider.Name, provider.Version);
                 if (p == null) {
@@ -196,7 +281,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                 request.YieldFromSwidtag(p, requiredVersion, minimumVersion, maximumVersion, name);
             }
         }
-
+      
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Plugin requirement.")]
         public void DownloadPackage(string fastPath, string location, BootstrapRequest request) {
             if (request == null) {
@@ -227,15 +312,130 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                             return false;
                     }
 
+                case Iso19770_2.MediaType.NuGetPackage:
+                    return InstallNugetPackage(provider, link, fastPath, request);
+
                 default:
                     request.Warning("Provider '{0}' with link '{1}' has unknown media type '{2}'.", provider.Name, link.HRef, link.MediaType);
                     return false;
             }
         }
 
+        private bool InstallNugetPackage(Package provider, Link link, string fastPath, BootstrapRequest request)
+        {
+            // download the nuget package
+            string downloadedNupkg = request.DownloadAndValidateFile(provider.Name, provider._swidtag);
+
+            if (downloadedNupkg != null)
+            {
+                // extracted folder
+                string extractedFolder = String.Concat(downloadedNupkg.GenerateTemporaryFilename());
+
+                try
+                {
+                    //unzip the file
+                    ZipFile.ExtractToDirectory(downloadedNupkg, extractedFolder);
+
+                    if (Directory.Exists(extractedFolder))
+                    {
+                        string versionFolder = Path.Combine(request.DestinationPath(request), provider.Name, provider.Version);
+                        // tool folder is where we find things like nuget.exe
+                        string toolFolder = Path.Combine(extractedFolder, "tools");
+                        string libFolder = Path.Combine(extractedFolder, "lib");
+
+                        // create the directory version folder if not exist
+                        if (!Directory.Exists(versionFolder))
+                        {
+                            Directory.CreateDirectory(versionFolder);
+                        }
+
+                        // copy the tools directory
+                        if (Directory.Exists(toolFolder))
+                        {
+                            string destinationToolFolder = Path.Combine(versionFolder, "tools");
+
+                            if (!Directory.Exists(destinationToolFolder))
+                            {
+                                Directory.CreateDirectory(destinationToolFolder);
+                            }
+
+                            foreach (string child in Directory.EnumerateFiles(toolFolder))
+                            {
+                                try
+                                {
+                                    // try copy and overwrite
+                                    File.Copy(child, Path.Combine(destinationToolFolder, Path.GetFileName(child)), true);
+                                }
+                                catch (Exception e)
+                                {
+                                    request.Debug(e.StackTrace);
+                                    if (!(e is UnauthorizedAccessException || e is IOException))
+                                    {
+                                        // something wrong, delete the version folder
+                                        versionFolder.TryHardToDelete();
+                                        return false;
+                                    }
+
+                                    // otherwise this means the file is just being used. so just moves on to copy other files
+                                }
+                            }
+                        }
+
+                        // copy files from lib
+                        if (Directory.Exists(libFolder))
+                        {
+                            // check that the lib folder has at most 1 dll
+                            if (Directory.EnumerateFiles(libFolder).Count(file => String.Equals(Path.GetExtension(file), ".dll", StringComparison.OrdinalIgnoreCase)) > 1)
+                            {
+                                request.Warning(String.Format(CultureInfo.CurrentCulture, Resources.Messages.MoreThanOneDllExists, provider.Name));
+                                return false;
+                            }
+
+                            foreach (string child in Directory.EnumerateFiles(libFolder))
+                            {
+                                try
+                                {
+                                    File.Copy(child, Path.Combine(versionFolder, Path.GetFileName(child)), true);
+                                }
+                                catch (Exception e)
+                                {
+                                    request.Debug(e.StackTrace);
+                                    if (!(e is UnauthorizedAccessException || e is IOException))
+                                    {
+                                        // something wrong, delete the version folder
+                                        versionFolder.TryHardToDelete();
+                                        return false;
+                                    }
+
+                                    // otherwise this means the file is just being used. so just moves on to copy other files
+                                }
+                            }
+                        }
+
+                        // target file name is the assembly provider
+                        string targetFile = Path.Combine(versionFolder, Path.GetFileName(link.Attributes[Iso19770_2.Discovery.TargetFilename]));
+
+                        if (File.Exists(targetFile))
+                        {
+                            request.Verbose(Resources.Messages.InstalledPackage, provider.Name, targetFile);
+                            request.YieldFromSwidtag(provider, fastPath);
+                            return true;
+                        }
+                    }
+                }
+                finally
+                {
+                    downloadedNupkg.TryHardToDelete();
+                    extractedFolder.TryHardToDelete();
+                }
+            }
+
+            return false;
+        }
+
         private bool InstallPackageFile(Package provider, string fastPath, BootstrapRequest request) {
             // we can download and verify this package and get the core to install it.
-            var file = request.DownloadAndValidateFile(provider.Name, provider._swidtag.Links.Where(each => each.Relationship == Iso19770_2.Relationship.InstallationMedia));
+            var file = request.DownloadAndValidateFile(provider.Name, provider._swidtag);
             if (file != null) {
                 // we have a valid file.
                 // run the installer
@@ -254,7 +454,7 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             IHostApi installRequest = request;
             if (packages[0].Provider.Name.EqualsIgnoreCase("PSModule") && !request.ProviderServices.IsElevated) {
                 // if we're not elevated, we want powershellget to install to the user scope
-
+            
                 installRequest = new object[] {
                     new {
                         GetOptionKeys = new Func<IEnumerable<string>>(() => request.OptionKeys.ConcatSingleItem("Scope")),
@@ -303,7 +503,9 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
         }
 
         private bool InstallAssemblyProvider(Package provider, Link link, string fastPath, BootstrapRequest request) {
-            if (!Directory.Exists(request.DestinationPath)) {
+            request.Verbose(Resources.Messages.InstallingPackage, fastPath);
+            
+            if (!Directory.Exists(request.DestinationPath(request))) {
                 request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.DestinationPathNotSet);
                 return false;
             }
@@ -316,37 +518,65 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             }
 
             targetFilename = Path.GetFileName(targetFilename);
-            var targetFile = Path.Combine(request.DestinationPath, targetFilename);
+
+            if (string.IsNullOrWhiteSpace(provider.Version)) {
+                request.Error(ErrorCategory.InvalidOperation, fastPath, Resources.Messages.MissingVersion);
+                return false;
+            }
+
+            //the provider is installing to like this folder: \WindowsPowerShell\Modules\PackageManagement\ProviderAssemblies\nuget\2.8.5.127
+            //... providername\version\.dll
+            var versionFolder = Path.Combine(request.DestinationPath(request), provider.Name, provider.Version);
+
+            if (!Directory.Exists(versionFolder)) {
+                //we create it
+                Directory.CreateDirectory(versionFolder);
+            }
+
+            var targetFile = Path.Combine(versionFolder, targetFilename);
 
             // download the file
-            var file = request.DownloadAndValidateFile(provider.Name, provider._swidtag.Links.Where(each => each.Relationship == Iso19770_2.Relationship.InstallationMedia));
+            var file = request.DownloadAndValidateFile(provider.Name, provider._swidtag);
+
             if (file != null) {
-                // looks good! let's keep it
-                if (File.Exists(targetFile)) {
-                    request.Debug("Removing old file '{0}'", targetFile);
-                    targetFile.TryHardToDelete();
-                }
+                try
+                {
+                    // looks good! let's keep it
+                    if (File.Exists(targetFile)) {
+                        request.Debug("Removing old file '{0}'", targetFile);
+                        targetFile.TryHardToDelete();
+                    }
 
-                // is that file still there?
-                if (File.Exists(targetFile)) {
-                    request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.UnableToRemoveFile, targetFile);
-                    return false;
-                }
+                    // is that file still there?
+                    if (File.Exists(targetFile)) {
+                        request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.UnableToRemoveFile, targetFile);
+                        return false;
+                    }
 
-                request.Debug("Copying file '{0}' to '{1}'", file, targetFile);
-                File.Copy(file, targetFile);
-                if (File.Exists(targetFile)) {
-                    // since we only installed a single assembly, we can just ask to load that specific assembly.
-                    if (PackageManagementService.TryToLoadProviderAssembly(targetFile, request)) {
-                        // looks good to me.
+                    request.Debug("Copying file '{0}' to '{1}'", file, targetFile);
+                    try {
+                        File.Copy(file, targetFile);
+                    }
+                    catch (Exception ex) {
+                        request.Debug(ex.StackTrace);
+                        return false;
+                    }
+
+                    //do not need to load the assembly here.The caller in the PackageManangemnt.RequirePackageProvider() is loading assembly
+                    //after the install
+                    if (File.Exists(targetFile)) {
+                        request.Verbose(Resources.Messages.InstalledPackage, provider.Name, targetFile);
                         request.YieldFromSwidtag(provider, fastPath);
                         return true;
                     }
+
+                }
+                finally
+                {
+                    file.TryHardToDelete();
                 }
             }
-            if (file != null) {
-                file.TryHardToDelete();
-            }
+
             return false;
         }
 

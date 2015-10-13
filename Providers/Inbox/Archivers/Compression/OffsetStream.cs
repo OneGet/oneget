@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression
 {
     using System;
     using System.IO;
@@ -202,6 +202,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression
             this.source.SetLength(value + this.sourceOffset);
         }
 
+#if !CORECLR
         /// <summary>
         /// Closes the underlying stream.
         /// </summary>
@@ -209,5 +210,19 @@ namespace Microsoft.PackageManagement.Archivers.Compression
         {
             this.source.Close();
         }
+#endif
+
+        /// <summary>
+        /// Disposes the underlying stream 
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.source.Dispose();
+            }
+        }
+
     }
 }

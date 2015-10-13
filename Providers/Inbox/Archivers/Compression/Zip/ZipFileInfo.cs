@@ -7,18 +7,15 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Zip
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
 {
     using System;
     using System.IO;
-    using System.Runtime.Serialization;
-    using System.Security.Permissions;
 
     /// <summary>
     /// Object representing a compressed file within a zip package; provides operations for getting
     /// the file properties and extracting the file.
     /// </summary>
-    [Serializable]
     public class ZipFileInfo : ArchiveFileInfo
     {
         private long compressedLength;
@@ -65,17 +62,6 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
         }
 
         /// <summary>
-        /// Initializes a new instance of the ZipFileInfo class with serialized data.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        protected ZipFileInfo(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            this.compressedLength = info.GetInt64("compressedLength");
-        }
-
-        /// <summary>
         /// Gets the compressed size of the file in bytes.
         /// </summary>
         public long CompressedLength
@@ -97,20 +83,5 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
             }
         }
 
-        /// <summary>
-        /// Sets the SerializationInfo with information about the archive.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data.</param>
-        /// <param name="context">The StreamingContext that contains contextual information
-        /// about the source or destination.</param>
-        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            if (info == null) {
-                throw new ArgumentNullException("info");
-            }
-            base.GetObjectData(info, context);
-            info.AddValue("compressedLength", this.compressedLength);
-        }
     }
 }

@@ -12,25 +12,32 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Providers.Bootstrap {
+namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
     using System;
+    using System.Globalization;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using Implementation;
-    using Packaging;
-    using Utility.Collections;
-    using Utility.Extensions;
-    using Utility.Platform;
+    using System.Security.Cryptography;
+    using PackageManagement.Internal;
+    using PackageManagement.Internal.Implementation;
+    using PackageManagement.Internal.Packaging;
+    using PackageManagement.Internal.Utility.Platform;
+    using PackageManagement.Internal.Utility.Collections;
+    using PackageManagement.Internal.Utility.Extensions;
+    
 
     public abstract class BootstrapRequest : Request {
-        private static readonly Uri[] _urls = {
+        internal readonly Uri[] _urls = {
 #if LOCAL_DEBUG
-            new Uri("http://localhost:81/providers.swidtag"),
+            new Uri("https://localhost:81/providers.swidtag"),
 #endif
+#if CORECLR
+            new Uri("https://go.microsoft.com/fwlink/?LinkID=627340&clcid=0x409"),
             // starting in 2015/05 builds, we bootstrap from here:
-            new Uri("http://go.microsoft.com/fwlink/?LinkID=535044&clcid=0x409"),
-            new Uri("http://go.microsoft.com/fwlink/?LinkID=535045&clcid=0x409")
+#else
+            new Uri("https://go.microsoft.com/fwlink/?LinkID=627338&clcid=0x409"),
+#endif
         };
 
         private IEnumerable<Feed> _feeds;
@@ -56,9 +63,24 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             }
         }
 
-        internal string DestinationPath {
-            get {
+        internal string DestinationPath(Request request) {
+
                 var pms = PackageManagementService as PackageManagementService;
+
+                var scope = GetValue("Scope");
+                if (!string.IsNullOrWhiteSpace(scope)) {
+                    if (scope.EqualsIgnoreCase("CurrentUser")) {
+                        return pms.UserAssemblyLocation;
+                    }
+                    if (AdminPrivilege.IsElevated) {
+                        return pms.SystemAssemblyLocation;
+                    } else {
+                        //a user specifies 'AllUsers' that requires Admin provilege. However his console gets launched by non-elevated.
+                        Error(ErrorCategory.InvalidOperation, ErrorCategory.InvalidOperation.ToString(),
+                            PackageManagement.Resources.Messages.InstallRequiresCurrentUserScopeParameterForNonAdminUser, pms.SystemAssemblyLocation, pms.UserAssemblyLocation);                 
+                        return null;
+                    }
+                }
 
                 var v = GetValue("DestinationPath");
                 if (String.IsNullOrWhiteSpace(v)) {
@@ -69,7 +91,6 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                     }
                 }
                 return Path.GetFullPath(v);
-            }
         }
 
         internal IEnumerable<Package> Providers {
@@ -95,41 +116,195 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             return Feeds.SelectMany(feed => feed.Query(name, version)).FirstOrDefault();
         }
 
-        internal IEnumerable<Package> GetProvider(string name, string minimumversion, string maximumversion) {
+        internal IEnumerable<Package> GetProviderAll(string name, string minimumversion, string maximumversion)
+        {
             return Feeds.SelectMany(feed => feed.Query(name, minimumversion, maximumversion));
         }
 
-        internal string DownloadAndValidateFile(string name, IEnumerable<Link> links) {
-            var failedBecauseInvalid = false;
-            string file = null;
-            foreach (var link in links) {
-                var tmpFile = link.Artifact.GenerateTemporaryFilename();
+        internal IEnumerable<Package> GetProvider(string name, string minimumversion, string maximumversion) {
+            return new[] { GetProviderAll(name, minimumversion, maximumversion)
+                .OrderByDescending(each => SoftwareIdentityVersionComparer.Instance).FirstOrDefault()};
+        }
 
-                file = ProviderServices.DownloadFile(link.HRef, tmpFile, -1, true, this);
-                if (file == null || !file.FileExists()) {
-                    Debug("Failed download of '{0}'", link.HRef);
-                    file = null;
-                    continue;
-                }
-
-                Debug("Verifying the package");
-
-                var valid = ProviderServices.IsSignedAndTrusted(file, this);
-                if (!valid) {
-                    Debug("Not Valid file '{0}' => '{1}'", link.HRef, tmpFile);
-                    Warning(Constants.Messages.FileFailedVerification, link.HRef);
-                    failedBecauseInvalid = true;
-#if !DEBUG
-                    tmpFile.TryHardToDelete();
-                    continue;
-#endif
-                }
-            }
-            if (failedBecauseInvalid) {
-                Error(ErrorCategory.InvalidData, name, Constants.Messages.FileFailedVerification, name);
+        internal string DownloadAndValidateFile(string name, Swidtag swidtag) {
+            var file = DownLoadFileFromLinks(name, swidtag.Links.Where(each => each.Relationship == Iso19770_2.Relationship.InstallationMedia));
+            if (string.IsNullOrWhiteSpace(file)) {
                 return null;
             }
+
+            var payload = swidtag.Payload;
+            if (payload == null) {
+                //We let the providers that are already posted in the public continue to be installed.
+                return file;
+            } else {
+                //validate the file hash
+                var valid = ValidateFileHash(file, payload);
+                if (!valid) {
+                    //if the hash does not match, delete the file in the temp folder
+                    file.TryHardToDelete();
+                    return null;
+                }
+                return file;
+            }
+        }
+
+        /// <summary>
+        /// Helper function to retry downloading a file.
+        /// downloadFileFunction is the main function that is used to download the file when given a uri
+        /// numberOfTry is how many times we can try to download it
+        /// </summary>
+        /// <param name="downloadFileFunction"></param>
+        /// <param name="location"></param>
+        /// <param name="numberOfTry"></param>
+        /// <returns></returns>
+        internal string RetryDownload(Func<Uri, string> downloadFileFunction, Uri location, int numberOfTry=3)
+        {
+            string file = null;
+
+            // if scheme is not https, write warning and ignores this link
+            if (!string.Equals(location.Scheme, "https"))
+            {
+                Warning(string.Format(CultureInfo.CurrentCulture, Resources.Messages.OnlyHttpsSchemeSupported, location.AbsoluteUri));
+                return file;
+            }
+
+            // try 3 times to see whether we can download this
+            int remainingTry = 3;
+
+            // try to download the file for remainingTry times
+            while (remainingTry > 0)
+            {
+                try
+                {
+                    file = downloadFileFunction(location);
+                }
+                finally
+                {
+                    if (file == null || !file.FileExists())
+                    {
+                        // file cannot be download
+                        file = null;
+                        remainingTry -= 1;
+                        Verbose(string.Format(CultureInfo.CurrentCulture, Resources.Messages.RetryDownload, location.AbsoluteUri, remainingTry));
+                    }
+                    else
+                    {
+                        // file downloaded, no need to retry.
+                        remainingTry = 0;
+                    }
+                }
+            }
+
             return file;
+        }
+
+        internal string DownLoadFileFromLinks(string name, IEnumerable<Link> links) {
+            string file = null;
+
+            foreach (var link in links) {
+                file = RetryDownload(
+                    // the download function takes in a uri link and download it
+                    (uri) =>
+                        {
+                            var tmpFile = link.Artifact.GenerateTemporaryFilename();
+                            return ProviderServices.DownloadFile(uri, tmpFile, -1, true, this);
+                        },
+                    link.HRef);
+
+                // got a valid file!
+                if (file != null && file.FileExists())
+                {
+                    return file;
+                }
+            }
+
+            return file;
+        }
+
+        private bool ValidateFileHash(string fileFullPath, Payload payload) {
+
+            Debug("BoostrapRequest::ValidateFileHash");
+            /* format: 
+             * <Payload>
+             *   <File name="nuget-anycpu-2.8.5.205.exe"  sha512:hash="a314fc2dc663ae7a6b6bc6787594057396e6b3f569cd50fd5ddb4d1bbafd2b6a" />
+             * </Payload>
+             */
+
+            if (payload == null || fileFullPath == null || !fileFullPath.FileExists()) {
+                return false;
+            }
+
+            try
+            {
+                if ((payload.Files == null) || !payload.Files.Any()) {
+                    Error(ErrorCategory.InvalidData, "Payload", Constants.Messages.MissingFileTag);
+                    return false;
+                }
+                var fileTag = payload.Files.FirstOrDefault();
+
+                if ((fileTag.Attributes == null) || (fileTag.Attributes.Keys == null)) {
+                    Error(ErrorCategory.InvalidData, "Payload", Constants.Messages.MissingHashAttribute);
+                    return false;
+                }
+
+                var hashtag = fileTag.Attributes.Keys.FirstOrDefault(each => each.LocalName.Equals("hash"));
+                if (hashtag == null) {
+                    Error(ErrorCategory.InvalidData, "Payload", Constants.Messages.MissingHashAttribute);
+                    return false;
+                }
+
+                //Note we cannot use switch here because these xname like Iso19770_2.Hash.Hash512, is not compiler time constant
+                string packageHash = null;
+                HashAlgorithm hashAlgorithm = null;
+
+                if (hashtag.Equals(Iso19770_2.Hash.Hash512)) {
+                    hashAlgorithm = SHA512.Create();
+                    packageHash = fileTag.GetAttribute(Iso19770_2.Hash.Hash512);
+                } else if (hashtag.Equals(Iso19770_2.Hash.Hash256)) {
+                    hashAlgorithm = SHA256.Create();
+                    packageHash = fileTag.GetAttribute(Iso19770_2.Hash.Hash256);
+                } else if (hashtag.Equals(Iso19770_2.Hash.Md5)) {
+                    hashAlgorithm = MD5.Create();
+                    packageHash = fileTag.GetAttribute(Iso19770_2.Hash.Md5);
+                } else {
+                    //hash alroghtme not supported, we support 512, 256, md5 only 
+                    Error(ErrorCategory.InvalidData, "Payload", Constants.Messages.UnsupportedHashAlgorithm, hashtag,
+                        new[] {Iso19770_2.HashAlgorithm.Sha512, Iso19770_2.HashAlgorithm.Sha256, Iso19770_2.HashAlgorithm.Md5}.JoinWithComma());
+                    return false;
+                }
+
+                if (string.IsNullOrWhiteSpace(packageHash) || hashAlgorithm == null) {
+                    //missing hash content?
+                    Error(ErrorCategory.InvalidData, "Payload", Constants.Messages.MissingHashContent);
+                    return false;
+                }
+
+                // Verify the hash
+                using (FileStream stream = System.IO.File.OpenRead(fileFullPath)) {
+                    // compute the hash from the file
+                    byte[] computedHash = hashAlgorithm.ComputeHash(stream);
+
+                    try {
+                        // convert the original hash we got from the payload tag
+                        byte[] expectedHash = Convert.FromBase64String(packageHash);
+                        //check if hash is equal
+                        if (!computedHash.SequenceEqual(expectedHash)) {
+                            // the file downloaded is not the same as expected. The file is modified.
+                            Error(ErrorCategory.SecurityError, "Payload", Constants.Messages.HashNotEqual, packageHash, Convert.ToBase64String(computedHash));
+                            return false;
+                        }
+
+                        return true;
+
+                    } catch (FormatException ex) {
+                        Warning(ex.Message);
+                        Error(ErrorCategory.SecurityError, "Payload", Constants.Messages.InvalidHashFormat, packageHash);
+                    }
+                }
+            } catch (Exception ex) {
+                Warning(ex.Message);
+            }
+            return false;
         }
 
         internal bool YieldFromSwidtag(Package provider, string requiredVersion, string minimumVersion, string maximumVersion, string searchKey) {
@@ -169,8 +344,8 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
             var summary = new MetadataIndexer(provider)[Iso19770_2.Attributes.Summary.LocalName].FirstOrDefault();
 
             var fastPackageReference = pkg.Location.AbsoluteUri;
-
-            if (YieldSoftwareIdentity(fastPackageReference, provider.Name, provider.Version, provider.VersionScheme, summary, null, searchKey, null, targetFilename) != null) {
+            
+            if (YieldSoftwareIdentity(fastPackageReference, provider.Name, provider.Version, provider.VersionScheme, summary, fastPackageReference, searchKey, null, targetFilename) != null) {
                 // yield all the meta/attributes
                 if (provider.Meta.Any(
                     m => {
@@ -196,7 +371,10 @@ namespace Microsoft.PackageManagement.Providers.Bootstrap {
                     return !IsCanceled;
                 }
 
-                if (AddMetadata(fastPackageReference, "FromTrustedSource", true.ToString()) == null) {
+                //installing a package from bootstrap site needs to prompt a user. Only auto-boostrap is not prompted.
+                var pm = PackageManagementService as PackageManagementService;
+                string isTrustedSource = pm.InternalPackageManagementInstallOnly ? "false" : "true";
+                if (AddMetadata(fastPackageReference, "FromTrustedSource", isTrustedSource) == null) {
                     return !IsCanceled;
                 }
             }

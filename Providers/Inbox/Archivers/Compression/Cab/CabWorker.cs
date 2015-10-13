@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Cab
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 {
     using System;
     using System.Collections.Generic;
@@ -310,13 +310,21 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
             {
                 if (this.cabStream != null)
                 {
+#if CORECLR
+                    this.cabStream.Dispose();
+#else
                     this.cabStream.Close();
+#endif
                     this.cabStream = null;
                 }
 
                 if (this.fileStream != null)
                 {
+#if CORECLR
+                    this.fileStream.Dispose();
+#else
                     this.fileStream.Close();
+#endif
                     this.fileStream = null;
                 }
             }

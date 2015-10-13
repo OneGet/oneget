@@ -17,16 +17,18 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Collections;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.IO;
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
     using System.Threading;
     using Microsoft.PackageManagement;
-    using Microsoft.PackageManagement.Api;
     using Microsoft.PackageManagement.Implementation;
-    using Microsoft.PackageManagement.Utility.Async;
-    using Microsoft.PackageManagement.Utility.Extensions;
-    using Microsoft.PackageManagement.Utility.Plugin;
+    using Microsoft.PackageManagement.Internal;
+    using Microsoft.PackageManagement.Internal.Api;
+    using Microsoft.PackageManagement.Internal.Implementation;
+    using Microsoft.PackageManagement.Internal.Utility.Async;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Resources;
     using Utility;
     using Constants = PackageManagement.Constants;
@@ -36,7 +38,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     public abstract class CmdletBase : AsyncCmdlet, IHostApi {
         private static int _globalCallCount = 1;
         private static readonly object _lockObject = new object();
-
+        private bool _messageResolverNotResponding = false;
         private readonly int _callCount;
         private readonly Hashtable _dynamicOptions = new Hashtable();
 
@@ -50,7 +52,34 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         protected CmdletBase() {
             _callCount = _globalCallCount++;
+            ShouldLogError = true;
         }
+
+        protected bool IsRooted(string filePath)
+        {
+            return (Path.IsPathRooted(filePath) ||
+                    filePath.StartsWith(@".\", StringComparison.Ordinal) ||
+                    filePath.StartsWith(@"./", StringComparison.Ordinal) ||
+                    filePath.StartsWith(@"..\", StringComparison.Ordinal) ||
+                    filePath.StartsWith(@"../", StringComparison.Ordinal) ||
+                    filePath.StartsWith(@"~/", StringComparison.Ordinal) ||
+                    filePath.StartsWith(@"~\", StringComparison.Ordinal));
+        }
+
+        protected void ValidateVersion(string version) {
+            if (string.IsNullOrWhiteSpace(version)) {
+                return;
+            }
+            try {
+                Version.Parse(version);
+            } catch (Exception ex) {
+                Error(Constants.Errors.InvalidVersion, version, ex.Message);
+            }
+        }
+
+        protected bool ShouldLogError {get; set;}
+
+        protected bool ShouldSelectAllProviders { get; set; }
 
         protected bool WaitForActivity<T>(IEnumerable<IAsyncEnumerable<T>> enumerables) {
             var handles = enumerables.Select(each => each.Ready).ConcatSingleItem(CancellationEvent.Token.WaitHandle).ToArray();
@@ -168,23 +197,28 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
             return true;
         }
-
+        
         public override string GetMessageString(string messageText, string defaultText) {
             messageText = DropMsgPrefix(messageText);
 
-            if (string.IsNullOrWhiteSpace(defaultText) || defaultText.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase)) {
+            if (string.IsNullOrWhiteSpace(defaultText) || defaultText.IndexOf("MSG:", StringComparison.OrdinalIgnoreCase) == 0) {
                 defaultText = Messages.ResourceManager.GetString(messageText);
             }
 
             string result = null;
-            if (MessageResolver != null) {
+            //when a user does find-module xjea, psreadline | install-module, the install-module starts executing before find-module completes. This
+            //is expected. However when the install-module starts, the MessageResolver delegate stops responding. This is a PowerShell thing.
+            //Once the delegate is blocked, it's blocked for the subsequence log message calls for the current cmdlet, find-module. Note that the
+            //next cmdlet, install-module has no impact on the delegate blocking issue, meaning all messages are expected to be logged for install-module.
+            //_messageResolverNotResponding is for avoiding continuesly waiting for unresponsive MessageResolver delegate.
+            if (MessageResolver != null && !_messageResolverNotResponding) {
                 // if the consumer has specified a MessageResolver delegate, we need to call it on the main thread
                 // because powershell won't let us use the default runspace from another thread.
 
                 // if we are anywhere but the end of the pipeline, the delegate here would block on stuff later in the pipe
                 // and since we're blocking *that* based on the the resolution of this, we're better off just skipping
                 // the message resoluion for things earlier in the pipeline.
-                ExecuteOnMainThread(() => {
+                _messageResolverNotResponding = !ExecuteOnMainThread(() =>{
                     result = MessageResolver(messageText, defaultText);
                     if (string.IsNullOrWhiteSpace(result)) {
                         result = null;
@@ -204,6 +238,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
         public virtual IEnumerable<string> GetOptionValues(string key) {
+            // try to see whether the key is a dynamic parameter first. if we cannot find it then go to bound parameters.
+            var dynamicValues = DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Name == key).SelectMany(each => each.GetValues(this));
+            if (dynamicValues.Any())
+            {
+                return dynamicValues;
+            }
+
             if (MyInvocation.BoundParameters.ContainsKey(key)) {
                 var value = MyInvocation.BoundParameters[key];
                 if (value is string || value is int) {
@@ -223,7 +264,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     MyInvocation.BoundParameters[key].ToString()
                 };
             }
-            return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Name == key).SelectMany(each => each.GetValues(this));
+
+            return Enumerable.Empty<string>();
         }
 
         public virtual string CredentialUsername {
@@ -288,10 +330,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
             if (names.IsNullOrEmpty()) {
-                return PackageManagementService.SelectProviders(null, this.SuppressErrorsAndWarnings(IsProcessing)).Where(each => !each.Features.ContainsKey(Microsoft.PackageManagement.Constants.Features.AutomationOnly));
+                return ShouldSelectAllProviders ? PackageManagementService.SelectProviders(null, this.SuppressErrorsAndWarnings(IsProcessing))
+                     : PackageManagementService.SelectProviders(null, this.SuppressErrorsAndWarnings(IsProcessing)).Where(each => !each.Features.ContainsKey(Microsoft.PackageManagement.Internal.Constants.Features.AutomationOnly));               
+                
             }
             // you can manually ask for any provider by name, if it is for automation only.
             if (IsInvocation) {
+            
                 return names.SelectMany(each => PackageManagementService.SelectProviders(each, this));
             }
             return names.SelectMany(each => PackageManagementService.SelectProviders(each, this.SuppressErrorsAndWarnings(IsProcessing)));
@@ -301,15 +346,15 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             // you can manually ask for any provider by name, if it is for automation only.
             if (IsInvocation) {
                 var result = PackageManagementService.SelectProviders(name, this).ToArray();
-                if (result.Length == 0) {
-                    Warning(Constants.Errors.UnknownProvider, name);
+                if ((result.Length == 0) && ShouldLogError) {
+                    Error(Constants.Errors.UnknownProvider, name);
                 }
                 return result;
             }
 
             var r = PackageManagementService.SelectProviders(name, this.SuppressErrorsAndWarnings(IsProcessing)).ToArray();
-            if (r.Length == 0) {
-                Warning(Constants.Errors.UnknownProvider, name);
+            if ((r.Length == 0) && ShouldLogError){
+                Error(Constants.Errors.UnknownProvider, name);               
             }
             return r;
         }

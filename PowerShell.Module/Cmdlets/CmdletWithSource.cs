@@ -15,6 +15,7 @@
 namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Management.Automation;
     using System.Security;
+    using Microsoft.PackageManagement.Internal.Packaging;
     using Microsoft.PackageManagement.Packaging;
 
     public abstract class CmdletWithSource : CmdletWithProvider {

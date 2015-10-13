@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.Package
 {
     using System;
     using System.Globalization;
@@ -16,7 +16,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Package
     /// <summary>
     /// Contains properties of a transform package (.MST).
     /// </summary>
-    public class TransformInfo
+    internal class TransformInfo
     {
         /// <summary>
         /// Reads transform information from a transform package.

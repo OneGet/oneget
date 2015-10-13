@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections;
@@ -20,7 +20,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// Collection of column information related to a <see cref="TableInfo"/> or
     /// <see cref="View"/>.
     /// </summary>
-    public sealed class ColumnCollection : ICollection<ColumnInfo>
+    internal sealed class ColumnCollection : ICollection<ColumnInfo>
     {
         private IList<ColumnInfo> columns;
         private string formatString;
@@ -29,6 +29,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Creates a new ColumnCollection based on a specified list of columns.
         /// </summary>
         /// <param name="columns">columns to be added to the new collection</param>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public ColumnCollection(ICollection<ColumnInfo> columns)
         {
             if (columns == null)
@@ -228,6 +229,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets a string suitable for printing all the values of a record containing these columns.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string FormatString
         {
             get
@@ -240,6 +242,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private static string CreateFormatString(IList<ColumnInfo> columns)
         {
             StringBuilder sb = new StringBuilder();

@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Api {
+namespace Microsoft.PackageManagement.Internal.Api {
     using System;
 
     /// <summary>

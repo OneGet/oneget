@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.Resources
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 {
     // Silence warnings about doc-comments
     #pragma warning disable 1591

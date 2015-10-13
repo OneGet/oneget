@@ -12,13 +12,13 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Implementation {
+namespace Microsoft.PackageManagement.Internal.Implementation {
     using System;
     using System.Collections.Generic;
     using System.Security;
     using System.Threading;
     using System.Threading.Tasks;
-    using Api;
+    using Internal.Api;
     using Resources;
     using Utility.Async;
     using Utility.Extensions;
@@ -78,15 +78,23 @@ namespace Microsoft.PackageManagement.Implementation {
 
                 try {
                     _action(this);
+#if !CORECLR
                 } catch (ThreadAbortException) {
 #if DEEP_DEBUG
                     Console.WriteLine("Thread Aborted for {0} : {1}", _invocationThread.Name, DateTime.Now.Subtract(_callStart).TotalSeconds);
 #endif
                     Thread.ResetAbort();
+#endif
                 } catch (Exception e) {
                     e.Dump();
                 } finally {
-                    Complete();
+                    try {
+                        Complete();
+                    }
+                    catch (Exception e)
+                    {
+                        e.Dump();
+                    } 
                 }
             }, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default); // .ContinueWith(antecedent => Complete());
 

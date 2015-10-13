@@ -12,10 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Platform {
+namespace Microsoft.PackageManagement.Internal.Utility.Platform {
     using System.Security.Principal;
 
-    public class AdminPrivilege {
+    internal class AdminPrivilege {
         /// <summary>
         ///     The function checks whether the current process is run as administrator. In other words, it dictates whether the
         ///     primary access token of the process belongs to user account that is a member of the local Administrators group and

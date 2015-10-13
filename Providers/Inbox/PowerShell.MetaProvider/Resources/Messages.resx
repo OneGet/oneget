@@ -1,4 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,12 +118,63 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="PowershellScriptFunctionFailed" xml:space="preserve">
-    <value>PowerShell Script '{0}' Function '{1}' failed.</value>
+  <data name="DuplicateProviderName" xml:space="preserve">
+    <value>Fail to import the provider '{0}' because the provider with the same name also exists from path '{1}'.</value>
+    <comment>{0} provider path {1} provider path</comment>
+  </data>
+  <data name="FailedToImportProvider" xml:space="preserve">
+    <value>Import-PackageProvider '{0}' failed.</value>
+    <comment>0-provider name or path</comment>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>File '{0}' not found.</value>
+    <comment>{0} module path</comment>
+  </data>
+  <data name="ImportModuleFailed" xml:space="preserve">
+    <value>Import-Module failed: '{0}'.</value>
+    <comment>0- module name or path</comment>
+  </data>
+  <data name="ModuleAlreadyLoaded" xml:space="preserve">
+    <value>The module '{0}' is already loaded.</value>
+    <comment>{0} - module name</comment>
+  </data>
+  <data name="ModuleNotFound" xml:space="preserve">
+    <value>Cannot find provider '{0}' under the specified path.</value>
+  </data>
+  <data name="PackageManagementProvidersNotFound" xml:space="preserve">
+    <value>'PackageManagementProviders' key is not found in the .psd1 file under '{0}'.</value>
+    <comment>{0} file path.</comment>
+  </data>
+  <data name="PowershellScriptFunctionReturnsNull" xml:space="preserve">
+    <value>PowerShell Script '{0}' Function '{1}' returns null.</value>
     <comment>{0} script name, {1} function name</comment>
+  </data>
+  <data name="ProvideNameMismatch" xml:space="preserve">
+    <value>Unable to find provider '{0}'. Please check if the ProviderName is set to '{1}' in '{2}'. </value>
+    <comment>{0} provider name, {1} provider path, {2} provider name</comment>
+  </data>
+  <data name="ProviderNameIsNullOrEmpty" xml:space="preserve">
+    <value>Name of the provider '{0}' is null, empty or not implemented by the provider.</value>
+    <comment>0-provider name</comment>
+  </data>
+  <data name="RootModuleAndPackageManagementProviderNameNotMatch" xml:space="preserve">
+    <value>Root module {0} does not match the packagemanagementprovider name {1}</value>
   </data>
   <data name="ScriptStackTrace" xml:space="preserve">
     <value>Script failure at : {0}</value>
     <comment>{0} script location</comment>
+  </data>
+  <data name="SuccessfullyLoadedModule" xml:space="preserve">
+    <value>Loaded PowerShell package provider: '[{0}]'.</value>
+  </data>
+  <data name="UnableToFindModuleProvider" xml:space="preserve">
+    <value>Unable to find package provider '{0}' under the specified path.</value>
+    <comment>{0} module name</comment>
+  </data>
+  <data name="UnableToFindPowerShellFunctionsFile" xml:space="preserve">
+    <value>Unable to find 'PackageProviderFunctions.psm1' at '{0}'</value>
+  </data>
+  <data name="UnableToLoadModule" xml:space="preserve">
+    <value>Cannot load module '{0}' because no valid provider found under the specified path.</value>
   </data>
 </root>

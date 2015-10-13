@@ -12,14 +12,21 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.Providers {
+namespace Microsoft.PackageManagement.Providers.Internal
+{
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.IO;
     using System.Net;
+#if CORECLR
+    using System.Net.Http;
+#endif
     using System.Threading;
-    using Implementation;
-    using Utility.Extensions;
+    using System.Threading.Tasks;
+    using PackageManagement.Internal;
+    using PackageManagement.Internal.Implementation;
+    using PackageManagement.Internal.Utility.Extensions;
 
     public class WebDownloader {
         internal static string ProviderName = "WebDownloader";
@@ -36,7 +43,7 @@ namespace Microsoft.PackageManagement.Providers {
         ///     the CORE and HOST
         /// </param>
         public void GetFeatures(Request request) {
-            if( request == null ) {
+            if (request == null) {
                 throw new ArgumentNullException("request");
             }
 
@@ -54,7 +61,7 @@ namespace Microsoft.PackageManagement.Providers {
             return ProviderName;
         }
 
-        public string DownloadFile(Uri remoteLocation, string localFilename,int timeoutMilliseconds, bool showProgress, Request request) {
+        public string DownloadFile(Uri remoteLocation, string localFilename, int timeoutMilliseconds, bool showProgress, Request request) {
 
             if (request == null) {
                 throw new ArgumentNullException("request");
@@ -64,7 +71,7 @@ namespace Microsoft.PackageManagement.Providers {
                 throw new ArgumentNullException("remoteLocation");
             }
 
-            request.Debug("Calling 'WebDownloader::DownloadFile' '{0}','{1}','{2}','{3}'", remoteLocation, localFilename,timeoutMilliseconds,showProgress);
+            request.Debug("Calling 'WebDownloader::DownloadFile' '{0}','{1}','{2}','{3}'", remoteLocation, localFilename, timeoutMilliseconds, showProgress);
 
             if (remoteLocation.Scheme.ToLowerInvariant() != "http" && remoteLocation.Scheme.ToLowerInvariant() != "https" && remoteLocation.Scheme.ToLowerInvariant() != "ftp") {
                 request.Error(ErrorCategory.InvalidResult, remoteLocation.ToString(), Constants.Messages.SchemeNotSupported, remoteLocation.Scheme);
@@ -101,9 +108,19 @@ namespace Microsoft.PackageManagement.Providers {
                 pid = request.StartProgress(0, "Downloading '{0}'", remoteLocation);
             }
 
+#if CORECLR
+            var task = Download(remoteLocation, localFilename, showProgress, request, pid);
+
+            task.Wait(timeoutMilliseconds);
+
+            if (!task.IsCompleted)
+            {
+                request.Warning(Constants.Status.TimedOut);
+                request.Debug("Timed out downloading '{0}'", remoteLocation.AbsoluteUri);
+            }
+#else
             var webClient = new WebClient();
 
-            // Apparently, places like Codeplex know to let this thru!
             webClient.Headers.Add("user-agent", "chocolatey command line");
 
             var done = new ManualResetEvent(false);
@@ -133,7 +150,8 @@ namespace Microsoft.PackageManagement.Providers {
 
             // wait for the completion 
             if (timeoutMilliseconds > 0) {
-                if (!done.WaitOne(timeoutMilliseconds)) {
+                if (!done.WaitOne(timeoutMilliseconds))
+                {
                     webClient.CancelAsync();
                     request.Warning(Constants.Status.TimedOut);
                     request.Debug("Timed out downloading '{0}'", remoteLocation.AbsoluteUri);
@@ -143,6 +161,8 @@ namespace Microsoft.PackageManagement.Providers {
                 // wait until it completes or fails on it's own
                 done.WaitOne();
             }
+
+#endif
             
             // if we don't have the file by this point, we've failed.
             if (localFilename == null || !File.Exists(localFilename)) {
@@ -158,5 +178,74 @@ namespace Microsoft.PackageManagement.Providers {
             return localFilename;
         }
 
+#if CORECLR
+        private async Task<string> Download(Uri remoteLocation, string localFilename, bool showProgress, Request request, int pid)
+        {
+            var httpClient = new HttpClient();
+
+            request.Debug("Calling httpclient with remotelocation {0}", remoteLocation.AbsoluteUri);
+
+            // Apparently, places like Codeplex know to let this thru!
+            httpClient.DefaultRequestHeaders.Add("user-agent", "chocolatey command line");
+            httpClient.DefaultRequestHeaders.ExpectContinue = false;
+            long totalBytesToReceive = 0L;
+
+            HttpResponseMessage response = await httpClient.GetAsync(remoteLocation, HttpCompletionOption.ResponseHeadersRead);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            if (response.Content != null && response.Content.Headers != null)
+            {
+                totalBytesToReceive = response.Content.Headers.ContentLength ?? 0;
+            }
+
+            try
+            {
+                Stream input = await response.Content.ReadAsStreamAsync();
+                byte[] bytes = new byte[1024 * 4];
+                FileStream output = File.Open(localFilename, FileMode.OpenOrCreate);
+
+                long totalDownloaded = 0;
+                int current = 0;
+                int lastPercent = 0;
+
+                current = await input.ReadAsync(bytes, 0, bytes.Length);
+
+                while (current > 0)
+                {
+                    totalDownloaded += current;
+
+                    await output.WriteAsync(bytes, 0, current);
+
+                    if (showProgress && totalBytesToReceive != 0)
+                    {
+                        int percent = (int)((totalDownloaded * 100) / totalBytesToReceive);
+
+                        if (percent > lastPercent)
+                        {
+                            lastPercent = percent;
+                            request.Progress(pid, (int)percent, "To {0}", localFilename);
+                        }
+                    }
+
+                    current = await input.ReadAsync(bytes, 0, bytes.Length);
+                }
+
+                input.Dispose();
+                output.Dispose();
+            }
+            catch (Exception e)
+            {
+                request.Debug(e.Message);
+                localFilename = null;
+            }
+
+            return localFilename;
+        }
+
+#endif
     }
 }

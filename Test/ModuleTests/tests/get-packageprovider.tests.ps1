@@ -18,20 +18,49 @@ ipmo "$PSScriptRoot\utility.psm1"
 # ------------------------------------------------------------------------------
 # Actual Tests:
 
-Describe "get-packageprovider" {
+Describe "get-packageprovider" -Tags @('BVT', 'DRT'){
     # make sure that packagemanagement is loaded
     import-packagemanagement
 
     It "lists package providers installed" {
-        $x = (get-packageprovider -name "nuget").name | should match "nuget"
+        $x = (get-packageprovider -name "nuget" -ForceBootstrap).name | should match "nuget"
+    }
+
+    It "lists package providers installed" {
+        $x = (get-packageprovider -name "nuget" -verbose -Force).name | should match "nuget"
     }
 
     It "EXPECTED:  Gets The 'Programs' Package Provider" {
         $x = (get-packageprovider -name "Programs").name | should match "Programs"
     }
+    
+    It "EXPECTED:  Gets The 'P*' Package Provider" {
+        $x = (get-packageprovider -name "P*").name.Contains('PSModule')| should be $true
+    }
+   
+    It "EXPECTED:  returns an error when asking for a provider that does not exist" {
+        $Error.Clear()
+        $msg = powershell 'get-packageprovider -name NOT_EXISTS  -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
+        $msg | should be "UnknownProviderFromActivatedList,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackageProvider"
+    }
+
+    It "EXPECTED:  returns an error when asking for multiple providers that do not exist" {
+        $Error.Clear()
+        $msg = powershell 'get-packageprovider -name NOT_EXISTS,NOT_EXISTS2  -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
+        $msg | should be "UnknownProviderFromActivatedList,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackageProvider"
+    }
+    
+    It "EXPECTED:  returns an error when asking for multiple providers that do not exist -list" {
+        $Error.Clear()
+        $msg = powershell 'get-packageprovider -name NOT_EXISTS,NOT_EXISTS2 -ListAvailable -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
+        $msg | should be "UnknownProviders,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackageProvider"
+    }
+
 }
 
-Describe "happy" -tag common {
+
+
+Describe "happy" -Tags @('BVT', 'DRT'){
     # make sure that packagemanagement is loaded
     import-packagemanagement
 
@@ -44,32 +73,32 @@ Describe "happy" -tag common {
     }
 }
 
-Describe "mediocre" -tag common,pristine {
+
+Describe "Get-PackageProvider with list" -Tags @('BVT', 'DRT'){
     # make sure that packagemanagement is loaded
     import-packagemanagement
 
-    It "does something useful" {
-        $true | should be $true
+    It "lists package providers installed" {
+        $x = (Get-PackageProvider).Count -gt 1 | should be $true
+        $y = (Get-PackageProvider -ListAvailable).Count -gt $x | should be $true
+    }
+
+    It "List two providers" {
+        (get-packageprovider -name "OneGetTest" -ListAvailable).name | should match "OneGetTest"
+        (get-packageprovider -name "PSModule" -ListAvailable).name | should match "PSModule"
+
+        $providers = get-packageprovider -Name OneGetTest, PSModule -ListAvailable
+        
+        $providers | ?{ $_.name -eq "OneGetTest" } | should not BeNullOrEmpty
+   
+        $providers | ?{ $_.name -eq "PSModule" } | should not BeNullOrEmpty   
+    }
+       
+    It "List two providers with wildcard chars" {
+        $providers = get-packageprovider -Name OneGetTest* -ListAvailable
+        
+        $providers | ?{ $_.name -eq "OneGetTest" } | should not BeNullOrEmpty
+        #all versions of the OneGetTest provider should be displayed
+        $providers.Count -ge 3 | should be $true
     }
 }
-
-Describe "sad" -tag pristine {
-    # make sure that packagemanagement is loaded
-    import-packagemanagement
-
-    It "does something useful" {
-        $true | should be $true
-    }
-}
-
-Describe "mad" -tag pristine {
-    # make sure that packagemanagement is loaded
-    import-packagemanagement
-
-    It "does something useful too" {
-        $true | should be $true
-    }
-}
-
-
-

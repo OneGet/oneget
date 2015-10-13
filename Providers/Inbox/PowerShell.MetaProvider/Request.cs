@@ -12,7 +12,10 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
+
+using Microsoft.PackageManagement.Internal.Utility.Plugin;
+
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -21,12 +24,12 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
-    using Api;
-    using Implementation;
-    using Resources;
-    using Utility.Async;
-    using Utility.Extensions;
-    using Utility.Plugin;
+    using Microsoft.PackageManagement.Internal.Api;
+    using Microsoft.PackageManagement.Internal.Implementation;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Utility.Async;
+    
+    using Messages = Microsoft.PackageManagement.MetaProvider.PowerShell.Resources.Messages;
 
     public abstract class PsRequest : Request {
         internal CommandInfo CommandInfo;
@@ -70,9 +73,9 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 return string.Empty;
             }
 
-            if (messageText.StartsWith(PackageManagement.Constants.MSGPrefix, true, CultureInfo.CurrentCulture)) {
+            if (messageText.IndexOf(PackageManagement.Internal.Constants.MSGPrefix, StringComparison.CurrentCultureIgnoreCase) == 0) {
                 // check with the caller first, then with the local resources, and fallback to using the messageText itself.
-                messageText = GetMessageString(messageText.Substring(PackageManagement.Constants.MSGPrefix.Length), GetMessageStringInternal(messageText) ?? messageText) ?? GetMessageStringInternal(messageText) ?? messageText;
+                messageText = GetMessageString(messageText.Substring(PackageManagement.Internal.Constants.MSGPrefix.Length), GetMessageStringInternal(messageText) ?? messageText) ?? GetMessageStringInternal(messageText) ?? messageText;
             }
 
             // if it doesn't look like we have the correct number of parameters
@@ -97,7 +100,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 if (_options == null) {
                     _options = new Hashtable();
                     //quick and dirty, grab all four sets and merge them.
-                    var keys = OptionKeys.ToArray();
+                    var keys = OptionKeys ?? new string[0];
                     foreach (var k in keys) {
                         if (_options.ContainsKey(k)) {
                             continue;
@@ -106,8 +109,10 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                         if (values.Length == 1) {
                             if (values[0].IsTrue()) {
                                 _options.Add(k, true);
-                            } else if (values[0].StartsWith("SECURESTRING:", StringComparison.OrdinalIgnoreCase)) {
+                            } else if (values[0].IndexOf("SECURESTRING:", StringComparison.OrdinalIgnoreCase) == 0) {
+#if !CORECLR
                                 _options.Add(k, values[0].Substring(13).FromProtectedString("salt"));
+#endif
                             } else {
                                 _options.Add(k, values[0]);
                             }
@@ -187,6 +192,20 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 req.Debug("METHOD_NOT_IMPLEMENTED", methodName);
             }
             req._provider = provider;
+
+            if (req.Options == null) {
+                req.Debug("req.Options is null");
+                
+            } else {
+
+                req.Debug("Calling New() : MethodName = '{0}'", methodName);
+
+                foreach(string key in req.Options.Keys)
+                {
+                    req.Debug(String.Format(CultureInfo.CurrentCulture, "{0}: {1}", key, req.Options[key]));                   
+                }
+            }
+                      
             return req;
         }
 

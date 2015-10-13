@@ -14,11 +14,13 @@
 
 namespace Microsoft.PackageManagement.Implementation {
     using System;
-    using Api;
+    using Internal;
+    using Internal.Api;
+    using Internal.Implementation;
+    using Internal.Providers;
+    using Internal.Utility.Async;
+    using Internal.Utility.Plugin;
     using Packaging;
-    using Providers;
-    using Utility.Async;
-    using Utility.Plugin;
 
     public class PackageProvider : ProviderBase<IPackageProvider> {
         private string _name;
@@ -136,6 +138,10 @@ namespace Microsoft.PackageManagement.Implementation {
         }
 
         public IAsyncEnumerable<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, IHostApi requestObject) {
+            if (requestObject != null)
+            {
+                requestObject.Debug(String.Format(System.Globalization.CultureInfo.CurrentCulture, "PackageProvider::FindPackage with name {0}", name));
+            }
             return new SoftwareIdentityRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.FindPackage(name, requiredVersion, minimumVersion, maximumVersion,0, request), Constants.PackageStatus.Available);
         }
 
@@ -189,7 +195,8 @@ namespace Microsoft.PackageManagement.Implementation {
             return new PackageSourceRequestObject(this, requestObject ?? new object().As<IHostApi>(), request => Provider.ResolvePackageSources(request));
         }
 
-        public IAsyncAction DownloadPackage(SoftwareIdentity softwareIdentity, string destinationFilename, IHostApi requestObject) {
+        public IAsyncEnumerable<SoftwareIdentity> DownloadPackage(SoftwareIdentity softwareIdentity, string destinationFilename, IHostApi requestObject)
+        {
             if (requestObject == null) {
                 throw new ArgumentNullException("requestObject");
             }
@@ -198,7 +205,7 @@ namespace Microsoft.PackageManagement.Implementation {
                 throw new ArgumentNullException("softwareIdentity");
             }
 
-            return new ActionRequestObject(this, requestObject, request => Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, request));
+            return new SoftwareIdentityRequestObject(this, requestObject, request => Provider.DownloadPackage(softwareIdentity.FastPackageReference, destinationFilename, request), Constants.PackageStatus.Downloaded);
         }
     }
 }

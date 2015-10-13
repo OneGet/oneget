@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Cab
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 {
     using System;
     using System.Collections.Generic;
@@ -15,7 +15,9 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
     using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
+#if !CORECLR
     using System.Security.Permissions;
+#endif
     using System.Text;
 
     internal class CabPacker : CabWorker
@@ -57,19 +59,19 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
         public CabPacker(CabEngine cabEngine)
             : base(cabEngine)
         {
-            this.fciAllocMemHandler    = this.CabAllocMem;
-            this.fciFreeMemHandler     = this.CabFreeMem;
-            this.fciOpenStreamHandler  = this.CabOpenStreamEx;
-            this.fciReadStreamHandler  = this.CabReadStreamEx;
+            this.fciAllocMemHandler = this.CabAllocMem;
+            this.fciFreeMemHandler = this.CabFreeMem;
+            this.fciOpenStreamHandler = this.CabOpenStreamEx;
+            this.fciReadStreamHandler = this.CabReadStreamEx;
             this.fciWriteStreamHandler = this.CabWriteStreamEx;
             this.fciCloseStreamHandler = this.CabCloseStreamEx;
-            this.fciSeekStreamHandler  = this.CabSeekStreamEx;
-            this.fciFilePlacedHandler  = this.CabFilePlaced;
-            this.fciDeleteFileHandler  = this.CabDeleteFile;
+            this.fciSeekStreamHandler = this.CabSeekStreamEx;
+            this.fciFilePlacedHandler = this.CabFilePlaced;
+            this.fciDeleteFileHandler = this.CabDeleteFile;
             this.fciGetTempFileHandler = this.CabGetTempFile;
-            this.fciGetNextCabinet     = this.CabGetNextCabinet;
-            this.fciCreateStatus       = this.CabCreateStatus;
-            this.fciGetOpenInfo        = this.CabGetOpenInfo;
+            this.fciGetNextCabinet = this.CabGetNextCabinet;
+            this.fciCreateStatus = this.CabCreateStatus;
+            this.fciGetOpenInfo = this.CabGetOpenInfo;
             this.tempStreams = new List<Stream>();
             this.compressionLevel = CompressionLevel.Normal;
         }
@@ -107,7 +109,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
             if (maxArchiveSize > 0 && maxArchiveSize < ccab.cb)
             {
                 ccab.cb = Math.Max(
-                    NativeMethods.FCI.MIN_DISK, (int) maxArchiveSize);
+                    NativeMethods.FCI.MIN_DISK, (int)maxArchiveSize);
             }
 
             object maxFolderSizeOption = this.context.GetOption(
@@ -118,7 +120,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
                     maxFolderSizeOption, CultureInfo.InvariantCulture);
                 if (maxFolderSize > 0 && maxFolderSize < ccab.cbFolderThresh)
                 {
-                    ccab.cbFolderThresh = (int) maxFolderSize;
+                    ccab.cbFolderThresh = (int)maxFolderSize;
                 }
             }
 
@@ -129,7 +131,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
                 throw new FileNotFoundException(
                     "Cabinet name not provided by stream context.");
             }
-            ccab.setID = (short) new Random().Next(
+            ccab.setID = (short)new Random().Next(
                 Int16.MinValue, Int16.MaxValue + 1);
             this.CabNumbers[ccab.szCab] = 0;
             this.currentArchiveName = ccab.szCab;
@@ -156,7 +158,9 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
 
         [SuppressMessage("Microsoft.Security", "CA2106:SecureAsserts")]
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+#if !CORECLR
         [SecurityPermission(SecurityAction.Assert, UnmanagedCode = true)]
+#endif
         public void Pack(
             IPackStreamContext streamContext,
             IEnumerable<string> files,
@@ -212,7 +216,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
                             continue;
                         }
 
-                        if (fileStream.Length >= (long) NativeMethods.FCI.MAX_FOLDER)
+                        if (fileStream.Length >= (long)NativeMethods.FCI.MAX_FOLDER)
                         {
                             throw new NotSupportedException(String.Format(
                                 CultureInfo.InvariantCulture,
@@ -226,7 +230,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
                             // Automatically create a new folder if this file
                             // won't fit in the current folder.
                             bool nextFolder = uncompressedBytesInFolder
-                                + fileStream.Length >= (long) NativeMethods.FCI.MAX_FOLDER;
+                                + fileStream.Length >= (long)NativeMethods.FCI.MAX_FOLDER;
 
                             // Otherwise ask the client if it wants to
                             // move to the next folder.
@@ -414,7 +418,11 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
             }
             else  // Must be a temp stream
             {
+#if CORECLR
+                stream.Dispose();
+#else
                 stream.Close();
+#endif
                 this.tempStreams.Remove(stream);
             }
             return base.CabCloseStreamEx(streamHandle, out err, pv);
@@ -460,14 +468,14 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
                 }
 
                 int lzxWindowMax =
-                    ((int) NativeMethods.FCI.TCOMP.LZX_WINDOW_HI >> (int) NativeMethods.FCI.TCOMP.SHIFT_LZX_WINDOW) -
-                    ((int) NativeMethods.FCI.TCOMP.LZX_WINDOW_LO >> (int) NativeMethods.FCI.TCOMP.SHIFT_LZX_WINDOW);
+                    ((int)NativeMethods.FCI.TCOMP.LZX_WINDOW_HI >> (int)NativeMethods.FCI.TCOMP.SHIFT_LZX_WINDOW) -
+                    ((int)NativeMethods.FCI.TCOMP.LZX_WINDOW_LO >> (int)NativeMethods.FCI.TCOMP.SHIFT_LZX_WINDOW);
                 int lzxWindow = lzxWindowMax *
                     (compLevel - CompressionLevel.Min) / (CompressionLevel.Max - CompressionLevel.Min);
 
-                return (NativeMethods.FCI.TCOMP) ((int) NativeMethods.FCI.TCOMP.TYPE_LZX |
-                    ((int) NativeMethods.FCI.TCOMP.LZX_WINDOW_LO +
-                    (lzxWindow << (int) NativeMethods.FCI.TCOMP.SHIFT_LZX_WINDOW)));
+                return (NativeMethods.FCI.TCOMP)((int)NativeMethods.FCI.TCOMP.TYPE_LZX |
+                    ((int)NativeMethods.FCI.TCOMP.LZX_WINDOW_LO +
+                    (lzxWindow << (int)NativeMethods.FCI.TCOMP.SHIFT_LZX_WINDOW)));
             }
         }
 
@@ -513,7 +521,8 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
                     this.fciCreateStatus,
                     this.fciGetOpenInfo,
                     tcomp);
-                if (result == 0) {
+                if (result == 0)
+                {
                     // Stop compiler from complaining
                     this.CheckError(false);
                     this.FileStream = null;
@@ -538,7 +547,8 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
         {
             this.Erf.Clear();
             var result = NativeMethods.FCI.FlushFolder(this.fciHandle, this.fciGetNextCabinet, this.fciCreateStatus);
-            if (result == 0) {
+            if (result == 0)
+            {
                 // Stop compiler from complaining
                 this.CheckError(false);
                 return;
@@ -550,7 +560,8 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
         {
             this.Erf.Clear();
             var result = NativeMethods.FCI.FlushCabinet(this.fciHandle, false, this.fciGetNextCabinet, this.fciCreateStatus);
-            if (result == 0) {
+            if (result == 0)
+            {
                 // Stop compiler from complaining
                 this.CheckError(false);
                 return;
@@ -567,7 +578,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
             IntPtr pv)
         {
             CompressionEngine.DateTimeToDosDateAndTime(this.fileLastWriteTime, out date, out time);
-            attribs = (short) this.fileAttributes;
+            attribs = (short)this.fileAttributes;
 
             Stream stream = this.FileStream;
             this.FileStream = new DuplicateStream(stream);
@@ -593,7 +604,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
 
             nextCcab.szDisk = String.Empty;
             nextCcab.szCab = this.context.GetArchiveName(nextCcab.iCab);
-            this.CabNumbers[nextCcab.szCab] = (short) nextCcab.iCab;
+            this.CabNumbers[nextCcab.szCab] = (short)nextCcab.iCab;
             this.NextCabinetName = nextCcab.szCab;
 
             Marshal.StructureToPtr(nextCcab, pccab, false);
@@ -609,7 +620,7 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
                     {
                         if (this.currentFileBytesProcessed + cb2 > this.currentFileTotalBytes)
                         {
-                            cb2 = (uint) this.currentFileTotalBytes - (uint) this.currentFileBytesProcessed;
+                            cb2 = (uint)this.currentFileTotalBytes - (uint)this.currentFileBytesProcessed;
                         }
                         this.currentFileBytesProcessed += cb2;
                         this.fileBytesProcessed += cb2;

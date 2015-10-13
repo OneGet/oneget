@@ -12,60 +12,75 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Plugin {
+namespace Microsoft.PackageManagement.Internal.Utility.Plugin
+{
     using System;
+    using System.Linq;
     using System.Collections.Generic;
     using System.Reflection;
     using System.Reflection.Emit;
     using Extensions;
 
-    internal static class DynamicTypeExtensions {
+    internal static class DynamicTypeExtensions
+    {
         private static readonly Type[] _emptyTypes = {
         };
 
         private static MethodInfo _asMethod;
 
-        private static MethodInfo AsMethod {
-            get {
-                return _asMethod ?? (_asMethod = typeof (DynamicInterfaceExtensions).GetMethod("As", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] {typeof (Object)}, null));
+        private static MethodInfo AsMethod
+        {
+            get
+            {
+                var methods = typeof(DynamicInterfaceExtensions).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                if (_asMethod == null)
+                {
+                    _asMethod = methods.FirstOrDefault(method => String.Equals(method.Name, "As", StringComparison.OrdinalIgnoreCase)
+                        && method.GetParameterTypes().Count() == 1 && method.GetParameterTypes().First() == typeof(Object));
+                }
+
+                return _asMethod;
             }
         }
 
-        internal static void OverrideInitializeLifetimeService(this TypeBuilder dynamicType) {
+        internal static void OverrideInitializeLifetimeService(this TypeBuilder dynamicType)
+        {
             // add override of InitLifetimeService so this object doesn't fall prey to timeouts
-            var il = dynamicType.DefineMethod("InitializeLifetimeService", MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual, CallingConventions.HasThis, typeof (object), _emptyTypes).GetILGenerator();
+            var il = dynamicType.DefineMethod("InitializeLifetimeService", MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual, CallingConventions.HasThis, typeof(object), _emptyTypes).GetILGenerator();
 
             il.LoadNull();
             il.Return();
         }
 
-        internal static void GenerateIsMethodImplemented(this TypeBuilder dynamicType) {
+        internal static void GenerateIsMethodImplemented(this TypeBuilder dynamicType)
+        {
             // special case -- the IsMethodImplemented method can give the interface owner information as to
             // which methods are actually implemented.
-            var implementedMethodsField = dynamicType.DefineField("__implementedMethods", typeof (HashSet<string>), FieldAttributes.Private);
+            var implementedMethodsField = dynamicType.DefineField("__implementedMethods", typeof(HashSet<string>), FieldAttributes.Private);
 
-            var il = dynamicType.CreateMethod("IsMethodImplemented", typeof (bool), typeof (string));
+            var il = dynamicType.CreateMethod("IsMethodImplemented", typeof(bool), typeof(string));
 
             il.LoadThis();
             il.LoadField(implementedMethodsField);
             il.LoadArgument(1);
-            il.CallVirutal(typeof (HashSet<string>).GetMethod("Contains"));
+            il.CallVirutal(typeof(HashSet<string>).GetMethod("Contains"));
             il.Return();
         }
 
-        internal static void GenerateMethodForDirectCall(this TypeBuilder dynamicType, MethodInfo method, FieldBuilder backingField, MethodInfo instanceMethod, MethodInfo onUnhandledException) {
+        internal static void GenerateMethodForDirectCall(this TypeBuilder dynamicType, MethodInfo method, FieldBuilder backingField, MethodInfo instanceMethod, MethodInfo onUnhandledException)
+        {
             var il = dynamicType.CreateMethod(method);
             // the target object has a method that matches.
             // let's use that.
 
-            var hasReturn = method.ReturnType != typeof (void);
+            var hasReturn = method.ReturnType != typeof(void);
             var hasOue = onUnhandledException != null;
 
             var exit = il.DefineLabel();
             var setDefaultReturn = il.DefineLabel();
 
             var ret = hasReturn ? il.DeclareLocal(method.ReturnType) : null;
-            var exc = hasOue ? il.DeclareLocal(typeof (Exception)) : null;
+            var exc = hasOue ? il.DeclareLocal(typeof(Exception)) : null;
 
             il.BeginExceptionBlock();
 
@@ -75,15 +90,20 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
             var imTypes = instanceMethod.GetParameterTypes();
             var dmTypes = method.GetParameterTypes();
 
-            for (var i = 0; i < dmTypes.Length; i++) {
+            for (var i = 0; i < dmTypes.Length; i++)
+            {
                 il.LoadArgument(i + 1);
 
                 // if the types are assignable,
-                if (imTypes[i].IsAssignableFrom(dmTypes[i])) {
+                if (imTypes[i].IsAssignableFrom(dmTypes[i]))
+                {
                     // it assigns straight across.
-                } else {
+                }
+                else
+                {
                     // it doesn't, we'll ducktype it.
-                    if (dmTypes[i].IsPrimitive) {
+                    if (dmTypes[i].GetTypeInfo().IsPrimitive)
+                    {
                         // box it first?
                         il.Emit(OpCodes.Box, dmTypes[i]);
                     }
@@ -94,22 +114,30 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
             // call the actual method implementation
             il.CallVirutal(instanceMethod);
 
-            if (hasReturn) {
+            if (hasReturn)
+            {
                 // copy the return value in the return
                 // check to see if we need to ducktype the return value here.
-                if (method.ReturnType.IsAssignableFrom(instanceMethod.ReturnType)) {
+                if (method.ReturnType.IsAssignableFrom(instanceMethod.ReturnType))
+                {
                     // it can store it directly.
-                } else {
+                }
+                else
+                {
                     // it doesn't assign directly, let's ducktype it.
-                    if (instanceMethod.ReturnType.IsPrimitive) {
+                    if (instanceMethod.ReturnType.GetTypeInfo().IsPrimitive)
+                    {
                         il.Emit(OpCodes.Box, instanceMethod.ReturnType);
                     }
                     il.Call(AsMethod.MakeGenericMethod(method.ReturnType));
                 }
                 il.StoreLocation(ret);
-            } else {
+            }
+            else
+            {
                 // this method isn't returning anything.
-                if (instanceMethod.ReturnType != typeof (void)) {
+                if (instanceMethod.ReturnType != typeof(void))
+                {
                     // pop the return value beacuse the generated method is void and the
                     // method we called actually gave us a result.
                     il.Emit(OpCodes.Pop);
@@ -117,8 +145,9 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
             }
             il.Emit(OpCodes.Leave_S, exit);
 
-            il.BeginCatchBlock(typeof (Exception));
-            if (hasOue) {
+            il.BeginCatchBlock(typeof(Exception));
+            if (hasOue)
+            {
                 // we're going to call the handler.
                 il.StoreLocation(exc.LocalIndex);
                 il.LoadArgument(0);
@@ -126,7 +155,9 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
                 il.LoadLocation(exc.LocalIndex);
                 il.Call(onUnhandledException);
                 il.Emit(OpCodes.Leave_S, setDefaultReturn);
-            } else {
+            }
+            else
+            {
                 // suppress the exception quietly
                 il.Emit(OpCodes.Pop);
                 il.Emit(OpCodes.Leave_S, setDefaultReturn);
@@ -140,24 +171,28 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
 
             // looks like we're returning the value that we got back from the implementation.
             il.MarkLabel(exit);
-            if (hasReturn) {
+            if (hasReturn)
+            {
                 il.LoadLocation(ret.LocalIndex);
             }
 
             il.Return();
         }
 
-        internal static ILGenerator CreateMethod(this TypeBuilder dynamicType, MethodInfo method) {
+        internal static ILGenerator CreateMethod(this TypeBuilder dynamicType, MethodInfo method)
+        {
             return dynamicType.CreateMethod(method.Name, method.ReturnType, method.GetParameterTypes());
         }
 
-        internal static ILGenerator CreateMethod(this TypeBuilder dynamicType, string methodName, Type returnType, params Type[] parameterTypes) {
+        internal static ILGenerator CreateMethod(this TypeBuilder dynamicType, string methodName, Type returnType, params Type[] parameterTypes)
+        {
             var methodBuilder = dynamicType.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig, CallingConventions.HasThis, returnType, parameterTypes);
 
             return methodBuilder.GetILGenerator();
         }
 
-        internal static void GenerateMethodForDelegateCall(this TypeBuilder dynamicType, MethodInfo method, FieldBuilder field, MethodInfo onUnhandledException) {
+        internal static void GenerateMethodForDelegateCall(this TypeBuilder dynamicType, MethodInfo method, FieldBuilder field, MethodInfo onUnhandledException)
+        {
             var il = dynamicType.CreateMethod(method);
 
             // the target object has a property or field that matches the signature we're looking for.
@@ -167,44 +202,54 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
 
             il.LoadThis();
             il.LoadField(field);
-            for (var i = 0; i < method.GetParameterTypes().Length; i++) {
+            for (var i = 0; i < method.GetParameterTypes().Length; i++)
+            {
                 il.LoadArgument(i + 1);
             }
             il.CallVirutal(delegateType.GetMethod("Invoke"));
             il.Return();
         }
 
-        internal static void GenerateStubMethod(this TypeBuilder dynamicType, MethodInfo method) {
+        internal static void GenerateStubMethod(this TypeBuilder dynamicType, MethodInfo method)
+        {
             var il = dynamicType.CreateMethod(method);
-            do {
-                if (method.ReturnType != typeof (void)) {
-                    if (method.ReturnType.IsPrimitive) {
-                        if (method.ReturnType == typeof (double)) {
+            do
+            {
+                if (method.ReturnType != typeof(void))
+                {
+                    if (method.ReturnType.GetTypeInfo().IsPrimitive)
+                    {
+                        if (method.ReturnType == typeof(double))
+                        {
                             il.LoadDouble(0.0);
                             break;
                         }
 
-                        if (method.ReturnType == typeof (float)) {
+                        if (method.ReturnType == typeof(float))
+                        {
                             il.LoadFloat(0.0F);
                             break;
                         }
 
                         il.LoadInt32(0);
 
-                        if (method.ReturnType == typeof (long) || method.ReturnType == typeof (ulong)) {
+                        if (method.ReturnType == typeof(long) || method.ReturnType == typeof(ulong))
+                        {
                             il.ConvertToInt64();
                         }
 
                         break;
                     }
 
-                    if (method.ReturnType.IsEnum) {
+                    if (method.ReturnType.GetTypeInfo().IsEnum)
+                    {
                         // should really find out the actual default?
                         il.LoadInt32(0);
                         break;
                     }
 
-                    if (method.ReturnType.IsValueType) {
+                    if (method.ReturnType.GetTypeInfo().IsValueType)
+                    {
                         var result = il.DeclareLocal(method.ReturnType);
                         il.LoadLocalAddress(result);
                         il.InitObject(method.ReturnType);
@@ -218,35 +263,43 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
             il.Return();
         }
 
-        private static void SetDefaultReturnValue(ILGenerator il, Type returnType) {
-            if (returnType != typeof (void)) {
-                if (returnType.IsPrimitive) {
-                    if (returnType == typeof (double)) {
+        private static void SetDefaultReturnValue(ILGenerator il, Type returnType)
+        {
+            if (returnType != typeof(void))
+            {
+                if (returnType.GetTypeInfo().IsPrimitive)
+                {
+                    if (returnType == typeof(double))
+                    {
                         il.LoadDouble(0.0);
                         return;
                     }
 
-                    if (returnType == typeof (float)) {
+                    if (returnType == typeof(float))
+                    {
                         il.LoadFloat(0.0F);
                         return;
                     }
 
                     il.LoadInt32(0);
 
-                    if (returnType == typeof (long) || returnType == typeof (ulong)) {
+                    if (returnType == typeof(long) || returnType == typeof(ulong))
+                    {
                         il.ConvertToInt64();
                     }
 
                     return;
                 }
 
-                if (returnType.IsEnum) {
+                if (returnType.GetTypeInfo().IsEnum)
+                {
                     // should really find out the actual default?
                     il.LoadInt32(0);
                     return;
                 }
 
-                if (returnType.IsValueType) {
+                if (returnType.GetTypeInfo().IsValueType)
+                {
                     var result = il.DeclareLocal(returnType);
                     il.LoadLocalAddress(result);
                     il.InitObject(returnType);

@@ -8,7 +8,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections;
@@ -18,7 +18,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <summary>
     /// Defines a callback function that the installer calls for progress notification and error messages.
     /// </summary>
-    public delegate MessageResult ExternalUIHandler(
+    internal delegate MessageResult ExternalUIHandler(
         InstallMessage messageType,
         string message,
         MessageButtons buttons,
@@ -28,7 +28,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <summary>
     /// [MSI 3.1] Defines a callback function that the installer calls for record-based progress notification and error messages.
     /// </summary>
-    public delegate MessageResult ExternalUIRecordHandler(
+    internal delegate MessageResult ExternalUIRecordHandler(
         InstallMessage messageType,
         Record messageRecord,
         MessageButtons buttons,
@@ -119,7 +119,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         }
     }
 
-    public static partial class Installer
+    internal static partial class Installer
     {
         private static IList externalUIHandlers = ArrayList.Synchronized(new ArrayList());
 
@@ -152,7 +152,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisetexternalui.asp">MsiSetExternalUI</a>
         /// </p></remarks>
-        public static ExternalUIHandler SetExternalUI(ExternalUIHandler uiHandler, InstallLogModes messageFilter)
+        internal static ExternalUIHandler SetExternalUI(ExternalUIHandler uiHandler, InstallLogModes messageFilter)
         {
             NativeExternalUIHandler nativeHandler = null;
             if (uiHandler != null)
@@ -201,7 +201,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisetexternaluirecord.asp">MsiSetExternalUIRecord</a>
         /// </p></remarks>
-        public static ExternalUIRecordHandler SetExternalUI(ExternalUIRecordHandler uiHandler, InstallLogModes messageFilter)
+        internal static ExternalUIRecordHandler SetExternalUI(ExternalUIRecordHandler uiHandler, InstallLogModes messageFilter)
         {
             NativeExternalUIRecordHandler nativeHandler = null;
             if (uiHandler != null)

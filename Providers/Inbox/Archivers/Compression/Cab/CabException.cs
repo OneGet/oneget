@@ -7,18 +7,16 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Cab
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 {
     using System;
+    using System.Reflection;
     using System.Globalization;
     using System.Resources;
-    using System.Runtime.Serialization;
-    using System.Security.Permissions;
 
     /// <summary>
     /// Exception class for cabinet operations.
     /// </summary>
-    [Serializable]
     public class CabException : ArchiveException
     {
         private static ResourceManager errorResources;
@@ -59,21 +57,6 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
         internal CabException(int error, int errorCode, string message)
             : this(error, errorCode, message, null) { }
 
-        /// <summary>
-        /// Initializes a new instance of the CabException class with serialized data.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        protected CabException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-            if (info == null)
-            {
-                throw new ArgumentNullException("info");
-            }
-
-            this.error = info.GetInt32("cabError");
-            this.errorCode = info.GetInt32("cabErrorCode");
-        }
 
         /// <summary>
         /// Gets the FCI or FDI cabinet engine error number.
@@ -109,29 +92,16 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Cab
                 {
                     errorResources = new ResourceManager(
                         typeof(CabException).Namespace + ".Errors",
+#if CORECLR
+                        typeof(CabException).GetTypeInfo().Assembly);
+#else
                         typeof(CabException).Assembly);
+#endif
                 }
                 return errorResources;
             }
         }
 
-        /// <summary>
-        /// Sets the SerializationInfo with information about the exception.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        [SecurityPermission(SecurityAction.Demand, SerializationFormatter=true)]
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            if (info == null)
-            {
-                throw new ArgumentNullException("info");
-            }
-
-            info.AddValue("cabError", this.error);
-            info.AddValue("cabErrorCode", this.errorCode);
-            base.GetObjectData(info, context);
-        }
 
         internal static string GetErrorMessage(int error, int errorCode, bool extracting)
         {

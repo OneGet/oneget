@@ -1,25 +1,29 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
+using Microsoft.PackageManagement.Internal.Utility.Platform;
+
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
     using System.Threading;
-    using Resources;
-    using Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Utility.Platform;
+    using Messages = Microsoft.PackageManagement.MetaProvider.PowerShell.Resources.Messages;
+    using System.Collections.Concurrent;
 
     public class PowerShellProviderBase : IDisposable {
         private object _lock = new Object();
@@ -100,14 +104,14 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 }
 
                 // try IsFoo to Test-IsFoo
-                if (methodName.StartsWith("Is", StringComparison.OrdinalIgnoreCase)) {
+                if (methodName.IndexOf("Is", StringComparison.OrdinalIgnoreCase) == 0) {
                     var meth = "test" + methodName;
                     if (_allCommands.ContainsKey(meth)) {
                         return _allCommands[meth];
                     }
                 }
 
-                if (methodName.StartsWith("add", StringComparison.OrdinalIgnoreCase)) {
+                if (methodName.IndexOf("add", StringComparison.OrdinalIgnoreCase) == 0) {
                     // try it with 'register' instead
                     var result = GetMethod("register" + methodName.Substring(3));
                     if (result != null) {
@@ -115,7 +119,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                     }
                 }
 
-                if (methodName.StartsWith("remove", StringComparison.OrdinalIgnoreCase)) {
+                if (methodName.IndexOf("remove", StringComparison.OrdinalIgnoreCase) == 0) {
                     // try it with 'register' instead
                     var result = GetMethod("unregister" + methodName.Substring(6));
                     if (result != null) {
@@ -137,13 +141,13 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 return null;
             }
 
-            var result = _powershell.InvokeFunction<object>(cmdInfo.Name, args);
+            var result = _powershell.InvokeFunction<object>(cmdInfo.Name, null, null, args);
             if (result == null) {
                 // failure!
-                throw new Exception(Messages.PowershellScriptFunctionFailed.format(_module.Name, method));
+                throw new Exception(Messages.PowershellScriptFunctionReturnsNull.format(_module.Name, method));
             }
 
-            return result.Last();
+            return result;
         }
 
         // lock is on this instance only
@@ -151,9 +155,10 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
         internal void ReportErrors(PsRequest request, IEnumerable<ErrorRecord> errors) {
             foreach (var error in errors) {
                 request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject == null ? null : error.TargetObject.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
-                if (!string.IsNullOrWhiteSpace(error.ScriptStackTrace)) {
+                if (!string.IsNullOrWhiteSpace(error.Exception.StackTrace)) {
                     // give a debug hint if we have a script stack trace. How nice of us.
-                    request.Debug(Constants.ScriptStackTrace, error.ScriptStackTrace);
+                    // the exception stack trace gives better stack than the script stack trace
+                    request.Debug(Constants.ScriptStackTrace, error.Exception.StackTrace);
                 }
             }
         }
@@ -165,14 +170,13 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             if (!_reentrancyLock.WaitOne(0)) {
                 // it's running right now.
 #if DEBUG
-                    PackageManagement.Utility.Platform.NativeMethods.OutputDebugString("[Cmdlet:debugging] -- Stopping powershell script.");
+                    NativeMethods.OutputDebugString("[Cmdlet:debugging] -- Stopping powershell script.");
 #endif
                 lock (_stopLock) {
                     if (_stopResult == null) {
                         _stopResult = _powershell.BeginStop(ar => { }, null);
                     }
                 }
-                _powershell.Stop();
             }
         }
 
@@ -187,7 +191,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                     // into this provider. That's just bad bad bad.
                     throw new Exception("Re-entrancy Violation in powershell module");
                 }
-
+                
                 try {
                     // otherwise, this is the first time we've been here during this call.
                     _reentrancyLock.Reset();
@@ -195,34 +199,26 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                     _powershell.SetVariable("request", request);
                     _powershell.Streams.ClearStreams();
 
-                    // request.Debug("INVOKING PowerShell Fn {0} in {1}", request.CommandInfo.Name, _module.Name);
-                    // make sure we don't pass the request to the function.
-                    var result = _powershell.InvokeFunction<object>(request.CommandInfo.Name, args);
-
-                    // instead, loop thru results and get
-                    if (result == null) {
-                        // failure!
-                        throw new Exception(Messages.PowershellScriptFunctionFailed.format(_module.Name, request.CommandInfo.Name));
-                    }
-
                     object finalValue = null;
+                    ConcurrentBag<ErrorRecord> errors = new ConcurrentBag<ErrorRecord>();
 
-                    foreach (var value in result) {
-                        if (_powershell.Streams.Error.Any()) {
-                            ReportErrors(request, _powershell.Streams.Error);
-                            _powershell.Streams.Error.Clear();
-                        }
+                    request.Debug("INVOKING PowerShell Fn {0} with args {1} that has length {2}", request.CommandInfo.Name, String.Join(", ", args), args.Length);
 
-                        var y = value as Yieldable;
-                        if (y != null) {
-                            y.YieldResult(request);
-                        } else {
-                            finalValue = value;
-                        }
+                    var result = _powershell.InvokeFunction<object>(request.CommandInfo.Name,
+                        (sender, e) => output_DataAdded(sender, e, request, ref finalValue),
+                        (sender, e) => error_DataAdded(sender, e, request, errors),
+                        args);
+
+                    if (result == null)
+                    {
+                        // result is null but it does not mean that the call fails because the command may return nothing
+                        request.Debug(Messages.PowershellScriptFunctionReturnsNull.format(_module.Name, request.CommandInfo.Name));
                     }
 
-                    if (_powershell.Streams.Error.Any()) {
-                        ReportErrors(request, _powershell.Streams.Error);
+                    if (errors.Count > 0)
+                    {
+                        // report the error if there are any
+                        ReportErrors(request, errors);
                         _powershell.Streams.Error.Clear();
                     }
 
@@ -230,8 +226,6 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 } catch (CmdletInvocationException cie) {
                     var error = cie.ErrorRecord;
                     request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject == null ? null : error.TargetObject.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
-                }catch (Exception e) {
-                    e.Dump();
                 } finally {
                     lock (_stopLock) {
                         if (_stopResult != null){
@@ -242,10 +236,57 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                     _powershell.Clear();
                     _powershell.SetVariable("request", null);
                     // it's ok if someone else calls into this module now.
+                    request.Debug("Done calling powershell", request.CommandInfo.Name, _module.Name);
                     _reentrancyLock.Set();
                 }
 
                 return null;
+            }
+        }
+
+        private void error_DataAdded(object sender, DataAddedEventArgs e, PsRequest request, ConcurrentBag<ErrorRecord> errors)
+        {
+            PSDataCollection<ErrorRecord> errorStream = sender as PSDataCollection<ErrorRecord>;
+
+            if (errorStream == null)
+            {
+                return;
+            }
+
+            var error = errorStream[e.Index];
+
+            if (error != null)
+            {
+                // add the error so we can report them later
+                errors.Add(error);
+            }
+        
+        }
+
+        private void output_DataAdded(object sender, DataAddedEventArgs e, PsRequest request, ref object finalValue)
+        {
+            PSDataCollection<PSObject> outputstream = sender as PSDataCollection<PSObject>;
+
+            if (outputstream == null)
+            {
+                return;
+            }
+
+            PSObject psObject = outputstream[e.Index];
+            if (psObject != null)
+            {
+                var value = psObject.ImmediateBaseObject;
+                var y = value as Yieldable;
+                if (y != null)
+                {
+                    // yield it to stream the result gradually
+                    y.YieldResult(request);
+                }
+                else
+                {
+                    finalValue = value;
+                    return;
+                }
             }
         }
     }

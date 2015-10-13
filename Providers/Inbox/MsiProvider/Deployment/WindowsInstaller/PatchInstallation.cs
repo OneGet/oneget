@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// The Patch object represents a unique instance of a patch that has been
     /// registered or applied.
     /// </summary>
-    public class PatchInstallation : Installation
+    internal class PatchInstallation : Installation
     {
         /// <summary>
         /// Enumerates all patch installations on the system.
@@ -29,6 +29,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msienumpatches.asp">MsiEnumPatches</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static IEnumerable<PatchInstallation> AllPatches
         {
             get
@@ -136,6 +137,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <remarks><p>
         /// All available user contexts will be queried.
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public PatchInstallation(string patchCode, string productCode)
             : this(patchCode, productCode, null, UserContexts.All)
         {
@@ -206,6 +208,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Gets a value indicating whether this patch is marked as obsolte.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Obsoleted")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool IsObsoleted
         {
             get
@@ -218,6 +221,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Gets a value indicating whether this patch is present but has been
         /// superseded by a more recent installed patch.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool IsSuperseded
         {
             get
@@ -252,6 +256,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the cached patch file that the product uses.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string LocalPackage
         {
             get
@@ -268,6 +273,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// This value may not be available for per-user, non-managed applications
         /// if the user is not logged on.
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string Transforms
         {
             get
@@ -280,6 +286,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the date and time when the patch is applied to the product.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public DateTime InstallDate
         {
             get
@@ -305,6 +312,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// cannot be uninstalled.
         /// </p></remarks>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Uninstallable")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool Uninstallable
         {
             get
@@ -316,6 +324,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Get the registered display name for the patch.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string DisplayName
         {
             get
@@ -327,6 +336,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the registered support information URL for the patch.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Uri MoreInfoUrl
         {
             get

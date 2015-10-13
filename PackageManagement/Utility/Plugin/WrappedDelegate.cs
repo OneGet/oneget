@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Plugin {
+namespace Microsoft.PackageManagement.Internal.Utility.Plugin {
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -22,12 +22,7 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
 
     public static class WrappedDelegate {
         internal static T CreateProxiedDelegate<T>(this Delegate delegateInstance) {
-            return (T)(object)delegateInstance.CreateProxiedDelegate(typeof (T));
-        }
-
-        internal static Delegate CreateProxiedDelegate(this Delegate dlg, Type expectedDelegateType) {
-            // the delegate to the proxy object
-            return Delegate.CreateDelegate(expectedDelegateType, expectedDelegateType.CreateWrappedProxy(dlg), "Invoke");
+            return (T)(object)typeof(T).CreateWrappedProxy(delegateInstance);
         }
 
         internal static T CreateProxiedDelegate<T>(this object instance, MethodInfo method) {
@@ -52,153 +47,32 @@ namespace Microsoft.PackageManagement.Utility.Plugin {
             // the func/action type for the proxied delegate.
             var proxyDelegateType = GetFuncOrActionType(expectedDelegateType.GetDelegateParameterTypes(), expectedDelegateType.GetDelegateReturnType());
 
-            // create the actual delegate with the function/action instead
-            var actualDelegate = Delegate.CreateDelegate(proxyDelegateType, instance, method);
-
-            // the wrapped delegate class
-            var wrappedType = method.GetWrappedDelegateType();
-
-            // Create an instance of the WrappedDelegate object (this ties keeps the actual delegate in the right appdomain)
-            // and exposes a delegate that is tied to a MarshalByRef object.
-            var proxyObject = wrappedType.GetConstructor(new[] {
-                proxyDelegateType
-            }).Invoke(new object[] {
-                actualDelegate
-            });
-
-            // the delegate to the proxy object
-            return Delegate.CreateDelegate(expectedDelegateType, proxyObject, "Invoke");
+#if CORECLR
+            return method.CreateDelegate(proxyDelegateType, instance);
+#else
+            return Delegate.CreateDelegate(proxyDelegateType, instance, method);
+#endif
         }
 
         internal static object CreateWrappedProxy(this Type expectedDelegateType, Delegate dlg) {
             // the func/action type for the proxied delegate.
             var proxyDelegateType = GetFuncOrActionType(expectedDelegateType.GetDelegateParameterTypes(), expectedDelegateType.GetDelegateReturnType());
 
-            // create the actual delegate with the function/action instead
-            // we already have a viable delegate to use.
-            // var actualDelegate = Delegate.CreateDelegate(proxyDelegateType, instance, method);
-            var actualDelegate = (object)Delegate.CreateDelegate(
+#if CORECLR
+            MethodInfo method = dlg.GetMethodInfo();
+            return (object)method.CreateDelegate(proxyDelegateType, dlg.Target);
+#else
+            return (object)Delegate.CreateDelegate(
                 proxyDelegateType,
                 dlg.Target,
                 dlg.Method,
                 true);
+#endif
 
-            // the wrapped delegate class
-            var wrappedType = dlg.GetWrappedDelegateType();
-
-            // Create an instance of the WrappedDelegate object (this ties keeps the actual delegate in the right appdomain)
-            // and exposes a delegate that is tied to a MarshalByRef object.
-            return wrappedType.GetConstructor(new[] {
-                proxyDelegateType
-            }).Invoke(new[] {
-                actualDelegate
-            });
-        }
-
-        public static Type GetWrappedDelegateType(this MethodInfo method) {
-            if (method.ReturnType == typeof (void)) {
-                return GetWrappedActionType(method.GetParameterTypes());
-            }
-            return GetWrappedFunctionType(method.GetParameterTypes(), method.ReturnType);
-        }
-
-        public static Type GetWrappedDelegateType(this Delegate dlg) {
-            var delegateType = dlg.GetType();
-
-            var returnType = delegateType.GetDelegateReturnType();
-            if (returnType == typeof (void)) {
-                return GetWrappedActionType(delegateType.GetDelegateParameterTypes());
-            }
-            return GetWrappedFunctionType(delegateType.GetDelegateParameterTypes(), returnType);
         }
 
         public static Type GetFuncOrActionType(IEnumerable<Type> argTypes, Type returnType) {
             return returnType == typeof (void) ? Expression.GetActionType(argTypes.ToArray()) : Expression.GetFuncType(argTypes.ConcatSingleItem(returnType).ToArray());
-        }
-
-        public static Type GetWrappedActionType(IEnumerable<Type> argTypes) {
-            var types = argTypes.ToArray();
-
-            switch (types.Length) {
-                case 0:
-                    return typeof (WrappedAction);
-                case 1:
-                    return typeof (WrappedAction<>).MakeGenericType(types);
-                case 2:
-                    return typeof (WrappedAction<,>).MakeGenericType(types);
-                case 3:
-                    return typeof (WrappedAction<,,>).MakeGenericType(types);
-                case 4:
-                    return typeof (WrappedAction<,,,>).MakeGenericType(types);
-                case 5:
-                    return typeof (WrappedAction<,,,,>).MakeGenericType(types);
-                case 6:
-                    return typeof (WrappedAction<,,,,,>).MakeGenericType(types);
-                case 7:
-                    return typeof (WrappedAction<,,,,,,>).MakeGenericType(types);
-                case 8:
-                    return typeof (WrappedAction<,,,,,,,>).MakeGenericType(types);
-                case 9:
-                    return typeof (WrappedAction<,,,,,,,,>).MakeGenericType(types);
-                case 10:
-                    return typeof (WrappedAction<,,,,,,,,,>).MakeGenericType(types);
-                case 11:
-                    return typeof (WrappedAction<,,,,,,,,,,>).MakeGenericType(types);
-                case 12:
-                    return typeof (WrappedAction<,,,,,,,,,,,>).MakeGenericType(types);
-                case 13:
-                    return typeof (WrappedAction<,,,,,,,,,,,,>).MakeGenericType(types);
-                case 14:
-                    return typeof (WrappedAction<,,,,,,,,,,,,,>).MakeGenericType(types);
-                case 15:
-                    return typeof (WrappedAction<,,,,,,,,,,,,,,>).MakeGenericType(types);
-                case 16:
-                    return typeof (WrappedAction<,,,,,,,,,,,,,,,>).MakeGenericType(types);
-                default:
-                    return (Type)null;
-            }
-        }
-
-        public static Type GetWrappedFunctionType(IEnumerable<Type> argTypes, Type returnType) {
-            var types = argTypes.ConcatSingleItem(returnType).ToArray();
-            switch (types.Length) {
-                case 1:
-                    return typeof (WrappedFunc<>).MakeGenericType(types);
-                case 2:
-                    return typeof (WrappedFunc<,>).MakeGenericType(types);
-                case 3:
-                    return typeof (WrappedFunc<,,>).MakeGenericType(types);
-                case 4:
-                    return typeof (WrappedFunc<,,,>).MakeGenericType(types);
-                case 5:
-                    return typeof (WrappedFunc<,,,,>).MakeGenericType(types);
-                case 6:
-                    return typeof (WrappedFunc<,,,,,>).MakeGenericType(types);
-                case 7:
-                    return typeof (WrappedFunc<,,,,,,>).MakeGenericType(types);
-                case 8:
-                    return typeof (WrappedFunc<,,,,,,,>).MakeGenericType(types);
-                case 9:
-                    return typeof (WrappedFunc<,,,,,,,,>).MakeGenericType(types);
-                case 10:
-                    return typeof (WrappedFunc<,,,,,,,,,>).MakeGenericType(types);
-                case 11:
-                    return typeof (WrappedFunc<,,,,,,,,,,>).MakeGenericType(types);
-                case 12:
-                    return typeof (WrappedFunc<,,,,,,,,,,,>).MakeGenericType(types);
-                case 13:
-                    return typeof (WrappedFunc<,,,,,,,,,,,,>).MakeGenericType(types);
-                case 14:
-                    return typeof (WrappedFunc<,,,,,,,,,,,,,>).MakeGenericType(types);
-                case 15:
-                    return typeof (WrappedFunc<,,,,,,,,,,,,,,>).MakeGenericType(types);
-                case 16:
-                    return typeof (WrappedFunc<,,,,,,,,,,,,,,,>).MakeGenericType(types);
-                case 17:
-                    return typeof (WrappedFunc<,,,,,,,,,,,,,,,,>).MakeGenericType(types);
-                default:
-                    return (Type)null;
-            }
         }
     }
 }

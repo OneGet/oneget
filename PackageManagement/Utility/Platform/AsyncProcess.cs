@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Platform {
+namespace Microsoft.PackageManagement.Internal.Utility.Platform {
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Microsoft.PackageManagement.Utility.Platform {
     ///     stdout/stderr streams.
     ///     TODO: add support for a cancellation token to kill the process when cancelled.
     /// </summary>
-    public class AsyncProcess : IDisposable {
+    internal class AsyncProcess : IDisposable {
         protected Process _process;
         private BlockingCollection<string> _stdError = new BlockingCollection<string>();
         private ManualResetEvent _stdErrStarted = new ManualResetEvent(false);
@@ -71,6 +71,7 @@ namespace Microsoft.PackageManagement.Utility.Platform {
             }
         }
 
+#if !CORECLR
         public IntPtr Handle {
             get {
                 return _process.Handle;
@@ -81,6 +82,64 @@ namespace Microsoft.PackageManagement.Utility.Platform {
             get {
                 return _process.HandleCount;
             }
+        }
+
+        public IntPtr MainWindowHandle
+        {
+            get
+            {
+                return _process.MainWindowHandle;
+            }
+        }
+
+        public string MainWindowTitle
+        {
+            get
+            {
+                return _process.MainWindowTitle;
+            }
+        }
+
+        public ISynchronizeInvoke SynchronizingObject
+        {
+            get
+            {
+                return _process.SynchronizingObject;
+            }
+        }
+
+        public bool Responding
+        {
+            get
+            {
+                return _process.Responding;
+            }
+        }
+
+        public bool WaitForInputIdle(int milliseconds)
+        {
+            return _process.WaitForInputIdle(milliseconds);
+        }
+
+        public bool WaitForInputIdle()
+        {
+            return WaitForInputIdle(-1);
+        }
+
+        public bool CloseMainWindow()
+        {
+            return _process.CloseMainWindow();
+        }
+
+#endif
+
+        public void Close()
+        {
+#if !CORECLR
+            _process.Close();
+#else
+            Dispose();
+#endif
         }
 
         public int Id {
@@ -95,17 +154,6 @@ namespace Microsoft.PackageManagement.Utility.Platform {
             }
         }
 
-        public IntPtr MainWindowHandle {
-            get {
-                return _process.MainWindowHandle;
-            }
-        }
-
-        public string MainWindowTitle {
-            get {
-                return _process.MainWindowTitle;
-            }
-        }
 
         public ProcessModule MainModule {
             get {
@@ -212,12 +260,6 @@ namespace Microsoft.PackageManagement.Utility.Platform {
             }
         }
 
-        public bool Responding {
-            get {
-                return _process.Responding;
-            }
-        }
-
         public int SessionId {
             get {
                 return _process.SessionId;
@@ -227,12 +269,6 @@ namespace Microsoft.PackageManagement.Utility.Platform {
         public DateTime StartTime {
             get {
                 return _process.StartTime;
-            }
-        }
-
-        public ISynchronizeInvoke SynchronizingObject {
-            get {
-                return _process.SynchronizingObject;
             }
         }
 
@@ -318,6 +354,7 @@ namespace Microsoft.PackageManagement.Utility.Platform {
             startInfo.UseShellExecute = false;
             var redirecting = true;
 
+#if !CORECLR
             if (AdminPrivilege.IsElevated) {
                 startInfo.Verb = "";
             } else {
@@ -328,10 +365,15 @@ namespace Microsoft.PackageManagement.Utility.Platform {
                     startInfo.RedirectStandardOutput = false;
                 }
             }
+#endif
 
             if (environment != null) {
                 foreach (var i in environment.Keys) {
+#if !CORECLR
                     startInfo.EnvironmentVariables[(string)i] = (string)environment[i];
+#else
+                    startInfo.Environment[(string)i] = (string)environment[i];
+#endif
                 }
             }
 
@@ -394,14 +436,6 @@ namespace Microsoft.PackageManagement.Utility.Platform {
             WaitForExit(-1);
         }
 
-        public bool WaitForInputIdle(int milliseconds) {
-            return _process.WaitForInputIdle(milliseconds);
-        }
-
-        public bool WaitForInputIdle() {
-            return WaitForInputIdle(-1);
-        }
-
         public event EventHandler Exited {
             add {
                 _process.Exited += value;
@@ -409,10 +443,6 @@ namespace Microsoft.PackageManagement.Utility.Platform {
             remove {
                 _process.Exited -= value;
             }
-        }
-
-        public bool CloseMainWindow() {
-            return _process.CloseMainWindow();
         }
 
         protected virtual void Dispose(bool disposing) {
@@ -443,10 +473,6 @@ namespace Microsoft.PackageManagement.Utility.Platform {
                 }
                 _stdErrStarted = null;
             }
-        }
-
-        public void Close() {
-            _process.Close();
         }
 
         public static void EnterDebugMode() {

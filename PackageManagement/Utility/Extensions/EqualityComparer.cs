@@ -12,11 +12,11 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Extensions {
+namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
     using System;
     using System.Collections.Generic;
 
-    public class EqualityComparer<T> : IEqualityComparer<T> {
+    internal class EqualityComparer<T> : IEqualityComparer<T> {
         private readonly Func<T, T, bool> _compareFn;
         private readonly Func<T, int> _hashFn;
 

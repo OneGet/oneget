@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Extensions {
+namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -20,7 +20,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
     using System.Threading.Tasks;
     using Collections;
 
-    public static class CollectionExtensions {
+    internal static class CollectionExtensions {
         private static readonly MethodInfo _castMethod = typeof (Enumerable).GetMethod("Cast");
         private static readonly MethodInfo _toArrayMethod = typeof (Enumerable).GetMethod("ToArray");
         private static readonly IDictionary<Type, MethodInfo> _castMethods = new Dictionary<Type, MethodInfo>();
@@ -88,7 +88,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
 
         public static void ParallelForEach<T>(this IEnumerable<T> enumerable, Action<T> action) {
             var items = enumerable.ReEnumerable();
-            object first = items.FirstOrDefault();
+            var first = items.FirstOrDefault();
             if (first != null) {
                 object second = items.Skip(1).FirstOrDefault();
                 if (second != null) {
@@ -97,7 +97,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
                         TaskScheduler = new ThreadPerTaskScheduler()
                     }, action);
                 } else {
-                    action(items.FirstOrDefault());
+                    action(first);
                 }
             }
         }
@@ -115,6 +115,14 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
                     action(items.FirstOrDefault());
                 }
             }
+        }
+
+        public static IEnumerable<Task> AsyncForEach<T>(this IEnumerable<T> enumerable, Action<T> action) {
+            return enumerable.Select(i => Task.Factory.StartNew(() => action(i)));
+        }
+
+        public static void WaitAll(this IEnumerable<Task> tasks) {
+            Task.WaitAll(tasks.ToArray());
         }
 
         public static object ToIEnumerableT(this IEnumerable<object> enumerable, Type elementType) {

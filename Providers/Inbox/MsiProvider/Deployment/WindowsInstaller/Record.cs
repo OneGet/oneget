@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -27,7 +27,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// Record is directly returned from a query on a database. For other records, attempting
     /// to access a field by name will result in an InvalidOperationException.
     /// </p></remarks>
-    public class Record : InstallerHandle
+    internal class Record : InstallerHandle
     {
         private View view;
         private bool isFormatStringInvalid;
@@ -110,6 +110,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets or sets field 0 of the Record, which is the format string.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string FormatString
         {
             get { return this.GetString(0); }
@@ -130,6 +131,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// the object provided will determine the type of the Record field. The object should be one of:
         /// Int16, Int32, String, Stream, or null.
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public object this[string fieldName]
         {
             get
@@ -263,6 +265,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msirecordcleardata.asp">MsiRecordClearData</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Clear()
         {
             uint ret = RemotableNativeMethods.MsiRecordClearData((int) this.Handle);
@@ -296,6 +299,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <returns>True if the field is null, false otherwise.</returns>
         /// <exception cref="ArgumentOutOfRangeException">The field name does not match any
         /// of the named fields in the Record.</exception>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool IsNull(string fieldName)
         {
             int field = this.FindColumn(fieldName);
@@ -345,6 +349,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// </p><p>
         /// If the data is in stream format, the property returns the byte count.
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int GetDataSize(string fieldName)
         {
             int field = this.FindColumn(fieldName);
@@ -385,6 +390,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// of the named fields in the Record.</exception>
         /// <seealso cref="GetNullableInteger(string)"/>
         [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "integer")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int GetInteger(string fieldName)
         {
             int field = this.FindColumn(fieldName);
@@ -423,6 +429,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <exception cref="ArgumentOutOfRangeException">The field name does not match any
         /// of the named fields in the Record.</exception>
         /// <seealso cref="GetInteger(string)"/>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int? GetNullableInteger(string fieldName)
         {
             int field = this.FindColumn(fieldName);
@@ -460,6 +467,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <exception cref="ArgumentOutOfRangeException">The field name does not match any
         /// of the named fields in the Record.</exception>
         /// <seealso cref="SetNullableInteger(string,int?)"/>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void SetInteger(string fieldName, int value)
         {
             int field = this.FindColumn(fieldName);
@@ -500,6 +508,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <exception cref="ArgumentOutOfRangeException">The field name does not match any
         /// of the named fields in the Record.</exception>
         /// <seealso cref="SetInteger(string,int)"/>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void SetNullableInteger(string fieldName, int? value)
         {
             int field = this.FindColumn(fieldName);
@@ -589,6 +598,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <param name="value">new value of the field</param>
         /// <exception cref="ArgumentOutOfRangeException">The field name does not match any
         /// of the named fields in the Record.</exception>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void SetString(string fieldName, string value)
         {
             int field = this.FindColumn(fieldName);
@@ -701,6 +711,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msirecordreadstream.asp">MsiRecordReadStream</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Stream GetStream(int field)
         {
             this.CheckRange(field);
@@ -719,6 +730,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// This method is not capable of reading substorages. To extract a substorage,
         /// use <see cref="GetStream(string,string)"/>.
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Stream GetStream(string fieldName)
         {
             int field = this.FindColumn(fieldName);
@@ -777,6 +789,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Setting a stream with this method is more efficient than setting a field to a
         /// FileStream object.
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void SetStream(string fieldName, string filePath)
         {
             int field = this.FindColumn(fieldName);
@@ -861,6 +874,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <remarks><p>
         /// The stream persists if the Record is inserted into the Database and the Database is committed.
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void SetStream(string fieldName, Stream stream)
         {
             int field = this.FindColumn(fieldName);
@@ -936,6 +950,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// </p></remarks>
         [Obsolete("This method is obsolete because it has undesirable side-effects. As an alternative, set the FormatString " +
             "property separately before calling the ToString() override that takes no parameters.")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string ToString(string format)
         {
             return this.ToString(format, null);

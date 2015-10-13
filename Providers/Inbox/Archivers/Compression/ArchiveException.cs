@@ -7,18 +7,16 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression
 {
     using System;
     using System.IO;
-    using System.Runtime.Serialization;
 
     /// <summary>
     /// Base exception class for compression operations. Compression libraries should
     /// derive subclass exceptions with more specific error information relevent to the
     /// file format.
     /// </summary>
-    [Serializable]
     public class ArchiveException : IOException
     {
         /// <summary>
@@ -51,14 +49,5 @@ namespace Microsoft.PackageManagement.Archivers.Compression
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the ArchiveException class with serialized data.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        protected ArchiveException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }

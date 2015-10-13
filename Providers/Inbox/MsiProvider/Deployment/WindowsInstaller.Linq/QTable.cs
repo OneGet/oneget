@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.Linq
 {
     using System;
     using System.Collections;
@@ -27,7 +27,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
     /// class, or a specialized subclass of QRecord.</para>
     /// </remarks>
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public sealed class QTable<TRecord> : IOrderedQueryable<TRecord>, IQueryProvider
+    internal sealed class QTable<TRecord> : IOrderedQueryable<TRecord>, IQueryProvider
         where TRecord : QRecord, new()
     {
         private QDatabase db;

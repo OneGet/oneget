@@ -70,18 +70,33 @@ namespace Microsoft.PowerShell.PackageManagement {
             public static ErrorMessage SourceNotFound = new ErrorMessage(Messages.SourceNotFound, ErrorCategory.ObjectNotFound);
             public static ErrorMessage UnableToFindProviderForSource = new ErrorMessage(Messages.UnableToFindProviderForSource, ErrorCategory.ObjectNotFound);
             public static ErrorMessage UninstallationFailure = new ErrorMessage(Messages.UninstallationFailure, ErrorCategory.InvalidOperation);
-            public static ErrorMessage UnknownProvider = new ErrorMessage(Microsoft.PackageManagement.Constants.Messages.UnknownProvider, ErrorCategory.ObjectNotFound);
+            public static ErrorMessage UnknownProvider = new ErrorMessage(Microsoft.PackageManagement.Internal.Constants.Messages.UnknownProvider, ErrorCategory.ObjectNotFound);
+            public static ErrorMessage UnknownProviderFromActivatedList = new ErrorMessage(Messages.UnknownProviderFromActivatedList, ErrorCategory.ObjectNotFound);
             public static ErrorMessage UnknownProviders = new ErrorMessage(Messages.UnknownProviders, ErrorCategory.InvalidArgument);
             public static ErrorMessage PackageFileExists = new ErrorMessage(Messages.PackageFileExists, ErrorCategory.InvalidArgument);
+            public static ErrorMessage ProviderFailToDownloadFile = new ErrorMessage(Messages.ProviderFailToDownloadFile, ErrorCategory.InvalidOperation);
             public static ErrorMessage UnableToOverwrite = new ErrorMessage(Messages.UnableToOverwrite, ErrorCategory.InvalidResult);
             public static ErrorMessage FilePathMustBeFileSystemPath = new ErrorMessage(Messages.FilePathMustBeFileSystemPath, ErrorCategory.ObjectNotFound);
             public static ErrorMessage SavePackageError = new ErrorMessage(Messages.SavePackageError, ErrorCategory.InvalidArgument);
             public static ErrorMessage UnableToFindDependencyPackage = new ErrorMessage(Messages.UnableToFindDependencyPackage, ErrorCategory.ObjectNotFound);
             public static ErrorMessage ProviderNameNotSpecified = new ErrorMessage(Messages.ProviderNameNotSpecified, ErrorCategory.NotSpecified);
+            public static ErrorMessage SpecifiedProviderMissingRequiredOption = new ErrorMessage(Messages.SpecifiedProviderMissingRequiredOption, ErrorCategory.InvalidArgument);
             public static ErrorMessage FileNotFound = new ErrorMessage(Messages.FileNotFound, ErrorCategory.ObjectNotFound);
             public static ErrorMessage FolderNotFound = new ErrorMessage(Messages.FolderNotFound, ErrorCategory.ObjectNotFound);
             public static ErrorMessage MoreThanOneFolderMatched = new ErrorMessage(Messages.MoreThanOneFolderMatched, ErrorCategory.ObjectNotFound);
             public static ErrorMessage MoreThanOneFileMatched = new ErrorMessage(Messages.MoreThanOneFileMatched, ErrorCategory.ObjectNotFound);
+            public static ErrorMessage VersionRangeAndRequiredVersionCannotBeSpecifiedTogether = new ErrorMessage(Messages.VersionRangeAndRequiredVersionCannotBeSpecifiedTogether, ErrorCategory.InvalidArgument);
+            public static ErrorMessage AllVersionsCannotBeUsedWithOtherVersionParameters = new ErrorMessage(Messages.AllVersionsCannotBeUsedWithOtherVersionParameters, ErrorCategory.InvalidArgument);
+            public static ErrorMessage InvalidVersion = new ErrorMessage(Messages.InvalidVersion, ErrorCategory.InvalidArgument);
+            public static ErrorMessage MultipleNamesWithVersionNotAllowed = new ErrorMessage(Messages.MultipleNamesWithVersionNotAllowed, ErrorCategory.InvalidArgument);
+            public static ErrorMessage WildCardCharsAreNotSupported = new ErrorMessage(Messages.WildCardCharsAreNotSupported, ErrorCategory.InvalidArgument);            
+            public static ErrorMessage MinimumVersionMustBeLessThanMaximumVersion = new ErrorMessage(Messages.MinimumVersionMustBeLessThanMaximumVersion, ErrorCategory.InvalidArgument);
+            public static ErrorMessage FullProviderFilePathVersionNotAllowed = new ErrorMessage(Messages.FullProviderFilePathVersionNotAllowed, ErrorCategory.InvalidArgument);
+            public static ErrorMessage RegisterPackageSourceRequired = new ErrorMessage(Messages.RegisterPackageSourceRequired, ErrorCategory.InvalidArgument);
+            public static ErrorMessage NoMatchFoundForProvider = new ErrorMessage(Messages.NoMatchFoundForProvider, ErrorCategory.InvalidArgument);
+            public static ErrorMessage MethodNotImplemented = new ErrorMessage(Messages.MethodNotImplemented, ErrorCategory.NotImplemented);
+            public static ErrorMessage InstallRequiresCurrentUserScopeParameterForNonAdminUser = new ErrorMessage(Messages.InstallRequiresCurrentUserScopeParameterForNonAdminUser, ErrorCategory.NotImplemented);
+            
             // ReSharper restore InconsistentNaming
         }
 
@@ -89,8 +104,15 @@ namespace Microsoft.PowerShell.PackageManagement {
 #if DEBUG
             internal const string NotImplemented = "MSG:NotImplemented";
 #endif
+            internal const string InstallRequiresCurrentUserScopeParameterForNonAdminUser = "MSG:InstallRequiresCurrentUserScopeParameterForNonAdminUser";
             internal const string MoreThanOneFileMatched = "MSG:MoreThanOneFileMatched";
             internal const string FileNotFound = "MSG:FileNotFound";
+            internal const string RegisterPackageSourceRequired = "MSG:RegisterPackageSourceRequired";
+            internal const string NoMatchFoundForProvider = "MSG:NoMatchFoundForProvider";            
+            internal const string FullProviderFilePathVersionNotAllowed = "MSG:FullProviderFilePathVersionNotAllowed";
+            internal const string MultipleNamesWithVersionNotAllowed = "MSG:MultipleNamesWithVersionNotAllowed";
+            internal const string WildCardCharsAreNotSupported = "MSG:WildCardCharsAreNotSupported";
+            internal const string MinimumVersionMustBeLessThanMaximumVersion = "MSG:MinimumVersionMustBeLessThanMaximumVersion";
             internal const string FolderNotFound = "MSG:FolderNotFound";
             internal const string MoreThanOneFolderMatched = "MSG:MoreThanOneFolderMatched";
             internal const string ActionInstallPackage = "MSG:ActionInstallPackage";
@@ -120,6 +142,7 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string InstalledPackageMultiple = "MSG:InstalledPackageMultiple";
             internal const string InstallingPackageMultiple = "MSG:InstallingPackageMultiple";
             internal const string InstallingPackagesCount = "MSG:InstallingPackagesCount";
+            internal const string MethodNotImplemented = "MSG:MethodNotImplemented";
             internal const string MatchesMultiplePackages = "MSG:MatchesMultiplePackages";
             internal const string MatchesMultipleProviders = "MSG:MatchesMultipleProviders";
             internal const string MustSpecifyCriteria = "MSG:MustSpecifyCriteria";
@@ -127,7 +150,7 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string NoMatchesForWildcard = "MSG:NoMatchesForWildcard";
             internal const string NoMatchForProvidersAndSources = "MSG:NoMatchForProvidersAndSources";
             internal const string NoMatchFound = "MSG:NoMatchFound";
-            internal const string NoMatchFoundForCriteria = "MSG:NoMatchFoundForCriteria";            
+            internal const string NoMatchFoundForCriteria = "MSG:NoMatchFoundForCriteria";
             internal const string NoPackagesFoundForProvider = "MSG:NoPackagesFoundForProvider";
             internal const string OverwritingPackageSource = "MSG:OverwritingPackageSource";
             internal const string PackageInstallRequiresOption = "MSG:PackageInstallRequiresOption";
@@ -149,15 +172,21 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string SourceNotFoundForLocation = "MSG:SourceNotFoundForLocation";
             internal const string SourceNotFoundForNameAndLocation = "MSG:SourceNotFoundForNameAndLocation";
             internal const string SourceNotFoundNoCriteria = "MSG:SourceNotFoundNoCriteria";
+            internal const string SpecifiedProviderMissingRequiredOption = "MSG:SpecifiedProviderMissingRequiredOption";
             internal const string TargetPackage = "MSG:TargetPackage";
-            internal const string TargetPackageVersion = "MSG:TargetPackageVersion";            
+            internal const string TargetPackageVersion = "MSG:TargetPackageVersion";
             internal const string TargetPackageSource = "MSG:TargetPackageSource";
             internal const string UnableToFindProviderForSource = "MSG:UnableToFindProviderForSource";
             internal const string UninstallationFailure = "MSG:UninstallationFailure";
             internal const string UnknownProviders = "MSG:UnknownProviders";
+            internal const string UnknownProviderFromActivatedList = "MSG:UnknownProviderFromActivatedList";
             internal const string PackageFileExists = "MSG:PackageFileExists";
             internal const string UnableToOverwrite = "MSG:UnableToOverwrite";
+            internal const string ProviderFailToDownloadFile = "MSG:ProviderFailToDownloadFile";
             internal const string UnableToFindDependencyPackage = "MSG:UnableToFindDependencyPackage";
+            internal const string VersionRangeAndRequiredVersionCannotBeSpecifiedTogether = "MSG:VersionRangeAndRequiredVersionCannotBeSpecifiedTogether";
+            internal const string AllVersionsCannotBeUsedWithOtherVersionParameters = "MSG:AllVersionsCannotBeUsedWithOtherVersionParameters";
+            internal const string InvalidVersion = "MSG:InvalidVersion";
         }
 
         internal static class Nouns {

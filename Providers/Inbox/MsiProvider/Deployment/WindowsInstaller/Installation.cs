@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     /// <summary>
     /// Subclasses of this abstract class represent a unique instance of a
@@ -57,7 +57,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the source list of this product or patch installation.
         /// </summary>
-        public virtual SourceList SourceList
+        internal virtual SourceList SourceList
         {
             get
             {

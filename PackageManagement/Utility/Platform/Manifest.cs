@@ -12,14 +12,14 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Platform {
+namespace Microsoft.PackageManagement.Internal.Utility.Platform {
     using System;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
     using System.Text;
     using System.Xml.Linq;
 
-    public static class Manifest {
+    internal static class Manifest {
         private static readonly byte[] _utf = {0xef, 0xbb, 0xbf};
 
         public static IEnumerable<XElement> LoadFrom(string filename) {

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.Resources
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -15,35 +15,56 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
     /// <summary>
     /// Represents either a standard integer resource type or a custom resource type name.
     /// </summary>
-    public class ResourceType
+    internal class ResourceType
     {
         // Silence warnings about doc-comments
         #pragma warning disable 1591
 
-        public static ResourceType None          { get { return "#0"; } }
-        public static ResourceType Cursor        { get { return "#1"; } }
-        public static ResourceType Bitmap        { get { return "#2"; } }
-        public static ResourceType Icon          { get { return "#3"; } }
-        public static ResourceType Menu          { get { return "#4"; } }
-        public static ResourceType Dialog        { get { return "#5"; } }
-        public static ResourceType String        { get { return "#6"; } }
-        public static ResourceType FontDir       { get { return "#7"; } }
-        public static ResourceType Font          { get { return "#8"; } }
-        public static ResourceType Accelerator   { get { return "#9"; } }
-        public static ResourceType RCData        { get { return "#10"; } }
-        public static ResourceType MessageTable  { get { return "#11"; } }
-        public static ResourceType GroupCursor   { get { return "#12"; } }
-        public static ResourceType GroupIcon     { get { return "#14"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType None { get { return "#0"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType Cursor { get { return "#1"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType Bitmap { get { return "#2"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType Icon { get { return "#3"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType Menu { get { return "#4"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType Dialog { get { return "#5"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType String { get { return "#6"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType FontDir { get { return "#7"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType Font { get { return "#8"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType Accelerator { get { return "#9"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType RCData { get { return "#10"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType MessageTable { get { return "#11"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType GroupCursor { get { return "#12"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType GroupIcon { get { return "#14"; } }
         public static ResourceType Version       { get { return "#16"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType DialogInclude { get { return "#17"; } }
-        public static ResourceType PlugPlay      { get { return "#19"; } }
-        public static ResourceType Vxd           { get { return "#20"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType PlugPlay { get { return "#19"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType Vxd { get { return "#20"; } }
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ani")]
-        public static ResourceType AniCursor     { get { return "#21"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType AniCursor { get { return "#21"; } }
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ani")]
-        public static ResourceType AniIcon       { get { return "#22"; } }
-        public static ResourceType Html          { get { return "#23"; } }
-        public static ResourceType Manifest      { get { return "#24"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType AniIcon { get { return "#22"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType Html { get { return "#23"; } }
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public static ResourceType Manifest { get { return "#24"; } }
 
         #pragma warning restore 1591
 
@@ -73,6 +94,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// Creates a new integer resource type.
         /// </summary>
         /// <param name="resourceType">Integer value of a well-known resource type.</param>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public ResourceType(int resourceType)
             : this("#" + resourceType)
         {

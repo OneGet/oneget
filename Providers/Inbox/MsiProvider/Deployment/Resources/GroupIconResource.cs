@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.Resources
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 {
     using System;
     using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
     /// <remarks>
     /// The resource is of type <see cref="ResourceType.GroupIcon"/> (RT_GROUPICON).
     /// </remarks>
-    public sealed class GroupIconResource : Resource
+    internal sealed class GroupIconResource : Resource
     {
         internal bool dirty;
         private GroupIconInfo rawGroupIconInfo;

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.Resources
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 {
     using System.IO;
 
@@ -42,8 +42,10 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
             this.images = new GroupIconDirectoryInfo[0];
         }
 
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public GroupIconDirectoryInfo[] DirectoryInfo { get { return this.images; } }
 
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void ReadFromFile(Stream stream)
         {
             BinaryReader reader = new BinaryReader(stream);

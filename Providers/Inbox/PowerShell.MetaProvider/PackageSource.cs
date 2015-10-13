@@ -15,6 +15,7 @@
 namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System;
     using System.Collections;
+    using Internal;
 
     public class PackageSource : Yieldable {
         public PackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated) {

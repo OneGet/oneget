@@ -12,12 +12,12 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Extensions {
+namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
     using System;
     using System.Collections.Generic;
     using System.Linq;
 
-    public static class Singleton<TResult> {
+    internal static class Singleton<TResult> {
         private static readonly Dictionary<int, TResult> _singletons = new Dictionary<int, TResult>();
 
         private static readonly int[] _seeds = {
@@ -72,7 +72,7 @@ namespace Microsoft.PackageManagement.Utility.Extensions {
         }
     }
 
-    public static class SingletonExtensions {
+    internal static class SingletonExtensions {
         public static TResult Get<TResult>(this object primaryKey, params object[] keys) {
             return Singleton<TResult>.Get(primaryKey, keys);
         }

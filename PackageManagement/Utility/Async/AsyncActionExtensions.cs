@@ -12,12 +12,12 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Async {
+namespace Microsoft.PackageManagement.Internal.Utility.Async {
     using System;
     using System.Threading;
     using System.Threading.Tasks;
 
-    public static class AsyncActionExtensions {
+    internal static class AsyncActionExtensions {
         public static T Timeout<T>(this T asyncAction, int seconds) where T : IAsyncAction {
             asyncAction.Timeout = TimeSpan.FromSeconds(seconds);
             return asyncAction;

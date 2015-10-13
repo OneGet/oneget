@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Globalization;
@@ -18,7 +18,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <summary>
     /// Provides access to summary information of a Windows Installer database.
     /// </summary>
-    public class SummaryInfo : InstallerHandle
+    internal class SummaryInfo : InstallerHandle
     {
         internal const int MAX_PROPERTIES = 20;
 
@@ -43,7 +43,9 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         {
         }
 
-        internal SummaryInfo(IntPtr handle, bool ownsHandle) : base(handle, ownsHandle)
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        internal SummaryInfo(IntPtr handle, bool ownsHandle)
+            : base(handle, ownsHandle)
         {
         }
 
@@ -56,6 +58,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string Title
         {
             get { return this[2]; }
@@ -73,6 +76,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string Subject
         {
             get { return this[3]; }
@@ -88,6 +92,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string Author
         {
             get { return this[4]; }
@@ -104,6 +109,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string Keywords
         {
             get { return this[5]; }
@@ -124,6 +130,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string Comments
         {
             get { return this[6]; }
@@ -172,6 +179,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string Template
         {
             get { return this[7]; }
@@ -192,6 +200,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string LastSavedBy
         {
             get { return this[8]; }
@@ -219,6 +228,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string RevisionNumber
         {
             get { return this[9]; }
@@ -234,6 +244,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string CreatingApp
         {
             get { return this[18]; }
@@ -250,6 +261,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public DateTime LastPrintTime
         {
             get { return (DateTime) this[11, typeof(DateTime)]; }
@@ -264,6 +276,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public DateTime CreateTime
         {
             get { return (DateTime) this[12, typeof(DateTime)]; }
@@ -281,6 +294,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public DateTime LastSaveTime
         {
             get { return (DateTime) this[13, typeof(DateTime)]; }
@@ -300,6 +314,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public short CodePage
         {
             get { return (short) this[1, typeof(short)]; }
@@ -324,6 +339,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int PageCount
         {
             get { return (int) this[14, typeof(int)]; }
@@ -376,6 +392,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int WordCount
         {
             get { return (int) this[15, typeof(int)]; }
@@ -392,6 +409,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int CharacterCount
         {
             get { return (int) this[16, typeof(int)]; }
@@ -416,12 +434,14 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfogetproperty.asp">MsiSummaryInfoGetProperty</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msisummaryinfosetproperty.asp">MsiSummaryInfoSetProperty</a>
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int Security
         {
             get { return (int) this[19, typeof(int)]; }
             set { this[19, typeof(int)] = value; }
         }
 
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private object this[uint property, Type type]
         {
             get
@@ -566,6 +586,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             }
         }
 
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private string this[uint property]
         {
             get { return (string) this[property, typeof(string)]; }

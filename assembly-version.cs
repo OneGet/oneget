@@ -10,7 +10,6 @@
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
 
 using System.Reflection;
 
@@ -20,6 +19,5 @@ using System.Reflection;
 //      Minor Version 
 //      Build Number
 //      Revision
-
-[assembly: AssemblyVersion("1.15.125.44306")]
-[assembly: AssemblyFileVersion("1.15.125.44306")]
+[assembly: AssemblyVersion("1.15.79.54082")]
+[assembly: AssemblyFileVersion("1.15.79.54082")]

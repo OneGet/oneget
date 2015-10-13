@@ -12,13 +12,15 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Implementation {
+namespace Microsoft.PackageManagement.Internal.Implementation {
     using System;
     using Api;
-    using Packaging;
+    using PackageManagement.Implementation;
+    using PackageManagement.Packaging;
     using Utility.Extensions;
+    using System.Globalization;
 
-    public class PackageSourceRequestObject : EnumerableRequestObject<PackageSource> {
+    internal class PackageSourceRequestObject : EnumerableRequestObject<PackageSource> {
         private PackageSource _currentItem;
 
         public PackageSourceRequestObject(ProviderBase provider, IHostApi request, Action<RequestObject> action)
@@ -34,6 +36,7 @@ namespace Microsoft.PackageManagement.Implementation {
         }
 
         public override bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated) {
+            Debug(String.Format(CultureInfo.CurrentCulture, "Yielding packge source for {0} at location {1}", name, location));
             Activity();
 
             CommitPackageSource();

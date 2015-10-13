@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <summary>
     /// Defines a table in an installation database.
     /// </summary>
-    public class TableInfo
+    internal class TableInfo
     {
         private string name;
         private ColumnCollection columns;
@@ -29,6 +29,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <param name="name">Name of the table.</param>
         /// <param name="columns">Columns in the table.</param>
         /// <param name="primaryKeys">The primary keys of the table.</param>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public TableInfo(string name, ICollection<ColumnInfo> columns, IList<string> primaryKeys)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -161,6 +162,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <remarks><p>
         /// The values are expressed as question-mark tokens, to be supplied by the record.
         /// </p></remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string SqlInsertString
         {
             get

@@ -12,10 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Api {
+namespace Microsoft.PackageManagement.Internal.Api {
     using System;
     using System.Collections.Generic;
-    using Packaging;
+    using PackageManagement.Packaging;
 
     public interface IProviderServices {
         #region declare service-apis

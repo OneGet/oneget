@@ -12,9 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Providers.Bootstrap {
+namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
     using System;
     using System.Collections.Generic;
+    using PackageManagement.Internal.Packaging;
     using Packaging;
 
     internal class Package : Swid {

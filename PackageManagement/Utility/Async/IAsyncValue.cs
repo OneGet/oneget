@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Async {
+namespace Microsoft.PackageManagement.Internal.Utility.Async {
     public interface IAsyncValue<out T> : IAsyncAction {
         T Value {get;}
     }

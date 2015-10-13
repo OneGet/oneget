@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <summary>
     /// Represents an instance of a registered component.
     /// </summary>
-    public class ComponentInstallation : InstallationPart
+    internal class ComponentInstallation : InstallationPart
     {
         /// <summary>
         /// Gets the set of installed components for all products.
@@ -244,6 +244,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/dd408006.aspx">MsiGetComponentPathEx</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msilocatecomponent.asp">MsiLocateComponent</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string Path
         {
             get
@@ -366,6 +367,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             /// <summary>
             /// Gets the qualifier code.
             /// </summary>
+            [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
             public string QualifierCode
             {
                 get
@@ -377,6 +379,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             /// <summary>
             /// Gets the qualifier data.
             /// </summary>
+            [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
             public string Data
             {
                 get

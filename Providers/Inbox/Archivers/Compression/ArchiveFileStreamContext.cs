@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression
 {
     using System;
     using System.Collections.Generic;
@@ -324,7 +324,11 @@ namespace Microsoft.PackageManagement.Archivers.Compression
         {
             if (stream != null)
             {
+#if CORECLR
+                stream.Dispose();
+#else
                 stream.Close();
+#endif
 
                 FileStream fileStream = stream as FileStream;
                 if (fileStream != null)
@@ -405,7 +409,11 @@ namespace Microsoft.PackageManagement.Archivers.Compression
         {
             if (stream != null)
             {
+#if CORECLR
+                stream.Dispose();
+#else
                 stream.Close();
+#endif
             }
         }
 
@@ -493,7 +501,11 @@ namespace Microsoft.PackageManagement.Archivers.Compression
         {
             if (stream != null)
             {
+#if CORECLR
+                stream.Dispose();
+#else
                 stream.Close();
+#endif
             }
         }
 
@@ -593,7 +605,11 @@ namespace Microsoft.PackageManagement.Archivers.Compression
         {
             if (stream != null)
             {
+#if CORECLR
+                stream.Dispose();
+#else
                 stream.Close();
+#endif
             }
 
             string filePath = this.TranslateFilePath(path);

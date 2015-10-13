@@ -12,10 +12,10 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Providers {
+namespace Microsoft.PackageManagement.Internal.Providers {
     using System;
-    using Api;
-    using Utility.Plugin;
+    using PackageManagement.Internal.Api;
+    using PackageManagement.Internal.Utility.Plugin;
 
     public interface IDownloader : IProvider {
         /// <summary>

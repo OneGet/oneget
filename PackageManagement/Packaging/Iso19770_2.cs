@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Packaging {
+namespace Microsoft.PackageManagement.Internal.Packaging {
     using System;
     using System.Xml.Linq;
     using Utility.Extensions;
@@ -137,6 +137,21 @@ namespace Microsoft.PackageManagement.Packaging {
 
         }
 
+        internal static class Hash {
+            internal static readonly XName Hash512 = Namespace.Sha512 + "hash";
+            internal static readonly XName Hash256 = Namespace.Sha256 + "hash";
+            internal static readonly XName Md5 = Namespace.Md5 + "hash";
+            
+        }
+
+        internal static class HashAlgorithm
+        {
+            internal static readonly string Sha512 = "sha512";
+            internal static readonly string Sha256 = "sha256";
+            internal static readonly string Md5 = "md5";
+        }
+
+
         internal static class MediaType {
             internal const string PackageReference = "application/vnd.packagemanagement-canonicalid";
 
@@ -203,6 +218,9 @@ namespace Microsoft.PackageManagement.Packaging {
             internal static readonly XNamespace OneGet = XNamespace.Get("http://oneget.org/packagemanagement");
             internal static readonly XNamespace Xml = XNamespace.Get("http://www.w3.org/XML/1998/namespace");
             internal static XNamespace XmlDsig = XNamespace.Get("http://www.w3.org/2000/09/xmldsig#");
+            internal static readonly XNamespace Sha512 = XNamespace.Get("http://www.w3.org/2001/04/xmlenc#sha512");
+            internal static readonly XNamespace Sha256 = XNamespace.Get("http://www.w3.org/2001/04/xmlenc#sha256");
+            internal static readonly XNamespace Md5 = XNamespace.Get("http://www.w3.org/2001/04/xmldsig-more#md5");            
         }
 
         internal static class Elements {

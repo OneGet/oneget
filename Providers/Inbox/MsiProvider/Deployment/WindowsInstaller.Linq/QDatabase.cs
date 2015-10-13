@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.Linq
 {
     using System;
     using System.IO;
@@ -15,7 +15,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
     /// <summary>
     /// Allows any Database instance to be converted into a queryable database.
     /// </summary>
-    public static class Queryable
+    internal static class Queryable
     {
         /// <summary>
         /// Converts any Database instance into a queryable database.
@@ -30,6 +30,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
         /// carries the same MSI handle, only one of the instances needs to be
         /// closed, not both.
         /// </remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static QDatabase AsQueryable(this Database db)
         {
             QDatabase qdb = db as QDatabase;
@@ -46,7 +47,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
     /// LINQ query functionality along with predefined entity types
     /// for common tables.
     /// </summary>
-    public class QDatabase : Database
+    internal class QDatabase : Database
     {
         /// <summary>
         /// Opens an existing database in read-only mode.
@@ -61,6 +62,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
         /// nature of finalization it is best that the handle be closed manually as soon as it is no
         /// longer needed, as leaving lots of unused handles open can degrade performance.</para>
         /// </remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public QDatabase(string filePath)
             : base(filePath)
         {
@@ -83,6 +85,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
         /// nature of finalization it is best that the handle be closed manually as soon as it is no
         /// longer needed, as leaving lots of unused handles open can degrade performance.</para>
         /// </remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public QDatabase(string filePath, string outputPath)
             : base(filePath, outputPath)
         {
@@ -108,6 +111,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
         /// nature of finalization it is best that the handle be closed manually as soon as it is no
         /// longer needed, as leaving lots of unused handles open can degrade performance.</para>
         /// </remarks>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public QDatabase(string filePath, DatabaseOpenMode mode)
             : base(filePath, mode)
         {
@@ -121,6 +125,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
         /// when the database object is disposed</param>
         /// <param name="filePath">Path of the database file, if known</param>
         /// <param name="openMode">Mode the handle was originally opened in</param>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         protected internal QDatabase(
             IntPtr handle, bool ownsHandle, string filePath, DatabaseOpenMode openMode)
             : base(handle, ownsHandle, filePath, openMode)
@@ -139,6 +144,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
         /// Gets a queryable table from the datbaase.
         /// </summary>
         /// <param name="table">name of the table</param>
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public QTable<QRecord> this[string table]
         {
             get

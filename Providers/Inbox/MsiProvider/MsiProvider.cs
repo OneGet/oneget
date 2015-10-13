@@ -12,16 +12,17 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.Msi {
+namespace Microsoft.PackageManagement.Msi.Internal {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using Deployment.WindowsInstaller;
     using Deployment.WindowsInstaller.Package;
-    using Implementation;
-    using Utility.Collections;
-    using Utility.Extensions;
+    using PackageManagement.Internal;
+    using PackageManagement.Internal.Implementation;
+    using PackageManagement.Internal.Utility.Collections;
+    using PackageManagement.Internal.Utility.Extensions;
 
     public class MsiProvider {
         /// <summary>

@@ -12,13 +12,13 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Extensions {
+namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
-    public class ThreadPerTaskScheduler : TaskScheduler {
+    internal class ThreadPerTaskScheduler : TaskScheduler {
         /// <summary>Gets the tasks currently scheduled to this scheduler.</summary>
         /// <remarks>This will always return an empty enumerable, as tasks are launched as soon as they're queued.</remarks>
         protected override IEnumerable<Task> GetScheduledTasks() {

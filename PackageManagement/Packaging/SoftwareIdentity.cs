@@ -18,10 +18,11 @@ namespace Microsoft.PackageManagement.Packaging {
     using System.Globalization;
     using System.Linq;
     using System.Xml.Linq;
-    using Api;
     using Implementation;
-    using Utility.Collections;
-    using Utility.Extensions;
+    using Internal.Api;
+    using Internal.Packaging;
+    using Internal.Utility.Collections;
+    using Internal.Utility.Extensions;
 
     /// <summary>
     ///     This class represents a package (retrieved from Find-SoftwareIdentity or Get-SoftwareIdentity)
@@ -59,7 +60,14 @@ namespace Microsoft.PackageManagement.Packaging {
 
         public string Summary {
             get {
-                return Element.Elements(Iso19770_2.Elements.Meta).Select(each => each.GetAttribute(Iso19770_2.Attributes.Summary)).WhereNotNull().FirstOrDefault();
+
+                return Element.Elements(Iso19770_2.Elements.Meta).Select(each => {
+                    var summary = each.GetAttribute(Iso19770_2.Attributes.Summary);
+                    if (string.IsNullOrWhiteSpace(summary)) {
+                        summary = each.GetAttribute(Iso19770_2.Attributes.Description);
+                    }
+                    return summary;
+                }).WhereNotNull().FirstOrDefault();
             }
             internal set {
                 (Meta.FirstOrDefault() ?? AddMeta()).AddAttribute(Iso19770_2.Attributes.Summary, value);
@@ -91,16 +99,16 @@ namespace Microsoft.PackageManagement.Packaging {
                 return null;
             }
             if (string.IsNullOrWhiteSpace(version) && string.IsNullOrWhiteSpace(source)) {
-                return "{0}:{1}".format(provider.ToLower(CultureInfo.CurrentCulture), name);
+                return "{0}:{1}".format(CultureInfo.CurrentCulture.TextInfo.ToLower(provider), name);
             }
             if (string.IsNullOrWhiteSpace(source)) {
-                return "{0}:{1}/{2}".format(provider.ToLower(CultureInfo.CurrentCulture), name, version);
+                return "{0}:{1}/{2}".format(CultureInfo.CurrentCulture.TextInfo.ToLower(provider), name, version);
             }
             if (string.IsNullOrWhiteSpace(version)) {
-                "{0}:{1}#{2}".format(provider.ToLower(CultureInfo.CurrentCulture), name, source);
+                "{0}:{1}#{2}".format(CultureInfo.CurrentCulture.TextInfo.ToLower(provider), name, source);
             }
 
-            return "{0}:{1}/{2}#{3}".format(provider.ToLower(CultureInfo.CurrentCulture), name, version, source);
+            return "{0}:{1}/{2}#{3}".format(CultureInfo.CurrentCulture.TextInfo.ToLower(provider), name, version, source);
         }
 
         public void FetchPackageDetails(IHostApi api) {

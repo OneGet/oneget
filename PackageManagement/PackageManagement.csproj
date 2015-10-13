@@ -7,12 +7,14 @@
     <ProjectGuid>{7044B856-6D51-498F-90F9-01F219909F79}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.PackageManagement</RootNamespace>
+    <RootNamespace>Microsoft.PackageManagement.Internal</RootNamespace>
     <AssemblyName>Microsoft.PackageManagement</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), PackageManagement.sln))\</SolutionDir>
     <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\PackageManagement.sln</SolutionPath>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props')" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -24,6 +26,7 @@
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -39,6 +42,7 @@
      $txt = (get-content $(SolutionDir)assembly-version.cs) -replace "\d*\.\d*\.\d*\.\d*",$v
      set-content -path $(SolutionDir)assembly-version.cs -Value $txt
     ]]></PSBeforeBuild>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -56,11 +60,11 @@
     <Compile Include="Implementation\DictionaryRequestObject.cs" />
     <Compile Include="Implementation\DynamicOptionRequestObject.cs" />
     <Compile Include="Implementation\FuncRequestObject.cs" />
+    <Compile Include="Implementation\DefaultPackageProvider.cs" />
     <Compile Include="Implementation\PackageDetailsRequestObject.cs" />
     <Compile Include="Implementation\ProviderServicesImpl.cs" />
     <Compile Include="Implementation\RequestObject.cs" />
     <Compile Include="Implementation\PackageSourceRequestObject.cs" />
-    <Compile Include="Implementation\RemotableHostApi.cs" />
     <Compile Include="Implementation\SoftwareIdentityRequestObject.cs" />
     <Compile Include="Packaging\AttributeIndexer.cs" />
     <Compile Include="Packaging\BaseElement.cs" />
@@ -140,9 +144,7 @@
     <Compile Include="Utility\Extensions\StringExtensions.cs" />
     <Compile Include="Utility\Extensions\TaskExtensions.cs" />
     <Compile Include="Utility\Extensions\ThreadPerTaskScheduler.cs" />
-    <Compile Include="Utility\Extensions\TwoTypes.cs" />
     <Compile Include="Utility\Extensions\Types.cs" />
-    <Compile Include="Utility\Extensions\XmlExtensions.cs" />
     <Compile Include="Utility\Platform\AdminPrivilege.cs" />
     <Compile Include="Utility\Platform\AsyncProcess.cs" />
     <Compile Include="Utility\Platform\Manifest.cs" />
@@ -170,9 +172,6 @@
     </Compile>
     <Compile Include="Utility\Versions\FourPartVersion.cs" />
     <Compile Include="Utility\Versions\TwoPartVersion.cs" />
-    <Compile Include="Utility\Xml\DynamicAttributes.cs" />
-    <Compile Include="Utility\Xml\DynamicElement.cs" />
-    <Compile Include="Utility\Xml\DynamicElementEnumerable.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -181,6 +180,8 @@
     <EmbeddedResource Include="Resources\Messages.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Messages.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Microsoft.PackageManagement.Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

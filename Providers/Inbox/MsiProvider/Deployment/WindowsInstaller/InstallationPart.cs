@@ -7,13 +7,13 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     /// <summary>
     /// Subclasses of this abstract class represent an instance
     /// of a registered feature or component.
     /// </summary>
-    public abstract class InstallationPart
+    internal abstract class InstallationPart
     {
         private string id;
         private string productCode;
@@ -68,7 +68,8 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the product that this item is a part of.
         /// </summary>
-        public ProductInstallation Product
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        internal ProductInstallation Product
         {
             get
             {

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.Resources
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -19,7 +19,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
     /// <summary>
     /// Represents a Win32 resource which can be loaded from and saved to a PE file.
     /// </summary>
-    public class Resource
+    internal class Resource
     {
         private ResourceType type;
         private string name;
@@ -61,6 +61,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// Gets or sets the type of the resource.  This may be one of the ResourceType constants
         /// or a user-defined type name.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public ResourceType ResourceType
         {
             get { return this.type; }
@@ -70,6 +71,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// <summary>
         /// Gets or sets the name of the resource.  For a numeric resource identifier, the decimal number is prefixed with a "#".
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string Name
         {
             get
@@ -91,6 +93,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// <summary>
         /// Gets or sets the locale of the resource.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int Locale
         {
             get { return this.locale; }
@@ -113,6 +116,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// <param name="file">Win32 PE file containing the resource</param>
         [SuppressMessage("Microsoft.Security", "CA2103:ReviewImperativeSecurity")]
         [SecurityPermission(SecurityAction.Assert, UnmanagedCode = true)]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Load(string file)
         {
             new FileIOPermission(FileIOPermissionAccess.Read, file).Demand();
@@ -128,6 +132,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal void Load(IntPtr module)
         {
             IntPtr resourceInfo = NativeMethods.FindResourceEx(module, (string) this.ResourceType, this.Name, (ushort) this.Locale);
@@ -152,6 +157,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// <param name="file">Win32 PE file to contain the resource</param>
         [SuppressMessage("Microsoft.Security", "CA2103:ReviewImperativeSecurity")]
         [SecurityPermission(SecurityAction.Assert, UnmanagedCode = true)]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Save(string file)
         {
             new FileIOPermission(FileIOPermissionAccess.AllAccess, file).Demand();
@@ -177,6 +183,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal void Save(IntPtr updateHandle)
         {
             IntPtr dataPtr = IntPtr.Zero;

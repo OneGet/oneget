@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msijointransaction.asp">MsiJoinTransaction</a>
     /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiendtransaction.asp">MsiEndTransaction</a>
     /// </p></remarks>
-    public class Transaction : InstallerHandle
+    internal class Transaction : InstallerHandle
     {
         private string name;
         private IntPtr ownerChangeEvent;
@@ -63,6 +63,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// </summary>
         /// <param name="handle">Integer transaction handle</param>
         /// <param name="ownsHandle">true to close the handle when this object is disposed</param>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static Transaction FromHandle(IntPtr handle, bool ownsHandle)
         {
             return new Transaction(handle.ToString(), new IntPtr[] { handle, IntPtr.Zero }, ownsHandle);
@@ -181,6 +182,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             this.End(false);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private static IntPtr[] Begin(string transactionName, TransactionAttributes attributes)
         {
             int hTransaction;

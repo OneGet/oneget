@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Archivers.Compression.Zip
+namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
 {
     using System;
     using System.IO;
@@ -153,11 +153,28 @@ namespace Microsoft.PackageManagement.Archivers.Compression.Zip
             this.length = value;
         }
 
+#if !CORECLR
+        /// <summary>
+        /// Closes underying stream
+        /// </summary>
         public override void Close()
         {
             if (this.source != null)
             {
                 this.source.Close();
+            }
+        }
+#endif
+
+        /// <summary>
+        /// Disposes underlying stream
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.source.Dispose();
             }
         }
     }

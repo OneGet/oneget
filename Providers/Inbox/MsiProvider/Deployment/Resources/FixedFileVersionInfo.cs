@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.Resources
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -33,6 +33,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         private uint signature;
         private uint structVersion;
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Version FileVersion
         {
             get
@@ -52,6 +53,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         }
         private Version fileVersion;
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Version ProductVersion
         {
             get
@@ -71,6 +73,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         }
         private Version productVersion;
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionBuildTypes FileFlagsMask
         {
             get { return this.fileFlagsMask; }
@@ -78,6 +81,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         }
         private VersionBuildTypes fileFlagsMask;
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionBuildTypes FileFlags
         {
             get { return this.fileFlags; }
@@ -93,6 +97,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         }
         private VersionFileOS fileOS;
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionFileType FileType
         {
             get { return this.fileType; }
@@ -100,6 +105,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         }
         private VersionFileType fileType;
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionFileSubtype FileSubtype
         {
             get { return this.fileSubtype; }
@@ -107,6 +113,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         }
         private VersionFileSubtype fileSubtype;
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public DateTime Timestamp
         {
             get { return this.timestamp; }

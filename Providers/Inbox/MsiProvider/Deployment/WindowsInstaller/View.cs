@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// it all replaceable parameters designated within the SQL query string.
     /// </summary>
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public class View : InstallerHandle, IEnumerable<Record>
+    internal class View : InstallerHandle, IEnumerable<Record>
     {
         private Database database;
         private string sql;
@@ -48,6 +48,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the SQL query string used to open this View.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string QueryString
         {
             get { return this.sql; }
@@ -261,6 +262,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <seealso cref="ValidateFields"/>
         /// <seealso cref="ValidateDelete"/>
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Modify(ViewModifyMode mode, Record record)
         {
             if (record == null)
@@ -294,6 +296,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Refresh(Record record) { this.Modify(ViewModifyMode.Refresh, record); }
 
         /// <summary>
@@ -311,6 +314,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Insert(Record record) { this.Modify(ViewModifyMode.Insert, record); }
 
         /// <summary>
@@ -328,6 +332,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Update(Record record) { this.Modify(ViewModifyMode.Update, record); }
 
         /// <summary>
@@ -345,6 +350,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Assign(Record record) { this.Modify(ViewModifyMode.Assign, record); }
 
         /// <summary>
@@ -363,6 +369,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Replace(Record record) { this.Modify(ViewModifyMode.Replace, record); }
 
         /// <summary>
@@ -380,6 +387,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Delete(Record record) { this.Modify(ViewModifyMode.Delete, record); }
 
         /// <summary>
@@ -397,6 +405,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void InsertTemporary(Record record) { this.Modify(ViewModifyMode.InsertTemporary, record); }
 
         /// <summary>
@@ -418,6 +427,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool Seek(Record record)
         {
             if (record == null)
@@ -457,6 +467,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool Merge(Record record)
         {
             if (record == null)
@@ -495,6 +506,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewgeterror.asp">MsiViewGetError</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public ICollection<ValidationErrorInfo> Validate(Record record) { return this.InternalValidate(ViewModifyMode.Validate, record); }
 
         /// <summary>
@@ -517,6 +529,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewgeterror.asp">MsiViewGetError</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public ICollection<ValidationErrorInfo> ValidateNew(Record record) { return this.InternalValidate(ViewModifyMode.ValidateNew, record); }
 
         /// <summary>
@@ -538,6 +551,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewgeterror.asp">MsiViewGetError</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public ICollection<ValidationErrorInfo> ValidateFields(Record record) { return this.InternalValidate(ViewModifyMode.ValidateField, record); }
 
         /// <summary>
@@ -559,6 +573,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>,
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewgeterror.asp">MsiViewGetError</a>
         /// </p></remarks>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public ICollection<ValidationErrorInfo> ValidateDelete(Record record) { return this.InternalValidate(ViewModifyMode.ValidateDelete, record); }
 
         /// <summary>
@@ -591,6 +606,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
             return this.GetEnumerator();
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private ICollection<ValidationErrorInfo> InternalValidate(ViewModifyMode mode, Record record)
         {
             uint ret = RemotableNativeMethods.MsiViewModify((int) this.Handle, (int) mode, (int) record.Handle);

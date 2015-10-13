@@ -16,9 +16,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Async;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Packaging;
-    using Microsoft.PackageManagement.Utility.Async;
-    using Microsoft.PackageManagement.Utility.Extensions;
     using Utility;
 
     [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageSourceNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517137")]
@@ -27,6 +28,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         private bool _found;
         private bool _noLocation;
         private bool _noName;
+        private string _name;
+        private string _originalName;
 
         public GetPackageSource()
             : base(new[] {
@@ -41,7 +44,21 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
         [Parameter(Position = 0)]
-        public string Name {get; set;}
+        public string Name {
+            get {
+                return _name;
+            }
+            set {
+                _originalName = value;
+                if (!string.IsNullOrWhiteSpace(_originalName) && _originalName.ContainsWildcards()){
+                    //'Name' means package Source Name here. if we pass down the source name with any wildcard charaters, providers cannot resolve them.
+                    //set it to "" here just as a user does not provide -Name. With that Get-PackageSource returns all and we'll filter on results.
+                    _name = string.Empty;
+                } else {
+                    _name = _originalName;                    
+                }
+            }
+        }
 
         [Parameter]
         public string Location {get; set;}
@@ -88,6 +105,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                 using (var src = provider.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).CancelWhen(CancellationEvent.Token)) {
                     var sources = src.Distinct();
+                    if (!string.IsNullOrWhiteSpace(_originalName) && _originalName.ContainsWildcards()) {
+                        WriteSources(sources.Where(each => each.Name.IsWildcardMatch(_originalName)));
+                        continue;
+                    }
                     if (noCriteria) {
                         // no criteria means just return whatever we found
                         if (WriteSources(sources)) {

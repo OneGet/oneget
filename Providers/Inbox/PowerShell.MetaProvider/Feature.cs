@@ -16,6 +16,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Internal;
 
     public class Feature : Yieldable {
         private KeyValuePair<string, string[]> _pair;

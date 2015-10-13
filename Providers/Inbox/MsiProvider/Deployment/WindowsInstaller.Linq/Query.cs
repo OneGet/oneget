@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller.Linq
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.Linq
 {
     using System;
     using System.Collections;

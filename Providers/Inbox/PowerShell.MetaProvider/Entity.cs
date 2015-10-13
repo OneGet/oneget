@@ -16,7 +16,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
 
     public class Entity {
         public string Name {get; set;}

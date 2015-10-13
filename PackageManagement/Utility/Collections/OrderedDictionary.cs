@@ -12,14 +12,14 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Collections {
+namespace Microsoft.PackageManagement.Internal.Utility.Collections {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.Linq;
 
-    public class OrderedDictionary<TKey, TValue> : OrderedDictionary, IDictionary<TKey, TValue> {
+    internal class OrderedDictionary<TKey, TValue> : OrderedDictionary, IDictionary<TKey, TValue> {
         public new IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
             return new KvpEnumerator(base.GetEnumerator());
         }

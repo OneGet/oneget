@@ -12,12 +12,13 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Implementation {
+namespace Microsoft.PackageManagement.Internal.Implementation {
     using System;
     using Api;
-    using Packaging;
-
-    public class SoftwareIdentityRequestObject : EnumerableRequestObject<SoftwareIdentity> {
+    using PackageManagement.Implementation;
+    using PackageManagement.Packaging;
+    
+    internal class SoftwareIdentityRequestObject : EnumerableRequestObject<SoftwareIdentity> {
         private SoftwareIdentity _currentItem;
         private readonly string _status;
 

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
     using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.WindowsInstaller
     /// <summary>
     /// Contains information about all the tables in a Windows Installer database.
     /// </summary>
-    public class TableCollection : ICollection<TableInfo>
+    internal class TableCollection : ICollection<TableInfo>
     {
         private Database db;
 

@@ -7,7 +7,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.PackageManagement.Msi.Deployment.Resources
+namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 {
     using System;
     using System.Collections;
@@ -23,7 +23,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
     /// The resource is of type <see cref="ResourceType.Version"/> (RT_VERSION).
     /// </remarks>
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public sealed class VersionResource : Resource, ICollection<VersionStringTable>
+    internal sealed class VersionResource : Resource, ICollection<VersionStringTable>
     {
         internal bool dirty;
         private VersionInfo rawVersionInfo;
@@ -92,6 +92,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// <summary>
         /// Gets or sets the binary locale-independent file version of the version resource.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Version FileVersion
         {
             get
@@ -108,6 +109,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// <summary>
         /// Gets or sets the binary locale-independent product version of the version resource.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Version ProductVersion
         {
             get
@@ -124,6 +126,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// <summary>
         /// Gets or sets a bitmask that specifies the build types of the file.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionBuildTypes BuildTypes
         {
             get
@@ -142,6 +145,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// <summary>
         /// Gets or sets the general type of the file.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionFileType FileType
         {
             get
@@ -158,6 +162,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// <summary>
         /// Gets or sets the specific type of the file.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionFileSubtype FileSubtype
         {
             get
@@ -174,6 +179,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// <summary>
         /// Gets or sets the binary creation date and time.
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public DateTime Timestamp
         {
             get
@@ -192,6 +198,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// </summary>
         /// <seealso cref="Add(int)"/>
         /// <seealso cref="Remove(int)"/>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionStringTable this[int locale]
         {
             get
@@ -217,6 +224,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// </summary>
         /// <param name="locale">Locale of the table</param>
         /// <returns>The new string table, or the existing table if the locale already existed.</returns>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionStringTable Add(int locale)
         {
             VersionInfo svi = this.rawVersionInfo["StringFileInfo"];
@@ -267,6 +275,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// Removes a version string table for a locale.
         /// </summary>
         /// <param name="locale">Locale of the table</param>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Remove(int locale)
         {
             VersionInfo svi = this.rawVersionInfo["StringFileInfo"];
@@ -321,6 +330,7 @@ namespace Microsoft.PackageManagement.Msi.Deployment.Resources
         /// </summary>
         /// <param name="locale">Locale to search for</param>
         /// <returns>True if a string table was found for the locale; false otherwise.</returns>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public bool Contains(int locale)
         {
             return this[locale] != null;

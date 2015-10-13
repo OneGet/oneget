@@ -20,9 +20,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.PackageManagement.Implementation;
+    using Microsoft.PackageManagement.Internal.Implementation;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Async;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Packaging;
-    using Microsoft.PackageManagement.Utility.Async;
-    using Microsoft.PackageManagement.Utility.Extensions;
     using Utility;
     using Directory = System.IO.Directory;
     using File = System.IO.File;
@@ -54,7 +56,18 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         public override string MaximumVersion { get; set; }
 
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
-        public override string[] Source { get; set; }
+        // Use the base Source property so relative path will be resolved
+        public override string[] Source
+        {
+            get
+            {
+                return base.Source;
+            }
+            set
+            {
+                base.Source = value;
+            }
+        }
 
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
             if (!IsInvocation) {
@@ -130,19 +143,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
             if (Directory.Exists(resolvedPath))
             {
-                // it appears to be a directory name
-                return System.IO.Path.Combine(resolvedPath, packageName);
-            }
-
-            var parentPath = System.IO.Path.GetDirectoryName(resolvedPath);
-            if (Directory.Exists(parentPath))
-            {
-                // it appears to be a full path including filename
+                // don't append path and package name here
                 return resolvedPath;
             }
 
-            // it's not an existing directory,
-            // and the parent directory of that path doesn't exist.
+            // it's not an existing directory
             // So throw a terminating error.
             Error(Constants.Errors.DestinationPathInvalid, resolvedPath, packageName);
             return null;
@@ -158,40 +163,52 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 ProcessPackage(SelectProviders(InputObject.ProviderName).FirstOrDefault(), InputObject.Name.SingleItemAsEnumerable(), InputObject);
                 return true;
             }
+
             return base.ProcessRecordAsync();
         }
 
         protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
+            // if provider does not implement downloadpackage throw error saying that save-package is not implemented by provider
+            if (!provider.IsMethodImplemented("DownloadPackage"))
+            {
+                Error(Constants.Errors.MethodNotImplemented, provider.ProviderName, "Save-Package");
+            }
+
             base.ProcessPackage(provider, searchKey, package);
 
+            // if we do save-package jquery -path C:\test then savepath would be C:\test
             var savePath = SaveFileName(package.PackageFilename);
 
-            if (savePath.FileExists()) {
-                if (Force) {
-                    savePath.TryHardToDelete();
-                    if (savePath.FileExists()) {
-                        Error(Constants.Errors.UnableToOverwrite, savePath);
-                        return;
+            bool mainPackageDownloaded = false;
+
+            if (!string.IsNullOrWhiteSpace(savePath)) {                
+                // let the provider handles everything
+                if (ShouldProcess(savePath, FormatMessageString(Resources.Messages.SavePackage)).Result)
+                {
+                    foreach (var downloadedPkg in provider.DownloadPackage(package, savePath, this.ProviderSpecific(provider)).CancelWhen(CancellationEvent.Token))
+                    {
+                        if (IsCanceled)
+                        {
+                            Error(Constants.Errors.ProviderFailToDownloadFile, downloadedPkg.PackageFilename, provider.ProviderName);
+                            return;
+                        }
+
+                        // check whether main package is downloaded;
+                        if (string.Equals(downloadedPkg.CanonicalId, package.CanonicalId, StringComparison.OrdinalIgnoreCase))
+                        {
+                            mainPackageDownloaded = true;
+                        }
+
+                        WriteObject(downloadedPkg);
                     }
-                } else {
-                    Error(Constants.Errors.PackageFileExists, savePath);
-                    return;
                 }
             }
 
-            // if we have a valid path, make a local copy of the file.
-            if (!string.IsNullOrWhiteSpace(savePath)) {
-                if (ShouldProcess(savePath, Constants.Messages.SavePackage).Result) {
-                    provider.DownloadPackage(package, SaveFileName(savePath), this.ProviderSpecific(provider)).Wait();
-
-                    if (File.Exists(savePath)) {
-                        package.FullPath = savePath;
-                    }
-                }
-                // return the object to the caller.
-                WriteObject(package);
+            if (!mainPackageDownloaded)
+            {
+                Error(Constants.Errors.ProviderFailToDownloadFile, package.PackageFilename, provider.ProviderName);
+                return;
             }
-
         }
 
         public override bool EndProcessingAsync() {

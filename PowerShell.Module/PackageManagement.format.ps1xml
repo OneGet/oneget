@@ -32,7 +32,7 @@
           <Width>16</Width>
         </TableColumnHeader>
         <TableColumnHeader>
-          <Width>16</Width>
+          <Width>30</Width>
         </TableColumnHeader>
         <TableColumnHeader>
         </TableColumnHeader>
@@ -126,10 +126,11 @@
           <Width>16</Width>
         </TableColumnHeader>
         <TableColumnHeader>
+	  <Label>DynamicOptions</Label>
         </TableColumnHeader>
       </TableHeaders>
       <TableRowEntries>
-        <TableRowEntry>
+        <TableRowEntry>         
           <TableColumnItems>
             <TableColumnItem>
               <PropertyName>Name</PropertyName>
@@ -138,7 +139,7 @@
               <PropertyName>Version</PropertyName>
             </TableColumnItem>
             <TableColumnItem>
-              <PropertyName>DynamicOptions</PropertyName>
+              <ScriptBlock>$_.DynamicOptions.Name -join ", "</ScriptBlock>
             </TableColumnItem>
           </TableColumnItems>
         </TableRowEntry>

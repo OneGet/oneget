@@ -12,7 +12,7 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
     internal static class Constants {
         internal const string ScriptStackTrace = "MSG:ScriptStackTrace";
         internal const string ProviderNameUnknown = "(unknown)";

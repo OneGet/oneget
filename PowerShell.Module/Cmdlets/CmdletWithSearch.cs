@@ -15,7 +15,7 @@
 namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Collections.Generic;
     using System.Management.Automation;
-    using Microsoft.PackageManagement.Packaging;
+    using Microsoft.PackageManagement.Internal.Packaging;
 
     public abstract class CmdletWithSearch : CmdletWithProvider {
         protected CmdletWithSearch(OptionCategory[] categories)
@@ -40,5 +40,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         [Parameter]
         public virtual string MaximumVersion {get; set;}
+
+        [Parameter]
+        public virtual SwitchParameter AllVersions { get; set; }
     }
 }

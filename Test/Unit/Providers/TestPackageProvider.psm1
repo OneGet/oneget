@@ -171,7 +171,7 @@ function Get-InstalledPackage {
 #>
 function Get-PackageProviderName { 
     param()
-    return "TestPSProvider"
+    return "TestPackageProvider"
 }
 
 <# 

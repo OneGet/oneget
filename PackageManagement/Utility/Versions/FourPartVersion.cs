@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-namespace Microsoft.PackageManagement.Utility.Versions {
+namespace Microsoft.PackageManagement.Internal.Utility.Versions {
     using System;
     using System.Diagnostics;
     using System.Globalization;
@@ -89,7 +89,8 @@ namespace Microsoft.PackageManagement.Utility.Versions {
 
         public static implicit operator FourPartVersion(Version version) {
             return new FourPartVersion {
-                _version = ((ulong)version.Major << 48) + ((ulong)version.Minor << 32) + ((ulong)version.Build << 16) + (ulong)version.Revision
+                _version = StringToULong(version.ToString())
+               // _version = ((ulong)version.Major << 48) + ((ulong)version.Minor << 32) + ((ulong)version.Build << 16) + (ulong)version.Revision
             };
         }
 
