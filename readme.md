@@ -61,7 +61,13 @@ check out the source code
 # add your repo url as the origin:
 # e.g. git@github.com:fearthecowboy/OneGet.git 
 > git remote add origin <your-repo-url> 
-    
+
+# run test
+build the packagemanagment.sln
+copy the files generated from the build to x:\Program Files\WindowsPowerShell\Modules\PackageManagement
+You may need to update the PowerShellGet files that are in the inbox folder.
+cd to the test folder
+.\run-test.ps1
 ```
 
 
