@@ -20,7 +20,7 @@
 
 #Step 1 - test setup
 $TestHome = $PSScriptRoot
-$TestBin = "$($TestHome)\..\output\Debug\bin\"
+$TestBin = "$($TestHome)\..\output\Release\bin\"
 Import-Module "$($TestBin)\PackageManagement.psd1"
 
 $ProgramProviderInstalledPath = "$Env:ProgramFiles\PackageManagement\ProviderAssemblies"
