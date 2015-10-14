@@ -33,6 +33,24 @@ $UserModulePath = "$($mydocument)\WindowsPowerShell\Modules"
 
 $ProgramModulePath = "$Env:ProgramFiles\WindowsPowerShell\Modules"
 
+$packagemanagementfolder = (Get-Module -ListAvailable PackageManagement | Select -First 1)
+
+if ($packagemanagementfolder -ne $null -and (Test-Path $packagemanagementfolder)) {
+    # folder exists so just replace it
+    $packagemanagementfolder = Split-Path $packagemanagementfolder
+}
+else {
+    $packagemanagementfolder = "$ProgramModulePath\PackageManagement"
+    if (-not (Test-Path $packagemanagementfolder)) {
+        md $packagemanagementfolder
+    }
+}
+
+Copy-Item "$TestBin\*.dll" $packagemanagementfolder
+Copy-Item "$TestBin\*.psd1" $packagemanagementfolder
+Copy-Item "$TestBin\*.psm1" $packagemanagementfolder
+Copy-Item "$TestBin\*.ps1" $packagemanagementfolder
+
 if(-not (Test-Path $ProgramProviderInstalledPath)){
     New-Item -Path $ProgramProviderInstalledPath -ItemType Directory -Force  
     Write-Host "Created  $ProgramProviderInstalledPath"

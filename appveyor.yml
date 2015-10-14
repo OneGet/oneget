@@ -5,8 +5,6 @@ platform: Any CPU
 install: 
     - cinst -y pester
 clone_folder: c:\projects\oneget
-environment:
-  PackageManagementManifest: c:\projects\oneget\output\release\bin\PackageManagement.psd1
 build:
   verbosity: minimal
 before_test:
