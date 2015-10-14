@@ -55,7 +55,7 @@ function Import-PackageManagement {
     }
 
     echo "Importing PackageManagement Module from $env:PMModuleTest"
-    ipmo $env:PMModuleTest
+    ipmo $env:PackageManagementManifest
     return $true
 }
 
