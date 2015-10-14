@@ -50,6 +50,7 @@ Copy-Item "$TestBin\*.dll" $packagemanagementfolder -Verbose
 Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -Verbose
 Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -Verbose
 Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -Verbose
+Copy-Item "$TestBin\*.ps1xml" $packagemanagementfolder -Verbose
 
 if(-not (Test-Path $ProgramProviderInstalledPath)){
     New-Item -Path $ProgramProviderInstalledPath -ItemType Directory -Force  
