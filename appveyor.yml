@@ -1,0 +1,11 @@
+version: 1.0.{build}
+configuration: Release
+platform: Any CPU
+clone_folder: c:\projects\oneget
+build:
+  verbosity: minimal
+before_test:
+- ps: >-
+    Copy-Item -Recurse "c:\projects\oneget\Providers\Inbox\PowerShellGet" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Force -Verbose
+
+    & "c:\projects\oneget\Test\run-test.ps1"
