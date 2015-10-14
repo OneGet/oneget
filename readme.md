@@ -3,7 +3,7 @@
 <hr><hr>
 
 ### What's New
-Follow our [[News Panel]
+Follow our [News Panel](https://github.com/OneGet/oneget/wiki/News-Panel).
 
 ### Get Started!
 
