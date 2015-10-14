@@ -8,4 +8,4 @@ before_test:
 - ps: >-
     Copy-Item -Recurse "c:\projects\oneget\Providers\Inbox\PowerShellGet" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Force -Verbose
 
-    & "c:\projects\oneget\Test\run-test.ps1"
+    & "c:\projects\oneget\Test\run-tests.ps1"
