@@ -1,6 +1,9 @@
 version: 1.0.{build}
 configuration: Release
 platform: Any CPU
+# Install Pester
+install: 
+    - cinst -y pester
 clone_folder: c:\projects\oneget
 build:
   verbosity: minimal
