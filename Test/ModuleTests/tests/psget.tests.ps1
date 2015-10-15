@@ -64,7 +64,7 @@ Describe "Set-PackageSource" -Tags @('BVT', 'DRT'){
         }
     }
 
-    It "EXPECTED: -FAILS- when Set-PackageSource raises an error but does not remove the old source" {
+    It "EXPECTED: -FAILS- when Set-PackageSource raises an error but does not remove the old source" -Skip {
         (Get-PackageSource -Name PSGallery).Count | should be 1
         $msg = powershell 'Set-PackageSource -Name PSGallery -ProviderName PSModule -PackageManagementProvider PSModule -ErrorAction SilentlyContinue; $Error[0].FullyQualifiedErrorId'
         $msg | should match "InvalidPackageManagementProviderValue,Add-PackageSource,Microsoft.PowerShell.PackageManagement.Cmdlets.SetPackageSource"
