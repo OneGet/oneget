@@ -150,8 +150,6 @@ Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($ProgramModuleP
 #Step 2 - run tests
 Write-Host -fore White "Running powershell pester tests "
 
-ipmo  "$($TestHome)\ModuleTests\Pester\Pester.psm1"
-
 Invoke-Pester -Path "$($TestHome)\ModuleTests\tests"
 
 Write-Host -fore White "Finished tests"
