@@ -158,7 +158,7 @@ Describe "Find-PackageProvider with Versions" -Tags @('BVT', 'DRT') {
  
 
     It "EXPECTED: success 'find a provider with MinimumVersion and MaximumVersion'" {
-        (find-packageprovider -name nuget -MinimumVersion 2.8.5.105 -MaximumVersion 2.8.5.121).Version.ToString() | should match "2.8.5.120"
+        (find-packageprovider -name nuget -MinimumVersion 2.8.5.105 -MaximumVersion 2.8.5.123).Version.ToString() | should match "2.8.5.122"
     }
     
     It "EXPECTED: success 'find a provider with MaximumVersion'" {

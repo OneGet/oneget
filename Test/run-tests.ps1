@@ -52,6 +52,16 @@ Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -Verbose
 Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -Verbose
 Copy-Item "$TestBin\*.ps1xml" $packagemanagementfolder -Verbose
 
+# Copy the PowerShellAssemblyProvider folder to module
+Copy-Item "$TestHome\Unit\Providers\PowerShellAssemblyProvider" -Destination $ProgramModulePath -Force -Recurse -verbose
+
+# copy the fakeonegettestprovider
+if (-not (Test-Path "$env:TMP\FakeOneGet")) {
+    md "$env:TMP\FakeOneGet"
+}
+
+Copy-Item "$TestHome\Unit\Providers\FakeOneGetTestProvider.psm1" -Destination "$env:TMP\FakeOneGet\FakeOneGetTestProvider.psm1"
+
 if(-not (Test-Path $ProgramProviderInstalledPath)){
     New-Item -Path $ProgramProviderInstalledPath -ItemType Directory -Force  
     Write-Host "Created  $ProgramProviderInstalledPath"
