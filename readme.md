@@ -15,8 +15,8 @@ You can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notifie
 * Learn how to [use the powershell cmdlets](https://github.com/OneGet/oneget/wiki/cmdlets) 
 * Read our [General Q and A](https://github.com/OneGet/oneget/wiki/Q-and-A)
 * Learn about the [8 Laws of Software Installation](https://github.com/OneGet/oneget/wiki/8-Laws-of-Software-Installation)
-* See the [documentation](https://github.com/OneGet/oneget/wiki) tab for more info.
-
+* See the [documentation](https://github.com/OneGet/oneget/wiki) tab for more info
+* Check out [install note](https://github.com/OneGet/oneget/issues/68).
 
 
 
