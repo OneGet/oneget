@@ -1,6 +1,6 @@
 
 # OneGet
-<hr><hr>
+
 
 ### What's New
 Follow our [News Panel](https://github.com/OneGet/oneget/wiki/News-Panel).
@@ -112,7 +112,8 @@ We have an online monthly meeting at the beginning of each month on Tuesday from
 
 You can see archives of the previous meetings available on [YouTube](https://www.youtube.com/playlist?list=PLeKWr5Ekac1SEEvHqIh3g051OyioFwOXN&feature=c4-feed-u)
 
-<hr><hr>
+
+
 ## What is OneGet?
 
 OneGet is a unified interface to package management systems and aims to make Software Discovery, Installation and Inventory (SDII) work via a common set of cmdlets (and eventually a set of APIs). Regardless of the installation technology underneath, users can use these common cmdlets to install/uninstall packages, add/remove/query package repositories, and query a system for the software installed. Included in this CTP is a prototype implementation of a Chocolatey-compatible package manager that can install existing Chocolatey packages.
@@ -129,7 +130,8 @@ We'll also be publishing standalone builds, once the source code is published.
 
 [Follow us on Twitter](https://twitter.com/PSOneGet)
 
-<hr><hr>
+
+
 ## Team Members
 
 | Branch | Purpose |
@@ -140,7 +142,8 @@ We'll also be publishing standalone builds, once the source code is published.
 |@Krishna|  Our engineer manager on OneGet, also owner for PowerShell Gallery.   |
 |@Quoc|  Our newest and freshest engineer.   |
 
-<hr><hr>
+
+
 ## Project Dashboard
 
 You can see issues, pull requests, backlog items, etc. in the [OneGet Dashboard](https://waffle.io/oneget/oneget)
