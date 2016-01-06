@@ -139,3 +139,12 @@ We'll also be publishing standalone builds, once the source code is published.
 |@Jianyun|  New engineer owner on OneGet. |
 |@Krishna|  Our engineer manager on OneGet, also owner for PowerShell Gallery.   |
 |@Quoc|  Our newest and freshest engineer.   |
+
+<hr><hr>
+## Project Dashboard
+
+You can see issues, pull requests, backlog items, etc. in the [OneGet Dashboard](https://waffle.io/oneget/oneget)
+
+Throughput Graph
+
+[![Throughput Graph](https://graphs.waffle.io/OneGet/oneget/throughput.svg)](https://waffle.io/OneGet/oneget/metrics)
