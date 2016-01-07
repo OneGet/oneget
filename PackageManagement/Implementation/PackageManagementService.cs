@@ -61,7 +61,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
         private readonly object _lockObject = new object();
         private readonly IDictionary<string, IMetaProvider> _metaProviders = new Dictionary<string, IMetaProvider>(StringComparer.OrdinalIgnoreCase);
-        private readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>(StringComparer.OrdinalIgnoreCase);
+        internal readonly IDictionary<string, PackageProvider> _packageProviders = new Dictionary<string, PackageProvider>(StringComparer.OrdinalIgnoreCase);
         internal readonly IDictionary<string, Archiver> Archivers = new Dictionary<string, Archiver>(StringComparer.OrdinalIgnoreCase);
         internal readonly IDictionary<string, Downloader> Downloaders = new Dictionary<string, Downloader>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, List<PackageProvider>> _providerCacheTable = new Dictionary<string, List<PackageProvider>>(StringComparer.OrdinalIgnoreCase);
@@ -423,8 +423,8 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
         private IEnumerable<PackageProvider> GetPackageProviderFromCacheTable(string providerName)
         {
-            var cacheList = (string.IsNullOrWhiteSpace(providerName)) ? _providerCacheTable.SelectMany(each => each.Value).WhereNotNull()
-                : _providerCacheTable.Where(each => each.Key.IsWildcardMatch(providerName)).SelectMany(each => each.Value).WhereNotNull();
+            var cacheList = (string.IsNullOrWhiteSpace(providerName)) ? _providerCacheTable.SelectMany(each => each.Value.OrderByDescending(provider => provider.Version)).WhereNotNull()
+                : _providerCacheTable.Where(each => each.Key.IsWildcardMatch(providerName)).SelectMany(each => each.Value.OrderByDescending(provider => provider.Version)).WhereNotNull();
 
             return cacheList;
         }

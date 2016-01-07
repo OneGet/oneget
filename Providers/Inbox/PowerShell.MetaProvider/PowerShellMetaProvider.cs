@@ -534,14 +534,24 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                     }
 
                     PackageProvider pkgProvider = null;
+                    bool needToSearchForLoadedProvider = false;
                     for (var index = 0; index < psInfo.Length; index++) {
                         var moduleInfo = psInfo[index];
                         if (moduleInfo == null) {
                             continue;
                         }
+
                         //load the provider that has the latest version
                         if (index == 0) {
                             pkgProvider = AnalyzeModule(request, moduleInfo.ProviderPath, moduleInfo.ProviderVersion, false);
+
+                            // now if the provider path is a dll, there is a chance that we already loaded another version, that is why the pkgProvider we received back will be null
+                            // because the path won't be match
+                            if (pkgProvider == null && string.Equals(Path.GetExtension(moduleInfo.ProviderPath), ".dll", StringComparison.OrdinalIgnoreCase))
+                            {
+                                needToSearchForLoadedProvider = true;
+                                break;
+                            }
                         } else {
                             if (pkgProvider != null) {
                                 //the rest of providers under the same module will just create a provider object for the output but not loaded
@@ -553,7 +563,38 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                                 AddToPackageProviderCacheTable(packageProvider);
                             }
                         }
+                    }
 
+                    // this is the case where we have the provider path as a dll and we have trouble loading the dll because another version of that dll is already loaded
+                    if (needToSearchForLoadedProvider)
+                    {
+                        // search for the loaded one in the list of loaded providers
+                        foreach (var packageProvider in PackageManagementService._packageProviders.Values)
+                        {
+                            int loadedProviderIndex = list.FindIndex(item => string.Equals(item.ProviderPath, packageProvider.ProviderPath, StringComparison.OrdinalIgnoreCase));
+                            // this means one of the provider is already loaded, so we should use that one to populate the other versions of the provider
+                            if (loadedProviderIndex != -1)
+                            {
+                                for (int i = 0; i < list.Count; i += 1)
+                                {
+                                    // populate provider object for this version
+                                    if (i != loadedProviderIndex)
+                                    {
+                                        var moduleInfo = list[i];
+
+                                        AddToPackageProviderCacheTable(
+                                            new PackageProvider(new DefaultPackageProvider(packageProvider.ProviderName, moduleInfo.ProviderVersion.ToString()))
+                                            {
+                                                ProviderPath = moduleInfo.ProviderPath,
+                                                Version = moduleInfo.ProviderVersion,
+                                                IsLoaded = false
+                                            });
+                                    }
+                                }
+
+                                break;
+                            }
+                        }                                       
                     }
                 }
 
@@ -589,7 +630,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
             //Check if it is already in the cache table
             var providersAlreadyImported = FindMatchedProvidersFromInternalCacheTable(request, modulePath).ToArray();
 
-            if (providersAlreadyImported.Any()) {
+            if (providersAlreadyImported.Any() && !force) {
                 return providersAlreadyImported;
             }
 
@@ -610,6 +651,26 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                 return null;
             }
             request.Debug("Attempting to load PowerShell Provider Module [{0}]", modulePath);
+
+            if (string.Equals(Path.GetExtension(modulePath), ".dll", StringComparison.OrdinalIgnoreCase))
+            {
+                // if the path is a .dll then we ask packagemanagement to load it for us
+                PackageManagementService.LoadProviderAssembly(request, modulePath, force);
+
+                // now let's checked whether we can find it in the list of loaded providers
+                foreach (var loadedProvider in PackageManagementService._packageProviders.Values)
+                {
+                    // the one loaded should have the same path
+                    if (string.Equals(loadedProvider.ProviderPath, modulePath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return loadedProvider;
+                    }
+                }
+
+                // if we reached here then we have failed to load the provider :(
+                return null;
+            }
+
             var provider = Create(request, modulePath, requiredVersion.ToString(), force);
             if (provider != null) {
                 var providerName = provider.GetPackageProviderName();

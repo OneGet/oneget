@@ -227,9 +227,31 @@ Describe "Import-PackageProvider with OneGetTest that has 3 versions: 1.1, 3.5, 
     It "EXPECTED: success 'OneGetTest with MinimumVersion'" {
         powershell '(Import-packageprovider -name OneGetTest -MinimumVersion 2.2 -WarningAction SilentlyContinue).Version.ToString()' | should match "9.9.0.0"
     }
+
+    It "EXPECTED: success 'Reimport OneGetTest with -force'" {
+        # first we import onegettest version 1.1
+        # then we change the provider file
+        # then we reimport again
+        $tempFolder = "$env:TMP\FakeOneGet"
+        $tempFile = "$tempFolder\FakeOneGetTestProvider.psm1"
+        $oldProvider = "$tempFolder\OldOneGetTestProvider.psm1"
+        $providerPath = powershell "(Import-PackageProvider -Name OneGetTest -RequiredVersion 1.1).ProviderPath"
+
+        # copy the old provider over
+        Copy-Item $providerPath $oldProvider -Force
+
+        try {
+            $importError = powershell "Import-PackageProvider -Name OneGetTest -RequiredVersion 1.1 | Out-Null ; Copy-Item '$tempFile' '$providerPath' -Force | Out-Null; Import-PackageProvider -Force OneGetTest -RequiredVersion 1.1 -ErrorAction SilentlyContinue; `$Error[0].FullyQualifiedErrorId";
+            $importError | should match "FailedToImportProvider,Microsoft.PowerShell.PackageManagement.Cmdlets.ImportPackageProvider"
+        }
+        finally {
+            if (Test-Path $oldProvider) {
+                Move-Item $oldProvider $providerPath -Force
+            }
+        }
+    }
 }
 
-<#
 function GetConsoleOutput()
 {
     Start-Sleep -Milliseconds $script:assertTimeOutms
@@ -241,7 +263,7 @@ function GetConsoleOutput()
     return $content
 }
 
-Describe "Import-PackageProvider with OneGetTestProvider that has 3 versions: 4.5, 6.0, 6.1 on the internal gallery." -tag common,pristine {
+Describe "Import-PackageProvider with PowerShellAssemblyProvider that has 3 versions: 4.5, 6.0, 6.1" -Tags @('BVT', 'DRT') {
     # make sure that packagemanagement is loaded
     import-packagemanagement
     $script:ConsoleOutput="$env:TEMP\consoleforimportpackageprovider-out.txt"
@@ -254,24 +276,16 @@ Describe "Import-PackageProvider with OneGetTestProvider that has 3 versions: 4.
         }
     }
 
-    It "EXPECTED: success 'import OneGetTestProvider -requiredVersion 4.5'" {
-        Start-Process PowerShell -ArgumentList '(Import-packageprovider -name OneGetTestProvider -requiredVersion 4.5).Version.ToString()' `
+    It "EXPECTED: success 'import PowerShellAssemblyProvider -requiredVersion 4.5'" {
+        Start-Process PowerShell -ArgumentList '(Import-packageprovider -name PowerShellAssemblyProvider -requiredVersion 4.5).Version.ToString()' `
                                     -Wait `
                                     -RedirectStandardOutput $script:ConsoleOutput
 
         GetConsoleOutput | should match '4.5.0.0'
     }
 
-    It "EXPECTED: success 'Import OneGetTestProvider -requiredVersion 4.5 and then 6.0 -force'" {
-        Start-Process PowerShell -ArgumentList '(Import-packageprovider -name OneGetTestProvider -requiredVersion 4.5) > $null; (Import-packageprovider -name OneGetTestProvider -requiredVersion 6.0 -force)' `
-                                    -Wait `
-                                    -RedirectStandardOutput $script:ConsoleOutput
-
-        GetConsoleOutput | should match "4.5.0.0"
-    }
-
-    It "EXPECTED: success 'import OneGetTestProvider with MinimumVersion and MaximumVersion'" {
-        Start-Process PowerShell -ArgumentList '(Import-packageprovider -name OneGetTestProvider -MinimumVersion 4.6 -MaximumVersion 6.0.5).Version.ToString()' `
+    It "EXPECTED: success 'import PowerShellAssemblyProvider with MinimumVersion and MaximumVersion'" {
+        Start-Process PowerShell -ArgumentList '(Import-packageprovider -name PowerShellAssemblyProvider -MinimumVersion 4.6 -MaximumVersion 6.0.5).Version.ToString()' `
                                     -Wait `
                                     -RedirectStandardOutput $script:ConsoleOutput
 
@@ -279,7 +293,7 @@ Describe "Import-PackageProvider with OneGetTestProvider that has 3 versions: 4.
     }
     
     It "EXPECTED: success 'import OneGetTestProvider with MaximumVersion'" {
-        Start-Process PowerShell -ArgumentList '(Import-packageprovider -name OneGetTestProvider -MaximumVersion 4.6).Version.ToString()' `
+        Start-Process PowerShell -ArgumentList '(Import-packageprovider -name PowerShellAssemblyProvider -MaximumVersion 4.6).Version.ToString()' `
                                     -Wait `
                                     -RedirectStandardOutput $script:ConsoleOutput
 
@@ -287,7 +301,7 @@ Describe "Import-PackageProvider with OneGetTestProvider that has 3 versions: 4.
     }
     
     It "EXPECTED: success 'OneGetTestProvider with MinimumVersion'" {
-        Start-Process PowerShell -ArgumentList '(Import-packageprovider -name OneGetTestProvider -MinimumVersion 6.0.5).Version.ToString()' `
+        Start-Process PowerShell -ArgumentList '(Import-packageprovider -name PowerShellAssemblyProvider -MinimumVersion 6.0.5).Version.ToString()' `
                                     -Wait `
                                     -RedirectStandardOutput $script:ConsoleOutput
 
