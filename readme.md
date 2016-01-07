@@ -17,10 +17,18 @@ You can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notifie
 * Learn about the [8 Laws of Software Installation](https://github.com/OneGet/oneget/wiki/8-Laws-of-Software-Installation)
 * See the [documentation](https://github.com/OneGet/oneget/wiki) tab for more info.
 
+#### What is OneGet?
+
+OneGet is renamed as PackageManagement. It is a unified interface to package management systems and aims to make Software Discovery, Installation and Inventory (SDII) work via a common set of cmdlets (and eventually a set of APIs). Regardless of the installation technology underneath, users can use these common cmdlets to install/uninstall packages, add/remove/query package repositories, and query a system for the software installed. 
+
+With OneGet, you can
+* Manage a list of software repositories in which packages can be searched, acquired, and installed
+* Search and filter your repositories to find the packages you need
+* Seamlessly install and uninstall packages from one or more repositories with a single PowerShell command
+* 
 
 
-
-## Building the code
+### Building the code
 
 #### Required Tools
 - Visual Studio 2013
@@ -71,13 +79,13 @@ cd to the test folder
 ```
 
 
-## Understanding the OneGet code repository
+### Understanding the OneGet code repository
 
 OneGet is under rapid development, and so you get to see just how the sausage is being made. I try to keep the master branch clean and buildable, but my own working branch can get pretty damn wild and I make no bones about some of this. I work fast, I make big changes, and I try to keep my eye on the target.
 
 Feel free to clone the repository, and check out the different branches:
 
-### Branches
+#### Branches
 
 There are currently three branches in the git repository:
 
@@ -87,9 +95,10 @@ There are currently three branches in the git repository:
 |`ctp`|  The `ctp` branch is a snapshot of the code that was released as the WMF 5.0 CTP back in April. This branch is frozen and here only for completion sake. No pull requests/patches will be taken for this, as it's a dead end. The new `master` branch is where all the new action is taking place. Fun to read, but a bit hacky in places. |
 |`wip`|  The `wip` branch is where the current **unstable** and **not-likely-working** coding is taking place. This lets you see where I'm at before stuff actually hits the master branch. Fun to read, but really, the wild-west of code branches. |
 
-## Contributing to OneGet
 
-Contributions to the OneGet project will require the signing of a CLA -- contact @fearthecowboy for details...
+### Contributing to OneGet
+
+Contributions to the OneGet project will require the signing of a CLA -- contact @jianyunt for details...
 
 In the immediate time frame, we won't be taking pull requests to the core itself, as we still have many masters at Microsoft to keep happy, and I have a lot of release process stuff I have to go thru to make them happy. 
 
@@ -102,9 +111,10 @@ There are some exceptions to the where I can take Pull Requests immediately:
 > Docs, Wiki, content, designs, bugs -- everything gleefully accepted :D
   
 
-## Participating in the OneGet Community
+### Participating in the OneGet Community
 
 I'm eager to work with anyone who wants to help shape the future of Package Management on Windows -- your opinions, feedback and code can help everyone. 
+
 
 ### Online Meeeting 
 
@@ -113,26 +123,16 @@ We have an online monthly meeting at the beginning of each month on Tuesday from
 You can see archives of the previous meetings available on [YouTube](https://www.youtube.com/playlist?list=PLeKWr5Ekac1SEEvHqIh3g051OyioFwOXN&feature=c4-feed-u)
 
 
+### Project Dashboard
 
-## What is OneGet?
+You can see issues, pull requests, backlog items, etc. in the [OneGet Dashboard](https://waffle.io/oneget/oneget)
 
-OneGet is a unified interface to package management systems and aims to make Software Discovery, Installation and Inventory (SDII) work via a common set of cmdlets (and eventually a set of APIs). Regardless of the installation technology underneath, users can use these common cmdlets to install/uninstall packages, add/remove/query package repositories, and query a system for the software installed. Included in this CTP is a prototype implementation of a Chocolatey-compatible package manager that can install existing Chocolatey packages.
+Throughput Graph
 
-With OneGet, you can
-* Manage a list of software repositories in which packages can be searched, acquired, and installed
-* Search and filter your repositories to find the packages you need
-* Seamlessly install and uninstall packages from one or more repositories with a single PowerShell command
+[![Throughput Graph](https://graphs.waffle.io/OneGet/oneget/throughput.svg)](https://waffle.io/OneGet/oneget/metrics)
 
 
-
-We'll also be publishing standalone builds, once the source code is published.
-
-
-[Follow us on Twitter](https://twitter.com/PSOneGet)
-
-
-
-## Team Members
+### Team Members 
 
 | Branch | Purpose |
 | ------- | ---------------------------|
@@ -142,12 +142,5 @@ We'll also be publishing standalone builds, once the source code is published.
 |@Krishna|  Our engineer manager on OneGet, also owner for PowerShell Gallery.   |
 |@Quoc|  Our newest and freshest engineer.   |
 
+[Follow us on Twitter](https://twitter.com/PSOneGet)
 
-
-## Project Dashboard
-
-You can see issues, pull requests, backlog items, etc. in the [OneGet Dashboard](https://waffle.io/oneget/oneget)
-
-Throughput Graph
-
-[![Throughput Graph](https://graphs.waffle.io/OneGet/oneget/throughput.svg)](https://waffle.io/OneGet/oneget/metrics)
