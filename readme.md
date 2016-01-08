@@ -115,7 +115,7 @@ There are some exceptions to the where I can take Pull Requests immediately:
 I'm eager to work with anyone who wants to help shape the future of Package Management on Windows -- your opinions, feedback and code can help everyone. 
 
 
-### Online Meeeting 
+### Online Meeting 
 
 We have an online monthly meeting at the beginning of each month on Tuesday from 10am - 11am (PST). Each month may have slight shift of either the first week or the second week.  We will twitter the exact time as well as put a note on GitHub site.  (everyone welcome!)
 
