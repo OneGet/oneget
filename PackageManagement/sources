@@ -38,7 +38,7 @@ LANGUAGE_SPECIFIC_MANAGED_RESOURCES =\
     $(OUTPUT_PATH)\$(RESOURCES_NAMESPACE).Messages.resources,$(RESOURCES_NAMESPACE).Messages.resources
 
 PASS2_BINPLACE=\
-    #(OUTPUT_PATH)\$(TARGETNAME).resources.dll
+    $(OUTPUT_PATH)\$(TARGETNAME).resources.dll
 
 ### Referenced assemblies
 
