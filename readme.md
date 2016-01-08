@@ -25,7 +25,6 @@ With OneGet, you can
 * Manage a list of software repositories in which packages can be searched, acquired, and installed
 * Search and filter your repositories to find the packages you need
 * Seamlessly install and uninstall packages from one or more repositories with a single PowerShell command
-* 
 
 
 ### Building the code
