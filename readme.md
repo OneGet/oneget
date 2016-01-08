@@ -16,6 +16,7 @@ You can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notifie
 * Read our [General Q and A](https://github.com/OneGet/oneget/wiki/Q-and-A)
 * Learn about the [8 Laws of Software Installation](https://github.com/OneGet/oneget/wiki/8-Laws-of-Software-Installation)
 * See the [documentation](https://github.com/OneGet/oneget/wiki) tab for more info.
+* [General Troubleshooting] (https://github.com/OneGet/oneget/wiki/General-Troubleshooting)
 
 #### What is OneGet?
 
@@ -119,7 +120,9 @@ I'm eager to work with anyone who wants to help shape the future of Package Mana
 
 We have an online monthly meeting at the beginning of each month on Tuesday from 10am - 11am (PST). Each month may have slight shift of either the first week or the second week.  We will twitter the exact time as well as put a note on GitHub site.  (everyone welcome!)
 
-You can see archives of the previous meetings available on [YouTube](https://www.youtube.com/playlist?list=PLeKWr5Ekac1SEEvHqIh3g051OyioFwOXN&feature=c4-feed-u)
+You can see archives of the previous meetings available on
+
+All meeting notes are recorded under [OneDrive PackageManagement](https://onedrive.live.com/?authkey=%21ABehsy6i3rzQdxE&id=EF4B329A5EB9EA4D%21127&cid=EF4B329A5EB9EA4D)
 
 
 ### Project Dashboard
