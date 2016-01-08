@@ -126,6 +126,12 @@ You can see archives of the previous meetings available on [YouTube](https://www
 
 You can see issues, pull requests, backlog items, etc. in the [OneGet Dashboard](https://waffle.io/oneget/oneget)
 
+[![Stories in Progress](https://badge.waffle.io/oneget/oneget.svg?label=Bug&title=Bug)](http://waffle.io/OneGet/OneGet)
+[![Stories in Progress](https://badge.waffle.io/oneget/oneget.svg?label=Investigate&title=Investigate)](http://waffle.io/OneGet/OneGet)
+[![Stories in Progress](https://badge.waffle.io/oneget/oneget.svg?label=Discussion&title=Discussion)](http://waffle.io/OneGet/OneGet)
+[![Stories in Progress](https://badge.waffle.io/oneget/oneget.svg?label=New%20Feature&title=New%20Feature)](http://waffle.io/OneGet/OneGet)
+[![Stories in Progress](https://badge.waffle.io/oneget/oneget.svg?label=PowerShellGet&title=PowerShellGet)](http://waffle.io/OneGet/OneGet)
+
 Throughput Graph
 
 [![Throughput Graph](https://graphs.waffle.io/OneGet/oneget/throughput.svg)](https://waffle.io/OneGet/oneget/metrics)
