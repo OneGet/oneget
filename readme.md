@@ -89,10 +89,10 @@ Feel free to clone the repository, and check out the different branches:
 
 There are currently three branches in the git repository:
 
-| Branch | Purpose |
+| Branch/Tag | Purpose |
 | ------- | ---------------------------|
 |`master`|  The `master` branch is where the daily builds of OneGet will be made from.  |
-|`ctp`|  The `ctp` branch is a snapshot of the code that was released as the WMF 5.0 CTP back in April. This branch is frozen and here only for completion sake. No pull requests/patches will be taken for this, as it's a dead end. The new `master` branch is where all the new action is taking place. Fun to read, but a bit hacky in places. |
+|`WMF5_RTM`|  The `WMF5_RTM` tag is to mark the WMF 5.0 RTM release point. |
 |`wip`|  The `wip` branch is where the current **unstable** and **not-likely-working** coding is taking place. This lets you see where I'm at before stuff actually hits the master branch. Fun to read, but really, the wild-west of code branches. |
 
 
