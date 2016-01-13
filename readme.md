@@ -70,12 +70,15 @@ check out the source code
 # e.g. git@github.com:fearthecowboy/OneGet.git 
 > git remote add origin <your-repo-url> 
 
-# run test
-build the packagemanagment.sln
-copy the files generated from the build to x:\Program Files\WindowsPowerShell\Modules\PackageManagement
-You may need to update the PowerShellGet files that are in the inbox folder.
+# build & deploy binaries and run test
+build the packagemanagment.sln:
+
+    msbuild PackageManagement.sln /p:Configuration=Release "/p:Platform=Any CPU"
+ 
 cd to the test folder
-.\run-test.ps1
+.\run-test.ps1  will copy the files generated from the build to x:\Program Files\WindowsPowerShell\Modules\PackageManagement
+and update the PowerShellGet to x:\Program Files\WindowsPowerShell\Modules\PowerShellGet. Also run the tests.
+
 ```
 
 
