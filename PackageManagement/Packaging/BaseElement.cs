@@ -26,7 +26,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
     public class BaseElement {
         private AttributeIndexer _attributeIndexer;
         private string _uniqueId;
-        protected internal readonly XElement Element;
+        protected internal XElement Element;
 
         protected internal BaseElement(XElement element) {
             Element = element;
@@ -118,7 +118,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         /// </summary>
         /// <param name="swidElement">the swid element to add</param>
         /// <returns>The newly added element</returns>
-        protected T AddElement<T>(T swidElement) where T : BaseElement {
+        internal T AddElement<T>(T swidElement) where T : BaseElement {
             Element.Add(swidElement.Element);
             return swidElement;
         }

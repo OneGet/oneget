@@ -1,5 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -134,7 +133,7 @@
     <comment>0 - the provider name</comment>
   </data>
   <data name="FileFailedVerification" xml:space="preserve">
-    <value>File from '{0}' failed signature validation. </value>
+    <value>File from '{0}' failed signature validation.</value>
     <comment>0 href to file location</comment>
   </data>
   <data name="HashNotEqual" xml:space="preserve">
@@ -145,7 +144,7 @@
     <value>The filename specified is not valid.</value>
   </data>
   <data name="MissingRequiredParameter" xml:space="preserve">
-    <value>The parameter '{0}' is required for this operation</value>
+    <value>The parameter '{0}' is required for this operation.</value>
     <comment>0 parameter name</comment>
   </data>
   <data name="PackageSourceExists" xml:space="preserve">
@@ -157,7 +156,7 @@
     <comment>0 protocol scheme</comment>
   </data>
   <data name="InvalidVersionRange" xml:space="preserve">
-    <value>Specified version range is invalid. Minimum Version:{0} MaximumVersion:{1}</value>
+    <value>Specified version range is invalid. Minimum Version:{0} MaximumVersion:{1}.</value>
     <comment>0 protocol scheme</comment>
   </data>
   <data name="ProviderPluginLoadFailure" xml:space="preserve">
@@ -167,7 +166,7 @@
     <value>Unable to download the list of available providers. Check your internet connection.</value>
   </data>
   <data name="RemoveEnvironmentVariableRequiresElevation" xml:space="preserve">
-    <value>Removal of the environment variable '{0}' requires elevation</value>
+    <value>Removal of the environment variable '{0}' requires elevation.</value>
     <comment>0 - environment variable name</comment>
   </data>
   <data name="SchemeNotSupported" xml:space="preserve">
@@ -183,7 +182,7 @@
     <comment>0 - destination path</comment>
   </data>
   <data name="UnableToCreateShortcutTargetDoesNotExist" xml:space="preserve">
-    <value>Unable to create shortcut for file '{0}' that does not exist </value>
+    <value>Unable to create shortcut for file '{0}' because it does not exist.</value>
     <comment>0 file that is missing</comment>
   </data>
   <data name="UnableToDownload" xml:space="preserve">
@@ -232,7 +231,7 @@
     <value>The provider type is not supported.</value>
   </data>
   <data name="UriSchemeNotSupported_Scheme" xml:space="preserve">
-    <value>??? not used ???</value>
+    <value>Uri Scheme '{0}' is not supported.</value>
   </data>
   <data name="UserDeclinedUntrustedPackageInstall" xml:space="preserve">
     <value>User declined to install untrusted package '{0}'.</value>
@@ -305,10 +304,10 @@
     <value>Version {0} of the Package Provider {1} is already loaded. Since this is an assembly-based provider, we cannot load another version.</value>
   </data>
   <data name="ProviderNameAndVersionNotAvailableFromFilePath" xml:space="preserve">
-    <value>The specified assembly '{0}' is installed at top level directory. However it is recommended that the assemblies should be installed under its ProviderName\Version folder.</value>
+    <value>The specified assembly '{0}' in \ProviderAssemblies, should be installed in ProviderAssemblies\ProviderName\Version. Either delete the provider assembly from \ProviderAssemblies, or create \ProviderAssemblies\ProvidernName\Version, and then move the assembly there.</value>
   </data>
   <data name="SingleAssemblyAllowed" xml:space="preserve">
-    <value>Multiple assemblies are found under path '{0}'. Please install a single provider assembly under each version folder.  </value>
+    <value>Multiple assemblies are found under path '{0}'. Please install a single provider assembly under each version folder.</value>
     <comment>0 - file path</comment>
   </data>
   <data name="NoMatchFoundForCriteria" xml:space="preserve">
@@ -333,10 +332,25 @@
     <value>Missing the hash attribute within the File xml tag.</value>
   </data>
   <data name="MissingHashContent" xml:space="preserve">
-    <value>The value of the hash xml attribue is empty.</value>
+    <value>The value of the hash xml attribute is empty.</value>
   </data>
   <data name="UnsupportedHashAlgorithm" xml:space="preserve">
     <value>The specified hash algorithm '{0}' is not supported. Please try using '{1}' instead.</value>
     <comment>0 - hash algorithm</comment>
+  </data>
+  <data name="ProviderNotResponsive" xml:space="preserve">
+    <value>Provider '{0}' is not respecting the responsiveness threshold in a timely fashion; Canceling request.</value>
+    <comment>0 - provider name</comment>
+  </data>
+  <data name="ProviderTimeoutExceeded" xml:space="preserve">
+    <value>"Provider '{0}' is not completing the request in the time allowed; Canceling request.</value>
+    <comment>0 - provider name</comment>
+  </data>
+  <data name="SwidTagXmlInvalidNameSpace" xml:space="preserve">
+    <value>Xml '{0}' is not a valid SoftwareIdentity swidtag. It needs to use '{1}' namespace.</value>
+    <comment>0 - the xml; 1 - the xml namespace</comment>
+  </data>
+  <data name="SwidTagXmlNotValid" xml:space="preserve">
+    <value>The swidtag xml returned by the provider is not valid.</value>
   </data>
 </root>

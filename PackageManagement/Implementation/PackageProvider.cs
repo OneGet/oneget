@@ -28,8 +28,13 @@ namespace Microsoft.PackageManagement.Implementation {
         internal PackageProvider(IPackageProvider provider) : base(provider) {
         }
 
-        public string Name {
+        public override string Name {
             get {
+                if (string.IsNullOrWhiteSpace(base.Name))
+                {
+                    base.Name = ProviderName;
+                }
+
                 return ProviderName;
             }
         }

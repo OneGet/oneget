@@ -61,6 +61,110 @@ function Write-Error {
 	$request.Verbose() function
 #>
 
+function Write-Progress {
+    param(
+        [CmdletBinding()]
+
+        [Parameter(Position=0)]
+        [string]
+        $Activity,
+
+        # This parameter is not supported by request object
+        [Parameter(Position=1)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Status,
+
+        [Parameter(Position=2)]
+        [ValidateRange(0,[int]::MaxValue)]
+        [int]
+        $Id,
+
+        [Parameter()]
+        [int]
+        $PercentComplete,
+
+        # This parameter is not supported by request object
+        [Parameter()]
+        [int]
+        $SecondsRemaining,
+
+        # This parameter is not supported by request object
+        [Parameter()]
+        [string]
+        $CurrentOperation,        
+
+        [Parameter()]
+        [ValidateRange(-1,[int]::MaxValue)]
+        [int]
+        $ParentID,
+
+        [Parameter()]
+        [switch]
+        $Completed,
+
+        # This parameter is not supported by request object
+        [Parameter()]
+        [int]
+        $SourceID,
+
+	    [object[]]
+        $args= @()
+    )
+
+    $params = @{}
+
+    if ($PSBoundParameters.ContainsKey("Activity")) {
+        $params.Add("Activity", $PSBoundParameters["Activity"])
+    }
+
+    if ($PSBoundParameters.ContainsKey("Status")) {
+        $params.Add("Status", $PSBoundParameters["Status"])
+    }
+
+    if ($PSBoundParameters.ContainsKey("PercentComplete")) {
+        $params.Add("PercentComplete", $PSBoundParameters["PercentComplete"])
+    }
+
+    if ($PSBoundParameters.ContainsKey("Id")) {
+        $params.Add("Id", $PSBoundParameters["Id"])
+    }
+
+    if ($PSBoundParameters.ContainsKey("ParentID")) {
+        $params.Add("ParentID", $PSBoundParameters["ParentID"])
+    }
+
+    if ($PSBoundParameters.ContainsKey("Completed")) {
+        $params.Add("Completed", $PSBoundParameters["Completed"])
+    }
+
+	if( -not $request  ) {    
+		if( -not $args  ) {
+			Microsoft.PowerShell.Utility\Write-Progress @params
+			return
+		}
+
+		$params["Activity"] = [system.string]::format($Activity, $args)
+		Microsoft.PowerShell.Utility\Write-Progress @params
+		return
+	}
+
+	if( -not $args  ) {
+        # Need to return int value for start progress
+        if ($PSBoundParameters.ContainsKey("ParentID")) {
+            return $request.StartProgress($ParentActivityID, $Activity, $args)
+        }
+        elseif ($PSBoundParameters.ContainsKey("Completed")) {
+            $iscompleted = $PSBoundParameters["Completed"] -eq [switch]::Present
+            $null = $request.CompleteProgress($Id, $iscompleted)
+        }
+        else {
+            $null = $request.Progress($Id, $PercentComplete, $Activity, $args)
+        }
+	}
+
+}
+
 function Write-Verbose{
 	param(
 	[Parameter(Mandatory=$true)][string] $message,
@@ -152,9 +256,22 @@ function New-SoftwareIdentity {
 		[System.Collections.ArrayList] $entities = $null,
 		[System.Collections.ArrayList] $links = $null,
 		[bool] $fromTrustedSource = $false,
-		[System.Collections.ArrayList] $dependencies = $null
+		[System.Collections.ArrayList] $dependencies = $null,
+		[string] $tagId = $null
 	)
-	return New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links, $fromTrustedSource, $dependencies
+	return New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links, $fromTrustedSource, $dependencies, $tagId
+}
+
+<#
+	Creates a new instance of a SoftwareIdentity object based on an xml string
+#>
+function New-SoftwareIdentityFromXml {
+    param(
+        [Parameter(Mandatory=$true)][string] $xmlSwidtag,
+        [bool] $commitImmediately = $false
+    )
+
+    return New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $xmlSwidtag, $commitImmediately
 }
 
 <#

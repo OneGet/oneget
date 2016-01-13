@@ -35,6 +35,22 @@ namespace Microsoft.PackageManagement.Internal.Api {
         string YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
 
         /// <summary>
+        /// Used by a provider to return a swidtag in the form of an xml
+        /// Provider has the option to commit immediately
+        /// </summary>
+        /// <param name="xmlSwidTag"></param>
+        /// <param name="commitImmediately"></param>
+        /// <returns></returns>
+        string YieldSoftwareIdentityXml(string xmlSwidTag, bool commitImmediately);
+
+        /// <summary>
+        /// Adds a tagId to a SoftwareIdentity object
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <returns></returns>
+        string AddTagId(string tagId);
+
+        /// <summary>
         /// Adds an arbitrary key/value pair of metadata to a SoftwareIdentity
         /// 
         /// This adds the metadata to the first Meta element in the swidtag.

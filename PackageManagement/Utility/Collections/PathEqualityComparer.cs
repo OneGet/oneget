@@ -54,6 +54,12 @@ namespace Microsoft.PackageManagement.Internal.Utility.Collections {
                         return Path.GetFileNameWithoutExtension(path);
                     case PathCompareOption.Extension:
                         return Path.GetExtension(path);
+                    case PathCompareOption.Nuget:
+                        //we changed nuget-anycpu.exe to Microsoft.PackageManagement.NuGetProvider as of 2.8.5.201. Without loading them, we have no way to know
+                        //if they are all the nugetprovider. 
+                        //In order to load the latest version of the nuget provider, we need to add the code below.
+                        var filename = Path.GetFileNameWithoutExtension(path);
+                        return filename.Equals("nuget-anycpu", StringComparison.OrdinalIgnoreCase) ? "Microsoft.PackageManagement.NuGetProvider" : filename;
                 }
             }
             catch (Exception) {

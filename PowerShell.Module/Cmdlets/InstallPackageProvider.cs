@@ -120,16 +120,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             ValidateVersion(MinimumVersion);
             ValidateVersion(MaximumVersion);
 
-            if (!AdminPrivilege.IsElevated) {
+            if (!AdminPrivilege.IsElevated && Scope.EqualsIgnoreCase("AllUsers"))
+            {
                 var pkgMgmtService = PackageManagementService as PackageManagementService;
-                if (pkgMgmtService == null) {
-                    return false;
-                }
-                //return pms.SystemAssemblyLocation;
-                if (Scope.EqualsIgnoreCase("AllUsers")) {
+                if (pkgMgmtService != null)
+                {
                     Error(Constants.Errors.InstallRequiresCurrentUserScopeParameterForNonAdminUser, pkgMgmtService.SystemAssemblyLocation, pkgMgmtService.UserAssemblyLocation);
-                    return false;
                 }
+                return false;
             }
 
             if (!string.IsNullOrWhiteSpace(RequiredVersion)) {
@@ -301,9 +299,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     }
                 } else {
                     //Handling a case where the multiple providers match one package
-                    //In this case, both boostrap and psmodule found the same package, let's take PSModule as a presendence
+                    //In this case, both boostrap and PowerShellGet found the same package, let's take PowerShellGet as a presendence
                     foreach (var subset in pkgSet) {
-                        if (subset.ProviderName.EqualsIgnoreCase(PSModule)) {
+                        if (subset.ProviderName.EqualsIgnoreCase(PowerShellGet)) {
                             //find the match
                             filteredSoftwareIdentity.Add(subset);
                             break;

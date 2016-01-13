@@ -25,6 +25,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using Microsoft.PackageManagement.Internal.Utility.Collections;
     using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Utility;
+    using Microsoft.PackageManagement.Packaging;
 
     public abstract class CmdletWithProvider : CmdletBase {
         private readonly OptionCategory[] _optionCategories;
@@ -56,6 +57,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             get {
 
                 var didUserSpecifyProviders = !ProviderName.IsNullOrEmpty();
+                var registeredSources = Enumerable.Empty<PackageSource>();
 
 
                 // filter on provider names  - if they specify a provider name, narrow to only those provider names.
@@ -86,7 +88,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     var potentialSources = providers.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => userSpecifiedSources.ContainsAnyOfIgnoreCase(source.Name, source.Location))).ReEnumerable();
 
                     // prefer registered sources
-                    var registeredSources = potentialSources.Where(source => source.IsRegistered).ReEnumerable();
+                    registeredSources = potentialSources.Where(source => source.IsRegistered).ReEnumerable();
 
                     var filteredproviders = registeredSources.Any() ? registeredSources.Select(source => source.Provider).Distinct().ReEnumerable() : potentialSources.Select(source => source.Provider).Distinct().ReEnumerable();
 
@@ -127,7 +129,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
 
                 // filter on: dynamic options - if they specify any dynamic options, limit the provider set to providers with those options.
-                var result = FilterProvidersUsingDynamicParameters(providers, didUserSpecifyProviders, didUserSpecifySources).ToArray();
+                var result = FilterProvidersUsingDynamicParameters(providers, registeredSources, didUserSpecifyProviders, didUserSpecifySources).ToArray();
 
                 /* todo : return error messages when dynamic parameters filter everything out. Either here or in the FPUDP fn.
 
@@ -182,7 +184,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
 
-        internal IEnumerable<PackageProvider> FilterProvidersUsingDynamicParameters(MutableEnumerable<PackageProvider> providers, bool didUserSpecifyProviders, bool didUserSpecifySources) {
+        private IEnumerable<PackageProvider> FilterProvidersUsingDynamicParameters(MutableEnumerable<PackageProvider> providers, IEnumerable<PackageSource> userSpecifiedRegisteredSources,  bool didUserSpecifyProviders, bool didUserSpecifySources) {
             var excluded = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
 
             var setparameters = DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).ReEnumerable();
@@ -263,6 +265,21 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             // if not for the missing requrired parameter.
             foreach (var mp in excluded.OrderBy(each => each.Key)) {
                 string optionsValue = mp.Value.JoinWithComma();
+
+                if (userSpecifiedRegisteredSources.Any())
+                {
+                    var mp1 = mp;
+
+                    //Check if the provider with missing dynamic parameters has been registered with the source provided by a user
+                    var sources = userSpecifiedRegisteredSources.Where(source => source.ProviderName != null && source.ProviderName.EqualsIgnoreCase(mp1.Key));
+
+                    if (didUserSpecifySources && sources.Any())
+                    {
+                        //Error out if the provider associated with the -source matches
+                        Error(Constants.Errors.SpecifiedProviderMissingRequiredOption, mp.Key, optionsValue);
+                    }
+                }
+
                 Verbose(Constants.Messages.SkippedProviderMissingRequiredOption, mp.Key, optionsValue);
             }
         }

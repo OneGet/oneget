@@ -35,7 +35,7 @@ Describe "get-packageprovider" -Tags @('BVT', 'DRT'){
     }
     
     It "EXPECTED:  Gets The 'P*' Package Provider" {
-        $x = (get-packageprovider -name "P*").name.Contains('PSModule')| should be $true
+        $x = (get-packageprovider -name "P*").name.Contains('PowerShellGet')| should be $true
     }
    
     It "EXPECTED:  returns an error when asking for a provider that does not exist" {
@@ -56,6 +56,23 @@ Describe "get-packageprovider" -Tags @('BVT', 'DRT'){
         $msg | should be "UnknownProviders,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackageProvider"
     }
 
+    It "EXPECTED: returns swidtag conformed object for powershell-based provider" {
+        $onegettest = (Get-PackageProvider OneGetTest -ListAvailable | Where-Object {$_.Version.ToString() -eq "9.9.0.0"} | Select -First 1)
+
+        $onegettest.Links.Count | should be 3
+
+        $found = $false
+
+        foreach ($link in $onegettest.Links)
+        {
+            if ($link.HRef.ToString() -match "http://oneget.org/icon" -and $link.Relationship -match "icon")
+            {
+                $found = $true
+            }
+        }
+
+        $found | should be $true
+    }
 }
 
 
@@ -85,13 +102,13 @@ Describe "Get-PackageProvider with list" -Tags @('BVT', 'DRT'){
 
     It "List two providers" {
         (get-packageprovider -name "OneGetTest" -ListAvailable).name | should match "OneGetTest"
-        (get-packageprovider -name "PSModule" -ListAvailable).name | should match "PSModule"
+        (get-packageprovider -name "PowerShellGet" -ListAvailable).name | should match "PowerShellGet"
 
-        $providers = get-packageprovider -Name OneGetTest, PSModule -ListAvailable
+        $providers = get-packageprovider -Name OneGetTest, PowerShellGet -ListAvailable
         
         $providers | ?{ $_.name -eq "OneGetTest" } | should not BeNullOrEmpty
    
-        $providers | ?{ $_.name -eq "PSModule" } | should not BeNullOrEmpty   
+        $providers | ?{ $_.name -eq "PowerShellGet" } | should not BeNullOrEmpty   
     }
        
     It "List two providers with wildcard chars" {

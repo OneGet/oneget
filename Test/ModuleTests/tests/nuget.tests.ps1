@@ -40,11 +40,19 @@ $pkgSources = @("NUGETTEST101", "NUGETTEST202", "NUGETTEST303");
 $nuget = "nuget"
 
 #bootstrap
-Get-PackageProvider -Name $nuget -Force
+Install-PackageProvider -Name $nuget -Force
 
 Describe "Find-Package" -Tags @('BVT', 'DRT'){
     # make sure that packagemanagement is loaded
     import-packagemanagement
+
+    it "EXPECTED: Find a package with a location created via new-psdrive" {
+
+        $Error.Clear()
+        $msg =  powershell 'New-PSDrive -Name xx -PSProvider FileSystem -Root $env:tmp -warningaction:silentlycontinue -ea silentlycontinue > $null; find-package -name "fooobarrr" -provider nuget -source xx:\  -warningaction:silentlycontinue -ea silentlycontinue;$ERROR[0].FullyQualifiedErrorId'
+        $msg | should  Not Be "SourceNotFound,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
+        $msg | should be "NoMatchFoundForCriteria,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
+	}
 
     It "EXPECTED: Finds 'Zlib' Package" {
         $version = "1.2.8.8"
@@ -52,6 +60,13 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
         $zlib = find-package -name "zlib" -provider $nuget -source $source -RequiredVersion $version -forcebootstrap
         $zlib.name | should match "zlib"
         $zlib.Dependencies.Count | should be 2
+
+        $zlib.Meta.Attributes["packageSize"] | should match "2742"
+        $zlib.Meta.Attributes["published"] | should match "5/17/2015 10:39:44 PM -07:00"
+        [long]$zlib.Meta.Attributes["versionDownloadCount"] -ge 4961 | should be $true
+        $zlib.Meta.Attributes["requireLicenseAcceptance"] | should match "False"
+        $zlib.TagId | should match "zlib#1.2.8.8"
+        
         foreach ($dep in $zlib.Dependencies) {
             $match = $false
             foreach ($expectedDependency in $expectedDependencies) {
@@ -63,6 +78,32 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
 
             $match | should be $true
         }
+    }
+
+    It "EXPECTED: Finds 64 packages" {
+        $packages = Find-Package -Provider $nuget -Source $source | Select -First 63
+
+        $packages = (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name)
+
+        $packages.Count | Should be 63
+    }
+
+
+    It "EXPECTED: Finds 100 packages" {
+        $packages = Find-Package -Provider $nuget -Source $source | Select -First 100
+
+        $packages = (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name)
+
+        $packages.Count | Should be 100
+    }
+
+
+    It "EXPECTED: Finds 128 packages" {
+        $packages = Find-Package -Provider $nuget -Source $source | Select -First 127
+
+        $packages = (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name)
+
+        $packages.Count | Should be 127
     }
 
     It "EXPECTED: Finds 'TestPackage' Package using fwlink" {
@@ -151,6 +192,12 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
 
     It "EXPECTED: Finds 'awssdk' package which has more than 200 versions" {
         (find-package -name "awssdk" -provider $nuget -source $source -forcebootstrap -AllVersions).Count -gt 200 | should be $true
+
+        # Uncomment this once publish the new version of nuget
+        $awssdk = Find-Package -Name "awssdk" -Provider $nuget -source $source -forcebootstrap -RequiredVersion 2.3.53
+        [long]$awssdk.Meta.Attributes["downloadCount"] -ge 1023357 | should be $true
+        $awssdk.Meta.Attributes["updated"] | should match "2015-12-15T17:46:22Z"
+        $awssdk.TagId | should match "AWSSDK#2.3.53.0" 
     }
 
 	It "EXPECTED: Finds A Combination Of Packages With Various Versions" {
@@ -760,8 +807,20 @@ Describe Register-PackageSource -Tags @('BVT', 'DRT'){
     # make sure that packagemanagement is loaded
     import-packagemanagement
 
+
+	it "EXPECTED: Register a package source with a location created via new-psdrive" {
+	    New-PSDrive -Name xx -PSProvider FileSystem -Root $destination	
+        (register-packagesource -name "psdriveTest" -provider $nuget -location xx:\).name | should be "psdriveTest"
+		(unregister-packagesource -name "psdriveTest" -provider $nuget)
+	}
+
 	it "EXPECTED: Registers A New Package Source 'NugetTest.org'" {
 		(register-packagesource -name "nugettest.org" -provider $nuget -location $source).name | should be "nugettest.org"
+	
+        $Error.Clear()
+        $msg = powershell 'install-package -name Jquery -source nugettest.org -force -warningaction:silentlycontinue -ea silentlycontinue;$error[0].FullyQualifiedErrorId'
+        $msg | should be "SpecifiedProviderMissingRequiredOption,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackage"
+	
 		(unregister-packagesource -name "nugettest.org" -provider $nuget)
 	}
 
@@ -829,7 +888,9 @@ Describe Unregister-PackageSource -Tags @('BVT', 'DRT'){
 
 	it "EXPECTED: Unregisters The 'NugetTest.org' Package Source" {
 		(register-packagesource -name "nugettest.org" -provider $nuget -location $source)
+        (Find-Package -name jquery -Source "nugettest.org").Name | should not BeNullOrEmpty
 		(unregister-packagesource -name "nugettest.org" -provider $nuget).name | should BeNullOrEmpty
+        (Find-Package -name jquery -Source "nugettest.org" -ErrorAction SilentlyContinue -WarningAction SilentlyContinue).Name | should BeNullOrEmpty
     }
 
 	it "EXPECTED: Unregisters Multiple Package Sources" {

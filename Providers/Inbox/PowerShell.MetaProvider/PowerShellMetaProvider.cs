@@ -34,8 +34,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
     using ProviderOption = PackageManagement.Internal.Implementation.PackageManagementService.ProviderOption;
 
     internal class ProviderItem {
-        internal string ProviderCategory;
-        internal Version ProviderVersion;
+        internal PSModuleInfo ModuleInfo;
         internal string ProviderPath;
     }
 
@@ -116,7 +115,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
         //that is not visiable to the PackageManagment.
         private readonly IDictionary<string, object> _availableProviders = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         private readonly IDictionary<string, List<ProviderItem>> _psProviderCacheTable = new Dictionary<string, List<ProviderItem>>(StringComparer.OrdinalIgnoreCase);
-        internal const string PsModule = "PSModule";
+        internal const string PowerShellGet = "PowerShellGet";
         private static readonly PowerShell _powershell = PowerShell.Create();
         private static bool _initialized = false;
 
@@ -133,7 +132,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                     _baseFolder = Path.GetDirectoryName(Path.GetFullPath(Assembly.GetExecutingAssembly().Location));
 #endif
                     if (_baseFolder == null || !Directory.Exists(_baseFolder)) {
-                        throw new Exception("MSG:CantFindBasePowerShellModuleFolder");
+                        throw new Exception(Resources.Messages.CantFindBasePowerShellModuleFolder);
                     }
                 }
                 return _baseFolder;
@@ -187,7 +186,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
             if (_psProviderCacheTable.ContainsKey(name)) {
                 var list = _psProviderCacheTable[name];
 
-                var index = list.FindIndex(each => (each.ProviderVersion == provider.ProviderVersion) && (each.ProviderPath.EqualsIgnoreCase(provider.ProviderPath)));
+                var index = list.FindIndex(each => (each.ModuleInfo.Version == provider.ModuleInfo.Version) && (each.ProviderPath.EqualsIgnoreCase(provider.ProviderPath)));
  
                 if (index != -1) {
                     list[index] = provider;
@@ -258,18 +257,18 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                 var privateData = module.PrivateData as Hashtable;
                 if (privateData != null) {
                     if (requiredVersion != null) {
-                        if (module.Version == requiredVersion) {
+                        if ((FourPartVersion)module.Version == (FourPartVersion)requiredVersion) {
                             return ScanPrivateDataForProviders(request, Path.GetDirectoryName(module.Path), privateData, module).ToArray();
                         } else {
                             return Enumerable.Empty<KeyValuePair<string, PSModuleInfo>>();
                         }
                     }
 
-                    if ((minimumVersion != null) && (module.Version < minimumVersion)) {
+                    if ((minimumVersion != null) && ((FourPartVersion)module.Version < (FourPartVersion)minimumVersion)) {
                         return Enumerable.Empty<KeyValuePair<string, PSModuleInfo>>();
                     }
 
-                    if ((maximumVersion != null) && (module.Version > maximumVersion)) {
+                    if ((maximumVersion != null) && ((FourPartVersion)module.Version > (FourPartVersion)maximumVersion)) {
                         return Enumerable.Empty<KeyValuePair<string, PSModuleInfo>>();
                     }
 
@@ -290,11 +289,18 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                     return;
                 }
 
+                // for the case where provider is a dll, we enforce that provider name must be the same as module name
+                // so the name we add to the hash table will be the name of the module.
+                // (for the case where provider is not a dll, we still allow multiple provider names for a module)
+                if (string.Equals(Path.GetExtension(moduleInfo.Key), ".dll", StringComparison.OrdinalIgnoreCase))
+                {
+                    name = moduleInfo.Value.Name;
+                }
+
                 AddToTable(name,
                     new ProviderItem {
-                        ProviderCategory = name,
+                        ModuleInfo = moduleInfo.Value,
                         ProviderPath = moduleInfo.Key,
-                        ProviderVersion = moduleInfo.Value.Version
                     });
             }
         }
@@ -460,7 +466,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                 // something didn't go well.
                 // skip it.
                 e.Dump();
-                request.Debug(e.Message);
+                request.Warning(e.Message);
             }
 
             // didn't import correctly.
@@ -475,25 +481,25 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
 
             request.Debug("Initializing PowerShell MetaProvider");
 
-            //During the initialization, we load the psmodule only to speeding up a little bit 
+            //During the initialization, we load the PowerShellGet only to speeding up a little bit 
             var psModules = ScanForPowerShellGetModule(request).WhereNotNull();
 
             foreach (var psModule in psModules) {
-                //Check if the psmodule provider exists
+                //Check if the PowerShellGet provider exists
                 if ((psModule.Key != null) && (psModule.Value != null)) {
-                    //load the psmodule
-                    AnalyzeModule(request, psModule.Key, psModule.Value.Version ?? new Version(0, 0), false);
+                    //load the PowerShellGet
+                    AnalyzeModule(request, psModule.Key, psModule.Value.Version ?? new Version(0, 0), false, psModule.Value);
                 }
             }
 
-            if (_availableProviders.ContainsKey(PsModule))
+            if (_availableProviders.ContainsKey(PowerShellGet))
             {
-                request.Debug("Loaded PowerShell Provider: PSModule");
+                request.Debug("Loaded PowerShell Provider: PowerShellGet");
             }
             else
             {
-                //if we can not load PSModule, we do not fail the initialization
-                request.Verbose(string.Format(CultureInfo.CurrentCulture, Resources.Messages.ModuleNotFound, PsModule));
+                //if we can not load PowerShellGet, we do not fail the initialization
+                request.Verbose(string.Format(CultureInfo.CurrentCulture, Resources.Messages.ModuleNotFound, PowerShellGet));
             }
         }
 
@@ -515,7 +521,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                 //Get the list of available providers
                 var modules = ScanForModules(request, requiredVersion, minimumVersion, maximumVersion, ProviderOption.AllProvider).ReEnumerable();
 
-                var tasks = modules.AsyncForEach(modulePath => AnalyzeModule(request, modulePath.Key, modulePath.Value.Version ?? new Version(0, 0), false));
+                var tasks = modules.AsyncForEach(modulePath => AnalyzeModule(request, modulePath.Key, modulePath.Value.Version ?? new Version(0, 0), false, modulePath.Value));
                 tasks.WaitAll();
             } else {
                 //find all providers but only load the lastest if no name nor version exists, e.g. get-pp -list 
@@ -528,32 +534,54 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                 }
 
                 foreach (var list in _psProviderCacheTable.Values.WhereNotNull()) {
-                    var psInfo = list.OrderByDescending(each => each.ProviderVersion).ToArray();
+                    var psInfo = list.OrderByDescending(each => each.ModuleInfo.Version).ToArray();
                     if (!psInfo.Any()) {
                         continue;
                     }
 
                     PackageProvider pkgProvider = null;
                     for (var index = 0; index < psInfo.Length; index++) {
-                        var moduleInfo = psInfo[index];
-                        if (moduleInfo == null) {
+                        var providerItem = psInfo[index];
+                        if (providerItem == null) {
                             continue;
                         }
-                        //load the provider that has the latest version
-                        if (index == 0) {
-                            pkgProvider = AnalyzeModule(request, moduleInfo.ProviderPath, moduleInfo.ProviderVersion, false);
-                        } else {
-                            if (pkgProvider != null) {
-                                //the rest of providers under the same module will just create a provider object for the output but not loaded
-                                var packageProvider = new PackageProvider(new DefaultPackageProvider(pkgProvider.ProviderName, moduleInfo.ProviderVersion.ToString())) {
-                                    ProviderPath = moduleInfo.ProviderPath,
-                                    Version = moduleInfo.ProviderVersion,
+
+                        // if the provider is a dll, we will just provide a default provider, assuming the module name will be the name of the provider and add to the cache table (if it is not already loaded)
+                        if (string.Equals(Path.GetExtension(providerItem.ProviderPath), ".dll", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // check whether it is already loaded or not
+                            var loadedProvider = PackageManagementService.PackageProviders.FirstOrDefault(item => string.Equals(item.ProviderPath, providerItem.ProviderPath, StringComparison.OrdinalIgnoreCase));
+
+                            // only provide default provider if it is not loaded
+                            if (loadedProvider == null)
+                            {
+                                // here moduleinfo.providercategory is the module name.
+                                // we are applying the guideline that module name is the same as provider name so we use that as the provider name
+                                AddToPackageProviderCacheTable(new PackageProvider(new DefaultPackageProvider(providerItem.ModuleInfo.Name, providerItem.ModuleInfo.Version.ToString()))
+                                {
+                                    ProviderPath = providerItem.ProviderPath,
+                                    Version = providerItem.ModuleInfo.Version,
                                     IsLoaded = false
-                                };
-                                AddToPackageProviderCacheTable(packageProvider);
+                                });
                             }
+
+                            continue;
                         }
 
+                        //load the provider that has the latest version
+                        if (pkgProvider == null) {
+                            // analyze the module
+                            pkgProvider = AnalyzeModule(request, providerItem.ProviderPath, providerItem.ModuleInfo.Version, false, providerItem.ModuleInfo);
+                        } else {
+                            //the rest of providers under the same module will just create a provider object for the output but not loaded
+                            var packageProvider = new PackageProvider(new DefaultPackageProvider(pkgProvider.ProviderName, providerItem.ModuleInfo.Version.ToString()))
+                            {
+                                ProviderPath = providerItem.ProviderPath,
+                                Version = providerItem.ModuleInfo.Version,
+                                IsLoaded = false
+                            };
+                            AddToPackageProviderCacheTable(packageProvider);
+                        }
                     }
                 }
 
@@ -589,7 +617,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
             //Check if it is already in the cache table
             var providersAlreadyImported = FindMatchedProvidersFromInternalCacheTable(request, modulePath).ToArray();
 
-            if (providersAlreadyImported.Any()) {
+            if (providersAlreadyImported.Any() && !force) {
                 return providersAlreadyImported;
             }
 
@@ -600,17 +628,59 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
             }
 
             request.Error(PackageManagement.Internal.Constants.Messages.FailedToImportProvider,
-                ErrorCategory.InvalidOperation.ToString(), PsModule, string.Format(CultureInfo.CurrentCulture, Resources.Messages.FailedToImportProvider, modulePath));
+                ErrorCategory.InvalidOperation.ToString(), PowerShellGet, string.Format(CultureInfo.CurrentCulture, Resources.Messages.FailedToImportProvider, modulePath));
             return Enumerable.Empty<PackageProvider>();
         }
 
-        private PackageProvider AnalyzeModule(PsRequest request, string modulePath, Version requiredVersion, bool force)
+        private PackageProvider AnalyzeModule(PsRequest request, string modulePath, Version requiredVersion, bool force, PSModuleInfo psModuleInfo = null)
         {
             if (string.IsNullOrWhiteSpace(modulePath)) {
                 return null;
             }
+
             request.Debug("Attempting to load PowerShell Provider Module [{0}]", modulePath);
-            var provider = Create(request, modulePath, requiredVersion.ToString(), force);
+
+            if (string.Equals(Path.GetExtension(modulePath), ".dll", StringComparison.OrdinalIgnoreCase))
+            {
+                if (psModuleInfo != null)
+                {
+                    // fake provider and returns it
+                    var result = new PackageProvider(new DefaultPackageProvider(psModuleInfo.Name, psModuleInfo.Version.ToString()))
+                    {
+                        ProviderPath = modulePath,
+                        Version = psModuleInfo.Version,
+                        IsLoaded = false
+                    };
+
+                    AddToPackageProviderCacheTable(result);
+
+                    return result;
+                }
+                else
+                {
+                    // psmoduleinfo is only null when this function is called in loadavailableprovider
+                    // but in that case we want to load the provider directly anyway so we can do this
+                    // if the path is a .dll then we ask packagemanagement to load it for us
+                    // it will also register the dll
+                    PackageManagementService.LoadProviderAssembly(request, modulePath, true);
+
+                    // now let's checked whether we can find it in the list of loaded providers
+                    foreach (var loadedProvider in PackageManagementService.PackageProviders)
+                    {
+                        // the one loaded should have the same path
+                        if (string.Equals(loadedProvider.ProviderPath, modulePath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return loadedProvider;
+                        }
+                    }
+
+                    // if we reached here then we have failed to load the provider :(
+                    return null;
+                }                
+            }
+
+            string requiredVersionString = requiredVersion.ToString();
+            var provider = Create(request, modulePath, requiredVersionString, force);
             if (provider != null) {
                 var providerName = provider.GetPackageProviderName();
                 if (!string.IsNullOrWhiteSpace(providerName)) {
@@ -623,6 +693,17 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                         ProviderPath = modulePath
                     };
 
+                    // take out powershell get
+                    var psgetprovider = PackageManagementService.PackageProviders.FirstOrDefault(pv => string.Equals(pv.ProviderName, PowerShellGet, StringComparison.OrdinalIgnoreCase));
+
+                    if (psModuleInfo != null)
+                    {
+                        // add swidtag information using moduleinfo
+                        // however, this won't give us as much information yet
+                        // we may have to fill this up later
+                        ProvideSwidTagInformation(packageProvider, psModuleInfo);
+                    }
+                    
                     AddToPackageProviderCacheTable(packageProvider);
                     _availableProviders.AddOrSet(providerName, provider);
 
@@ -634,6 +715,111 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// If we cannot use psget to get swidtag information, we will try to fill in some of the information
+        /// </summary>
+        /// <param name="packageProvider"></param>
+        /// <param name="psModuleInfo"></param>
+        private void ProvideSwidTagInformation(PackageProvider packageProvider, PSModuleInfo psModuleInfo)
+        {
+            if (packageProvider == null || psModuleInfo == null)
+            {
+                return;
+            }
+
+            packageProvider.VersionScheme = "MultiPartNumeric";
+
+            Microsoft.PackageManagement.Internal.Packaging.SoftwareMetadata softwareMetadata = new Microsoft.PackageManagement.Internal.Packaging.SoftwareMetadata();
+            bool changed = false;
+
+            var type = psModuleInfo.GetType();
+
+            // introduced in ps 2.0
+            if (!string.IsNullOrWhiteSpace(psModuleInfo.Description))
+            {
+                softwareMetadata.Description = psModuleInfo.Description;
+                changed = true;
+            }
+
+            // introduced in ps 3.0
+            if (!string.IsNullOrWhiteSpace(psModuleInfo.Copyright))
+            {
+                softwareMetadata.AddAttribute("copyright", psModuleInfo.Copyright);
+                changed = true;
+            }
+
+            // tags is introduced in ps 5.0
+            var tagsProperty = type.GetProperty("Tags");
+            bool isV5 = tagsProperty != null;
+
+            if (isV5)
+            {
+                // introduced in ps 5.0
+                var tags = tagsProperty.GetValue(psModuleInfo);
+
+                // check that we have something in tags
+                if (tags is IEnumerable<string> && (tags as IEnumerable<string>).Any())
+                {
+                    softwareMetadata.AddAttribute("tags", string.Join(" ", (tags as IEnumerable<string>).Distinct()));
+                    changed = true;
+                }
+
+                var releaseNotes = type.GetProperty("ReleaseNotes").GetValue(psModuleInfo);
+
+                // check that we have something in releasenotes
+                if (releaseNotes is string && !string.IsNullOrWhiteSpace(type.GetProperty("ReleaseNotes").GetValue(psModuleInfo) as string))
+                {
+                    softwareMetadata.AddAttribute("tags", string.Join(" ", (tags as IEnumerable<string>).Distinct()));
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                packageProvider.AddElement(softwareMetadata);
+            }
+
+            if (isV5)
+            {
+                var iconUri = type.GetProperty("IconUri").GetValue(psModuleInfo);
+
+                // introduced in ps 5.0
+                if (iconUri is Uri)
+                {
+                    packageProvider.AddLink(iconUri as Uri, "icon");
+                }
+
+                var licenseUri = type.GetProperty("LicenseUri").GetValue(psModuleInfo);
+
+                // introduced in ps 5.0
+                if (licenseUri is Uri)
+                {
+                    packageProvider.AddLink(licenseUri as Uri, "license");
+                }
+
+                var projectUri = type.GetProperty("ProjectUri").GetValue(psModuleInfo);
+
+                // introduced in ps 5.0
+                if (projectUri is Uri)
+                {
+                    packageProvider.AddLink(projectUri as Uri, "project");
+                }
+
+            }
+
+            // introduced in ps 3.0
+            if (!string.IsNullOrWhiteSpace(psModuleInfo.Author))
+            {
+                packageProvider.AddEntity(psModuleInfo.Author, null, "author");
+            }
+
+            // introduced in ps 3.0
+            if (!string.IsNullOrWhiteSpace(psModuleInfo.CompanyName))
+            {
+                packageProvider.AddEntity(psModuleInfo.CompanyName, null, "owner");
+            }        
         }
     }
 }

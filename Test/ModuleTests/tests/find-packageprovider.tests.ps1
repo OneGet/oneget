@@ -29,7 +29,7 @@ Describe "find-packageprovider" -Tags @('BVT', 'DRT'){
     foreach ($item in $a)
     {       
         #name contains "." foo.bar for example for the registered sources internally
-        if(($item.ProviderName -eq "PSModule") -and ($item.Location -eq $InternalGallery))
+        if(($item.ProviderName -eq "PowerShellGet") -and ($item.Location -eq $InternalGallery))
         {
             $found = $true
             break
@@ -38,7 +38,7 @@ Describe "find-packageprovider" -Tags @('BVT', 'DRT'){
 
     if(-not $found)
     {
-        Register-PackageSource -Name 'OneGetTestSource' -Location $InternalGallery -ProviderName 'PSModule' -ForceBootstrap
+        Register-PackageSource -Name 'OneGetTestSource' -Location $InternalGallery -ProviderName 'PowerShellGet' -ForceBootstrap
     }
 
     It "find-packageprovider without any parameters, Expect succeed" {
@@ -158,7 +158,7 @@ Describe "Find-PackageProvider with Versions" -Tags @('BVT', 'DRT') {
  
 
     It "EXPECTED: success 'find a provider with MinimumVersion and MaximumVersion'" {
-        (find-packageprovider -name nuget -MinimumVersion 2.8.5.105 -MaximumVersion 2.8.5.121).Version.ToString() | should match "2.8.5.120"
+        (find-packageprovider -name nuget -MinimumVersion 2.8.5.105 -MaximumVersion 2.8.5.123).Version.ToString() | should match "2.8.5.122"
     }
     
     It "EXPECTED: success 'find a provider with MaximumVersion'" {

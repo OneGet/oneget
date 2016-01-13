@@ -24,11 +24,12 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
     using Utility.Extensions;
 
     public class Swidtag : BaseElement {
-        private readonly XDocument _swidTag;
+        internal XDocument _swidTag;
 
         public Swidtag(XDocument document)
             : base(document.Root) {
             _swidTag = document;
+            ChangeCurrentNameSpace();
         }
 
         public Swidtag()
@@ -41,6 +42,40 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
             : this(new XDocument(
                 new XDeclaration("1.0", "UTF-8", "yes"),
                 xmlDocument)) {
+        }
+
+        internal void SetSwidTag(XDocument swidTag)
+        {
+            _swidTag = swidTag;
+            ChangeCurrentNameSpace();
+            Element = _swidTag.Root;
+        }
+
+        /// <summary>
+        /// This method is called to change namespace from Iso19770_2_Current to Iso19770_2
+        /// </summary>
+        private void ChangeCurrentNameSpace()
+        {
+            if (_swidTag.Root.GetDefaultNamespace() == Iso19770_2.Namespace.Iso19770_2_Current)
+            {
+                // change namespace of the document
+                // this is based on https://msdn.microsoft.com/en-us/library/bb943914.aspx
+
+                foreach (XElement el in _swidTag.Root.DescendantsAndSelf())
+                {
+
+                    el.Name = Iso19770_2.Namespace.Iso19770_2.GetName(el.Name.LocalName);
+
+                    List<XAttribute> atList = el.Attributes().ToList();
+
+                    el.Attributes().Remove();
+                    
+                    foreach (XAttribute at in atList)
+                    {
+                        el.Add(new XAttribute(Iso19770_2.Namespace.Iso19770_2.GetName(at.Name.LocalName), at.Value));
+                    }
+                }
+            }
         }
 
         public string SwidTagText {
@@ -63,7 +98,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         }
 
         public static bool IsSwidtag(XElement xmlDocument) {
-            return xmlDocument.Name == Iso19770_2.Elements.SoftwareIdentity;
+            return xmlDocument.Name == Iso19770_2.Elements.SoftwareIdentity || xmlDocument.Name == Iso19770_2.Elements.SoftwareIdentityCurrent;
         }
 
         public bool IsApplicable(Hashtable environment) {
@@ -83,7 +118,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
             }
         }
 
-        public string Name {
+        public virtual string Name {
             get {
                 return GetAttribute(Iso19770_2.Attributes.Name);
             }

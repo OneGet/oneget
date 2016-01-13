@@ -83,6 +83,7 @@ namespace Microsoft.PowerShell.PackageManagement {
             public static ErrorMessage SpecifiedProviderMissingRequiredOption = new ErrorMessage(Messages.SpecifiedProviderMissingRequiredOption, ErrorCategory.InvalidArgument);
             public static ErrorMessage FileNotFound = new ErrorMessage(Messages.FileNotFound, ErrorCategory.ObjectNotFound);
             public static ErrorMessage FolderNotFound = new ErrorMessage(Messages.FolderNotFound, ErrorCategory.ObjectNotFound);
+            public static ErrorMessage UnhandledException = new ErrorMessage(Messages.UnhandledException, ErrorCategory.InvalidOperation);
             public static ErrorMessage MoreThanOneFolderMatched = new ErrorMessage(Messages.MoreThanOneFolderMatched, ErrorCategory.ObjectNotFound);
             public static ErrorMessage MoreThanOneFileMatched = new ErrorMessage(Messages.MoreThanOneFileMatched, ErrorCategory.ObjectNotFound);
             public static ErrorMessage VersionRangeAndRequiredVersionCannotBeSpecifiedTogether = new ErrorMessage(Messages.VersionRangeAndRequiredVersionCannotBeSpecifiedTogether, ErrorCategory.InvalidArgument);
@@ -107,6 +108,7 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string InstallRequiresCurrentUserScopeParameterForNonAdminUser = "MSG:InstallRequiresCurrentUserScopeParameterForNonAdminUser";
             internal const string MoreThanOneFileMatched = "MSG:MoreThanOneFileMatched";
             internal const string FileNotFound = "MSG:FileNotFound";
+            internal const string UnhandledException = "MSG:UnhandledException";
             internal const string RegisterPackageSourceRequired = "MSG:RegisterPackageSourceRequired";
             internal const string NoMatchFoundForProvider = "MSG:NoMatchFoundForProvider";            
             internal const string FullProviderFilePathVersionNotAllowed = "MSG:FullProviderFilePathVersionNotAllowed";

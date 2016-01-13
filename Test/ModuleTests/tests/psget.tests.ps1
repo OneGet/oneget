@@ -57,7 +57,7 @@ Describe "Set-PackageSource" -Tags @('BVT', 'DRT'){
             $msg | should match "RepositoryAlreadyRegistered,Add-PackageSource,Microsoft.PowerShell.PackageManagement.Cmdlets.SetPackageSource"
             $package = Get-PackageSource -Name internal
             $package.Name | should match 'internal'
-            $package.ProviderName | should match 'PSModule'
+            $package.ProviderName | should match 'PowerShellGet'
         }
         finally {
             Unregister-PackageSource -Name internal
@@ -66,7 +66,7 @@ Describe "Set-PackageSource" -Tags @('BVT', 'DRT'){
 
     It "EXPECTED: -FAILS- when Set-PackageSource raises an error but does not remove the old source" -Skip {
         (Get-PackageSource -Name PSGallery).Count | should be 1
-        $msg = powershell 'Set-PackageSource -Name PSGallery -ProviderName PSModule -PackageManagementProvider PSModule -ErrorAction SilentlyContinue; $Error[0].FullyQualifiedErrorId'
+        $msg = powershell 'Set-PackageSource -Name PSGallery -ProviderName PowerShellGet -PackageManagementProvider PowerShellGet -ErrorAction SilentlyContinue; $Error[0].FullyQualifiedErrorId'
         $msg | should match "InvalidPackageManagementProviderValue,Add-PackageSource,Microsoft.PowerShell.PackageManagement.Cmdlets.SetPackageSource"
         (Get-PackageSource -Name PSGallery).Count | should be 1
     }
@@ -76,9 +76,9 @@ Describe Uninstall-Package -Tags @('BVT', 'DRT'){
 	# make sure packagemanagement is loaded
 	import-packagemanagement
 
-    It "E2E: Uninstall all versions of a specific package - PSModule provider" -Skip {
+    It "E2E: Uninstall all versions of a specific package - PowerShellGet provider" -skip {
         $packageName = "ContosoServer"
-        $provider = "PSModule"
+        $provider = "PowerShellGet"
         $packageSourceName = "InternalGallery"
         $internalGallerySource = "https://mytestgallery.cloudapp.net/api/v2/"
 
@@ -113,7 +113,7 @@ Describe Uninstall-Package -Tags @('BVT', 'DRT'){
         Uninstall-Package -Name $packageName -Provider $provider -AllVersions		
         
         # Get-Package must not return any packages - since we just uninstalled allversions of the package
-        $msg = powershell 'Get-Package -Name ContosoServer -Provider PSModule -AllVersions -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
+        $msg = powershell 'Get-Package -Name ContosoServer -Provider PowerShellGet -AllVersions -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
         $msg | should be "NoMatchFound,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackage" 
         
         # Clean-up - Unregister the Package source

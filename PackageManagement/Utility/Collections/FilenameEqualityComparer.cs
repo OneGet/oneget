@@ -17,6 +17,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Collections {
         Full,
         File,
         FileWithoutExtension,
-        Extension
+        Extension,
+        Nuget
     }
 }

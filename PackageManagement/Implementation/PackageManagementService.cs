@@ -245,6 +245,14 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                 if (results.Any()) {
                     return results;
                 }
+
+                // If the provider is installed but not imported, let's import it 
+                // we don't want import package provider via name to write errors, because in that case the subsequent call to bootstrapper provider will get cancelled.
+                var provider = ImportPackageProviderHelper(hostApi, providerName, null, null, null, false, false, false).ToArray();
+                if (provider.Any()) {
+                    return provider;
+                }
+
                 if (hostApi != null && !providerName.ContainsWildcards()) {
                     // if the end user requested a provider that's not there. perhaps the bootstrap provider can find it.
                     if (RequirePackageProvider(null, providerName, Constants.MinVersion, hostApi)) {
@@ -423,8 +431,9 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
         private IEnumerable<PackageProvider> GetPackageProviderFromCacheTable(string providerName)
         {
-            var cacheList = (string.IsNullOrWhiteSpace(providerName)) ? _providerCacheTable.SelectMany(each => each.Value).WhereNotNull()
-                : _providerCacheTable.Where(each => each.Key.IsWildcardMatch(providerName)).SelectMany(each => each.Value).WhereNotNull();
+            // latest version of the providers will be displayed first
+            var cacheList = (string.IsNullOrWhiteSpace(providerName)) ? _providerCacheTable.SelectMany(each => each.Value.OrderByDescending(provider => provider.Version)).WhereNotNull()
+                 : _providerCacheTable.Where(each => each.Key.IsWildcardMatch(providerName)).SelectMany(each => each.Value.OrderByDescending(provider => provider.Version)).WhereNotNull();
 
             return cacheList;
         }
@@ -485,6 +494,31 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             Version maximumVersion,
             bool isPathRooted,
             bool force) {
+ 
+            return ImportPackageProviderHelper(request, providerName, requiredVersion, minimumVersion, maximumVersion, isPathRooted, force, true);
+        }        
+
+        /// <summary>
+        /// Import a package provider.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="providerName">Provider name or file path</param>
+        /// <param name="requiredVersion">The provider version to be loaded</param>
+        /// <param name="minimumVersion">The minimum version of the provider to be loaded</param>
+        /// <param name="maximumVersion">The maximum version of the provider to be loaded</param>
+        /// <param name="isPathRooted">Whether the 'providerName' is path or name</param>
+        /// <param name="force">Whether -force is specified</param>
+        /// <param name="throwErrorWhenImportWithName">if true then we use write error when there is an
+        /// error when importing with name</param>
+        /// <returns></returns>
+        private IEnumerable<PackageProvider> ImportPackageProviderHelper(IHostApi request,
+            string providerName,
+            Version requiredVersion,
+            Version minimumVersion,
+            Version maximumVersion,
+            bool isPathRooted,
+            bool force,
+            bool throwErrorWhenImportWithName) {
 
             request.Debug(string.Format(CultureInfo.CurrentCulture, "Calling ImportPackageProvider. providerName = '{0}', requiredVersion='{1}', minimumVersion = '{2}', maximumVersion='{3}'",
                 providerName, requiredVersion, minimumVersion, maximumVersion));
@@ -513,7 +547,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             }
 
             var providers = isPathRooted ? ImportPackageProviderViaPath(request, providerName, requiredVersion, minimumVersion, maximumVersion, force)
-                : ImportPackageProviderViaName(request, providerName, requiredVersion, minimumVersion, maximumVersion, force);
+                : ImportPackageProviderViaName(request, providerName, requiredVersion, minimumVersion, maximumVersion, force, throwErrorWhenImportWithName);
 
             return providers;
         }
@@ -547,44 +581,30 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             return Enumerable.Empty<PackageProvider>();
         }
 
-        private static bool IsVersionMatch(PackageProvider provider, Version requiredVersion, Version minimumVersion, Version maximumVersion) {
-            bool match = true;
-
-            if (requiredVersion != null) {
-                return (provider.Version == (FourPartVersion)requiredVersion);
-            } else {
-                if (minimumVersion != null) {
-                    match = (provider.Version >= (FourPartVersion)minimumVersion);
-                }
-
-                if (maximumVersion != null) {
-                    match = (provider.Version <= (FourPartVersion)maximumVersion);
-                }
-            }
-            return match;
-        }
-
         private IEnumerable<PackageProvider> ImportPackageProviderViaName(IHostApi request,
             string providerName,
             Version requiredVersion,
             Version minimumVersion,
             Version maximumVersion,
-            bool force) {
+            bool force,
+            bool throwErrorWhenImportWithName) {
             request.Debug(string.Format(CultureInfo.CurrentCulture, "Calling ImportPackageProviderViaName. providerName = '{0}', requiredVersion='{1}', minimumVersion = '{2}', maximumVersion='{3}'",
                 providerName, requiredVersion, minimumVersion, maximumVersion));
 
             //Check if the module or assembly is already loaded
             //key = path, value = version
-            HashSet<KeyValuePair<string, string>> refreshingProvidersPaths = new HashSet<KeyValuePair<string, string>>();
+            HashSet<KeyValuePair<string, FourPartVersion>> refreshingProvidersPaths = new HashSet<KeyValuePair<string, FourPartVersion>>();
             foreach (var provider in _packageProviders) {
                 if (provider.Key.IsWildcardMatch(providerName)) {
                     //found the provider with the same name is already loaded                  
 
                     if (force) {
-                        if (IsVersionMatch(provider.Value, requiredVersion, minimumVersion, maximumVersion)) {
-                            //if -force is specified and the version is the same, we will re-import directly from the path
-
-                            refreshingProvidersPaths.Add(new KeyValuePair<string, string>(_packageProviders[provider.Key].ProviderPath, _packageProviders[provider.Key].Version));
+                        // if -force is present and required version is specified, we will enforce that the loaded provider version must match the required version
+                        if ((requiredVersion != null && provider.Value.Version == (FourPartVersion)requiredVersion)
+                            // if -force is specified and no version information is provided, we will re-import directly from the path of the loaded provider
+                            ||(requiredVersion == null && maximumVersion == null && minimumVersion == null))
+                        {
+                            refreshingProvidersPaths.Add(new KeyValuePair<string, FourPartVersion>(_packageProviders[provider.Key].ProviderPath, _packageProviders[provider.Key].Version));
                         }
                         request.Verbose(string.Format(CultureInfo.CurrentCulture, Resources.Messages.ReImportProvider, provider.Key));
                     } else {
@@ -596,21 +616,40 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
             //reload the assembly
             foreach (var providerPath in refreshingProvidersPaths) {
-                var providers = ImportPackageProviderViaPath(request, providerPath.Key, requiredVersion, minimumVersion, maximumVersion, force);
+                var providers = ImportPackageProviderViaPath(request, providerPath.Key, providerPath.Value, minimumVersion, maximumVersion, force);
                 return providers;
 
             }
-            //check if the provider is in the cache table
-            var results = FindMatchedProvidersFromInternalCacheTable(request, providerName, requiredVersion, minimumVersion, maximumVersion, force).ToArray();
-            if (results.Any()) {
-                return results;
+
+            IEnumerable<PackageProvider> results = null;
+
+            // if user doesn't have all the available providers in the cache,
+            // then there is a chance that we will miss the latest version of the provider
+            // so we will only try to search from the cache table without refreshing it
+            // if the user does not provide -force and either maximum or minimum version.
+            if (!force || (maximumVersion == null && minimumVersion == null))
+            {
+                //check if the provider is in the cache table
+                results = FindMatchedProvidersFromInternalCacheTable(request, providerName, requiredVersion, minimumVersion, maximumVersion, force).ToArray();
+                if (results.Any())
+                {
+                    return results;
+                }
             }
+
             //If the provider is not in the cache list, rescan for providers                
             ScanForAvailableProviders(request, providerName, requiredVersion, minimumVersion, maximumVersion, true);
             results = FindMatchedProvidersFromInternalCacheTable(request, providerName, requiredVersion, minimumVersion, maximumVersion, force).ToArray();
             if (!results.Any()) {
-                request.Error(Constants.Messages.NoMatchFoundForCriteria, ErrorCategory.InvalidData.ToString(),
-                    providerName, string.Format(CultureInfo.CurrentCulture, Resources.Messages.NoMatchFoundForCriteria, providerName));
+                if (throwErrorWhenImportWithName)
+                {
+                    request.Error(Constants.Messages.NoMatchFoundForCriteria, ErrorCategory.InvalidData.ToString(),
+                        providerName, string.Format(CultureInfo.CurrentCulture, Resources.Messages.NoMatchFoundForCriteria, providerName));
+                }
+                else
+                {
+                    request.Verbose(string.Format(CultureInfo.CurrentCulture, Resources.Messages.NoMatchFoundForCriteria, providerName));
+                }
             } else {
                 return results;
             }
@@ -642,7 +681,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                     foundMatch = each.Version >= (FourPartVersion)minimumVersion;
                 }
                 if (maximumVersion != null) {
-                    foundMatch |= each.Version <= (FourPartVersion)maximumVersion;
+                    foundMatch &= each.Version <= (FourPartVersion)maximumVersion;
                 }
 
                 return foundMatch;
@@ -846,13 +885,17 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                     //we reached the provider assembly file path now
 
                     var files = Directory.EnumerateFiles(assemblyFolder)
-                        .Where(file => (file != null) && (Path.GetExtension(file).EqualsIgnoreCase(".dll") || Path.GetExtension(file).EqualsIgnoreCase(".exe"))).ToArray();
+                        .Where(file => (file != null) && (Path.GetExtension(file).EqualsIgnoreCase(".dll") || Path.GetExtension(file).EqualsIgnoreCase(".exe"))
+                                        // we only check for dll that has manifest attached to it. (In case there are supporting assemblies in this folder)
+                                        && Manifest.LoadFrom(file).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())))
+                        .ToArray();
 
-                    //if found more than one dll is installed under a version folder, this is not allowed. warning here as enumerating for providers should continue
+                    //if found more than one dll with manifest is installed under a version folder, this is not allowed. warning here as enumerating for providers should continue
                     if (files.Any() && files.Count() > 1) {
                         request.Warning(string.Format(CultureInfo.CurrentCulture, Resources.Messages.SingleAssemblyAllowed, files.JoinWithComma()));
                         continue;
                     }
+
                     // find modules that have the provider manifests
                     var filelist = files.Where(each => Manifest.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
 
@@ -869,6 +912,8 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                         Version = version,
                         IsLoaded = false
                     };
+
+                    pkgProvider.SetSwidTag(providerPath);
 
                     AddToProviderCacheTable(name, pkgProvider);
                     yield return providerPath;
@@ -909,6 +954,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
 
         //return the providers with latest version under the providerAssemblies folder
+        //This method only gets called during the initialization, i.e. LoadProviders().
         private IEnumerable<string> ProvidersWithLatestVersionFromProviderAssembliesLocation(IHostApi request) {
             try {
                 var providerPaths = ScanAllProvidersFromProviderAssembliesLocation(request, null, null, null, null, ProviderOption.LatestVersion).WhereNotNull().ToArray();
@@ -932,8 +978,14 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                         return !System.Version.TryParse(Path.GetFileName(versionFolder), out ver) ? new Version("0.0") : ver;
                     }).FirstOrDefault()).WhereNotNull();
 
+                //filter out the old nuget-anycpu if exists
+                assembliesUnderRootFolder = assembliesUnderRootFolder.Where(rootPath => !assembliesUnderVersionFolder.Any(element => new PathEqualityComparer(PathCompareOption.Nuget).Equals(element, rootPath)));
+
                 return assembliesUnderVersionFolder.Concat(assembliesUnderRootFolder);
-            } catch (Exception ex) {
+
+            }
+            catch (Exception ex)
+            {
                 request.Debug(ex.Message);
             }
             return Enumerable.Empty<string>();
@@ -991,9 +1043,6 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             }
 #endif
 
-            //for the providers under root folder, continue
-            //for the providers not root folder, find the version
-
             providerAssemblies = providerAssemblies.OrderByDescending(each => {
                 try {
                     // try to get a version from the file first
@@ -1004,7 +1053,6 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                 }
             });
 
-            //get the files that have the same name
             providerAssemblies = providerAssemblies.Distinct(new PathEqualityComparer(PathCompareOption.FileWithoutExtension));
 
             // there is no trouble with loading providers concurrently.
@@ -1213,6 +1261,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                             if (packageProvider != null) {
                                 found = true;
                                 packageProvider.ProviderPath = assemblyPath;
+                                packageProvider.SetSwidTag(assemblyPath);
                             }
 
                         } catch (Exception ex) {
@@ -1225,14 +1274,18 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                         if (archiver != null) {
                             found = true;
                             archiver.ProviderPath = assemblyPath;
+                            archiver.SetSwidTag(assemblyPath);
                         }
+
                     }))
                     .Concat(assembly.FindCompatibleTypes<IDownloader>().AsyncForEach(serviceProviderClass => {
                         var downloader = RegisterDownloader(serviceProviderClass.Create<IDownloader>(), asmVersion, request);
                         if (downloader != null) {
                             found = true;
                             downloader.ProviderPath = assemblyPath;
+                            downloader.SetSwidTag(assemblyPath);
                         }
+
                     })).WaitAll();
 
             } catch (Exception e) {
@@ -1493,7 +1546,9 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                             found = true;
                             packageProvider.IsLoaded = true;
                             packageProvider.ProviderPath = metaProvider.GetProviderPath(name);
+                            packageProvider.SetSwidTag(packageProvider.ProviderPath);
                         }
+
                     } catch (Exception e) {
                         e.Dump();
                     }
@@ -1505,9 +1560,11 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                         var archiver = RegisterArchiver(instance.As<IArchiver>(), asmVersion, request);
                         if (archiver != null) {
                             found = true;
-                            archiver.ProviderPath = metaProvider.GetProviderPath(name);
                             archiver.IsLoaded = true;
+                            archiver.ProviderPath = metaProvider.GetProviderPath(name);
+                            archiver.SetSwidTag(archiver.ProviderPath);
                         }
+
                     } catch (Exception e) {
                         e.Dump();
                     }
@@ -1519,8 +1576,10 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                         if (downloader != null) {
                             found = true;
                             downloader.ProviderPath = metaProvider.GetProviderPath(name);
+                            downloader.SetSwidTag(downloader.ProviderPath);
                             downloader.IsLoaded = true;
                         }
+
                     } catch (Exception e) {
                         e.Dump();
                     }

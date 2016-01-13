@@ -1,5 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -118,6 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="FailedToExtractAndCopy" xml:space="preserve">
+    <value>Fail to extract and copy to '{0}'.</value>
+    <comment>0 - The directory we are copying to</comment>
+  </data>
   <data name="FindingPackage" xml:space="preserve">
     <value>Finding the package '{0}'.</value>
     <comment>0 - package name</comment>
@@ -131,19 +134,22 @@
     <comment>0 - package name</comment>
   </data>
   <data name="MissingVersion" xml:space="preserve">
-    <value>The version is not found for the specified provider '{0}' </value>
+    <value>The version is not found for the specified provider '{0}'.</value>
     <comment>0 - package name</comment>
   </data>
   <data name="MoreThanOneDllExists" xml:space="preserve">
-    <value>More than 1 dll exists in provider '{0}'</value>
+    <value>More than 1 dll with provider manifest exists in provider '{0}'.</value>
     <comment>0 - package name</comment>
   </data>
   <data name="OnlyHttpsSchemeSupported" xml:space="preserve">
-    <value>Link '{0}' is not using https</value>
+    <value>Link '{0}' is not using https.</value>
     <comment>0 - Uri link</comment>
   </data>
+  <data name="ProviderBootstrapFailed" xml:space="preserve">
+    <value>Unable to bootstrap the required package provider due to problems with network connectivity. Please fix your network connection. If this is not possible, refer to 'Get-Help Install-PackageProvider' or http://go.microsoft.com/fwlink/?LinkId=626941 for guidance on installing the package provider manually.</value>
+  </data>
   <data name="RetryDownload" xml:space="preserve">
-    <value>Cannot download link '{0}', retrying for '{1}' more times</value>
+    <value>Cannot download link '{0}', retrying for '{1}' more times.</value>
     <comment>0 - Uri link, 1 - number of retries</comment>
   </data>
 </root>

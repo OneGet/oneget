@@ -190,6 +190,24 @@ namespace Microsoft.PackageManagement.Internal.Api {
         bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
         /// <summary>
+        /// Allow a package provider to comfirm a user whether the process should continue
+        /// </summary>
+        /// <param name="query">Query that inquires whether the cmdlet should continue.</param>
+        /// <param name="caption">Caption of the window that might be displayed when the user is prompted whether or not to perform the action.</param>
+        /// <param name="yesToAll">True if and only if the user selects the yesToall option. If this is already True, ShouldContinue will bypass the prompt and return True.</param>
+        /// <param name="noToAll">True if and only if the user selects the noToall option. If this is already True, ShouldContinue will bypass the prompt and return False.</param>
+        /// <returns></returns>
+        bool ShouldContinue(string query, string caption, ref bool yesToAll, ref bool noToAll);
+
+        /// <summary>
+        /// Allow a package provider to comfirm a user whether the process should continue
+        /// </summary>
+        /// <param name="query">Query that inquires whether the cmdlet should continue.</param>
+        /// <param name="caption">Caption of the window that might be displayed when the user is prompted whether or not to perform the action.</param>
+        /// <returns></returns>
+        bool ShouldContinue(string query, string caption);
+
+        /// <summary>
         /// Asks an arbitrary true/false question of the user.
         /// </summary>
         /// <param name="permission"></param>

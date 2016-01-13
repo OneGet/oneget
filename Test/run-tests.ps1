@@ -21,7 +21,12 @@
 #Step 1 - test setup
 $TestHome = $PSScriptRoot
 $TestBin = "$($TestHome)\..\output\Release\bin\"
-Import-Module "$($TestBin)\PackageManagement.psd1"
+$PowerShellGetPath = "$($TestHome)\..\Providers\Inbox\PowerShellGet\"
+$PowerShellGetVersion = "1.0.0.1"
+$PackageManagementVersion = "1.0.0.1"
+
+
+#Import-Module "$($TestBin)\PackageManagement.psd1"
 
 $ProgramProviderInstalledPath = "$Env:ProgramFiles\PackageManagement\ProviderAssemblies"
 
@@ -33,24 +38,35 @@ $UserModulePath = "$($mydocument)\WindowsPowerShell\Modules"
 
 $ProgramModulePath = "$Env:ProgramFiles\WindowsPowerShell\Modules"
 
-$packagemanagementfolder = (Get-Module -ListAvailable PackageManagement | Select -First 1)
 
-if ($packagemanagementfolder -ne $null -and (Test-Path $packagemanagementfolder)) {
-    # folder exists so just replace it
-    $packagemanagementfolder = Split-Path $packagemanagementfolder
-}
-else {
-    $packagemanagementfolder = "$ProgramModulePath\PackageManagement"
-    if (-not (Test-Path $packagemanagementfolder)) {
-        md $packagemanagementfolder
-    }
+$packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
+$powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
+
+
+if(-not (Test-Path $packagemanagementfolder)){
+    New-Item -Path $packagemanagementfolder -ItemType Directory -Force  
+    Write-Host "Created  $packagemanagementfolder"
+} else{
+    Get-ChildItem -Path $packagemanagementfolder | %{ren "$packagemanagementfolder\$_" "$packagemanagementfolder\$_.deleteMe"}
+    Get-ChildItem -Path $packagemanagementfolder  -Recurse |  Remove-Item -force -Recurse
 }
 
-Copy-Item "$TestBin\*.dll" $packagemanagementfolder -Verbose
-Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -Verbose
-Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -Verbose
-Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -Verbose
-Copy-Item "$TestBin\*.ps1xml" $packagemanagementfolder -Verbose
+
+if(-not (Test-Path $powershellGetfolder)){
+    New-Item -Path $powershellGetfolder -ItemType Directory -Force  
+    Write-Host "Created  $powershellGetfolder"
+} else{
+    Get-ChildItem -Path $powershellGetfolder | %{ren "$powershellGetfolder\$_" "$powershellGetfolder\$_.deleteMe"}
+    Get-ChildItem -Path $powershellGetfolder  -Recurse |  Remove-Item -force -Recurse
+}
+
+
+Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
+Copy-Item "$TestBin\*.dll" $packagemanagementfolder -force -Verbose
+Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
+Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
+Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -force -Verbose
+Copy-Item "$TestBin\*.ps1xml" $packagemanagementfolder -force -Verbose
 
 if(-not (Test-Path $ProgramProviderInstalledPath)){
     New-Item -Path $ProgramProviderInstalledPath -ItemType Directory -Force  

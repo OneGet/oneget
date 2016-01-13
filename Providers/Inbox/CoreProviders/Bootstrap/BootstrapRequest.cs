@@ -47,6 +47,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                 if (_feeds == null) {
                     if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable()) {
                         Warning(Constants.Messages.NetworkNotAvailable);
+                        Warning(string.Format(CultureInfo.CurrentCulture, Resources.Messages.ProviderBootstrapFailed));
                     }
                     // right now, we only have one feed (can have many urls tho')
                     // so we just return a single feed in the collection
@@ -54,7 +55,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                     var feed = new Feed(this, _urls);
                     if (feed.IsValid) {
                         _feeds = feed.SingleItemAsEnumerable().ReEnumerable();
-                    } else {
+                    } else {                                           
                         Warning(Constants.Messages.ProviderSwidtagUnavailable);
                         return Enumerable.Empty<Feed>();
                     }
@@ -157,7 +158,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
         /// <param name="location"></param>
         /// <param name="numberOfTry"></param>
         /// <returns></returns>
-        internal string RetryDownload(Func<Uri, string> downloadFileFunction, Uri location, int numberOfTry=3)
+        internal string RetryDownload(Func<Uri, string> downloadFileFunction, Uri location, uint numberOfTry=3)
         {
             string file = null;
 

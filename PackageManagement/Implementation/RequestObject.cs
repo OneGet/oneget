@@ -22,6 +22,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
     using Resources;
     using Utility.Async;
     using Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Packaging;
 
     public abstract class RequestObject : AsyncAction, IRequest, IHostApi {
         private static int _c;
@@ -61,12 +62,12 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
         public override void WarnBeforeResponsivenessCancellation() {
             if (CanCallHost) {
-                _hostApi.Warning((GetMessageString("MSG:ProviderNotResponsive", null) ?? "Provider '{0}' is not respecting the responsiveness threshold in a timely fashion; Canceling request.").format(Provider.ProviderName));
+                _hostApi.Warning((GetMessageString(Constants.Messages.ProviderNotResponsive, null) ?? "Provider '{0}' is not respecting the responsiveness threshold in a timely fashion; Canceling request.").format(Provider.ProviderName));
             }
         }
         public override void WarnBeforeTimeoutCancellation() {
             if (CanCallHost) {
-                _hostApi.Warning((GetMessageString("MSG:ProviderTimeoutExceeded", null) ?? "Provider '{0}' is not completing the request in the time allowed; Canceling request.").format(Provider.ProviderName));
+                _hostApi.Warning((GetMessageString(Constants.Messages.ProviderTimeoutExceeded, null) ?? "Provider '{0}' is not completing the request in the time allowed; Canceling request.").format(Provider.ProviderName));
             }
         }
 
@@ -228,6 +229,20 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             return false;
         }
 
+        public bool ShouldContinue(string query, string caption, ref bool yesToAll, ref bool noToAll) {
+            if (CanCallHost) {
+                return _hostApi.ShouldContinue(query, caption, ref yesToAll, ref noToAll);
+            }
+            return false;
+        }
+
+        public bool ShouldContinue(string query, string caption)
+        {
+            if (CanCallHost) {
+                return _hostApi.ShouldContinue(query, caption);
+            }
+            return false;
+        }
         public bool AskPermission(string permission) {
             if (CanCallHost) {
                 return _hostApi.AskPermission(permission);
@@ -282,7 +297,18 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             return null;
         }
 
+        public virtual string YieldSoftwareIdentityXml(string xmlSwidTag, bool commitImmediately)
+        {
+            Debug("Unexpected call to YieldSoftwareIdentityXml in RequestObject");
+            return null;
+        }
+
         public virtual string AddMetadata(string name, string value) {
+            Debug("Unexpected call to AddMetaData in RequestObject");
+            return null;
+        }
+
+        public virtual string AddTagId(string tagId) {
             Debug("Unexpected call to AddMetaData in RequestObject");
             return null;
         }

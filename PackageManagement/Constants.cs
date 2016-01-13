@@ -58,6 +58,8 @@ namespace Microsoft.PackageManagement.Internal {
             internal const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependency";
             internal const string DestinationPathNotSet = "MSG:DestinationPathNotSet";
             internal const string FailedProviderBootstrap = "MSG:FailedProviderBootstrap";
+            internal const string ProviderNotResponsive = "MSG:ProviderNotResponsive";
+            internal const string ProviderTimeoutExceeded = "MSG:ProviderTimeoutExceeded";
             internal const string FailedPowerShellMetaProvider = "MSG:FailedPowerShellMetaProvider";
             internal const string FileFailedVerification = "MSG:FileFailedVerification";
             internal const string HashNotEqual = "MSG:HashNotEqual";
@@ -98,7 +100,6 @@ namespace Microsoft.PackageManagement.Internal {
             internal const string FileNotFound = "MSG:FileNotFound";
             internal const string InvalidFileType = "MSG:InvalidFileType";
             internal const string ProviderNameIsNullOrEmpty = "MSG:ProviderNameIsNullOrEmpty";
-            internal const string UnableToImportModule = "MSG:UnableToImportModule";
             internal const string FailedToImportProvider = "MSG:FailedToImportProvider";
             internal const string ModuleNotFound = "MSG:ModuleNotFound";
             internal const string NoMatchFoundForCriteria = "MSG:NoMatchFoundForCriteria";

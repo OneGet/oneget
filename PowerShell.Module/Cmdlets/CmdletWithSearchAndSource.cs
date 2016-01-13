@@ -16,6 +16,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
     using System.Globalization;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
@@ -44,8 +45,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         protected List<PackageProvider> _providersNotFindingAnything = new List<PackageProvider>();
         protected readonly string[] ProviderFilters = new[] {"Packagemanagement", "Provider"};
         protected const string Bootstrap = "Bootstrap";
-        protected const string PSModule = "PSModule";
-        protected readonly string[] RequiredProviders = new[] { Bootstrap, PSModule };
+        protected const string PowerShellGet = "PowerShellGet";
+        protected readonly string[] RequiredProviders = new[] { Bootstrap, PowerShellGet };
         private readonly HashSet<string> _sourcesTrusted = new HashSet<string>();
         private readonly HashSet<string> _sourcesDeniedTrust = new HashSet<string>();
         private bool _yesToAll = false;
@@ -76,11 +77,27 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         if (source.Equals(".")) {
                             source = ".\\";
                         }
-                        if (Directory.Exists(source)) {
-                            return GetResolvedProviderPathFromPSPath(source, out providerInfo);
-                        } else {
-                            return CollectionExtensions.SingleItemAsEnumerable(source);
+                        //Need to resolve the path created via psdrive. 
+                        //e.g., New-PSDrive -Name x -PSProvider FileSystem -Root \\foobar\myfolder. Here we are resolving x:\
+                        try
+                        {
+                            if (FilesystemExtensions.LooksLikeAFilename(source))
+                            {
+                                var resolvedPaths = GetResolvedProviderPathFromPSPath(source, out providerInfo);
+
+                                // Ensure the path is a single path from the file system provider
+                                if ((providerInfo != null) && (resolvedPaths.Count == 1) && String.Equals(providerInfo.Name, "FileSystem", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return resolvedPaths[0].SingleItemAsEnumerable();
+                                }
+                            }
                         }
+                        catch (Exception)
+                        {
+                            //allow to continue handling the cases other than file system       
+                        }
+
+                        return source.SingleItemAsEnumerable();
                     }).ToArray();
                 }
             }
@@ -256,6 +273,107 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return found;
         }
 
+        private void ProcessRequests(PackageProvider[] providers)
+        {
+            if (providers == null || providers.Length == 0)
+            {
+                return;
+            }
+
+            var requests = providers.SelectMany(pv => {
+                Verbose(Resources.Messages.SelectedProviders, pv.ProviderName);
+                // for a given provider, if we get an error, we want just that provider to stop.
+                var host = GetProviderSpecificOption(pv);
+
+                var a = _uris.Select(uri => new {
+                    query = new List<string> {
+                            uri.AbsolutePath
+                        },
+                    provider = pv,
+                    packages = pv.FindPackageByUri(uri, host).CancelWhen(CancellationEvent.Token)
+                });
+
+                var b = _files.Keys.Where(file => pv.IsSupportedFile(_files[file].Item2)).Select(file => new {
+                    query = _files[file].Item1,
+                    provider = pv,
+                    packages = pv.FindPackageByFile(file, host)
+                });
+
+                var c = _names.Select(name => new {
+                    query = new List<string> {
+                            name
+                        },
+                    provider = pv,
+                    packages = pv.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, host)
+                });
+
+                return a.Concat(b).Concat(c);
+            }).ToArray();
+
+            Debug("Calling SearchForPackages After Select {0}", requests.Length);
+
+            if (AllVersions || !SpecifiedMinimumOrMaximum) {
+                // the user asked for every version or they didn't specify any version ranges
+                // either way, that means that we can just return everything that we're finding.
+
+                while (WaitForActivity(requests.Select(each => each.packages))) {
+
+                    // keep processing while any of the the queries is still going.
+
+                    foreach (var result in requests.Where(each => each.packages.HasData)) {
+                        // look only at requests that have data waiting.
+
+                        foreach (var package in result.packages.GetConsumingEnumerable()) {
+                            // process the results for that set.
+                            // check if the package is a provider package. If so we need to filter on the packages for the providers.
+                            if (EnsurePackageIsProvider(package)) {
+                                ProcessPackage(result.provider, result.query, package);
+                            }
+                        }
+                    }
+
+                    requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
+                }
+
+
+            } else {
+                // now this is where it gets a bit funny.
+                // the user specified a min or max
+                // and so we have to only return the highest one in the set for a given package.
+
+                while (WaitForActivity(requests.Select(each => each.packages))) {
+                    // keep processing while any of the the queries is still going.
+                    foreach (var perProvider in requests.GroupBy(each => each.provider)) {
+                        foreach (var perQuery in perProvider.GroupBy(each => each.query)) {
+                            if (perQuery.All(each => each.packages.IsCompleted && !each.packages.IsConsumed)) {
+                                foreach (var pkg in from p in perQuery.SelectMany(each => each.packages.GetConsumingEnumerable())
+                                                    group p by new {
+                                                        p.Name,
+                                                        p.Source
+                                                    }
+                                                        // for a given name
+                                                        into grouping
+                                                        // get the latest version only
+                                                        select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()) {
+
+                                    if (EnsurePackageIsProvider(pkg)) {
+                                        ProcessPackage(perProvider.Key, perQuery.Key, pkg);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // filter out whatever we're done with.
+                    requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
+                }
+            }
+
+            // dispose of any requests that didn't get cleaned up earlier.
+            foreach (var i in requests) {
+                i.packages.Dispose();
+            }
+        }
+
         protected virtual void SearchForPackages() {
             try {
 
@@ -268,98 +386,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     Debug("Calling SearchForPackages. Name='{0}'", n);
                 }
 
-                var requests = providers.SelectMany(pv => {
-                    Verbose(Resources.Messages.SelectedProviders, pv.ProviderName);
-                    // for a given provider, if we get an error, we want just that provider to stop.
-                    var host = GetProviderSpecificOption(pv);
+                ProcessRequests(providers.Where(pv => string.Equals(pv.ProviderName, "bootstrap", StringComparison.OrdinalIgnoreCase)).ToArray());
 
-                    var a = _uris.Select(uri => new {
-                        query = new List<string> {
-                            uri.AbsolutePath
-                        },
-                        provider = pv,
-                        packages = pv.FindPackageByUri(uri, host).CancelWhen(CancellationEvent.Token)
-                    });
+                ProcessRequests(providers.Where(pv => !string.Equals(pv.ProviderName, "bootstrap", StringComparison.OrdinalIgnoreCase)).ToArray());
 
-                    var b = _files.Keys.Where(file => pv.IsSupportedFile(_files[file].Item2)).Select(file => new {
-                        query = _files[file].Item1,
-                        provider = pv,
-                        packages = pv.FindPackageByFile(file, host)
-                    });
-
-                    var c = _names.Select(name => new {
-                        query = new List<string> {
-                            name
-                        },
-                        provider = pv,
-                        packages = pv.FindPackage(name, RequiredVersion, MinimumVersion, MaximumVersion, host)
-                    });
-
-                    return a.Concat(b).Concat(c);
-                }).ToArray();
-
-                Debug("Calling SearchForPackages After Select {0}", requests.Length);
-
-                if (AllVersions || !SpecifiedMinimumOrMaximum) {
-                    // the user asked for every version or they didn't specify any version ranges
-                    // either way, that means that we can just return everything that we're finding.
-
-                    while (WaitForActivity(requests.Select(each => each.packages))) {
-
-                        // keep processing while any of the the queries is still going.
-
-                        foreach (var result in requests.Where(each => each.packages.HasData)) {
-                            // look only at requests that have data waiting.
-
-                            foreach (var package in result.packages.GetConsumingEnumerable()) {
-                                // process the results for that set.
-                                // check if the package is a provider package. If so we need to filter on the packages for the providers.
-                                if (EnsurePackageIsProvider(package)) {
-                                    ProcessPackage(result.provider, result.query, package);
-                                }
-                            }
-                        }
-
-                        requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
-                    }
-
-
-                } else {
-                    // now this is where it gets a bit funny.
-                    // the user specified a min or max
-                    // and so we have to only return the highest one in the set for a given package.
-
-                    while (WaitForActivity(requests.Select(each => each.packages))) {
-                        // keep processing while any of the the queries is still going.
-                        foreach (var perProvider in requests.GroupBy(each => each.provider)) {
-                            foreach (var perQuery in perProvider.GroupBy(each => each.query)) {
-                                if (perQuery.All(each => each.packages.IsCompleted && !each.packages.IsConsumed)) {
-                                    foreach (var pkg in from p in perQuery.SelectMany(each => each.packages.GetConsumingEnumerable())
-                                        group p by new {
-                                            p.Name,
-                                            p.Source
-                                        }
-                                        // for a given name
-                                        into grouping
-                                            // get the latest version only
-                                        select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()) {
-
-                                        if (EnsurePackageIsProvider(pkg)) {
-                                            ProcessPackage(perProvider.Key, perQuery.Key, pkg);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        // filter out whatever we're done with.
-                        requests = requests.FilterWithFinalizer(each => each.packages.IsConsumed, each => each.packages.Dispose()).ToArray();
-                    }
-                }
-
-                // dispose of any requests that didn't get cleaned up earlier.
-                foreach (var i in requests) {
-                    i.packages.Dispose();
-                }
             } catch (Exception ex) {
 
                 Debug(ex.ToString());

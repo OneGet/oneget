@@ -1,5 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -127,7 +126,7 @@
     <comment>query</comment>
   </data>
   <data name="DestinationPathInvalid" xml:space="preserve">
-    <value>The desintation path  '{0}' for package '{1}' is invalid.</value>
+    <value>The desintation path '{0}' for package '{1}' is invalid.</value>
     <comment>{0} - path
 {1} - package name</comment>
   </data>
@@ -144,7 +143,7 @@
     <comment>{0} package source name, {1} list of package providers</comment>
   </data>
   <data name="SkippedProviderMissingRequiredOption" xml:space="preserve">
-    <value>Skipping package provider provider '{0}'-- missing required option '{1}'</value>
+    <value>Skipping package provider provider '{0}'-- missing required option '{1}'.</value>
     <comment>{0} - provider name, {1} - dynamic option name</comment>
   </data>
   <data name="InstallationFailure" xml:space="preserve">
@@ -156,7 +155,7 @@
     <comment>{0} package name</comment>
   </data>
   <data name="CaptionSourceNotTrusted" xml:space="preserve">
-    <value>The package(s) come from a package source that is not marked as trusted.</value>
+    <value>The package(s) come(s) from a package source that is not marked as trusted.</value>
     <comment>package source not trusted</comment>
   </data>
   <data name="ActionInstallPackage" xml:space="preserve">
@@ -164,19 +163,19 @@
     <comment>action 'install package'</comment>
   </data>
   <data name="MatchesMultiplePackages" xml:space="preserve">
-    <value>'{0}' matched package '{2}/{3}' from provider: '{1}', source '{4}'</value>
+    <value>'{0}' matched package '{2}/{3}' from provider: '{1}', source '{4}'.</value>
     <comment>{0} search criteria {1} provider {2} package name {3} package version  {4} package sources</comment>
   </data>
   <data name="TargetPackageSource" xml:space="preserve">
-    <value>Package Source '{0}' ({1}) in provider '{2}'</value>
+    <value>Package Source '{0}' ({1}) in provider '{2}'.</value>
     <comment>{0} package source name , {1} package source location, {2} provider name</comment>
   </data>
   <data name="NoMatchFound" xml:space="preserve">
-    <value>No package found for  '{0}'.</value>
+    <value>No package found for '{0}'.</value>
     <comment>{0} - search criteria</comment>
   </data>
   <data name="NoMatchFoundForCriteria" xml:space="preserve">
-    <value>No match was found for the specified search criteria and package name '{0}'.</value>
+    <value>No match was found for the specified search criteria and package name '{0}'. Try Get-PackageSource to see all available registered package sources.</value>
     <comment>{0} - package name</comment>
   </data>
   <data name="NoPackagesFoundForProvider" xml:space="preserve">
@@ -184,11 +183,11 @@
     <comment>{0} - provider name</comment>
   </data>
   <data name="CaptionPackageContainsInstallationScript" xml:space="preserve">
-    <value>Package '{0}' contains an installation script</value>
+    <value>Package '{0}' contains an installation script.</value>
     <comment>{0} package name</comment>
   </data>
   <data name="CaptionPackageContainsUninstallationScript" xml:space="preserve">
-    <value>Package '{0}' contains an uninstallation script</value>
+    <value>Package '{0}' contains an uninstallation script.</value>
     <comment>{0} package name</comment>
   </data>
   <data name="FileNotRecognized" xml:space="preserve">
@@ -224,7 +223,7 @@
     <comment>{0} package name</comment>
   </data>
   <data name="ActionUninstallPackage" xml:space="preserve">
-    <value>Uninstall Package</value>
+    <value>Uninstall Package.</value>
     <comment>action 'uninstall package'</comment>
   </data>
   <data name="UnknownProvider" xml:space="preserve">
@@ -258,25 +257,25 @@
     <comment>{0} -provider name</comment>
   </data>
   <data name="TargetPackage" xml:space="preserve">
-    <value>Package '{0}' version '{1}' from '{2}'</value>
+    <value>Package '{0}' version '{1}' from '{2}'.</value>
     <comment>0- name
 1 - version
 2 - package source</comment>
   </data>
   <data name="TargetPackageVersion" xml:space="preserve">
-    <value>Package '{0}' with version '{1}'</value>
+    <value>Package '{0}' with version '{1}'.</value>
     <comment>0- version
 	1 - package</comment>
   </data>
   <data name="ActionRegisterPackageSource" xml:space="preserve">
-    <value>Register Package Source</value>
+    <value>Register Package Source.</value>
   </data>
   <data name="ActionReplacePackageSource" xml:space="preserve">
-    <value>Replace Package Source</value>
+    <value>Replace Package Source.</value>
     <comment>action 'replace package source'</comment>
   </data>
   <data name="ActionUnregisterPackageSource" xml:space="preserve">
-    <value>Unregister Package Source</value>
+    <value>Unregister Package Source.</value>
     <comment>action unregister package source</comment>
   </data>
   <data name="NotImplemmented" xml:space="preserve">
@@ -311,29 +310,29 @@
     <comment>{0} - package source name</comment>
   </data>
   <data name="DestinationOrLiteralPathRequired" xml:space="preserve">
-    <value>Saving a packge requires either a -Path or -LiteralPath parameter</value>
+    <value>Saving a packge requires either a -Path or -LiteralPath parameter.</value>
   </data>
   <data name="MatchesMultipleProviders" xml:space="preserve">
-    <value>Specified ProviderName parameter matches multiple providers: {0}</value>
+    <value>Specified ProviderName parameter matches multiple providers: {0}.</value>
     <comment>{0} - comma seperated list of providers matched</comment>
   </data>
   <data name="ProviderNameNotSpecified" xml:space="preserve">
-    <value>ProviderName must be specified. Available Providers: {0}</value>
+    <value>ProviderName must be specified. Available Providers: {0}.</value>
     <comment>{0} - comma seperated list of available providers</comment>
   </data>
   <data name="NameOrLocationRequired" xml:space="preserve">
     <value>Either -Name or -Location must be specified to select a package source.</value>
   </data>
   <data name="NoMatchesForWildcard" xml:space="preserve">
-    <value>No package found matching '{0}' .</value>
+    <value>No package found matching '{0}'.</value>
     <comment>{0} wildcard match string</comment>
   </data>
   <data name="NoMatchForProvidersAndSources" xml:space="preserve">
-    <value>No combination of providers ({0}) match sources specified ({1})</value>
+    <value>No combination of providers ({0}) match sources specified ({1}).</value>
     <comment>0 provider names, 1- source names</comment>
   </data>
   <data name="SavePackage" xml:space="preserve">
-    <value>Save Package</value>
+    <value>Save Package.</value>
     <comment>action 'save package'</comment>
   </data>
   <data name="ShouldContinueWithUntrustedPackageSource" xml:space="preserve">
@@ -348,7 +347,7 @@
     <comment>provider names</comment>
   </data>
   <data name="PackageFileExists" xml:space="preserve">
-    <value>Package file '{0}' exists. Remove the file first or use -Force to overwrite</value>
+    <value>Package file '{0}' exists. Remove the file first or use -Force to overwrite.</value>
     <comment>{0} - package filename </comment>
   </data>
   <data name="UnableToOverwrite" xml:space="preserve">
@@ -360,7 +359,7 @@
     <comment>{0} provides the path supplied by the user</comment>
   </data>
   <data name="SavePackageError" xml:space="preserve">
-    <value>Error running Save-Package cmdlet: {0}</value>
+    <value>Error running Save-Package cmdlet: {0}.</value>
   </data>
   <data name="ProviderSwidtagUnavailable" xml:space="preserve">
     <value>Unable to download the list of available providers. Check your internet connection.</value>
@@ -390,7 +389,7 @@
     <comment>name, version</comment>
   </data>
   <data name="SkippedInstalledPackageMultiple" xml:space="preserve">
-    <value>Skipping Installed Package '{0}' ({1} of {2}).</value>
+    <value>Skipping installed package '{0}' ({1} of {2}).</value>
   </data>
   <data name="VersionRangeAndRequiredVersionCannotBeSpecifiedTogether" xml:space="preserve">
     <value>You cannot use the parameters RequiredVersion and either MinimumVersion or MaximumVersion in the same command.</value>
@@ -403,6 +402,18 @@
     <value>Cannot find file '{0}'.</value>
     <comment>{0} - file name or path.</comment>
   </data>
+  <data name="MoreThanOneFileMatched" xml:space="preserve">
+    <value>Multiple matches found '{0}' for the specified file '{1}'.</value>
+    <comment>0 - matched files, 1 - file path.</comment>
+  </data>
+  <data name="MoreThanOneFolderMatched" xml:space="preserve">
+    <value>Multiple matches found '{0}' for the specified folder '{1}'.</value>
+    <comment>0 - matched folders, 1 - folder path.</comment>
+  </data>
+  <data name="UnhandledException" xml:space="preserve">
+    <value>Unhandled Exception - Message:'{0}' Name:'{1}' Stack Trace:'{2}'</value>
+    <comment>0 - Message, 1 - Name, 2 - stack trace.</comment>
+  </data>
   <data name="MinimumVersionMustBeLessThanMaximumVersion" xml:space="preserve">
     <value>The specified MinimumVersion '{0}' is greater than the specified MaximumVersion '{1}'</value>
   </data>
@@ -413,7 +424,7 @@
     <value>You cannot use the RequiredVersion and either MinimumVersion or MaximumVersion in the same command. Specify only one of these parameters in your command.</value>
   </data>
   <data name="FullProviderFilePathVersionNotAllowed" xml:space="preserve">
-    <value>The version parameter is allowed only when a single provider name is specified as the value of the Name parameter, without any wildcard characters. The file path is not allowed with version parameter.</value>
+    <value>The Version parameter is allowed only when a single provider name is specified as the value of the Name parameter, without any wildcard characters. The file path is not allowed with version parameter.</value>
   </data>
   <data name="UnknownProviderFromActivatedList" xml:space="preserve">
     <value>Unable to find package provider '{0}'. It may not be imported yet. Try 'Get-PackageProvider -ListAvailable'.</value>
@@ -427,13 +438,13 @@
     <comment>{0} - provider name</comment>
   </data>
   <data name="DisambiguateForInstall_SpecifyName" xml:space="preserve">
-    <value>Please specify an exact Name and RequiredVersion parameter.</value>
+    <value>Specify an exact Name and RequiredVersion parameter.</value>
   </data>
   <data name="DisambiguateForInstall_SpecifySource" xml:space="preserve">
-    <value>Please see Get-PackageSource for all available registered sources and try again by specifying a single Source parameter.</value>
+    <value>See Get-PackageSource for all available registered sources and try again by specifying a single Source parameter.</value>
   </data>
   <data name="RegisterPackageSourceRequired" xml:space="preserve">
-    <value>Unable to find repository with SourceLocation '{0}'. Please use Get-PSRepository to see all available repositories.</value>
+    <value>Unable to find repository with SourceLocation '{0}'. Use Get-PSRepository to see all available repositories.</value>
     <comment>{1} package source</comment>
   </data>
   <data name="InvalidVersion" xml:space="preserve">
@@ -467,5 +478,9 @@
   <data name="MethodNotImplemented" xml:space="preserve">
     <value>Provider '{0}' does not implement '{1}'.</value>
     <comment>0 - provider name. 1 - method name (such as save-package)</comment>
+  </data>
+  <data name="InstallRequiresCurrentUserScopeParameterForNonAdminUser" xml:space="preserve">
+    <value>Administrator rights are required to install packages in '{0}'. Log on to the computer with an account that has Administrator rights, and then try again, or install in '{1}' by adding "-Scope CurrentUser" to your command. You can also try running the Windows PowerShell session with elevated rights (Run as Administrator).</value>
+    <comment>0 - folder, 1 - folder</comment>
   </data>
 </root>

@@ -32,6 +32,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using Resources;
     using Utility;
     using Constants = PackageManagement.Constants;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Threading.Tasks;
 
     public delegate string GetMessageString(string messageId, string defaultText);
 
@@ -84,7 +86,39 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         protected bool WaitForActivity<T>(IEnumerable<IAsyncEnumerable<T>> enumerables) {
             var handles = enumerables.Select(each => each.Ready).ConcatSingleItem(CancellationEvent.Token.WaitHandle).ToArray();
             if (handles.Length > 1) {
-                WaitHandle.WaitAny(handles);
+                if (handles.Length <= 64)
+                {
+                    // less than or equal to 64 handles so we can use waithandle
+                    WaitHandle.WaitAny(handles);
+                }
+                else
+                {
+                    // divide handles in chunks of 64 each
+                    int numberOfTasks = (int)Math.Ceiling(handles.Length / 64.0);
+                    var cts = new CancellationTokenSource();
+                    Task[] tasks = new Task[numberOfTasks];
+                    for (int i = 0; i < numberOfTasks; i += 1)
+                    {
+                        // now each task will use the waithandle.waitany since only 64 handles will be assigned to each task
+                        // so we won't get exception
+                        tasks[i] = Task.Factory.StartNew(() =>
+                        {
+                            if ((handles.Length - i * 64) > 0)
+                            {
+                                // either 64 items or whatever left
+                                int waitHandleArrayLength = Math.Min(64, handles.Length - i * 64);
+                                WaitHandle[] waithandles = new WaitHandle[waitHandleArrayLength];
+                                Array.Copy(handles, i * 64, waithandles, 0, waitHandleArrayLength);
+                                WaitHandle.WaitAny(waithandles);
+                            }
+                        }, cts.Token);
+                    }
+
+                    // just need a task to finish
+                    Task.WaitAny(tasks);
+                    // cancel the rest
+                    cts.Cancel();
+                }
                 return !IsCanceled;
             }
             // we are finished when there is only handle to wait on (the cancellation token)
@@ -287,6 +321,25 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return true;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", Justification = "It's a PowerShell behavior.")]
+        bool IHostApi.ShouldContinue(string query, string caption, ref bool yesToAll, ref bool noToAll)
+        {
+            var shouldContinueResult = base.ShouldContinue(query, caption, true).Result;
+            if (shouldContinueResult != null)
+            {
+                yesToAll = shouldContinueResult.yesToAll;
+                noToAll = shouldContinueResult.noToAll;
+                return shouldContinueResult.result;
+            }
+                
+            return false;
+        }
+
+        bool IHostApi.ShouldContinue(string query, string caption)
+        {
+            return base.ShouldContinue(query, caption).Result;
+        }
+
         public virtual bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination) {
             try {
                 if (Force || ForceBootstrap) {
@@ -370,5 +423,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
             return true;
         }
+
+ 
     }
 }

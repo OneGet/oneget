@@ -232,7 +232,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     break;
 
                 default:
-                    Error(Constants.Errors.MoreThanOneFileMatched, filePath, files.JoinWithComma());
+                    Error(Constants.Errors.MoreThanOneFileMatched, files.JoinWithComma(), filePath);
                     break;
             }
             return null;
@@ -267,7 +267,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     return files[0];
 
                 default:
-                    Error(Constants.Errors.MoreThanOneFolderMatched, folderPath, files.JoinWithComma());
+                    Error(Constants.Errors.MoreThanOneFolderMatched, files.JoinWithComma(), folderPath);
                     break;
             }
             return null;
@@ -702,7 +702,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                             return asyncAction();
                         } catch (Exception e) {
-                            Error("MSG:UnhandledException", ErrorCategory.InvalidOperation.ToString(), e.Message, "{0}/{1}/{2}", e.GetType().Name, e.Message, e.StackTrace);
+                            Error(Constants.Errors.UnhandledException, e.Message, e.GetType().Name, e.StackTrace);
                         } finally {
                             // when the task is done, mark the msg queue as complete
                             if (_messages != null) {

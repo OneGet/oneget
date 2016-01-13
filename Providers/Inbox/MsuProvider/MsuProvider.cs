@@ -174,12 +174,12 @@ namespace Microsoft.PackageManagement.Msu.Internal {
         /// </summary>
         /// <param name="name"></param>
         /// <param name="maximumVersion"></param>
+        /// <param name="minimumVersion"></param>
+        /// <param name="requiredVersion"></param>
         /// <param name="request">
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        /// <param name="requiredVersion"></param>
-        /// <param name="minimumVersion"></param>
         public void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request)
         {
             if( request == null ) {

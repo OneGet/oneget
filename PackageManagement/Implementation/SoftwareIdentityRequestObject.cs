@@ -14,9 +14,15 @@
 
 namespace Microsoft.PackageManagement.Internal.Implementation {
     using System;
+    using System.Globalization;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Xml.Linq;
     using Api;
     using PackageManagement.Implementation;
     using PackageManagement.Packaging;
+    using PackageManagement.Internal.Packaging;
+    using PackageManagement.Internal.Utility.Plugin;
     
     internal class SoftwareIdentityRequestObject : EnumerableRequestObject<SoftwareIdentity> {
         private SoftwareIdentity _currentItem;
@@ -56,6 +62,52 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             return fastPath;
         }
 
+        public override string YieldSoftwareIdentityXml(string xmlSwidTag, bool commitImmediately=false)
+        {
+            Activity();
+            CommitCurrentItem();
+
+            if (string.IsNullOrWhiteSpace(xmlSwidTag))
+            {
+                return null;
+            }
+
+            try
+            {
+                XDocument xdoc = XDocument.Parse(xmlSwidTag);
+
+                if (xdoc != null && xdoc.Root != null && Swidtag.IsSwidtag(xdoc.Root))
+                {
+                    _currentItem = new SoftwareIdentity(xdoc);
+                }
+                else
+                {
+                    Verbose(string.Format(CultureInfo.CurrentCulture, Resources.Messages.SwidTagXmlInvalidNameSpace, xmlSwidTag, Iso19770_2.Namespace.Iso19770_2));
+                }
+            }
+            catch (Exception e)
+            {
+                Verbose(e.Message);
+                Verbose(e.StackTrace);
+            }
+
+            if (_currentItem == null)
+            {
+                Warning(string.Format(CultureInfo.CurrentCulture, Resources.Messages.SwidTagXmlNotValid));
+                return null;            
+            }
+            
+            string result = _currentItem.FastPackageReference;
+
+            // provider author wants us to commit at once
+            if (commitImmediately)
+            {
+                CommitCurrentItem();
+            }
+
+            return result;
+        }
+
         /// <summary>
         ///     Adds a metadata key/value pair to the Swidtag.
         /// </summary>
@@ -67,6 +119,31 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
             var swid = _currentItem;
             return swid != null ? swid.AddMetadataValue(swid.FastPackageReference, name, value) : null;
+        }
+
+        /// <summary>
+        /// Adds a tagID to the swidtag
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <returns></returns>
+        public override string AddTagId(string tagId)
+        {
+            Activity();
+
+            var swid = _currentItem;
+            
+            if (swid == null)
+            {
+                return null;
+            }
+
+            // we can't modify it once add so check that there is no swidtag
+            if (string.IsNullOrWhiteSpace(swid.TagId))
+            {
+                swid.TagId = tagId;
+            }
+
+            return swid.TagId;
         }
 
         /// <summary>

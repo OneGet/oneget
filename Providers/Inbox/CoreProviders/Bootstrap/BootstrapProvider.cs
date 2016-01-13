@@ -452,7 +452,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
 
         private bool InstallPackageReference(Package provider, string fastPath, BootstrapRequest request, SoftwareIdentity[] packages) {
             IHostApi installRequest = request;
-            if (packages[0].Provider.Name.EqualsIgnoreCase("PSModule") && !request.ProviderServices.IsElevated) {
+            if (packages[0].Provider.Name.EqualsIgnoreCase("PowerShellGet") && !request.ProviderServices.IsElevated) {
                 // if we're not elevated, we want powershellget to install to the user scope
             
                 installRequest = new object[] {
@@ -484,7 +484,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             }
 
             if (!request.IsCanceled && lastPackage != null) {
-                if (provider.Name.EqualsIgnoreCase("PSModule")) {
+                if (provider.Name.EqualsIgnoreCase("PowerShellGet")) {
                     // special case. PSModules we can just ask the PowerShell provider to pick it up 
                     // rather than try to scan for it.
                     PackageManagementService.TryLoadProviderViaMetaProvider("PowerShell", lastPackage.FullPath, request);

@@ -350,6 +350,15 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Administrator rights are required to install packages in &apos;{0}&apos;. Log on to the computer with an account that has Administrator rights, and then try again, or install in &apos;{1}&apos; by adding &quot;-Scope CurrentUser&quot; to your command. You can also try running the Windows PowerShell session with elevated rights (Run as Administrator).
+        /// </summary>
+        internal static string InstallRequiresCurrentUserScopeParameterForNonAdminUser {
+            get {
+                return ResourceManager.GetString("InstallRequiresCurrentUserScopeParameterForNonAdminUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The specified version &apos;{0}&apos; is invalid. Error: &apos;{1}&apos;..
         /// </summary>
         internal static string InvalidVersion {

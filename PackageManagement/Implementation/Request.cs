@@ -74,6 +74,10 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
         public abstract bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
 
+        public abstract bool ShouldContinue(string query, string caption, ref bool yesToAll, ref bool noToAll);
+
+        public abstract bool ShouldContinue(string query, string caption);
+
         public abstract bool AskPermission(string permission);
 
         public abstract bool IsInteractive {get;}
@@ -100,6 +104,12 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
         /// <param name="packageFileName"></param>
         /// <returns></returns>
         public abstract string YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
+
+        public abstract string YieldSoftwareIdentityXml(string xmlSwidTag, bool commitImmediately);
+
+        public abstract bool IsSwidTagXml(string xmlSwidTag);
+
+        public abstract string AddTagId(string tagId);
 
         public abstract string AddMetadata(string name, string value);
 

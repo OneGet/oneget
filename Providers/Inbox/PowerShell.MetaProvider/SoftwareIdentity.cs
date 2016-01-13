@@ -23,7 +23,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
         public SoftwareIdentity() {
         }
 
-        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, string fullPath, string filename ) {
+        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, string fullPath, string filename) {
             FastPackageReference = fastPackageReference;
             Name = name;
             Version = version;
@@ -52,6 +52,24 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             _dependencies = dependencies;
         }
 
+        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, string fullPath, string filename, Hashtable details, ArrayList entities, ArrayList links, bool fromTrustedSource, ArrayList dependencies, string tagId)
+            : this(fastPackageReference, name, version, versionScheme, source, summary, searchKey, fullPath, filename)
+        {
+            _details = details;
+            _entities = entities;
+            _links = links;
+            FromTrustedSource = fromTrustedSource;
+            _dependencies = dependencies;
+            _tagId = tagId;
+        }
+
+        public SoftwareIdentity(string xmlSwidTag, bool commitImmediately)
+        {
+            _xmlSwidTag = xmlSwidTag;
+            _commitImmediately = commitImmediately;
+        }
+
+
         public string FastPackageReference {get; set;}
         public string Name {get; set;}
         public string Version {get; set;}
@@ -71,12 +89,31 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 throw new ArgumentNullException("r");
             }
 
-            return r.YieldSoftwareIdentity(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey, FullPath, Filename) != null && YieldDetails(r) && YieldEntities(r) && YieldLinks(r) && YieldDependencies(r) && r.AddMetadata(FastPackageReference, "FromTrustedSource", FromTrustedSource.ToString()) != null;
+            // if we get an xml swidtag string, use that
+            if (!string.IsNullOrWhiteSpace(_xmlSwidTag))
+            {
+                return r.YieldSoftwareIdentityXml(_xmlSwidTag, _commitImmediately) != null;
+            }
+
+            return r.YieldSoftwareIdentity(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey, FullPath, Filename) != null && YieldTagId(r) && YieldDetails(r) && YieldEntities(r) && YieldLinks(r) && YieldDependencies(r) && r.AddMetadata(FastPackageReference, "FromTrustedSource", FromTrustedSource.ToString()) != null;
         }
 
         private ArrayList _links;
         private ArrayList _entities;
         private ArrayList _dependencies;
+        private string _tagId;
+        private string _xmlSwidTag;
+        private bool _commitImmediately;
+
+        protected virtual bool YieldTagId(PsRequest r)
+        {
+            if (string.IsNullOrWhiteSpace(_tagId))
+            {
+                return true;
+            }
+
+            return r.AddTagId(_tagId) != null;
+        }
 
         protected override bool YieldDetails(PsRequest r) {
             if (_details != null && _details.Count > 0) {

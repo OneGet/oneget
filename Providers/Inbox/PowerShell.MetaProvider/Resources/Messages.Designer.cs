@@ -203,5 +203,16 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Resources {
                 return ResourceManager.GetString("UnableToLoadModule", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot Find Base PowerShell Module Folder.
+        /// </summary>
+        internal static string CantFindBasePowerShellModuleFolder
+        {
+            get
+            {
+                return ResourceManager.GetString("CantFindBasePowerShellModuleFolder", resourceCulture);
+            }
+        }
     }
 }

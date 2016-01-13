@@ -26,7 +26,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
     using PackageManagement.Internal.Utility.Plugin;
 
     internal class Swid {
-        private const int SwidDownloadTimeout = 8000;
+        private const int SwidDownloadTimeout = 40000;
         internal readonly BootstrapRequest _request;
         internal readonly Swidtag _swidtag;
         private bool _timedOut;

@@ -16,12 +16,13 @@
 namespace Microsoft.PackageManagement.Internal.Implementation
 {
     using System;
+    using PackageManagement.Internal.Packaging;
     using Providers;
 
     /// <summary>
     /// This DefaultPackageProvider type is mainly used for the PowerShell console output.
     /// </summary>
-    public class DefaultPackageProvider : IPackageProvider {
+    public class DefaultPackageProvider : Swidtag, IPackageProvider {
 
         private readonly string _providerName;
         private readonly string _providerVersion;

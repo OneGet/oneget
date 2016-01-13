@@ -18,6 +18,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
+    using System.Xml.Linq;
     using System.Text.RegularExpressions;
     using Api;
     using Packaging;
@@ -27,13 +28,15 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
     using Utility.Plugin;
     using Utility.Versions;
     using File = System.IO.File;
+    using Microsoft.PackageManagement.Internal.Utility.Platform;
+    using PackageManagement.Packaging;
 
-    public abstract class ProviderBase {
-        public abstract string ProviderName {get;}
+    public abstract class ProviderBase : SoftwareIdentity
+    {
+        public abstract new string ProviderName {get;}
     }
 
     public abstract class ProviderBase<T> : ProviderBase where T : IProvider {
-        private static Regex _canonicalPackageRegex = new Regex("(.*?):(.*?)/(.*)");
         private List<DynamicOption> _dynamicOptions;
         private Dictionary<string, List<string>> _features;
         private bool _initialized;
@@ -42,11 +45,11 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
         private string[] _supportedSchemes;
         private FourPartVersion _version;
 
-        public ProviderBase(T provider) {
+        protected ProviderBase(T provider) {
             Provider = provider;
         }
 
-        internal T Provider { get; private set; }
+        internal new T Provider { get; private set; }
 
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is required for the PowerShell Providers.")]
         public IDictionary<string, List<string>> Features {
@@ -56,20 +59,40 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             }
         }
 
-        public FourPartVersion Version {
+        public new FourPartVersion Version {
             get {
                 return _version;
             }
             set {
                 if (_version == 0) {
                     _version = value;
+                    base.Version = value.ToString();
                 }
             }
         }
 
         internal bool IsLoaded {get; set;}
 
-        public string ProviderPath {get; internal set;}
+        public string ProviderPath { get; set;}
+
+        /// <summary>
+        /// Set swidtag based on provider file
+        /// </summary>
+        /// <param name="providerPath"></param>
+        public void SetSwidTag(string providerPath)
+        {
+            if (!string.IsNullOrWhiteSpace(providerPath))
+            {
+                // check whether there is swidtag attached to the provider path
+                var swid = Manifest.LoadFrom(providerPath).FirstOrDefault(manifest => Swidtag.IsSwidtag(manifest));
+
+                if (swid != null)
+                {
+                    // give the manifest to the providers to populate swidtag fields
+                    SetSwidTag(new XDocument(new XDeclaration("1.0", "UTF-8", "yes"), swid));
+                }
+            }
+        }
 
         public IEnumerable<string> SupportedFileExtensions {
             get {

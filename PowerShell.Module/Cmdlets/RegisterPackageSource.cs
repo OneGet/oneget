@@ -132,6 +132,25 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             string providerNameForProcessMessage = ProviderName.JoinWithComma();
             if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, Name, Location, providerNameForProcessMessage), FormatMessageString(Constants.Messages.ActionRegisterPackageSource)).Result)
             {
+                //Need to resolve the path created via psdrive. 
+                //e.g., New-PSDrive -Name x -PSProvider FileSystem -Root \\foobar\myfolder. Here we are resolving x:\
+                try
+                {
+                    if (FilesystemExtensions.LooksLikeAFilename(Location))
+                    {
+                        ProviderInfo providerInfo = null;
+                        var resolvedPaths = GetResolvedProviderPathFromPSPath(Location, out providerInfo);
+
+                        // Ensure the path is a single path from the file system provider
+                        if ((providerInfo != null) && (resolvedPaths.Count == 1) && String.Equals(providerInfo.Name, "FileSystem", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Location = resolvedPaths[0];
+                        }
+                    }
+                } catch (Exception) {
+                    //allow to continue handling the cases other than file system                  
+                }
+
                 using (var added = provider.AddPackageSource(Name, Location, Trusted, this).CancelWhen(CancellationEvent.Token)) {
                     foreach (var addedSource in added) {
                         WriteObject(addedSource);

@@ -14,6 +14,7 @@
 
 namespace Microsoft.PackageManagement.Internal.Packaging {
     using System;
+    using System.Linq;
     using System.Xml.Linq;
     using Utility.Extensions;
 
@@ -35,8 +36,20 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
             if (element == null || attribute == null || string.IsNullOrWhiteSpace(attribute.ToString())) {
                 return null;
             }
-            var a = element.Attribute(attribute);
-            return a == null ? null : a.Value;
+
+            XAttribute result;
+
+            // no name space, just check local name
+            if (string.IsNullOrWhiteSpace(attribute.Namespace.NamespaceName))
+            {
+                result = element.Attributes().Where(attr => attr != null && attr.Name.LocalName == attribute.LocalName).FirstOrDefault();
+            }
+            else
+            {
+                result = element.Attribute(attribute);
+            }
+
+            return result == null ? null : result.Value;
         }
 
         /// <summary>
@@ -162,6 +175,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
             internal const string MsuPackage  = "application/vnd.ms.msu-package";
 
             internal const string ExePackage = "application/vnd.packagemanagement.exe-package";
+            internal const string ZipPackage = "application/epub+zip";
             internal const string NuGetPackage = "application/vnd.packagemanagement.nuget-package";
             internal const string ChocolateyPackage = "application/vnd.packagemanagement.chocolatey-package";
 
@@ -214,6 +228,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
 
         internal static class Namespace {
             internal static readonly XNamespace Iso19770_2 = XNamespace.Get("http://standards.iso.org/iso/19770/-2/2015/schema.xsd");
+            internal static readonly XNamespace Iso19770_2_Current = XNamespace.Get("http://standards.iso.org/iso/19770/-2/2015-current/schema.xsd");
             internal static readonly XNamespace Discovery = XNamespace.Get("http://packagemanagement.org/discovery");
             internal static readonly XNamespace OneGet = XNamespace.Get("http://oneget.org/packagemanagement");
             internal static readonly XNamespace Xml = XNamespace.Get("http://www.w3.org/XML/1998/namespace");
@@ -225,6 +240,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
 
         internal static class Elements {
             internal static readonly XName SoftwareIdentity = Namespace.Iso19770_2 + "SoftwareIdentity";
+            internal static readonly XName SoftwareIdentityCurrent = Namespace.Iso19770_2_Current + "SoftwareIdentity";
             internal static readonly XName Entity = Namespace.Iso19770_2 + "Entity";
             internal static readonly XName Link = Namespace.Iso19770_2 + "Link";
             internal static readonly XName Evidence = Namespace.Iso19770_2 + "Evidence";

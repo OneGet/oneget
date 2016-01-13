@@ -1,5 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -158,7 +157,7 @@
     <comment>0-provider name</comment>
   </data>
   <data name="RootModuleAndPackageManagementProviderNameNotMatch" xml:space="preserve">
-    <value>Root module {0} does not match the packagemanagementprovider name {1}</value>
+    <value>Root module {0} does not match the packagemanagementprovider name {1}.</value>
   </data>
   <data name="ScriptStackTrace" xml:space="preserve">
     <value>Script failure at : {0}</value>
@@ -176,5 +175,8 @@
   </data>
   <data name="UnableToLoadModule" xml:space="preserve">
     <value>Cannot load module '{0}' because no valid provider found under the specified path.</value>
+  </data>
+  <data name="CantFindBasePowerShellModuleFolder" xml:space="preserve">
+    <value>Cannot find base Powershell module folder.</value>
   </data>
 </root>

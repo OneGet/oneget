@@ -295,6 +295,7 @@ namespace Microsoft.PackageManagement.Msi.Internal {
                 // YieldPackage(product,fastPackageReference, request);
                 if (request.YieldSoftwareIdentity(fastPackageReference, productName, productVersion, "multipartnumeric", summary, "", fastPackageReference, "", "") != null) {
                     request.AddMetadata(fastPackageReference, "ProductCode", fastPackageReference);
+                    request.AddTagId(fastPackageReference.Trim(new char[] { '{', '}' }));
                 }
 
                 request.Warning("Reboot is required to complete uninstallation.");
@@ -371,12 +372,17 @@ namespace Microsoft.PackageManagement.Msi.Internal {
                        */
             if (request.YieldSoftwareIdentity(filename, package.Property["ProductName"], package.Property["ProductVersion"], "multipartnumeric", package.Property["Summary"], filename, filename, filename, Path.GetFileName(filename)) != null) {
                 var trusted = request.ProviderServices.IsSignedAndTrusted(filename, request);
-
+                                
                 if (request.AddMetadata(filename, "FromTrustedSource", trusted.ToString()) == null ) {
                     return false;
                 }
 
                 if (request.AddMetadata(filename, "ProductCode", package.Property["ProductCode"]) == null) {
+                    return false;
+                }
+
+                if (request.AddTagId(package.Property["ProductCode"].Trim(new char[] { '{', '}' })) == null)
+                {
                     return false;
                 }
 
@@ -393,6 +399,11 @@ namespace Microsoft.PackageManagement.Msi.Internal {
         private bool YieldPackage(ProductInstallation package, string searchKey, Request request) {
             if (request.YieldSoftwareIdentity(package.ProductCode, package.ProductName, package.ProductVersion.ToString(), "multipartnumeric", package["Summary"], package.InstallSource, searchKey, package.InstallLocation, "?") != null) {
                 if (request.AddMetadata(package.ProductCode, "ProductCode", package.ProductCode) == null) {
+                    return false;
+                }
+
+                if (request.AddTagId(package.ProductCode.Trim(new char[] {'{','}'})) == null)
+                {
                     return false;
                 }
 
