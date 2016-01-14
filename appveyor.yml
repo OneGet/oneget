@@ -7,10 +7,12 @@ install:
 clone_folder: c:\projects\oneget
 build:
   verbosity: minimal
+after_build:
+- ps: >-
+    Get-ChildItem "C:\projects\oneget\output\Release\bin" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
+
 before_test:
 - ps: >-
     Copy-Item -Recurse "c:\projects\oneget\Providers\Inbox\PowerShellGet" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Force -Verbose
 
     & "c:\projects\oneget\Test\run-tests.ps1"
-
-    Get-ChildItem "C:\Program Files\WindowsPowerShell\Modules\PackageManagement" | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
