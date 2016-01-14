@@ -34,6 +34,7 @@ With OneGet, you can
 - Visual Studio 2013
 - Powershell Tools for Visual Studio : http://visualstudiogallery.msdn.microsoft.com/c9eb3ba8-0c59-4944-9a62-6eee37294597
 - XUnit ( I currently use 2.0.0.0 ) : http://xunit.codeplex.com/releases
+- You may need to manually install Windows SDK for getting tools like mt.exe.
 
 #### Optional Tools
 - Resharper - http://www.jetbrains.com/resharper/
