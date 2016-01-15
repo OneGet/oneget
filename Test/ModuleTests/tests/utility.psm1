@@ -51,7 +51,7 @@ function Import-PackageManagement {
     #>
 
     if (-not $env:PMModuleTest ) {
-        $env:PMModuleTest = "PackageManagement"
+        $env:PMModuleTest = "C:\projects\oneget\output\Release\bin\PackageManagement.psd1"
     }
 
     echo "Importing PackageManagement Module from $env:PMModuleTest"
