@@ -56,6 +56,8 @@ function Import-PackageManagement {
 
     echo "Importing PackageManagement Module from $env:PMModuleTest"
     ipmo $env:PMModuleTest -Verbose
+    $pkg = (Get-Module PackageManagement).Path
+    Write-Host $pkg
     return $true
 }
 
