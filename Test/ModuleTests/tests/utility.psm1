@@ -51,13 +51,11 @@ function Import-PackageManagement {
     #>
 
     if (-not $env:PMModuleTest ) {
-        $env:PMModuleTest = "C:\projects\oneget\output\Release\bin\PackageManagement.psd1"
+        $env:PMModuleTest = "PackageManagement"
     }
 
     echo "Importing PackageManagement Module from $env:PMModuleTest"
     ipmo $env:PMModuleTest -Verbose
-    $pkg = (Get-Module PackageManagement).Path
-    Write-Host $pkg
     return $true
 }
 
