@@ -22,8 +22,8 @@
 $TestHome = $PSScriptRoot
 $TestBin = "$($TestHome)\..\output\Release\bin\"
 $PowerShellGetPath = "$($TestHome)\..\Providers\Inbox\PowerShellGet\"
-#$PowerShellGetVersion = "1.0.0.1"
-#$PackageManagementVersion = "1.0.0.1"
+$PowerShellGetVersion = "1.0.0.1"
+$PackageManagementVersion = "1.0.0.1"
 
 
 #Import-Module "$($TestBin)\PackageManagement.psd1"
@@ -39,10 +39,10 @@ $UserModulePath = "$($mydocument)\WindowsPowerShell\Modules"
 $ProgramModulePath = "$Env:ProgramFiles\WindowsPowerShell\Modules"
 
 
-#$packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
-#$powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
-$packagemanagementfolder = "$ProgramModulePath\PackageManagement"
-$powershellGetfolder = "$ProgramModulePath\PowerShellGet"
+$packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
+$powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
+#$packagemanagementfolder = "$ProgramModulePath\PackageManagement"
+#$powershellGetfolder = "$ProgramModulePath\PowerShellGet"
 
 if(-not (Test-Path $packagemanagementfolder)){
     New-Item -Path $packagemanagementfolder -ItemType Directory -Force  
