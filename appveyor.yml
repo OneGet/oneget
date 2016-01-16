@@ -1,6 +1,6 @@
 version: 1.0.{build}
 os:
-- Windows Server 2012 R2
+- WMF 5
 configuration: Release
 platform: Any CPU
 # Install Pester
