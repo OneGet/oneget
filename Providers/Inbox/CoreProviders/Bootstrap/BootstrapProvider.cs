@@ -74,7 +74,6 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                     // we can do this asynchronously, it'll cut down on any startup delay when the network is slow or unavailable.
                     try {
                         PackageManagementService.BootstrappableProviderNames = request.Providers.Select(provider => provider.Name).ToArray();
-
                     } catch (Exception e) {
                         // if we have a serious problem, it just means we can't bootstrap those providers anyway.
                         // in the event of a catastrophic failure, request isn't going to be valid anymore (and hence the user won't see it)
@@ -129,18 +128,10 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             request.Debug("Calling ResolvePackageSources");
 
             try {
-                if (request.LocalSource.Any()) {
-                    foreach (var source in request.LocalSource) {
-                        request.YieldPackageSource(source, source, false, true, true);
-                    }
-                    return;
-                }
-
                 foreach (var source in request._urls) {
 
                     request.YieldPackageSource(source.AbsoluteUri, source.AbsoluteUri, false, true, true);
                 }
-
             } catch (Exception e) {
                 e.Dump();
             }
@@ -156,12 +147,6 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             if (name != null && name.EqualsIgnoreCase("PackageManagement")) {
                 // they are looking for PackageManagement itself.
                 // future todo: let PackageManagement update itself.
-                return;
-            }
-
-            if (request.LocalSource.Any()) {
-                // find a provider from given path
-                request.FindProviderFromFile(name, requiredVersion, minimumVersion, maximumVersion);
                 return;
             }
 
@@ -214,7 +199,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             }
 
             // return any matches in the name
-        }        
+        }
 
         /// <summary>
         ///     Returns the packages that are installed
@@ -284,10 +269,15 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                 each.ProviderPath
             })).Distinct();
 
-            var pp = request.LocalSource.Any() ? providers.Select(each => request.GetProviderFromFile(each.ProviderPath, false, true)).WhereNotNull() :
-                                                                    providers.Select(each => request.GetProvider(each.Name, each.Version)).WhereNotNull();
-
-            foreach (var p in pp) {
+            foreach (var provider in providers) {
+                // for each package manager, match it's name and version with the swidtag from the remote feed
+                var p = request.GetProvider(provider.Name, provider.Version);
+                if (p == null) {
+                    request.Debug("Dynamic provider '{0}' from '{1}' is not listed in a bootstrap feed.", provider.Name, provider.ProviderPath);
+                    // we didn't find it. It's possible that the provider is listed elsewhere.
+                    // well, we'll return as much info as we have.
+                    continue;
+                }
                 request.YieldFromSwidtag(p, requiredVersion, minimumVersion, maximumVersion, name);
             }
         }
@@ -512,7 +502,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             return false;
         }
 
-        private bool InstallAssemblyProvider(Package provider, Link link, string fastPath, BootstrapRequest request, bool deleteFile=true) {
+        private bool InstallAssemblyProvider(Package provider, Link link, string fastPath, BootstrapRequest request) {
             request.Verbose(Resources.Messages.InstallingPackage, fastPath);
             
             if (!Directory.Exists(request.DestinationPath(request))) {
@@ -520,17 +510,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                 return false;
             }
 
-                        
-            string targetFilename = fastPath;
-            string file = fastPath;
-
-            //source can be from install-packageprovider or can be from the pipeline
-            if (!request.LocalSource.Any() && !fastPath.IsFile()) {
-
-                targetFilename = link.Attributes[Iso19770_2.Discovery.TargetFilename];
-                // download the file
-                file = request.DownloadAndValidateFile(provider.Name, provider._swidtag);
-            }
+            var targetFilename = link.Attributes[Iso19770_2.Discovery.TargetFilename];
 
             if (string.IsNullOrWhiteSpace(targetFilename)) {
                 request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.InvalidFilename);
@@ -554,7 +534,10 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             }
 
             var targetFile = Path.Combine(versionFolder, targetFilename);
-                           
+
+            // download the file
+            var file = request.DownloadAndValidateFile(provider.Name, provider._swidtag);
+
             if (file != null) {
                 try
                 {
@@ -590,24 +573,11 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                 }
                 finally
                 {
-                    if (deleteFile) {
-                        file.TryHardToDelete();
-                    }
+                    file.TryHardToDelete();
                 }
             }
 
             return false;
-        }
-
-        private void InstallPackageFromFile(string fastPath, BootstrapRequest request)
-        {
-            var filePath = new Uri(fastPath).LocalPath;
-
-            var pkg = request.GetProviderFromFile(filePath, true, false);
-
-            if (pkg != null) {
-                InstallAssemblyProvider(pkg, null, filePath, request, false);
-            }
         }
 
         public void InstallPackage(string fastPath, BootstrapRequest request) {
@@ -617,13 +587,6 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             // ensure that mandatory parameters are present.
             request.Debug("Calling 'Bootstrap::InstallPackage'");
             var triedAndFailed = false;
-
-            //source can be from install-packageprovider or can be from the pipeline
-            if (fastPath != null && (request.LocalSource.Any() || fastPath.IsFile()))
-            {
-                InstallPackageFromFile(fastPath, request);
-                return;
-            }
 
             // verify the package integrity (ie, check if it's digitally signed before installing)
 

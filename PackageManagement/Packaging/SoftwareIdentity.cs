@@ -30,7 +30,7 @@ namespace Microsoft.PackageManagement.Packaging {
     /// </summary>
     public class SoftwareIdentity : Swidtag {
         public SoftwareIdentity(XDocument document)
-            : base(document) {
+            : base(document.Root) {
         }
 
         public SoftwareIdentity() {

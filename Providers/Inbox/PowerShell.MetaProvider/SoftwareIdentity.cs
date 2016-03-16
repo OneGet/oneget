@@ -52,7 +52,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             _dependencies = dependencies;
         }
 
-        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, string fullPath, string filename, Hashtable details, ArrayList entities, ArrayList links, bool fromTrustedSource, ArrayList dependencies, string tagId, string xmlLang)
+        public SoftwareIdentity(string fastPackageReference, string name, string version, string versionScheme, string source, string summary, string searchKey, string fullPath, string filename, Hashtable details, ArrayList entities, ArrayList links, bool fromTrustedSource, ArrayList dependencies, string tagId)
             : this(fastPackageReference, name, version, versionScheme, source, summary, searchKey, fullPath, filename)
         {
             _details = details;
@@ -61,7 +61,6 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             FromTrustedSource = fromTrustedSource;
             _dependencies = dependencies;
             _tagId = tagId;
-            _xmlLang = xmlLang;
         }
 
         public SoftwareIdentity(string xmlSwidTag, bool commitImmediately)
@@ -96,14 +95,13 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
                 return r.YieldSoftwareIdentityXml(_xmlSwidTag, _commitImmediately) != null;
             }
 
-            return r.YieldSoftwareIdentity(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey, FullPath, Filename) != null && YieldTagId(r) && YieldXmlLang(r) && YieldDetails(r) && YieldEntities(r) && YieldLinks(r) && YieldDependencies(r) && r.AddMetadata(FastPackageReference, "FromTrustedSource", FromTrustedSource.ToString()) != null;
+            return r.YieldSoftwareIdentity(FastPackageReference, Name, Version, VersionScheme, Summary, Source, SearchKey, FullPath, Filename) != null && YieldTagId(r) && YieldDetails(r) && YieldEntities(r) && YieldLinks(r) && YieldDependencies(r) && r.AddMetadata(FastPackageReference, "FromTrustedSource", FromTrustedSource.ToString()) != null;
         }
 
         private ArrayList _links;
         private ArrayList _entities;
         private ArrayList _dependencies;
         private string _tagId;
-        private string _xmlLang;
         private string _xmlSwidTag;
         private bool _commitImmediately;
 
@@ -117,15 +115,6 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
             return r.AddTagId(_tagId) != null;
         }
 
-        protected virtual bool YieldXmlLang(PsRequest r)
-        {
-            if (string.IsNullOrWhiteSpace(_xmlLang))
-            {
-                return true;
-            }
-
-            return r.AddCulture(_xmlLang) != null;
-        }
         protected override bool YieldDetails(PsRequest r) {
             if (_details != null && _details.Count > 0) {
                 // we need to send this back as a set of key/path & value  pairs.

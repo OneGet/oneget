@@ -158,7 +158,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 base.ProcessPackage(provider, searchKey, package);
 
                 // output to console
-                WriteObject(AddPropertyToSoftwareIdentity(package));
+                WriteObject(package);
 
                 if (IncludeDependencies) {
                     var missingDependencies = new HashSet<string>();

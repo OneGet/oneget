@@ -40,12 +40,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using FilesystemExtensions = Microsoft.PackageManagement.Internal.Utility.Extensions.FilesystemExtensions;
 
     public abstract class CmdletWithSearchAndSource : CmdletWithSearch {
+        protected readonly List<string, string> _filesWithoutMatches = new List<string, string>();
         internal readonly OrderedDictionary<string, List<SoftwareIdentity>> _resultsPerName = new OrderedDictionary<string, List<SoftwareIdentity>>();
         protected List<PackageProvider> _providersNotFindingAnything = new List<PackageProvider>();
-        internal static readonly string[] ProviderFilters = new[] { "Packagemanagement", "Provider" };
+        protected readonly string[] ProviderFilters = new[] {"Packagemanagement", "Provider"};
         protected const string Bootstrap = "Bootstrap";
         protected const string PowerShellGet = "PowerShellGet";
-        internal static readonly string[] RequiredProviders = new[] { Bootstrap, PowerShellGet };
+        protected readonly string[] RequiredProviders = new[] { Bootstrap, PowerShellGet };
         private readonly HashSet<string> _sourcesTrusted = new HashSet<string>();
         private readonly HashSet<string> _sourcesDeniedTrust = new HashSet<string>();
         private bool _yesToAll = false;
@@ -428,6 +429,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 }
             }
 
+            foreach (var unmatchedFile in _filesWithoutMatches) {
+                Verbose("Didn't Match File: {0}", unmatchedFile.Key);
+            }
             return result;
         }
 
@@ -581,15 +585,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                                 return false;
                             }
 
-                            WriteObject(AddPropertyToSoftwareIdentity(installedPkg));
-                            LogEvent(EventTask.Install, EventId.Install,
-                                Resources.Messages.PackageInstalled,
-                                installedPkg.Name,
-                                installedPkg.Version,
-                                installedPkg.ProviderName,
-                                installedPkg.Source ?? string.Empty,
-                                installedPkg.Status ?? string.Empty);
-                            TraceMessage(Constants.InstallPackageTrace, installedPkg);                           
+
+                            WriteObject(installedPkg);
+
                         }
                     }
                 } catch (Exception e) {

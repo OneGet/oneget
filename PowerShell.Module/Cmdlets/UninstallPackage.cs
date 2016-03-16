@@ -16,14 +16,12 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.PackageManagement.Internal.Packaging;
     using Microsoft.PackageManagement.Internal.Utility.Async;
     using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Packaging;
-    using Utility;
 
     [Cmdlet(VerbsLifecycle.Uninstall, Constants.Nouns.PackageNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517142")]
     public sealed class UninstallPackage : GetPackage {
@@ -35,16 +33,16 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.ParameterSets.PackageByInputObjectSet)]
         public SoftwareIdentity[] InputObject {get; set;}
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Name {get; set;}
-        
+
         [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string RequiredVersion {get; set;}
-       
+
+        [Alias("Version")]
         [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string MinimumVersion {get; set;}
 
@@ -150,8 +148,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                                 return false;
                             }
                             WriteObject(installedPkg);
-                            LogEvent(EventTask.Uninstall, EventId.Uninstall, Resources.Messages.PackageUnInstalled, installedPkg.Name, installedPkg.Version, installedPkg.ProviderName, installedPkg.Source ?? string.Empty, installedPkg.Status ?? string.Empty);
-                            TraceMessage(Constants.UnInstallPackageTrace, installedPkg);
                         }
                     }
                 } catch (Exception e) {

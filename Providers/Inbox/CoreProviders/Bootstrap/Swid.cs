@@ -47,7 +47,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             _swidtag = DownloadSwidtag(mirrors);
         }
 
-        internal Uri Location {get;  set;}
+        internal Uri Location {get; private set;}
 
         private IRequest DownloadRequest {
             get {

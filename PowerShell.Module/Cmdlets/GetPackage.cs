@@ -174,7 +174,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         protected virtual void ProcessPackage(SoftwareIdentity package) {
             // Check for duplicates
             if (!IsDuplicate(package)) {
-                WriteObject(AddPropertyToSoftwareIdentity(package));
+                WriteObject(package);
             }
         }
 
@@ -184,13 +184,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 Error(Constants.Errors.NoMatchFound, name);
             }
             return true;
-        }
-
-        //use wide Source column for get-package
-        protected override bool UseDefaultSourceFormat {
-            get {
-                return false;
-            }
         }
     }
 }

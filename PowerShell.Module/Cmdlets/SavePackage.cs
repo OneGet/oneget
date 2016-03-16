@@ -43,7 +43,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        [Parameter(Position = 0, Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
+        [Parameter(Position = 0, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Name { get; set; }
 
         [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
@@ -111,47 +111,46 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
             try
             {
-                if (!string.IsNullOrWhiteSpace(Path))
+                // Validate Path
+                if (!String.IsNullOrEmpty(Path))
                 {
-                    resolvedPath = ResolveExistingFolderPath(Path, !Force);
+                    ProviderInfo provider = null;
+                    Collection<string> resolvedPaths = GetResolvedProviderPathFromPSPath(Path, out provider);
+
+                    // Ensure the path is a single path from the file system provider
+                    if ((resolvedPaths.Count > 1) ||
+                        (!String.Equals(provider.Name, "FileSystem", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        Error(Constants.Errors.FilePathMustBeFileSystemPath, Path);
+                        return null;
+                    }
+
+                    resolvedPath = resolvedPaths[0];
                 }
 
-                if (!string.IsNullOrWhiteSpace(LiteralPath))
+                if (!String.IsNullOrEmpty(LiteralPath))
                 {
                     // Validate that the path exists
-                    try
-                    {
-                        SessionState.InvokeProvider.Item.Get(new string[] { LiteralPath }, false, true);
-                    }
-                    catch (ItemNotFoundException)
-                    {
-                        if(!Force)
-                        {
-                            throw;
-                        }
-                    }
-
+                    SessionState.InvokeProvider.Item.Get(new string[] { LiteralPath }, false, true);
                     resolvedPath = LiteralPath;
                 }
-
-                if (string.IsNullOrWhiteSpace(resolvedPath)) {
-                    Error(Constants.Errors.DestinationPathInvalid, resolvedPath, packageName);
-                    return null;
-                }
-
-                // If the destination directory doesn't exist, create it
-                if (!Directory.Exists(resolvedPath)) {
-                    Directory.CreateDirectory(resolvedPath);
-                }
-
-                // don't append path and package name here
-                return resolvedPath;
             }
-            catch (Exception e)
+            catch(Exception e)
             {
                 Error(Constants.Errors.SavePackageError, e.Message);
                 return null;
             }
+
+            if (Directory.Exists(resolvedPath))
+            {
+                // don't append path and package name here
+                return resolvedPath;
+            }
+
+            // it's not an existing directory
+            // So throw a terminating error.
+            Error(Constants.Errors.DestinationPathInvalid, resolvedPath, packageName);
+            return null;
         }
 
         public override bool ProcessRecordAsync() {
@@ -165,12 +164,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 return true;
             }
 
-            if (Name.Any(each => each.ContainsWildcards()))
-            {
-                Error(Constants.Errors.WildCardCharsAreNotSupported, Name.JoinWithComma());
-                return false;
-            }
-  
             return base.ProcessRecordAsync();
         }
 
@@ -201,20 +194,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         }
 
                         // check whether main package is downloaded;
-                        if (downloadedPkg.Name.EqualsIgnoreCase(package.Name) && downloadedPkg.Version.EqualsIgnoreCase(package.Version))
+                        if (string.Equals(downloadedPkg.CanonicalId, package.CanonicalId, StringComparison.OrdinalIgnoreCase))
                         {
                             mainPackageDownloaded = true;
                         }
 
-                        WriteObject(AddPropertyToSoftwareIdentity(downloadedPkg));
-                        LogEvent(EventTask.Download, EventId.Save, Resources.Messages.PackageSaved, downloadedPkg.Name, downloadedPkg.Version, downloadedPkg.ProviderName, downloadedPkg.Source ?? string.Empty, downloadedPkg.Status ?? string.Empty);
-                        TraceMessage(Constants.SavePackageTrace, downloadedPkg);
+                        WriteObject(downloadedPkg);
                     }
-                }
-                else
-                {
-                    // What if scenario, don't error out
-                    return;
                 }
             }
 

@@ -14,21 +14,18 @@
 
 namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
     using System;
-    using System.Collections;
     using System.Globalization;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Xml.Linq;
     using System.Security.Cryptography;
-    using System.Management.Automation;
     using PackageManagement.Internal;
     using PackageManagement.Internal.Implementation;
     using PackageManagement.Internal.Packaging;
     using PackageManagement.Internal.Utility.Platform;
     using PackageManagement.Internal.Utility.Collections;
     using PackageManagement.Internal.Utility.Extensions;
-    using ErrorCategory = PackageManagement.Internal.ErrorCategory;
+    
 
     public abstract class BootstrapRequest : Request {
         internal readonly Uri[] _urls = {
@@ -44,16 +41,10 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
         };
 
         private IEnumerable<Feed> _feeds;
-        private IEnumerable<string> _fileSource = null;
 
         private IEnumerable<Feed> Feeds {
             get {
                 if (_feeds == null) {
-                    if (LocalSource.Any()) {
-                        Verbose(Resources.Messages.UseLocalSource, LocalSource.FirstOrDefault());                        
-                        return Enumerable.Empty<Feed>();
-                    }
-
                     if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable()) {
                         Warning(Constants.Messages.NetworkNotAvailable);
                         Warning(string.Format(CultureInfo.CurrentCulture, Resources.Messages.ProviderBootstrapFailed));
@@ -64,7 +55,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                     var feed = new Feed(this, _urls);
                     if (feed.IsValid) {
                         _feeds = feed.SingleItemAsEnumerable().ReEnumerable();
-                    } else {
+                    } else {                                           
                         Warning(Constants.Messages.ProviderSwidtagUnavailable);
                         return Enumerable.Empty<Feed>();
                     }
@@ -73,50 +64,34 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             }
         }
 
-        internal IEnumerable<string> LocalSource {
-            get
-            {
-                if (_fileSource == null)
-                {
-                    if (Sources.IsNullOrEmpty())
-                    {
-                        _fileSource = Enumerable.Empty<string>();                       
-                    } else {
-                        _fileSource = Sources.Where(each => !string.IsNullOrWhiteSpace(each) && (System.IO.File.Exists(each) || System.IO.Directory.Exists(each))).WhereNotNull();
-                    }
-                }
-                return _fileSource;
-            }
-        }
-
         internal string DestinationPath(Request request) {
 
-            var pms = PackageManagementService as PackageManagementService;
+                var pms = PackageManagementService as PackageManagementService;
 
-            var scope = GetValue("Scope");
-            if (!string.IsNullOrWhiteSpace(scope)) {
-                if (scope.EqualsIgnoreCase("CurrentUser")) {
-                    return pms.UserAssemblyLocation;
+                var scope = GetValue("Scope");
+                if (!string.IsNullOrWhiteSpace(scope)) {
+                    if (scope.EqualsIgnoreCase("CurrentUser")) {
+                        return pms.UserAssemblyLocation;
+                    }
+                    if (AdminPrivilege.IsElevated) {
+                        return pms.SystemAssemblyLocation;
+                    } else {
+                        //a user specifies 'AllUsers' that requires Admin provilege. However his console gets launched by non-elevated.
+                        Error(ErrorCategory.InvalidOperation, ErrorCategory.InvalidOperation.ToString(),
+                            PackageManagement.Resources.Messages.InstallRequiresCurrentUserScopeParameterForNonAdminUser, pms.SystemAssemblyLocation, pms.UserAssemblyLocation);                 
+                        return null;
+                    }
                 }
-                if (AdminPrivilege.IsElevated) {
-                    return pms.SystemAssemblyLocation;
-                } else {
-                    //a user specifies 'AllUsers' that requires Admin provilege. However his console gets launched by non-elevated.
-                    Error(ErrorCategory.InvalidOperation, ErrorCategory.InvalidOperation.ToString(),
-                        PackageManagement.Resources.Messages.InstallRequiresCurrentUserScopeParameterForNonAdminUser, pms.SystemAssemblyLocation, pms.UserAssemblyLocation);
-                    return null;
-                }
-            }
 
-            var v = GetValue("DestinationPath");
-            if (String.IsNullOrWhiteSpace(v)) {
-                // use a well-known path.
-                v = AdminPrivilege.IsElevated ? pms.SystemAssemblyLocation : pms.UserAssemblyLocation;
+                var v = GetValue("DestinationPath");
                 if (String.IsNullOrWhiteSpace(v)) {
-                    return null;
+                    // use a well-known path.
+                    v = AdminPrivilege.IsElevated ? pms.SystemAssemblyLocation : pms.UserAssemblyLocation;
+                    if (String.IsNullOrWhiteSpace(v)) {
+                        return null;
+                    }
                 }
-            }
-            return Path.GetFullPath(v);
+                return Path.GetFullPath(v);
         }
 
         internal IEnumerable<Package> Providers {
@@ -142,15 +117,14 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             return Feeds.SelectMany(feed => feed.Query(name, version)).FirstOrDefault();
         }
 
-        internal IEnumerable<Package> GetProviderAll(string name, string minimumversion, string maximumversion) {
+        internal IEnumerable<Package> GetProviderAll(string name, string minimumversion, string maximumversion)
+        {
             return Feeds.SelectMany(feed => feed.Query(name, minimumversion, maximumversion));
         }
 
         internal IEnumerable<Package> GetProvider(string name, string minimumversion, string maximumversion) {
-            return new[] {
-                GetProviderAll(name, minimumversion, maximumversion)
-                    .OrderByDescending(each => SoftwareIdentityVersionComparer.Instance).FirstOrDefault()
-            };
+            return new[] { GetProviderAll(name, minimumversion, maximumversion)
+                .OrderByDescending(each => SoftwareIdentityVersionComparer.Instance).FirstOrDefault()};
         }
 
         internal string DownloadAndValidateFile(string name, Swidtag swidtag) {
@@ -184,11 +158,13 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
         /// <param name="location"></param>
         /// <param name="numberOfTry"></param>
         /// <returns></returns>
-        internal string RetryDownload(Func<Uri, string> downloadFileFunction, Uri location, uint numberOfTry = 3) {
+        internal string RetryDownload(Func<Uri, string> downloadFileFunction, Uri location, uint numberOfTry=3)
+        {
             string file = null;
 
             // if scheme is not https, write warning and ignores this link
-            if (!string.Equals(location.Scheme, "https")) {
+            if (!string.Equals(location.Scheme, "https"))
+            {
                 Warning(string.Format(CultureInfo.CurrentCulture, Resources.Messages.OnlyHttpsSchemeSupported, location.AbsoluteUri));
                 return file;
             }
@@ -197,16 +173,23 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             int remainingTry = 3;
 
             // try to download the file for remainingTry times
-            while (remainingTry > 0) {
-                try {
+            while (remainingTry > 0)
+            {
+                try
+                {
                     file = downloadFileFunction(location);
-                } finally {
-                    if (file == null || !file.FileExists()) {
+                }
+                finally
+                {
+                    if (file == null || !file.FileExists())
+                    {
                         // file cannot be download
                         file = null;
                         remainingTry -= 1;
                         Verbose(string.Format(CultureInfo.CurrentCulture, Resources.Messages.RetryDownload, location.AbsoluteUri, remainingTry));
-                    } else {
+                    }
+                    else
+                    {
                         // file downloaded, no need to retry.
                         remainingTry = 0;
                     }
@@ -222,14 +205,16 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             foreach (var link in links) {
                 file = RetryDownload(
                     // the download function takes in a uri link and download it
-                    (uri) => {
-                        var tmpFile = link.Artifact.GenerateTemporaryFilename();
-                        return ProviderServices.DownloadFile(uri, tmpFile, -1, true, this);
-                    },
+                    (uri) =>
+                        {
+                            var tmpFile = link.Artifact.GenerateTemporaryFilename();
+                            return ProviderServices.DownloadFile(uri, tmpFile, -1, true, this);
+                        },
                     link.HRef);
 
                 // got a valid file!
-                if (file != null && file.FileExists()) {
+                if (file != null && file.FileExists())
+                {
                     return file;
                 }
             }
@@ -250,7 +235,8 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                 return false;
             }
 
-            try {
+            try
+            {
                 if ((payload.Files == null) || !payload.Files.Any()) {
                     Error(ErrorCategory.InvalidData, "Payload", Constants.Messages.MissingFileTag);
                     return false;
@@ -349,25 +335,18 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             return YieldFromSwidtag(provider, searchKey);
         }
 
-
         internal bool YieldFromSwidtag(Package pkg, string searchKey) {
             if (pkg == null) {
                 return !IsCanceled;
             }
 
             var provider = pkg._swidtag;
-            var fastPackageReference = LocalSource.Any() ? pkg.Location.LocalPath : pkg.Location.AbsoluteUri;
-            var source = pkg.Source ?? fastPackageReference;
+            var targetFilename = provider.Links.Select(each => each.Attributes[Iso19770_2.Discovery.TargetFilename]).WhereNotNull().FirstOrDefault();
+            var summary = new MetadataIndexer(provider)[Iso19770_2.Attributes.Summary.LocalName].FirstOrDefault();
 
-            var summary = pkg.Name;
-            var targetFileName = pkg.Name;
-
-            if (!LocalSource.Any()) {
-                summary = new MetadataIndexer(provider)[Iso19770_2.Attributes.Summary.LocalName].FirstOrDefault();
-                targetFileName = provider.Links.Select(each => each.Attributes[Iso19770_2.Discovery.TargetFilename]).WhereNotNull().FirstOrDefault();
-            }
-
-            if (YieldSoftwareIdentity(fastPackageReference, provider.Name, provider.Version, provider.VersionScheme, summary, source, searchKey, null, targetFileName) != null) {
+            var fastPackageReference = pkg.Location.AbsoluteUri;
+            
+            if (YieldSoftwareIdentity(fastPackageReference, provider.Name, provider.Version, provider.VersionScheme, summary, fastPackageReference, searchKey, null, targetFilename) != null) {
                 // yield all the meta/attributes
                 if (provider.Meta.Any(
                     m => {
@@ -405,203 +384,6 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
 
         private static bool AnyNullOrEmpty(params string[] args) {
             return args.Any(String.IsNullOrWhiteSpace);
-        }
-
-        /// <summary>
-        /// Get a package provider from a given path.
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="suppressErrorsAndWarnings"></param>
-        /// <param name="copyFileToTemp"></param>
-        /// <returns></returns>
-        internal Package GetProviderFromFile(string filePath, bool copyFileToTemp = false, bool suppressErrorsAndWarnings = false) {
-            
-            if (string.IsNullOrWhiteSpace(filePath) && !System.IO.File.Exists(filePath)) {
-                Warning(Constants.Messages.FileNotFound, filePath);              
-                return null;
-            }
-
-            // support providers with .dll file extention only
-            if (!Path.GetExtension(filePath).EqualsIgnoreCase(".dll")) {
-                if (!suppressErrorsAndWarnings)
-                {
-                    Warning(Resources.Messages.InvalidFileType, ".dll", filePath);
-                }
-                return null;
-            }
-
-            string tempFile = filePath;
-            IEnumerable<XElement> manifests = Enumerable.Empty<XElement>();
-            if (copyFileToTemp) {
-                try {
-                    // Manifest.LoadFrom() does not work with network share, so we need to copy the dll to temp location
-                    tempFile = CopyToTempLocation(filePath);
-                    if (string.IsNullOrWhiteSpace(tempFile) && !System.IO.File.Exists(tempFile))
-                    {
-                        Warning(Constants.Messages.FileNotFound, tempFile);
-                        return null;
-                    }
-
-                    manifests = Manifest.LoadFrom(tempFile).ToArray();
-                }
-                finally {
-                    if (!string.IsNullOrWhiteSpace(tempFile)) {
-                        tempFile.TryHardToDelete();
-                    }
-                }
-            } else {
-                // providers have the provider manifest embeded?
-                manifests = Manifest.LoadFrom(filePath).ToArray();
-            }
-
-            if (!manifests.Any()) {
-                if (!suppressErrorsAndWarnings)
-                {
-                    Warning(Resources.Messages.MissingProviderManifest, tempFile);
-                }
-                return null;
-            }
-
-            var source = new Uri(filePath);
-            foreach (var manifest in manifests) {
-                var swidTagObject = new Swidtag(manifest);
-
-                if (Swidtag.IsSwidtag(manifest) && swidTagObject.IsApplicable(new Hashtable())) {
-                    
-                    return new Package(this, swidTagObject) {
-                        Location = source,
-                        Source = source.LocalPath
-                    };
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Find a package provider from a file path.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="requiredVersion"></param>
-        /// <param name="minimumVersion"></param>
-        /// <param name="maximumVersion"></param>
-        internal void FindProviderFromFile(string name, string requiredVersion, string minimumVersion, string maximumVersion) {
-
-            // find the providers from the given Source location
-            var pkgs = FindProviderByNameFromFile(name).Where(each => FilterOnName(each, name) && FilterOnVersion(each, requiredVersion, minimumVersion, maximumVersion)).ReEnumerable();
-
-            Debug("Total {0}  providers found".format(pkgs.Count()));
-
-            //A user does not provide version info, we choose the latest
-            if (!GetOptionValue("AllVersions").IsTrue() && (string.IsNullOrWhiteSpace(requiredVersion) && string.IsNullOrWhiteSpace(minimumVersion) && string.IsNullOrWhiteSpace(maximumVersion)))
-            {
-                pkgs = pkgs.GroupBy(p => p.Name).Select(each => each.OrderByDescending(pp => pp.Version).FirstOrDefault()).ReEnumerable();
-            }
-        
-            foreach (var package in pkgs)
-            {
-                YieldFromSwidtag(package, name);
-            }
-        }
-
-        private IEnumerable<Package> FindProviderByNameFromFile(string name) {
-            foreach (var each in LocalSource) {
-                // each can be file full path or folder directory
-                var assemblies = System.IO.File.Exists(each) ? new[] {each} : System.IO.Directory.EnumerateFiles(each, "*.dll", SearchOption.AllDirectories);
-
-                foreach (var item in assemblies) {
-                    yield return GetProviderFromFile(item, true, false);               
-                }
-            }
-        }
-
-        private bool FilterOnName(Package pkg, string name)
-        {
-            if (pkg == null)
-            {
-                return false;
-            }
-
-            if(string.IsNullOrWhiteSpace(name))
-            {
-                return true;
-            }
-
-            if (WildcardPattern.ContainsWildcardCharacters(name))            
-            {
-                // Applying the wildcard pattern matching
-                const WildcardOptions wildcardOptions = WildcardOptions.CultureInvariant | WildcardOptions.IgnoreCase;
-                var wildcardPattern = new WildcardPattern(name, wildcardOptions);
-
-                return wildcardPattern.IsMatch(pkg.Name);
-
-            }
-            else
-            {
-                return pkg.Name.EqualsIgnoreCase(name);
-            }
-        }
-
-        private bool FilterOnVersion(Package pkg, string requiredVersion, string minimumVersion, string maximumVersion) {
-
-            if(pkg == null) {
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(requiredVersion) || (SoftwareIdentityVersionComparer.CompareVersions(pkg.VersionScheme, pkg.Version, requiredVersion) == 0))
-            {
-                if (string.IsNullOrWhiteSpace(minimumVersion) || (SoftwareIdentityVersionComparer.CompareVersions(pkg.VersionScheme, pkg.Version, minimumVersion) >= 0))
-                {
-                    if (string.IsNullOrWhiteSpace(maximumVersion) || (SoftwareIdentityVersionComparer.CompareVersions(pkg.VersionScheme, pkg.Version, maximumVersion) <= 0))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        public static string GetTempFileFullPath(string filePath) {
-            if (string.IsNullOrWhiteSpace(filePath)) {
-                return filePath;
-            }
-            // get a temp location
-            var file = Path.Combine(Path.GetTempPath(), Path.GetFileName(filePath));
-
-            if (System.IO.File.Exists(file)) {
-                //if exists already, delete it
-                file.TryHardToDelete();
-            }
-
-            // is that file still there?
-            if (System.IO.File.Exists(file)) {
-                //try it again if the generated file already exists
-                file = GetTempFileFullPath(filePath);
-            }
-
-            return file;
-        }
-
-        private string CopyToTempLocation(string filePath) {
-            if (string.IsNullOrWhiteSpace(filePath)) {
-                return filePath;
-            }
-
-            var targetFile = GetTempFileFullPath(filePath);
-
-            if (filePath.EqualsIgnoreCase(targetFile)) {
-                return filePath;
-            }
-
-            Debug("Copying file '{0}' to '{1}'", filePath, targetFile);
-            try {
-                System.IO.File.Copy(filePath, targetFile);
-                return targetFile;
-            } catch (Exception ex) {
-                Debug(ex.StackTrace);
-                return string.Empty;
-            }
         }
     }
 }

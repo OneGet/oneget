@@ -51,13 +51,6 @@ namespace Microsoft.PackageManagement.Internal.Api {
         string AddTagId(string tagId);
 
         /// <summary>
-        /// Adds a xml language attribute to a SoftwareIdentity object
-        /// </summary>
-        /// <param name="culture"></param>
-        /// <returns></returns>
-        string AddCulture(string culture);
-
-        /// <summary>
         /// Adds an arbitrary key/value pair of metadata to a SoftwareIdentity
         /// 
         /// This adds the metadata to the first Meta element in the swidtag.

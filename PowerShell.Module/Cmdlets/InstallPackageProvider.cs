@@ -17,7 +17,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
@@ -36,8 +35,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         private const string FilterOnTag = "FilterOnTag";
         private string _scope = "AllUsers";
-        private List<string> _sourcesFromPipeline = null;
-
+      
         public InstallPackageProvider()
             : base(new[] {
                 OptionCategory.Package, OptionCategory.Install
@@ -83,16 +81,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
             get
             {
-                if(InputObject != null) {
-                    if (_sourcesFromPipeline == null) {
-                        _sourcesFromPipeline = new List<string>();
-
-                        foreach (var inputObj in InputObject) {
-                            _sourcesFromPipeline.Add(inputObj.Source);
-                        }                        
-                    }
-                    return _sourcesFromPipeline.ToArray();
-                }
                 return base.Source;
             }
             set
@@ -101,7 +89,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             }
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = Constants.ParameterSets.PackageByInputObjectSet)]
         public SoftwareIdentity[] InputObject {get; set;}
 

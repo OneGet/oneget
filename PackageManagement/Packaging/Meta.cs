@@ -41,7 +41,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         }
 
         public override string ToString() {
-            return Attributes != null ? Attributes.ToString() : string.Empty;
+            return Attributes.ToString();
         }
 
         /// <summary>

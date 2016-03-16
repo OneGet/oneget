@@ -239,10 +239,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
         public string ResolveExistingFolderPath(string folderPath) {
-            return ResolveExistingFolderPath(folderPath, false);
-        }
-
-        public string ResolveExistingFolderPath(string folderPath, bool isThrow) {
             ProviderInfo providerInfo = null;
             string[] files = null;
 
@@ -254,9 +250,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
             catch (ItemNotFoundException itemNotFoundEx)
             {
-                if (isThrow) {
-                    throw;
-                }
                 // this means path does not exist but the provider may want to create it so we should allow
                 files = new string[1] { itemNotFoundEx.ItemName };
             }

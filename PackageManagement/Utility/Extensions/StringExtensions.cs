@@ -198,21 +198,6 @@ namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
             return source.IndexOf(input, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        public static bool IsFile(this string input) {
-            if (string.IsNullOrWhiteSpace(input)) {
-                return false;
-            }
-
-            try {
-                Uri result;
-                if (Uri.TryCreate(input, UriKind.Absolute, out result)) {
-                    return result.IsFile;
-                }
-            } catch {
-            }
-            return false;
-        }
-
         public static bool IsWildcardMatch(this string input, string wildcardMask) {
             if (input == null || string.IsNullOrWhiteSpace(wildcardMask)) {
                 return false;

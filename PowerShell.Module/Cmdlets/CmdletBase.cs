@@ -33,10 +33,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using Utility;
     using Constants = PackageManagement.Constants;
     using System.Diagnostics.CodeAnalysis;
-    using System.Globalization;
-    using Microsoft.PackageManagement.Packaging;
-    using Telemetry.Internal;
-    using System.Management.Automation.Runspaces;
+    using System.Threading.Tasks;
 
     public delegate string GetMessageString(string messageId, string defaultText);
 
@@ -96,34 +93,31 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 }
                 else
                 {
-                    // throw error saying we don't support
-                    Error(Constants.Errors.TooManyPackages, handles.Length);
-                    
-                    //// divide handles in chunks of 64 each
-                    //int numberOfTasks = (int)Math.Ceiling(handles.Length / 64.0);
-                    //var cts = new CancellationTokenSource();
-                    //Task[] tasks = new Task[numberOfTasks];
-                    //for (int i = 0; i < numberOfTasks; i += 1)
-                    //{
-                    //    // now each task will use the waithandle.waitany since only 64 handles will be assigned to each task
-                    //    // so we won't get exception
-                    //    tasks[i] = Task.Factory.StartNew(() =>
-                    //    {
-                    //        if ((handles.Length - i * 64) > 0)
-                    //        {
-                    //            // either 64 items or whatever left
-                    //            int waitHandleArrayLength = Math.Min(64, handles.Length - i * 64);
-                    //            WaitHandle[] waithandles = new WaitHandle[waitHandleArrayLength];
-                    //            Array.Copy(handles, i * 64, waithandles, 0, waitHandleArrayLength);
-                    //            WaitHandle.WaitAny(waithandles);
-                    //        }
-                    //    }, cts.Token);
-                    //}
+                    // divide handles in chunks of 64 each
+                    int numberOfTasks = (int)Math.Ceiling(handles.Length / 64.0);
+                    var cts = new CancellationTokenSource();
+                    Task[] tasks = new Task[numberOfTasks];
+                    for (int i = 0; i < numberOfTasks; i += 1)
+                    {
+                        // now each task will use the waithandle.waitany since only 64 handles will be assigned to each task
+                        // so we won't get exception
+                        tasks[i] = Task.Factory.StartNew(() =>
+                        {
+                            if ((handles.Length - i * 64) > 0)
+                            {
+                                // either 64 items or whatever left
+                                int waitHandleArrayLength = Math.Min(64, handles.Length - i * 64);
+                                WaitHandle[] waithandles = new WaitHandle[waitHandleArrayLength];
+                                Array.Copy(handles, i * 64, waithandles, 0, waitHandleArrayLength);
+                                WaitHandle.WaitAny(waithandles);
+                            }
+                        }, cts.Token);
+                    }
 
-                    //// just need a task to finish
-                    //Task.WaitAny(tasks);
-                    //// cancel the rest
-                    //cts.Cancel();
+                    // just need a task to finish
+                    Task.WaitAny(tasks);
+                    // cancel the rest
+                    cts.Cancel();
                 }
                 return !IsCanceled;
             }
@@ -430,69 +424,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return true;
         }
 
-        #region Event and telemetry stuff
-        //Calling PowerShell Telemetry APIs
-        protected void TraceMessage(string message, SoftwareIdentity swidObject) {
-            TelemetryAPI.TraceMessage(message,
-                new {
-                    PackageName = swidObject.Name,
-                    PackageVersion = swidObject.Version,
-                    PackageProviderName = swidObject.ProviderName,
-                    Repository = swidObject.Source,
-                    ExuectionStatus = swidObject.Status,
-                    ExecutionTime = DateTime.Today
-                });
-        }
-
-        protected enum EventTask {
-            None = 0,
-            Install = 1,
-            Uninstall = 2,
-            Download = 3
-        }
-
-        
-        //We use Microsoft-Windows-PowerShell event source to log PackageManagement events.
-        //4101... is the eventid of Microsoft-Windows-PowerShell event provider
-        //You can find the events in Microsoft-Windows-PowerShell event log
-        protected enum EventId
-        {
-            Install = 4101,
-            Uninstall = 4102,
-            Save = 4103
-        }
-
-        protected void LogEvent(EventTask task, EventId id, string context, string name, string version, string providerName, string source, string status)
-        {
-            var iis = InitialSessionState.CreateDefault2();
-
-            using (Runspace rs = RunspaceFactory.CreateRunspace(iis))
-            {
-                using (PowerShell powershell = PowerShell.Create())
-                {
-                    try
-                    {
-                        rs.Open();
-                        powershell.Runspace = rs;
-                        powershell.AddCommand(Constants.NewWinEvent);
-                        powershell.AddParameter("ProviderName", Constants.PowerShellProviderName);
-                        powershell.AddParameter("Id", id);
-
-                        powershell.AddParameter("Payload", new object[] {
-                        task.ToString(),
-                        string.Format(CultureInfo.InvariantCulture, "Package={0}, Version={1}, Provider={2}, Source={3}, Status={4}", name, version, providerName, source, status),
-                        context});
-
-                        powershell.Invoke();
-                    }
-                    catch (Exception ex)
-                    {
-                        Verbose(ex.Message);
-                    }
-                }
-            }           
-        }
-
-        #endregion
+ 
     }
 }

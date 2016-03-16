@@ -90,12 +90,10 @@ namespace Microsoft.PackageManagement.Providers.Internal {
                 throw new ArgumentNullException("request");
             }
 
-            category = category ?? string.Empty;
-
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetDynamicOptions' '{1}'", ProviderName, category);
 
-            switch (category.ToLowerInvariant()) {
+            switch ((category ?? string.Empty).ToLowerInvariant()) {
                 case "install":
                     // options required for install/uninstall/getinstalledpackages
                     request.YieldDynamicOption("IncludeWindowsInstaller", "Switch", false);

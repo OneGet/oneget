@@ -1,0 +1,84 @@
+# Copyright (C) 2014 Microsoft Corporation
+
+###
+### PowerShell.Module/sources
+###
+
+!include ..\common.inc
+
+TARGETNAME          = Microsoft.PowerShell.PackageManagement
+TARGETTYPE          = DYNLINK
+
+## !include $(PROJECT_ROOT)\monad\nttargets\build\sources.inc
+OUTPUT_PATH=$(OBJ_PATH)\$(O)
+
+SOURCES_PATH = .\
+
+###
+### Note: This really only works if you have a single .resx file.
+###       if an additional .resx file is added at some point in the future
+###       you have to either *always* pre-gen the .cs files or figure another
+###       way.
+###
+RESOURCES_NAMESPACE=Microsoft.PowerShell.PackageManagement.Resources
+GENERATED_RESOURCES_SOURCE=$(OUTPUT_PATH)\Messages.cs
+RESGEN_FLAGS = /str:cs,$(RESOURCES_NAMESPACE),Messages,$(OUTPUT_PATH)\Messages.cs
+
+### The resources that we want to include in the project
+RESGEN_SOURCES=\
+    Resources\Messages.resx,$(OUTPUT_PATH)\$(RESOURCES_NAMESPACE).Messages.resources
+
+### Note: I'm not entirely sure if the base resources are supposed to be
+###       LANGUAGE_SPECIFIC_MANAGED_RESOURCES =
+###       or
+###       LANGUAGE_NEUTRAL_MANAGED_RESOURCES =
+###       so I've left it as SPECIFIC..
+
+LANGUAGE_SPECIFIC_MANAGED_RESOURCES =\
+    $(OUTPUT_PATH)\$(RESOURCES_NAMESPACE).Messages.resources,$(RESOURCES_NAMESPACE).Messages.resources
+
+PASS2_BINPLACE=\
+    #(OUTPUT_PATH)\$(TARGETNAME).resources.dll
+
+### Referenced assemblies
+
+REFERENCES=\
+	$(PACKAGEMANAGEMENT_CORE) \
+	$(CLR_REF_PATH)\System.metadata_dll; \
+	$(CLR_REF_PATH)\System.Xml.metadata_dll; \
+    $(CLR_REF_PATH)\System.Xml.Linq.metadata_dll; \
+	$(CLR_REF_PATH)\System.Core.metadata_dll; \
+	$(CLR_REF_PATH)\..\System.Management.Automation.metadata_dll;
+
+#region sourcefiles
+SOURCES=\
+	Cmdlets\AsyncCmdlet.cs \
+	Cmdlets\CmdletBase.cs \
+ 	Cmdlets\CmdletWithProvider.cs \
+ 	Cmdlets\CmdletWithSearch.cs \
+ 	Cmdlets\CmdletWithSearchAndSource.cs \
+ 	Cmdlets\CmdletWithSource.cs \
+ 	Cmdlets\FindPackage.cs \
+ 	Cmdlets\GetPackage.cs \
+ 	Cmdlets\GetPackageProvider.cs \
+ 	Cmdlets\GetPackageSource.cs \
+ 	Cmdlets\InstallPackage.cs \
+ 	Cmdlets\RegisterPackageSource.cs \
+ 	Cmdlets\SavePackage.cs \
+ 	Cmdlets\SetPackageSource.cs \
+ 	Cmdlets\UninstallPackage.cs \
+ 	Cmdlets\UnregisterPackageSource.cs \
+ 	Utility\CustomRuntimeDefinedParameter.cs \
+ 	Utility\ErrorMessage.cs \
+ 	Utility\HostApiExtensions.cs \
+ 	Utility\ProgressTracker.cs \
+ 	Constants.cs \
+	$(GENERATED_RESOURCES_SOURCE)
+
+#endregion
+
+
+PASS0_BINPLACE=\
+	PackageManagement.format.ps1xml \
+	PackageManagement.psd1
+

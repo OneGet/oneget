@@ -97,24 +97,6 @@ namespace Microsoft.PackageManagement.Providers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Install-PackageProvider -Source only supports &apos;{0}&apos; for file-based installation. &apos;{1}&apos; is not a supported file type. To install a PowerShell-based provider, you must install it from a PSRepository..
-        /// </summary>
-        internal static string InvalidFileType {
-            get {
-                return ResourceManager.GetString("InvalidFileType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; does not contain a package provider manifest. Refer to &apos;Get-Help Import-PackageProvider&apos; for guidance..
-        /// </summary>
-        internal static string MissingProviderManifest {
-            get {
-                return ResourceManager.GetString("MissingProviderManifest", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The version is not found for the specified provider &apos;{0}&apos;..
         /// </summary>
         internal static string MissingVersion {
@@ -156,15 +138,6 @@ namespace Microsoft.PackageManagement.Providers.Resources {
         internal static string RetryDownload {
             get {
                 return ResourceManager.GetString("RetryDownload", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Searching for providers in the file path {0}..
-        /// </summary>
-        internal static string UseLocalSource {
-            get {
-                return ResourceManager.GetString("UseLocalSource", resourceCulture);
             }
         }
     }
