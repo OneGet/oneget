@@ -100,6 +100,7 @@ There are currently three branches in the git repository:
 | ------- | ---------------------------|
 |`master`|  The `master` branch is where the daily builds of OneGet will be made from.  |
 |`WMF5_RTM`|  The `WMF5_RTM` tag is to mark the WMF 5.0 RTM release point. |
+|`TP5`|  The `TP5` tag is to mark the TP5 release point. |
 |`wip`|  The `wip` branch is where the current **unstable** and **not-likely-working** coding is taking place. This lets you see where I'm at before stuff actually hits the master branch. Fun to read, but really, the wild-west of code branches. |
 
 
