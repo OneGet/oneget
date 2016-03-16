@@ -124,6 +124,7 @@
         <View>
             <Name>PSGetDscResourceInfo</Name>
             <ViewSelectedBy>
+                <TypeName>Microsoft.PowerShell.Commands.PSGetCommandInfo</TypeName>
                 <TypeName>Microsoft.PowerShell.Commands.PSGetDscResourceInfo</TypeName>
             </ViewSelectedBy>
             <TableControl>

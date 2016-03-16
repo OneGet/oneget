@@ -12,14 +12,7 @@ Microsoft.PowerShell.Core\Set-StrictMode -Version Latest
 #region script variables
 
 # Check if this is nano server. [System.Runtime.Loader.AssemblyLoadContext] is only available on NanoServer
-try {
-    [System.Runtime.Loader.AssemblyLoadContext]
-    $script:isNanoServer = $true
-}
-catch
-{
-    $script:isNanoServer = $false
-}
+$script:isNanoServer = $null -ne ('System.Runtime.Loader.AssemblyLoadContext' -as [Type])
 
 try
 {
@@ -51,7 +44,7 @@ $script:MyDocumentsScriptsPath = Microsoft.PowerShell.Management\Join-Path -Path
 $script:TempPath = ([System.IO.DirectoryInfo]$env:TEMP).FullName
 $script:PSGetItemInfoFileName = "PSGetModuleInfo.xml"
 $script:PSGetProgramDataPath = Microsoft.PowerShell.Management\Join-Path -Path $env:ProgramData -ChildPath 'Microsoft\Windows\PowerShell\PowerShellGet\'
-$script:PSGetAppLocalPath = Microsoft.PowerShell.Management\Join-Path -Path $env:LOCALAPPDATA -ChildPath 'Microsoft\Windows\PowerShell\PowerShellGet'
+$script:PSGetAppLocalPath = Microsoft.PowerShell.Management\Join-Path -Path $env:LOCALAPPDATA -ChildPath 'Microsoft\Windows\PowerShell\PowerShellGet\'
 $script:PSGetModuleSourcesFilePath = Microsoft.PowerShell.Management\Join-Path -Path $script:PSGetAppLocalPath -ChildPath "PSRepositories.xml"
 $script:PSGetModuleSources = $null
 $script:PSGetInstalledModules = $null
@@ -573,10 +566,28 @@ function Publish-Module
 
     Process
     {
-        $ev = $null
-        $moduleSource = Get-PSRepository -Name $Repository -ErrorVariable ev
-        if($ev) { return }
-
+        if($Repository -eq $Script:PSGalleryModuleSource)
+        {
+            $moduleSource = Get-PSRepository -Name $Repository -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            if(-not $moduleSource) 
+            {
+                $message = $LocalizedData.PSGalleryNotFound -f ($Repository)
+                ThrowError -ExceptionName "System.ArgumentException" `
+                           -ExceptionMessage $message `
+                           -ErrorId 'PSGalleryNotFound' `
+                           -CallerPSCmdlet $PSCmdlet `
+                           -ErrorCategory InvalidArgument `
+                           -ExceptionObject $Repository
+                return
+            }            
+        }
+        else
+        {
+            $ev = $null
+            $moduleSource = Get-PSRepository -Name $Repository -ErrorVariable ev
+            if($ev) { return }
+        }
+        
         $DestinationLocation = $moduleSource.PublishLocation
                 
         if(-not $DestinationLocation -or
@@ -596,7 +607,7 @@ function Publish-Module
         $message = $LocalizedData.PublishLocation -f ($DestinationLocation)
         Write-Verbose -Message $message
 
-        if(-not $NuGetApiKey)
+        if(-not $NuGetApiKey.Trim())
         {
             if(Microsoft.PowerShell.Management\Test-Path -Path $DestinationLocation)
             {
@@ -732,6 +743,17 @@ function Publish-Module
                            -CallerPSCmdlet $PSCmdlet `
                            -ErrorCategory InvalidArgument `
                            -ExceptionObject $Path
+            }
+
+            if($module -and (-not $module.Path.EndsWith('.psd1', [System.StringComparison]::OrdinalIgnoreCase)))
+            {
+                $message = $LocalizedData.InvalidModuleToPublish -f ($module.Name)
+                ThrowError -ExceptionName "System.InvalidOperationException" `
+                           -ExceptionMessage $message `
+                           -ErrorId "InvalidModuleToPublish" `
+                           -CallerPSCmdlet $PSCmdlet `
+                           -ErrorCategory InvalidOperation `
+                           -ExceptionObject $module.Name
             }
 
             $moduleName = $module.Name
@@ -913,7 +935,6 @@ function Find-Module
 
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [ValidateNotNull()]
-        [Alias("Version")]
         [Version]
         $MinimumVersion,
 
@@ -1014,25 +1035,35 @@ function Find-Module
 
         # No Telemetry must be performed if PSGallery is not in the supplied list of Repositories
         $isRepositoryNullOrPSGallerySpecified = $false
-        if ((-not $Repository) -or ($Repository -and ($Repository -Contains $Script:PSGalleryModuleSource)))        
+        if ($Repository -and ($Repository -Contains $Script:PSGalleryModuleSource)) 
         {
             $isRepositoryNullOrPSGallerySpecified = $true
+        }
+        elseif(-not $Repository)
+        {
+            $psgalleryRepo = Get-PSRepository -Name $Script:PSGalleryModuleSource `
+                                              -ErrorAction SilentlyContinue `
+                                              -WarningAction SilentlyContinue
+            if($psgalleryRepo)
+            {
+                $isRepositoryNullOrPSGallerySpecified = $true
+            }
         }
 		
 		PackageManagement\Find-Package @PSBoundParameters | Microsoft.PowerShell.Core\ForEach-Object {
 
-                                                        $psgetItemInfo = New-PSGetItemInfo -SoftwareIdentity $_ -Type $script:PSArtifactTypeModule 
+            $psgetItemInfo = New-PSGetItemInfo -SoftwareIdentity $_ -Type $script:PSArtifactTypeModule 
                                                         
-                                                        $psgetItemInfo
+            $psgetItemInfo
 
-                                                        if ($psgetItemInfo -and 
-                                                            $isRepositoryNullOrPSGallerySpecified -and 
-                                                            $script:TelemetryEnabled -and 
-                                                            ($psgetItemInfo.Repository -eq $Script:PSGalleryModuleSource))
-                                                        { 
-                                                            $modulesFoundInPSGallery += $psgetItemInfo.Name 
-                                                        }
-                                                 }
+            if ($psgetItemInfo -and 
+                $isRepositoryNullOrPSGallerySpecified -and 
+                $script:TelemetryEnabled -and 
+                ($psgetItemInfo.Repository -eq $Script:PSGalleryModuleSource))
+            { 
+                $modulesFoundInPSGallery += $psgetItemInfo.Name 
+            }
+        }
 
         # Perform Telemetry if Repository is not supplied or Repository contains PSGallery
         # We are only interested in finding modules not in PSGallery
@@ -1083,7 +1114,6 @@ function Save-Module
                    ParameterSetName='NameAndPathParameterSet')]
         [Parameter(ValueFromPipelineByPropertyName=$true,
                    ParameterSetName='NameAndLiteralPathParameterSet')]
-        [Alias("Version")]
         [ValidateNotNull()]
         [Version]
         $MinimumVersion,
@@ -1142,40 +1172,44 @@ function Save-Module
         $PSBoundParameters["Provider"] = $script:PSModuleProviderName
         $PSBoundParameters["MessageResolver"] = $script:PackageManagementSaveModuleMessageResolverScriptBlock
         $PSBoundParameters[$script:PSArtifactType] = $script:PSArtifactTypeModule
-
-        if($Path)
+        
+        # When -Force is specified, Path will be created if not available.
+        if(-not $Force)
         {
-            $destinationPath = Resolve-PathHelper -Path $Path -CallerPSCmdlet $PSCmdlet | Microsoft.PowerShell.Utility\Select-Object -First 1
-
-            if(-not $destinationPath -or -not (Microsoft.PowerShell.Management\Test-path $destinationPath))
+            if($Path)
             {
-                $errorMessage = ($LocalizedData.PathNotFound -f $Path)
-                ThrowError  -ExceptionName "System.ArgumentException" `
-                            -ExceptionMessage $errorMessage `
-                            -ErrorId "PathNotFound" `
-                            -CallerPSCmdlet $PSCmdlet `
-                            -ExceptionObject $Path `
-                            -ErrorCategory InvalidArgument
+                $destinationPath = Resolve-PathHelper -Path $Path -CallerPSCmdlet $PSCmdlet | Microsoft.PowerShell.Utility\Select-Object -First 1
+
+                if(-not $destinationPath -or -not (Microsoft.PowerShell.Management\Test-path $destinationPath))
+                {
+                    $errorMessage = ($LocalizedData.PathNotFound -f $Path)
+                    ThrowError  -ExceptionName "System.ArgumentException" `
+                                -ExceptionMessage $errorMessage `
+                                -ErrorId "PathNotFound" `
+                                -CallerPSCmdlet $PSCmdlet `
+                                -ExceptionObject $Path `
+                                -ErrorCategory InvalidArgument
+                }
+
+                $PSBoundParameters['Path'] = $destinationPath
             }
-
-            $PSBoundParameters['Path'] = $destinationPath
-        }
-        else
-        {
-            $destinationPath = Resolve-PathHelper -Path $LiteralPath -IsLiteralPath -CallerPSCmdlet $PSCmdlet | Microsoft.PowerShell.Utility\Select-Object -First 1
-
-            if(-not $destinationPath -or -not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $destinationPath))
+            else
             {
-                $errorMessage = ($LocalizedData.PathNotFound -f $LiteralPath)
-                ThrowError  -ExceptionName "System.ArgumentException" `
-                            -ExceptionMessage $errorMessage `
-                            -ErrorId "PathNotFound" `
-                            -CallerPSCmdlet $PSCmdlet `
-                            -ExceptionObject $LiteralPath `
-                            -ErrorCategory InvalidArgument
-            }
+                $destinationPath = Resolve-PathHelper -Path $LiteralPath -IsLiteralPath -CallerPSCmdlet $PSCmdlet | Microsoft.PowerShell.Utility\Select-Object -First 1
 
-            $PSBoundParameters['LiteralPath'] = $destinationPath
+                if(-not $destinationPath -or -not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $destinationPath))
+                {
+                    $errorMessage = ($LocalizedData.PathNotFound -f $LiteralPath)
+                    ThrowError  -ExceptionName "System.ArgumentException" `
+                                -ExceptionMessage $errorMessage `
+                                -ErrorId "PathNotFound" `
+                                -CallerPSCmdlet $PSCmdlet `
+                                -ExceptionObject $LiteralPath `
+                                -ErrorCategory InvalidArgument
+                }
+
+                $PSBoundParameters['LiteralPath'] = $destinationPath
+            }
         }
 
         if($Name)
@@ -1204,12 +1238,6 @@ function Save-Module
                 if($ev) { return }
             }
 
-            if($PSBoundParameters.ContainsKey("Version"))
-            {
-                $null = $PSBoundParameters.Remove("Version")
-                $PSBoundParameters["MinimumVersion"] = $MinimumVersion
-            }
-
             $null = PackageManagement\Save-Package @PSBoundParameters
         }
         elseif($InputObject)
@@ -1220,6 +1248,8 @@ function Save-Module
             {
                 if (($inputValue.PSTypeNames -notcontains "Microsoft.PowerShell.Commands.PSRepositoryItemInfo") -and
                     ($inputValue.PSTypeNames -notcontains "Deserialized.Microsoft.PowerShell.Commands.PSRepositoryItemInfo") -and
+                    ($inputValue.PSTypeNames -notcontains "Microsoft.PowerShell.Commands.PSGetCommandInfo") -and
+                    ($inputValue.PSTypeNames -notcontains "Deserialized.Microsoft.PowerShell.Commands.PSGetCommandInfo") -and
                     ($inputValue.PSTypeNames -notcontains "Microsoft.PowerShell.Commands.PSGetDscResourceInfo") -and
                     ($inputValue.PSTypeNames -notcontains "Deserialized.Microsoft.PowerShell.Commands.PSGetDscResourceInfo") -and
                     ($inputValue.PSTypeNames -notcontains "Microsoft.PowerShell.Commands.PSGetRoleCapabilityInfo") -and
@@ -1236,6 +1266,8 @@ function Save-Module
                 
                 if( ($inputValue.PSTypeNames -contains "Microsoft.PowerShell.Commands.PSGetDscResourceInfo") -or
                     ($inputValue.PSTypeNames -contains "Deserialized.Microsoft.PowerShell.Commands.PSGetDscResourceInfo") -or
+                    ($inputValue.PSTypeNames -contains "Microsoft.PowerShell.Commands.PSGetCommandInfo") -or
+                    ($inputValue.PSTypeNames -contains "Deserialized.Microsoft.PowerShell.Commands.PSGetCommandInfo") -or
                     ($inputValue.PSTypeNames -contains "Microsoft.PowerShell.Commands.PSGetRoleCapabilityInfo") -or
                     ($inputValue.PSTypeNames -contains "Deserialized.Microsoft.PowerShell.Commands.PSGetRoleCapabilityInfo"))
                 {
@@ -1302,7 +1334,6 @@ function Install-Module
 
         [Parameter(ValueFromPipelineByPropertyName=$true,
                    ParameterSetName='NameParameterSet')]
-        [Alias("Version")]
         [ValidateNotNull()]
         [Version]
         $MinimumVersion,
@@ -1397,12 +1428,6 @@ function Install-Module
                 if($ev) { return }
             }
 
-            if($PSBoundParameters.ContainsKey("Version"))
-            {
-                $null = $PSBoundParameters.Remove("Version")
-                $PSBoundParameters["MinimumVersion"] = $MinimumVersion
-            }
-
             $null = PackageManagement\Install-Package @PSBoundParameters
         }
         elseif($PSCmdlet.ParameterSetName -eq "InputObject")
@@ -1413,6 +1438,8 @@ function Install-Module
             {
                 if (($inputValue.PSTypeNames -notcontains "Microsoft.PowerShell.Commands.PSRepositoryItemInfo") -and
                     ($inputValue.PSTypeNames -notcontains "Deserialized.Microsoft.PowerShell.Commands.PSRepositoryItemInfo") -and
+                    ($inputValue.PSTypeNames -notcontains "Microsoft.PowerShell.Commands.PSGetCommandInfo") -and
+                    ($inputValue.PSTypeNames -notcontains "Deserialized.Microsoft.PowerShell.Commands.PSGetCommandInfo") -and
                     ($inputValue.PSTypeNames -notcontains "Microsoft.PowerShell.Commands.PSGetDscResourceInfo") -and
                     ($inputValue.PSTypeNames -notcontains "Deserialized.Microsoft.PowerShell.Commands.PSGetDscResourceInfo") -and
                     ($inputValue.PSTypeNames -notcontains "Microsoft.PowerShell.Commands.PSGetRoleCapabilityInfo") -and
@@ -1428,6 +1455,8 @@ function Install-Module
                 
                 if( ($inputValue.PSTypeNames -contains "Microsoft.PowerShell.Commands.PSGetDscResourceInfo") -or
                     ($inputValue.PSTypeNames -contains "Deserialized.Microsoft.PowerShell.Commands.PSGetDscResourceInfo") -or
+                    ($inputValue.PSTypeNames -contains "Microsoft.PowerShell.Commands.PSGetCommandInfo") -or
+                    ($inputValue.PSTypeNames -contains "Deserialized.Microsoft.PowerShell.Commands.PSGetCommandInfo") -or                    
                     ($inputValue.PSTypeNames -contains "Microsoft.PowerShell.Commands.PSGetRoleCapabilityInfo") -or
                     ($inputValue.PSTypeNames -contains "Deserialized.Microsoft.PowerShell.Commands.PSGetRoleCapabilityInfo"))
                 {
@@ -1551,8 +1580,6 @@ function Update-Module
 
     Process
     {
-        $moduleBasesToUpdate = @()
-
         $ValidationResult = Validate-VersionParameters -CallerPSCmdlet $PSCmdlet `
                                                        -Name $Name `
                                                        -MaximumVersion $MaximumVersion `
@@ -1565,89 +1592,75 @@ function Update-Module
             return
         }
 
+        $GetPackageParameters = @{}
+        $GetPackageParameters[$script:PSArtifactType] = $script:PSArtifactTypeModule
+        $GetPackageParameters["Provider"] = $script:PSModuleProviderName
+        $GetPackageParameters["MessageResolver"] = $script:PackageManagementMessageResolverScriptBlock
+        $GetPackageParameters['ErrorAction'] = 'SilentlyContinue'
+        $GetPackageParameters['WarningAction'] = 'SilentlyContinue'
+
+        $PSGetItemInfos = @()
+
         if($Name)
         {
             foreach($moduleName in $Name)
             {
-                $availableModules = Get-Module -ListAvailable $moduleName -Verbose:$false | Microsoft.PowerShell.Utility\Select-Object -Unique
-        
-                if(-not $availableModules -and -not (Test-WildcardPattern -Name $moduleName))
-                {                    
-                    $message = $LocalizedData.ModuleNotInstalledOnThisMachine -f ($moduleName)
-                    Write-Error -Message $message -ErrorId "ModuleNotInstalledOnThisMachine" -Category InvalidOperation -TargetObject $moduleName
-                    continue
-                }
-
-                foreach($mod in $availableModules)
+                $GetPackageParameters['Name'] = $moduleName
+                $installedPackages = PackageManagement\Get-Package @GetPackageParameters
+                
+                if(-not $installedPackages -and -not (Test-WildcardPattern -Name $moduleName))
                 {
-                    # Check if this module got installed with PSGet and user has required permissions
-                    $PSGetItemInfoPath = Microsoft.PowerShell.Management\Join-Path $mod.ModuleBase $script:PSGetItemInfoFileName
-                    if (Microsoft.PowerShell.Management\Test-path $PSGetItemInfoPath)
-                    {
-                        if(-not (Test-RunningAsElevated) -and $mod.ModuleBase.StartsWith($script:programFilesModulesPath, [System.StringComparison]::OrdinalIgnoreCase))
-                        {                            
-                            if(-not (Test-WildcardPattern -Name $moduleName))
-                            {
-                                $message = $LocalizedData.AdminPrivilegesRequiredForUpdate -f ($mod.Name, $mod.ModuleBase)
-                                Write-Error -Message $message -ErrorId "AdminPrivilegesAreRequiredForUpdate" -Category InvalidOperation -TargetObject $moduleName
-                            }
-                            continue
-                        }
+                    $availableModules = Get-Module -ListAvailable $moduleName -Verbose:$false | Microsoft.PowerShell.Utility\Select-Object -Unique
 
-                        $moduleBasesToUpdate += $mod.ModuleBase
+                    if(-not $availableModules)
+                    {                    
+                        $message = $LocalizedData.ModuleNotInstalledOnThisMachine -f ($moduleName)
+                        Write-Error -Message $message -ErrorId 'ModuleNotInstalledOnThisMachine' -Category InvalidOperation -TargetObject $moduleName
                     }
                     else
                     {
-                        if(-not (Test-WildcardPattern -Name $moduleName))
-                        {
-                            $message = $LocalizedData.ModuleNotInstalledUsingPowerShellGet -f ($mod.Name)
-                            Write-Error -Message $message -ErrorId "ModuleNotInstalledUsingInstallModuleCmdlet" -Category InvalidOperation -TargetObject $moduleName
-                        }
-                        continue
+                        $message = $LocalizedData.ModuleNotInstalledUsingPowerShellGet -f ($moduleName)
+                        Write-Error -Message $message -ErrorId 'ModuleNotInstalledUsingInstallModuleCmdlet' -Category InvalidOperation -TargetObject $moduleName
                     }
+
+                    continue
                 }
+
+                $installedPackages |
+                    Microsoft.PowerShell.Core\ForEach-Object {New-PSGetItemInfo -SoftwareIdentity $_ -Type $script:PSArtifactTypeModule} | 
+                        Microsoft.PowerShell.Core\ForEach-Object {                    
+                            if(-not (Test-RunningAsElevated) -and $_.InstalledLocation.StartsWith($script:programFilesModulesPath, [System.StringComparison]::OrdinalIgnoreCase))
+                            {                            
+                                if(-not (Test-WildcardPattern -Name $moduleName))
+                                {
+                                    $message = $LocalizedData.AdminPrivilegesRequiredForUpdate -f ($_.Name, $_.InstalledLocation)
+                                    Write-Error -Message $message -ErrorId "AdminPrivilegesAreRequiredForUpdate" -Category InvalidOperation -TargetObject $moduleName
+                                }
+                                continue
+                            }
+
+                            $PSGetItemInfos += $_
+                        }
             }
         }
         else
-        {            
-            $modulePaths = @()
-            $modulePaths += $script:MyDocumentsModulesPath
+        {
 
-            if((Test-RunningAsElevated))
-            {
-                $modulePaths += $script:programFilesModulesPath
-            }
-        
-            foreach ($location in $modulePaths)
-            {
-                # find all modules installed using PSGet
-                $moduleBases = Microsoft.PowerShell.Management\Get-ChildItem $location -Recurse `
-                                                                             -Attributes Hidden -Filter $script:PSGetItemInfoFileName `
-                                                                             -ErrorAction SilentlyContinue `
-                                                                             -WarningAction SilentlyContinue `
-                                                                             | Microsoft.PowerShell.Core\Foreach-Object { $_.Directory }
-                foreach ($moduleBase in $moduleBases)
-                {
-                    $PSGetItemInfoPath = Microsoft.PowerShell.Management\Join-Path $moduleBase.FullName $script:PSGetItemInfoFileName
-
-                    # Check if this module got installed using PSGet, read its contents and compare with current version
-                    if (Microsoft.PowerShell.Management\Test-Path $PSGetItemInfoPath)
-                    {
-                        $moduleBasesToUpdate += $moduleBase.FullName
-                    }
-                }
-            }
+            $PSGetItemInfos = PackageManagement\Get-Package @GetPackageParameters |
+                                Microsoft.PowerShell.Core\ForEach-Object {New-PSGetItemInfo -SoftwareIdentity $_ -Type $script:PSArtifactTypeModule} | 
+                                    Microsoft.PowerShell.Core\Where-Object {
+                                        (Test-RunningAsElevated) -or 
+                                        $_.InstalledLocation.StartsWith($script:MyDocumentsModulesPath, [System.StringComparison]::OrdinalIgnoreCase)
+                                    }
         }
 
+
         $PSBoundParameters["Provider"] = $script:PSModuleProviderName
+        $PSBoundParameters["MessageResolver"] = $script:PackageManagementUpdateModuleMessageResolverScriptBlock
         $PSBoundParameters[$script:PSArtifactType] = $script:PSArtifactTypeModule
 
-        foreach($moduleBase in $moduleBasesToUpdate)
+        foreach($psgetItemInfo in $PSGetItemInfos)
         {
-            $PSGetItemInfoPath = Microsoft.PowerShell.Management\Join-Path $moduleBase $script:PSGetItemInfoFileName
-
-            $psgetItemInfo = DeSerialize-PSObject -Path $PSGetItemInfoPath
-            
             # Skip the module name if it is already tried in the current pipeline
             if($moduleNamesInPipeline -contains $psgetItemInfo.Name)
             {
@@ -1673,7 +1686,7 @@ function Update-Module
             $PSBoundParameters["PackageManagementProvider"] = $providerName 
             $PSBoundParameters["InstallUpdate"] = $true
 
-            if($moduleBase.ToString().StartsWith($script:MyDocumentsModulesPath, [System.StringComparison]::OrdinalIgnoreCase))
+            if($psgetItemInfo.InstalledLocation.ToString().StartsWith($script:MyDocumentsModulesPath, [System.StringComparison]::OrdinalIgnoreCase))
             {
                 $PSBoundParameters["Scope"] = "CurrentUser"
             }
@@ -1682,7 +1695,6 @@ function Update-Module
                 $PSBoundParameters['Scope'] = 'AllUsers'
             }
 
-            $PSBoundParameters["MessageResolver"] = $script:PackageManagementUpdateModuleMessageResolverScriptBlock
             $sid = PackageManagement\Install-Package @PSBoundParameters
         }
     }
@@ -1876,7 +1888,6 @@ function Find-DscResource
 
         [Parameter()]
         [ValidateNotNull()]
-        [Alias('Version')]
         [Version]
         $MinimumVersion,
         
@@ -1947,6 +1958,102 @@ function Find-DscResource
 }
 
 #endregion Find-DscResouce cmdlet
+
+#region Find-Command cmdlet
+
+function Find-Command
+{
+    <#
+    .ExternalHelp PSGet.psm1-help.xml
+    #>
+    [CmdletBinding(HelpUri = 'http://go.microsoft.com/fwlink/?LinkId=733636')]
+    [outputtype('PSCustomObject[]')]
+    Param
+    (
+        [Parameter(Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]
+        $Name,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $ModuleName,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [Version]
+        $MinimumVersion,
+        
+        [Parameter()]
+        [ValidateNotNull()]
+        [Version]
+        $RequiredVersion,
+
+        [Parameter()]
+        [switch]
+        $AllVersions,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [string[]]
+        $Tag,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [string]
+        $Filter,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string[]]
+        $Repository
+    )
+
+
+    Process
+    {
+        if($PSBoundParameters.ContainsKey('Name'))
+        {
+            $PSBoundParameters['Command'] = $Name
+            $null = $PSBoundParameters.Remove('Name')
+        }
+        else
+        {
+            $PSBoundParameters['Includes'] = @('Cmdlet','Function')
+        }
+
+        if($PSBoundParameters.ContainsKey('ModuleName'))
+        {
+            $PSBoundParameters['Name'] = $ModuleName
+            $null = $PSBoundParameters.Remove('ModuleName')
+        }        
+
+        PowerShellGet\Find-Module @PSBoundParameters | 
+        Microsoft.PowerShell.Core\ForEach-Object {
+            $psgetModuleInfo = $_
+            $psgetModuleInfo.Includes.Command | Microsoft.PowerShell.Core\ForEach-Object {
+                if(($_ -eq "*") -or ($Name -and ($Name -notcontains $_)))
+                {
+                    return
+                }
+
+                $psgetCommandInfo = Microsoft.PowerShell.Utility\New-Object PSCustomObject -Property ([ordered]@{
+                        Name            = $_
+                        Version         = $psgetModuleInfo.Version
+                        ModuleName      = $psgetModuleInfo.Name
+                        Repository      = $psgetModuleInfo.Repository
+                        PSGetModuleInfo = $psgetModuleInfo
+                })
+
+                $psgetCommandInfo.PSTypeNames.Insert(0, 'Microsoft.PowerShell.Commands.PSGetCommandInfo')
+                $psgetCommandInfo
+            }
+        }
+    }
+}
+
+#endregion Find-Command cmdlet
 
 #region Find-RoleCapability cmdlet
 
@@ -2146,9 +2253,27 @@ function Publish-Script
             return
         }
 
-        $ev = $null
-        $repo = Get-PSRepository -Name $Repository -ErrorVariable ev
-        if($ev) { return }
+        if($Repository -eq $Script:PSGalleryModuleSource)
+        {
+            $repo = Get-PSRepository -Name $Repository -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            if(-not $repo) 
+            {
+                $message = $LocalizedData.PSGalleryNotFound -f ($Repository)
+                ThrowError -ExceptionName "System.ArgumentException" `
+                           -ExceptionMessage $message `
+                           -ErrorId 'PSGalleryNotFound' `
+                           -CallerPSCmdlet $PSCmdlet `
+                           -ErrorCategory InvalidArgument `
+                           -ExceptionObject $Repository
+                return
+            }            
+        }
+        else
+        {
+            $ev = $null
+            $repo = Get-PSRepository -Name $Repository -ErrorVariable ev
+            if($ev) { return }
+        }
 
         $DestinationLocation = $null
 
@@ -2174,7 +2299,7 @@ function Publish-Script
         $message = $LocalizedData.PublishLocation -f ($DestinationLocation)
         Write-Verbose -Message $message
 
-        if(-not $NuGetApiKey)
+        if(-not $NuGetApiKey.Trim())
         {
             if(Microsoft.PowerShell.Management\Test-Path -Path $DestinationLocation)
             {
@@ -2430,25 +2555,35 @@ function Find-Script
 
         # No Telemetry must be performed if PSGallery is not in the supplied list of Repositories
         $isRepositoryNullOrPSGallerySpecified = $false
-        if ((-not $Repository) -or ($Repository -and ($Repository -Contains $Script:PSGalleryModuleSource)))        
+        if ($Repository -and ($Repository -Contains $Script:PSGalleryModuleSource))
         {
             $isRepositoryNullOrPSGallerySpecified = $true
         }
+        elseif(-not $Repository)
+        {
+            $psgalleryRepo = Get-PSRepository -Name $Script:PSGalleryModuleSource `
+                                              -ErrorAction SilentlyContinue `
+                                              -WarningAction SilentlyContinue
+            # And check for IsDeafult?
+            if($psgalleryRepo)
+            {
+                $isRepositoryNullOrPSGallerySpecified = $true
+            }
+        }
 
         PackageManagement\Find-Package @PSBoundParameters | Microsoft.PowerShell.Core\ForEach-Object {
-
-                                                        $psgetItemInfo = New-PSGetItemInfo -SoftwareIdentity $_ -Type $script:PSArtifactTypeScript 
+                $psgetItemInfo = New-PSGetItemInfo -SoftwareIdentity $_ -Type $script:PSArtifactTypeScript 
                                                         
-                                                        $psgetItemInfo
+                $psgetItemInfo
 
-                                                        if ($psgetItemInfo -and 
-                                                            $isRepositoryNullOrPSGallerySpecified -and 
-                                                            $script:TelemetryEnabled -and 
-                                                            ($psgetItemInfo.Repository -eq $Script:PSGalleryModuleSource))
-                                                        { 
-                                                            $scriptsFoundInPSGallery += $psgetItemInfo.Name 
-                                                        }
-                                                 }
+                if ($psgetItemInfo -and 
+                    $isRepositoryNullOrPSGallerySpecified -and 
+                    $script:TelemetryEnabled -and 
+                    ($psgetItemInfo.Repository -eq $Script:PSGalleryModuleSource))
+                { 
+                    $scriptsFoundInPSGallery += $psgetItemInfo.Name 
+                }
+            }
 
         # Perform Telemetry if Repository is not supplied or Repository contains PSGallery
         # We are only interested in finding artifacts not in PSGallery
@@ -2568,41 +2703,45 @@ function Save-Script
         $PSBoundParameters["MessageResolver"] = $script:PackageManagementSaveScriptMessageResolverScriptBlock
         $PSBoundParameters[$script:PSArtifactType] = $script:PSArtifactTypeScript
 
-        if($Path)
+        # When -Force is specified, Path will be created if not available.
+        if(-not $Force)
         {
-            $destinationPath = Resolve-PathHelper -Path $Path -CallerPSCmdlet $PSCmdlet | 
-                                   Microsoft.PowerShell.Utility\Select-Object -First 1
-
-            if(-not $destinationPath -or -not (Microsoft.PowerShell.Management\Test-path $destinationPath))
+            if($Path)
             {
-                $errorMessage = ($LocalizedData.PathNotFound -f $Path)
-                ThrowError  -ExceptionName "System.ArgumentException" `
-                            -ExceptionMessage $errorMessage `
-                            -ErrorId "PathNotFound" `
-                            -CallerPSCmdlet $PSCmdlet `
-                            -ExceptionObject $Path `
-                            -ErrorCategory InvalidArgument
+                $destinationPath = Resolve-PathHelper -Path $Path -CallerPSCmdlet $PSCmdlet | 
+                                       Microsoft.PowerShell.Utility\Select-Object -First 1
+
+                if(-not $destinationPath -or -not (Microsoft.PowerShell.Management\Test-path $destinationPath))
+                {
+                    $errorMessage = ($LocalizedData.PathNotFound -f $Path)
+                    ThrowError  -ExceptionName "System.ArgumentException" `
+                                -ExceptionMessage $errorMessage `
+                                -ErrorId "PathNotFound" `
+                                -CallerPSCmdlet $PSCmdlet `
+                                -ExceptionObject $Path `
+                                -ErrorCategory InvalidArgument
+                }
+
+                $PSBoundParameters['Path'] = $destinationPath
             }
-
-            $PSBoundParameters['Path'] = $destinationPath
-        }
-        else
-        {
-            $destinationPath = Resolve-PathHelper -Path $LiteralPath -IsLiteralPath -CallerPSCmdlet $PSCmdlet | 
-                                   Microsoft.PowerShell.Utility\Select-Object -First 1
-
-            if(-not $destinationPath -or -not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $destinationPath))
+            else
             {
-                $errorMessage = ($LocalizedData.PathNotFound -f $LiteralPath)
-                ThrowError  -ExceptionName "System.ArgumentException" `
-                            -ExceptionMessage $errorMessage `
-                            -ErrorId "PathNotFound" `
-                            -CallerPSCmdlet $PSCmdlet `
-                            -ExceptionObject $LiteralPath `
-                            -ErrorCategory InvalidArgument
-            }
+                $destinationPath = Resolve-PathHelper -Path $LiteralPath -IsLiteralPath -CallerPSCmdlet $PSCmdlet | 
+                                       Microsoft.PowerShell.Utility\Select-Object -First 1
 
-            $PSBoundParameters['LiteralPath'] = $destinationPath
+                if(-not $destinationPath -or -not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $destinationPath))
+                {
+                    $errorMessage = ($LocalizedData.PathNotFound -f $LiteralPath)
+                    ThrowError  -ExceptionName "System.ArgumentException" `
+                                -ExceptionMessage $errorMessage `
+                                -ErrorId "PathNotFound" `
+                                -CallerPSCmdlet $PSCmdlet `
+                                -ExceptionObject $LiteralPath `
+                                -ErrorCategory InvalidArgument
+                }
+
+                $PSBoundParameters['LiteralPath'] = $destinationPath
+            }
         }
 
         if($Name)
@@ -2650,12 +2789,6 @@ function Save-Script
                 {
                     return
                 }
-            }
-
-            if($PSBoundParameters.ContainsKey("Version"))
-            {
-                $null = $PSBoundParameters.Remove("Version")
-                $PSBoundParameters["MinimumVersion"] = $MinimumVersion
             }
 
             $null = PackageManagement\Save-Package @PSBoundParameters
@@ -2762,6 +2895,10 @@ function Install-Script
         $Scope = 'AllUsers',
 
         [Parameter()]
+        [Switch]
+        $NoPathUpdate,
+        
+        [Parameter()]
         [switch]
         $Force
     )
@@ -2793,7 +2930,10 @@ function Install-Script
             $scopePath = $script:MyDocumentsScriptsPath
         }
 
-        ValidateAndSet-PATHVariableIfUserAccepts -Scope $Scope -ScopePath $scopePath
+        ValidateAndSet-PATHVariableIfUserAccepts -Scope $Scope `
+                                                 -ScopePath $scopePath `
+                                                 -NoPathUpdate:$NoPathUpdate `
+                                                 -Force:$Force
         
         Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet
         
@@ -2864,10 +3004,33 @@ function Install-Script
                 }
             }
 
-            if($PSBoundParameters.ContainsKey("Version"))
+            if(-not $Force)
             {
-                $null = $PSBoundParameters.Remove("Version")
-                $PSBoundParameters["MinimumVersion"] = $MinimumVersion
+                foreach($scriptName in $Name)
+                {
+                    # Throw an error if there is a command with the same name and -force is not specified.
+                    $cmd = Microsoft.PowerShell.Core\Get-Command -Name $scriptName `
+                                                                 -ErrorAction SilentlyContinue `
+                                                                 -WarningAction SilentlyContinue
+                    if($cmd)
+                    {
+                        # Check if this script was already installed, may be with -Force
+                        $InstalledScriptInfo = Test-ScriptInstalled -Name $scriptName `
+                                                                    -ErrorAction SilentlyContinue `
+                                                                    -WarningAction SilentlyContinue
+                        if(-not $InstalledScriptInfo)
+                        {
+                            $message = $LocalizedData.CommandAlreadyAvailable -f ($scriptName)
+                            Write-Error -Message $message -ErrorId CommandAlreadyAvailableWitScriptName -Category InvalidOperation
+
+                            # return if only single name is specified
+                            if($scriptName -eq $Name)
+                            {
+                                return
+                            }
+                        }
+                    }
+                }
             }
 
             $null = PackageManagement\Install-Package @PSBoundParameters
@@ -2921,6 +3084,21 @@ function Install-Script
                 }
                 else
                 {
+                    # Throw an error if there is a command with the same name and -force is not specified.
+                    if(-not $Force)
+                    {
+                        $cmd = Microsoft.PowerShell.Core\Get-Command -Name $psRepositoryItemInfo.Name `
+                                                                     -ErrorAction SilentlyContinue `
+                                                                     -WarningAction SilentlyContinue
+                        if($cmd)
+                        {
+                            $message = $LocalizedData.CommandAlreadyAvailable -f ($psRepositoryItemInfo.Name)
+                            Write-Error -Message $message -ErrorId CommandAlreadyAvailableWitScriptName -Category InvalidOperation
+                                                       
+                            continue
+                        }
+                    }
+
                     $source =  $psRepositoryItemInfo.Repository
                     $installationPolicy = (Get-PSRepository -Name $source).InstallationPolicy                
                     $ShouldProcessMessage = $PackageTarget -f ($psRepositoryItemInfo.Name, $psRepositoryItemInfo.Version)
@@ -3875,8 +4053,8 @@ function Test-ScriptFileInfo
         $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptFilePath, ([ref]$tokens), ([ref]$errors))
         
 
-        $notSupportedOnNanoErrorIds = @('WorkflowNotSupportedOnOneCore',
-                                        'ConfigurationNotSupportedOnOneCore')
+        $notSupportedOnNanoErrorIds = @('WorkflowNotSupportedInPowerShellCore',
+                                        'ConfigurationNotSupportedInPowerShellCore')
         $errosAfterSkippingOneCoreErrors = $errors | Microsoft.PowerShell.Core\Where-Object { $notSupportedOnNanoErrorIds -notcontains $_.ErrorId}
 
         if($errosAfterSkippingOneCoreErrors)
@@ -4137,7 +4315,7 @@ function New-ScriptFileInfo
                    HelpUri='http://go.microsoft.com/fwlink/?LinkId=619792')]
     Param
     (
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory=$false,
                    Position=0,
                    ValueFromPipelineByPropertyName=$true)]
         [ValidateNotNullOrEmpty()]
@@ -4164,7 +4342,7 @@ function New-ScriptFileInfo
         [Guid]
         $Guid,
 
-        [Parameter()] 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [String]
         $CompanyName,
@@ -4229,26 +4407,38 @@ function New-ScriptFileInfo
 
     Process
     {
-        if(-not $Path.EndsWith('.ps1', [System.StringComparison]::OrdinalIgnoreCase))
+        if($Path)
         {
-            $errorMessage = ($LocalizedData.InvalidScriptFilePath -f $Path)
-            ThrowError  -ExceptionName 'System.ArgumentException' `
-                        -ExceptionMessage $errorMessage `
-                        -ErrorId 'InvalidScriptFilePath' `
-                        -CallerPSCmdlet $PSCmdlet `
-                        -ExceptionObject $Path `
-                        -ErrorCategory InvalidArgument
-            return
-        }
+            if(-not $Path.EndsWith('.ps1', [System.StringComparison]::OrdinalIgnoreCase))
+            {
+                $errorMessage = ($LocalizedData.InvalidScriptFilePath -f $Path)
+                ThrowError  -ExceptionName 'System.ArgumentException' `
+                            -ExceptionMessage $errorMessage `
+                            -ErrorId 'InvalidScriptFilePath' `
+                            -CallerPSCmdlet $PSCmdlet `
+                            -ExceptionObject $Path `
+                            -ErrorCategory InvalidArgument
+                return
+            }
 
-        if(-not $Force -and (Microsoft.PowerShell.Management\Test-Path -Path $Path))
+            if(-not $Force -and (Microsoft.PowerShell.Management\Test-Path -Path $Path))
+            {
+                $errorMessage = ($LocalizedData.ScriptFileExist -f $Path)
+                ThrowError  -ExceptionName 'System.ArgumentException' `
+                            -ExceptionMessage $errorMessage `
+                            -ErrorId 'ScriptFileExist' `
+                            -CallerPSCmdlet $PSCmdlet `
+                            -ExceptionObject $Path `
+                            -ErrorCategory InvalidArgument
+                return
+            }
+        }
+        elseif(-not $PassThru)
         {
-            $errorMessage = ($LocalizedData.ScriptFileExist -f $Path)
             ThrowError  -ExceptionName 'System.ArgumentException' `
-                        -ExceptionMessage $errorMessage `
-                        -ErrorId 'ScriptFileExist' `
+                        -ExceptionMessage $LocalizedData.MissingTheRequiredPathOrPassThruParameter `
+                        -ErrorId 'MissingTheRequiredPathOrPassThruParameter' `
                         -CallerPSCmdlet $PSCmdlet `
-                        -ExceptionObject $Path `
                         -ErrorCategory InvalidArgument
             return
         }
@@ -4331,14 +4521,14 @@ function New-ScriptFileInfo
                 return
             }
 
-    	    if($Force -or $PSCmdlet.ShouldProcess($Path, ($LocalizedData.NewScriptFileInfowhatIfMessage -f $Path) ))
+    	    if($Path -and ($Force -or $PSCmdlet.ShouldProcess($Path, ($LocalizedData.NewScriptFileInfowhatIfMessage -f $Path) )))
     	    {
                 Microsoft.PowerShell.Management\Copy-Item -Path $tempScriptFilePath -Destination $Path -Force -WhatIf:$false -Confirm:$false
+            }
 
-                if($PassThru)
-                {
-                    $ScriptMetadataString
-                }
+            if($PassThru)
+            {
+                Write-Output -InputObject $ScriptMetadataString
             }
         }
         finally
@@ -4507,83 +4697,120 @@ function Update-ScriptFileInfo
                         -ErrorCategory InvalidArgument
             return
         }
+        
+        $psscriptInfo = $null
+        try
+        {
+            $psscriptInfo = Test-ScriptFileInfo -LiteralPath $scriptFilePath
+        }
+        catch
+        {
+            if(-not $Force)
+            {
+                throw $_
+                return
+            }
+        }
 
-        $psscriptInfo = Test-ScriptFileInfo -Path $scriptFilePath
         if(-not $psscriptInfo)
         {
-            # Test-ScriptFileInfo cmdlet throws the actual errors
-            return
-        }
-        
-        # Use existing values if any of the parameters are not specified during Update-ScriptFileInfo
-        if(-not $Version -and $psscriptInfo.Version)
-        {
-            $Version = $psscriptInfo.Version
-        }
+            if(-not $Description)
+            {                
+                ThrowError  -ExceptionName "System.ArgumentException" `
+                            -ExceptionMessage $LocalizedData.DescriptionParameterIsMissingForAddingTheScriptFileInfo `
+                            -ErrorId 'DescriptionParameterIsMissingForAddingTheScriptFileInfo' `
+                            -CallerPSCmdlet $PSCmdlet `
+                            -ErrorCategory InvalidArgument
+                return
+            }
 
-        if(-not $Guid -and $psscriptInfo.Guid)
-        {
-            $Guid = $psscriptInfo.Guid
-        }
+            if(-not $Version)
+            {
+                $Version = [Version]'1.0'
+            }
 
-        if(-not $Author -and $psscriptInfo.Author)
-        {
-            $Author = $psscriptInfo.Author
-        }
+            if(-not $Author)
+            {
+                $Author = (Get-EnvironmentVariable -Name 'USERNAME' -Target $script:EnvironmentVariableTarget.Process -ErrorAction SilentlyContinue)
+            }
 
-        if(-not $CompanyName -and $psscriptInfo.CompanyName)
-        {
-            $CompanyName = $psscriptInfo.CompanyName
+            if(-not $Guid)
+            {
+                $Guid = [System.Guid]::NewGuid()
+            }
         }
+        else
+        {     
+            # Use existing values if any of the parameters are not specified during Update-ScriptFileInfo
+            if(-not $Version -and $psscriptInfo.Version)
+            {
+                $Version = $psscriptInfo.Version
+            }
 
-        if(-not $Copyright -and $psscriptInfo.Copyright)
-        {
-            $Copyright = $psscriptInfo.Copyright
-        }
+            if(-not $Guid -and $psscriptInfo.Guid)
+            {
+                $Guid = $psscriptInfo.Guid
+            }
 
-        if(-not $RequiredModules -and $psscriptInfo.RequiredModules)
-        {
-            $RequiredModules = $psscriptInfo.RequiredModules
-        }
+            if(-not $Author -and $psscriptInfo.Author)
+            {
+                $Author = $psscriptInfo.Author
+            }
 
-        if(-not $ExternalModuleDependencies -and $psscriptInfo.ExternalModuleDependencies)
-        {
-            $ExternalModuleDependencies = $psscriptInfo.ExternalModuleDependencies
-        }
+            if(-not $CompanyName -and $psscriptInfo.CompanyName)
+            {
+                $CompanyName = $psscriptInfo.CompanyName
+            }
 
-        if(-not $RequiredScripts -and $psscriptInfo.RequiredScripts)
-        {
-            $RequiredScripts = $psscriptInfo.RequiredScripts
-        }
+            if(-not $Copyright -and $psscriptInfo.Copyright)
+            {
+                $Copyright = $psscriptInfo.Copyright
+            }
 
-        if(-not $ExternalScriptDependencies -and $psscriptInfo.ExternalScriptDependencies)
-        {
-            $ExternalScriptDependencies = $psscriptInfo.ExternalScriptDependencies
-        }
+            if(-not $RequiredModules -and $psscriptInfo.RequiredModules)
+            {
+                $RequiredModules = $psscriptInfo.RequiredModules
+            }
 
-        if(-not $Tags -and $psscriptInfo.Tags)
-        {
-            $Tags = $psscriptInfo.Tags
-        }
+            if(-not $ExternalModuleDependencies -and $psscriptInfo.ExternalModuleDependencies)
+            {
+                $ExternalModuleDependencies = $psscriptInfo.ExternalModuleDependencies
+            }
 
-        if(-not $ProjectUri -and $psscriptInfo.ProjectUri)
-        {
-            $ProjectUri = $psscriptInfo.ProjectUri
-        }
+            if(-not $RequiredScripts -and $psscriptInfo.RequiredScripts)
+            {
+                $RequiredScripts = $psscriptInfo.RequiredScripts
+            }
 
-        if(-not $LicenseUri -and $psscriptInfo.LicenseUri)
-        {
-            $LicenseUri = $psscriptInfo.LicenseUri
-        }
+            if(-not $ExternalScriptDependencies -and $psscriptInfo.ExternalScriptDependencies)
+            {
+                $ExternalScriptDependencies = $psscriptInfo.ExternalScriptDependencies
+            }
 
-        if(-not $IconUri -and $psscriptInfo.IconUri)
-        {
-            $IconUri = $psscriptInfo.IconUri
-        }
+            if(-not $Tags -and $psscriptInfo.Tags)
+            {
+                $Tags = $psscriptInfo.Tags
+            }
 
-        if(-not $ReleaseNotes -and $psscriptInfo.ReleaseNotes)
-        {
-            $ReleaseNotes = $psscriptInfo.ReleaseNotes
+            if(-not $ProjectUri -and $psscriptInfo.ProjectUri)
+            {
+                $ProjectUri = $psscriptInfo.ProjectUri
+            }
+
+            if(-not $LicenseUri -and $psscriptInfo.LicenseUri)
+            {
+                $LicenseUri = $psscriptInfo.LicenseUri
+            }
+
+            if(-not $IconUri -and $psscriptInfo.IconUri)
+            {
+                $IconUri = $psscriptInfo.IconUri
+            }
+
+            if(-not $ReleaseNotes -and $psscriptInfo.ReleaseNotes)
+            {
+                $ReleaseNotes = $psscriptInfo.ReleaseNotes
+            }
         }
 
         $params = @{
@@ -4616,7 +4843,8 @@ function Update-ScriptFileInfo
         }
 
         $PSScriptInfoString = Get-PSScriptInfoString @params
-                                                     
+        
+        $requiresStrings = ""                                             
         $requiresStrings = Get-RequiresString -RequiredModules $RequiredModules
         
         $DescriptionValue = if($Description) {$Description} else {$psscriptInfo.Description}
@@ -4655,112 +4883,87 @@ function Update-ScriptFileInfo
                 return
             }
 
-            [System.Management.Automation.Language.Token[]]$tokens = $null;
-            [System.Management.Automation.Language.ParseError[]]$errors = $null;
-            $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptFilePath, ([ref]$tokens), ([ref]$errors))
+            $scriptFileContents = Microsoft.PowerShell.Management\Get-Content -LiteralPath $scriptFilePath
 
-            # Update PSScriptInfo and #Requires
-            $CommentTokens = $tokens | Microsoft.PowerShell.Core\Where-Object {$_.Kind -eq 'Comment'}
-
-            $psscriptInfoComments = $CommentTokens | 
-                                        Microsoft.PowerShell.Core\Where-Object { $_.Extent.Text -match "<#PSScriptInfo" } | 
-                                            Microsoft.PowerShell.Utility\Select-Object -First 1
-
-            if(-not $psscriptInfoComments)
+            # If -Force is specified and script file doesnt have a valid PSScriptInfo 
+            # Prepend the PSScriptInfo and Check if the Test-ScriptFileInfo returns a valid script info without any errors
+            if($Force -and -not $psscriptInfo)
             {
-                $errorMessage = ($LocalizedData.MissingPSScriptInfo -f $scriptFilePath)
-                ThrowError  -ExceptionName "System.ArgumentException" `
-                            -ExceptionMessage $errorMessage `
-                            -ErrorId "MissingPSScriptInfo" `
-                            -CallerPSCmdlet $PSCmdlet `
-                            -ExceptionObject $scriptFilePath `
-                            -ErrorCategory InvalidArgument
-                return
+                # Add the script file contents to the temp file with script metadata
+                Microsoft.PowerShell.Management\Set-Content -LiteralPath $tempScriptFilePath `
+                                                            -Value $ScriptMetadataString,$scriptFileContents `
+                                                            -Force `
+                                                            -WhatIf:$false `
+                                                            -Confirm:$false
+
+                $tempScriptInfo = $null
+                try
+                {
+                    $tempScriptInfo = Test-ScriptFileInfo -LiteralPath $tempScriptFilePath
+                }
+                catch
+                {
+                    $errorMessage = ($LocalizedData.UnableToAddPSScriptInfo -f $scriptFilePath)
+                    ThrowError  -ExceptionName 'System.InvalidOperationException' `
+                                -ExceptionMessage $errorMessage `
+                                -ErrorId 'UnableToAddPSScriptInfo' `
+                                -CallerPSCmdlet $PSCmdlet `
+                                -ExceptionObject $scriptFilePath `
+                                -ErrorCategory InvalidOperation
+                    return
+                }
             }
-
-            # Ensure that metadata is replaced at the correct location and should not corrupt the existing script file.
-
-            # Remove the lines between below lines and add the new PSScriptInfo and new #Requires statements
-            # ($psscriptInfoComments.Extent.StartLineNumber - 1)
-            # ($psscriptInfoComments.Extent.EndLineNumber - 1)
-            $tempContents = @()
-            $IsNewPScriptInfoAdded = $false
-            $scriptFileContents = Microsoft.PowerShell.Management\Get-Content -Path $scriptFilePath
-
-            for($i = 0; $i -lt $scriptFileContents.Count; $i++)
+            else
             {
-               $line = $scriptFileContents[$i]
-               if(($i -ge ($psscriptInfoComments.Extent.StartLineNumber - 1)) -and
-                  ($i -le ($psscriptInfoComments.Extent.EndLineNumber - 1)))
-               {
-                   if(-not $IsNewPScriptInfoAdded)
-                   {
-                       $PSScriptInfoString = $PSScriptInfoString.TrimStart()
-                       $requiresStrings = $requiresStrings.TrimEnd()
+                [System.Management.Automation.Language.Token[]]$tokens = $null;
+                [System.Management.Automation.Language.ParseError[]]$errors = $null;
+                $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptFilePath, ([ref]$tokens), ([ref]$errors))
 
-                       $tempContents += "$PSScriptInfoString `r`n`r`n$($requiresStrings -join "`r`n")"
-                       $IsNewPScriptInfoAdded = $true
-                   }
-               }
-               elseif($line -notmatch "\s*#Requires\s+-Module")
-               {
-                   # Add the existing lines if they are not part of PSScriptInfo comment or not containing #Requires -Module statements.
-                   $tempContents += $line
-               }
-            }
+                # Update PSScriptInfo and #Requires
+                $CommentTokens = $tokens | Microsoft.PowerShell.Core\Where-Object {$_.Kind -eq 'Comment'}
 
-            Microsoft.PowerShell.Management\Set-Content -Value $tempContents -Path $tempScriptFilePath -Force -WhatIf:$false -Confirm:$false
+                $psscriptInfoComments = $CommentTokens | 
+                                            Microsoft.PowerShell.Core\Where-Object { $_.Extent.Text -match "<#PSScriptInfo" } | 
+                                                Microsoft.PowerShell.Utility\Select-Object -First 1
 
-            $scriptInfo = Test-ScriptFileInfo -Path $tempScriptFilePath
+                if(-not $psscriptInfoComments)
+                {
+                    $errorMessage = ($LocalizedData.MissingPSScriptInfo -f $scriptFilePath)
+                    ThrowError  -ExceptionName "System.ArgumentException" `
+                                -ExceptionMessage $errorMessage `
+                                -ErrorId "MissingPSScriptInfo" `
+                                -CallerPSCmdlet $PSCmdlet `
+                                -ExceptionObject $scriptFilePath `
+                                -ErrorCategory InvalidArgument
+                    return
+                }
 
-            if(-not $scriptInfo)
-            {
-                # Above Test-ScriptFileInfo cmdlet writes the error
-                return
-            }
-            
-            # Now update the Description value if a new is specified.
-            if($Description)
-            {
+                # Ensure that metadata is replaced at the correct location and should not corrupt the existing script file.
+
+                # Remove the lines between below lines and add the new PSScriptInfo and new #Requires statements
+                # ($psscriptInfoComments.Extent.StartLineNumber - 1)
+                # ($psscriptInfoComments.Extent.EndLineNumber - 1)
                 $tempContents = @()
-                $IsDescriptionAdded = $false
-                
-                $IsDescriptionBeginFound = $false
-                $scriptFileContents = Microsoft.PowerShell.Management\Get-Content -Path $tempScriptFilePath
+                $IsNewPScriptInfoAdded = $false
 
                 for($i = 0; $i -lt $scriptFileContents.Count; $i++)
                 {
                    $line = $scriptFileContents[$i]
-
-                   if(-not $IsDescriptionAdded)
+                   if(($i -ge ($psscriptInfoComments.Extent.StartLineNumber - 1)) -and
+                      ($i -le ($psscriptInfoComments.Extent.EndLineNumber - 1)))
                    {
-                        if(-not $IsDescriptionBeginFound)
-                        {
-                            if($line.Trim().StartsWith(".DESCRIPTION", [System.StringComparison]::OrdinalIgnoreCase))
-                            {
-                               $IsDescriptionBeginFound = $true
-                            }
-                            else
-                            {
-                                $tempContents += $line
-                            }
-                        }
-                        else
-                        {
-                            # Description begin has found
-                            # Skip the old description lines until description end is found
+                       if(-not $IsNewPScriptInfoAdded)
+                       {
+                           $PSScriptInfoString = $PSScriptInfoString.TrimStart()
+                           $requiresStrings = $requiresStrings.TrimEnd()
 
-                            if($line.Trim().StartsWith("#>", [System.StringComparison]::OrdinalIgnoreCase) -or 
-                               $line.Trim().StartsWith(".", [System.StringComparison]::OrdinalIgnoreCase))
-                            {
-                               $tempContents += ".DESCRIPTION `r`n$($Description -join "`r`n")`r`n"
-                               $IsDescriptionAdded = $true
-                               $tempContents += $line
-                            }      
-                        }
+                           $tempContents += "$PSScriptInfoString `r`n`r`n$($requiresStrings -join "`r`n")"
+                           $IsNewPScriptInfoAdded = $true
+                       }
                    }
-                   else
+                   elseif($line -notmatch "\s*#Requires\s+-Module")
                    {
+                       # Add the existing lines if they are not part of PSScriptInfo comment or not containing #Requires -Module statements.
                        $tempContents += $line
                    }
                 }
@@ -4774,11 +4977,68 @@ function Update-ScriptFileInfo
                     # Above Test-ScriptFileInfo cmdlet writes the error
                     return
                 }
+            
+                # Now update the Description value if a new is specified.
+                if($Description)
+                {
+                    $tempContents = @()
+                    $IsDescriptionAdded = $false
+                
+                    $IsDescriptionBeginFound = $false
+                    $scriptFileContents = Microsoft.PowerShell.Management\Get-Content -Path $tempScriptFilePath
+
+                    for($i = 0; $i -lt $scriptFileContents.Count; $i++)
+                    {
+                       $line = $scriptFileContents[$i]
+
+                       if(-not $IsDescriptionAdded)
+                       {
+                            if(-not $IsDescriptionBeginFound)
+                            {
+                                if($line.Trim().StartsWith(".DESCRIPTION", [System.StringComparison]::OrdinalIgnoreCase))
+                                {
+                                   $IsDescriptionBeginFound = $true
+                                }
+                                else
+                                {
+                                    $tempContents += $line
+                                }
+                            }
+                            else
+                            {
+                                # Description begin has found
+                                # Skip the old description lines until description end is found
+
+                                if($line.Trim().StartsWith("#>", [System.StringComparison]::OrdinalIgnoreCase) -or 
+                                   $line.Trim().StartsWith(".", [System.StringComparison]::OrdinalIgnoreCase))
+                                {
+                                   $tempContents += ".DESCRIPTION `r`n$($Description -join "`r`n")`r`n"
+                                   $IsDescriptionAdded = $true
+                                   $tempContents += $line
+                                }      
+                            }
+                       }
+                       else
+                       {
+                           $tempContents += $line
+                       }
+                    }
+
+                    Microsoft.PowerShell.Management\Set-Content -Value $tempContents -Path $tempScriptFilePath -Force -WhatIf:$false -Confirm:$false
+
+                    $scriptInfo = Test-ScriptFileInfo -Path $tempScriptFilePath
+
+                    if(-not $scriptInfo)
+                    {
+                        # Above Test-ScriptFileInfo cmdlet writes the error
+                        return
+                    }
+                }
             }
 
-            if($Force -or $PSCmdlet.ShouldProcess($Path, ($LocalizedData.UpdateScriptFileInfowhatIfMessage -f $Path) ))
+            if($Force -or $PSCmdlet.ShouldProcess($scriptFilePath, ($LocalizedData.UpdateScriptFileInfowhatIfMessage -f $Path) ))
     	    {
-                Microsoft.PowerShell.Management\Copy-Item -Path $tempScriptFilePath -Destination $Path -Force -WhatIf:$false -Confirm:$false
+                Microsoft.PowerShell.Management\Copy-Item -Path $tempScriptFilePath -Destination $scriptFilePath -Force -WhatIf:$false -Confirm:$false
 
                 if($PassThru)
                 {
@@ -4820,7 +5080,7 @@ function Get-RequiresString
                     }
                     else
                     {
-                        $moduleSpec = [Microsoft.PowerShell.Commands.ModuleSpecification]::new($requiredModuleObject)
+                        $moduleSpec = New-Object Microsoft.PowerShell.Commands.ModuleSpecification -ArgumentList $requiredModuleObject
                         if (-not (Microsoft.PowerShell.Utility\Get-Variable -Name moduleSpec -ErrorAction SilentlyContinue))
                         {
                             return
@@ -4829,6 +5089,34 @@ function Get-RequiresString
                         $keyvalueStrings = $requiredModuleObject.Keys | Microsoft.PowerShell.Core\ForEach-Object {"$_ = '$( $requiredModuleObject[$_])'"}
                         $RequiredModuleStrings += "@{$($keyvalueStrings -join '; ')}"
                     }
+                }
+                elseif(($PSVersionTable.PSVersion -eq [Version]'3.0') -and
+                       ($requiredModuleObject.GetType().ToString() -eq 'Microsoft.PowerShell.Commands.ModuleSpecification'))
+                {
+                    # ModuleSpecification.ToString() is not implemented on PowerShell 3.0.
+                                    
+                    $optionalString = " "
+    
+                    if($requiredModuleObject.Version)
+                    {
+                        $optionalString += "ModuleVersion = '$($requiredModuleObject.Version.ToString())'; "
+                    }
+
+                    if($requiredModuleObject.Guid)
+                    {
+                        $optionalString += "Guid = '$($requiredModuleObject.Guid.ToString())'; "
+                    }
+    
+                    if($optionalString.Trim())
+                    {
+                        $moduleSpecString = "@{ ModuleName = '$($requiredModuleObject.Name.ToString())';$optionalString}"
+                    }
+                    else
+                    {
+                        $moduleSpecString = $requiredModuleObject.Name.ToString()
+                    }
+
+                    $RequiredModuleStrings += $moduleSpecString
                 }
                 else
                 {
@@ -4840,6 +5128,10 @@ function Get-RequiresString
                                        Microsoft.PowerShell.Core\ForEach-Object { "#Requires -Module $_" }
         
             return $hashRequiresStrings
+        }
+        else
+        {
+            return ""
         }
     }
 }
@@ -5316,8 +5608,10 @@ function Ping-Endpoint
         $response = $null
         try
         {
-            $httpClient = New-Object 'System.Net.Http.HttpClient'
-            $response = $httpclient.GetAsync($endpoint)          
+            $handler = New-Object System.Net.Http.HttpClientHandler
+            $handler.UseDefaultCredentials = $true
+            $httpClient = New-Object System.Net.Http.HttpClient -ArgumentList $handler
+            $response = $httpclient.GetAsync($endpoint)  
         }
         catch
         {            
@@ -5342,6 +5636,7 @@ function Ping-Endpoint
                 $request = [System.Net.WebRequest]::Create("{0}")
                 $request.Method = 'GET'
                 $request.Timeout = 30000
+                $request.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
                 $request.AllowAutoRedirect = ${1}
                 $response = [System.Net.HttpWebResponse]$request.GetResponse()             
                 if($response.StatusCode.value__ -eq 302)
@@ -5475,6 +5770,14 @@ function ValidateAndSet-PATHVariableIfUserAccepts
         $ScopePath,
 
         [Parameter()]
+        [Switch]
+        $NoPathUpdate,
+
+        [Parameter()]
+        [Switch]
+        $Force,
+
+        [Parameter()]
         $Request
     )
 
@@ -5484,13 +5787,13 @@ function ValidateAndSet-PATHVariableIfUserAccepts
     if($Scope -eq 'AllUsers')
     {
         $envVariableTarget = $script:EnvironmentVariableTarget.Machine
-        $scriptPATHPromptQuery=$LocalizedData.AllUsersScope_ScriptPATHPromptQuery -f $ScopePath
+        $scriptPATHPromptQuery=$LocalizedData.ScriptPATHPromptQuery -f $ScopePath
         $scopeSpecificKey = 'AllUsersScope_AllowPATHChangeForScripts'
     }
     else
     {
         $envVariableTarget = $script:EnvironmentVariableTarget.User
-        $scriptPATHPromptQuery=$LocalizedData.CurentUserScope_ScriptPATHPromptQuery -f $ScopePath
+        $scriptPATHPromptQuery=$LocalizedData.ScriptPATHPromptQuery -f $ScopePath
         $scopeSpecificKey = 'CurrentUserScope_AllowPATHChangeForScripts'
     }
 
@@ -5511,55 +5814,66 @@ function ValidateAndSet-PATHVariableIfUserAccepts
         }
 
         $userResponse = $false
-        $scopePathEndingWithBackSlash = "$scopePath\"
 
-        # Check and add the $scopePath to $env:Path value
-        if( (($env:PATH -split ';') -notcontains $scopePath) -and
-            (($env:PATH -split ';') -notcontains $scopePathEndingWithBackSlash))
+        if(-not $NoPathUpdate)
         {
-            $scriptPATHPromptCaption = $LocalizedData.ScriptPATHPromptCaption
+            $scopePathEndingWithBackSlash = "$scopePath\"
 
-            if($Request)
+            # Check and add the $scopePath to $env:Path value
+            if( (($env:PATH -split ';') -notcontains $scopePath) -and
+                (($env:PATH -split ';') -notcontains $scopePathEndingWithBackSlash))
             {
-                $userResponse = $Request.ShouldContinue($scriptPATHPromptQuery, $scriptPATHPromptCaption)
-            }
-            else
-            {
-                $userResponse = $PSCmdlet.ShouldContinue($scriptPATHPromptQuery, $scriptPATHPromptCaption)
-            }
-
-            if($userResponse)
-            {
-                $currentPATHValue = Get-EnvironmentVariable -Name 'PATH' -Target $envVariableTarget
-
-                if((($currentPATHValue -split ';') -notcontains $scopePath) -and
-                   (($currentPATHValue -split ';') -notcontains $scopePathEndingWithBackSlash))
+                if($Force)
                 {
-                    # To ensure that the installed script is immediately usable, 
-                    # we need to add the scope path to the PATH enviroment variable.
-                    Set-EnvironmentVariable -Name 'PATH' `
-                                            -Value "$currentPATHValue;$scopePath" `
-                                            -Target $envVariableTarget
+                    $userResponse = $true
+                }
+                else
+                {
+                    $scriptPATHPromptCaption = $LocalizedData.ScriptPATHPromptCaption
 
-                    Write-Verbose ($LocalizedData.AddedScopePathToPATHVariable -f ($scopePath,$Scope))
+                    if($Request)
+                    {
+                        $userResponse = $Request.ShouldContinue($scriptPATHPromptQuery, $scriptPATHPromptCaption)
+                    }
+                    else
+                    {
+                        $userResponse = $PSCmdlet.ShouldContinue($scriptPATHPromptQuery, $scriptPATHPromptCaption)
+                    }
                 }
 
-                # Process specific PATH
-                # Check and add the $scopePath to $env:Path value of current process
-                # so that installed scripts can be used in the current process.
-                $target = $script:EnvironmentVariableTarget.Process
-                $currentPATHValue = Get-EnvironmentVariable -Name 'PATH' -Target $target
-
-                if((($currentPATHValue -split ';') -notcontains $scopePath) -and
-                   (($currentPATHValue -split ';') -notcontains $scopePathEndingWithBackSlash))
+                if($userResponse)
                 {
-                    # To ensure that the installed script is immediately usable, 
-                    # we need to add the scope path to the PATH enviroment variable.
-                    Set-EnvironmentVariable -Name 'PATH' `
-                                            -Value "$currentPATHValue;$scopePath" `
-                                            -Target $target
+                    $currentPATHValue = Get-EnvironmentVariable -Name 'PATH' -Target $envVariableTarget
 
-                    Write-Verbose ($LocalizedData.AddedScopePathToProcessSpecificPATHVariable -f ($scopePath,$Scope))
+                    if((($currentPATHValue -split ';') -notcontains $scopePath) -and
+                       (($currentPATHValue -split ';') -notcontains $scopePathEndingWithBackSlash))
+                    {
+                        # To ensure that the installed script is immediately usable, 
+                        # we need to add the scope path to the PATH enviroment variable.
+                        Set-EnvironmentVariable -Name 'PATH' `
+                                                -Value "$currentPATHValue;$scopePath" `
+                                                -Target $envVariableTarget
+
+                        Write-Verbose ($LocalizedData.AddedScopePathToPATHVariable -f ($scopePath,$Scope))
+                    }
+
+                    # Process specific PATH
+                    # Check and add the $scopePath to $env:Path value of current process
+                    # so that installed scripts can be used in the current process.
+                    $target = $script:EnvironmentVariableTarget.Process
+                    $currentPATHValue = Get-EnvironmentVariable -Name 'PATH' -Target $target
+
+                    if((($currentPATHValue -split ';') -notcontains $scopePath) -and
+                       (($currentPATHValue -split ';') -notcontains $scopePathEndingWithBackSlash))
+                    {
+                        # To ensure that the installed script is immediately usable, 
+                        # we need to add the scope path to the PATH enviroment variable.
+                        Set-EnvironmentVariable -Name 'PATH' `
+                                                -Value "$currentPATHValue;$scopePath" `
+                                                -Target $target
+
+                        Write-Verbose ($LocalizedData.AddedScopePathToProcessSpecificPATHVariable -f ($scopePath,$Scope))
+                    }
                 }
             }
         }
@@ -5626,41 +5940,42 @@ function Set-ModuleSourcesVariable
         else
         {
             $script:PSGetModuleSources = [ordered]@{}
-        }
 
-        if(-not $script:PSGetModuleSources.Contains($Script:PSGalleryModuleSource))
-        {
-            $psgalleryLocation = Resolve-Location -Location $Script:PSGallerySourceUri `
-                                                  -LocationParameterName 'SourceLocation' `
-                                                  -ErrorAction SilentlyContinue `
-                                                  -WarningAction SilentlyContinue
-
-            $scriptSourceLocation = Resolve-Location -Location $Script:PSGalleryScriptSourceUri `
-                                                     -LocationParameterName 'ScriptSourceLocation' `
-                                                     -ErrorAction SilentlyContinue `
-                                                     -WarningAction SilentlyContinue
-            if($psgalleryLocation)
+            if(-not $script:PSGetModuleSources.Contains($Script:PSGalleryModuleSource))
             {
-                $result = Ping-Endpoint -Endpoint $Script:PSGalleryPublishUri -AllowAutoRedirect:$false
-                if ($result.ContainsKey($Script:ResponseUri) -and $result[$Script:ResponseUri])
-                {   
-                        $script:PSGalleryPublishUri = $result[$Script:ResponseUri]                    
-                }
-                $moduleSource = Microsoft.PowerShell.Utility\New-Object PSCustomObject -Property ([ordered]@{
-                        Name = $Script:PSGalleryModuleSource
-                        SourceLocation =  $psgalleryLocation
-                        PublishLocation = $Script:PSGalleryPublishUri
-                        ScriptSourceLocation = $scriptSourceLocation
-                        ScriptPublishLocation = $Script:PSGalleryPublishUri
-                        Trusted=$false
-                        Registered=$true
-                        InstallationPolicy = 'Untrusted'
-                        PackageManagementProvider=$script:NuGetProviderName
-                        ProviderOptions = @{}
-                    })
+                $isPersistRequired = $true
+                $psgalleryLocation = Resolve-Location -Location $Script:PSGallerySourceUri `
+                                                      -LocationParameterName 'SourceLocation' `
+                                                      -ErrorAction SilentlyContinue `
+                                                      -WarningAction SilentlyContinue
 
-                $moduleSource.PSTypeNames.Insert(0, "Microsoft.PowerShell.Commands.PSRepository")
-                $script:PSGetModuleSources.Add($Script:PSGalleryModuleSource, $moduleSource)
+                $scriptSourceLocation = Resolve-Location -Location $Script:PSGalleryScriptSourceUri `
+                                                         -LocationParameterName 'ScriptSourceLocation' `
+                                                         -ErrorAction SilentlyContinue `
+                                                         -WarningAction SilentlyContinue
+                if($psgalleryLocation)
+                {
+                    $result = Ping-Endpoint -Endpoint $Script:PSGalleryPublishUri -AllowAutoRedirect:$false
+                    if ($result.ContainsKey($Script:ResponseUri) -and $result[$Script:ResponseUri])
+                    {   
+                            $script:PSGalleryPublishUri = $result[$Script:ResponseUri]                    
+                    }
+                    $moduleSource = Microsoft.PowerShell.Utility\New-Object PSCustomObject -Property ([ordered]@{
+                            Name = $Script:PSGalleryModuleSource
+                            SourceLocation =  $psgalleryLocation
+                            PublishLocation = $Script:PSGalleryPublishUri
+                            ScriptSourceLocation = $scriptSourceLocation
+                            ScriptPublishLocation = $Script:PSGalleryPublishUri
+                            Trusted=$false
+                            Registered=$true
+                            InstallationPolicy = 'Untrusted'
+                            PackageManagementProvider=$script:NuGetProviderName
+                            ProviderOptions = @{}
+                        })
+
+                    $moduleSource.PSTypeNames.Insert(0, "Microsoft.PowerShell.Commands.PSRepository")
+                    $script:PSGetModuleSources.Add($Script:PSGalleryModuleSource, $moduleSource)
+                }
             }
         }
 
@@ -5871,7 +6186,15 @@ function New-PSGetItemInfo
 
         [Parameter()]
         [string]
-        $InstalledLocation
+        $InstalledLocation,
+
+        [Parameter()]
+        [System.DateTime]
+        $InstalledDate,
+
+        [Parameter()]
+        [System.DateTime]
+        $UpdatedDate
     )
 
     foreach($swid in $SoftwareIdentity)
@@ -5903,6 +6226,26 @@ function New-PSGetItemInfo
 
         $published = (Get-First $swid.Metadata["published"])
         $PublishedDate = New-Object System.DateTime
+
+        $InstalledDateString = (Get-First $swid.Metadata['installeddate'])
+        if(-not $InstalledDate -and $InstalledDateString)
+        {
+            $InstalledDate = New-Object System.DateTime
+            if(-not ([System.DateTime]::TryParse($InstalledDateString, ([ref]$InstalledDate))))
+            {
+                $InstalledDate = $null
+            }
+        }
+
+        $UpdatedDateString = (Get-First $swid.Metadata['updateddate'])
+        if(-not $UpdatedDate -and $UpdatedDateString)
+        {
+            $UpdatedDate = New-Object System.DateTime
+            if(-not ([System.DateTime]::TryParse($UpdatedDateString, ([ref]$UpdatedDate))))
+            {
+                $UpdatedDate = $null
+            }
+        }
 
         $tags = (Get-First $swid.Metadata["tags"]) -split " "
         $userTags = @()
@@ -6039,6 +6382,8 @@ function New-PSGetItemInfo
                 CompanyName = (Get-EntityName -SoftwareIdentity $swid -Role "owner")
                 Copyright = (Get-First $swid.Metadata["copyright"])
                 PublishedDate = if([System.DateTime]::TryParse($published, ([ref]$PublishedDate))){$PublishedDate};
+                InstalledDate = $InstalledDate;
+                UpdatedDate = $UpdatedDate;
                 LicenseUri = (Get-UrlFromSwid -SoftwareIdentity $swid -UrlName "license")
                 ProjectUri = (Get-UrlFromSwid -SoftwareIdentity $swid -UrlName "project")
                 IconUri = (Get-UrlFromSwid -SoftwareIdentity $swid -UrlName "icon")
@@ -6216,6 +6561,37 @@ function Install-NuGetClientBinaries
         
             $bootstrapNuGetProvider = $false
         }
+        else
+        {
+            # User might have installed it in an another console or in the same process, check available NuGet providers and import the required provider.
+            $availableNugetProviders = PackageManagement\Get-PackageProvider -Name $script:NuGetProviderName `
+                                                                             -ListAvailable `
+                                                                             -ErrorAction SilentlyContinue `
+                                                                             -WarningAction SilentlyContinue |
+                                            Microsoft.PowerShell.Core\Where-Object { 
+                                                                                       $_.Name -eq $script:NuGetProviderName -and 
+                                                                                       $_.Version -ge $script:NuGetProviderVersion
+                                                                                   }
+            if($availableNugetProviders)
+            {
+                # Force import ensures that nuget provider with minimum version got loaded.
+                $null = PackageManagement\Import-PackageProvider -Name $script:NuGetProviderName `
+                                                                 -MinimumVersion $script:NuGetProviderVersion `
+                                                                 -Force
+
+                $nugetProvider = PackageManagement\Get-PackageProvider -ErrorAction SilentlyContinue -WarningAction SilentlyContinue |
+                                    Microsoft.PowerShell.Core\Where-Object { 
+                                                                             $_.Name -eq $script:NuGetProviderName -and 
+                                                                             $_.Version -ge $script:NuGetProviderVersion
+                                                                           }
+                if($nugetProvider)
+                {
+                    $script:NuGetProvider = $nugetProvider
+        
+                    $bootstrapNuGetProvider = $false
+                }
+            }
+        }
     }
 
     if($BootstrapNuGetExe -and 
@@ -6277,13 +6653,13 @@ function Install-NuGetClientBinaries
     # Should continue message for bootstrapping both NuGet provider and NuGet.exe
     if($bootstrapNuGetProvider -and $BootstrapNuGetExe)
     {
-        $shouldContinueQueryMessage = $LocalizedData.InstallNuGetBinariesShouldContinueQuery2 -f @($script:NuGetProviderVersion,$script:NuGetBinaryProgramDataPath,$script:NuGetBinaryLocalAppDataPath)
+        $shouldContinueQueryMessage = $LocalizedData.InstallNuGetBinariesShouldContinueQuery2 -f @($script:NuGetProviderVersion,$script:NuGetBinaryProgramDataPath,$script:NuGetBinaryLocalAppDataPath, $script:PSGetProgramDataPath, $script:PSGetAppLocalPath)
         $shouldContinueCaption = $LocalizedData.InstallNuGetBinariesShouldContinueCaption2
     }
     elseif($BootstrapNuGetExe)
     {
         # Should continue message for bootstrapping only NuGet.exe
-        $shouldContinueQueryMessage = $LocalizedData.InstallNuGetExeShouldContinueQuery
+        $shouldContinueQueryMessage = $LocalizedData.InstallNuGetExeShouldContinueQuery -f ($script:PSGetProgramDataPath, $script:PSGetAppLocalPath)
         $shouldContinueCaption = $LocalizedData.InstallNuGetExeShouldContinueCaption
     }
 
@@ -7601,6 +7977,7 @@ function Get-DynamicOptions
                 {
                     Write-Output -InputObject (New-DynamicOption -Category $category -Name "Scope" -ExpectedType String -IsRequired $false -PermittedValues @("CurrentUser","AllUsers"))
                     Write-Output -InputObject (New-DynamicOption -Category $category -Name "InstallUpdate" -ExpectedType Switch -IsRequired $false)
+                    Write-Output -InputObject (New-DynamicOption -Category $category -Name 'NoPathUpdate' -ExpectedType Switch -IsRequired $false)
                 }
     }
 }
@@ -7635,12 +8012,36 @@ function Add-PackageSource
     if($Options.ContainsKey('IsNewModuleSource'))
     {
         $IsNewModuleSource = $Options['IsNewModuleSource']
+
+        if($IsNewModuleSource.GetType().ToString() -eq 'System.String')
+        {
+            if($IsNewModuleSource -eq 'false')
+            {
+                $IsNewModuleSource = $false
+            }
+            elseif($IsNewModuleSource -eq 'true')
+            {
+                $IsNewModuleSource = $true
+            }
+        }
     }
 
     $IsUpdatePackageSource = $false
     if($Options.ContainsKey('IsUpdatePackageSource'))
     {
         $IsUpdatePackageSource = $Options['IsUpdatePackageSource']
+
+        if($IsUpdatePackageSource.GetType().ToString() -eq 'System.String')
+        {
+            if($IsUpdatePackageSource -eq 'false')
+            {
+                $IsUpdatePackageSource = $false
+            }
+            elseif($IsUpdatePackageSource -eq 'true')
+            {
+                $IsUpdatePackageSource = $true
+            }
+        }
     }
 
     $PublishLocation = $null
@@ -7648,10 +8049,8 @@ function Add-PackageSource
     {
         $PublishLocation = $Options[$script:PublishLocation]
 
-        if(($Name -ne $Script:PSGalleryModuleSource) -and 
-           -not (Microsoft.PowerShell.Management\Test-Path $PublishLocation) -and
-           -not (Test-WebUri -uri $PublishLocation)
-          )
+        if(-not (Microsoft.PowerShell.Management\Test-Path $PublishLocation) -and
+           -not (Test-WebUri -uri $PublishLocation))
         {
             $PublishLocationUri = [Uri]$PublishLocation
             if($PublishLocationUri.Scheme -eq 'file')
@@ -7682,10 +8081,8 @@ function Add-PackageSource
     {
         $ScriptSourceLocation = $Options[$script:ScriptSourceLocation]
 
-        if(($Name -ne $Script:PSGalleryModuleSource) -and 
-           -not (Microsoft.PowerShell.Management\Test-Path $ScriptSourceLocation) -and
-           -not (Test-WebUri -uri $ScriptSourceLocation)
-          )
+        if(-not (Microsoft.PowerShell.Management\Test-Path $ScriptSourceLocation) -and
+           -not (Test-WebUri -uri $ScriptSourceLocation))
         {
             $ScriptSourceLocationUri = [Uri]$ScriptSourceLocation
             if($ScriptSourceLocationUri.Scheme -eq 'file')
@@ -7716,10 +8113,8 @@ function Add-PackageSource
     {
         $ScriptPublishLocation = $Options[$script:ScriptPublishLocation]
 
-        if(($Name -ne $Script:PSGalleryModuleSource) -and 
-           -not (Microsoft.PowerShell.Management\Test-Path $ScriptPublishLocation) -and
-           -not (Test-WebUri -uri $ScriptPublishLocation)
-          )
+        if(-not (Microsoft.PowerShell.Management\Test-Path $ScriptPublishLocation) -and
+           -not (Test-WebUri -uri $ScriptPublishLocation))
         {
             $ScriptPublishLocationUri = [Uri]$ScriptPublishLocation
             if($ScriptPublishLocationUri.Scheme -eq 'file')
@@ -7755,10 +8150,8 @@ function Add-PackageSource
         return
     }
 
-    if(($Name -ne $Script:PSGalleryModuleSource) -and 
-       -not (Microsoft.PowerShell.Management\Test-Path -Path $Location) -and
-       -not (Test-WebUri -uri $Location)
-      )
+    if(-not (Microsoft.PowerShell.Management\Test-Path -Path $Location) -and
+       -not (Test-WebUri -uri $Location) )
     {
         $LocationUri = [Uri]$Location
         if($LocationUri.Scheme -eq 'file')
@@ -7795,29 +8188,6 @@ function Add-PackageSource
     }
 
     $LocationString = Get-ValidModuleLocation -LocationString $Location -ParameterName "Location"
-
-    if($LocationString -ne $script:PSGetModuleSources[$Script:PSGalleryModuleSource].SourceLocation)
-    {
-        if($Name -eq $Script:PSGalleryModuleSource)
-        {
-            ThrowError -ExceptionName "System.ArgumentException" `
-                        -ExceptionMessage $LocalizedData.SourceLocationValueForPSGalleryCannotBeChanged `
-                        -ErrorId "LocationValueForPSGalleryCannotBeChanged" `
-                        -CallerPSCmdlet $PSCmdlet `
-                        -ErrorCategory InvalidArgument
-        }
-    }
-
-    if($PublishLocation -and 
-       ($Name -eq $Script:PSGalleryModuleSource) -and
-       ($PublishLocation -ne $script:PSGetModuleSources[$Script:PSGalleryModuleSource].PublishLocation))
-    {
-        ThrowError -ExceptionName "System.ArgumentException" `
-                    -ExceptionMessage $LocalizedData.PublishLocationValueForPSGalleryCannotBeChanged `
-                    -ErrorId "PublishLocationValueForPSGalleryCannotBeChanged" `
-                    -CallerPSCmdlet $PSCmdlet `
-                    -ErrorCategory InvalidArgument
-    }
 
     # Check if Location is already registered with another Name
     $existingSourceName = Get-SourceName -Location $LocationString
@@ -8192,14 +8562,6 @@ function Remove-PackageSource
         if($request.IsCanceled)
         {
             return
-        }
-
-        # PSGallery module source cannot be unregistered
-        if($moduleSourceName -eq $Script:PSGalleryModuleSource)
-        {
-            $message = $LocalizedData.RepositoryCannotBeUnregistered -f ($moduleSourceName)
-            Write-Error -Message $message -ErrorId "RepositoryCannotBeUnregistered" -Category InvalidOperation -TargetObject $moduleSourceName
-            continue
         }
 
         # Check if $Name contains any wildcards
@@ -8956,6 +9318,7 @@ function Install-PackageUtility
     $RequiredVersion = $null
     $IsSavePackage = $false
     $Scope = $null
+    $NoPathUpdate = $false
 
     # take the fastPackageReference and get the package object again.
     $parts = $fastPackageReference -Split '[|]'
@@ -9039,26 +9402,40 @@ function Install-PackageUtility
                            -ErrorCategory InvalidArgument
             }
 
-            if($Scope -and $artfactType -eq $script:PSArtifactTypeScript)
-            {
-                ValidateAndSet-PATHVariableIfUserAccepts -Scope $Scope -ScopePath $scriptDestination -Request $request
-            }
-
-            if($artfactType -eq $script:PSArtifactTypeModule)
-            {
-                $message = $LocalizedData.ModuleDestination -f @($moduleDestination)
-            }
-            else
-            {
-                $message = $LocalizedData.ScriptDestination -f @($scriptDestination, $moduleDestination)
-            }            
-            Write-Verbose $message
-
             if($options.ContainsKey('Force'))
             {
                 $Force = $options['Force']
+
+                if($Force.GetType().ToString() -eq 'System.String')
+                {
+                    if($Force -eq 'false')
+                    {
+                        $Force = $false
+                    }
+                    elseif($Force -eq 'true')
+                    {
+                        $Force = $true
+                    }
+                }
             }
             
+            if($options.ContainsKey('NoPathUpdate'))
+            {
+                $NoPathUpdate = $options['NoPathUpdate']
+
+                if($NoPathUpdate.GetType().ToString() -eq 'System.String')
+                {
+                    if($NoPathUpdate -eq 'false')
+                    {
+                        $NoPathUpdate = $false
+                    }
+                    elseif($NoPathUpdate -eq 'true')
+                    {
+                        $NoPathUpdate = $true
+                    }
+                }
+            }
+
             if($options.ContainsKey('MinimumVersion'))
             {
                 $MinimumVersion = $options['MinimumVersion']
@@ -9072,7 +9449,38 @@ function Install-PackageUtility
             if($options.ContainsKey('InstallUpdate'))
             {
                 $installUpdate = $options['InstallUpdate']
+
+                if($installUpdate.GetType().ToString() -eq 'System.String')
+                {
+                    if($installUpdate -eq 'false')
+                    {
+                        $installUpdate = $false
+                    }
+                    elseif($installUpdate -eq 'true')
+                    {
+                        $installUpdate = $true
+                    }
+                }
             }            
+
+            if($Scope -and ($artfactType -eq $script:PSArtifactTypeScript) -and (-not $installUpdate))
+            {
+                ValidateAndSet-PATHVariableIfUserAccepts -Scope $Scope `
+                                                         -ScopePath $scriptDestination `
+                                                         -Request $request `
+                                                         -NoPathUpdate:$NoPathUpdate `
+                                                         -Force:$Force
+            }
+
+            if($artfactType -eq $script:PSArtifactTypeModule)
+            {
+                $message = $LocalizedData.ModuleDestination -f @($moduleDestination)
+            }
+            else
+            {
+                $message = $LocalizedData.ScriptDestination -f @($scriptDestination, $moduleDestination)
+            }            
+            Write-Verbose $message            
         }
 
         Write-Debug "ArtfactType is $artfactType"
@@ -9178,6 +9586,22 @@ function Install-PackageUtility
                     }
                 }
             }
+            
+            # Throw an error if there is a command with the same name and -force is not specified.
+            if(-not $installUpdate -and 
+               -not $IsSavePackage -and 
+               -not $Force)
+            {
+                $cmd = Microsoft.PowerShell.Core\Get-Command -Name $packageName `
+                                                             -ErrorAction SilentlyContinue `
+                                                             -WarningAction SilentlyContinue
+                if($cmd)
+                {
+                    $message = $LocalizedData.CommandAlreadyAvailable -f ($packageName)
+                    Write-Error -Message $message -ErrorId CommandAlreadyAvailableWitScriptName -Category InvalidOperation
+                    return
+                }
+            }
         }
 
         # create a temp folder and download the module
@@ -9250,19 +9674,61 @@ function Install-PackageUtility
                     }
                 }
                 
+                $AdditionalParams = @{}
+
+                if(-not $IsSavePackage)
+                {
+                    # During the install operation:
+                    #     InstalledDate should be the current Get-Date value
+                    #     UpdatedDate should be null
+                    #
+                    # During the update operation:
+                    #     InstalledDate should be from the previous version's InstalledDate otherwise current Get-Date value
+                    #     UpdatedDate should be the current Get-Date value
+                    #
+                    $InstalledDate = Microsoft.PowerShell.Utility\Get-Date
+
+                    if($installUpdate)
+                    {
+                        $AdditionalParams['UpdatedDate'] = Microsoft.PowerShell.Utility\Get-Date
+
+                        $InstalledItemDetails = $null
+                        if($packageType -eq $script:PSArtifactTypeModule)
+                        {
+                            $InstalledItemDetails = Get-InstalledModuleDetails -Name $pkg.Name | Select-Object -Last 1
+                        }
+                        elseif($packageType -eq $script:PSArtifactTypeScript)
+                        {
+                            $InstalledItemDetails = Get-InstalledScriptDetails -Name $pkg.Name | Select-Object -Last 1
+                        }
+
+                        if($InstalledItemDetails -and 
+                           $InstalledItemDetails.PSGetItemInfo -and
+                           (Get-Member -InputObject $InstalledItemDetails.PSGetItemInfo -Name 'InstalledDate') -and 
+                           $InstalledItemDetails.PSGetItemInfo.InstalledDate)
+                        {
+                            $InstalledDate = $InstalledItemDetails.PSGetItemInfo.InstalledDate
+                        }
+                    }
+
+                    $AdditionalParams['InstalledDate'] = $InstalledDate
+                }
+
                 $sid = New-SoftwareIdentityFromPackage -Package $pkg `
                                                        -SourceLocation $sourceLocation `
                                                        -PackageManagementProviderName $provider.ProviderName `
                                                        -Request $request `
                                                        -Type $packageType `
-                                                       -InstalledLocation $installLocation
+                                                       -InstalledLocation $installLocation `
+                                                       @AdditionalParams
 
                 # construct the PSGetItemInfo from SoftwareIdentity and persist it
                 $psgItemInfo = New-PSGetItemInfo -SoftwareIdentity $pkg `
                                                  -PackageManagementProviderName $provider.ProviderName `
                                                  -SourceLocation $sourceLocation `
                                                  -Type $packageType `
-                                                 -InstalledLocation $installLocation
+                                                 -InstalledLocation $installLocation `
+                                                 @AdditionalParams
 
                 if($packageType -eq $script:PSArtifactTypeModule)
                 {
@@ -9603,6 +10069,18 @@ function Uninstall-Package
         if($options.ContainsKey('Force'))
         {
             $Force = $options['Force']
+
+            if($Force.GetType().ToString() -eq 'System.String')
+            {
+                if($Force -eq 'false')
+                {
+                    $Force = $false
+                }
+                elseif($Force -eq 'true')
+                {
+                    $Force = $true
+                }
+            }
         }
 
         if($artfactType -eq $script:PSArtifactTypeModule)
@@ -10095,7 +10573,15 @@ function New-SoftwareIdentityFromPackage
 
         [Parameter()]
         [string]
-        $InstalledLocation
+        $InstalledLocation,
+
+        [Parameter()]
+        [System.DateTime]
+        $InstalledDate,
+
+        [Parameter()]
+        [System.DateTime]
+        $UpdatedDate
     )
 
     $fastPackageReference = New-FastPackageReference -ProviderName $PackageManagementProviderName `
@@ -10151,6 +10637,16 @@ function New-SoftwareIdentityFromPackage
     if($InstalledLocation)
     {
         $details.Add( $script:InstalledLocation , $InstalledLocation )
+    }
+
+    if($InstalledDate)
+    {
+        $details.Add( 'installeddate' , $InstalledDate.ToString() )
+    }
+
+    if($UpdatedDate)
+    {
+        $details.Add( 'updateddate' , $UpdatedDate.ToString() )
     }
 
     # Initialize package source name to the source location
@@ -10422,10 +10918,22 @@ function New-SoftwareIdentityFromPSGetItemInfo
                     description    = $psgetItemInfo.Description
                     copyright      = $psgetItemInfo.Copyright
                     published      = $psgetItemInfo.PublishedDate.ToString()
+                    installeddate  = $null
+                    updateddate    = $null
                     tags           = $psgetItemInfo.Tags
                     releaseNotes   = $psgetItemInfo.ReleaseNotes
                     PackageManagementProvider = (Get-ProviderName -PSCustomObject $psgetItemInfo)
                  }
+
+    if((Get-Member -InputObject $psgetItemInfo -Name 'InstalledDate') -and $psgetItemInfo.InstalledDate)
+    {
+        $details['installeddate'] = $psgetItemInfo.InstalledDate.ToString()
+    }
+
+    if((Get-Member -InputObject $psgetItemInfo -Name 'UpdatedDate') -and $psgetItemInfo.UpdatedDate)
+    {
+        $details['updateddate'] = $psgetItemInfo.UpdatedDate.ToString()
+    }
 
     if(Get-Member -InputObject $psgetItemInfo -Name $script:InstalledLocation)
     {
@@ -11253,11 +11761,12 @@ function Update-ModuleManifest
         $PackageManagementProviders
     )
 
+
     Import-LocalizedData -BindingVariable ModuleManifestHashTable `
-                             -FileName (Microsoft.PowerShell.Management\Split-Path $Path -Leaf) `
-                             -BaseDirectory (Microsoft.PowerShell.Management\Split-Path $Path -Parent) `
-                             -ErrorAction SilentlyContinue `
-                             -WarningAction SilentlyContinue
+                         -FileName (Microsoft.PowerShell.Management\Split-Path $Path -Leaf) `
+                         -BaseDirectory (Microsoft.PowerShell.Management\Split-Path $Path -Parent) `
+                         -ErrorAction SilentlyContinue `
+                         -WarningAction SilentlyContinue
 
     if(-not (Microsoft.PowerShell.Management\Test-Path $Path))
     {
@@ -11269,12 +11778,11 @@ function Update-ModuleManifest
                    -CallerPSCmdlet $PSCmdlet `
                    -ErrorCategory InvalidArgument
       }
-         
-
+    
     #Get the original module manifest and migrate all the fields to the new module manifest, including the specified parameter values
     try
     {
-        $moduleInfo = Microsoft.PowerShell.Core\Test-ModuleManifest -Path $Path
+        $moduleInfo = Microsoft.PowerShell.Core\Test-ModuleManifest -Path $Path -ErrorAction Stop
     }
     catch
     {
@@ -11296,7 +11804,7 @@ function Update-ModuleManifest
     {
         $params.Add("NestedModules",$NestedModules)
     }
-    else
+    elseif($moduleInfo.NestedModules)
     {
         #Get the original module info from ManifestHashTab
         if($ModuleManifestHashTable -and $ModuleManifestHashTable.ContainsKey("NestedModules"))
@@ -11310,7 +11818,7 @@ function Update-ModuleManifest
     {
         $params.Add("Guid",$Guid)
     }
-    else
+    elseif($moduleInfo.Guid)
     {
         $params.Add("Guid",$moduleInfo.Guid)
     }
@@ -11319,7 +11827,7 @@ function Update-ModuleManifest
     {
         $params.Add("Author",$Author)
     }
-    else
+    elseif($moduleInfo.Author)
     {
         $params.Add("Author",$moduleInfo.Author)
     }
@@ -11328,7 +11836,7 @@ function Update-ModuleManifest
     {
         $params.Add("CompanyName",$CompanyName)
     }
-    else
+    elseif($moduleInfo.CompanyName)
     {
         $params.Add("CompanyName",$moduleInfo.CompanyName)
     }
@@ -11337,7 +11845,7 @@ function Update-ModuleManifest
     {
         $params.Add("CopyRight",$Copyright)
     }
-    else
+    elseif($moduleInfo.Copyright)
     {
         $params.Add("Copyright",$moduleInfo.Copyright)
     }
@@ -11346,16 +11854,16 @@ function Update-ModuleManifest
     {
         $params.Add("RootModule",$RootModule)
     }
-    else
+    elseif($ModuleManifestHashTable -and $ModuleManifestHashTable.ContainsKey("RootModule") -and $moduleInfo.RootModule)
     {
-        $params.Add("RootModule",$moduleInfo.RootModule)
+        $params.Add("RootModule",$ModuleManifestHashTable.RootModule)
     }
 
     if($ModuleVersion)
     {
         $params.Add("ModuleVersion",$ModuleVersion)
     }
-    else
+    elseif($moduleInfo.Version)
     {
         $params.Add("ModuleVersion",$moduleInfo.Version)
     }
@@ -11364,7 +11872,7 @@ function Update-ModuleManifest
     {
         $params.Add("Description",$Description)
     }
-    else
+    elseif($moduleInfo.Description)
     {
         $params.Add("Description",$moduleInfo.Description)
     }
@@ -11373,7 +11881,8 @@ function Update-ModuleManifest
     {
         $params.Add("ProcessorArchitecture",$ProcessorArchitecture)
     }
-    else
+    #Check if ProcessorArchitecture has a value and is not 'None' on lower verison PS
+    elseif($moduleInfo.ProcessorArchitecture -and $moduleInfo.ProcessorArchitecture -ne 'None')
     {
         $params.Add("ProcessorArchitecture",$moduleInfo.ProcessorArchitecture)
     }
@@ -11382,7 +11891,7 @@ function Update-ModuleManifest
     {
         $params.Add("PowerShellVersion",$PowerShellVersion)
     }
-    else
+    elseif($moduleinfo.PowerShellVersion)
     {
         $params.Add("PowerShellVersion",$moduleinfo.PowerShellVersion)
     }
@@ -11391,7 +11900,7 @@ function Update-ModuleManifest
     {
         $params.Add("ClrVersion",$ClrVersion)
     }
-    else
+    elseif($moduleInfo.ClrVersion)
     {
         $params.Add("ClrVersion",$moduleInfo.ClrVersion)
     }
@@ -11400,7 +11909,7 @@ function Update-ModuleManifest
     {
         $params.Add("DotNetFrameworkVersion",$DotNetFrameworkVersion)
     }
-    else
+    elseif($moduleInfo.DotNetFrameworkVersion)
     {
         $params.Add("DotNetFrameworkVersion",$moduleInfo.DotNetFrameworkVersion)
     }
@@ -11409,7 +11918,7 @@ function Update-ModuleManifest
     {
         $params.Add("PowerShellHostName",$PowerShellHostName)
     }
-    else
+    elseif($moduleInfo.PowerShellHostName)
     {
         $params.Add("PowerShellHostName",$moduleInfo.PowerShellHostName)
     }
@@ -11418,7 +11927,7 @@ function Update-ModuleManifest
     {
         $params.Add("PowerShellHostVersion",$PowerShellHostVersion)
     }
-    else
+    elseif($moduleInfo.PowerShellHostVersion)
     {
         $params.Add("PowerShellHostVersion",$moduleInfo.PowerShellHostVersion)
     }
@@ -11427,46 +11936,43 @@ function Update-ModuleManifest
     {
         $params.Add("RequiredModules",$RequiredModules)
     }
-    else
+    elseif($ModuleManifestHashTable -and $ModuleManifestHashTable.ContainsKey("RequiredModules") -and $moduleInfo.RequiredModules)
     {
-        if($ModuleManifestHashTable -and $ModuleManifestHashTable.ContainsKey("RequiredModules"))
-        {
-            $params.Add("RequiredModules",$ModuleManifestHashtable.RequiredModules)
-        }
+        $params.Add("RequiredModules",$ModuleManifestHashtable.RequiredModules)
     }
 
     if($TypesToProcess)
     {
         $params.Add("TypesToProcess",$TypesToProcess)
     }
-    else
+    elseif($ModuleManifestHashTable -and $ModuleManifestHashTable.ContainsKey("TypesToProcess") -and $moduleInfo.ExportedTypeFiles)
     {
-        $params.Add("TypesToProcess",$moduleInfo.ExportedTypeFiles)
+        $params.Add("TypesToProcess",$ModuleManifestHashTable.TypesToProcess)
     }
 
     if($FormatsToProcess)
     {
         $params.Add("FormatsToProcess",$FormatsToProcess)
     }
-    else
+    elseif($ModuleManifestHashTable -and $ModuleManifestHashTable.ContainsKey("FormatsToProcess") -and $moduleInfo.ExportedFormatFiles)
     {
-        $params.Add("FormatsToProcess",$moduleInfo.ExportedFormatFiles)
+        $params.Add("FormatsToProcess",$ModuleManifestHashTable.FormatsToProcess)
     }
 
     if($ScriptsToProcess)
     {
         $params.Add("ScriptsToProcess",$ScriptstoProcess)
     }
-    else
+    elseif($ModuleManifestHashTable -and $ModuleManifestHashTable.ContainsKey("ScriptsToProcess") -and $moduleInfo.Scripts)
     {
-        $params.Add("ScriptsToProcess",$moduleInfo.Scripts)
+        $params.Add("ScriptsToProcess",$ModuleManifestHashTable.ScriptsToProcess)
     }
 
     if($RequiredAssemblies)
     {
         $params.Add("RequiredAssemblies",$RequiredAssemblies)
     }
-    else
+    elseif($ModuleManifestHashTable -and $ModuleManifestHashTable.ContainsKey("RequiredAssemblies") -and $moduleInfo.RequiredAssemblies)
     {
         $params.Add("RequiredAssemblies",$moduleInfo.RequiredAssemblies)
     }
@@ -11475,35 +11981,57 @@ function Update-ModuleManifest
     {
         $params.Add("FileList",$FileList)
     }
-    else
+    elseif($ModuleManifestHashTable -and $ModuleManifestHashTable.ContainsKey("FileList") -and $moduleInfo.FileList)
     {
-        $params.Add("FileList",$moduleInfo.FileList)
+        $params.Add("FileList",$ModuleManifestHashTable.FileList)
+    }
+
+    #Make sure every path defined under FileList is within module base
+    $moduleBase = $moduleInfo.ModuleBase
+    foreach($file in $params["FileList"])
+    {
+        #If path is not root path, append the module base to it and check if the file exists 
+        if(-not [System.IO.Path]::IsPathRooted($file))
+        {
+            $combinedPath = Join-Path $moduleBase -ChildPath $file
+        }
+        else
+        {
+            $combinedPath = $file
+        }
+        if(-not (Microsoft.PowerShell.Management\Test-Path -Type Leaf -LiteralPath $combinedPath))
+        {
+            $message = $LocalizedData.FilePathInFileListNotWithinModuleBase -f ($file,$moduleBase)
+            ThrowError -ExceptionName "System.ArgumentException" `
+               -ExceptionMessage $message `
+               -ErrorId "FilePathInFileListNotWithinModuleBase" `
+               -ExceptionObject $file `
+               -CallerPSCmdlet $PSCmdlet `
+               -ErrorCategory InvalidArgument
+               
+            return
+        }
     }
 
     if($ModuleList)
     {
         $params.Add("ModuleList",$ModuleList)
     }
-    else
+    elseif($ModuleManifestHashTable -and $ModuleManifestHashTable.ContainsKey("ModuleList") -and $moduleInfo.ModuleList)
     {
-        if($ModuleManifestHashTable -and $ModuleManifestHashTable.ContainsKey("ModuleList"))
-        {
-            $params.Add("ModuleList",$ModuleManifestHashtable.ModuleList)
-        }
+        $params.Add("ModuleList",$ModuleManifestHashtable.ModuleList)
     }
 
     if($FunctionsToExport)
     {
         $params.Add("FunctionsToExport",$FunctionsToExport)
     }
-    else
+   
+    elseif($moduleInfo.ExportedFunctions)
     {
         #Since $moduleInfo.ExportedFunctions is a hashtable, we need to take the name of the 
         #functions and make them into a list
-        if($moduleInfo.ExportedFunctions)
-        {
-            $params.Add("FunctionsToExport",$moduleInfo.ExportedFunctions.Keys)
-        }
+        $params.Add("FunctionsToExport",($moduleInfo.ExportedFunctions.Keys -split ' '))
     }
     
 
@@ -11511,36 +12039,26 @@ function Update-ModuleManifest
     {
         $params.Add("AliasesToExport",$AliasesToExport)
     }
-    else
+    elseif($moduleInfo.ExportedAliases)
     {
-        if($moduleInfo.ExportedAliases)
-        {
-            $params.Add("AliasesToExport",$moduleInfo.ExportedAliases.Keys)
-        }
+        $params.Add("AliasesToExport",($moduleInfo.ExportedAliases.Keys -split ' '))
     }
     if($VariablesToExport)
     {
         $params.Add("VariablesToExport",$VariablesToExport)
     }
-    else
-    {
-        if($moduleInfo.ExportedVariables)
-        { 
-            $params.Add("VariablesToExport",$moduleInfo.ExportedVariables.Keys)
-        }
+    elseif($moduleInfo.ExportedVariables)
+    { 
+        $params.Add("VariablesToExport",($moduleInfo.ExportedVariables.Keys -split ' '))
     }
     if($CmdletsToExport)
     {
         $params.Add("CmdletsToExport", $CmdletsToExport)
     }
-    else
+    elseif($moduleInfo.ExportedCmdlets)
     {
-        if($moduleInfo.ExportedCmdlets)
-        {
-            $params.Add("CmdletsToExport",$moduleInfo.ExportedCmdlets.Keys)
-        }
+        $params.Add("CmdletsToExport",($moduleInfo.ExportedCmdlets.Keys -split ' '))
     }
-
     if($DscResourcesToExport)
     {
         #DscResourcesToExport field is not available in PowerShell version lower than 5.0
@@ -11560,7 +12078,7 @@ function Update-ModuleManifest
 
         $params.Add("DscResourcesToExport",$DscResourcesToExport)
     }
-    else
+    elseif(Microsoft.PowerShell.Utility\Get-Member -InputObject $moduleInfo -name "ExportedDscResources")
     {
         if($moduleInfo.ExportedDscResources)
         {
@@ -11572,7 +12090,7 @@ function Update-ModuleManifest
     {
         $params.Add("HelpInfoUri",$HelpInfoUri)
     }
-    else
+    elseif($moduleInfo.HelpInfoUri)
     {
         $params.Add("HelpInfoUri",$moduleInfo.HelpInfoUri)
     }
@@ -11581,270 +12099,287 @@ function Update-ModuleManifest
     {
         $params.Add("DefaultCommandPrefix",$DefaultCommandPrefix)
     }
+    elseif($ModuleManifestHashTable -and $ModuleManifestHashTable.ContainsKey("DefaultCommandPrefix") -and $ModuleManifestHashTable.DefaultCommandPrefix)
+    {
+        $params.Add("DefaultCommandPrefix",$ModuleManifestHashTable.DefaultCommandPrefix)
+    }
 
-    #Create a temp file path and generate a new temporary manifest with the input
-    $DestinationPath = Microsoft.PowerShell.Management\Join-Path -Path $script:TempPath -ChildPath "$(Microsoft.PowerShell.Utility\Get-Random)"
-    $null = Microsoft.PowerShell.Management\New-Item -Path $DestinationPath -ItemType Directory -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Confirm:$false -WhatIf:$false
-    $tempPath = Microsoft.PowerShell.Management\Join-Path -Path $DestinationPath -ChildPath "NewManifest.psd1"
+    #Create a temp file within the directory and generate a new temporary manifest with the input
+    $tempPath = Microsoft.PowerShell.Management\Join-Path -Path $moduleInfo.ModuleBase -ChildPath "PSGet_$($moduleInfo.Name).psd1"
     $params.Add("Path",$tempPath)
     
-    #Terminates if there is error creating new module manifest
-    try{
-        Microsoft.PowerShell.Core\New-ModuleManifest @params -Confirm:$false -WhatIf:$false
-    }
-    catch
+    try
     {
-        $ErrorMessage = $LocalizedData.UpdatedModuleManifestNotValid -f ($Path, $_.Exception.Message)
-        ThrowError -ExceptionName "System.ArgumentException" `
-                   -ExceptionMessage $ErrorMessage `
-                   -ErrorId "NewModuleManifestFailure" `
-                   -ExceptionObject $params `
-                   -CallerPSCmdlet $PSCmdlet `
-                   -ErrorCategory InvalidArgument
-        return
-    }
-
-    #Manually update the section in PrivateData since New-ModuleManifest works differently on different PS version
-    $PrivateDataInput = ""
-    $ExistingData = $moduleInfo.PrivateData
-    $Data = @{}
-    if($ExistingData)
-    {
-        foreach($key in $ExistingData.Keys)
-        {
-            if($key -ne "PSData"){
-                $Data.Add($key,$ExistingData[$key])
-            }
-            else
-            {
-                $PSData = $ExistingData["PSData"]
-                foreach($entry in $PSData.Keys)
-                {
-                    $Data.Add($entry,$PSData[$Entry])
-                }
-            }
+        #Terminates if there is error creating new module manifest
+        try{
+            Microsoft.PowerShell.Core\New-ModuleManifest @params -Confirm:$false -WhatIf:$false
         }
-    }
-
-    if($PrivateData)
-    {
-        foreach($key in $PrivateData.Keys)
+        catch
         {
-            #if user provides PSData within PrivateData, we will parse through the PSData
-            if($key -ne "PSData")
-            {
-                $Data[$key] = $PrivateData[$Key]
-            }
-
-            else
-            {
-                $PSData = $ExistingData["PSData"]
-                foreach($entry in $PSData.Keys)
-                {
-                    $Data[$entry] = $PSData[$entry]
-                }
-            }
-        }
-    }
-
-    #Tags is a read-only property
-    if($Tags)
-    {
-       $Data["Tags"] = $Tags 
-    }
-
-    #The following Uris and ReleaseNotes cannot be empty
-    if($ProjectUri)
-    {
-        $Data["ProjectUri"] = $ProjectUri
-    }
-
-    if($LicenseUri)
-    {
-        $Data["LicenseUri"] = $LicenseUri
-    }
-    if($IconUri)
-    {
-        $Data["IconUri"] = $IconUri
-    }
-
-    if($ReleaseNotes)
-    {
-        #If value is provided as an array, we append the string.
-        $Data["ReleaseNotes"] = $($ReleaseNotes -join "`r`n")
-    }
-        
-    if($ExternalModuleDependencies)
-    {
-        #ExternalModuleDependencies have to be specified either under $RequiredModules or $NestedModules
-        #Extract all the module names specified in the moduleInfo of NestedModules and RequiredModules
-        $DependentModuleNames = @()
-        foreach($moduleInfo in $params["NestedModules"])
-        {
-            if($moduleInfo.GetType() -eq [System.Collections.Hashtable])
-            {
-                $DependentModuleNames += $moduleInfo.ModuleName
-            }
+            $ErrorMessage = $LocalizedData.UpdatedModuleManifestNotValid -f ($Path, $_.Exception.Message)
+            ThrowError -ExceptionName "System.ArgumentException" `
+                       -ExceptionMessage $ErrorMessage `
+                       -ErrorId "NewModuleManifestFailure" `
+                       -ExceptionObject $params `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidArgument
+            return
         }
 
-        foreach($moduleInfo in $params["RequiredModules"])
+        #Manually update the section in PrivateData since New-ModuleManifest works differently on different PS version
+        $PrivateDataInput = ""
+        $ExistingData = $moduleInfo.PrivateData
+        $Data = @{}
+        if($ExistingData)
         {
-            if($moduleInfo.GetType() -eq [System.Collections.Hashtable])
+            foreach($key in $ExistingData.Keys)
             {
-                $DependentModuleNames += $moduleInfo.ModuleName
-            }
-        }
-
-        foreach($dependency in $ExternalModuleDependencies)
-        {
-            if($params["NestedModules"] -notcontains $dependency -and $params["RequiredModules"] -notContains $dependency `
-            -and $DependentModuleNames -notcontains $dependency)
-            {
-                
-                $message = $LocalizedData.ExternalModuleDependenciesNotSpecifiedInRequiredOrNestedModules -f ($dependency)
-                ThrowError -ExceptionName "System.ArgumentException" `
-                    -ExceptionMessage $message `
-                    -ErrorId "InvalidExternalModuleDependencies" `
-                    -ExceptionObject $Exception `
-                    -CallerPSCmdlet $PSCmdlet `
-                    -ErrorCategory InvalidArgument
-                    return  
-                }
-        }
-        if($Data.ContainsKey("ExternalModuleDependencies"))
-        {
-            $Data["ExternalModuleDependencies"] = $ExternalModuleDependencies
-        }
-        else
-        {
-            $Data.Add("ExternalModuleDependencies", $ExternalModuleDependencies)
-        }
-    }
-    if($PackageManagementProviders)
-    {
-        #Check if the provided value is within the relative path
-        $ModuleBase = Microsoft.PowerShell.Management\Split-Path $Path -Parent
-        $Files = Microsoft.PowerShell.Management\Get-ChildItem -Path $ModuleBase
-        foreach($provider in $PackageManagementProviders)
-        {
-            if ($Files.Name -notcontains $provider)
-            {
-                $message = $LocalizedData.PackageManagementProvidersNotInModuleBaseFolder -f ($provider,$ModuleBase)
-                ThrowError -ExceptionName "System.ArgumentException" `
-                    -ExceptionMessage $message `
-                    -ErrorId "InvalidPackageManagementProviders" `
-                    -ExceptionObject $PackageManagementProviders `
-                    -CallerPSCmdlet $PSCmdlet `
-                    -ErrorCategory InvalidArgument
-                return  
-            }
-        }
-
-        $Data["PackageManagementProviders"] = $PackageManagementProviders
-    }
-       
-    $PrivateDataInput = Get-PrivateData -PrivateData $Data
-        
-    #Repleace the PrivateData section by first locating the linenumbers of start line and endline.  
-    $PrivateDataBegin = Select-String -Path $tempPath -Pattern "PrivateData ="
-    $PrivateDataBeginLine = $PrivateDataBegin.LineNumber
-    
-    $newManifest = Microsoft.PowerShell.Management\Get-Content -Path $tempPath
-    #Look up the endline of PrivateData section by finding the matching brackets since private data could 
-    #consist of multiple pairs of brackets.
-    $PrivateDataEndLine=0
-    if($PrivateDataBegin -match "@{")
-    {
-        $leftBrace = 0
-        $EndLineOfFile = $newManifest.Length-1
-        
-        For($i = $PrivateDataBeginLine;$i -lt $EndLineOfFile; $i++)
-        {
-            if($newManifest[$i] -match "{")
-            {
-                $leftBrace ++
-            }
-            elseif($newManifest[$i] -match "}")
-            {
-                if($leftBrace -gt 0)
-                {
-                    $leftBrace --
+                if($key -ne "PSData"){
+                    $Data.Add($key,$ExistingData[$key])
                 }
                 else
                 {
-                   $PrivateDataEndLine = $i
-                   break
+                    $PSData = $ExistingData["PSData"]
+                    foreach($entry in $PSData.Keys)
+                            {
+                    $Data.Add($entry,$PSData[$Entry])
+                }
                 }
             }
-        } 
-    }
-
-    
-    try
-    {
-        if($PrivateDataEndLine -ne 0)
-        {
-            #If PrivateData section has more than one line, we will remove the old content and insert the new PrivataData
-            $newManifest  | where {$_.readcount -le $PrivateDataBeginLine -or $_.readcount -gt $PrivateDataEndLine+1} `
-            | ForEach-Object {
-                $_
-                if($_ -match "PrivateData = ")
-                 {
-                    $PrivateDataInput
-                }
-              } | Set-Content -Path $tempPath -Confirm:$false -WhatIf:$false
         }
 
-        #In lower version, PrivateData is just a single line
-        else
+        if($PrivateData)
         {
-            $newManifest  | where {$_.readcount -lt $PrivateDataBeginLine } `
-            | ForEach-Object {
-                $_
-                if($_ -match "PrivateData = ")
+            foreach($key in $PrivateData.Keys)
+            {
+                #if user provides PSData within PrivateData, we will parse through the PSData
+                if($key -ne "PSData")
                 {
-                   $PrivateDataInput
+                    $Data[$key] = $PrivateData[$Key]
                 }
-            } | Set-Content -Path $tempPath -Confirm:$false -WhatIf:$false
-        }
- 
-        #Verify the new module manifest is valid
-        $testModuleInfo = Microsoft.PowerShell.Core\Test-ModuleManifest -Path $tempPath `
-                                                                    -Verbose:$VerbosePreference `
-    }
-    #Catch the exceptions from Test-ModuleManifest
-    catch
-    {
-        $message = $LocalizedData.UpdatedModuleManifestNotValid -f ($Path, $_.Exception.Message)
-       
-        ThrowError -ExceptionName "System.ArgumentException" `
-                   -ExceptionMessage $message `
-                   -ErrorId "UpdateManifestFileFail" `
-                   -ExceptionObject $_.Exception `
-                   -CallerPSCmdlet $PSCmdlet `
-                   -ErrorCategory InvalidArgument
-        return
-    }
-    
-    try
-    {
-    	$newContent = Microsoft.PowerShell.Management\Get-Content -Path $tempPath
-   
-    	#Ask for confirmation of the new manifest before replacing the original one
-    	if($PSCmdlet.ShouldProcess($Path,$LocalizedData.UpdateManifestContentMessage+$newContent))
-    	{
-            Microsoft.PowerShell.Management\Set-Content -Path $Path -Value $newContent -Confirm:$false -WhatIf:$false
-    	}
 
-    	#Return the new content if -PassThru is specified
-    	if($PassThru)
-    	{
-        	return $newContent
-    	}
+                else
+                {
+                    $PSData = $ExistingData["PSData"]
+                    foreach($entry in $PSData.Keys)
+                    {
+                        $Data[$entry] = $PSData[$entry]
+                    }
+                }
+            }
+        }
+
+        #Tags is a read-only property
+        if($Tags)
+        {
+           $Data["Tags"] = $Tags 
+        }
+       
+
+        #The following Uris and ReleaseNotes cannot be empty
+        if($ProjectUri)
+        {
+            $Data["ProjectUri"] = $ProjectUri
+        }
+
+        if($LicenseUri)
+        {
+            $Data["LicenseUri"] = $LicenseUri
+        }
+        if($IconUri)
+        {
+            $Data["IconUri"] = $IconUri
+        }
+
+        if($ReleaseNotes)
+        {
+            #If value is provided as an array, we append the string.
+            $Data["ReleaseNotes"] = $($ReleaseNotes -join "`r`n")
+        }
+        
+        if($ExternalModuleDependencies)
+        {
+            #ExternalModuleDependencies have to be specified either under $RequiredModules or $NestedModules
+            #Extract all the module names specified in the moduleInfo of NestedModules and RequiredModules
+            $DependentModuleNames = @()
+            foreach($moduleInfo in $params["NestedModules"])
+            {
+                if($moduleInfo.GetType() -eq [System.Collections.Hashtable])
+                {
+                    $DependentModuleNames += $moduleInfo.ModuleName
+                }
+            }
+
+            foreach($moduleInfo in $params["RequiredModules"])
+            {
+                if($moduleInfo.GetType() -eq [System.Collections.Hashtable])
+                {
+                    $DependentModuleNames += $moduleInfo.ModuleName
+                }
+            }
+
+            foreach($dependency in $ExternalModuleDependencies)
+            {
+                if($params["NestedModules"] -notcontains $dependency -and 
+                $params["RequiredModules"] -notContains $dependency -and 
+                $DependentModuleNames -notcontains $dependency)
+                {
+                    $message = $LocalizedData.ExternalModuleDependenciesNotSpecifiedInRequiredOrNestedModules -f ($dependency)
+                    ThrowError -ExceptionName "System.ArgumentException" `
+                        -ExceptionMessage $message `
+                        -ErrorId "InvalidExternalModuleDependencies" `
+                        -ExceptionObject $Exception `
+                        -CallerPSCmdlet $PSCmdlet `
+                        -ErrorCategory InvalidArgument
+                        return  
+                    }
+            }
+            if($Data.ContainsKey("ExternalModuleDependencies"))
+            {
+                $Data["ExternalModuleDependencies"] = $ExternalModuleDependencies
+            }
+            else
+            {
+                $Data.Add("ExternalModuleDependencies", $ExternalModuleDependencies)
+            }
+        }
+        if($PackageManagementProviders)
+        {
+            #Check if the provided value is within the relative path
+            $ModuleBase = Microsoft.PowerShell.Management\Split-Path $Path -Parent
+            $Files = Microsoft.PowerShell.Management\Get-ChildItem -Path $ModuleBase
+            foreach($provider in $PackageManagementProviders)
+            {
+                if ($Files.Name -notcontains $provider)
+                {
+                    $message = $LocalizedData.PackageManagementProvidersNotInModuleBaseFolder -f ($provider,$ModuleBase)
+                    ThrowError -ExceptionName "System.ArgumentException" `
+                               -ExceptionMessage $message `
+                               -ErrorId "InvalidPackageManagementProviders" `
+                               -ExceptionObject $PackageManagementProviders `
+                               -CallerPSCmdlet $PSCmdlet `
+                               -ErrorCategory InvalidArgument
+                    return  
+                }
+            }
+
+            $Data["PackageManagementProviders"] = $PackageManagementProviders
+        }
+        $PrivateDataInput = Get-PrivateData -PrivateData $Data
+        
+        #Repleace the PrivateData section by first locating the linenumbers of start line and endline.  
+        $PrivateDataBegin = Select-String -Path $tempPath -Pattern "PrivateData ="
+        $PrivateDataBeginLine = $PrivateDataBegin.LineNumber
+    
+        $newManifest = Microsoft.PowerShell.Management\Get-Content -Path $tempPath
+        #Look up the endline of PrivateData section by finding the matching brackets since private data could 
+        #consist of multiple pairs of brackets.
+        $PrivateDataEndLine=0
+        if($PrivateDataBegin -match "@{")
+        {
+            $leftBrace = 0
+            $EndLineOfFile = $newManifest.Length-1
+        
+            For($i = $PrivateDataBeginLine;$i -lt $EndLineOfFile; $i++)
+            {
+                if($newManifest[$i] -match "{")
+                {
+                    $leftBrace ++
+                }
+                elseif($newManifest[$i] -match "}")
+                {
+                    if($leftBrace -gt 0)
+                    {
+                        $leftBrace --
+                    }
+                    else
+                    {
+                       $PrivateDataEndLine = $i
+                       break
+                    }
+                }
+            } 
+        }
+
+    
+        try
+        {
+            if($PrivateDataEndLine -ne 0)
+            {
+                #If PrivateData section has more than one line, we will remove the old content and insert the new PrivataData
+                $newManifest  | where {$_.readcount -le $PrivateDataBeginLine -or $_.readcount -gt $PrivateDataEndLine+1} `
+                | ForEach-Object {
+                    $_
+                    if($_ -match "PrivateData = ")
+                    {
+                        $PrivateDataInput
+                    }
+                  } | Set-Content -Path $tempPath -Confirm:$false -WhatIf:$false
+            }
+
+            #In lower version, PrivateData is just a single line
+            else
+            {
+                $PrivateDataForDownlevelPS = "PrivateData = @{ `n"+$PrivateDataInput
+
+                $newManifest  | where {$_.readcount -le $PrivateDataBeginLine -or $_.readcount -gt $PrivateDataBeginLine } `
+                | ForEach-Object {
+                    $_
+                    if($_ -match "PrivateData = ")
+                    {
+                       $PrivateDataForDownlevelPS
+                    }
+                } | Set-Content -Path $tempPath -Confirm:$false -WhatIf:$false
+            }
+ 
+            #Verify the new module manifest is valid
+            $testModuleInfo = Microsoft.PowerShell.Core\Test-ModuleManifest -Path $tempPath `
+                                                                        -Verbose:$VerbosePreference `
+        }
+        #Catch the exceptions from Test-ModuleManifest
+        catch
+        {
+            $message = $LocalizedData.UpdatedModuleManifestNotValid -f ($Path, $_.Exception.Message)
+       
+            ThrowError -ExceptionName "System.ArgumentException" `
+                       -ExceptionMessage $message `
+                       -ErrorId "UpdateManifestFileFail" `
+                       -ExceptionObject $_.Exception `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidArgument
+            return
+        }
+    
+    
+       $newContent = Microsoft.PowerShell.Management\Get-Content -Path $tempPath
+   
+       try{
+           #Ask for confirmation of the new manifest before replacing the original one
+           if($PSCmdlet.ShouldProcess($Path,$LocalizedData.UpdateManifestContentMessage+$newContent))
+           {
+                Microsoft.PowerShell.Management\Set-Content -Path $Path -Value $newContent -Confirm:$false -WhatIf:$false
+           }
+
+           #Return the new content if -PassThru is specified
+           if($PassThru)
+           {
+      	        return $newContent
+           }
+      }
+      catch
+      {
+            $message = $LocalizedData.ManifestFileReadWritePermissionDenied -f ($Path)
+            ThrowError -ExceptionName "System.ArgumentException" `
+                       -ExceptionMessage $message `
+                       -ErrorId "ManifestFileReadWritePermissionDenied" `
+                       -ExceptionObject $Path `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidArgument
+      }
     }
     finally
     {
-        Microsoft.PowerShell.Management\Remove-Item -Path $DestinationPath -Recurse -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Confirm:$false -WhatIf:$false
+        Microsoft.PowerShell.Management\Remove-Item -LiteralPath $tempPath -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Confirm:$false -WhatIf:$false
     }
 }
 
@@ -11889,10 +12424,11 @@ function Get-PrivateData
 
     #Validate each of the property of PSData is of the desired data type
     $Tags= $PrivateData["Tags"] -join "','" | %{"'$_'"}
-    $LicenseUri = $PrivateData["LicenseUri"] -join "','" | %{"'$_'"}
-    $ProjectUri = $PrivateData["ProjectUri"] -join "','" | %{"'$_'"}
-    $IconUri = $PrivateData["IconUri"] -join "','" | %{"'$_'"}
-    $ReleaseNotes = $PrivateData["ReleaseNotes"] -join "','" | %{"'$_'"}
+    $LicenseUri = $PrivateData["LicenseUri"]| %{"'$_'"}
+    $ProjectUri = $PrivateData["ProjectUri"] | %{"'$_'"}
+    $IconUri = $PrivateData["IconUri"] | %{"'$_'"}
+    $ReleaseNotesEscape = $PrivateData["ReleaseNotes"] -Replace "'","''"
+    $ReleaseNotes = $ReleaseNotesEscape | %{"'$_'"}
     $ExternalModuleDependencies = $PrivateData["ExternalModuleDependencies"] -join "','" | %{"'$_'"} 
     
     $DefaultProperties = @("Tags","LicenseUri","ProjectUri","IconUri","ReleaseNotes","ExternalModuleDependencies")
@@ -12122,6 +12658,39 @@ function Copy-Module
     [System.IO.File]::SetAttributes($psgetItemInfopath, [System.IO.FileAttributes]::Hidden)
 }
 
+function Test-FileInUse
+{
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param
+    (
+        [string]
+        $FilePath
+    )
+
+    if(Microsoft.PowerShell.Management\Test-Path -LiteralPath $FilePath -PathType Leaf)
+    {
+        # Attempts to open a file and handles the exception if the file is already open/locked
+        try
+        {
+            $fileInfo = New-Object System.IO.FileInfo $FilePath
+            $fileStream = $fileInfo.Open( [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None )
+
+            if ($fileStream)
+            {
+                $fileStream.Close()
+            }
+        }
+        catch
+        {
+            Write-Debug "In Test-FileInUse function, unable to open the $FilePath file in ReadWrite access. $_"
+            return $true
+        }
+    }
+
+    return $false
+}
+
 function Test-ModuleInUse
 {
     [CmdletBinding()]
@@ -12144,30 +12713,29 @@ function Test-ModuleInUse
         $ModuleVersion
     )
 
-    $dllsInModule = Get-ChildItem -Path $ModuleBasePath `
-                                  -Filter *.dll `
-                                  -Recurse `
-                                  -ErrorAction SilentlyContinue `
-                                  -WarningAction SilentlyContinue | Microsoft.PowerShell.Core\Foreach-Object{$_.FullName}
-    if($dllsInModule)
-    {
-        $currentProcesses = Get-Process
-        $processesDlls = $currentProcesses | Microsoft.PowerShell.Core\Foreach-Object{$_.Modules} | Sort-Object -Unique
-        
-        $moduleDllsInUse = $processesDlls | Where-Object {$_ -and ($dllsInModule -contains $_.FileName)}
-    
-        if($moduleDllsInUse)
-        {
-            $processes = $moduleDllsInUse | Microsoft.PowerShell.Core\Foreach-Object{$dllName = $_.ModuleName; $currentProcesses | Where-Object {$_ -and $_.Modules -and $_.Modules.ModuleName -eq $dllName} } | Select-Object -Unique
-        
-            if($processes)
-            {
-                $message = $LocalizedData.ModuleInUseWithProcessDetails -f ($ModuleVersion, $ModuleName, $( $($processes | Microsoft.PowerShell.Core\Foreach-Object{"$($_.ProcessName):$($_.Id)"} ) -join ",") )
-                Write-Error -Message $message -ErrorId "ModuleIsInUse" -Category InvalidOperation
+    $FileList = Get-ChildItem -Path $ModuleBasePath `
+                              -File `
+                              -Recurse `
+                              -ErrorAction SilentlyContinue `
+                              -WarningAction SilentlyContinue
+    $IsModuleInUse = $false
 
-                return $true
-            }
+    foreach($file in $FileList)
+    {
+        $IsModuleInUse = Test-FileInUse -FilePath $file.FullName
+
+        if($IsModuleInUse)
+        {
+            break
         }
+    }
+
+    if($IsModuleInUse)
+    {
+        $message = $LocalizedData.ModuleVersionInUse -f ($ModuleVersion, $ModuleName)
+        Write-Error -Message $message -ErrorId 'ModuleIsInUse' -Category InvalidOperation
+
+        return $true
     }
 
     return $false
@@ -12340,7 +12908,7 @@ function Resolve-Location
 
         Write-Debug -Message "Ping-Endpoint: location=$Location, statuscode=$statusCode, resolvedLocation=$resolvedLocation"
 
-        if(($statusCode -eq 200) -and $resolvedLocation)
+        if((($statusCode -eq 200) -or ($statusCode -eq 401)) -and $resolvedLocation)
         {
             return $resolvedLocation
         }
@@ -12459,6 +13027,7 @@ Export-ModuleMember -Function Find-Module, `
                               Publish-Module, `
                               Uninstall-Module, `
                               Get-InstalledModule, `
+                              Find-Command, `
                               Find-DscResource, `
                               Find-RoleCapability, `
                               Install-Script, `
