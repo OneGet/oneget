@@ -5,6 +5,9 @@
 ### What's New
 Follow our [News Panel](https://github.com/OneGet/oneget/wiki/News-Panel).
 
+Check out the PackageManagement and PowershellGet MSI package [March release for downlevel OSs!] (https://www.microsoft.com/en-us/download/details.aspx?id=51451)
+
+
 ### Get Started!
 
 OneGet is shipped inside PowerShell in Win10 Client RTM! For downlevel OS, OneGet is included in WMF 5.0. Download the latest official release [here](http://www.microsoft.com/en-us/download/details.aspx?id=48729) -- currently it's in the WMF 5.0 Production Preview.
