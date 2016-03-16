@@ -61,8 +61,11 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
         $zlib.name | should match "zlib"
         $zlib.Dependencies.Count | should be 2
 
+  	$dateTime = [datetime]$zlib.Meta.Attributes["published"]
         $zlib.Meta.Attributes["packageSize"] | should match "2742"
-        $zlib.Meta.Attributes["published"] | should match "5/17/2015 10:39:44 PM -07:00"
+        $dateTime.Day | should be 17
+        $dateTime.Month | should be 5
+        $dateTime.Year | should be 2015
         [long]$zlib.Meta.Attributes["versionDownloadCount"] -ge 4961 | should be $true
         $zlib.Meta.Attributes["requireLicenseAcceptance"] | should match "False"
         $zlib.TagId | should match "zlib#1.2.8.8"
