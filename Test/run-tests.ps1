@@ -20,7 +20,7 @@
 
 #Step 1 - test setup
 $TestHome = $PSScriptRoot
-$TestBin = "$($TestHome)\..\output\debug\bin\"
+$TestBin = "$($TestHome)\..\output\Release\bin\"
 $PowerShellGetPath = "$($TestHome)\..\Providers\Inbox\PowerShellGet\"
 $PowerShellGetVersion = "1.0.0.1"
 $PackageManagementVersion = "1.0.0.1"
