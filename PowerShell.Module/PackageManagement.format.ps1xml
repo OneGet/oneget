@@ -32,7 +32,48 @@
           <Width>16</Width>
         </TableColumnHeader>
         <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+        </TableColumnHeader>
+      </TableHeaders>
+      <TableRowEntries>
+        <TableRowEntry>
+          <TableColumnItems>
+            <TableColumnItem>
+              <PropertyName>Name</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Version</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Source</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Summary</PropertyName>
+            </TableColumnItem>
+          </TableColumnItems>
+        </TableRowEntry>
+      </TableRowEntries>
+    </TableControl>
+  </View>
+
+   <View>
+    <Name>packageWithLongSourceName</Name>
+    <ViewSelectedBy>
+      <TypeName>Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayLongSourceName</TypeName>
+      <TypeName>Deserialized.Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayLongSourceName</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+      <TableHeaders>
+        <TableColumnHeader>
           <Width>30</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>32</Width>
         </TableColumnHeader>
         <TableColumnHeader>
         </TableColumnHeader>
@@ -59,6 +100,272 @@
   </View>
 
   <View>
+    <Name>packageWithLongSourceNameAndCulture</Name>
+    <ViewSelectedBy>
+      <TypeName>Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayLongSourceName#DisplayCulture</TypeName>
+      <TypeName>Deserialized.Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayLongSourceName#DisplayCulture</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+      <TableHeaders>
+        <TableColumnHeader>
+          <Width>30</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>32</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+        </TableColumnHeader>
+      </TableHeaders>
+      <TableRowEntries>
+        <TableRowEntry>
+          <TableColumnItems>
+            <TableColumnItem>
+              <PropertyName>Name</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Version</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Culture</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Source</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Summary</PropertyName>
+            </TableColumnItem>
+          </TableColumnItems>
+        </TableRowEntry>
+      </TableRowEntries>
+    </TableControl>
+  </View>
+
+  <View>
+    <Name>packageWithLongSourceNameAndName</Name>
+    <ViewSelectedBy>
+      <TypeName>Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayLongSourceName#DisplayLongName</TypeName>
+      <TypeName>Deserialized.Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayLongSourceName#DisplayLongName</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+      <TableHeaders>
+        <TableColumnHeader>
+          <Width>45</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>32</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+        </TableColumnHeader>
+      </TableHeaders>
+      <TableRowEntries>
+        <TableRowEntry>
+          <TableColumnItems>
+            <TableColumnItem>
+              <PropertyName>Name</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Version</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Source</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Summary</PropertyName>
+            </TableColumnItem>
+          </TableColumnItems>
+        </TableRowEntry>
+      </TableRowEntries>
+    </TableControl>
+  </View>
+  <View>
+    <Name>packageWithLongSourceNameAndCultureAndName</Name>
+    <ViewSelectedBy>
+      <TypeName>Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayLongSourceName#DisplayCulture#DisplayLongName</TypeName>
+      <TypeName>Deserialized.Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayLongSourceName#DisplayCulture#DisplayLongName</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+      <TableHeaders>
+        <TableColumnHeader>
+          <Width>42</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>24</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+        </TableColumnHeader>
+      </TableHeaders>
+      <TableRowEntries>
+        <TableRowEntry>
+          <TableColumnItems>
+            <TableColumnItem>
+              <PropertyName>Name</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Version</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Culture</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Source</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Summary</PropertyName>
+            </TableColumnItem>
+          </TableColumnItems>
+        </TableRowEntry>
+      </TableRowEntries>
+    </TableControl>
+  </View>
+  
+  <View>
+    <Name>PackageWithCulture</Name>
+    <ViewSelectedBy>
+      <TypeName>Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayCulture</TypeName>
+      <TypeName>Deserialized.Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayCulture</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+      <TableHeaders>
+        <TableColumnHeader>
+          <Width>30</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+        </TableColumnHeader>
+      </TableHeaders>
+      <TableRowEntries>
+        <TableRowEntry>
+          <TableColumnItems>
+            <TableColumnItem>
+              <PropertyName>Name</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Version</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Culture</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Source</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Summary</PropertyName>
+            </TableColumnItem>
+          </TableColumnItems>
+        </TableRowEntry>
+      </TableRowEntries>
+    </TableControl>
+  </View>
+  <View>
+    <Name>PackageWithLongName</Name>
+    <ViewSelectedBy>
+      <TypeName>Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayLongName</TypeName>
+      <TypeName>Deserialized.Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayLongName</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+      <TableHeaders>
+        <TableColumnHeader>
+          <Width>52</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+        </TableColumnHeader>
+      </TableHeaders>
+      <TableRowEntries>
+        <TableRowEntry>
+          <TableColumnItems>
+            <TableColumnItem>
+              <PropertyName>Name</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Version</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Source</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Summary</PropertyName>
+            </TableColumnItem>
+          </TableColumnItems>
+        </TableRowEntry>
+      </TableRowEntries>
+    </TableControl>
+  </View>
+  <View>
+    <Name>PackageWithCultureAndLongName</Name>
+    <ViewSelectedBy>
+      <TypeName>Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayCulture#DisplayLongName</TypeName>
+      <TypeName>Deserialized.Microsoft.PackageManagement.Packaging.SoftwareIdentity#DisplayCulture#DisplayLongName</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+      <TableHeaders>
+        <TableColumnHeader>
+          <Width>52</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+        </TableColumnHeader>
+      </TableHeaders>
+      <TableRowEntries>
+        <TableRowEntry>
+          <TableColumnItems>
+            <TableColumnItem>
+              <PropertyName>Name</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Version</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Culture</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Source</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Summary</PropertyName>
+            </TableColumnItem>
+          </TableColumnItems>
+        </TableRowEntry>
+      </TableRowEntries>
+    </TableControl>
+  </View>
+  <View>
     <Name>PackageSource</Name>
     <ViewSelectedBy>
       <TypeName>Microsoft.PackageManagement.Packaging.PackageSource</TypeName>
@@ -74,15 +381,9 @@
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>10</Width>
-        </TableColumnHeader>
+        </TableColumnHeader>      
         <TableColumnHeader>
-          <Width>12</Width>
         </TableColumnHeader>
-        <TableColumnHeader>
-          <Width>12</Width>
-        </TableColumnHeader>
-        <TableColumnHeader>
-          </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
           <TableRowEntry>
@@ -95,12 +396,6 @@
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>IsTrusted</PropertyName>
-              </TableColumnItem>
-              <TableColumnItem>
-                <PropertyName>IsRegistered</PropertyName>
-              </TableColumnItem>
-              <TableColumnItem>
-                <PropertyName>IsValidated</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Location</PropertyName>
@@ -139,7 +434,7 @@
               <PropertyName>Version</PropertyName>
             </TableColumnItem>
             <TableColumnItem>
-              <ScriptBlock>$_.DynamicOptions.Name -join ", "</ScriptBlock>
+              <ScriptBlock>$options = $_.DynamicOptions.Name | select-object -unique; $options -join ", "</ScriptBlock>
             </TableColumnItem>
           </TableColumnItems>
         </TableRowEntry>

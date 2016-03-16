@@ -24,7 +24,7 @@ $ProgramModulePath = "$Env:ProgramFiles\WindowsPowerShell\Modules"
 $mydocument = [Environment]::GetFolderPath("MyDocuments")
 $UserModuleFolder = "$($mydocument)\WindowsPowerShell\Modules"
 
-$InternalGallery = "https://www.powershellgallery.com/api/v2/"
+$InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
 $InternalSource = 'OneGetTestSource'
 
 #make sure the package repository exists
@@ -43,6 +43,7 @@ foreach ($item in $a)
 }
 
 Register-PackageSource -Name $InternalSource -Location $InternalGallery -ProviderName 'PowerShellGet' -Trusted -ForceBootstrap -ErrorAction SilentlyContinue
+
 # ------------------------------------------------------------------------------
 # Actual Tests:
 
@@ -52,7 +53,7 @@ Describe "import-packageprovider" -Tags @('BVT', 'DRT'){
     
     It "Import -force 'PowerShellGet', a builtin package provider, Expect succeed" {
         #avoid popup for installing nuget-any.exe
-        Find-PackageProvider -force
+        Find-PackageProvider -force 
         (Import-PackageProvider  'PowerShellGet' -verbose -force).name | should match "PowerShellGet"
     }
               
@@ -149,6 +150,7 @@ Describe "import-packageprovider" -Tags @('BVT', 'DRT'){
         Receive-Job -Wait -Job $job -ErrorVariable theError 2>&1
         $theError.FullyQualifiedErrorId | should be "FailedToImportProvider,Microsoft.PowerShell.PackageManagement.Cmdlets.ImportPackageProvider"      
     }
+
     It "Import 'OneGetTest' PowerShell package provider that has multiple versions, Expect succeed" {
         #check all version of OneGetTest is listed
         $x = get-packageprovider "OneGetTest" -ListAvailable
@@ -237,6 +239,7 @@ Describe "import-packageprovider Error Cases" -Tags @('BVT', 'DRT'){
 Describe "Import-PackageProvider with OneGetTest that has 3 versions: 1.1, 3.5, and 9.9." -Tags @('BVT', 'DRT') {
     # make sure that packagemanagement is loaded
     import-packagemanagement
+
     $ps = [PowerShell]::Create()
     $ps.AddScript("Import-PackageProvider -Name OneGetTest -RequiredVersion 9.9; Find-Package -ProviderName OneGetTest")
     $ps.Invoke()
@@ -263,7 +266,7 @@ Describe "Import-PackageProvider with OneGetTest that has 3 versions: 1.1, 3.5, 
     }
 
     It "EXPECTED: success 'Import OneGetTest -requiredVersion 3.5 and then 9.9 -force'" {
-        $a = powershell {(Import-packageprovider -name OneGetTest -requiredVersion 3.5) > $null; (Import-packageprovider -name OneGetTest -requiredVersion 9.9 -force)} 
+        $a = powershell {(Import-packageprovider -name OneGetTest -RequiredVersion 3.5) > $null; (Import-packageprovider -name OneGetTest -requiredVersion 9.9 -force)} 
         $a.Version.ToString()| should match "9.9.0.0"
     }
 
@@ -291,7 +294,7 @@ Describe "Import-PackageProvider with OneGetTest that has 3 versions: 1.1, 3.5, 
         $ps.Streams.Progress[5].PercentComplete | should be 100
     }
 
-    It "EXPECTED: success 'OneGetTest Find-Package returns correct TagId'" -skip {
+    It "EXPECTED: success 'OneGetTest Find-Package returns correct TagId'" {
         $ps = [PowerShell]::Create()
         $ps.AddScript("Import-PackageProvider -Name OneGetTest -RequiredVersion 9.9; Find-Package -ProviderName OneGetTest")
         $result = $ps.Invoke() | Select -First 1
@@ -299,7 +302,7 @@ Describe "Import-PackageProvider with OneGetTest that has 3 versions: 1.1, 3.5, 
         $result.TagId | should match "MyVeryUniqueTagId"
     }
 
-    It "EXPECTED: success 'OneGetTest Get-Package returns correct package object using swidtag'" -skip {
+    It "EXPECTED: success 'OneGetTest Get-Package returns correct package object using swidtag'" {
         $ps = [PowerShell]::Create()
         $null = $ps.AddScript("`$null = Import-PackageProvider -Name OneGetTest -RequiredVersion 9.9; Get-Package -ProviderName OneGetTest")
         $result = $ps.Invoke() 
@@ -310,7 +313,6 @@ Describe "Import-PackageProvider with OneGetTest that has 3 versions: 1.1, 3.5, 
     }
 }
 
-<#
 Describe "Import-PackageProvider with OneGetTestProvider that has 2 versions: 4.5, 6.1" -Tags @('BVT', 'DRT') {
     # make sure that packagemanagement is loaded
     import-packagemanagement
@@ -322,7 +324,7 @@ Describe "Import-PackageProvider with OneGetTestProvider that has 2 versions: 4.
     It "EXPECTED: Get-PackageProvider -ListAvailable succeeds" {
         $providers = Get-PackageProvider -ListAvailable
         ($providers | Where-Object {$_.Name -eq 'OneGetTest'}).Count | should match 3
-        ($providers | Where-Object {$_.Name -eq 'OneGetTestProvider'}).Count | should match 2
+        ($providers | Where-Object {$_.Name -eq 'OneGetTestProvider'}).Count -ge 2 | should be $true
     }
 
     It "EXPECTED: Get-PackageProvider -ListAvailable succeeds even after importing gist provider" {
@@ -330,7 +332,7 @@ Describe "Import-PackageProvider with OneGetTestProvider that has 2 versions: 4.
         Import-PackageProvider Gist
         $providers = Get-PackageProvider -ListAvailable
         ($providers | Where-Object {$_.Name -eq 'OneGetTest'}).Count | should match 3
-        ($providers | Where-Object {$_.Name -eq 'OneGetTestProvider'}).Count | should match 2
+        ($providers | Where-Object {$_.Name -eq 'OneGetTestProvider'}).Count -ge 2 | should be $true
     }
 
     It "EXPECTED: success 'import OneGetTestProvider -requiredVersion 4.5'" {
@@ -351,7 +353,7 @@ Describe "Import-PackageProvider with OneGetTestProvider that has 2 versions: 4.
     It "EXPECTED: success 'OneGetTestProvider with MinimumVersion'" {
         Import-packageprovider -name OneGetTestProvider -MinimumVersion 6.0.5 -Force
 
-        (Get-PackageProvider OneGetTestProvider).Version.ToString() | should match '6.1.0.0'
+        (Get-PackageProvider OneGetTestProvider).Version -ge [version]'6.1.0.0' | should be $true
     }
 
     It "EXPECTED: success 'Import OneGetTestProvider -requiredVersion 4.5 and then 6.1 -force'" {
@@ -362,9 +364,8 @@ Describe "Import-PackageProvider with OneGetTestProvider that has 2 versions: 4.
 
     It "EXPECTED: success 'Import OneGetTestProvider -MinimumVersion 4.5 and then MaximumVersion 5.0 -force'" {
         Import-PackageProvider -Name OneGetTestProvider -MinimumVersion 4.5 -Force;
-        (Get-PackageProvider OneGetTestProvider).Version.ToString() | should match '6.1.0.0'
+        (Get-PackageProvider OneGetTestProvider).Version -ge [version]'6.1.0.0' | should be $true
         Import-PackageProvider -Name OneGetTestProvider -MaximumVersion 5.0 -Force;
         (Get-PackageProvider OneGetTestProvider).Version.ToString() | should match '4.5.0.0'
     }
 }
-#>

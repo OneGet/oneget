@@ -133,6 +133,12 @@
     <value>Installing the package '{0}'.</value>
     <comment>0 - package name</comment>
   </data>
+  <data name="InvalidFileType" xml:space="preserve">
+    <value>Install-PackageProvider -Source only supports '{0}' for file-based installation. '{1}' is not a supported file type. To install a PowerShell-based provider, you must install it from a PSRepository.</value>
+  </data>
+  <data name="MissingProviderManifest" xml:space="preserve">
+    <value>'{0}' does not contain a package provider manifest. Refer to 'Get-Help Import-PackageProvider' for guidance.</value>
+  </data>
   <data name="MissingVersion" xml:space="preserve">
     <value>The version is not found for the specified provider '{0}'.</value>
     <comment>0 - package name</comment>
@@ -151,5 +157,9 @@
   <data name="RetryDownload" xml:space="preserve">
     <value>Cannot download link '{0}', retrying for '{1}' more times.</value>
     <comment>0 - Uri link, 1 - number of retries</comment>
+  </data>
+  <data name="UseLocalSource" xml:space="preserve">
+    <value>Searching for providers in the file path {0}.</value>
+    <comment>0 - file folder or file name</comment>
   </data>
 </root>

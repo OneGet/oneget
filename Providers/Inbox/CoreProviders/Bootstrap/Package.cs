@@ -57,5 +57,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                 return Iso19770_2.VersionScheme.Unknown;
             }
         }
+
+        internal string Source {get; set;}
     }
 }

@@ -3,6 +3,31 @@
 function Initialize-Provider     { write-debug "In $($Providername) - Initialize-Provider" }
 function Get-PackageProviderName { return $Providername }
 
+function Get-Feature {
+	# customized output display
+    Write-Output -InputObject (New-Feature -name "DisplayLongName")   
+}
+
+function Get-DynamicOptions {
+    param
+    (
+        [Microsoft.PackageManagement.MetaProvider.PowerShell.OptionCategory] 
+        $Category
+    )
+
+    switch($Category)
+    {
+		install
+				{
+                    Write-Output -InputObject (New-DynamicOption -Category $Category -Name "DisplayCulture" -ExpectedType Switch -IsRequired $false)                    
+                }
+        Package {
+                    Write-Output -InputObject (New-DynamicOption -Category $Category -Name "DisplayCulture" -ExpectedType Switch -IsRequired $false)                    
+                }
+
+    }
+}
+
 function Get-InstalledPackage
 {
     [CmdletBinding()]
@@ -28,6 +53,7 @@ function Get-InstalledPackage
 <SoftwareIdentity
     name="jQuery"
     version="2.1.4"
+    xml:lang="en-US"
     versionScheme="semver" xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd">
     <Meta
     description="jQuery is a new kind of JavaScript Library.&#xA;        jQuery is a fast and
@@ -35,7 +61,6 @@ concise JavaScript Library that simplifies HTML document traversing, event handl
 and Ajax interactions for rapid web development. jQuery is designed to change the way that you
 write JavaScript.&#xA;        NOTE: This package is maintained on behalf of the library owners by
 the NuGet Community Packages project at http://nugetpackages.codeplex.com/"
-    language="en-US"
     tags="jQuery"
     title="jQuery"
     developmentDependency="False" />
@@ -71,6 +96,7 @@ the NuGet Community Packages project at http://nugetpackages.codeplex.com/"
 <SoftwareIdentity
     name="jWhat"
     version="2.1.4"
+    lang="en"
     tagId="jWhat-jWhere-jWho-jQuery"
     versionScheme="semver" xmlns="http://standards.iso.org/iso/19770/-2/2015-current/schema.xsd">
     <Meta
@@ -79,7 +105,6 @@ concise JavaScript Library that simplifies HTML document traversing, event handl
 and Ajax interactions for rapid web development. jWhat is designed to change the way that you
 write JavaScript.&#xA;        NOTE: This package is maintained on behalf of the library owners by
 the NuGet Community Packages project at http://nugetpackages.codeplex.com/"
-    language="en-US"
     tags="jWhat"
     title="jWhat"
     developmentDependency="False" />
@@ -115,6 +140,7 @@ the NuGet Community Packages project at http://nugetpackages.codeplex.com/"
 <SoftwareIdentity
     name="jError"
     version="2.1.4"
+    lang="en-US"
     tagId="jWhat-jWhere-jWho-jQuery"
     versionScheme="semver" xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd">
     <Meta
@@ -123,7 +149,6 @@ concise JavaScript Library that simplifies HTML document traversing, event handl
 and Ajax interactions for rapid web development. jWhat is designed to change the way that you
 write JavaScript.&#xA;        NOTE: This package is maintained on behalf of the library owners by
 the NuGet Community Packages project at http://nugetpackages.codeplex.com/"
-    language="en-US"
     tags="jWhat"
     title="jWhat"
     developmentDependency="False" />
@@ -166,7 +191,6 @@ concise JavaScript Library that simplifies HTML document traversing, event handl
 and Ajax interactions for rapid web development. jWhat is designed to change the way that you
 write JavaScript.&#xA;        NOTE: This package is maintained on behalf of the library owners by
 the NuGet Community Packages project at http://nugetpackages.codeplex.com/"
-    language="en-US"
     tags="jWhat"
     title="jWhat"
     developmentDependency="False" />
@@ -229,13 +253,87 @@ function Find-Package
 
     $params = @{
                 FastPackageReference = "fast";
-                Name = "name";
-                Version = "version";
-                Source = "Source";
+                Name = "11160201-1500_amd64fre_ServerDatacenterCore_en-us.wim";
+                Version = "1.0.0.0";
+                Source = "from a funland";
                 versionScheme  = "MultiPartNumeric";
                 TagId = "MyVeryUniqueTagId";
+				Culture ="en-US"
                }
 
     $sid = New-SoftwareIdentity @params
     Write-Output -InputObject $sid
+
+
+	if (!$names)
+	{
+		$params2 = @{
+					FastPackageReference = "fast";
+					Name = "22160201-1500_amd64fre_ServerDatacenterCore_en-us.wim";
+					Version = "1.0.0.1";
+					Source = "from a neverland";
+					versionScheme  = "MultiPartNumeric";
+					TagId = "MyVeryUniqueTagId";
+					Culture ="de-de"
+				   }
+
+		$sid2 = New-SoftwareIdentity @params2
+		Write-Output -InputObject $sid2
+	}
+
+}
+
+function Install-Package
+{ 
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $fastPackageReference
+    )
+
+    $params = @{
+                FastPackageReference = "fast";
+                Name = "11160201-1500_amd64fre_ServerDatacenterCore_en-us.wim";
+                Version = "1.0.0.0";
+                Source = "from a funland";
+                versionScheme  = "MultiPartNumeric";
+                TagId = "MyVeryUniqueTagId";
+				Culture ="en-US"
+               }
+
+    $sid = New-SoftwareIdentity @params
+    Write-Output -InputObject $sid
+}
+
+function Download-Package
+{ 
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $FastPackageReference,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Location
+    )
+   
+    Write-Debug ($LocalizedData.ProviderDebugMessage -f ('Download-Package'))
+    Write-Debug -Message ($LocalizedData.FastPackageReference -f $fastPackageReference)
+	
+
+    <#
+        You need to add code here in your real provider:
+     1. parse the FastPackageReference for package name, version, source etc.
+     2. Find the matched source from the registered ones
+     3. Use the Source to download packages
+    #>
+
+    Install-Package -FastPackageReference $fastPackageReference
 }

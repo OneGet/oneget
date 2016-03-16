@@ -111,6 +111,8 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
         public abstract string AddTagId(string tagId);
 
+        public abstract string AddCulture(string xmlLang);
+
         public abstract string AddMetadata(string name, string value);
 
         public abstract string AddMetadata(string elementPath, string name, string value);

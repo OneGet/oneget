@@ -313,6 +313,12 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             return null;
         }
 
+        public virtual string AddCulture(string xmlLang)
+        {
+            Debug("Unexpected call to Culture in RequestObject");
+            return null;
+        }
+
         public virtual string AddMetadata(string elementPath, string name, string value) {
             Debug("Unexpected call to AddMetaData in RequestObject");
             return null;

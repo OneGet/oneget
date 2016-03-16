@@ -32,6 +32,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(ValueFromPipelineByPropertyName = true, Position = 0, Mandatory = true)]
         public string[] Name { get; set; }
 
