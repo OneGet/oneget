@@ -13,40 +13,10 @@
 #
 # ------------------ PackageManagement Test  -----------------------------------
 ipmo "$PSScriptRoot\utility.psm1"
-$InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
+$InternalGallery = "https://www.PowerShellGallery.com/api/v2/"
 
 # ------------------------------------------------------------------------------
 # Actual Tests:
-
-Describe "Find-Package With FilterOnTag" -Tags @('BVT', 'DRT'){
-    # make sure that packagemanagement is loaded
-    import-packagemanagement
-
-    it "EXPECTED: Find a package with FilterOnTag" {
-
-        $a=find-package -ProviderName nuget -source $InternalGallery -Name gistprovider -FilterOnTag Provider
-        $a.name | should match "GistProvider"
-	}
-
-    it "EXPECTED: Find a package with array of FilterOnTags" {
-
-        $a=find-package -ProviderName nuget -source $InternalGallery -Name gistprovider -FilterOnTag @('Provider','PackageManagement')
-        $a.name | should match "GistProvider"  
-               	
-    }
-
-    it "EXPECTED: Find a package with a bad tag" {
-        $Error.Clear()
-        find-package -ProviderName nuget -source $InternalGallery -Name gistprovider -FilterOnTag Pro -ErrorAction SilentlyContinue -ErrorVariable ev
-        $ev.FullyQualifiedErrorId | should be "NoMatchFoundForCriteria,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
-	}
-
-    it "EXPECTED: Find a package with a bad tag" {
-        $Error.Clear()
-        find-package -ProviderName nuget -source $InternalGallery -Name gistprovider -FilterOnTag Providerrrrrr -ErrorAction SilentlyContinue -ErrorVariable ev
-        $ev.FullyQualifiedErrorId | should be "NoMatchFoundForCriteria,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
-	}
-}
 
 Describe "find-packageprovider" -Tags @('BVT', 'DRT'){
     # make sure that packagemanagement is loaded
@@ -139,7 +109,7 @@ Describe "find-packageprovider" -Tags @('BVT', 'DRT'){
         $a -contains "gistprovider" | should be $true
         $a -contains "nuget" | should be $false
     }
-    It "find-packageprovider -Name with dependencies, Expect succeed" {
+    It "find-packageprovider -Name with dependencies, Expect succeed" -Skip {
         # gistprovider 1.5 depends on tsdprovider 0.2
         $a = (Find-PackageProvider -name gistprovider -RequiredVersion 1.5 -source $InternalGallery -IncludeDependencies) 
         $a.Name -contains "gistprovider" | should be $true
@@ -183,7 +153,7 @@ Describe "Find-PackageProvider with Versions" -Tags @('BVT', 'DRT') {
     2.8.5.24#>
 
     It "EXPECTED: success 'Find a provider  -requiredVersion 3.5'" {
-        (find-packageprovider -name Nuget -RequiredVersion 2.8.5.122).Version.ToString() | should match "2.8.5.122"
+        (find-packageprovider -name Nuget -requiredVersion 2.8.5.122).Version.ToString() | should match "2.8.5.122"
     }
  
 

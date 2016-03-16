@@ -55,17 +55,6 @@ Describe "Get-package with version parameter  - valid scenarios" -Tags @('BVT', 
         $installedPackages = (Get-Package -Name "adept.nugetrunner" -Provider $nuget -Destination $destination -AllVersions)
         $installedPackages.Name | should be "adept.nugetrunner"
         $installedPackages.Count -eq $foundPackages.Count | should be $true        
-
-        # check that getting attributes from meta is not case sensitive
-        $packageToInspect = $installedPackages[0]
-
-        $firstDescr = $packageToInspect.Meta.Attributes["Description"]
-        # the description should not be null
-        [string]::IsNullOrWhiteSpace($firstDescr) | should be $false
-        $secondDescr = $packageToInspect.Meta.Attributes["dEsCriPtIoN"]
-
-        # the 2 descriptions should be the same
-        $firstDescr -eq $secondDescr | should be $true
         
 		if (Test-Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)

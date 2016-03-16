@@ -28,9 +28,7 @@ $maximumVersions = @("1.8", "2.1", "2.3");
 $destination = "$env:tmp\nugettests"
 $relativetestpath = "$env:tmp\relativepathtestnuget"
 $dependenciesSource = "$env:temp\PackageManagementDependencies"
-$dtlgallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
-$providerName ="Microsoft-Windows-PowerShell"
-
+$dtlgallery = "https://MyTestGallery.cloudapp.net/api/v2/"
 Get-ChildItem -Path $dependenciesSource -Recurse -Include *.nupkg | % { $_.IsReadOnly = $false }
 if( test-path $destination ) {
     rmdir -recurse -force $destination -ea silentlycontinue
@@ -43,191 +41,6 @@ $nuget = "nuget"
 
 #bootstrap
 Install-PackageProvider -Name $nuget -Force
-
-
-
-Describe "Find, Get, Save, and Install-Package with Culture" -Tags @('BVT', 'DRT'){
-    # make sure that packagemanagement is loaded
-    import-packagemanagement
-
-    (get-packageprovider -name "OneGetTest" -list).name | should match "OneGetTest"
-    $x = PowerShell '(Import-PackageProvider -name OneGetTest -RequiredVersion 9.9 -WarningAction SilentlyContinue -force ).Name'
-    $x | should match "OneGetTest"
-
- 
-    it "EXPECTED: Find a package should not show Culture" {
-    
-        $packages = Find-Package -ProviderName OneGetTest -DisplayCulture
-        $packages.Culture | Should Not BeNullOrEmpty
-        $packages.Name | Should Not BeNullOrEmpty
-	}
-
-    it "EXPECTED: Find a package with a DisplayCulture" {
-    
-        $packages = Find-Package -DisplayCulture
-        $packages.Culture | Should Not BeNullOrEmpty
-        $packages.Name | Should Not BeNullOrEmpty
-	}
-
-    it "EXPECTED: Get a package should not show Culture" {
-    
-        $packages = Get-Package -DisplayCulture -ProviderName OneGetTest
-        $packages.Culture | Should Not BeNullOrEmpty
-        $packages.Name | Should Not BeNullOrEmpty
-	}
-
-    it "EXPECTED: Install a package with a DisplayCulture" {
-    
-        $packages = install-Package -ProviderName OneGetTest -name jquery -force -DisplayCulture
-        $packages.Culture | Should Not BeNullOrEmpty
-        $packages.Name | Should Not BeNullOrEmpty
-	}
-
-    it "EXPECTED: Save a package with a DisplayCulture" {
-    
-        $packages = save-Package -ProviderName OneGetTest -name jquery -DisplayCulture -path $destination
-        $packages.Culture | Should Not BeNullOrEmpty
-        $packages.Name | Should Not BeNullOrEmpty
-	}
-}
-
-Describe "Event Test" -Tags @('BVT', 'DRT'){
-    # make sure that packagemanagement is loaded
-    import-packagemanagement
- 
-    it "EXPECTED: install a package should raise event" {
-     
-        Install-Package EntityFramework -ProviderName nuget -requiredVersion 6.1.3  -Destination $env:tmp -source 'http://www.nuget.org/api/v2/' -force
-        
-        $retryCount= 5
-        while($retryCount -gt 0)
-        {
-            $events = @(Get-WinEvent -FilterHashtable @{ ProviderName = $providerName; Id = 4101 } -ErrorAction SilentlyContinue) 
-
-            try
-            {
-                if($events)
-                {
-                    $events[0].Message | Should Match "Package=jQuery"  
-                    break
-                }
-            }
-            catch
-            {
-            }
-            $retryCount--
-            Start-Sleep -Milliseconds 500
-        }
-
-        if($events)
-        {         
-            $event= $events[0]  
-            $event.ProviderName | Should Match "Microsoft-Windows-PowerShell"
-            $event.Id | Should Match 4101                     
-            $event.Message | Should Match "Installed"
-            $event.Message | Should Match "Package=EntityFramework"  
-            $event.Message | Should Match "Version=6.1.3"  
-            $event.Message | Should Match "Provider=NuGet"   
-            $event.Message | Should Match "Source=http://www.nuget.org/api/v2/" 
-
-        }       
-        else 
-        {         
-            # this will fail the test
-            $events | Should Not BeNullOrEmpty
-        }       
-               
-	}
-
-    it "EXPECTED: uninstall a package should raise event" {
-     
-        Install-Package EntityFramework -ProviderName nuget -requiredVersion 6.1.3  -Destination $env:tmp -source 'http://www.nuget.org/api/v2/' -force 
-        UnInstall-Package EntityFramework -ProviderName nuget -Destination $env:tmp       
-
-        $retryCount= 5
-        while($retryCount -gt 0)
-        {
-            $events = @(Get-WinEvent -FilterHashtable @{ ProviderName = $providerName; Id = 4102 } -ErrorAction SilentlyContinue)  
-
-            try
-            {
-                if($events)
-                {
-                    $events[0].Message | Should Match "Package=jQuery"  
-                    break
-                }
-            }
-            catch
-            {
-            }
-            $retryCount--
-            Start-Sleep -Milliseconds 500
-        }
-
-        if($events)
-        {         
-            $event= $events[0]
-                        
-            $event.ProviderName | Should Match "Microsoft-Windows-PowerShell"
-            $event.Id | Should Match 4102
-            $event.Message | Should Match "Uninstalled"
-            $event.Message | Should Match "Package=EntityFramework"  
-            $event.Message | Should Match "Version=6.1.3"  
-            $event.Message | Should Match "Provider=NuGet"   
-            $event.Message | Should Match "EntityFramework.6.1.3.nupkg"  
-
-        }       
-        else 
-        {         
-            # this will fail the test
-            $events | Should Not BeNullOrEmpty
-        }
-               
-	}
-
-    it "EXPECTED: save a package should raise event" {
-     
-        save-Package EntityFramework -ProviderName nuget -path $env:tmp -requiredVersion 6.1.3 -source 'http://www.nuget.org/api/v2/' -force
-
-        $retryCount= 5
-        while($retryCount -gt 0)
-        {
-            $events = @(Get-WinEvent -FilterHashtable @{ ProviderName = $providerName; Id = 4103} -ErrorAction SilentlyContinue)   
-
-            try
-            {
-                if($events)
-                {
-                    $events[0].Message | Should Match "Package=jQuery"  
-                    break
-                }
-            }
-            catch
-            {
-            }
-            $retryCount--
-            Start-Sleep -Milliseconds 500
-        }
-
-        if($events)
-        {         
-            $event= $events[0]
-                        
-            $event.ProviderName | Should Match "Microsoft-Windows-PowerShell"
-            $event.Id | Should Match 4103      
-            $event.Message | Should Match "Downloaded"
-            $event.Message | Should Match "Package=EntityFramework"  
-            $event.Message | Should Match "Version=6.1.3"  
-            $event.Message | Should Match "Provider=NuGet"   
-            $event.Message | Should Match "Source=http://www.nuget.org/api/v2/" 
-        }       
-        else 
-        {         
-            # this will fail the test
-            $events | Should Not BeNullOrEmpty
-        }             
-	}
-}
 
 Describe "Find-Package" -Tags @('BVT', 'DRT'){
     # make sure that packagemanagement is loaded
@@ -249,11 +62,7 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
         $zlib.Dependencies.Count | should be 2
 
         $zlib.Meta.Attributes["packageSize"] | should match "2742"
-        $dateTime = [datetime]$zlib.Meta.Attributes["published"]
-        
-        $dateTime.Day | should be 17
-        $dateTime.Month | should be 5
-        $dateTime.Year | should be 2015
+        $zlib.Meta.Attributes["published"] | should match "5/17/2015 10:39:44 PM -07:00"
         [long]$zlib.Meta.Attributes["versionDownloadCount"] -ge 4961 | should be $true
         $zlib.Meta.Attributes["requireLicenseAcceptance"] | should match "False"
         $zlib.TagId | should match "zlib#1.2.8.8"
@@ -274,23 +83,27 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
     It "EXPECTED: Finds 64 packages" {
         $packages = Find-Package -Provider $nuget -Source $source | Select -First 63
 
-        $packages = (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction silentlycontinue)
+        $packages = (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name)
 
         $packages.Count | Should be 63
     }
 
 
-    It "EXPECTED: Finds 100 packages should throw error" {
+    It "EXPECTED: Finds 100 packages" {
         $packages = Find-Package -Provider $nuget -Source $source | Select -First 100
 
-        (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction silentlycontinue) | should throw
+        $packages = (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name)
+
+        $packages.Count | Should be 100
     }
 
 
-    It "EXPECTED: Finds 128 packages should throw error" {
+    It "EXPECTED: Finds 128 packages" {
         $packages = Find-Package -Provider $nuget -Source $source | Select -First 127
 
-        (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction silentlycontinue) | should throw
+        $packages = (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name)
+
+        $packages.Count | Should be 127
     }
 
     It "EXPECTED: Finds 'TestPackage' Package using fwlink" {
@@ -322,12 +135,12 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
 
     }
 
-    It "EXPECTED: Cannot find unlisted package" {
+    It "EXPECTED: Cannot find unlisted package" -Skip {
         $msg = powershell "find-package -provider $nuget -source $dtlgallery -name hellops -erroraction silentlycontinue; `$Error[0].FullyQualifiedErrorId"
         $msg | should be "NoMatchFoundForCriteria,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
     }
 
-    It "EXPECTED: Cannot find unlisted package with all versions parameter" {
+    It "EXPECTED: Cannot find unlisted package with all versions parameter" -Skip {
         $packages = find-package -name gistprovider -provider $nuget -source $dtlgallery -AllVersions
         # we should still be able to find at least 2 listed package
         $packages.Count -gt 1 | should be $true
@@ -337,7 +150,7 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
         $packages.Version.Contains("1.2") | should be $true
     }
 
-    It "EXPECTED: Cannot find unlisted package with all versions and maximum versions" {
+    It "EXPECTED: Cannot find unlisted package with all versions and maximum versions" -Skip{
         $packages = find-package -name gistprovider -provider $nuget -source $dtlgallery -AllVersions -MaximumVersion 1.3
         # we should still be able to find 2 listed package (which is version 1.2 and 1.3)
         $packages.Count -eq 2 | should be $true
@@ -347,7 +160,7 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
         $packages.Version.Contains("1.2") | should be $true
     }
 
-    It "EXPECTED: Cannot find unlisted package with all versions and minimum versions" {
+    It "EXPECTED: Cannot find unlisted package with all versions and minimum versions" -Skip {
         $packages = find-package -name gistprovider -provider $nuget -source $dtlgallery -AllVersions -MinimumVersion 0.5
         # we should still be able to find at least 2 listed package (which is version 1.2 and 1.3)
         $packages.Count -gt 2 | should be $true
@@ -357,17 +170,17 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
         $packages.Version.Contains("1.2") | should be $true
     }
 
-    It "EXPECTED: Finds unlisted package with required version" {
+    It "EXPECTED: Finds unlisted package with required version" -Skip{
         (find-package -name hellops -provider $nuget -source $dtlgallery -requiredversion 0.1.0).Name | should match "HellOps"
     }
 
-    It "EXPECTED: Cannot find unlisted package with maximum versions" {
+    It "EXPECTED: Cannot find unlisted package with maximum versions" -Skip {
         # error out because all the versions below 0.6 are unlisted
         $msg = powershell "find-package -provider $nuget -source $dtlgallery -name gistprovider -maximumversion 0.6 -erroraction silentlycontinue; `$Error[0].FullyQualifiedErrorId"
         $msg | should be "NoMatchFoundForCriteria,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
     }
 
-    It "EXPECTED: Cannot find unlisted package with minimum versions" {
+    It "EXPECTED: Cannot find unlisted package with minimum versions" -Skip{
         $packages = find-package -name gistprovider -provider $nuget -source $dtlgallery -AllVersions -MinimumVersion 0.5
         # we should still be able to find at least 2 listed package (which is version 1.2 and 1.3)
         $packages.Count -gt 2 | should be $true
@@ -433,62 +246,6 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
 Describe Save-Package -Tags @('BVT', 'DRT'){
 	# make sure packagemanagement is loaded
 	import-packagemanagement
-
-
-    It "EXPECTED success: save-package path should be created with -force " {
-        $dest = "$destination\NeverEverExists"
-        $package = save-package -name TSDProvider -path $dest -source $dtlgallery -provider $nuget -force
-       
-        $package.Name | should be "TSDProvider"
-        (test-path "$dest\TSDProvider*") | should be $true
-        if (test-path "$dest\TSDProvider*") {
-            rm $dest\TSDProvider* -force
-        }
-        if (test-path "$dest") {
-            rm $dest -force
-        }
-    }
-
-    It "EXPECTED success: save-package -LiteralPath" {
-        
-        $package = save-package -LiteralPath $destination -ProviderName nuget -Source $dtlgallery -name TSDProvider
-       
-        $package.Name | should be "TSDProvider"
-        (test-path "$destination\TSDProvider*") | should be $true
-        if (test-path "$destination\TSDProvider*") {
-            rm $destination\TSDProvider* -force
-        }
-    }
-
-    It "EXPECTED success: save-package -LiteralPath" {
-        $dest = "$destination\NeverEverExists"
-        $package = save-package -LiteralPath $dest -ProviderName nuget -Source $dtlgallery -name TSDProvider -force
-       
-        $package.Name | should be "TSDProvider"
-        (test-path "$dest\TSDProvider*") | should be $true
-        if (test-path "$dest\TSDProvider*") {
-            rm $dest\TSDProvider* -force
-        }
-        if (test-path "$dest") {
-            rm $dest -force
-        }
-    }
-
-    It "EXPECTED success: find-package and save-package" {
-        $package = find-package -name TSDProvider -provider $nuget -source $dtlgallery | save-package -path $destination
-       
-        $package.Name | should be "TSDProvider"
-        (test-path "$destination\TSDProvider*") | should be $true
-        if (test-path "$destination\TSDProvider*") {
-            rm $destination\TSDProvider* -force
-        }
-    }
-
-    It "save-package -name with wildcards, Expect error" {
-        $Error.Clear()
-        $package =  save-package -path $destination -name DOESNOTEXIST* -warningaction:silentlycontinue -ErrorVariable wildcardError -ErrorAction SilentlyContinue        
-        $wildcardError.FullyQualifiedErrorId| should be "WildCardCharsAreNotSupported,Microsoft.PowerShell.PackageManagement.Cmdlets.SavePackage"
-    }
 
 	it "EXPECTED: Saves 'Zlib' Package To Packages Directory" {
         $version = "1.2.8.8"
@@ -626,14 +383,6 @@ Describe Save-Package -Tags @('BVT', 'DRT'){
     	(save-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source -Path $destination -EA silentlycontinue) | should throw
     }
 
-    It "EXPECTED: -FAILS- To Save Package without folder pre-created" {
-    	(save-package -name Jquery -provider $nuget -source $source -Path "$destination\SavePackageTest\FolderDoesNotExist" -EA silentlycontinue) | should throw
-    }
-
-    It "EXPECTED: -FAILS- To Save Package -LiteralPath without folder pre-created" {
-    	(save-package -name Jquery -provider $nuget -source $source -LiteralPath "$destination\SavePackageTest\FolderDoesNotExist" -EA silentlycontinue) | should throw
-    }
-
 	It "EXPECTED: -FAILS- To Save Package Due To Negative Maximum Version Parameter" {
     	(save-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -Path $destination -EA silentlycontinue) | should throw
     }
@@ -654,54 +403,6 @@ Describe Save-Package -Tags @('BVT', 'DRT'){
     	(save-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -Path $destination -EA silentlycontinue) | should throw
     }
 }
-
-Describe "save-package with Whatif" -Tags @('BVT', 'DRT'){
-    # make sure that packagemanagement is loaded
-    #import-packagemanagement
-    $tempDir = "$env:temp\nugettesttempfolder"    
-
-    BeforeEach{
-        $tempFile = [System.IO.Path]::GetTempFileName() 
-        $whatif = "What if: Performing the operation";
-
-        if (-not (Test-Path $tempDir))
-        {
-            md $tempDir | Out-Null
-        }
-    }
-
-    AfterEach {
-        if(Test-Path $tempFile)
-        {
-            Remove-Item $tempFile -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
-        }
-    }
-
-     It "install-package -name nuget with whatif, Expect succeed" {
-       if($PSCulture -eq 'en-US'){
-        # Start Transcript
-        Start-Transcript -Path $tempFile
-		
-        Save-Package -name jquery -force -source $source -ProviderName NuGet -Path $tempDir -warningaction:silentlycontinue -ErrorAction SilentlyContinue -whatif  
-
-        # Stop Transcript and get content of transcript file
-        Stop-Transcript
-        $transcriptContent = Get-Content $tempFile
-
-        $transcriptContent | where { $_.Contains( $whatif ) } | should be $true
-        Test-Path C:\foof | should be $false
-
-
-        Remove-Item $whatif -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
-        }
-    }
-
-     It "install-package -name nuget with whatif where package has a dependencies, Expect succeed" {
-        {Save-Package -name zlib -source https://www.nuget.org/api/v2/ `
-            -ProviderName NuGet -Path $tempDir -whatif} | should not throw
-    }
-}
-
 
 Describe "install-package with Whatif" -Tags @('BVT', 'DRT'){
     # make sure that packagemanagement is loaded
@@ -738,126 +439,12 @@ Describe "install-package with Whatif" -Tags @('BVT', 'DRT'){
         Remove-Item $whatif -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
     }
-
-     It "install-package -name nuget with whatif where package has a dependencies, Expect succeed" {
-        {install-Package -name zlib -source https://www.nuget.org/api/v2/ `
-            -ProviderName NuGet -destination c:\foof -whatif} | should not throw
-    }
-}
-
-Describe "install-package with Scope" -Tags @('BVT', 'DRT'){
-    BeforeAll {
-        import-packagemanagement
-        $userName = "smartguy"
-        $password = "password%1"
-        net user $userName $password /add
-        $secesurestring = ConvertTo-SecureString $password -AsPlainText -Force
-        $credential = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $secesurestring
-    }
-
-    AfterAll {
-         # Delete the user profile
-         net user $userName /delete | Out-Null        
-    }
-
-     it "EXPECTED Success: Get and Install-Package without Scope without destination" {
-            
-        $ProgramFiles = [Environment]::GetFolderPath("ProgramFiles")
-        $UserInstalledLocation = "$($ProgramFiles)\Nuget\Packages"
-
-        
-        if (Test-Path $UserInstalledLocation) {
-                Remove-Item -Recurse -Force -Path $UserInstalledLocation -ErrorAction SilentlyContinue
-        }
-
-        $package = install-package -ProviderName nuget  -source  $dtlgallery -name  gistprovider -RequiredVersion 0.6 -force
-    
-        $package.Name | Should Match "GistProvider"
-
-        $packages = Get-package -ProviderName nuget 
-
-        $packages | ?{ $_.Name -eq "GistProvider" } | should not BeNullOrEmpty
-   
-        (Test-Path "$UserInstalledLocation\GistProvider*") | should be $true
-	}
-
-    it "EXPECTED Success: Get and Install-Package AllUsers Scope Without destination" {
-            
-        $ProgramFiles = [Environment]::GetFolderPath("ProgramFiles")
-        $UserInstalledLocation = "$($ProgramFiles)\Nuget\Packages"
-
-        
-        if (Test-Path $UserInstalledLocation) {
-                Remove-Item -Recurse -Force -Path $UserInstalledLocation -ErrorAction SilentlyContinue
-        }
-
-        $package = install-package -ProviderName nuget  -source  $dtlgallery -name  gistprovider -RequiredVersion 0.6 -scope AllUsers -force
-    
-        $package.Name | Should Match "GistProvider"
-
-        $packages = Get-package -ProviderName nuget 
-
-        $packages | ?{ $_.Name -eq "GistProvider" } | should not BeNullOrEmpty
-   
-        (Test-Path "$UserInstalledLocation\GistProvider*") | should be $true
-	}
-
-    it "EXPECTED Success: Get and Install-Package -Scope CurrentUser with destination" {
-            
-        $userProfile = [Environment]::GetFolderPath("UserProfile")
-        $UserInstalledLocation = "$($userProfile)\Nuget\Packages"
-
-        
-        if (Test-Path $UserInstalledLocation) {
-                Remove-Item -Recurse -Force -Path $UserInstalledLocation -ErrorAction SilentlyContinue
-        }
-
-        $package = install-package -ProviderName nuget  -source  $dtlgallery -name  gistprovider -RequiredVersion 0.6 -scope CurrentUser -destination $UserInstalledLocation -force
-    
-        $package.Name | Should Match "GistProvider"
-
-        $packages = Get-package -ProviderName nuget 
-
-        $packages | ?{ $_.Name -eq "GistProvider" } | should not BeNullOrEmpty
-   
-        (Test-Path "$UserInstalledLocation\GistProvider*") | should be $true
-	}
-        
-    It "install-package CurrentUser scope in a non-admin console, expect succeed" {
-        $Error.Clear()                             
-        $job=Start-Job -ScriptBlock {Param ([Parameter(Mandatory = $True)] [string]$dtlgallery) install-package -ProviderName nuget  -source $dtlgallery -name  gistprovider -RequiredVersion 0.6 -force -scope CurrentUser} -Credential $credential -ArgumentList $dtlgallery
-
-        $a= Receive-Job -Wait -Job $job
-        $a.Name | should match 'gistprovider'
-    } 
-
-    It "install-package without scope in a non-admin console, expect fail" {
-       
-        $Error.Clear()
-                      
-        $job=Start-Job -ScriptBlock {
-             install-package -ProviderName nuget  -source  http://nuget.org/api/v2 -name  jquery -force
-            } -Credential $credential 
-
-        Receive-Job -Wait -Job $job -ErrorVariable theError 2>&1
-        $theError.FullyQualifiedErrorId | should be "InstallRequiresCurrentUserScopeParameterForNonAdminUser,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackage"
-    } 
-
-    It "install-package with AllUsers scope in a non-admin console, expect fail" {
-        $Error.Clear()
-                      
-        $job=Start-Job -ScriptBlock {install-package -ProviderName nuget  -source  http://nuget.org/api/v2 -name  jquery -force -scope AllUsers} -Credential $credential
-
-        Receive-Job -Wait -Job $job -ErrorVariable theError2 2>&1
-        $theError2.FullyQualifiedErrorId | should be "InstallRequiresCurrentUserScopeParameterForNonAdminUser,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackage"
-
-    } 
 }
 
 Describe Install-Package -Tags @('BVT', 'DRT'){
 	# make sure packagemanagement is loaded
 	import-packagemanagement
- 
+
 	it "EXPECTED: Installs 'Zlib' Package To Packages Directory" {
         $version = "1.2.8.8"
 		(install-package -name "zlib" -provider $nuget -source $source -destination $destination -force -RequiredVersion $version)
@@ -1068,20 +655,6 @@ Describe Get-Package -Tags @('BVT', 'DRT'){
 Describe Uninstall-Package -Tags @('BVT', 'DRT'){
 	# make sure packagemanagement is loaded
 	import-packagemanagement
-
-	it "EXPECTED: Uninstalls The Right version of 'Jquery'" {
-
-		(install-package -name "Jquery" -provider $nuget -source $source -destination $destination -RequiredVersion 2.1.3 -force).Version | Should match "2.1.3" 
-        (install-package -name "Jquery" -provider $nuget -source $source -destination $destination -RequiredVersion 2.1.4 -force).Version | Should match "2.1.4" 
-
-        #uninstall the old version
-		uninstall-package -name "Jquery" -provider $nuget -destination $destination -RequiredVersion 2.1.3
-      
-        #the old version should be gone but the later should exist
-        (Get-Package -ProviderName nuget -RequiredVersion 2.1.3 -Name jquery -Destination $destination -EA silentlycontinue) | should throw
-        (Get-Package -ProviderName nuget -RequiredVersion 2.1.4 -Name jquery -Destination $destination).Version | should be "2.1.4"
-
-    }
 
 	it "EXPECTED: Uninstalls The'Adept.Nugetrunner' Package From The Packages Directory" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)

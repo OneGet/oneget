@@ -40,19 +40,19 @@ Describe "Set-PackageSource" -Tags @('BVT', 'DRT'){
     # make sure that packagemanagement is loaded
     import-packagemanagement
 
-	It "EXPECTED: -FAILS- To rename package source but does not remove the old source" {
+	It "EXPECTED: -FAILS- To rename package source but does not remove the old source" -Skip{
         try {
 
             $a=(Get-PackageSource -ErrorAction Ignore -WarningAction Ignore).Location
             foreach($item in $a)
             {                
-                if($item -match "https://dtlgalleryint.cloudapp.net/api/v2/")
+                if($item -match "https://mytestgallery.cloudapp.net/api/v2/")
                 {
                     Unregister-PackageSource -Name $item
                 }                
             }
 
-            Register-PackageSource -Name internal -Location https://dtlgalleryint.cloudapp.net/api/v2/ -ProviderName PowerShellGet
+            Register-PackageSource -Name internal -Location https://mytestgallery.cloudapp.net/api/v2/ -ProviderName PSModule
             $msg = powershell 'set-packagesource -name internal -newname internal2 -ea silentlycontinue ; $Error[0].FullyQualifiedErrorId'
             $msg | should match "RepositoryAlreadyRegistered,Add-PackageSource,Microsoft.PowerShell.PackageManagement.Cmdlets.SetPackageSource"
             $package = Get-PackageSource -Name internal
@@ -64,7 +64,7 @@ Describe "Set-PackageSource" -Tags @('BVT', 'DRT'){
         }
     }
 
-    It "EXPECTED: -FAILS- when Set-PackageSource raises an error but does not remove the old source" {
+    It "EXPECTED: -FAILS- when Set-PackageSource raises an error but does not remove the old source" -Skip {
         (Get-PackageSource -Name PSGallery).Count | should be 1
         $msg = powershell 'Set-PackageSource -Name PSGallery -ProviderName PowerShellGet -PackageManagementProvider PowerShellGet -ErrorAction SilentlyContinue; $Error[0].FullyQualifiedErrorId'
         $msg | should match "InvalidPackageManagementProviderValue,Add-PackageSource,Microsoft.PowerShell.PackageManagement.Cmdlets.SetPackageSource"
@@ -76,11 +76,11 @@ Describe Uninstall-Package -Tags @('BVT', 'DRT'){
 	# make sure packagemanagement is loaded
 	import-packagemanagement
 
-    It "E2E: Uninstall all versions of a specific package - PowerShellGet provider" {
+    It "E2E: Uninstall all versions of a specific package - PowerShellGet provider" -skip {
         $packageName = "ContosoServer"
         $provider = "PowerShellGet"
         $packageSourceName = "InternalGallery"
-        $internalGallerySource = "https://dtlgalleryint.cloudapp.net/api/v2/"
+        $internalGallerySource = "https://mytestgallery.cloudapp.net/api/v2/"
 
         #make sure the package repository exists
         $packageSource = Get-PackageSource -ForceBootstrap | Select-Object Location, ProviderName
