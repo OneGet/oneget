@@ -20,6 +20,7 @@ You can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notifie
 * Learn about the [8 Laws of Software Installation](https://github.com/OneGet/oneget/wiki/8-Laws-of-Software-Installation)
 * See the [documentation](https://github.com/OneGet/oneget/wiki) tab for more info.
 * [General Troubleshooting] (https://github.com/OneGet/oneget/wiki/General-Troubleshooting)
+* Check out more help information [in our wiki page] (https://github.com/oneget/oneget/wiki)
 
 #### What is OneGet?
 
