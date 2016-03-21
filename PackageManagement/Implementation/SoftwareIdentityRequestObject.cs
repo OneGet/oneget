@@ -79,6 +79,9 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                 if (xdoc != null && xdoc.Root != null && Swidtag.IsSwidtag(xdoc.Root))
                 {
                     _currentItem = new SoftwareIdentity(xdoc);
+                    if (Provider != null) {
+                        _currentItem.Provider = (PackageProvider)Provider;
+                    }
                 }
                 else
                 {
@@ -144,6 +147,26 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             }
 
             return swid.TagId;
+        }
+
+        public override string AddCulture(string xmlLang)
+        {
+            Activity();
+
+            var swid = _currentItem;
+
+            if (swid == null)
+            {
+                return null;
+            }
+
+           // we can't modify it once add, so check that there is no swidtag
+            if (string.IsNullOrWhiteSpace(swid.Culture))
+            {
+                swid.Culture = xmlLang;
+            }
+
+            return swid.Culture;
         }
 
         /// <summary>

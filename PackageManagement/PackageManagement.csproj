@@ -13,8 +13,6 @@
     <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), PackageManagement.sln))\</SolutionDir>
     <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\PackageManagement.sln</SolutionPath>
     <RestorePackages>true</RestorePackages>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props')" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -26,7 +24,6 @@
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -42,7 +39,6 @@
      $txt = (get-content $(SolutionDir)assembly-version.cs) -replace "\d*\.\d*\.\d*\.\d*",$v
      set-content -path $(SolutionDir)assembly-version.cs -Value $txt
     ]]></PSBeforeBuild>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -82,6 +78,7 @@
     <Compile Include="Packaging\Resource.cs" />
     <Compile Include="Packaging\ResourceCollection.cs" />
     <Compile Include="Packaging\SoftwareIdentityVersionComparer.cs" />
+    <Compile Include="Packaging\SoftwareIdentityNameVersionComparer.cs" />
     <Compile Include="Providers\IArchiver.cs" />
     <Compile Include="Api\ICoreApi.cs" />
     <Compile Include="Providers\IDownloader.cs" />

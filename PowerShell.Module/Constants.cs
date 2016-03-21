@@ -26,6 +26,11 @@ namespace Microsoft.PowerShell.PackageManagement {
         // cmdlet naming/etc
 
         internal class ParameterSets {
+
+            // To avoid the FxCop complains: CA1812: Avoid uninstantiated internal 
+            private ParameterSets() {
+            }
+
             internal const string PackageBySearchSet = "PackageBySearch";
             internal const string PackageByInputObjectSet = "PackageByInputObject";
             internal const string SourceByInputObjectSet = "SourceByInputObject";
@@ -37,6 +42,12 @@ namespace Microsoft.PowerShell.PackageManagement {
 
         internal const string AssemblyProviderType = "assembly";
         internal static object[] NoParameters = new object[0];
+        internal const string InstallPackageTrace = "Microsoft.Windows.PowerShell.PackageManagement_InstallPackage";
+        internal const string UnInstallPackageTrace = "Microsoft.Windows.PowerShell.PackageManagement_UnInstallPackage";
+        internal const string SavePackageTrace = "Microsoft.Windows.PowerShell.PackageManagement_InstallPackage";
+
+        internal const string PowerShellProviderName = "Microsoft-Windows-PowerShell";
+        internal const string NewWinEvent = @"Microsoft.PowerShell.Diagnostics\New-WinEvent";
 
         // messages
 
@@ -97,6 +108,7 @@ namespace Microsoft.PowerShell.PackageManagement {
             public static ErrorMessage NoMatchFoundForProvider = new ErrorMessage(Messages.NoMatchFoundForProvider, ErrorCategory.InvalidArgument);
             public static ErrorMessage MethodNotImplemented = new ErrorMessage(Messages.MethodNotImplemented, ErrorCategory.NotImplemented);
             public static ErrorMessage InstallRequiresCurrentUserScopeParameterForNonAdminUser = new ErrorMessage(Messages.InstallRequiresCurrentUserScopeParameterForNonAdminUser, ErrorCategory.NotImplemented);
+            public static ErrorMessage TooManyPackages = new ErrorMessage(Messages.TooManyPackages, ErrorCategory.InvalidArgument);
             
             // ReSharper restore InconsistentNaming
         }
@@ -189,6 +201,7 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string VersionRangeAndRequiredVersionCannotBeSpecifiedTogether = "MSG:VersionRangeAndRequiredVersionCannotBeSpecifiedTogether";
             internal const string AllVersionsCannotBeUsedWithOtherVersionParameters = "MSG:AllVersionsCannotBeUsedWithOtherVersionParameters";
             internal const string InvalidVersion = "MSG:InvalidVersion";
+            internal const string TooManyPackages = "MSG:TooManyPackages";
         }
 
         internal static class Nouns {

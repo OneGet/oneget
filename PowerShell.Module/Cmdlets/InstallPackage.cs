@@ -16,6 +16,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.PackageManagement.Implementation;
@@ -38,10 +39,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = Constants.ParameterSets.PackageByInputObjectSet),]
         public SoftwareIdentity[] InputObject {get; set;}
 
-        [Parameter(Position = 0, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
+        [Parameter(Position = 0, Mandatory = true, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Name {get; set;}
 
         [Parameter(ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
@@ -155,17 +157,102 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
             if (WhatIf) {
                 // grab the dependencies and return them *first*
+                bool hasDependencyLoop = false;
+                var dependencies = GetDependenciesToInstall(package, ref hasDependencyLoop);
 
-                 foreach (var dep in package.Dependencies) {
-                    // note: future work may be needed if the package sources currently selected by the user don't
-                    // contain the dependencies.
-                    var dependendcies = PackageManagementService.FindPackageByCanonicalId(dep, this);
-                    foreach (var depPackage in dependendcies) {
-                        ProcessPackage( depPackage.Provider,  searchKey.Select( each => each+depPackage.Name).ToArray(), depPackage);
+                if (!hasDependencyLoop)
+                {
+                    foreach (var dependency in dependencies)
+                    {
+                        base.ProcessPackage(provider, searchKey.Select(each => each+dependency.Name).ToArray(), dependency);
                     }
                 }
             }
+
             base.ProcessPackage(provider, searchKey, package);
         }
+
+        private IEnumerable<SoftwareIdentity> GetDependenciesToInstall(SoftwareIdentity package, ref bool hasDependencyLoop)
+        {
+            // No dependency
+            if (package.Dependencies == null || package.Dependencies.Count() == 0)
+            {
+                return Enumerable.Empty<SoftwareIdentity>();
+            }
+
+            // Returns list of dependency to be installed in the correct order that we should install them
+            List<SoftwareIdentity> dependencyToBeInstalled = new List<SoftwareIdentity>();
+
+            HashSet<SoftwareIdentity> permanentlyMarked = new HashSet<SoftwareIdentity>(new SoftwareIdentityNameVersionComparer());
+            HashSet<SoftwareIdentity> temporarilyMarked = new HashSet<SoftwareIdentity>(new SoftwareIdentityNameVersionComparer());
+
+            // checks that there are no dependency loop 
+            hasDependencyLoop = !DepthFirstVisit(package, temporarilyMarked, permanentlyMarked, dependencyToBeInstalled);
+
+            if (!hasDependencyLoop)
+            {
+                // remove the last item of the list because that is the package itself
+                dependencyToBeInstalled.RemoveAt(dependencyToBeInstalled.Count - 1);
+                return dependencyToBeInstalled;
+            }
+
+            // there are dependency loop. 
+            return Enumerable.Empty<SoftwareIdentity>();            
+        }
+
+        /// <summary>
+        /// Do a dfs visit. returns false if a cycle is encountered. Add the packageItem to the list at the end of each visit
+        /// </summary>
+        /// <param name="packageItem"></param>
+        /// <param name="dependencyToBeInstalled"></param>
+        /// <param name="permanentlyMarked"></param>
+        /// <param name="temporarilyMarked"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        internal bool DepthFirstVisit(SoftwareIdentity packageItem, HashSet<SoftwareIdentity> temporarilyMarked,
+            HashSet<SoftwareIdentity> permanentlyMarked, List<SoftwareIdentity> dependencyToBeInstalled)
+        {
+            // dependency loop detected because the element is temporarily marked
+            if (temporarilyMarked.Contains(packageItem))
+            {
+                return false;
+            }
+
+            // this is permanently marked. So we don't have to visit it.
+            // This is to resolve a case where we have: A->B->C and A->C. Then we need this when we visit C again from either B or A.
+            if (permanentlyMarked.Contains(packageItem))
+            {
+                return true;
+            }
+
+            // Mark this node temporarily so we can detect cycle.
+            temporarilyMarked.Add(packageItem);
+
+            // Visit the dependency
+            foreach (var dependency in packageItem.Dependencies)
+            {
+                var dependencies = PackageManagementService.FindPackageByCanonicalId(dependency, this);
+                var depPkg = dependencies.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).FirstOrDefault();
+
+                if (!DepthFirstVisit(depPkg, temporarilyMarked, permanentlyMarked, dependencyToBeInstalled))
+                {
+                    // if dfs returns false then we have encountered a loop
+                    return false;
+                }
+                // otherwise visit the next dependency
+            }
+
+            // Add the package to the list so we can install later
+            dependencyToBeInstalled.Add(packageItem);
+
+            // Done with this node so mark it permanently
+            permanentlyMarked.Add(packageItem);
+
+            // Unmark it temporarily
+            temporarilyMarked.Remove(packageItem);
+
+            return true;
+        }
+
     }
 }

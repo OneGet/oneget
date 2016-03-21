@@ -13,6 +13,7 @@
 //
 
 namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
+    using System.Diagnostics.CodeAnalysis;
     using System.Management.Automation;
     using System.Security;
     using Microsoft.PackageManagement.Internal.Packaging;
@@ -23,6 +24,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             : base(categories) {
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(ParameterSetName = Constants.ParameterSets.SourceByInputObjectSet, Mandatory = true, ValueFromPipeline = true)]
         public PackageSource[] InputObject {get; set;}
 

@@ -27,7 +27,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         internal XDocument _swidTag;
 
         public Swidtag(XDocument document)
-            : base(document.Root) {
+            : base(document) {
             _swidTag = document;
             ChangeCurrentNameSpace();
         }

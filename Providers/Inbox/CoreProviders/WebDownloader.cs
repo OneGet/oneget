@@ -19,6 +19,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
     using System.Linq;
     using System.IO;
     using System.Net;
+    using System.Globalization;
 #if CORECLR
     using System.Net.Http;
 #endif
@@ -121,7 +122,14 @@ namespace Microsoft.PackageManagement.Providers.Internal
 #else
             var webClient = new WebClient();
 
-            webClient.Headers.Add("user-agent", "chocolatey command line");
+            // Mozilla/5.0 is the general token that says the browser is Mozilla compatible, and is common to almost every browser today.
+            webClient.Headers.Add("User-Agent", "Mozilla/5.0 PackageManagement");
+
+            // get ie settings
+            webClient.Proxy = WebRequest.GetSystemWebProxy();
+
+            // set credentials to be user credentials
+            webClient.Proxy.Credentials = CredentialCache.DefaultNetworkCredentials;
 
             var done = new ManualResetEvent(false);
 
@@ -181,13 +189,18 @@ namespace Microsoft.PackageManagement.Providers.Internal
 #if CORECLR
         private async Task<string> Download(Uri remoteLocation, string localFilename, bool showProgress, Request request, int pid)
         {
-            var httpClient = new HttpClient();
+            var clientHandler = new HttpClientHandler();
+            
+            clientHandler.UseDefaultCredentials = true;
+
+            var httpClient = new HttpClient(clientHandler);
 
             request.Debug("Calling httpclient with remotelocation {0}", remoteLocation.AbsoluteUri);
 
-            // Apparently, places like Codeplex know to let this thru!
-            httpClient.DefaultRequestHeaders.Add("user-agent", "chocolatey command line");
+            // Mozilla/5.0 is the general token that says the browser is Mozilla compatible, and is common to almost every browser today.
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 PackageManagement");
             httpClient.DefaultRequestHeaders.ExpectContinue = false;
+
             long totalBytesToReceive = 0L;
 
             HttpResponseMessage response = await httpClient.GetAsync(remoteLocation, HttpCompletionOption.ResponseHeadersRead);

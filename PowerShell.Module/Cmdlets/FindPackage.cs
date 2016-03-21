@@ -64,7 +64,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 base.ProcessPackage(provider, searchKey, package);
             
                 // return the object to the caller now.
-                WriteObject(package);
+                WriteObject(AddPropertyToSoftwareIdentity(package));
 
                 if (IncludeDependencies) {
                     var missingDependencies = new HashSet<string>();

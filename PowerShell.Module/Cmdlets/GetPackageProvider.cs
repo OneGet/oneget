@@ -14,6 +14,7 @@
 
 namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Management.Automation;
     using Microsoft.PackageManagement.Internal.Utility.Collections;
@@ -27,6 +28,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(Position = 0)]
         public string[] Name {get; set;}
 

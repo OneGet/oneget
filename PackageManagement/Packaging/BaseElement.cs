@@ -15,6 +15,7 @@
 namespace Microsoft.PackageManagement.Internal.Packaging {
     using System;
     using System.Linq;
+    using System.Xml;
     using System.Xml.Linq;
     using Utility.Extensions;
 
@@ -32,6 +33,12 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
             Element = element;
         }
 
+        protected internal BaseElement(XDocument element) {
+            if (element != null) {
+                Element = element.Root;
+            }
+        }
+
         internal string ElementUniqueId {
             get {
                 return _uniqueId ?? (_uniqueId = PathToElement(Element));
@@ -41,9 +48,14 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         /// <summary>
         ///     All Swidtag elements can explicity support the xml:lang attribute.
         /// </summary>
-        public string XmlLang {
+        public string Culture {
             get {
-                return GetAttribute(Iso19770_2.Attributes.XmlLang);
+                var xmlLang =  GetAttribute(Iso19770_2.Attributes.XmlLang);               
+                if (string.IsNullOrWhiteSpace(xmlLang))
+                {
+                    xmlLang = GetAttribute(Iso19770_2.Attributes.Lang);
+                }
+                return xmlLang;               
             }
             internal set {
                 AddAttribute(Iso19770_2.Attributes.XmlLang, value);

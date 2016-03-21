@@ -29,12 +29,20 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
     public abstract class CmdletWithProvider : CmdletBase {
         private readonly OptionCategory[] _optionCategories;
-
         protected CmdletWithProvider(OptionCategory[] categories) {
             _optionCategories = categories;
         }
 
         private string[] _providerName;
+        private bool _initializedTypeName;
+        private string _softwareIdentityTypeName = "Microsoft.PackageManagement.Packaging.SoftwareIdentity";
+        private bool _isDisplayCulture;
+        private bool _initializedCulture;
+        private bool _isUserSpecifyOneProviderName;
+        private bool _hasTypeNameChanged;
+        private bool _useDefaultSourceFormat = true;
+        private bool _initializedSource;
+        private IEnumerable<PackageSource> _resolvedUserSpecifiedSource;
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "Used in a powershell parameter.")]
         public string[] ProviderName {
@@ -85,11 +93,16 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 if (didUserSpecifySources) {
                     // sources must actually match a name or location. Keeps providers from being a bit dishonest
 
-                    var potentialSources = providers.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => userSpecifiedSources.ContainsAnyOfIgnoreCase(source.Name, source.Location))).ReEnumerable();
+                    var potentialSources = providers.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing))
+                                        // check either that the source name or source location can be found in user specifed sources
+                        .Where(source => userSpecifiedSources.ContainsAnyOfIgnoreCase(source.Name, source.Location)
+                                        // or that the source.location contains any of the user specified sources
+                                        || userSpecifiedSources.Any(userSpecifiedSource => source.Location.ContainsIgnoreCase(userSpecifiedSource)))).ReEnumerable();
 
                     // prefer registered sources
                     registeredSources = potentialSources.Where(source => source.IsRegistered).ReEnumerable();
 
+                    _resolvedUserSpecifiedSource = registeredSources.Any() ? registeredSources : potentialSources;
                     var filteredproviders = registeredSources.Any() ? registeredSources.Select(source => source.Provider).Distinct().ReEnumerable() : potentialSources.Select(source => source.Provider).Distinct().ReEnumerable();
 
                     if (!filteredproviders.Any()) {
@@ -449,6 +462,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                             var pName = unbound.ContainsKey("ProviderName")?unbound["ProviderName"]:unbound["Provider"] ;
                             if (pName != null)
                             {
+
                                 if (pName.GetType().IsArray)
                                 {
                                     ProviderName = pName as string[] ?? (((object[])pName).Select(p => p.ToString()).ToArray());
@@ -456,7 +470,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                                 else
                                 {
                                     ProviderName = new[] { pName.ToString() };
-                            }
+                                }
+                             
+                                // a user specifies -providerName
+                                _isUserSpecifyOneProviderName = (ProviderName.Count() == 1);
+                                
                             }
                         }
 
@@ -506,5 +524,102 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             // return true;
         }
 
+        // true if a user specifies -displayCulture and provider has the "DisplayCulture" dynamic option
+        protected bool IsDisplayCulture
+        {
+            get
+            {
+                if (!_initializedCulture)
+                {
+                    var displayCulture = GetDynamicParameterValue<string>("DisplayCulture");
+                    _isDisplayCulture = !(string.IsNullOrWhiteSpace(displayCulture));
+                    _initializedCulture = true;
+                    return _isDisplayCulture;
+                }
+                else
+                {
+                    return _isDisplayCulture;
+                }
+            }
+        }
+
+        protected virtual bool UseDefaultSourceFormat
+        {
+            get
+            {
+                if (_initializedSource)
+                {
+                    return _useDefaultSourceFormat;
+                }
+                // check if a user specifies -source and its source name >= the default width. if so, we will widen the source column
+                if (!_resolvedUserSpecifiedSource.IsNullOrEmpty())
+                {
+                    //the default width of the Source column is 16
+                    _useDefaultSourceFormat = _resolvedUserSpecifiedSource.Any(each => each.Source.Length <= 16);
+                }
+                _initializedSource = true;
+                return _useDefaultSourceFormat;
+            }
+        }
+        private string GetSoftwareIdentityTypeName(SoftwareIdentity package)
+        {
+            if(_initializedTypeName)
+            {
+                return _softwareIdentityTypeName;
+            }
+
+            //check if a user specifies -source with a long source name such as http://www.powershellgallery.com/api/v2, 
+            // if so we will choose the longsource column format.
+            if (!UseDefaultSourceFormat)
+            {
+                _softwareIdentityTypeName += "#DisplayLongSourceName";
+                _hasTypeNameChanged = true;
+            }
+            //provider has the "DisplayCulture" in the Get-DynamicOption()
+            if (IsDisplayCulture)
+            {
+                _softwareIdentityTypeName += "#DisplayCulture";
+                _hasTypeNameChanged = true;
+            }
+
+            //provider defines the 'DisplayLongName' feature in the Get-Feature()
+            if (package != null && (package.Provider != null && (package.Provider.Features != null && package.Provider.Features.ContainsKey("DisplayLongName"))))
+            {
+                _softwareIdentityTypeName += "#DisplayLongName";
+                _hasTypeNameChanged = true;
+            }
+
+            _initializedTypeName = true;
+
+            return _softwareIdentityTypeName;
+        }
+
+        /// <summary>
+        /// This method is used for customizing the format of the OneGet *-Package output display.
+        /// </summary>
+        /// <param name="package"></param>
+        /// <returns></returns>
+        protected object AddPropertyToSoftwareIdentity(SoftwareIdentity package)
+        {
+            // Use the default output format if a user does not provide the -providername property, e.g. find-package
+            if (package == null || (!_isUserSpecifyOneProviderName && !IsDisplayCulture && UseDefaultSourceFormat))
+            {
+                return package;
+            }
+
+            // Customize the output format
+            var typeName = GetSoftwareIdentityTypeName(package);
+
+            // For the find-package -providername nuget case, we can return right away.
+            if (!_hasTypeNameChanged) {
+                return package;
+            }
+
+            var swidTagAsPsobj = PSObject.AsPSObject(package);
+            var noteProperty = new PSNoteProperty("PropertyOfSoftwareIdentity", "PropertyOfSoftwareIdentity");
+            swidTagAsPsobj.Properties.Add(noteProperty, true);
+            swidTagAsPsobj.TypeNames.Insert(0, typeName);
+            return swidTagAsPsobj;
+        }
     }
 }

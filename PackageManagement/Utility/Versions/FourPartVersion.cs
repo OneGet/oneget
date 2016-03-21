@@ -172,13 +172,13 @@ namespace Microsoft.PackageManagement.Internal.Utility.Versions {
 
         public static implicit operator FourPartVersion(FileVersionInfo versionInfo) {
             return new FourPartVersion {
-                _version = (ulong)((ulong)versionInfo.FileMajorPart << 48) | (ulong)((ulong)versionInfo.FileMinorPart << 32) | (ulong)((ulong)versionInfo.FileBuildPart << 16) | (ulong)((ulong)versionInfo.FilePrivatePart)
+                _version = (ulong)((ulong)(uint)versionInfo.FileMajorPart << 48) | (ulong)((ulong)(uint)versionInfo.FileMinorPart << 32) | (ulong)((ulong)(uint)versionInfo.FileBuildPart << 16) | (ulong)((ulong)(uint)versionInfo.FilePrivatePart)
             };
         }
 
         public static FourPartVersion FromFileVersionInfo(FileVersionInfo versionInfo) {
             return new FourPartVersion {
-                _version = (ulong)((ulong)versionInfo.FileMajorPart << 48) | (ulong)((ulong)versionInfo.FileMinorPart << 32) | (ulong)((ulong)versionInfo.FileBuildPart << 16) | (ulong)((ulong)versionInfo.FilePrivatePart)
+                _version = (ulong)((ulong)(uint)versionInfo.FileMajorPart << 48) | (ulong)((ulong)(uint)versionInfo.FileMinorPart << 32) | (ulong)((ulong)(uint)versionInfo.FileBuildPart << 16) | (ulong)((ulong)(uint)versionInfo.FilePrivatePart)
             };
         }
 

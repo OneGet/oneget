@@ -310,7 +310,7 @@
     <comment>{0} - package source name</comment>
   </data>
   <data name="DestinationOrLiteralPathRequired" xml:space="preserve">
-    <value>Saving a packge requires either a -Path or -LiteralPath parameter.</value>
+    <value>Saving a package requires either a -Path or -LiteralPath parameter.</value>
   </data>
   <data name="MatchesMultipleProviders" xml:space="preserve">
     <value>Specified ProviderName parameter matches multiple providers: {0}.</value>
@@ -332,7 +332,7 @@
     <comment>0 provider names, 1- source names</comment>
   </data>
   <data name="SavePackage" xml:space="preserve">
-    <value>Save Package.</value>
+    <value>Save Package</value>
     <comment>action 'save package'</comment>
   </data>
   <data name="ShouldContinueWithUntrustedPackageSource" xml:space="preserve">
@@ -482,5 +482,25 @@
   <data name="InstallRequiresCurrentUserScopeParameterForNonAdminUser" xml:space="preserve">
     <value>Administrator rights are required to install packages in '{0}'. Log on to the computer with an account that has Administrator rights, and then try again, or install in '{1}' by adding "-Scope CurrentUser" to your command. You can also try running the Windows PowerShell session with elevated rights (Run as Administrator).</value>
     <comment>0 - folder, 1 - folder</comment>
+  </data>
+  <data name="TooManyPackages" xml:space="preserve">
+    <value>PackageManagement cannot handle '{0}' packages.The limit is 63.</value>
+    <comment>0 - number of packages</comment>
+  </data>
+  <data name="PackageInstalled" xml:space="preserve">
+    <value>PackageManagement: A package is installed.</value>
+    <comment>Please do not localize PackageManagement</comment>
+  </data>
+  <data name="PackageSaved" xml:space="preserve">
+    <value>PackageManagement: A package is saved.</value>
+    <comment>Please do not localize PackageManagement</comment>
+  </data>
+  <data name="PackageUnInstalled" xml:space="preserve">
+    <value>PackageManagement: A package is uninstalled.</value>
+    <comment>Please do not localize PackageManagement</comment>
+  </data>
+  <data name="SavePackageWhatIfDescription" xml:space="preserve">
+    <value>'{0}' to location '{1}'</value>
+    <comment>0 - package name, 1 - save location</comment>
   </data>
 </root>

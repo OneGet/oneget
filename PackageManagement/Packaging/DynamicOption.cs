@@ -14,6 +14,7 @@
 
 namespace Microsoft.PackageManagement.Internal.Packaging {
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
 
     public class DynamicOption {
@@ -21,7 +22,8 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         public string ProviderName {get; set;}
         public OptionCategory Category {get; internal set;}
         public string Name {get; internal set;}
-        public OptionType Type {get; internal set;}
+        [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "Type is OK for a cmdlet parameter")]
+        public OptionType Type { get; internal set;}
         public bool IsRequired {get; internal set;}
 
         public IEnumerable<string> PossibleValues {

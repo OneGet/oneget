@@ -42,7 +42,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
             // no name space, just check local name
             if (string.IsNullOrWhiteSpace(attribute.Namespace.NamespaceName))
             {
-                result = element.Attributes().Where(attr => attr != null && attr.Name.LocalName == attribute.LocalName).FirstOrDefault();
+                result = element.Attributes().Where(attr => attr != null && string.Equals(attr.Name.LocalName, attribute.LocalName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
             }
             else
             {
@@ -130,6 +130,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
             internal static readonly XName Date = "date";
             internal static readonly XName DeviceId = "deviceId";
             internal static readonly XName XmlLang = Namespace.Xml + "lang";
+            internal static readonly XName Lang = "lang";
         }
 
         internal static class Discovery {
