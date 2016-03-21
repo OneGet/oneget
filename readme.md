@@ -15,7 +15,7 @@ OneGet is shipped inside PowerShell in Win10 Client RTM! For downlevel OS, OneGe
 You can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notified of every new build.
 
 
-* Learn how to [use the powershell cmdlets](https://github.com/OneGet/oneget/wiki/cmdlets) 
+* Learn how to [use the powershell cmdlets](https://github.com/OneGet/oneget/wiki/cmdlets), [try some samples] (https://msdn.microsoft.com/en-us/powershell/wmf/oneget_cmdlets), or read [our MSDN Technet docs] (https://technet.microsoft.com/en-us/library/mt422622.aspx)
 * Read our [General Q and A](https://github.com/OneGet/oneget/wiki/Q-and-A)
 * Learn about the [8 Laws of Software Installation](https://github.com/OneGet/oneget/wiki/8-Laws-of-Software-Installation)
 * See the [documentation](https://github.com/OneGet/oneget/wiki) tab for more info.
