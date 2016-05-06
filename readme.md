@@ -1,5 +1,5 @@
 
-# PackageManagement(aka OneGet)
+# PackageManagement (aka OneGet)
 
 
 ### What's New
@@ -31,7 +31,7 @@ With OneGet, you can
 * Search and filter your repositories to find the packages you need
 * Seamlessly install and uninstall packages from one or more repositories with a single PowerShell command
 
-PackageManagement Architecture
+#####PackageManagement Architecture#####
 
 ![Image](https://github.com/OneGet/oneget/blob/master/OneGetArchitecture.PNG?raw=true)
 
