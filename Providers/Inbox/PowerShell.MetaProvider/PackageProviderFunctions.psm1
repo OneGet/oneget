@@ -82,12 +82,12 @@ function Write-Progress {
 
         [Parameter()]
         [int]
-        $PercentComplete,
+        $PercentComplete=-1,
 
         # This parameter is not supported by request object
         [Parameter()]
         [int]
-        $SecondsRemaining,
+        $SecondsRemaining=-1,
 
         # This parameter is not supported by request object
         [Parameter()]
@@ -97,7 +97,7 @@ function Write-Progress {
         [Parameter()]
         [ValidateRange(-1,[int]::MaxValue)]
         [int]
-        $ParentID,
+        $ParentID=-1,
 
         [Parameter()]
         [switch]
@@ -150,17 +150,7 @@ function Write-Progress {
 	}
 
 	if( -not $args  ) {
-        # Need to return int value for start progress
-        if ($PSBoundParameters.ContainsKey("ParentID")) {
-            return $request.StartProgress($ParentActivityID, $Activity, $args)
-        }
-        elseif ($PSBoundParameters.ContainsKey("Completed")) {
-            $iscompleted = $PSBoundParameters["Completed"] -eq [switch]::Present
-            $null = $request.CompleteProgress($Id, $iscompleted)
-        }
-        else {
-            $null = $request.Progress($Id, $PercentComplete, $Activity, $args)
-        }
+        $request.Progress($Activity, $Status, $Id, $PercentComplete, $SecondsRemaining, $CurrentOperation, $ParentID, $Completed)
 	}
 
 }
@@ -258,9 +248,10 @@ function New-SoftwareIdentity {
 		[bool] $fromTrustedSource = $false,
 		[System.Collections.ArrayList] $dependencies = $null,
 		[string] $tagId = $null,
-		[string] $culture = $null
+		[string] $culture = $null,
+        [string] $destination = $null
 	)
-	return New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links, $fromTrustedSource, $dependencies, $tagId, $culture
+	return New-Object -TypeName Microsoft.PackageManagement.MetaProvider.PowerShell.SoftwareIdentity -ArgumentList $fastPackageReference, $name, $version,  $versionScheme,  $source,  $summary,  $searchKey, $fullPath, $filename , $details , $entities, $links, $fromTrustedSource, $dependencies, $tagId, $culture, $destination
 }
 
 <#

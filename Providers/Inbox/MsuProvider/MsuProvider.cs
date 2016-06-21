@@ -195,13 +195,16 @@ namespace Microsoft.PackageManagement.Msu.Internal {
                 $updateSearcher = $updateSession.CreateUpdateSearcher()
                 $updateSearcher.queryhistory(1, $updateSearcher.GetTotalHistoryCount()) | select Title, SupportUrl, Date, ResultCode, Description");
                 var output = ps.Invoke();
+
+                var wildcardPattern = new WildcardPattern(name, WildcardOptions.CultureInvariant | WildcardOptions.IgnoreCase);
+
                 foreach (var obj in output)
                 {
                     if (obj != null)
                     {
                         var title = obj.Properties["Title"] != null ? obj.Properties["Title"].Value as string : null;
 
-                        if (title != null && title.IndexOf(name, StringComparison.OrdinalIgnoreCase) > -1)
+                        if (title != null && (string.IsNullOrWhiteSpace(name) || wildcardPattern.IsMatch(title)))
                         {
                             var supportUrl = obj.Properties["SupportUrl"] != null ? obj.Properties["SupportUrl"].Value as string : null;
                             var date = obj.Properties["Date"] != null ? obj.Properties["Date"].Value as DateTime? : null;
@@ -231,19 +234,38 @@ namespace Microsoft.PackageManagement.Msu.Internal {
                 throw new ArgumentNullException("fastPackageReference");
             }
 
+            string errorLogFolder = Path.GetTempPath() + Guid.NewGuid();
+            DirectoryInfo errorDir = Directory.CreateDirectory(errorLogFolder);
+            string errorLogPath = errorLogFolder + "\\msuLog.evtx";       
+
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InstallPackage' '{1}'", ProviderName, fastPackageReference);
 
             string output;
-            int exitCode = request.ProviderServices.StartProcess(WusaExecutableLocation, fastPackageReference + " /quiet /norestart", true, out output, request);
+            string args = "\"" + fastPackageReference + "\"" + " /quiet /norestart /log:" + "\"" + errorLogPath + "\"";
+            int exitCode = request.ProviderServices.StartProcess(WusaExecutableLocation, args, true, out output, request);
             if (exitCode == 0)
             {
                 request.Verbose("Provider '{0}', Package '{1}': Installation succeeded", ProviderName, fastPackageReference);
             }
+            else if (exitCode == 3010) //Exit code: 3010 (0xBC2) ERROR_SUCCESS_REBOOT_REQUIRED
+            {                
+                request.Warning(Resources.Messages.InstallRequiresReboot);
+            }
             else
             {
-                request.Verbose("Provider '{0}', Package '{1}': Installation failed with Windows Update error code '{2}'.", ProviderName, fastPackageReference, String.Format(CultureInfo.CurrentCulture, "0x{0:X}", exitCode));
+                request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.InvalidOperation, fastPackageReference, Resources.Messages.InstallFailed, fastPackageReference, String.Format(CultureInfo.CurrentCulture, "0x{0:X}", exitCode), errorLogPath);
             }
+
+            try {
+                if (exitCode == 0 || exitCode == 3010)
+                {
+                    if (errorDir.Exists)
+                        errorDir.Delete(true);
+                }
+            } catch {
+            }
+            
         }
 
         /// <summary>

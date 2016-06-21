@@ -32,6 +32,7 @@ namespace Microsoft.PackageManagement.Internal {
         internal static TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(15 * 60);
 
         internal static TimeSpan Zero = new TimeSpan(0);
+        internal static string BootstrapNuGet = "BootstrapNuGet";
 
         #region declare common-constants-implementation
 
@@ -72,6 +73,7 @@ namespace Microsoft.PackageManagement.Internal {
             internal const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
             internal const string NetworkNotAvailable = "MSG:NetworkNotAvailable";
             internal const string PackageFailedInstall = "MSG:UnableToInstallPackage_package_reason";
+            internal const string PackageFailedInstallErrorLog = "MSG:PackageFailedInstallErrorLog";
             internal const string PackageSourceExists = "MSG:PackageSourceExists";
             internal const string ProtocolNotSupported = "MSG:ProtocolNotSupported";
             internal const string ProviderPluginLoadFailure = "MSG:ProviderPluginLoadFailure";

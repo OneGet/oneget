@@ -78,10 +78,28 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 }));
             }
         }
-
+        protected override string BootstrapNuGet
+        {
+            get
+            {
+                // need bootstrap NuGet if does not exists.
+                return "true";
+            }
+        }
         public override bool ProcessRecordAsync() {
             if (IsPackageByObject) {
                 return UninstallPackages(InputObject);
+            }
+
+            if (Name.Any(each => each.ContainsWildcards())) {
+                Error(Constants.Errors.WildCardCharsAreNotSupported, Name.JoinWithComma());
+                return false;
+            }
+
+            if (Name.Any(each => string.IsNullOrWhiteSpace(each)))
+            {
+                Error(Constants.Errors.WhitespacesAreNotSupported, Name.JoinWithComma());
+                return false;
             }
 
             // otherwise do the same as get-package and collect the results for the EndProcessingAsync
@@ -150,7 +168,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                                 return false;
                             }
                             WriteObject(installedPkg);
-                            LogEvent(EventTask.Uninstall, EventId.Uninstall, Resources.Messages.PackageUnInstalled, installedPkg.Name, installedPkg.Version, installedPkg.ProviderName, installedPkg.Source ?? string.Empty, installedPkg.Status ?? string.Empty);
+                            LogEvent(EventTask.Uninstall, EventId.Uninstall, Resources.Messages.PackageUnInstalled, installedPkg.Name, installedPkg.Version, installedPkg.ProviderName, installedPkg.Source ?? string.Empty, installedPkg.Status ?? string.Empty, installedPkg.InstallationPath ?? string.Empty);
                             TraceMessage(Constants.UnInstallPackageTrace, installedPkg);
                         }
                     }

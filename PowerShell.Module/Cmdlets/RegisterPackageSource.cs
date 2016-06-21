@@ -23,11 +23,53 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using Microsoft.PackageManagement.Internal.Utility.Collections;
     using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Utility;
+    using System.Security;
 
     [Cmdlet(VerbsLifecycle.Register, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517139")]
     public sealed class RegisterPackageSource : CmdletWithProvider {
         public RegisterPackageSource()
             : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
+        }
+
+        [Parameter]
+        [ValidateNotNull()]
+        public Uri Proxy { get; set; }
+
+        [Parameter]
+        [ValidateNotNull()]
+        public PSCredential ProxyCredential { get; set; }
+
+        public override string CredentialUsername
+        {
+            get
+            {
+                return Credential != null ? Credential.UserName : null;
+            }
+        }
+
+        public override SecureString CredentialPassword
+        {
+            get
+            {
+                return Credential != null ? Credential.Password : null;
+            }
+        }
+
+        /// <summary>
+        /// Returns web proxy that provider can use
+        /// Construct the webproxy using InternalWebProxy
+        /// </summary>
+        public override System.Net.IWebProxy WebProxy
+        {
+            get
+            {
+                if (Proxy != null)
+                {
+                    return new PackageManagement.Utility.InternalWebProxy(Proxy, ProxyCredential == null ? null : ProxyCredential.GetNetworkCredential());
+                }
+
+                return null;
+            }
         }
 
         protected override IEnumerable<string> ParameterSets {

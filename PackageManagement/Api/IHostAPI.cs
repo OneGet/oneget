@@ -15,6 +15,7 @@
 namespace Microsoft.PackageManagement.Internal.Api {
     using System.Collections.Generic;
     using System.Security;
+    using System.Net;
 
     /// <summary>
     /// Functions implemented by the HOST to provide contexual information and control to for the current request.
@@ -111,6 +112,24 @@ namespace Microsoft.PackageManagement.Internal.Api {
         int StartProgress(int parentActivityId, string messageText);
 
         /// <summary>
+        /// Write progress using powershell write progress directly
+        /// </summary>
+        /// <param name="activity">Specifies the first line of text in the heading above the status bar.</param>
+        /// <param name="messageText">Corresponds to status on write-progress. Specifies the second line of text in the heading above the status bar. This text describes current state of the activity.</param>
+        /// <param name="activityId">
+        /// Corresponds to id on write-progress. Specifies an ID that distinguishes each progress bar from the others.
+        /// Use this parameter when you are creating more than one progress bar in a single command.
+        /// If the progress bars do not have different IDs, they are superimposed instead of being displayed in a series.
+        /// </param>
+        /// <param name="progressPercentage">Specifies the percentage of the activity that is completed. Use the value -1 if the percentage complete is unknown or not applicable.</param>
+        /// <param name="secondsRemaining">Specifies the projected number of seconds remaining until the activity is completed. Use the value -1 if the number of seconds remaining is unknown or not applicable.</param>
+        /// <param name="currentOperation">Specifies the line of text below the progress bar. This text describes the operation that is currently taking place.</param>
+        /// <param name="parentActivityId">Identifies the parent activity of the current activity. Use the value -1 if the current activity has no parent activity.</param>
+        /// <param name="completed">Indicates whether the progress bar is visible</param>
+        /// <returns></returns>
+        bool Progress(string activity, string messageText, int activityId, int progressPercentage, int secondsRemaining, string currentOperation, int parentActivityId, bool completed);
+
+        /// <summary>
         ///     Sends a progress update
         /// </summary>
         /// <param name="activityId">
@@ -153,6 +172,11 @@ namespace Microsoft.PackageManagement.Internal.Api {
         /// <param name="key">the dynamic option Key (should be present in OptionKeys)</param>
         /// <returns>an collection of the value for the specified dynamic option</returns>
         IEnumerable<string> GetOptionValues(string key);
+
+        /// <summary>
+        /// Proxy used by provider
+        /// </summary>
+        IWebProxy WebProxy { get; }
 
         /// <summary>
         /// A collection of sources specified by the user. If this is null or empty, the provider should assume 'all the registered sources'

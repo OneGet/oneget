@@ -14,6 +14,7 @@
 
 namespace Microsoft.PackageManagement.Internal.Implementation {
     using System;
+    using System.Net;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
@@ -50,6 +51,8 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
         public abstract bool Progress(int activityId, int progressPercentage, string messageText);
 
+        public abstract bool Progress(string activity, string messageText, int activityId, int progressPercentage, int secondsRemaining, string currentOperation, int parentActivityId, bool completed);
+
         public abstract bool CompleteProgress(int activityId, bool isSuccessful);
 
         /// <summary>
@@ -65,6 +68,8 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
         public abstract IEnumerable<string> GetOptionValues(string key);
 
         public abstract IEnumerable<string> Sources {get;}
+
+        public abstract IWebProxy WebProxy { get; }
 
         public abstract string CredentialUsername { get; }
 
@@ -215,6 +220,11 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             return StartProgress(parentActivityId, FormatMessageString(messageText, args));
         }
 
+        public bool Progress(string activity, string messageText, int activityId, int progressPercentage, int secondsRemaining, string currentOperation, int parentActivityId, bool completed, params object[] args)
+        {
+            return Progress(activity, FormatMessageString(messageText, args), activityId, progressPercentage, secondsRemaining, currentOperation, parentActivityId, completed);
+        }
+
         public bool Progress(int activityId, int progressPercentage, string messageText, params object[] args) {
             return Progress(activityId, progressPercentage, FormatMessageString(messageText, args));
         }
@@ -234,7 +244,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
         #endregion
 
-        private string FormatMessageString(string messageText, params object[] args) {
+        protected string FormatMessageString(string messageText, params object[] args) {
             if (string.IsNullOrWhiteSpace(messageText)) {
                 return string.Empty;
             }

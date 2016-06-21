@@ -25,6 +25,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using Microsoft.PackageManagement.Internal.Utility.Plugin;
     using Microsoft.PackageManagement.Packaging;
     using Utility;
+    using System.Security;
 
     [Cmdlet(VerbsCommon.Set, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.ParameterSets.SourceBySearchSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517141")]
     public sealed class SetPackageSource : CmdletWithProvider {
@@ -35,7 +36,48 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
         [Parameter]
+        [ValidateNotNull()]
+        public Uri Proxy { get; set; }
+
+        [Parameter]
+        [ValidateNotNull()]
+        public PSCredential ProxyCredential { get; set; }
+
+        /// <summary>
+        /// Returns web proxy that provider can use
+        /// Construct the webproxy using InternalWebProxy
+        /// </summary>
+        public override System.Net.IWebProxy WebProxy
+        {
+            get
+            {
+                if (Proxy != null)
+                {
+                    return new PackageManagement.Utility.InternalWebProxy(Proxy, ProxyCredential == null ? null : ProxyCredential.GetNetworkCredential());
+                }
+
+                return null;
+            }
+        }
+
+        [Parameter]
         public PSCredential Credential { get; set; }
+        
+        public override string CredentialUsername
+        {
+            get
+            {
+                return Credential != null ? Credential.UserName : null;
+            }
+        }
+
+        public override SecureString CredentialPassword
+        {
+            get
+            {
+                return Credential != null ? Credential.Password : null;
+            }
+        }
 
         protected override IEnumerable<string> ParameterSets {
             get {

@@ -75,6 +75,7 @@
     <Compile Include="Cmdlets\CmdletBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="$(SolutionDir)assembly-version.cs" />
+    <Compile Include="Utility\WebProxy.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Messages.resx">

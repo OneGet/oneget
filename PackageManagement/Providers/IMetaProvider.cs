@@ -62,9 +62,10 @@ namespace Microsoft.PackageManagement.Internal.Providers {
         /// <param name="requiredVersion">Retrieves only the specified version of the provider</param>
         /// <param name="minimumVersion">Retrieves only a version of the provider that is greater than or equal to the specified value</param>
         /// <param name="maximumVersion">Retrieves only a version of the provider that is less than the specified value</param>
+        /// <param name="logWarning"></param>
         /// <returns></returns>
         [Required]
-        void RefreshProviders(IRequest request, string providerName, Version requiredVersion, Version minimumVersion, Version maximumVersion);
+        void RefreshProviders(IRequest request, string providerName, Version requiredVersion, Version minimumVersion, Version maximumVersion, bool logWarning);
 
         /// <summary>
         ///  Load a particular provider written in powershell module. 

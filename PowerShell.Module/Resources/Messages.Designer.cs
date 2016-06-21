@@ -215,6 +215,15 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Completed.
+        /// </summary>
+        internal static string Completed {
+            get {
+                return ResourceManager.GetString("Completed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Saving a package requires either a -Path or -LiteralPath parameter..
         /// </summary>
         internal static string DestinationOrLiteralPathRequired {
@@ -584,11 +593,38 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Processing.
+        /// </summary>
+        internal static string Processing {
+            get {
+                return ResourceManager.GetString("Processing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to save the package &apos;{0}&apos;..
         /// </summary>
         internal static string ProviderFailToDownloadFile {
             get {
                 return ResourceManager.GetString("ProviderFailToDownloadFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Imported provider &apos;{0}&apos; ..
+        /// </summary>
+        internal static string ProviderImported {
+            get {
+                return ResourceManager.GetString("ProviderImported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import-PackageProvider failed. Possibly the provider name is different from the package name &apos;{0}&apos;. Try Get-PackageProvider -ListAvailable to identify the associated provider name and run Import-PackageProvider&quot;..
+        /// </summary>
+        internal static string ProviderNameDifferentFromPackageName {
+            get {
+                return ResourceManager.GetString("ProviderNameDifferentFromPackageName", resourceCulture);
             }
         }
         
@@ -958,6 +994,15 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
         internal static string VersionRangeAndRequiredVersionCannotBeSpecifiedTogether {
             get {
                 return ResourceManager.GetString("VersionRangeAndRequiredVersionCannotBeSpecifiedTogether", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The specified name &apos;{0}&apos; should not be whitespaces only, please correct it and try again..
+        /// </summary>
+        internal static string WhitespacesAreNotSupported {
+            get {
+                return ResourceManager.GetString("WhitespacesAreNotSupported", resourceCulture);
             }
         }
         

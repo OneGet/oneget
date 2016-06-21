@@ -102,6 +102,7 @@ namespace Microsoft.PowerShell.PackageManagement {
             public static ErrorMessage InvalidVersion = new ErrorMessage(Messages.InvalidVersion, ErrorCategory.InvalidArgument);
             public static ErrorMessage MultipleNamesWithVersionNotAllowed = new ErrorMessage(Messages.MultipleNamesWithVersionNotAllowed, ErrorCategory.InvalidArgument);
             public static ErrorMessage WildCardCharsAreNotSupported = new ErrorMessage(Messages.WildCardCharsAreNotSupported, ErrorCategory.InvalidArgument);            
+            public static ErrorMessage WhitespacesAreNotSupported = new ErrorMessage(Messages.WhitespacesAreNotSupported, ErrorCategory.InvalidArgument);            
             public static ErrorMessage MinimumVersionMustBeLessThanMaximumVersion = new ErrorMessage(Messages.MinimumVersionMustBeLessThanMaximumVersion, ErrorCategory.InvalidArgument);
             public static ErrorMessage FullProviderFilePathVersionNotAllowed = new ErrorMessage(Messages.FullProviderFilePathVersionNotAllowed, ErrorCategory.InvalidArgument);
             public static ErrorMessage RegisterPackageSourceRequired = new ErrorMessage(Messages.RegisterPackageSourceRequired, ErrorCategory.InvalidArgument);
@@ -126,6 +127,7 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string FullProviderFilePathVersionNotAllowed = "MSG:FullProviderFilePathVersionNotAllowed";
             internal const string MultipleNamesWithVersionNotAllowed = "MSG:MultipleNamesWithVersionNotAllowed";
             internal const string WildCardCharsAreNotSupported = "MSG:WildCardCharsAreNotSupported";
+            internal const string WhitespacesAreNotSupported = "MSG:WhitespacesAreNotSupported";           
             internal const string MinimumVersionMustBeLessThanMaximumVersion = "MSG:MinimumVersionMustBeLessThanMaximumVersion";
             internal const string FolderNotFound = "MSG:FolderNotFound";
             internal const string MoreThanOneFolderMatched = "MSG:MoreThanOneFolderMatched";

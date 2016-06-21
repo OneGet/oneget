@@ -73,7 +73,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
                 try {
                     // move the file to the tmp file
                     // and tell the OS to remove it next reboot.
-                    var tmpFilename = location.GenerateTemporaryFilename() + ".delete_me"; // generates a unique filename but not a file!
+                    var tmpFilename = GenerateTemporaryFileOrDirectoryNameInTempDirectory() + ".delete_me"; // generates a unique filename but not a file!
                     MoveFileOverwrite(location, tmpFilename);
 
                     if (File.Exists(location) || Directory.Exists(location)) {
@@ -114,31 +114,20 @@ namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
             NativeMethods.MoveFileEx(sourceFile, destinationFile, MoveFileFlags.DelayUntilReboot);
         }
 
-        public static string GenerateTemporaryFilename(this string filename) {
-            string ext = null;
-            string name = null;
-            string folder = null;
+        /// <summary>
+        /// Create a temporary file name in the temp directory so we can move file that we cannot delete over
+        /// </summary>
+        /// <returns></returns>
+        public static string GenerateTemporaryFileOrDirectoryNameInTempDirectory() {
+            string name = string.Empty;
 
-            if (!string.IsNullOrWhiteSpace(filename)) {
-                ext = Path.GetExtension(filename);
-                name = Path.GetFileNameWithoutExtension(filename);
-                folder = Path.GetDirectoryName(filename);
+            do
+            {
+                // keep doing this until we get a file name that does not exist
+                name = Path.Combine(TempPath, Path.GetRandomFileName());
             }
+            while (File.Exists(name) || Directory.Exists(name));
 
-            if (string.IsNullOrWhiteSpace(ext)) {
-                ext = ".tmp";
-            }
-            if (string.IsNullOrWhiteSpace(folder)) {
-                folder = TempPath;
-            }
-
-            name = Path.Combine(folder, "tmpFile." + CounterHex + (string.IsNullOrWhiteSpace(name) ? ext : "." + name + ext));
-
-            if (File.Exists(name)) {
-                name.TryHardToDelete();
-            }
-
-            // return MarkFileTemporary(name);
             return name;
         }
 
@@ -152,14 +141,39 @@ namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
                     Directory.CreateDirectory(appTempPath);
                 }
 
-                TempPath = Path.Combine(appTempPath, (Directory.EnumerateDirectories(appTempPath).Count() + 1).ToString(CultureInfo.CurrentCulture));
-                if (!Directory.Exists(TempPath)) {
-                    Directory.CreateDirectory(TempPath);
+                TempPath = appTempPath;
+
+                // delete all the directories in Microsoft.PackageManagement folder in temp that is older than 2 days
+                foreach (var directory in Directory.EnumerateDirectories(TempPath))
+                {
+                    try
+                    {
+                        var dirInfo = new DirectoryInfo(directory);
+
+                        // delete all directories older than 2 days
+                        if (dirInfo.CreationTime < DateTime.Now.AddDays(-2))
+                        {
+                            Directory.Delete(directory, true);
+                        }
+                    }
+                    catch { }
                 }
 
-                // make sure this temp directory gets marked for eventual cleanup.
-                MoveFileOverwrite(appTempPath, null);
-                MoveFileAtNextBoot(TempPath, null);
+                // delete all filese that is older than 2 days
+                foreach (var filePath in Directory.EnumerateFiles(TempPath))
+                {
+                    try
+                    {
+                        var fileInfo = new FileInfo(filePath);
+
+                        // delete anything older than 2 days
+                        if (fileInfo.CreationTime < DateTime.Now.AddDays(-2))
+                        {
+                            File.Delete(filePath);
+                        }
+                    }
+                    catch { }
+                }
             }
 
             TempPath = TempPath ?? OriginalTempFolder;

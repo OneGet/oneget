@@ -23,6 +23,8 @@ namespace Microsoft.PackageManagement.Msi.Internal {
     using PackageManagement.Internal.Implementation;
     using PackageManagement.Internal.Utility.Collections;
     using PackageManagement.Internal.Utility.Extensions;
+    using PackageManagement.Internal.Utility.Versions;
+    using System.Management.Automation;
 
     public class MsiProvider {
         /// <summary>
@@ -142,7 +144,7 @@ namespace Microsoft.PackageManagement.Msi.Internal {
             request.Debug("Calling '{0}::FindPackageByFile' '{1}','{2}'", ProviderName, file, id);
 
             if (!file.FileExists()) {
-                request.Error(ErrorCategory.ObjectNotFound, file, Constants.Messages.UnableToResolvePackage, file);
+                request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.ObjectNotFound, file, Constants.Messages.UnableToResolvePackage, file);
                 return;
             }
             try {
@@ -152,7 +154,7 @@ namespace Microsoft.PackageManagement.Msi.Internal {
             } catch (Exception e) {
                 e.Dump();
                 // any exception at this point really just means that
-                request.Error(ErrorCategory.OpenError, file, Constants.Messages.UnableToResolvePackage, file);
+                request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.OpenError, file, Constants.Messages.UnableToResolvePackage, file);
             }
         }
 
@@ -175,21 +177,22 @@ namespace Microsoft.PackageManagement.Msi.Internal {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetInstalledPackages' '{1}','{2}','{3}','{4}'", ProviderName, name, requiredVersion, minimumVersion, maximumVersion);
             var products = ProductInstallation.AllProducts;
+            WildcardPattern pattern = new WildcardPattern(name, WildcardOptions.IgnoreCase);
             var installed = string.IsNullOrWhiteSpace(name)
-                ? products.Where(each => each.IsInstalled) : products.Where(each => each.IsInstalled && each.ProductName.IndexOf(name, StringComparison.OrdinalIgnoreCase) > -1);
+                ? products.Where(each => each.IsInstalled) : products.Where(each => each.IsInstalled && pattern.IsMatch(each.ProductName));
 
             if (!string.IsNullOrWhiteSpace(requiredVersion)) {
                 // filter to just the exact version
                 var rv = new Version(requiredVersion.FixVersion());
-                installed = installed.Where(each => each.ProductVersion == rv);
+                installed = installed.Where(each => (FourPartVersion)each.ProductVersion == (FourPartVersion)rv);
             } else {
                 if (!string.IsNullOrWhiteSpace(minimumVersion)) {
                     var min = new Version(minimumVersion.FixVersion());
-                    installed = installed.Where(each => each.ProductVersion >= min);
+                    installed = installed.Where(each => (FourPartVersion)each.ProductVersion >= (FourPartVersion)min);
                 }
                 if (!string.IsNullOrWhiteSpace(maximumVersion)) {
                     var max = new Version(maximumVersion.FixVersion());
-                    installed = installed.Where(each => each.ProductVersion <= max);
+                    installed = installed.Where(each => (FourPartVersion)each.ProductVersion <= (FourPartVersion)max);
                 }
             }
             // make sure we don't enumerate more once
@@ -219,9 +222,12 @@ namespace Microsoft.PackageManagement.Msi.Internal {
             request.Debug("Calling '{0}::InstallPackage' '{1}'", ProviderName, fastPackageReference);
             var file = fastPackageReference.CanonicalizePath(false);
             if (!file.FileExists()) {
-                request.Error(ErrorCategory.OpenError, fastPackageReference, Constants.Messages.UnableToResolvePackage, fastPackageReference);
+                request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.OpenError, fastPackageReference, Constants.Messages.UnableToResolvePackage, fastPackageReference);
                 return;
             }
+            string errorLogFolder = Path.GetTempPath() + Guid.NewGuid();
+            DirectoryInfo errorDir = Directory.CreateDirectory(errorLogFolder);
+            string errorLogPath = errorLogFolder + "\\msi.log";       
             try {
                 var package = new InstallPackage(file, DatabaseOpenMode.ReadOnly);
 
@@ -229,23 +235,44 @@ namespace Microsoft.PackageManagement.Msi.Internal {
 
                 // todo 1501: support additional parameters!
 
-                var handler = CreateProgressHandler(request);
-                _progressId = request.StartProgress(0, "Installing MSI '{0}'", file);
+                if (request.Sources != null && request.Sources.Any()) {
+                    // The 'file' can be from a temp location downloaded by a chained provider. In that case, we can show 
+                    // the orignal package source specified in the request.Sources.
+                    _progressId = request.StartProgress(0, Resources.Messages.InstallingMSIPackage, request.Sources.FirstOrDefault());
+
+                } else {
+                    _progressId = request.StartProgress(0, Resources.Messages.InstallingMSIPackage, file);
+                }
+
+                var handler = CreateProgressHandler(request, Resources.Messages.Installing);
+
                 Installer.SetExternalUI(handler, InstallLogModes.Progress | InstallLogModes.Info);
+                Installer.EnableLog(InstallLogModes.Error, errorLogPath);
                 Installer.InstallProduct(file, "REBOOT=REALLYSUPPRESS");
                 Installer.SetInternalUI(InstallUIOptions.Default);
 
                 Installer.SetExternalUI(handler, InstallLogModes.None);
 
-                YieldPackage(package, file, request);
+                if (request.Sources != null && request.Sources.Any()) {
+
+                    // The 'file' can be from a temp location downloaded by a chained provider. In that case, we can show 
+                    // the orignal package source specified in the request.Sources.
+                    YieldPackage(package, request.Sources.FirstOrDefault(), request);
+                } else {
+                    YieldPackage(package, file, request);
+                }
+
                 package.Close();
 
                 if (Installer.RebootRequired) {
-                    request.Warning("Reboot is required to complete Installation.");
+                    request.Warning(Resources.Messages.InstallRequireReboot);
                 }
+
+                if (errorDir.Exists)
+                    errorDir.Delete(true);
             } catch (Exception e) {
                 e.Dump();
-                request.Error(ErrorCategory.InvalidOperation, file, Constants.Messages.UnableToResolvePackage, file);
+                request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.InvalidOperation, file, Constants.Messages.PackageFailedInstallErrorLog, file, errorLogPath);
             }
 
             request.CompleteProgress(_progressId, true);
@@ -272,12 +299,12 @@ namespace Microsoft.PackageManagement.Msi.Internal {
             try {
                 Guid guid;
                 if (!Guid.TryParse(fastPackageReference, out guid)) {
-                    request.Error(ErrorCategory.InvalidArgument, fastPackageReference, Constants.Messages.UnableToResolvePackage, fastPackageReference);
+                    request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.InvalidArgument, fastPackageReference, Constants.Messages.UnableToResolvePackage, fastPackageReference);
                     return;
                 }
                 var product = ProductInstallation.GetProducts(fastPackageReference, null, UserContexts.All).FirstOrDefault();
                 if (product == null) {
-                    request.Error(ErrorCategory.InvalidArgument, fastPackageReference, Constants.Messages.UnableToResolvePackage, fastPackageReference);
+                    request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.InvalidArgument, fastPackageReference, Constants.Messages.UnableToResolvePackage, fastPackageReference);
                     return;
                 }
                 var productVersion = product.ProductVersion.ToString();
@@ -285,8 +312,8 @@ namespace Microsoft.PackageManagement.Msi.Internal {
                 var summary = product["Summary"];
 
                 Installer.SetInternalUI(InstallUIOptions.UacOnly | InstallUIOptions.Silent);
-                _progressId = request.StartProgress(0, "Uninstalling MSI '{0}'", productName);
-                var handler = CreateProgressHandler(request);
+                _progressId = request.StartProgress(0, Resources.Messages.UninstallingMSIPackage, productName);
+                var handler = CreateProgressHandler(request, Resources.Messages.UnInstalling);
 
                 Installer.SetExternalUI(handler, InstallLogModes.Progress | InstallLogModes.Info);
                 Installer.InstallProduct(product.LocalPackage, "REMOVE=ALL REBOOT=REALLYSUPPRESS");
@@ -300,7 +327,8 @@ namespace Microsoft.PackageManagement.Msi.Internal {
                     request.AddTagId(fastPackageReference.Trim(new char[] { '{', '}' }));
                 }
 
-                request.Warning("Reboot is required to complete uninstallation.");
+
+                request.Warning(Resources.Messages.UninstallRequireReboot);
             } catch (Exception e) {
                 e.Dump();
             }
@@ -308,7 +336,7 @@ namespace Microsoft.PackageManagement.Msi.Internal {
             _progressId = 0;
         }
 
-        private ExternalUIHandler CreateProgressHandler(Request request) {
+        private ExternalUIHandler CreateProgressHandler(Request request, string showMessage) {
             var currentTotalTicks = -1;
             var currentProgress = 0;
             var progressDirection = 1;
@@ -353,7 +381,7 @@ namespace Microsoft.PackageManagement.Msi.Internal {
                             if (actualPercent < newPercent) {
                                 actualPercent = newPercent;
                                 // request.Debug("Progress : {0}", newPercent);
-                                request.Progress(_progressId, actualPercent, "installing...");
+                                request.Progress(_progressId, actualPercent, showMessage);
                             }
                         }
                         break;
@@ -399,7 +427,8 @@ namespace Microsoft.PackageManagement.Msi.Internal {
         }
 
         private bool YieldPackage(ProductInstallation package, string searchKey, Request request) {
-            if (request.YieldSoftwareIdentity(package.ProductCode, package.ProductName, package.ProductVersion.ToString(), "multipartnumeric", package["Summary"], package.InstallSource, searchKey, package.InstallLocation, "?") != null) {
+            if (request.YieldSoftwareIdentity(package.ProductCode, package.ProductName, package.ProductVersion.ToString(), "multipartnumeric", package["Summary"], package.InstallLocation, searchKey, package.InstallLocation, "?") != null)
+            {
                 if (request.AddMetadata(package.ProductCode, "ProductCode", package.ProductCode) == null) {
                     return false;
                 }

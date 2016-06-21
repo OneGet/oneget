@@ -23,6 +23,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
     using Utility.Async;
     using Utility.Extensions;
     using Microsoft.PackageManagement.Internal.Packaging;
+    using System.Net;
 
     public abstract class RequestObject : AsyncAction, IRequest, IHostApi {
         private static int _c;
@@ -171,6 +172,16 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             return true;
         }
 
+        public bool Progress(string activity, string status, int id, int percentcomplete, int secondsremaining, string currentoperation, int parentid, bool completed)
+        {
+            if (CanCallHost)
+            {
+                return _hostApi.Progress(activity, status, id, percentcomplete, secondsremaining, currentoperation, parentid, completed);
+            }
+
+            return true;
+        }
+
         public bool CompleteProgress(int activityId, bool isSuccessful) {
             if (CanCallHost) {
                 return _hostApi.CompleteProgress(activityId, isSuccessful);
@@ -200,6 +211,14 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                     return _hostApi.Sources;
                 }
                 return new string[0];
+            }
+        }
+
+        public IWebProxy WebProxy
+        {
+            get
+            {
+                return CanCallHost ? _hostApi.WebProxy : null;
             }
         }
 

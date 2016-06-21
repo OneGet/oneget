@@ -490,6 +490,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     } else {
                         parent = _progressTrackers.FirstOrDefault(each => each.Id == parentActivityId);
                     }
+                                        
                     var p = new ProgressTracker() {
                         Activity = FormatMessageString(message, args),
                         Id = _nextProgressId++,
@@ -510,6 +511,68 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 }
             }
             return 0;
+        }
+
+        /// <summary>
+        /// Write progress using powershell write progress directly
+        /// </summary>
+        /// <param name="activity">Specifies the first line of text in the heading above the status bar.</param>
+        /// <param name="messageText">Corresponds to status on write-progress. Specifies the second line of text in the heading above the status bar. This text describes current state of the activity.</param>
+        /// <param name="activityId">
+        /// Corresponds to id on write-progress. Specifies an ID that distinguishes each progress bar from the others.
+        /// Use this parameter when you are creating more than one progress bar in a single command.
+        /// If the progress bars do not have different IDs, they are superimposed instead of being displayed in a series.
+        /// </param>
+        /// <param name="progressPercentage">Specifies the percentage of the activity that is completed. Use the value -1 if the percentage complete is unknown or not applicable.</param>
+        /// <param name="secondsRemaining">Specifies the projected number of seconds remaining until the activity is completed. Use the value -1 if the number of seconds remaining is unknown or not applicable.</param>
+        /// <param name="currentOperation">Specifies the line of text below the progress bar. This text describes the operation that is currently taking place.</param>
+        /// <param name="parentActivityId">Identifies the parent activity of the current activity. Use the value -1 if the current activity has no parent activity.</param>
+        /// <param name="completed">Indicates whether the progress bar is visible</param>
+        /// <returns></returns>
+        public bool Progress(string activity, string messageText, int activityId, int progressPercentage, int secondsRemaining, string currentOperation, int parentActivityId, bool completed)
+        {
+            lock (_progressTrackers)
+            {
+                if (IsInvocation)
+                {
+                    // make sure percent complete is not greater than 100
+                    if (progressPercentage >= 100)
+                    {
+                        progressPercentage = 100;
+                        completed = true;
+                    }
+
+                    if (progressPercentage < 0)
+                    {
+                        // set any negative to -1, which means percent complete not applicable
+                        progressPercentage = -1;
+                    }                    
+
+                    if (string.IsNullOrWhiteSpace(messageText))
+                    {
+                        if (completed)
+                        {
+                            messageText = string.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Messages.Completed);
+                        }
+                        else
+                        {
+                            messageText = string.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Messages.Processing);
+                        }
+                    }
+
+                    // call the powershell progressrecord directly
+                    WriteProgress(new ProgressRecord(activityId, activity, messageText)
+                    {
+                        PercentComplete = progressPercentage,
+                        RecordType = completed ? ProgressRecordType.Completed : ProgressRecordType.Processing,
+                        SecondsRemaining = secondsRemaining,
+                        CurrentOperation = currentOperation,
+                        ParentActivityId = parentActivityId
+                    });
+                }
+            }
+
+            return IsCanceled;
         }
 
         public bool Progress(int activityId, int progressPercentage, string messageText) {
@@ -545,12 +608,18 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         public bool CompleteProgress(int activityId, bool isSuccessful) {
             lock (_progressTrackers) {
                 if (IsInvocation) {
+
                     var p = _progressTrackers.FirstOrDefault(each => each.Id == activityId);
                     if (p != null) {
+                        // need to clone to avoid collection modification while iterating
+                        var cloneChildrenList = new List<ProgressTracker>(p.Children);
+
                         // complete all of this trackers kids.
-                        foreach (var child in p.Children) {
+                        foreach (var child in cloneChildrenList)
+                        {
                             CompleteProgress(child.Id, isSuccessful);
                         }
+
                         if (p.Parent != null) {
                             p.Parent.Children.Remove(p);
                         }

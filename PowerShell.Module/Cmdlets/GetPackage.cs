@@ -27,7 +27,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=517135")]
     public class GetPackage : CmdletWithSearch {
         private readonly Dictionary<string, bool> _namesProcessed = new Dictionary<string, bool>();
-
+        private readonly string _newSoftwareIdentityTypeName = "Microsoft.PackageManagement.Packaging.SoftwareIdentity#GetPackage";
+      
         public GetPackage()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Install
@@ -158,12 +159,23 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 // post processing the potential packages as we have to display only
                 // 1 package per name (note multiple versions of the same package may be installed)
                 // In general, it is good practice to show only the latest one.
-                foreach (var potentialPackage in from p in potentialPackagesToProcess
-                                                 group p by p.Name
-                                                 into grouping
-                                                 select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First()
-                                                 )
-                {
+
+                // However there are cases when the same package can be found by different providers. in that case, we will show
+                // the packages from different providers even through they have the same package name. This is important because uninstall-package 
+                // inherts from get-package, so that when the first provider does not implement the uninstall-package(), such as Programs, others will
+                // perform the uninstall.
+
+                //grouping packages by package name first
+                var enumerablePotentialPackages = from p in potentialPackagesToProcess
+                    group p by p.Name
+                    into grouping
+                    select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance);
+
+                //each group of packages with the same name, return the first if the packages are from the same provider
+                foreach (var potentialPackage in enumerablePotentialPackages.Select(pp => (from p in pp
+                    group p by p.ProviderName
+                    into grouping
+                    select grouping.OrderByDescending(each => each, SoftwareIdentityVersionComparer.Instance).First())).SelectMany(pkgs => pkgs.ToArray())) {
                     ProcessPackage(potentialPackage);
                 }
             }
@@ -174,7 +186,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         protected virtual void ProcessPackage(SoftwareIdentity package) {
             // Check for duplicates
             if (!IsDuplicate(package)) {
-                WriteObject(AddPropertyToSoftwareIdentity(package));
+
+                // Display the SoftwareIdentity object in a format: Name, Version, Source and Provider
+                var swidTagAsPsobj = PSObject.AsPSObject(package);
+                var noteProperty = new PSNoteProperty("PropertyOfSoftwareIdentity", "PropertyOfSoftwareIdentity");
+                swidTagAsPsobj.Properties.Add(noteProperty, true);
+                swidTagAsPsobj.TypeNames.Insert(0, _newSoftwareIdentityTypeName);
+
+                WriteObject(swidTagAsPsobj);
             }
         }
 

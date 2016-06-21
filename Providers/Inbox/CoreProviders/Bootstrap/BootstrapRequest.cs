@@ -31,17 +31,39 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
     using ErrorCategory = PackageManagement.Internal.ErrorCategory;
 
     public abstract class BootstrapRequest : Request {
-        internal readonly Uri[] _urls = {
-#if LOCAL_DEBUG
-            new Uri("https://localhost:81/providers.swidtag"),
-#endif
-#if CORECLR
-            new Uri("https://go.microsoft.com/fwlink/?LinkID=627340&clcid=0x409"),
-            // starting in 2015/05 builds, we bootstrap from here:
-#else
-            new Uri("https://go.microsoft.com/fwlink/?LinkID=627338&clcid=0x409"),
-#endif
-        };
+        internal Uri[] _urls
+        {
+            get
+            {
+                string testfeed = Environment.GetEnvironmentVariable("BootstrapProviderTestfeedUrl");
+
+                // if testfeed exists, use that
+                if (!string.IsNullOrWhiteSpace(testfeed))
+                {
+                    Uri result = null;
+
+                    // test whether the uri is valid
+                    if (Uri.TryCreate(testfeed, UriKind.Absolute, out result))
+                    {
+                        return new Uri[] {
+                            result
+                        };
+                    }
+                }
+
+                return new Uri[] {
+    #if LOCAL_DEBUG
+                new Uri("https://localhost:81/providers.swidtag"),
+    #endif
+    #if CORECLR
+                new Uri("https://go.microsoft.com/fwlink/?LinkID=627340&clcid=0x409"),
+                // starting in 2015/05 builds, we bootstrap from here:
+    #else
+                new Uri("https://go.microsoft.com/fwlink/?LinkID=627338&clcid=0x409"),
+    #endif      
+                };
+            }
+        }
 
         private IEnumerable<Feed> _feeds;
         private IEnumerable<string> _fileSource = null;
@@ -58,6 +80,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                         Warning(Constants.Messages.NetworkNotAvailable);
                         Warning(string.Format(CultureInfo.CurrentCulture, Resources.Messages.ProviderBootstrapFailed));
                     }
+
                     // right now, we only have one feed (can have many urls tho')
                     // so we just return a single feed in the collection
                     // but later, we can expand it to support multiple feeds.
@@ -153,8 +176,8 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             };
         }
 
-        internal string DownloadAndValidateFile(string name, Swidtag swidtag) {
-            var file = DownLoadFileFromLinks(name, swidtag.Links.Where(each => each.Relationship == Iso19770_2.Relationship.InstallationMedia));
+        internal string DownloadAndValidateFile(Swidtag swidtag) {
+            var file = DownLoadFileFromLinks(swidtag.Links.Where(each => each.Relationship == Iso19770_2.Relationship.InstallationMedia));
             if (string.IsNullOrWhiteSpace(file)) {
                 return null;
             }
@@ -211,25 +234,27 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                         remainingTry = 0;
                     }
                 }
-            }
+           } 
 
             return file;
         }
 
-        internal string DownLoadFileFromLinks(string name, IEnumerable<Link> links) {
+        
+        
+        internal string DownLoadFileFromLinks(IEnumerable<Link> links) {
             string file = null;
 
             foreach (var link in links) {
                 file = RetryDownload(
                     // the download function takes in a uri link and download it
                     (uri) => {
-                        var tmpFile = link.Artifact.GenerateTemporaryFilename();
+                        var tmpFile = FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory();
                         return ProviderServices.DownloadFile(uri, tmpFile, -1, true, this);
                     },
                     link.HRef);
 
                 // got a valid file!
-                if (file != null && file.FileExists()) {
+                if (file != null && file.FileExists()) {                    
                     return file;
                 }
             }

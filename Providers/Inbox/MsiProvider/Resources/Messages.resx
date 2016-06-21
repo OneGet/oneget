@@ -117,4 +117,24 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Installing" xml:space="preserve">
+    <value>Installing ...</value>
+  </data>
+  <data name="InstallingMSIPackage" xml:space="preserve">
+    <value>Installing a MSI package from '{0}'</value>
+    <comment>0 - file path</comment>
+  </data>
+  <data name="InstallRequireReboot" xml:space="preserve">
+    <value>Reboot is required to complete the installation operation.</value>
+  </data>
+  <data name="UnInstalling" xml:space="preserve">
+    <value>Uninstalling ...</value>
+  </data>
+  <data name="UninstallingMSIPackage" xml:space="preserve">
+    <value>Uninstalling a MSI package '{0}'</value>
+    <comment>0 - package name</comment>
+  </data>
+  <data name="UninstallRequireReboot" xml:space="preserve">
+    <value>Reboot is required to complete the uninstallation operation.</value>
+  </data>
 </root>

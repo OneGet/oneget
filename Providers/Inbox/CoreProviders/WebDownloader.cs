@@ -80,7 +80,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
             }
 
             if (localFilename == null) {
-                localFilename = "downloadedFile.tmp".GenerateTemporaryFilename();
+                localFilename = FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory();
             }
 
             localFilename = Path.GetFullPath(localFilename);
@@ -125,11 +125,19 @@ namespace Microsoft.PackageManagement.Providers.Internal
             // Mozilla/5.0 is the general token that says the browser is Mozilla compatible, and is common to almost every browser today.
             webClient.Headers.Add("User-Agent", "Mozilla/5.0 PackageManagement");
 
-            // get ie settings
-            webClient.Proxy = WebRequest.GetSystemWebProxy();
+            if (request.WebProxy != null)
+            {
+                // if user supplies webproxy, use that
+                webClient.Proxy = request.WebProxy;
+            }
+            else
+            {
+                // get ie settings
+                webClient.Proxy = WebRequest.GetSystemWebProxy();
 
-            // set credentials to be user credentials
-            webClient.Proxy.Credentials = CredentialCache.DefaultNetworkCredentials;
+                // set credentials to be user credentials
+                webClient.Proxy.Credentials = CredentialCache.DefaultNetworkCredentials;
+            }
 
             var done = new ManualResetEvent(false);
 
@@ -175,7 +183,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
             // if we don't have the file by this point, we've failed.
             if (localFilename == null || !File.Exists(localFilename)) {
                 request.CompleteProgress(pid, false);
-                request.Error(ErrorCategory.InvalidResult, remoteLocation.ToString(), Constants.Messages.UnableToDownload, remoteLocation.ToString(), localFilename);
+                request.Warning(Constants.Messages.UnableToDownload, remoteLocation.ToString(), localFilename);
                 return null;
             }
 
@@ -192,6 +200,12 @@ namespace Microsoft.PackageManagement.Providers.Internal
             var clientHandler = new HttpClientHandler();
             
             clientHandler.UseDefaultCredentials = true;
+
+            // if user supplies web proxy, use that
+            if (request.WebProxy != null)
+            {
+                clientHandler.Proxy = request.WebProxy;
+            }
 
             var httpClient = new HttpClient(clientHandler);
 

@@ -79,6 +79,10 @@ $script:PackageManagementProviderParam  = "PackageManagementProvider"
 $script:PublishLocation = "PublishLocation"
 $script:ScriptSourceLocation = 'ScriptSourceLocation'
 $script:ScriptPublishLocation = 'ScriptPublishLocation'
+$script:Proxy = 'Proxy'
+$script:ProxyCredential = 'ProxyCredential'
+$script:Credential = 'Credential'
+$script:VSTSAuthenticatedFeedsDocUrl = 'https://go.microsoft.com/fwlink/?LinkID=698608'
 
 $script:NuGetProviderName = "NuGet"
 $script:NuGetProviderVersion  = [Version]'2.8.5.201'
@@ -271,8 +275,8 @@ function PackageManagementMessageResolver($MsgID, $Message) {
                         if($Message)
                         {
                             $tempMessage = $Message     -creplace "PackageSource", "PSRepository"
-                            $tempMessage = $Message     -creplace "packagesource", "psrepository"
-                            $tempMessage = $Message     -creplace "Package", "Module"
+                            $tempMessage = $tempMessage -creplace "packagesource", "psrepository"
+                            $tempMessage = $tempMessage -creplace "Package", "Module"
                             $tempMessage = $tempMessage -creplace "package", "module"
                             $tempMessage = $tempMessage -creplace "Sources", "Repositories"
                             $tempMessage = $tempMessage -creplace "sources", "repositories"
@@ -369,8 +373,8 @@ function PackageManagementMessageResolverForScripts($MsgID, $Message) {
                         if($Message)
                         {
                             $tempMessage = $Message     -creplace "PackageSource", "PSRepository"
-                            $tempMessage = $Message     -creplace "packagesource", "psrepository"
-                            $tempMessage = $Message     -creplace "Package", "Script"
+                            $tempMessage = $tempMessage -creplace "packagesource", "psrepository"
+                            $tempMessage = $tempMessage -creplace "Package", "Script"
                             $tempMessage = $tempMessage -creplace "package", "script"
                             $tempMessage = $tempMessage -creplace "Sources", "Repositories"
                             $tempMessage = $tempMessage -creplace "sources", "repositories"
@@ -387,17 +391,19 @@ function PackageManagementMessageResolverForScripts($MsgID, $Message) {
 
 Microsoft.PowerShell.Utility\Import-LocalizedData  LocalizedData -filename PSGet.Resource.psd1
 
-#region Add .Net type for Telemetry APIs
+#region Add .Net type for Telemetry APIs and WebProxy
 
 # This code is required to add a .Net type and call the Telemetry APIs 
 # This is required since PowerShell does not support generation of .Net Anonymous types
 #
-$requiredAssembly = ( 
-    "system.management.automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"    
-    ) 
+$requiredAssembly = @( "system.management.automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+                       "$([System.Net.IWebProxy].AssemblyQualifiedName)".Substring('System.Net.IWebProxy'.Length+1).Trim(), 
+                       "$([System.Uri].AssemblyQualifiedName)".Substring('System.Uri'.Length+1).Trim()
+                     )
 
 $source = @" 
 using System; 
+using System.Net;
 using System.Management.Automation;
 
 namespace Microsoft.PowerShell.Get 
@@ -414,6 +420,47 @@ namespace Microsoft.PowerShell.Get
             Microsoft.PowerShell.Telemetry.Internal.TelemetryAPI.TraceMessage(operationName, new { SourceLocationType = sourceLocationType, SourceLocationHash = sourceLocationHash, InstallationPolicy = installationPolicy, PackageManagementProvider = packageManagementProvider, PublishLocationHash = publishLocationHash, ScriptSourceLocationHash = scriptSourceLocationHash, ScriptPublishLocationHash = scriptPublishLocationHash });
         }         
         
+    }
+    
+    /// <summary>
+    /// Used by Ping-Endpoint function to supply webproxy to HttpClient
+    /// We cannot use System.Net.WebProxy because this is not available on CoreClr
+    /// </summary>
+    public class InternalWebProxy : IWebProxy
+    {
+        Uri _proxyUri;
+        ICredentials _credentials;
+
+        public InternalWebProxy(Uri uri, ICredentials credentials)
+        {
+            Credentials = credentials;
+            _proxyUri = uri;
+        }
+
+        /// <summary>
+        /// Credentials used by WebProxy
+        /// </summary>
+        public ICredentials Credentials
+        {
+            get
+            {
+                return _credentials;
+            }
+            set
+            {
+                _credentials = value;
+            }
+        }
+
+        public Uri GetProxy(Uri destination)
+        {
+            return _proxyUri;
+        }
+
+        public bool IsBypassed(Uri host)
+        {
+            return false;
+        }
     } 
 } 
 "@ 
@@ -423,8 +470,6 @@ $script:TelemetryEnabled = $false
 
 try
 {
-    Add-Type -ReferencedAssemblies $requiredAssembly -TypeDefinition $source -Language CSharp -ErrorAction SilentlyContinue
-    
     # If the telemetry namespace/methods are not found flow goes to the catch block where telemetry is disabled
     $telemetryMethods = ([Microsoft.PowerShell.Get.Telemetry] | Get-Member -Static).Name
 
@@ -436,10 +481,30 @@ try
 }
 catch
 {
-    # Disable Telemetry if there are any issues finding/loading the Telemetry infrastructure
-    $script:TelemetryEnabled = $false
+    # Ignore the error and try adding the type below
 }
 
+if(-not $script:TelemetryEnabled)
+{
+    try
+    {
+        Add-Type -ReferencedAssemblies $requiredAssembly -TypeDefinition $source -Language CSharp -ErrorAction SilentlyContinue
+    
+        # If the telemetry namespace/methods are not found flow goes to the catch block where telemetry is disabled
+        $telemetryMethods = ([Microsoft.PowerShell.Get.Telemetry] | Get-Member -Static).Name
+
+        if ($telemetryMethods.Contains("TraceMessageArtifactsNotFound") -and $telemetryMethods.Contains("TraceMessageNonPSGalleryRegistration"))
+        {
+            # Turn ON Telemetry if the infrastructure is present on the machine
+            $script:TelemetryEnabled = $true
+        }
+    }
+    catch
+    {
+        # Disable Telemetry if there are any issues finding/loading the Telemetry infrastructure
+        $script:TelemetryEnabled = $false
+    }
+}
 
 #endregion
 
@@ -484,6 +549,10 @@ function Publish-Module
         [string]
         $Repository = $Script:PSGalleryModuleSource,
 
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $Credential,
+
         [Parameter()] 
         [ValidateSet("1.0")]
         [Version]
@@ -511,7 +580,11 @@ function Publish-Module
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [Uri]
-        $ProjectUri
+        $ProjectUri,
+
+        [Parameter()]
+        [switch]
+        $Force
     )
 
     Begin
@@ -561,7 +634,7 @@ function Publish-Module
                         -ExceptionObject $ProjectUri
         }
        
-        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -BootstrapNuGetExe
+        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -BootstrapNuGetExe -Force:$Force
     }
 
     Process
@@ -849,15 +922,24 @@ function Publish-Module
                            -ExceptionObject $moduleName
             }
 
+            $FindParameters = @{
+                Name = $moduleName
+                Repository = $Repository
+                Tag = 'PSScript'
+                Verbose = $VerbosePreference
+                ErrorAction = 'SilentlyContinue'
+                WarningAction = 'SilentlyContinue'
+                Debug = $DebugPreference
+            }
+
+            if($Credential)
+            {
+                $FindParameters[$script:Credential] = $Credential
+            }
+
             # Check if the specified module name is already used for a script on the specified repository
             # Use Find-Script to check if that name is already used as scriptname
-            $scriptPSGetItemInfo = Find-Script -Name $moduleName `
-                                               -Repository $Repository `
-                                               -Tag 'PSScript' `
-                                               -Verbose:$VerbosePreference `
-                                               -ErrorAction SilentlyContinue `
-                                               -WarningAction SilentlyContinue `
-                                               -Debug:$DebugPreference | 
+            $scriptPSGetItemInfo = Find-Script @FindParameters | 
                                         Microsoft.PowerShell.Core\Where-Object {$_.Name -eq $moduleName} | 
                                             Microsoft.PowerShell.Utility\Select-Object -Last 1
             if($scriptPSGetItemInfo)
@@ -871,12 +953,8 @@ function Publish-Module
                            -ExceptionObject $moduleName
             }
 
-            $currentPSGetItemInfo = Find-Module -Name $moduleInfo.Name `
-                                                -Repository $Repository `
-                                                -Verbose:$VerbosePreference `
-                                                -ErrorAction SilentlyContinue `
-                                                -WarningAction SilentlyContinue `
-                                                -Debug:$DebugPreference | 
+            $null = $FindParameters.Remove('Tag')
+            $currentPSGetItemInfo = Find-Module @FindParameters | 
                                         Microsoft.PowerShell.Core\Where-Object {$_.Name -eq $moduleInfo.Name} | 
                                             Microsoft.PowerShell.Utility\Select-Object -Last 1
 
@@ -891,7 +969,7 @@ function Publish-Module
             }
 
             $shouldProcessMessage = $LocalizedData.PublishModulewhatIfMessage -f ($moduleInfo.Version, $moduleInfo.Name)
-            if($PSCmdlet.ShouldProcess($shouldProcessMessage, "Publish-Module"))
+            if($Force -or $PSCmdlet.ShouldProcess($shouldProcessMessage, "Publish-Module"))
             {
                 Publish-PSArtifactUtility -PSModuleInfo $moduleInfo `
                                           -ManifestPath $manifestPath `
@@ -987,17 +1065,30 @@ function Find-Module
         [string[]]
         $Command,
 
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
+
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [string[]]
-        $Repository
+        $Repository,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $Credential
     )
 
     Begin
     {
         Get-PSGalleryApiAvailability -Repository $Repository
         
-        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet
+        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -Proxy $Proxy -ProxyCredential $ProxyCredential
     }
 
     Process
@@ -1152,6 +1243,19 @@ function Save-Module
         [string]
         $LiteralPath,
 
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
+        
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $Credential,
+
         [Parameter()]
         [switch]
         $Force
@@ -1161,7 +1265,7 @@ function Save-Module
     {
         Get-PSGalleryApiAvailability -Repository $Repository
                 
-        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet
+        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -Proxy $Proxy -ProxyCredential $ProxyCredential
 
         # Module names already tried in the current pipeline for InputObject parameterset
         $moduleNamesInPipeline = @()
@@ -1355,10 +1459,27 @@ function Install-Module
         [string[]]
         $Repository,
 
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $Credential,
+
         [Parameter()] 
         [ValidateSet("CurrentUser","AllUsers")]
         [string]
         $Scope = "AllUsers",
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
+
+        [Parameter()]
+        [switch]
+        $AllowClobber,
 
         [Parameter()]
         [switch]
@@ -1381,7 +1502,7 @@ function Install-Module
                         -ErrorCategory InvalidArgument
         }
 
-        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet
+        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -Proxy $Proxy -ProxyCredential $ProxyCredential
 
         # Module names already tried in the current pipeline for InputObject parameterset
         $moduleNamesInPipeline = @()
@@ -1565,6 +1686,19 @@ function Update-Module
         [Version]
         $MaximumVersion,
 
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $Credential,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
+
         [Parameter()]
         [Switch]
         $Force
@@ -1572,7 +1706,7 @@ function Update-Module
 
     Begin
     {
-        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet
+        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -Proxy $Proxy -ProxyCredential $ProxyCredential
 
         # Module names already tried in the current pipeline
         $moduleNamesInPipeline = @()
@@ -1890,6 +2024,11 @@ function Find-DscResource
         [ValidateNotNull()]
         [Version]
         $MinimumVersion,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [Version]
+        $MaximumVersion,
         
         [Parameter()]
         [ValidateNotNull()]
@@ -1909,6 +2048,15 @@ function Find-DscResource
         [ValidateNotNull()]
         [string]
         $Filter,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -1984,6 +2132,11 @@ function Find-Command
         [ValidateNotNull()]
         [Version]
         $MinimumVersion,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [Version]
+        $MaximumVersion,
         
         [Parameter()]
         [ValidateNotNull()]
@@ -2003,6 +2156,15 @@ function Find-Command
         [ValidateNotNull()]
         [string]
         $Filter,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -2084,6 +2246,11 @@ function Find-RoleCapability
         [Parameter()]
         [ValidateNotNull()]
         [Version]
+        $MaximumVersion,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [Version]
         $RequiredVersion,
 
         [Parameter()]
@@ -2099,6 +2266,15 @@ function Find-RoleCapability
         [ValidateNotNull()]
         [string]
         $Filter,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -2183,7 +2359,15 @@ function Publish-Script
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [string]
-        $Repository = $Script:PSGalleryModuleSource
+        $Repository = $Script:PSGalleryModuleSource,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $Credential,
+
+        [Parameter()]
+        [switch]
+        $Force
     )
 
     Begin
@@ -2200,7 +2384,7 @@ function Publish-Script
 
         Get-PSGalleryApiAvailability -Repository $Repository        
 
-        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -BootstrapNuGetExe
+        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -BootstrapNuGetExe -Force:$Force
     }
 
     Process
@@ -2361,15 +2545,24 @@ function Publish-Script
 
         try
         {
+            $FindParameters = @{
+                Name = $scriptName
+                Repository = $Repository
+                Tag = 'PSModule'
+                Verbose = $VerbosePreference
+                ErrorAction = 'SilentlyContinue'
+                WarningAction = 'SilentlyContinue'
+                Debug = $DebugPreference
+            }
+
+            if($Credential)
+            {
+                $FindParameters[$script:Credential] = $Credential
+            }
+
             # Check if the specified script name is already used for a module on the specified repository
             # Use Find-Module to check if that name is already used as module name
-            $modulePSGetItemInfo = Find-Module -Name $scriptName `
-                                               -Repository $Repository `
-                                               -Tag 'PSModule' `
-                                               -Verbose:$VerbosePreference `
-                                               -ErrorAction SilentlyContinue `
-                                               -WarningAction SilentlyContinue `
-                                               -Debug:$DebugPreference | 
+            $modulePSGetItemInfo = Find-Module @FindParameters | 
                                         Microsoft.PowerShell.Core\Where-Object {$_.Name -eq $scriptName} | 
                                             Microsoft.PowerShell.Utility\Select-Object -Last 1
             if($modulePSGetItemInfo)
@@ -2383,13 +2576,10 @@ function Publish-Script
                            -ExceptionObject $scriptName
             }
 
+            $null = $FindParameters.Remove('Tag')
+
             $currentPSGetItemInfo = $null
-            $currentPSGetItemInfo = Find-Script -Name $scriptName `
-                                                -Repository $Repository `
-                                                -Verbose:$VerbosePreference `
-                                                -ErrorAction SilentlyContinue `
-                                                -WarningAction SilentlyContinue `
-                                                -Debug:$DebugPreference | 
+            $currentPSGetItemInfo = Find-Script @FindParameters | 
                                         Microsoft.PowerShell.Core\Where-Object {$_.Name -eq $scriptName} | 
                                             Microsoft.PowerShell.Utility\Select-Object -Last 1
 
@@ -2407,7 +2597,7 @@ function Publish-Script
             }
 
             $shouldProcessMessage = $LocalizedData.PublishScriptwhatIfMessage -f ($PSScriptInfo.Version, $scriptName)
-            if($PSCmdlet.ShouldProcess($shouldProcessMessage, "Publish-Script"))
+            if($Force -or $PSCmdlet.ShouldProcess($shouldProcessMessage, "Publish-Script"))
             {
                 Publish-PSArtifactUtility -PSScriptInfo $PSScriptInfo `
                                           -NugetApiKey $NuGetApiKey `
@@ -2486,17 +2676,30 @@ function Find-Script
         [string[]]
         $Command,
 
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
+
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [string[]]
-        $Repository
+        $Repository,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $Credential
     )
 
     Begin
     {
         Get-PSGalleryApiAvailability -Repository $Repository
         
-        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet
+        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -Proxy $Proxy -ProxyCredential $ProxyCredential
     }
 
     Process
@@ -2682,6 +2885,19 @@ function Save-Script
         [string]
         $LiteralPath,
 
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
+        
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $Credential,
+
         [Parameter()]
         [switch]
         $Force
@@ -2691,7 +2907,7 @@ function Save-Script
     {
         Get-PSGalleryApiAvailability -Repository $Repository
                 
-        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet
+        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -Proxy $Proxy -ProxyCredential $ProxyCredential
 
         # Script names already tried in the current pipeline for InputObject parameterset
         $scriptNamesInPipeline = @()
@@ -2897,7 +3113,20 @@ function Install-Script
         [Parameter()]
         [Switch]
         $NoPathUpdate,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
         
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $Credential,
+
         [Parameter()]
         [switch]
         $Force
@@ -2935,7 +3164,7 @@ function Install-Script
                                                  -NoPathUpdate:$NoPathUpdate `
                                                  -Force:$Force
         
-        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet
+        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -Proxy $Proxy -ProxyCredential $ProxyCredential
         
         # Script names already tried in the current pipeline for InputObject parameterset
         $scriptNamesInPipeline = @()
@@ -3167,6 +3396,19 @@ function Update-Script
         [Version]
         $MaximumVersion,
 
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $Credential,
+
         [Parameter()]
         [Switch]
         $Force
@@ -3174,7 +3416,7 @@ function Update-Script
 
     Begin
     {
-        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet
+        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -Proxy $Proxy -ProxyCredential $ProxyCredential
 
         # Script names already tried in the current pipeline
         $scriptNamesInPipeline = @()
@@ -3492,41 +3734,64 @@ function Register-PSRepository
     <#
     .ExternalHelp PSGet.psm1-help.xml
     #>
-    [CmdletBinding(PositionalBinding=$false,
+    [CmdletBinding(DefaultParameterSetName='NameParameterSet',
                    HelpUri='http://go.microsoft.com/fwlink/?LinkID=517129')]
     Param 
     (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,
+                   Position=0, 
+                   ParameterSetName='NameParameterSet')]
         [ValidateNotNullOrEmpty()]
         [string]
         $Name,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,
+                   Position=1, 
+                   ParameterSetName='NameParameterSet')]
         [ValidateNotNullOrEmpty()]
         [Uri]
         $SourceLocation,
 
-        [Parameter()]
+        [Parameter(ParameterSetName='NameParameterSet')]
         [ValidateNotNullOrEmpty()]
         [Uri]
         $PublishLocation,
 
-        [Parameter()]
+        [Parameter(ParameterSetName='NameParameterSet')]
         [ValidateNotNullOrEmpty()]
         [Uri]
         $ScriptSourceLocation,
 
-        [Parameter()]
+        [Parameter(ParameterSetName='NameParameterSet')]
         [ValidateNotNullOrEmpty()]
         [Uri]
         $ScriptPublishLocation,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true,
+                   ParameterSetName='NameParameterSet')]
+        [PSCredential]
+        $Credential,
+
+        [Parameter(Mandatory=$true,
+                   ParameterSetName='PSGalleryParameterSet')]
+        [Switch]
+        $Default,
 
         [Parameter()]
         [ValidateSet('Trusted','Untrusted')]
         [string]
         $InstallationPolicy = 'Untrusted',
 
-        [Parameter()]
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
+
+        [Parameter(ParameterSetName='NameParameterSet')]
         [ValidateNotNullOrEmpty()]
         [string]
         $PackageManagementProvider        
@@ -3556,7 +3821,7 @@ function Register-PSRepository
     {
         Get-PSGalleryApiAvailability -Repository $Name
         
-        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet
+        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -Proxy $Proxy -ProxyCredential $ProxyCredential
 
         if($PackageManagementProvider)
         {
@@ -3585,62 +3850,89 @@ function Register-PSRepository
 
     Process
     {
-        # Ping and resolve the specified location
-        $SourceLocation = Resolve-Location -Location (Get-LocationString -LocationUri $SourceLocation) `
-                                           -LocationParameterName 'SourceLocation' `
-                                           -CallerPSCmdlet $PSCmdlet
-        if(-not $SourceLocation)
+        if($PSCmdlet.ParameterSetName -eq 'PSGalleryParameterSet')
         {
-            # Above Resolve-Location function throws an error when it is not able to resolve a location
-            return
+            if(-not $Default)
+            {
+                return
+            }
+
+            $PSBoundParameters['Name'] = $Script:PSGalleryModuleSource
+            $null = $PSBoundParameters.Remove('Default')
+        }
+        else
+        {
+            if($Name -eq $Script:PSGalleryModuleSource)
+            {
+                $message = $LocalizedData.UseDefaultParameterSetOnRegisterPSRepository
+                ThrowError -ExceptionName "System.ArgumentException" `
+                           -ExceptionMessage $message `
+                           -ErrorId 'UseDefaultParameterSetOnRegisterPSRepository' `
+                           -CallerPSCmdlet $PSCmdlet `
+                           -ErrorCategory InvalidArgument `
+                           -ExceptionObject $Name
+                return   
+            }
+
+            # Ping and resolve the specified location
+            $SourceLocation = Resolve-Location -Location (Get-LocationString -LocationUri $SourceLocation) `
+                                               -LocationParameterName 'SourceLocation' `
+                                               -Credential $Credential `
+                                               -Proxy $Proxy `
+                                               -ProxyCredential $ProxyCredential `
+                                               -CallerPSCmdlet $PSCmdlet
+            if(-not $SourceLocation)
+            {
+                # Above Resolve-Location function throws an error when it is not able to resolve a location
+                return
+            }
+
+            $providerName = $null
+
+            if($PackageManagementProvider)
+            {            
+                $providerName = $PackageManagementProvider
+            }
+            elseif($selctedProviderName)
+            {
+                $providerName = $selctedProviderName
+            }
+            else
+            {
+                $providerName = Get-PackageManagementProviderName -Location $SourceLocation
+            }
+
+            if($providerName)
+            {
+                $PSBoundParameters[$script:PackageManagementProviderParam] = $providerName
+            }
+
+            if($PublishLocation)
+            {
+                $PSBoundParameters[$script:PublishLocation] = Get-LocationString -LocationUri $PublishLocation
+            }
+
+            if($ScriptPublishLocation)
+            {
+                $PSBoundParameters[$script:ScriptPublishLocation] = Get-LocationString -LocationUri $ScriptPublishLocation
+            }
+
+            if($ScriptSourceLocation)
+            {
+                $PSBoundParameters[$script:ScriptSourceLocation] = Get-LocationString -LocationUri $ScriptSourceLocation
+            }
+
+            $PSBoundParameters["Location"] = Get-LocationString -LocationUri $SourceLocation
+            $null = $PSBoundParameters.Remove("SourceLocation")
         }
 
         if($InstallationPolicy -eq "Trusted")
         {
-            $PSBoundParameters.Add("Trusted", $true)
+            $PSBoundParameters['Trusted'] = $true
         }
-
-        $providerName = $null
-
-        if($PackageManagementProvider)
-        {            
-            $providerName = $PackageManagementProvider
-        }
-        elseif($selctedProviderName)
-        {
-            $providerName = $selctedProviderName
-        }
-        else
-        {
-            $providerName = Get-PackageManagementProviderName -Location $SourceLocation
-        }
-
-        if($providerName)
-        {
-            $PSBoundParameters[$script:PackageManagementProviderParam] = $providerName
-        }
-
-        if($PublishLocation)
-        {
-            $PSBoundParameters[$script:PublishLocation] = Get-LocationString -LocationUri $PublishLocation
-        }
-
-        if($ScriptPublishLocation)
-        {
-            $PSBoundParameters[$script:ScriptPublishLocation] = Get-LocationString -LocationUri $ScriptPublishLocation
-        }
-
-        if($ScriptSourceLocation)
-        {
-            $PSBoundParameters[$script:ScriptSourceLocation] = Get-LocationString -LocationUri $ScriptSourceLocation
-        }
-
-        $PSBoundParameters["Provider"] = $script:PSModuleProviderName
-        
-        $PSBoundParameters["Location"] = Get-LocationString -LocationUri $SourceLocation
-        $null = $PSBoundParameters.Remove("SourceLocation")
         $null = $PSBoundParameters.Remove("InstallationPolicy")
 
+        $PSBoundParameters["Provider"] = $script:PSModuleProviderName
         $PSBoundParameters["MessageResolver"] = $script:PackageManagementMessageResolverScriptBlock
 
         $null = PackageManagement\Register-PackageSource @PSBoundParameters
@@ -3656,16 +3948,15 @@ function Set-PSRepository
                    HelpUri='http://go.microsoft.com/fwlink/?LinkID=517128')]
     Param
     (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true, Position=0)]
         [ValidateNotNullOrEmpty()]
         [string]
         $Name,
         
-        [Parameter()]
+        [Parameter(Position=1)]
         [ValidateNotNullOrEmpty()]
         [Uri]
         $SourceLocation,
-
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -3682,10 +3973,23 @@ function Set-PSRepository
         [Uri]
         $ScriptPublishLocation,
 
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $Credential,
+
         [Parameter()]
         [ValidateSet('Trusted','Untrusted')]
         [string]
         $InstallationPolicy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [Uri]
+        $Proxy,
+
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [PSCredential]
+        $ProxyCredential,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -3724,7 +4028,7 @@ function Set-PSRepository
     {
         Get-PSGalleryApiAvailability -Repository $Name
         
-        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet
+        Install-NuGetClientBinaries -CallerPSCmdlet $PSCmdlet -Proxy $Proxy -ProxyCredential $ProxyCredential
 
         if($PackageManagementProvider)
         {
@@ -3759,6 +4063,9 @@ function Set-PSRepository
             # Ping and resolve the specified location
             $SourceLocation = Resolve-Location -Location (Get-LocationString -LocationUri $SourceLocation) `
                                                -LocationParameterName 'SourceLocation' `
+                                               -Credential $Credential `
+                                               -Proxy $Proxy `
+                                               -ProxyCredential $ProxyCredential `
                                                -CallerPSCmdlet $PSCmdlet
             if(-not $SourceLocation)
             {
@@ -4151,9 +4458,9 @@ function Test-ScriptFileInfo
                     # A line is starting with . conveys a new metadata property
                     # __NEWLINE__ is used for replacing the value lines while adding the value to $PSScriptInfo object
                     #
-                    if($line.StartsWith('.'))
+                    if($line.trim().StartsWith('.'))
                     {
-                        $parts = $line -split '[.\s+]',3 | Microsoft.PowerShell.Core\Where-Object {$_}
+                        $parts = $line.trim() -split '[.\s+]',3 | Microsoft.PowerShell.Core\Where-Object {$_}
 
                         if($KeyName -and $Value)
                         {
@@ -5391,6 +5698,85 @@ function Get-ScriptCommentHelpInfoString
 #endregion *-ScriptFileInfo cmdlets
 
 #region Utility functions
+
+function Get-ManifestHashTable
+{
+    param 
+    (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Path,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCmdlet]
+        $CallerPSCmdlet
+    )
+
+    $Lines = $null
+
+    try
+    {
+        $Lines = Get-Content -Path $Path -Force
+    }
+    catch
+    {
+        if($CallerPSCmdlet)
+        {
+            $CallerPSCmdlet.ThrowTerminatingError($_.Exception.ErrorRecord)
+        }
+    }
+
+    if(-not $Lines)
+    {
+        return
+    }
+    
+    $scriptBlock = [ScriptBlock]::Create( $Lines -join "`n" )
+
+    $allowedVariables = [System.Collections.Generic.List[String]] @('PSEdition', 'PSScriptRoot')
+    $allowedCommands = [System.Collections.Generic.List[String]] @()
+    $allowEnvironmentVariables = $false
+
+    try
+    {
+        $scriptBlock.CheckRestrictedLanguage($allowedCommands, $allowedVariables, $allowEnvironmentVariables)
+    }
+    catch
+    {
+        if($CallerPSCmdlet)
+        {
+            $CallerPSCmdlet.ThrowTerminatingError($_.Exception.ErrorRecord)
+        }
+
+        return
+    }
+
+    return $scriptBlock.InvokeReturnAsIs()
+}
+
+function Get-ParametersHashtable
+{
+    param(
+        $Proxy,
+        $ProxyCredential
+    )
+
+    $ParametersHashtable = @{}
+    if($Proxy)
+    {
+        $ParametersHashtable[$script:Proxy] = $Proxy
+    }
+
+    if($ProxyCredential)
+    {
+        $ParametersHashtable[$script:ProxyCredential] = $ProxyCredential
+    }
+
+    return $ParametersHashtable
+}
+
 function ToUpper
 {
     param([string]$str)
@@ -5467,13 +5853,14 @@ function Check-PSGalleryApiAvailability
 
     # check internet availability first
     $connected = $false
+    $microsoftDomain = 'www.microsoft.com'
     if(Get-Command Microsoft.PowerShell.Management\Test-Connection -ErrorAction SilentlyContinue)
     {        
-        $connected = Microsoft.PowerShell.Management\Test-Connection -ComputerName "www.microsoft.com" -Count 1 -Quiet
+        $connected = Microsoft.PowerShell.Management\Test-Connection -ComputerName $microsoftDomain -Count 1 -Quiet
     }
     else
     {
-        $connected = NetTCPIP\Test-NetConnection -ComputerName "www.microsoft.com" -InformationLevel Quiet
+        $connected = NetTCPIP\Test-NetConnection -ComputerName $microsoftDomain -InformationLevel Quiet
     }
     if ( -not $connected)
     {
@@ -5589,6 +5976,7 @@ function HttpClientApisAvailable
 
 function Ping-Endpoint
 {
+    [CmdletBinding()]
     param
     (
         [Parameter()]
@@ -5597,11 +5985,32 @@ function Ping-Endpoint
         $Endpoint,
 
         [Parameter()]
+        $Credential,
+
+        [Parameter()]
+        $Proxy,
+
+        [Parameter()]
+        $ProxyCredential,
+
+        [Parameter()]
         [switch]
         $AllowAutoRedirect = $true
     )   
         
     $results = @{}
+
+    $WebProxy = $null
+    if($Proxy)
+    {
+        $ProxyNetworkCredential = $null
+        if($ProxyCredential)
+        {
+            $ProxyNetworkCredential = $ProxyCredential.GetNetworkCredential()
+        }
+
+        $WebProxy = New-Object Microsoft.PowerShell.Get.InternalWebProxy -ArgumentList $Proxy,$ProxyNetworkCredential
+    }
 
     if(HttpClientApisAvailable)
     {
@@ -5609,7 +6018,21 @@ function Ping-Endpoint
         try
         {
             $handler = New-Object System.Net.Http.HttpClientHandler
-            $handler.UseDefaultCredentials = $true
+            
+            if($Credential)
+            {
+                $handler.Credentials = $Credential.GetNetworkCredential()
+            }
+            else
+            {
+                $handler.UseDefaultCredentials = $true
+            }
+
+            if($WebProxy)
+            {
+                $handler.Proxy = $WebProxy
+            }
+
             $httpClient = New-Object System.Net.Http.HttpClient -ArgumentList $handler
             $response = $httpclient.GetAsync($endpoint)  
         }
@@ -5631,13 +6054,29 @@ function Ping-Endpoint
         $iss.LanguageMode = "FullLanguage"
 
         $WebRequestcmd =  @'
+            param($Credential, $WebProxy)  
+
             try
             {{
                 $request = [System.Net.WebRequest]::Create("{0}")
                 $request.Method = 'GET'
                 $request.Timeout = 30000
-                $request.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
+                if($Credential)
+                {{
+                    $request.Credentials = $Credential.GetNetworkCredential()
+                }}
+                else
+                {{
+                    $request.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
+                }}
+
                 $request.AllowAutoRedirect = ${1}
+                
+                if($WebProxy)
+                {{
+                    $request.Proxy = $WebProxy
+                }}
+
                 $response = [System.Net.HttpWebResponse]$request.GetResponse()             
                 if($response.StatusCode.value__ -eq 302)
                 {{
@@ -5656,6 +6095,17 @@ function Ping-Endpoint
 '@ -f $EndPoint, $AllowAutoRedirect
 
         $ps = [powershell]::Create($iss).AddScript($WebRequestcmd)
+
+        if($WebProxy)
+        {
+            $null = $ps.AddParameter('WebProxy', $WebProxy)
+        }
+
+        if($Credential)
+        {
+            $null = $ps.AddParameter('Credential', $Credential)
+        }
+
         $response = $ps.Invoke()
         $ps.dispose()
         if ($response -ne "Error:System.Net.WebException")
@@ -5925,10 +6375,75 @@ function Set-PSGetSettingsVariable
     }   
 }
 
+function Set-PSGalleryRepository
+{
+    [CmdletBinding()]
+    param(
+        [Parameter()]
+        [switch]
+        $Trusted,
+
+        [Parameter()]
+        $Proxy,
+
+        [Parameter()]
+        $ProxyCredential
+    )
+
+    $psgalleryLocation = Resolve-Location -Location $Script:PSGallerySourceUri `
+                                          -LocationParameterName 'SourceLocation' `
+                                          -Proxy $Proxy `
+                                          -ProxyCredential $ProxyCredential `
+                                          -ErrorAction SilentlyContinue `
+                                          -WarningAction SilentlyContinue
+
+    $scriptSourceLocation = Resolve-Location -Location $Script:PSGalleryScriptSourceUri `
+                                             -LocationParameterName 'ScriptSourceLocation' `
+                                             -Proxy $Proxy `
+                                             -ProxyCredential $ProxyCredential `
+                                             -ErrorAction SilentlyContinue `
+                                             -WarningAction SilentlyContinue
+    if($psgalleryLocation)
+    {
+        $result = Ping-Endpoint -Endpoint $Script:PSGalleryPublishUri -AllowAutoRedirect:$false -Proxy $Proxy -ProxyCredential $ProxyCredential
+        if ($result.ContainsKey($Script:ResponseUri) -and $result[$Script:ResponseUri])
+        {   
+                $script:PSGalleryPublishUri = $result[$Script:ResponseUri]                    
+        }
+
+        $repository = Microsoft.PowerShell.Utility\New-Object PSCustomObject -Property ([ordered]@{
+                Name = $Script:PSGalleryModuleSource
+                SourceLocation =  $psgalleryLocation
+                PublishLocation = $Script:PSGalleryPublishUri
+                ScriptSourceLocation = $scriptSourceLocation
+                ScriptPublishLocation = $Script:PSGalleryPublishUri
+                Trusted=$Trusted
+                Registered=$true
+                InstallationPolicy = if($Trusted) {'Trusted'} else {'Untrusted'}
+                PackageManagementProvider=$script:NuGetProviderName
+                ProviderOptions = @{}
+            })
+
+        $repository.PSTypeNames.Insert(0, "Microsoft.PowerShell.Commands.PSRepository")
+        $script:PSGetModuleSources[$Script:PSGalleryModuleSource] = $repository
+        
+        Save-ModuleSources
+
+        return $repository
+    }
+}
+
 function Set-ModuleSourcesVariable
 {
     [CmdletBinding()]
-    param([switch]$Force)
+    param(
+        [switch]
+        $Force,
+
+        $Proxy,
+
+        $ProxyCredential
+    )
 
     if(-not $script:PSGetModuleSources -or $Force)
     {
@@ -5943,39 +6458,7 @@ function Set-ModuleSourcesVariable
 
             if(-not $script:PSGetModuleSources.Contains($Script:PSGalleryModuleSource))
             {
-                $isPersistRequired = $true
-                $psgalleryLocation = Resolve-Location -Location $Script:PSGallerySourceUri `
-                                                      -LocationParameterName 'SourceLocation' `
-                                                      -ErrorAction SilentlyContinue `
-                                                      -WarningAction SilentlyContinue
-
-                $scriptSourceLocation = Resolve-Location -Location $Script:PSGalleryScriptSourceUri `
-                                                         -LocationParameterName 'ScriptSourceLocation' `
-                                                         -ErrorAction SilentlyContinue `
-                                                         -WarningAction SilentlyContinue
-                if($psgalleryLocation)
-                {
-                    $result = Ping-Endpoint -Endpoint $Script:PSGalleryPublishUri -AllowAutoRedirect:$false
-                    if ($result.ContainsKey($Script:ResponseUri) -and $result[$Script:ResponseUri])
-                    {   
-                            $script:PSGalleryPublishUri = $result[$Script:ResponseUri]                    
-                    }
-                    $moduleSource = Microsoft.PowerShell.Utility\New-Object PSCustomObject -Property ([ordered]@{
-                            Name = $Script:PSGalleryModuleSource
-                            SourceLocation =  $psgalleryLocation
-                            PublishLocation = $Script:PSGalleryPublishUri
-                            ScriptSourceLocation = $scriptSourceLocation
-                            ScriptPublishLocation = $Script:PSGalleryPublishUri
-                            Trusted=$false
-                            Registered=$true
-                            InstallationPolicy = 'Untrusted'
-                            PackageManagementProvider=$script:NuGetProviderName
-                            ProviderOptions = @{}
-                        })
-
-                    $moduleSource.PSTypeNames.Insert(0, "Microsoft.PowerShell.Commands.PSRepository")
-                    $script:PSGetModuleSources.Add($Script:PSGalleryModuleSource, $moduleSource)
-                }
+                $null = Set-PSGalleryRepository -Proxy $Proxy -ProxyCredential $ProxyCredential
             }
         }
 
@@ -5987,7 +6470,7 @@ function Set-ModuleSourcesVariable
 
                                               if(-not (Get-Member -InputObject $moduleSource -Name $script:ScriptSourceLocation))
                                               {
-                                                  $scriptSourceLocation = Get-ScriptSourceLocation -Location $moduleSource.SourceLocation
+                                                  $scriptSourceLocation = Get-ScriptSourceLocation -Location $moduleSource.SourceLocation -Proxy $Proxy -ProxyCredential $ProxyCredential
 
                                                   Microsoft.PowerShell.Utility\Add-Member -InputObject $script:PSGetModuleSources[$_] `
                                                                                           -MemberType NoteProperty `
@@ -6532,6 +7015,12 @@ function Install-NuGetClientBinaries
         [switch]
         $BootstrapNuGetExe,
 
+        [Parameter()]
+        $Proxy,
+
+        [Parameter()]
+        $ProxyCredential,
+
         [parameter()]
         [switch]
         $Force
@@ -6663,6 +7152,8 @@ function Install-NuGetClientBinaries
         $shouldContinueCaption = $LocalizedData.InstallNuGetExeShouldContinueCaption
     }
 
+    $AdditionalParams = Get-ParametersHashtable -Proxy $Proxy -ProxyCredential $ProxyCredential
+
     if($Force -or $psCmdlet.ShouldContinue($shouldContinueQueryMessage, $shouldContinueCaption))
     {
         if($bootstrapNuGetProvider)
@@ -6679,7 +7170,7 @@ function Install-NuGetClientBinaries
             $null = PackageManagement\Install-PackageProvider -Name $script:NuGetProviderName `
                                                               -MinimumVersion $script:NuGetProviderVersion `
                                                               -Scope $scope `
-                                                              -Force
+                                                              -Force @AdditionalParams
 
             # Force import ensures that nuget provider with minimum version got loaded.
             $null = PackageManagement\Import-PackageProvider -Name $script:NuGetProviderName `
@@ -6720,7 +7211,8 @@ function Install-NuGetClientBinaries
 
             # Download the NuGet.exe from http://nuget.org/NuGet.exe
             $null = Microsoft.PowerShell.Utility\Invoke-WebRequest -Uri $script:NuGetClientSourceURL `
-                                                                   -OutFile $nugetExeFilePath
+                                                                   -OutFile $nugetExeFilePath `
+                                                                   @AdditionalParams
 
             if (Microsoft.PowerShell.Management\Test-Path -Path $nugetExeFilePath)
             {
@@ -7144,13 +7636,9 @@ function Get-ModuleDependencies
     if($PSModuleInfo.RequiredModules -or $PSModuleInfo.NestedModules)
     {
         # PSModuleInfo.RequiredModules doesn't provide the RequiredVersion info from the ModuleSpecification
-        # Reading the contents of module manifest file using Import-LocalizedData cmdlet
+        # Reading the contents of module manifest file
         # to get the RequiredVersion details.
-        Import-LocalizedData -BindingVariable ModuleManifestHashTable `
-                             -FileName (Microsoft.PowerShell.Management\Split-Path $PSModuleInfo.Path -Leaf) `
-                             -BaseDirectory $PSModuleInfo.ModuleBase `
-                             -ErrorAction SilentlyContinue `
-                             -WarningAction SilentlyContinue                                
+        $ModuleManifestHashTable = Get-ManifestHashTable -Path $PSModuleInfo.Path
 
         if($PSModuleInfo.RequiredModules)
         {
@@ -7403,12 +7891,7 @@ function Publish-PSArtifactUtility
     {
         $Tags += "PSModule"
 
-        Import-LocalizedData -BindingVariable ModuleManifestHashTable `
-                             -FileName (Microsoft.PowerShell.Management\Split-Path $ManifestPath -Leaf) `
-                             -BaseDirectory (Microsoft.PowerShell.Management\Split-Path $ManifestPath -Parent) `
-                             -ErrorAction SilentlyContinue `
-                             -WarningAction SilentlyContinue
-
+        $ModuleManifestHashTable = Get-ManifestHashTable -Path $ManifestPath
 
         if($PSModuleInfo.ExportedCommands.Count)
         {
@@ -7552,7 +8035,7 @@ function Publish-PSArtifactUtility
         Microsoft.PowerShell.Management\Remove-Item $NupkgPath  -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Confirm:$false -WhatIf:$false
         Microsoft.PowerShell.Management\Remove-Item $NuspecPath -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Confirm:$false -WhatIf:$false
             
-        Microsoft.PowerShell.Management\Set-Content -Value $nuspec -Path $NuspecPath
+        Microsoft.PowerShell.Management\Set-Content -Value $nuspec -Path $NuspecPath -Force -Confirm:$false -WhatIf:$false
 
         # Create .nupkg file
         $output = & $script:NuGetExePath pack $NuspecPath -OutputDirectory $NugetPackageRoot
@@ -7578,7 +8061,7 @@ function Publish-PSArtifactUtility
         $tempOutputFile = Microsoft.PowerShell.Management\Join-Path -Path $nugetPackageRoot -ChildPath "TempPublishOutput.txt"
         
         Microsoft.PowerShell.Management\Start-Process -FilePath "$script:NuGetExePath" `
-                                                      -ArgumentList @('push', $NupkgPath, '-source', $Destination, '-NonInteractive', '-ApiKey', $NugetApiKey) `
+                                                      -ArgumentList @('push', "`"$NupkgPath`"", '-source', "`"$Destination`"", '-NonInteractive', '-ApiKey', "`"$NugetApiKey`"") `
                                                       -RedirectStandardError $tempErrorFile `
                                                       -RedirectStandardOutput $tempOutputFile `
                                                       -NoNewWindow `
@@ -7588,6 +8071,12 @@ function Publish-PSArtifactUtility
 
         if($errorMsg)
         {
+            if(($NugetApiKey -eq 'VSTS') -and 
+               ($errorMsg -match 'Cannot prompt for input in non-interactive mode.') )
+            {
+                $errorMsg = $LocalizedData.RegisterVSTSFeedAsNuGetPackageSource -f ($Destination, $script:VSTSAuthenticatedFeedsDocUrl)
+            }
+
             if($PSArtifactType -eq $script:PSArtifactTypeModule)
             {
                 $message = $LocalizedData.FailedToPublish -f ($Name,$errorMsg)
@@ -7950,15 +8439,14 @@ function Get-DynamicOptions
 
     Write-Output -InputObject (New-DynamicOption -Category $category -Name $script:PackageManagementProviderParam -ExpectedType String -IsRequired $false)
 
-    Write-Output -InputObject (New-DynamicOption -Category $category `
-                                                 -Name $script:PSArtifactType `
-                                                 -ExpectedType String `
-                                                 -IsRequired $false `
-                                                 -PermittedValues @($script:PSArtifactTypeModule,$script:PSArtifactTypeScript, $script:All))
-
     switch($category)
     {
         Package {
+                    Write-Output -InputObject (New-DynamicOption -Category $category `
+                                                                 -Name $script:PSArtifactType `
+                                                                 -ExpectedType String `
+                                                                 -IsRequired $false `
+                                                                 -PermittedValues @($script:PSArtifactTypeModule,$script:PSArtifactTypeScript, $script:All))
                     Write-Output -InputObject (New-DynamicOption -Category $category -Name $script:Filter -ExpectedType String -IsRequired $false)
                     Write-Output -InputObject (New-DynamicOption -Category $category -Name $script:Tag -ExpectedType StringArray -IsRequired $false)
                     Write-Output -InputObject (New-DynamicOption -Category $category -Name Includes -ExpectedType StringArray -IsRequired $false -PermittedValues $script:IncludeValidSet)
@@ -7975,7 +8463,13 @@ function Get-DynamicOptions
 
         Install 
                 {
+                    Write-Output -InputObject (New-DynamicOption -Category $category `
+                                                                 -Name $script:PSArtifactType `
+                                                                 -ExpectedType String `
+                                                                 -IsRequired $false `
+                                                                 -PermittedValues @($script:PSArtifactTypeModule,$script:PSArtifactTypeScript, $script:All))
                     Write-Output -InputObject (New-DynamicOption -Category $category -Name "Scope" -ExpectedType String -IsRequired $false -PermittedValues @("CurrentUser","AllUsers"))
+                    Write-Output -InputObject (New-DynamicOption -Category $category -Name 'AllowClobber' -ExpectedType Switch -IsRequired $false)
                     Write-Output -InputObject (New-DynamicOption -Category $category -Name "InstallUpdate" -ExpectedType Switch -IsRequired $false)
                     Write-Output -InputObject (New-DynamicOption -Category $category -Name 'NoPathUpdate' -ExpectedType Switch -IsRequired $false)
                 }
@@ -7999,7 +8493,12 @@ function Add-PackageSource
      
     Write-Debug ($LocalizedData.ProviderApiDebugMessage -f ('Add-PackageSource'))
 
-    Set-ModuleSourcesVariable -Force
+    if(-not $Name)
+    {
+        return
+    }
+    
+    $Credential = $request.Credential
 
     $IsNewModuleSource = $false
     $Options = $request.Options
@@ -8008,6 +8507,31 @@ function Add-PackageSource
     {
         Write-Debug ( "OPTION: {0} => {1}" -f ($o, $Options[$o]) )
     }
+
+    $Proxy = $null
+    if($Options.ContainsKey($script:Proxy))
+    {
+        $Proxy = $Options[$script:Proxy]
+
+        if(-not (Test-WebUri -Uri $Proxy))
+        {
+            $message = $LocalizedData.InvalidWebUri -f ($Proxy, $script:Proxy)
+            ThrowError -ExceptionName 'System.ArgumentException' `
+                        -ExceptionMessage $message `
+                        -ErrorId 'InvalidWebUri' `
+                        -CallerPSCmdlet $PSCmdlet `
+                        -ErrorCategory InvalidArgument `
+                        -ExceptionObject $Proxy
+        }
+    }
+
+    $ProxyCredential = $null
+    if($Options.ContainsKey($script:ProxyCredential))
+    {
+        $ProxyCredential = $Options[$script:ProxyCredential]
+    }
+
+    Set-ModuleSourcesVariable -Force -Proxy $Proxy -ProxyCredential $ProxyCredential
 
     if($Options.ContainsKey('IsNewModuleSource'))
     {
@@ -8047,6 +8571,17 @@ function Add-PackageSource
     $PublishLocation = $null
     if($Options.ContainsKey($script:PublishLocation))
     {
+        if($Name -eq $Script:PSGalleryModuleSource)
+        {
+            $message = $LocalizedData.ParameterIsNotAllowedWithPSGallery -f ('PublishLocation')
+            ThrowError -ExceptionName "System.ArgumentException" `
+                       -ExceptionMessage $message `
+                       -ErrorId 'ParameterIsNotAllowedWithPSGallery' `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidArgument `
+                       -ExceptionObject $PublishLocation
+        }
+
         $PublishLocation = $Options[$script:PublishLocation]
 
         if(-not (Microsoft.PowerShell.Management\Test-Path $PublishLocation) -and
@@ -8079,6 +8614,17 @@ function Add-PackageSource
     $ScriptSourceLocation = $null
     if($Options.ContainsKey($script:ScriptSourceLocation))
     {
+        if($Name -eq $Script:PSGalleryModuleSource)
+        {
+            $message = $LocalizedData.ParameterIsNotAllowedWithPSGallery -f ('ScriptSourceLocation')
+            ThrowError -ExceptionName "System.ArgumentException" `
+                       -ExceptionMessage $message `
+                       -ErrorId 'ParameterIsNotAllowedWithPSGallery' `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidArgument `
+                       -ExceptionObject $ScriptSourceLocation
+        }
+
         $ScriptSourceLocation = $Options[$script:ScriptSourceLocation]
 
         if(-not (Microsoft.PowerShell.Management\Test-Path $ScriptSourceLocation) -and
@@ -8111,6 +8657,17 @@ function Add-PackageSource
     $ScriptPublishLocation = $null
     if($Options.ContainsKey($script:ScriptPublishLocation))
     {
+        if($Name -eq $Script:PSGalleryModuleSource)
+        {
+            $message = $LocalizedData.ParameterIsNotAllowedWithPSGallery -f ('ScriptPublishLocation')
+            ThrowError -ExceptionName "System.ArgumentException" `
+                       -ExceptionMessage $message `
+                       -ErrorId 'ParameterIsNotAllowedWithPSGallery' `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidArgument `
+                       -ExceptionObject $ScriptPublishLocation
+        }
+
         $ScriptPublishLocation = $Options[$script:ScriptPublishLocation]
 
         if(-not (Microsoft.PowerShell.Management\Test-Path $ScriptPublishLocation) -and
@@ -8140,10 +8697,56 @@ function Add-PackageSource
         }
     }
 
-    # Ping and resolve the specified location
-    $Location = Resolve-Location -Location $Location `
-                                 -LocationParameterName 'Location' `
-                                 -CallerPSCmdlet $PSCmdlet
+    $currentSourceObject = $null
+
+    # Check if Name is already registered
+    if($script:PSGetModuleSources.Contains($Name))
+    {
+        $currentSourceObject = $script:PSGetModuleSources[$Name]
+    }
+
+    # Location is not allowed for PSGallery source
+    # However OneGet passes Location value during Set-PackageSource cmdlet, 
+    # that's why ensuring that Location value is same as the current SourceLocation
+    #
+    if(($Name -eq $Script:PSGalleryModuleSource) -and 
+       $Location -and
+       ((-not $IsUpdatePackageSource) -or ($currentSourceObject -and $currentSourceObject.SourceLocation -ne $Location)))
+    {
+        $message = $LocalizedData.ParameterIsNotAllowedWithPSGallery -f ('Location, NewLocation or SourceLocation')
+        ThrowError -ExceptionName "System.ArgumentException" `
+                   -ExceptionMessage $message `
+                   -ErrorId 'ParameterIsNotAllowedWithPSGallery' `
+                   -CallerPSCmdlet $PSCmdlet `
+                   -ErrorCategory InvalidArgument `
+                   -ExceptionObject $Location
+    }
+
+    if($Name -eq $Script:PSGalleryModuleSource)
+    {
+        # Add or update the PSGallery repostory
+        $repository = Set-PSGalleryRepository -Trusted:$Trusted
+
+        if($repository)
+        {
+            # return the package source object.
+            Write-Output -InputObject (New-PackageSourceFromModuleSource -ModuleSource $repository)
+        }
+
+        return
+    }
+
+    if($Location)
+    {
+        # Ping and resolve the specified location
+        $Location = Resolve-Location -Location $Location `
+                                     -LocationParameterName 'Location' `
+                                     -Credential $Credential `
+                                     -Proxy $Proxy `
+                                     -ProxyCredential $ProxyCredential `
+                                     -CallerPSCmdlet $PSCmdlet
+    }
+
     if(-not $Location)
     {
         # Above Resolve-Location function throws an error when it is not able to resolve a location
@@ -8187,7 +8790,7 @@ function Add-PackageSource
                     -ExceptionObject $Name
     }
 
-    $LocationString = Get-ValidModuleLocation -LocationString $Location -ParameterName "Location"
+    $LocationString = Get-ValidModuleLocation -LocationString $Location -ParameterName "Location" -Proxy $Proxy -ProxyCredential $ProxyCredential -Credential $Credential
 
     # Check if Location is already registered with another Name
     $existingSourceName = Get-SourceName -Location $LocationString
@@ -8202,14 +8805,6 @@ function Add-PackageSource
                    -ErrorId "RepositoryAlreadyRegistered" `
                    -CallerPSCmdlet $PSCmdlet `
                    -ErrorCategory InvalidArgument
-    }
-    
-    $currentSourceObject = $null
-
-    # Check if Name is already registered
-    if($script:PSGetModuleSources.Contains($Name))
-    {
-        $currentSourceObject = $script:PSGetModuleSources[$Name]
     }
     
     if(-not $PublishLocation -and $currentSourceObject -and $currentSourceObject.PublishLocation)
@@ -8284,7 +8879,8 @@ function Add-PackageSource
 
         if($SelectedProvider -and $SelectedProvider.Features.ContainsKey($script:SupportsPSModulesFeatureName))
         {
-            $packageSource = $SelectedProvider.ResolvePackageSources( (New-Request -Sources @($LocationString)) )
+            $NewRequest = $request.CloneRequest( $null, @($LocationString), $request.Credential )
+            $packageSource = $SelectedProvider.ResolvePackageSources( $NewRequest )
         }
         else
         {
@@ -8325,7 +8921,8 @@ function Add-PackageSource
             }
 
             Write-Verbose ($LocalizedData.PollingSingleProviderForLocation -f ($LocationString, $provider.ProviderName))
-            $packageSource = $provider.ResolvePackageSources((New-Request -Option @{} -Sources @($LocationString))) 
+            $NewRequest = $request.CloneRequest( @{}, @($LocationString), $request.Credential )
+            $packageSource = $provider.ResolvePackageSources($NewRequest) 
 
             if($packageSource)
             {
@@ -8396,7 +8993,7 @@ function Add-PackageSource
 
     if(-not $ScriptSourceLocation)
     {
-        $ScriptSourceLocation = Get-ScriptSourceLocation -Location $LocationString
+        $ScriptSourceLocation = Get-ScriptSourceLocation -Location $LocationString -Proxy $Proxy -ProxyCredential $ProxyCredential -Credential $Credential
     }
     elseif($Options.ContainsKey($script:ScriptSourceLocation))
     {
@@ -8417,7 +9014,14 @@ function Add-PackageSource
         }
         else
         {
-            if($ScriptSourceLocation -eq $LocationString)
+            if($ScriptSourceLocation -eq $LocationString -and
+               -not ($LocationString.EndsWith('/nuget/v2', [System.StringComparison]::OrdinalIgnoreCase)) -and
+               -not ($LocationString.EndsWith('/nuget/v2/', [System.StringComparison]::OrdinalIgnoreCase)) -and
+               -not ($LocationString.EndsWith('/nuget', [System.StringComparison]::OrdinalIgnoreCase)) -and
+               -not ($LocationString.EndsWith('/nuget/', [System.StringComparison]::OrdinalIgnoreCase)) -and
+               -not ($LocationString.EndsWith('index.json', [System.StringComparison]::OrdinalIgnoreCase)) -and
+               -not ($LocationString.EndsWith('index.json/', [System.StringComparison]::OrdinalIgnoreCase))
+              )
             {
                 $message = $LocalizedData.SourceLocationUrisForModulesAndScriptsShouldBeDifferent -f ($LocationString, $ScriptSourceLocation)
                 ThrowError -ExceptionName "System.InvalidOperationException" `
@@ -8697,12 +9301,10 @@ function Find-Package
                 else
                 {
                     $message = $LocalizedData.RepositoryNotFound -f ($sourceName)
-                    ThrowError -ExceptionName "System.ArgumentException" `
-                               -ExceptionMessage $message `
-                               -ErrorId "RepositoryNotFound" `
-                               -CallerPSCmdlet $PSCmdlet `
-                               -ErrorCategory InvalidArgument `
-                               -ExceptionObject $sourceName
+                    Write-Error -Message $message `
+                                -ErrorId 'RepositoryNotFound' `
+                                -Category InvalidArgument `
+                                -TargetObject $sourceName
                 }
             }
         }
@@ -9006,11 +9608,13 @@ function Find-Package
 
                 $providerOptions["Headers"] = 'PSGalleryClientVersion=1.1'
 				
+                $NewRequest = $request.CloneRequest( $providerOptions, @($Location), $request.Credential )
+
                 $pkgs = $provider.FindPackages($names, 
                                                $requiredVersion, 
                                                $minimumVersion, 
                                                $maximumVersion,
-                                               (New-Request -Sources @($Location) -Options $providerOptions) )
+                                               $NewRequest )
 
                 foreach($pkg in  $pkgs)
                 {
@@ -9314,6 +9918,8 @@ function Install-PackageUtility
     Write-Debug ($LocalizedData.FastPackageReference -f $fastPackageReference)     
     
     $Force = $false
+    $AllowClobber = $false
+    $Debug = $false
     $MinimumVersion = $null
     $RequiredVersion = $null
     $IsSavePackage = $false
@@ -9401,6 +10007,23 @@ function Install-PackageUtility
                            -CallerPSCmdlet $PSCmdlet `
                            -ErrorCategory InvalidArgument
             }
+            
+            if($options.ContainsKey('AllowClobber'))
+            {
+                $AllowClobber = $options['AllowClobber']
+
+                if($AllowClobber.GetType().ToString() -eq 'System.String')
+                {
+                    if($AllowClobber -eq 'false')
+                    {
+                        $AllowClobber = $false
+                    }
+                    elseif($AllowClobber -eq 'true')
+                    {
+                        $AllowClobber = $true
+                    }
+                }
+            }
 
             if($options.ContainsKey('Force'))
             {
@@ -9419,6 +10042,23 @@ function Install-PackageUtility
                 }
             }
             
+            if($options.ContainsKey('Debug'))
+            {
+                $Debug = $options['Debug']
+
+                if($Debug.GetType().ToString() -eq 'System.String')
+                {
+                    if($Debug -eq 'false')
+                    {
+                        $Debug = $false
+                    }
+                    elseif($Debug -eq 'true')
+                    {
+                        $Debug = $true
+                    }
+                }
+            }            
+
             if($options.ContainsKey('NoPathUpdate'))
             {
                 $NoPathUpdate = $options['NoPathUpdate']
@@ -9624,10 +10264,46 @@ function Install-PackageUtility
             }
 
             Write-Verbose ($LocalizedData.SpecifiedLocationAndOGP -f ($provider.ProviderName, $providerName))
+
+            $InstalledItemsList = $null
+            $pkg = $script:FastPackRefHastable[$fastPackageReference]
+
+            # If an item has dependencies, prepare the list of installed items and 
+            # pass it to the NuGet provider to not download the already installed items.
+            if($pkg.Dependencies.count -and 
+               -not $IsSavePackage -and 
+               -not $Force)
+            {
+                $InstalledItemsList = Microsoft.PowerShell.Core\Get-Module -ListAvailable | 
+                                        Microsoft.PowerShell.Core\ForEach-Object {"$($_.Name)!#!$($_.Version)".ToLower()}
+
+                if($artfactType -eq $script:PSArtifactTypeScript)
+                {
+                    $InstalledItemsList += $script:PSGetInstalledScripts.GetEnumerator() | 
+                                               Microsoft.PowerShell.Core\ForEach-Object { 
+                                                   "$($_.Value.PSGetItemInfo.Name)!#!$($_.Value.PSGetItemInfo.Version)".ToLower() 
+                                               }
+                }
+                
+                $InstalledItemsList | Select-Object -Unique
+
+                if($Debug)
+                {
+                    $InstalledItemsList | Microsoft.PowerShell.Core\ForEach-Object { Write-Debug -Message "Locally available Item: $_"}
+                }
+            } 
 		
-            $newRequest = New-Request -Options @{Destination=$tempDestination;
-                                                 ExcludeVersion=$true} `
-                                      -Sources @($SourceLocation)
+            $ProviderOptions = @{
+                                    Destination=$tempDestination;
+                                    ExcludeVersion=$true
+                                }                                 
+
+            if($InstalledItemsList)
+            {
+                $ProviderOptions['InstalledPackages'] = $InstalledItemsList
+            }
+
+            $newRequest = $request.CloneRequest( $ProviderOptions, @($SourceLocation), $request.Credential )
 
             if($artfactType -eq $script:PSArtifactTypeModule)
             {
@@ -9754,13 +10430,17 @@ function Install-PackageUtility
                     # Validate the module
                     if(-not $IsSavePackage)
                     {
-                        $CurrentModuleInfo = Test-ValidManifestModule -ModuleBasePath $sourceModulePath
+                        $CurrentModuleInfo = Test-ValidManifestModule -ModuleBasePath $sourceModulePath `
+                                                                      -InstallLocation $InstallLocation `
+                                                                      -AllowClobber:$AllowClobber `
+                                                                      -IsUpdateOperation:$installUpdate
 
                         if(-not $CurrentModuleInfo)
                         {
-                            $message = $LocalizedData.InvalidPSModule -f ($pkg.Name)
-                            Write-Error -Message $message -ErrorId "InvalidManifestModule" -Category InvalidOperation
-                            continue
+                            # This Install-Package provider API gets called once per an item/package/SoftwareIdentity.
+                            # Return if there is an error instead of continuing further to install the dependencies or current module.
+                            #
+                            return
                         }
                     }
 
@@ -9864,26 +10544,14 @@ function Install-PackageUtility
                             }
                         }
                     }
-                                 
-                    # Remove the old module base folder if it is different from the required destination module path when -Force is specified
-                    if($Force -and 
-                        $InstalledModuleInfo2 -and
-                        -not $destinationModulePath.StartsWith($InstalledModuleInfo2.ModuleBase, [System.StringComparison]::OrdinalIgnoreCase))
-                    {
-                        Microsoft.PowerShell.Management\Remove-Item -Path $InstalledModuleInfo2.ModuleBase `
-                                                                    -Force -Recurse `
-                                                                    -ErrorAction SilentlyContinue `
-                                                                    -WarningAction SilentlyContinue `
-                                                                    -Confirm:$false -WhatIf:$false
-                    }
-
+                    
                     if($IsSavePackage)
                     {
-                        $message = $LocalizedData.ModuleSavedSuccessfully -f ($psgItemInfo.Name)
+                        $message = $LocalizedData.ModuleSavedSuccessfully -f ($psgItemInfo.Name, $installLocation)
                     }
                     else
                     {
-                        $message = $LocalizedData.ModuleInstalledSuccessfully -f ($psgItemInfo.Name)
+                        $message = $LocalizedData.ModuleInstalledSuccessfully -f ($psgItemInfo.Name, $installLocation)
                     }                
                     Write-Verbose $message
                 }
@@ -10006,11 +10674,11 @@ function Install-PackageUtility
 
                     if($IsSavePackage)
                     {
-                        $message = $LocalizedData.ScriptSavedSuccessfully -f ($psgItemInfo.Name)
+                        $message = $LocalizedData.ScriptSavedSuccessfully -f ($psgItemInfo.Name, $installLocation)
                     }
                     else
                     {
-                        $message = $LocalizedData.ScriptInstalledSuccessfully -f ($psgItemInfo.Name)
+                        $message = $LocalizedData.ScriptInstalledSuccessfully -f ($psgItemInfo.Name, $installLocation)
                     }                
                     Write-Verbose $message
                 }
@@ -10632,7 +11300,6 @@ function New-SoftwareIdentityFromPackage
 	}
 	
     $details.Add( "PackageManagementProvider" , $PackageManagementProviderName )
-    $details.Add( "Type" , $Type )
 
     if($InstalledLocation)
     {
@@ -10904,7 +11571,7 @@ function New-SoftwareIdentityFromPSGetItemInfo
     }
     
     $entities = New-Object -TypeName  System.Collections.ArrayList
-    if($psgetItemInfo.Author)
+    if($psgetItemInfo.Author -and $psgetItemInfo.Author.ToString())
     {
         $entities.Add( (New-Entity -Name $psgetItemInfo.Author -Role 'author') )
     }
@@ -11245,7 +11912,16 @@ function Get-ValidModuleLocation
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $ParameterName
+        $ParameterName,
+
+        [Parameter()]
+        $Credential,
+
+        [Parameter()]
+        $Proxy,
+
+        [Parameter()]
+        $ProxyCredential
     )
 
     # Get the actual Uri from the Location
@@ -11253,6 +11929,12 @@ function Get-ValidModuleLocation
     {
         # Append '/api/v2/' to the $LocationString, return if that URI works.
         if(($LocationString -notmatch 'LinkID') -and 
+           -not ($LocationString.EndsWith('/nuget/v2', [System.StringComparison]::OrdinalIgnoreCase)) -and
+           -not ($LocationString.EndsWith('/nuget/v2/', [System.StringComparison]::OrdinalIgnoreCase)) -and
+           -not ($LocationString.EndsWith('/nuget', [System.StringComparison]::OrdinalIgnoreCase)) -and
+           -not ($LocationString.EndsWith('/nuget/', [System.StringComparison]::OrdinalIgnoreCase)) -and
+           -not ($LocationString.EndsWith('index.json', [System.StringComparison]::OrdinalIgnoreCase)) -and
+           -not ($LocationString.EndsWith('index.json/', [System.StringComparison]::OrdinalIgnoreCase)) -and
            -not ($LocationString.EndsWith('/api/v2', [System.StringComparison]::OrdinalIgnoreCase)) -and
            -not ($LocationString.EndsWith('/api/v2/', [System.StringComparison]::OrdinalIgnoreCase))
             )
@@ -11273,6 +11955,9 @@ function Get-ValidModuleLocation
                 # Ping and resolve the specified location
                 $tempLocation = Resolve-Location -Location $tempLocation `
                                                  -LocationParameterName $ParameterName `
+                                                 -Credential $Credential `
+                                                 -Proxy $Proxy `
+                                                 -ProxyCredential $ProxyCredential `
                                                  -ErrorAction SilentlyContinue `
                                                  -WarningAction SilentlyContinue                
                 if($tempLocation)
@@ -11286,6 +11971,9 @@ function Get-ValidModuleLocation
         # Ping and resolve the specified location
         $LocationString = Resolve-Location -Location $LocationString `
                                            -LocationParameterName $ParameterName `
+                                           -Credential $Credential `
+                                           -Proxy $Proxy `
+                                           -ProxyCredential $ProxyCredential `
                                            -CallerPSCmdlet $PSCmdlet   
     }
 
@@ -11623,6 +12311,11 @@ function Update-ModuleManifest
         $ProcessorArchitecture,
 
         [Parameter()]
+        [ValidateSet('Desktop','Core')]
+        [string[]]
+        $CompatiblePSEditions,
+
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [Version]
         $PowerShellVersion,
@@ -11761,14 +12454,7 @@ function Update-ModuleManifest
         $PackageManagementProviders
     )
 
-
-    Import-LocalizedData -BindingVariable ModuleManifestHashTable `
-                         -FileName (Microsoft.PowerShell.Management\Split-Path $Path -Leaf) `
-                         -BaseDirectory (Microsoft.PowerShell.Management\Split-Path $Path -Parent) `
-                         -ErrorAction SilentlyContinue `
-                         -WarningAction SilentlyContinue
-
-    if(-not (Microsoft.PowerShell.Management\Test-Path $Path))
+    if(-not (Microsoft.PowerShell.Management\Test-Path -Path $Path -PathType Leaf))
     {
         $message = $LocalizedData.UpdateModuleManifestPathCannotFound -f ($Path)
         ThrowError -ExceptionName "System.ArgumentException" `
@@ -11777,23 +12463,48 @@ function Update-ModuleManifest
                    -ExceptionObject $Path `
                    -CallerPSCmdlet $PSCmdlet `
                    -ErrorCategory InvalidArgument
-      }
+    }
+
+    $ModuleManifestHashTable = $null
+
+    try
+    {
+        $ModuleManifestHashTable = Get-ManifestHashTable -Path $Path -CallerPSCmdlet $PSCmdlet
+    }
+    catch
+    {
+        $message = $LocalizedData.TestModuleManifestFail -f ($_.Exception.Message)
+        ThrowError -ExceptionName "System.ArgumentException" `
+                    -ExceptionMessage $message `
+                    -ErrorId "InvalidModuleManifestFile" `
+                    -ExceptionObject $Path `
+                    -CallerPSCmdlet $PSCmdlet `
+                    -ErrorCategory InvalidArgument
+        return
+    }
     
     #Get the original module manifest and migrate all the fields to the new module manifest, including the specified parameter values
+    $moduleInfo = $null
+
     try
     {
         $moduleInfo = Microsoft.PowerShell.Core\Test-ModuleManifest -Path $Path -ErrorAction Stop
     }
     catch
     {
-        $message = $LocalizedData.TestModuleManifestFail -f ($_.Exception.Message)
-        ThrowError -ExceptionName "System.ArgumentException" `
-                   -ExceptionMessage $message `
-                   -ErrorId "InvalidModuleManifestFile" `
-                   -ExceptionObject $Path `
-                   -CallerPSCmdlet $PSCmdlet `
-                   -ErrorCategory InvalidArgument
-        return
+        # Throw an error only if Test-ModuleManifest did not return the PSModuleInfo object.
+        # This enables the users to use Update-ModuleManifest cmdlet to update the metadata.
+        if(-not $moduleInfo)
+        {
+            $message = $LocalizedData.TestModuleManifestFail -f ($_.Exception.Message)
+            ThrowError -ExceptionName "System.ArgumentException" `
+                       -ExceptionMessage $message `
+                       -ErrorId "InvalidModuleManifestFile" `
+                       -ExceptionObject $Path `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidArgument
+            return
+        }
     }
     
     #Params to pass to New-ModuleManifest module                                                                    
@@ -12084,6 +12795,31 @@ function Update-ModuleManifest
         {
             $params.Add("DscResourcesToExport",$moduleInfo.ExportedDscResources)
         }
+    }
+
+    if($CompatiblePSEditions)
+    {
+        # CompatiblePSEditions field is not available in PowerShell version lower than 5.1
+        #
+        if  (($PSVersionTable.PSVersion -lt [Version]'5.1') -or ($PowerShellVersion -and $PowerShellVersion -lt [Version]'5.1') `
+             -or (-not $PowerShellVersion -and $moduleInfo.PowerShellVersion -and $moduleInfo.PowerShellVersion -lt [Version]'5.1') `
+             -or (-not $PowerShellVersion -and -not $moduleInfo.PowerShellVersion))
+        {
+                ThrowError -ExceptionName 'System.ArgumentException' `
+                           -ExceptionMessage $LocalizedData.CompatiblePSEditionsNotSupportedOnLowerPowerShellVersion `
+                           -ErrorId 'CompatiblePSEditionsNotSupported' `
+                           -ExceptionObject $CompatiblePSEditions `
+                           -CallerPSCmdlet $PSCmdlet `
+                           -ErrorCategory InvalidArgument
+                return  
+        }
+
+        $params.Add('CompatiblePSEditions', $CompatiblePSEditions)
+    }
+    elseif( (Microsoft.PowerShell.Utility\Get-Member -InputObject $moduleInfo -name 'CompatiblePSEditions') -and
+            $moduleInfo.CompatiblePSEditions)
+    {
+        $params.Add('CompatiblePSEditions', $moduleInfo.CompatiblePSEditions)
     }
 
     if($HelpInfoUri)
@@ -12741,6 +13477,348 @@ function Test-ModuleInUse
     return $false
 }
 
+function Validate-ModuleAuthenticodeSignature
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        $CurrentModuleInfo,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $InstallLocation,
+
+        [Parameter()]
+        [Switch]
+        $AllowClobber,
+
+        [Parameter()]
+        [Switch]
+        $IsUpdateOperation        
+    )
+
+    $CurrentModuleAuthenticodeIssuer = $null
+
+    # Validate the catalog signature
+    $ev = $null
+    $CurrentModuleAuthenticodeIssuer = ValidateAndGet-CatalogSigningIssuer -ModuleBasePath $CurrentModuleInfo.ModuleBase `
+                                                                           -ModuleName $CurrentModuleInfo.Name `
+                                                                           -ErrorVariable ev
+    if($ev)
+    {
+        return $false
+    }
+
+    $InstalledModuleInfo = Test-ModuleInstalled -Name $CurrentModuleInfo.Name
+
+    # Remove the version folder on 5.0 to get the actual module base folder without version
+    if(Test-ModuleSxSVersionSupport)
+    {
+        $InstallLocation = Microsoft.PowerShell.Management\Split-Path -Path $InstallLocation
+    }
+
+    if($InstalledModuleInfo)
+    {
+        # if $InstalledModuleInfo module base is not starting with current module destination
+        # Check if the destination location has a previously-installed version, then use that in the further validation.
+        # 
+        if(-not $InstalledModuleInfo.ModuleBase.StartsWith($InstallLocation, [System.StringComparison]::OrdinalIgnoreCase))
+        {
+            $DestinationModulePath = Microsoft.PowerShell.Management\Join-Path -Path $InstallLocation -ChildPath "$($CurrentModuleInfo.Name)"
+            
+            $ModuleInfoUnderDestination = Microsoft.PowerShell.Core\Get-Module -ListAvailable `
+                                                                               -Name $DestinationModulePath `
+                                                                               -ErrorAction SilentlyContinue `
+                                                                               -WarningAction SilentlyContinue `
+                                                                               -Verbose:$false | 
+                                              Microsoft.PowerShell.Utility\Select-Object -First 1 -ErrorAction SilentlyContinue
+
+            if($ModuleInfoUnderDestination)
+            {
+                $InstalledModuleInfo = $ModuleInfoUnderDestination
+            }
+        }
+
+        $InstalledModuleAuthenticodeIssuer = ValidateAndGet-CatalogSigningIssuer -ModuleBasePath $InstalledModuleInfo.ModuleBase `
+                                                                                 -ModuleName $InstalledModuleInfo.Name `
+                                                                                 -IsLocal `
+                                                                                 -ErrorAction SilentlyContinue
+        
+        Write-Debug -Message "Previously installed module authenticode issuer: $InstalledModuleAuthenticodeIssuer"
+        Write-Debug -Message "Current module authenticode issuer: $CurrentModuleAuthenticodeIssuer"
+
+        if($InstalledModuleAuthenticodeIssuer -and 
+           $CurrentModuleAuthenticodeIssuer -and
+           ($InstalledModuleAuthenticodeIssuer -eq $CurrentModuleAuthenticodeIssuer))
+        {
+            $Message = $LocalizedData.AuthenticodeIssuerMatch -f ($CurrentModuleAuthenticodeIssuer, $CurrentModuleInfo.Name, $CurrentModuleInfo.Version, $InstalledModuleAuthenticodeIssuer, $InstalledModuleInfo.Name, $InstalledModuleInfo.Version)
+            Write-Verbose -Message $message
+
+            return $true
+        }
+        elseif(-not $InstalledModuleInfo.ModuleBase.StartsWith($PSHome, [System.StringComparison]::OrdinalIgnoreCase) -and
+               $InstalledModuleAuthenticodeIssuer -and 
+               (-not $CurrentModuleAuthenticodeIssuer -or 
+                ($InstalledModuleAuthenticodeIssuer -ne $CurrentModuleAuthenticodeIssuer)))
+        {
+            $Message = $LocalizedData.AuthenticodeIssuerMismatch -f ($CurrentModuleAuthenticodeIssuer, $CurrentModuleInfo.Name, $CurrentModuleInfo.Version, $InstalledModuleAuthenticodeIssuer, $InstalledModuleInfo.Name, $InstalledModuleInfo.Version)
+            ThrowError -ExceptionName 'System.InvalidOperationException' `
+                       -ExceptionMessage $message `
+                       -ErrorId 'AuthenticodeIssuerMismatch' `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidOperation
+
+            return $false
+        }
+
+        # Check if there is a system module
+        $SystemModuleBase = $null
+        $SystemModuleManifestFilePath = $null
+
+        if($InstalledModuleInfo -and
+           $InstalledModuleInfo.ModuleBase.StartsWith($PSHome, [System.StringComparison]::OrdinalIgnoreCase))
+        {
+            $SystemModuleBase = $InstalledModuleInfo.ModuleBase
+        }
+        else
+        {
+            $SystemModuleBase = Microsoft.PowerShell.Management\Join-Path -Path $PSHome -ChildPath "Modules\$($CurrentModuleInfo.Name)"
+        }
+
+        if($SystemModuleBase -and 
+           (Microsoft.PowerShell.Management\Test-Path -Path $SystemModuleBase -PathType Container))
+        {                             
+            $ManifestFileName = "$($CurrentModuleInfo.Name).psd1"
+            $SystemModuleManifestFilePath = Microsoft.PowerShell.Management\Join-Path -Path $SystemModuleBase -ChildPath $ManifestFileName
+        }
+
+        if($SystemModuleManifestFilePath -and 
+           (Microsoft.PowerShell.Management\Test-Path -Path $SystemModuleManifestFilePath -PathType Leaf))
+        {
+            $AuthenticodeSignature = Microsoft.PowerShell.Security\Get-AuthenticodeSignature -FilePath $SystemModuleManifestFilePath
+            $SystemModuleAuthenticodeIssuer = Get-AuthentcodeIssuer -AuthenticodeSignature $AuthenticodeSignature
+                                
+            if($SystemModuleAuthenticodeIssuer -eq $CurrentModuleAuthenticodeIssuer)
+            {
+                $Message = $LocalizedData.AuthenticodeIssuerMatch -f ($CurrentModuleAuthenticodeIssuer, $CurrentModuleInfo.Name, $CurrentModuleInfo.Version, $SystemModuleAuthenticodeIssuer, $SystemModuleInfo.Name, $SystemModuleInfo.Version)
+                Write-Verbose -Message $message
+
+                return $true
+            }
+            else
+            {
+                $SystemModuleInfo = Microsoft.PowerShell.Core\Test-ModuleManifest -Path $SystemModuleManifestFilePath
+                $Message = $LocalizedData.AuthenticodeIssuerMismatch -f ($CurrentModuleAuthenticodeIssuer, $CurrentModuleInfo.Name, $CurrentModuleInfo.Version, $SystemModuleAuthenticodeIssuer, $SystemModuleInfo.Name, $SystemModuleInfo.Version)
+                ThrowError -ExceptionName 'System.InvalidOperationException' `
+                           -ExceptionMessage $message `
+                           -ErrorId 'AuthenticodeIssuerMismatch' `
+                           -CallerPSCmdlet $PSCmdlet `
+                           -ErrorCategory InvalidOperation
+
+                return $false
+            }
+        }
+    }
+
+    # When module being installed doesn't have the security catalog file, check for the existing commands
+    # We are calling Test-ModuleCommandAlreadyAvailable as InstalledModuleInfo is required for checking the possible clobbering
+    #
+    return Test-ModuleCommandAlreadyAvailable -CurrentModuleInfo $CurrentModuleInfo `
+                                              -InstallLocation $InstallLocation `
+                                              -InstalledModuleInfo $InstalledModuleInfo `
+                                              -AllowClobber:$AllowClobber `
+                                              -IsUpdateOperation:$IsUpdateOperation
+}
+
+function Test-ModuleCommandAlreadyAvailable
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        $CurrentModuleInfo,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $InstallLocation,
+
+        [Parameter()]
+        $InstalledModuleInfo,
+
+        [Parameter()]
+        [Switch]
+        $AllowClobber,
+
+        [Parameter()]
+        [Switch]
+        $IsUpdateOperation        
+    )
+
+    # When new module has some commands, no clobber error if 
+    # - AllowClobber is specified, or
+    # - Installing to the same module base, or
+    # - Update operation
+    if($CurrentModuleInfo.ExportedCommands.Keys -and
+       -not $AllowClobber -and 
+       -not $IsUpdateOperation -and
+       ($InstalledModuleInfo -and -not $InstalledModuleInfo.ModuleBase.StartsWith($InstallLocation, [System.StringComparison]::OrdinalIgnoreCase)))
+    {
+        # Throw an error if there is a command with the same name.
+        # Get-Command loads the module if a command is already available.
+        $AvailableCommand = Microsoft.PowerShell.Core\Get-Command -Name $CurrentModuleInfo.ExportedCommands.Values.Name `
+                                                                  -ErrorAction SilentlyContinue `
+                                                                  -WarningAction SilentlyContinue | 
+                                Microsoft.PowerShell.Utility\Select-Object -First 1 -ErrorAction SilentlyContinue
+        if($AvailableCommand)
+        {
+            $message = $LocalizedData.ModuleCommandAlreadyAvailable -f ($AvailableCommand.Name, $CurrentModuleInfo.Name)
+            ThrowError -ExceptionName 'System.InvalidOperationException' `
+                        -ExceptionMessage $message `
+                        -ErrorId 'CommandAlreadyAvailable' `
+                        -CallerPSCmdlet $PSCmdlet `
+                        -ErrorCategory InvalidOperation
+
+            return $false
+        }
+    }
+
+    return $true
+}
+
+function ValidateAndGet-CatalogSigningIssuer
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $ModuleBasePath,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $ModuleName,
+
+        [Parameter()]
+        [Switch]
+        $IsLocal
+    )
+    
+    $CatalogFileName = "$ModuleName.cat"
+    $CatalogFilePath = Microsoft.PowerShell.Management\Join-Path -Path $ModuleBasePath -ChildPath $CatalogFileName
+
+    $AuthenticodeSignature = $null
+
+    if(Microsoft.PowerShell.Management\Test-Path -Path $CatalogFilePath -PathType Leaf)
+    {
+        $message = $LocalizedData.CatalogFileFound -f ($CatalogFileName, $ModuleName)
+        Write-Verbose -Message $message
+
+        $AuthenticodeSignature = Microsoft.PowerShell.Security\Get-AuthenticodeSignature -FilePath $CatalogFilePath
+
+        if(-not $IsLocal)
+        {
+            if(-not $AuthenticodeSignature -or ($AuthenticodeSignature.Status -ne "Valid"))
+            {
+                $message = $LocalizedData.InvalidModuleAuthenticodeSignature -f ($ModuleName, $CatalogFileName)
+                ThrowError -ExceptionName 'System.InvalidOperationException' `
+                           -ExceptionMessage $message `
+                           -ErrorId 'InvalidAuthenticodeSignature' `
+                           -CallerPSCmdlet $PSCmdlet `
+                           -ErrorCategory InvalidOperation
+
+                return
+            }
+        
+            Write-Verbose -Message ($LocalizedData.ValidAuthenticodeSignature -f @($CatalogFileName, $ModuleName))
+        
+            if(Get-Command -Name Test-FileCatalog -Module Microsoft.PowerShell.Security -ErrorAction SilentlyContinue)
+            {
+                Write-Verbose -Message ($LocalizedData.ValidatingCatalogSignature -f @($ModuleName, $CatalogFileName))
+            
+                # Skip the PSGetModuleInfo.xml and ModuleName.cat files in the catalog validation
+                $TestFileCatalogResult = Microsoft.PowerShell.Security\Test-FileCatalog -Path $ModuleBasePath `
+                                                                                        -CatalogFilePath $CatalogFilePath `
+                                                                                        -FilesToSkip $script:PSGetItemInfoFileName `
+                                                                                        -Detailed
+                if(-not $TestFileCatalogResult -or 
+                   ($TestFileCatalogResult.Status -ne "Valid") -or 
+                   ($TestFileCatalogResult.Signature.Status -ne "Valid"))
+                {
+                    $message = $LocalizedData.InvalidCatalogSignature -f ($ModuleName, $CatalogFileName)
+                    ThrowError -ExceptionName 'System.InvalidOperationException' `
+                               -ExceptionMessage $message `
+                               -ErrorId 'InvalidCatalogSignature' `
+                               -CallerPSCmdlet $PSCmdlet `
+                               -ErrorCategory InvalidOperation
+                    return
+                }
+                else
+                {
+                    Write-Verbose -Message ($LocalizedData.ValidCatalogSignature -f @($CatalogFileName, $ModuleName))
+                }
+            }
+        }
+    }
+    else
+    {
+        if($IsLocal)
+        {
+            Write-Verbose -Message ($LocalizedData.CatalogFileNotFoundInAvailableModule -f ($CatalogFileName, $ModuleName))
+        }
+        else
+        {
+            Write-Verbose -Message ($LocalizedData.CatalogFileNotFoundInNewModule -f ($CatalogFileName, $ModuleName))
+        }
+    }
+
+    if($AuthenticodeSignature)
+    {
+        return Get-AuthentcodeIssuer -AuthenticodeSignature $AuthenticodeSignature
+    }
+}
+
+function Get-AuthentcodeIssuer
+{
+    [CmdletBinding()]
+    [OutputType([bool])]
+    Param
+    (
+        [Parameter(Mandatory=$true)]
+        [System.Management.Automation.Signature]
+        $AuthenticodeSignature
+    )    
+
+    if(($AuthenticodeSignature.Status -eq "Valid") -and 
+       $AuthenticodeSignature.SignerCertificate)
+    {
+        $chain = New-Object System.Security.Cryptography.X509Certificates.X509Chain
+        $null = $chain.Build($AuthenticodeSignature.SignerCertificate)
+
+        $certStoreLocations = @('cert:\LocalMachine\Root',
+                                'cert:\LocalMachine\AuthRoot',
+                                'cert:\CurrentUser\Root',
+                                'cert:\CurrentUser\AuthRoot')
+
+        foreach($element in $chain.ChainElements.Certificate)
+        {
+            foreach($certStoreLocation in $certStoreLocations)
+            {
+                $rootCertificateAuthority = Microsoft.PowerShell.Management\Get-ChildItem -Path $certStoreLocation | 
+                                                Microsoft.PowerShell.Core\Where-Object { $_.Subject -eq $element.Subject }
+                if($rootCertificateAuthority)
+                {
+                    return $rootCertificateAuthority.Subject
+                }
+            }
+        }
+    }
+}
+
 function Test-ValidManifestModule
 {
     [CmdletBinding()]
@@ -12750,16 +13828,50 @@ function Test-ValidManifestModule
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $ModuleBasePath
+        $ModuleBasePath,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $InstallLocation,
+
+        [Parameter()]
+        [Switch]
+        $AllowClobber,
+
+        [Parameter()]
+        [Switch]
+        $IsUpdateOperation
     )
 
     $moduleName = Microsoft.PowerShell.Management\Split-Path $ModuleBasePath -Leaf
     $manifestPath = Microsoft.PowerShell.Management\Join-Path $ModuleBasePath "$moduleName.psd1"
     $PSModuleInfo = $null
-        
+
     if(Microsoft.PowerShell.Management\Test-Path $manifestPath)
     {
        $PSModuleInfo = Microsoft.PowerShell.Core\Test-ModuleManifest -Path $manifestPath -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+
+        if(-not $PSModuleInfo)
+        {
+            $message = $LocalizedData.InvalidPSModule -f ($moduleName)
+            ThrowError -ExceptionName 'System.InvalidOperationException' `
+                       -ExceptionMessage $message `
+                       -ErrorId 'InvalidManifestModule' `
+                       -CallerPSCmdlet $PSCmdlet `
+                       -ErrorCategory InvalidOperation
+        }
+        else
+        {
+            $ValidationResult = Validate-ModuleAuthenticodeSignature -CurrentModuleInfo $PSModuleInfo `
+                                                                     -InstallLocation $InstallLocation `
+                                                                     -AllowClobber:$AllowClobber `
+                                                                     -IsUpdateOperation:$IsUpdateOperation
+            if(-not $ValidationResult)
+            {
+                $PSModuleInfo = $null
+            }
+        }
     }
 
     return $PSModuleInfo
@@ -12772,7 +13884,16 @@ function Get-ScriptSourceLocation
     (
         [Parameter()]
         [String]
-        $Location
+        $Location,
+
+        [Parameter()]
+        $Credential,
+
+        [Parameter()]
+        $Proxy,
+
+        [Parameter()]
+        $ProxyCredential
     )
 
     $scriptLocation = $null
@@ -12802,6 +13923,9 @@ function Get-ScriptSourceLocation
                 # Ping and resolve the specified location
                 $scriptLocation = Resolve-Location -Location $tempScriptLocation `
                                                    -LocationParameterName 'ScriptSourceLocation' `
+                                                   -Credential $Credential `
+                                                   -Proxy $Proxy `
+                                                   -ProxyCredential $ProxyCredential `
                                                    -ErrorAction SilentlyContinue `
                                                    -WarningAction SilentlyContinue
             }
@@ -12866,6 +13990,15 @@ function Resolve-Location
         [Parameter(Mandatory=$true)]
         [string]
         $LocationParameterName,
+        
+        [Parameter()]
+        $Credential,
+
+        [Parameter()]
+        $Proxy,
+
+        [Parameter()]
+        $ProxyCredential,
 
         [Parameter()]
         [System.Management.Automation.PSCmdlet]
@@ -12892,7 +14025,7 @@ function Resolve-Location
     }
     else
     {
-        $pingResult = Ping-Endpoint -Endpoint $Location
+        $pingResult = Ping-Endpoint -Endpoint $Location -Credential $Credential -Proxy $Proxy -ProxyCredential $ProxyCredential
         $statusCode = $null
         $exception = $null
         $resolvedLocation = $null

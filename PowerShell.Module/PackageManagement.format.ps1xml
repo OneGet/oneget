@@ -58,6 +58,47 @@
     </TableControl>
   </View>
 
+  <View>
+    <Name>GetPackage</Name>
+    <ViewSelectedBy>
+      <TypeName>Microsoft.PackageManagement.Packaging.SoftwareIdentity#GetPackage</TypeName>
+      <TypeName>Deserialized.Microsoft.PackageManagement.Packaging.SoftwareIdentity#GetPackage</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+      <TableHeaders>
+        <TableColumnHeader>
+          <Width>30</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>16</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>32</Width>
+        </TableColumnHeader>
+        <TableColumnHeader>
+        </TableColumnHeader>
+      </TableHeaders>
+      <TableRowEntries>
+        <TableRowEntry>
+          <TableColumnItems>
+            <TableColumnItem>
+              <PropertyName>Name</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Version</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Source</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>ProviderName</PropertyName>
+            </TableColumnItem>
+          </TableColumnItems>
+        </TableRowEntry>
+      </TableRowEntries>
+    </TableControl>
+  </View>
+
    <View>
     <Name>packageWithLongSourceName</Name>
     <ViewSelectedBy>

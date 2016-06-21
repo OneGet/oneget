@@ -17,6 +17,7 @@ namespace Microsoft.PackageManagement.Providers.Internal {
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
+    using System.Management.Automation;
     using System.Security.AccessControl;
     using PackageManagement.Internal;
     using PackageManagement.Internal.Implementation;
@@ -50,7 +51,7 @@ namespace Microsoft.PackageManagement.Providers.Internal {
         ///     the CORE and HOST
         /// </param>
         public void InitializeProvider(Request request) {
-            if( request == null ) {
+            if (request == null) {
                 throw new ArgumentNullException("request");
             }
             // Nice-to-have put a debug message in that tells what's going on.
@@ -65,7 +66,7 @@ namespace Microsoft.PackageManagement.Providers.Internal {
         ///     the CORE and HOST
         /// </param>
         public void GetFeatures(Request request) {
-           if( request == null ) {
+            if (request == null) {
                 throw new ArgumentNullException("request");
             }
 
@@ -86,7 +87,7 @@ namespace Microsoft.PackageManagement.Providers.Internal {
         ///     the CORE and HOST
         /// </param>
         public void GetDynamicOptions(string category, Request request) {
-            if( request == null ) {
+            if (request == null) {
                 throw new ArgumentNullException("request");
             }
 
@@ -129,7 +130,7 @@ namespace Microsoft.PackageManagement.Providers.Internal {
         ///     the CORE and HOST
         /// </param>
         public void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request) {
-            if( request == null ) {
+            if (request == null) {
                 throw new ArgumentNullException("request");
             }
             // Nice-to-have put a debug message in that tells what's going on.
@@ -139,7 +140,7 @@ namespace Microsoft.PackageManagement.Providers.Internal {
 
             if (Environment.Is64BitOperatingSystem) {
                 using (var hklm64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
-                    if (!YieldPackages("hklm64", hklm64, name,requiredVersion, minimumVersion,maximumVersion, request)) {
+                    if (!YieldPackages("hklm64", hklm64, name, requiredVersion, minimumVersion, maximumVersion, request)) {
                         return;
                     }
                 }
@@ -158,16 +159,19 @@ namespace Microsoft.PackageManagement.Providers.Internal {
             }
 
             using (var hkcu32 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false)) {
-                if (!YieldPackages("hkcu32", hkcu32, name, requiredVersion, minimumVersion,maximumVersion, request)) {
+                if (!YieldPackages("hkcu32", hkcu32, name, requiredVersion, minimumVersion, maximumVersion, request)) {
                 }
             }
         }
 
 
-        private bool YieldPackages(string hive, RegistryKey regkey, string name,string requiredVersion, string minimumVersion, string maximumVersion, Request request) {
+        private bool YieldPackages(string hive, RegistryKey regkey, string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request) {
             if (regkey != null) {
                 var includeWindowsInstaller = request.GetOptionValue("IncludeWindowsInstaller").IsTrue();
                 var includeSystemComponent = request.GetOptionValue("IncludeSystemComponent").IsTrue();
+
+                var wildcardPattern = new WildcardPattern(name??"", WildcardOptions.CultureInvariant | WildcardOptions.IgnoreCase);
+
 
                 foreach (var key in regkey.GetSubKeyNames()) {
                     var subkey = regkey.OpenSubKey(key);
@@ -189,7 +193,8 @@ namespace Microsoft.PackageManagement.Providers.Internal {
                             continue;
                         }
 
-                        if (string.IsNullOrWhiteSpace(name) || productName.IndexOf(name, StringComparison.OrdinalIgnoreCase) > -1) {
+                        if (!string.IsNullOrWhiteSpace(productName) && (string.IsNullOrWhiteSpace(name) || wildcardPattern.IsMatch(productName))) {
+
                             var productVersion = properties.Get("DisplayVersion") ?? "";
                             var publisher = properties.Get("Publisher") ?? "";
                             var uninstallString = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
@@ -220,197 +225,6 @@ namespace Microsoft.PackageManagement.Providers.Internal {
                 }
             }
             return true;
-        }
-
-        private bool YieldPackage(string path, string searchKey, Dictionary<string, string> properties, Request request) {
-            var productName = properties.Get("DisplayName") ?? "";
-            var productVersion = properties.Get("DisplayVersion") ?? "";
-            var publisher = properties.Get("Publisher") ?? "";
-            var uninstallString = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
-            var comments = properties.Get("Comments") ?? "";
-
-            if (request.YieldSoftwareIdentity(path, productName, productVersion, "unknown", comments, "", searchKey, "", "") != null) {
-                if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => request.AddMetadata(path, k.MakeSafeFileName(), properties[k]) == null)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        /// <summary>
-        ///     Uninstalls a package
-        /// </summary>
-        /// <param name="fastPackageReference"></param>
-        /// <param name="request">
-        ///     An object passed in from the CORE that contains functions that can be used to interact with
-        ///     the CORE and HOST
-        /// </param>
-        public void UninstallPackage(string fastPackageReference, Request request) {
-            if( string.IsNullOrWhiteSpace( fastPackageReference ) ) {
-              return;
-            }
-
-            if( request == null ) {
-                throw new ArgumentNullException("request");
-            }
-
-
-            request.Debug("Calling '{0}::UninstallPackage' '{1}'", ProviderName, fastPackageReference);
-            // Nice-to-have put a debug message in that tells what's going on.
-
-            var path = fastPackageReference.Split(new[] {'\\'}, 3);
-            var uninstallCommand = string.Empty;
-            Dictionary<string, string> properties = null;
-            if (path.Length == 3) {
-                switch (path[0].ToLowerInvariant()) {
-                    case "hklm64":
-                        using (var product = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(path[2], RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
-                            if (product == null) {
-                                return;
-                            }
-                            properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
-                            uninstallCommand = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
-                        }
-                        break;
-                    case "hkcu64":
-                        using (var product = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(path[2], RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
-                            if (product == null) {
-                                return;
-                            }
-                            properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
-                            uninstallCommand = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
-                        }
-                        break;
-                    case "hklm32":
-                        using (var product = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(path[2], RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
-                            if (product == null) {
-                                return;
-                            }
-                            properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
-                            uninstallCommand = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
-                        }
-                        break;
-                    case "hkcu32":
-                        using (var product = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32).OpenSubKey(path[2], RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
-                            if (product == null) {
-                                return;
-                            }
-                            properties = product.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (product.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
-                            uninstallCommand = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
-                        }
-                        break;
-                }
-
-                if (properties == null) {
-                    return;
-                }
-
-                if (!string.IsNullOrWhiteSpace(uninstallCommand)) {
-                    do {
-                        if (File.Exists(uninstallCommand)) {
-                            ExecStandalone(request, uninstallCommand);
-                            break;
-                        }
-
-                        // not a single file.
-                        // check if it's just quoted.
-                        var c = uninstallCommand.Trim('\"');
-                        if (File.Exists(c)) {
-                            ExecStandalone(request, c);
-                            break;
-                        }
-
-                        if (uninstallCommand.IndexOf("msiexec", StringComparison.OrdinalIgnoreCase) > -1) {
-                            MsiUninstall(request, uninstallCommand);
-                            break;
-                        }
-
-                        if (uninstallCommand.IndexOf("rundll32", StringComparison.OrdinalIgnoreCase) > -1) {
-                            RunDll32(request, uninstallCommand);
-                            break;
-                        }
-
-                        if (uninstallCommand.IndexOf("cmd.exe", StringComparison.OrdinalIgnoreCase) == 0) {
-                            CmdCommand(request, uninstallCommand);
-                            continue;
-                        }
-
-                        if (uninstallCommand.IndexOf("cmd ", StringComparison.OrdinalIgnoreCase) == 0) {
-                            CmdCommand(request, uninstallCommand);
-                            continue;
-                        }
-
-                        if (uninstallCommand[0] == '"') {
-                            var p = uninstallCommand.IndexOf('"', 1);
-                            if (p > 0) {
-                                var file = uninstallCommand.Substring(1, p - 1);
-                                var args = uninstallCommand.Substring(p + 1);
-                                if (File.Exists(file)) {
-                                    CommandWithParameters(request, file, args);
-                                }
-                            }
-                        } else {
-                            var p = uninstallCommand.IndexOf(' ');
-                            if (p > 0) {
-                                var file = uninstallCommand.Substring(0, p);
-                                var args = uninstallCommand.Substring(p + 1);
-                                if (File.Exists(file)) {
-                                    CommandWithParameters(request, file, args);
-                                    continue;
-                                }
-
-                                var s = 0;
-                                do {
-                                    s = uninstallCommand.IndexOf(' ', s + 1);
-                                    if (s == -1) {
-                                        break;
-                                    }
-                                    file = uninstallCommand.Substring(0, s);
-                                    if (File.Exists(file)) {
-                                        args = uninstallCommand.Substring(s + 1);
-                                        CommandWithParameters(request, file, args);
-                                        break;
-                                    }
-                                } while (s > -1);
-
-                                if (s == -1) {
-                                    // never found a way to parse the command :(
-                                    request.Error(ErrorCategory.InvalidOperation, properties["DisplayName"], Constants.Messages.UnableToUninstallPackage);
-                                    return;
-                                }
-                            }
-                        }
-                    } while (false);
-                    YieldPackage(fastPackageReference, fastPackageReference, properties, request);
-                    return;
-                }
-                request.Error(ErrorCategory.InvalidOperation, properties["DisplayName"], Constants.Messages.UnableToUninstallPackage);
-
-            }
-        }
-
-        private void RunDll32(Request request,string uninstallCommand) {
-
-        }
-
-        private void MsiUninstall(Request request, string uninstallCommand) {
-        }
-
-        private void CommandWithParameters(Request request, string file, string args) {
-        }
-
-        private void CmdCommand(Request request, string args) {
-        }
-
-        private void ExecStandalone(Request request, string uninstallCommand) {
-            // we could examine the EXE a bit here to see if it's a NSIS installer and if it is, tack on a /S to get it to go silently.
-
-            // uninstall via standalone EXE
-            var proc = AsyncProcess.Start(new ProcessStartInfo {
-                FileName = uninstallCommand,
-            });
-
-            proc.WaitForExit();
         }
     }
 }

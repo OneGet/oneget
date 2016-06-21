@@ -189,6 +189,10 @@
     <value>Unable to download from URI '{0}' to '{1}'.</value>
     <comment>0 source uri, 1 destination file name</comment>
   </data>
+  <data name="PackageFailedInstallErrorLog" xml:space="preserve">
+    <value>The package '{0}' failed to install. Please look at '{1}' file for details.</value>
+    <comment>0 package id, 1 path to error log file</comment>
+  </data>
   <data name="UnableToInstallPackage_package_reason" xml:space="preserve">
     <value>The package '{0}' failed to install.</value>
     <comment>0 package id</comment>

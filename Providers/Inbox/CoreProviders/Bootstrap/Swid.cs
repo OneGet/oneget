@@ -75,28 +75,28 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         protected IEnumerable<IGrouping<string, Link>> Artifacts {
             get {
-                return IsValid ? _swidtag.Links.GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
+                return IsValid ? _swidtag.Links.GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
             }
         }
 
         protected IEnumerable<IGrouping<string, Link>> Feeds {
             get {
                 return IsValid
-                    ? _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Feed).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
+                    ? _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Feed).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
             }
         }
 
         protected IEnumerable<IGrouping<string, Link>> Packages {
             get {
                 return IsValid
-                    ? _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Package).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() : link.Artifact)
+                    ? _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Package).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact)
                     : Enumerable.Empty<IGrouping<string, Link>>();
             }
         }
 
         protected IEnumerable<IGrouping<string, Link>> More {
             get {
-                return _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Supplemental).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? "noartifact".GenerateTemporaryFilename() : link.Artifact);
+                return _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Supplemental).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact);
             }
         }
 
@@ -109,7 +109,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
         private Swidtag DownloadSwidtag(IEnumerable<Uri> locations) {            
             foreach (var location in locations.WhereNotNull()) {
                 try {
-                    var filename = "swidtag.xml".GenerateTemporaryFilename();
+                    var filename = FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory();
                     DownloadSwidtagToFile(filename, location);
 
                     if (_timedOut) {
@@ -118,10 +118,18 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                     }
 
                     if (filename.FileExists()) {
-                        var document = XDocument.Load(filename);
-                        if (Swidtag.IsSwidtag(document.Root)) {
-                            Location = location;
-                            return new Swidtag(document);
+                        try
+                        {
+                            var document = XDocument.Load(filename);
+                            if (Swidtag.IsSwidtag(document.Root))
+                            {
+                                Location = location;
+                                return new Swidtag(document);
+                            }
+                        }
+                        finally
+                        {
+                            System.IO.File.Delete(filename);
                         }
                     }
                 } catch (Exception e) {
