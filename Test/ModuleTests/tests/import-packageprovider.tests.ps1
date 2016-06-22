@@ -279,7 +279,7 @@ Describe "Import-PackageProvider with OneGetTest that has 3 versions: 1.1, 3.5, 
         powershell '(Import-packageprovider -name OneGetTest -MinimumVersion 2.2 -WarningAction SilentlyContinue).Version.ToString()' | should match "9.9.0.0"
     }
 
-    It "EXPECTED: success 'OneGetTest Find-Package with Progress'" {
+    It "EXPECTED: success 'OneGetTest Find-Package with Progress'" -skip {
         $ps.Streams.Progress.Count | Should be 6
         $ps.Streams.Progress[1].ActivityId | Should Be 1
         $ps.Streams.Progress[1].Activity | Should match "Getting some progress"
