@@ -157,11 +157,10 @@ Throughput Graph
 
 | Branch | Purpose |
 | ------- | ---------------------------|
-|@fearthecowboy|  Godfather of OneGet project, has moved on to some other exciting project. But will always stand by with OneGet to give us supports. |
 |@Xumin|  Program Manager on OneGet. Xumin is the sheriff, trying to keep the law. If there are rules that we need to play by, Xumin make us follow them.   |
-|@Jianyun|  New engineer owner on OneGet. |
+|@Jianyun|  Engineer owner on OneGet & its providers. |
 |@Krishna|  Our engineer manager on OneGet, also owner for PowerShell Gallery.   |
-|@Quoc|  Our newest and freshest engineer.   |
+|@Quoc|  Engineer on the team.   |
 
 [Follow us on Twitter](https://twitter.com/PSOneGet)
 
