@@ -83,7 +83,7 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
         }
     }
 
-    It "EXPECTED: Finds 64 packages" {
+    It "EXPECTED: Finds 64 packages" -skip {
         $packages = Find-Package -Provider $nuget -Source $source | Select -First 63
 
         $packages = (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name)
@@ -815,12 +815,15 @@ Describe Register-PackageSource -Tags @('BVT', 'DRT'){
 
 	it "EXPECTED: Registers A New Package Source 'NugetTest.org'" {
 		(register-packagesource -name "nugettest.org" -provider $nuget -location $source).name | should be "nugettest.org"
-	
-        $Error.Clear()
-        $msg = powershell 'install-package -name Jquery -source nugettest.org -force -warningaction:silentlycontinue -ea silentlycontinue;$error[0].FullyQualifiedErrorId'
-        $msg | should be "SpecifiedProviderMissingRequiredOption,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackage"
-	
-		(unregister-packagesource -name "nugettest.org" -provider $nuget)
+        try 
+        {
+            # check that even without slash, source returned is still nugettest.org
+            (find-package -source $sourceWithoutSlash | Select -First 1).Source | should be "nugettest.org"
+        }
+        finally
+        {
+    		(unregister-packagesource -name "nugettest.org" -provider $nuget)
+        }
 	}
 
     it "EXPECTED: PackageSource persists" {
@@ -863,8 +866,8 @@ Describe Register-PackageSource -Tags @('BVT', 'DRT'){
         }
     }
 
-    it "EXPECTED: Registers an invalid package source" {
-		$msg = powershell "register-packagesource -name `"BingProvider`" -provider $nuget -location `"http://www.bing.com/`" -erroraction silentlycontinue; `$Error[0].FullyQualifiedErrorId"
+     it "EXPECTED: Registers an invalid package source" {
+		$msg = powershell "register-packagesource -name `"BingProvider`" -provider $nuget -location `"http://www.example.com/`" -erroraction silentlycontinue; `$Error[0].FullyQualifiedErrorId"
         $msg | should be 'SourceLocationNotValid,Microsoft.PowerShell.PackageManagement.Cmdlets.RegisterPackageSource'
     }
 
@@ -940,12 +943,6 @@ Describe Set-PackageSource -Tags @('BVT', 'DRT'){
 Describe Check-ForCorrectError -Tags @('BVT', 'DRT'){  
     # make sure that packagemanagement is loaded
     import-packagemanagement
-
-	it "EXPECTED: returns an error when specifying a provider but missing a required parameter" {
-        $Error.Clear()
-        $msg = powershell "install-package -provider $nuget -source http://nuget.org/api/v2 zlib.redist -ea silentlycontinue; `$ERROR[0].FullyQualifiedErrorId"
-        $msg | should be "SpecifiedProviderMissingRequiredOption,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackage"
-    }
 
     it "EXPECTED: returns a correct error for find-package with dynamic parameter when package source is wrong" {
         $Error.Clear()
