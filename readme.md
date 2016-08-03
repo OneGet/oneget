@@ -117,7 +117,7 @@ In the immediate time frame, we won't be taking pull requests to the core itself
 
 There are some exceptions to the where I can take Pull Requests immediately: 
 
-> Pull Requests to the not-in-core Package Providers (Chocolatey, NuGet, etc) are instantly welcome 
+> Pull Requests to the Package Providers are instantly welcome 
 
 > Any unit tests, BVT tests or -Edge only features, we can take pull requests for as well
 
