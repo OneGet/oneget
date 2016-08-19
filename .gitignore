@@ -68,6 +68,7 @@ ipch
 packages
 *.wixobj
 
+*.lock.json
 
 *.suo
 *.wixpdb
