@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B3AD1ADE-2EC6-4AF4-8E65-147BDF5219E9}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PackageManagement</RootNamespace>
+    <AssemblyName>PackageManagement</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Constants.cs" />
+    <Compile Include="ErrorCategory.cs" />
+    <Compile Include="APIs\ICoreApi.cs" />
+    <Compile Include="APIs\IHostAPI.cs" />
+    <Compile Include="APIs\IPackageManagementService.cs" />
+    <Compile Include="APIs\IProviderServices.cs" />
+    <Compile Include="APIs\IRequest.cs" />
+    <Compile Include="APIs\IResponseApi.cs" />
+    <Compile Include="Implementation\ActionRequestObject.cs" />
+    <Compile Include="Implementation\Archiver.cs" />
+    <Compile Include="Implementation\DefaultPackageProvider.cs" />
+    <Compile Include="Implementation\DictionaryRequestObject.cs" />
+    <Compile Include="Implementation\Downloader.cs" />
+    <Compile Include="Implementation\DynamicOptionRequestObject.cs" />
+    <Compile Include="Implementation\EnumerableRequestObject.cs" />
+    <Compile Include="Implementation\Extensions.cs" />
+    <Compile Include="Implementation\FuncRequestObject.cs" />
+    <Compile Include="Implementation\PackageDetailsRequestObject.cs" />
+    <Compile Include="Implementation\PackageManagementService.cs" />
+    <Compile Include="Implementation\PackageProvider.cs" />
+    <Compile Include="Implementation\PackageSourceRequestObject.cs" />
+    <Compile Include="Implementation\ProviderBase.cs" />
+    <Compile Include="Implementation\ProviderServicesImpl.cs" />
+    <Compile Include="Implementation\Request.cs" />
+    <Compile Include="Implementation\RequestObject.cs" />
+    <Compile Include="Implementation\SoftwareIdentityRequestObject.cs" />
+    <Compile Include="PackageManager.cs" />
+    <Compile Include="Packaging\AttributeIndexer.cs" />
+    <Compile Include="Packaging\BaseElement.cs" />
+    <Compile Include="Packaging\Directory.cs" />
+    <Compile Include="Packaging\DynamicOption.cs" />
+    <Compile Include="Packaging\Entity.cs" />
+    <Compile Include="Packaging\Evidence.cs" />
+    <Compile Include="Packaging\File.cs" />
+    <Compile Include="Packaging\FilesystemItem.cs" />
+    <Compile Include="Packaging\Iso19770_2.cs" />
+    <Compile Include="Packaging\Link.cs" />
+    <Compile Include="Packaging\MediaQuery.cs" />
+    <Compile Include="Packaging\Meta.cs" />
+    <Compile Include="Packaging\MetadataIndexer.cs" />
+    <Compile Include="Packaging\OptionCategory.cs" />
+    <Compile Include="Packaging\OptionType.cs" />
+    <Compile Include="Packaging\PackageSource.cs" />
+    <Compile Include="Packaging\Payload.cs" />
+    <Compile Include="Packaging\Process.cs" />
+    <Compile Include="Packaging\Resource.cs" />
+    <Compile Include="Packaging\ResourceCollection.cs" />
+    <Compile Include="Packaging\SoftwareIdentity.cs" />
+    <Compile Include="Packaging\SoftwareIdentityNameVersionComparer.cs" />
+    <Compile Include="Packaging\SoftwareIdentityVersionComparer.cs" />
+    <Compile Include="Packaging\SoftwareMetadata.cs" />
+    <Compile Include="Packaging\Swidtag.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\IArchiver.cs" />
+    <Compile Include="Providers\IDownloader.cs" />
+    <Compile Include="Providers\IMetaProvider.cs" />
+    <Compile Include="Providers\IPackageProvider.cs" />
+    <Compile Include="Providers\IProvider.cs" />
+    <Compile Include="Utility\Plugin\AssignableTypeComparer.cs" />
+    <Compile Include="Utility\Plugin\DynamicInterface.cs" />
+    <Compile Include="Utility\Plugin\DynamicInterfaceExtensions.cs" />
+    <Compile Include="Utility\Plugin\DynamicType.cs" />
+    <Compile Include="Utility\Plugin\DynamicTypeExtensions.cs" />
+    <Compile Include="Utility\Plugin\FluentIlExtensions.cs" />
+    <Compile Include="Utility\Plugin\RequiredAttribute.cs" />
+    <Compile Include="Utility\Plugin\WrappedDelegate.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Microsoft.PackageManagement.Resources.Messages.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Utility\Collections\" />
+    <Folder Include="Utility\dsf - Copy\" />
+    <Folder Include="Utility\dsf\" />
+    <Folder Include="Utility\Extensions\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

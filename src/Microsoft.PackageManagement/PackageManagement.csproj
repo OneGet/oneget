@@ -13,6 +13,8 @@
     <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), PackageManagement.sln))\</SolutionDir>
     <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\PackageManagement.sln</SolutionPath>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props')" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -80,18 +82,18 @@
     <Compile Include="Packaging\SoftwareIdentityVersionComparer.cs" />
     <Compile Include="Packaging\SoftwareIdentityNameVersionComparer.cs" />
     <Compile Include="Providers\IArchiver.cs" />
-    <Compile Include="src\Api\ICoresrc\Api.cs" />
+    <Compile Include="Api\ICoreApi.cs" />
     <Compile Include="Providers\IDownloader.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Packaging\Iso19770_2.cs" />
     <Compile Include="Packaging\SoftwareMetadata.cs" />
     <Compile Include="Providers\IPackageProvider.cs" />
-    <Compile Include="src\Api\IRequest.cs" />
+    <Compile Include="Api\IRequest.cs" />
     <Compile Include="Implementation\ProviderBase.cs" />
     <Compile Include="Implementation\Archiver.cs" />
-    <Compile Include="src\Api\IResponsesrc\Api.cs" />
-    <Compile Include="src\Api\IProviderServices.cs" />
-    <Compile Include="src\Api\IHostsrc\Api.cs" />
+    <Compile Include="Api\IResponseApi.cs" />
+    <Compile Include="Api\IProviderServices.cs" />
+    <Compile Include="Api\IHostAPI.cs" />
     <Compile Include="Packaging\Entity.cs" />
     <Compile Include="Packaging\Evidence.cs" />
     <Compile Include="Packaging\Link.cs" />
@@ -107,13 +109,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PackageManager.cs" />
     <Compile Include="Providers\IProvider.cs" />
-    <Compile Include="$(SolutionDir)assembly-version.cs" />
-    <Compile Include="Resources\Messages.Designer.cs">
+    <Compile Include="Packaging\Swidtag.cs" />
+    <Compile Include="Resources\Microsoft.PackageManagement.Resources.Messages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>Messages.resx</DependentUpon>
+      <DependentUpon>Microsoft.PackageManagement.Resources.Messages.resx</DependentUpon>
     </Compile>
-    <Compile Include="Packaging\Swidtag.cs" />
     <Compile Include="Utility\Async\AsyncAction.cs" />
     <Compile Include="Utility\Async\AsyncActionExtensions.cs" />
     <Compile Include="Utility\Async\EmptyAsyncEnumerable.cs" />
@@ -156,17 +157,7 @@
     <Compile Include="Utility\Plugin\DynamicTypeExtensions.cs" />
     <Compile Include="Utility\Plugin\FluentIlExtensions.cs" />
     <Compile Include="Utility\Plugin\RequiredAttribute.cs" />
-    <Compile Include="Utility\Plugin\WrappedAction.cs">
-      <DependentUpon>WrappedAction.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Utility\Plugin\WrappedDelegate.cs" />
-    <Compile Include="Utility\Plugin\WrappedFunc.cs">
-      <DependentUpon>WrappedFunc.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Utility\Versions\FourPartVersion.cs" />
     <Compile Include="Utility\Versions\TwoPartVersion.cs" />
   </ItemGroup>
@@ -174,22 +165,17 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Messages.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>Microsoft.PackageManagement.Resources</CustomToolNamespace>
-      <SubType>Designer</SubType>
+    <EmbeddedResource Include="Resources\Microsoft.PackageManagement.Resources.Messages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Microsoft.PackageManagement.Resources.Messages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Utility\Plugin\WrappedAction.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>WrappedAction.cs</LastGenOutput>
-    </None>
-    <None Include="Utility\Plugin\WrappedFunc.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>WrappedFunc.cs</LastGenOutput>
-    </None>
+    <None Include="map.json" />
+    <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="BeforeBuild" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
