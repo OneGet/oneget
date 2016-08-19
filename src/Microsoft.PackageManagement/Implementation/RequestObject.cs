@@ -115,7 +115,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
         public string GetMessageString(string messageText, string defaultText) {
             if (CanCallHost) {
                 if (string.IsNullOrWhiteSpace(defaultText) || defaultText.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase)) {
-                    defaultText = Resources.Microsoft_PackageManagement_Resources_Messages.ResourceManager.GetString(DropMsgPrefix(messageText));
+                    defaultText = Resources.Messages.ResourceManager.GetString(DropMsgPrefix(messageText));
                 }
 
                 return _hostApi.GetMessageString(messageText, defaultText);

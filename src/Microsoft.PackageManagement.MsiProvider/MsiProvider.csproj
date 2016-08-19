@@ -112,14 +112,17 @@
     <Compile Include="Deployment\WindowsInstaller\View.cs" />
     <Compile Include="MsiProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="$(SolutionDir)assembly-version.cs" />
+    <Compile Include="Resources\Messages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Messages.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Deployment\WindowsInstaller\Errors.resources" />
-    <EmbeddedResource Include="Resources\Microsoft.PackageManagement.Msi.Resources.Messages.resx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Deployment\WindowsInstaller\Errors.txt" />
+    <EmbeddedResource Include="Resources\Messages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.PackageManagement.ArchiverProviders\Archivers.csproj">

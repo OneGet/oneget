@@ -29,7 +29,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
     using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Internal.Utility.Async;
     
-    using Messages = Microsoft.PackageManagement.MetaProvider.PowerShell.Resources.Messages;
+    using Messages = Microsoft.PackageManagement.MetaProvider.PowerShell.Internal.Resources.Messages;
 
     public abstract class PsRequest : Request {
         internal CommandInfo CommandInfo;

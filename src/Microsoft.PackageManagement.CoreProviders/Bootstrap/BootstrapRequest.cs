@@ -132,7 +132,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                 } else {
                     //a user specifies 'AllUsers' that requires Admin provilege. However his console gets launched by non-elevated.
                     Error(ErrorCategory.InvalidOperation, ErrorCategory.InvalidOperation.ToString(),
-                        PackageManagement.Resources.Messages.InstallRequiresCurrentUserScopeParameterForNonAdminUser, pms.SystemAssemblyLocation, pms.UserAssemblyLocation);
+                        PackageManagement.Internal.Resources.Messages.InstallRequiresCurrentUserScopeParameterForNonAdminUser, pms.SystemAssemblyLocation, pms.UserAssemblyLocation);
                     return null;
                 }
             }

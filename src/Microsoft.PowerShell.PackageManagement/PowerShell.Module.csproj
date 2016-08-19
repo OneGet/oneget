@@ -56,6 +56,11 @@
     <Compile Include="Cmdlets\RegisterPackageSource.cs" />
     <Compile Include="Cmdlets\SavePackage.cs" />
     <Compile Include="Cmdlets\SetPackageSource.cs" />
+    <Compile Include="Resources\Messages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Messages.resx</DependentUpon>
+    </Compile>
     <Compile Include="Utility\ErrorMessage.cs" />
     <Compile Include="Utility\HostApiExtensions.cs" />
     <Compile Include="Utility\ProgressTracker.cs" />
@@ -70,12 +75,13 @@
     <Compile Include="Cmdlets\UnregisterPackageSource.cs" />
     <Compile Include="Cmdlets\UninstallPackage.cs" />
     <Compile Include="Cmdlets\CmdletBase.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="$(SolutionDir)assembly-version.cs" />
     <Compile Include="Utility\WebProxy.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Microsoft.PowerShell.PackageManagement.Resources.Messages.resx" />
+    <EmbeddedResource Include="Resources\Messages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -91,6 +97,9 @@
     <None Include="PackageManagement.psd1" />
     <None Include="PackageProviderFunctions.psm1" />
     <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="BeforeBuild">

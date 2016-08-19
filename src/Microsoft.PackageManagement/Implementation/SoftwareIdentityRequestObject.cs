@@ -23,7 +23,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
     using PackageManagement.Packaging;
     using PackageManagement.Internal.Packaging;
     using PackageManagement.Internal.Utility.Plugin;
-    using Messages = Resources.Microsoft_PackageManagement_Resources_Messages;
+    using Messages = Resources.Messages;
 
     internal class SoftwareIdentityRequestObject : EnumerableRequestObject<SoftwareIdentity> {
         private SoftwareIdentity _currentItem;
@@ -86,7 +86,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                 }
                 else
                 {
-                    Verbose(string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_PackageManagement_Resources_Messages.SwidTagXmlInvalidNameSpace, xmlSwidTag, Iso19770_2.Namespace.Iso19770_2));
+                    Verbose(string.Format(CultureInfo.CurrentCulture, Resources.Messages.SwidTagXmlInvalidNameSpace, xmlSwidTag, Iso19770_2.Namespace.Iso19770_2));
                 }
             }
             catch (Exception e)

@@ -78,14 +78,10 @@
     <Compile Include="Compression\SafeNativeMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ZipArchiver.cs" />
-    <Compile Include="$(SolutionDir)assembly-version.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
     <None Include="provider.manifest" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\Microsoft.PackageManagement.Archivers.Resources.Messages.resx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.PackageManagement\PackageManagement.csproj">

@@ -35,7 +35,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
     using Utility.Plugin;
     using Utility.Versions;
     using Win32;
-    using Messages = Resources.Microsoft_PackageManagement_Resources_Messages;
+    using Messages = Resources.Messages;
     using Directory = System.IO.Directory;
     using File = System.IO.File;
 #if CORECLR
@@ -797,7 +797,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                 }
             } 
 
-            request.Verbose(string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_PackageManagement_Resources_Messages.FailedPowerShellMetaProvider));
+            request.Verbose(string.Format(CultureInfo.CurrentCulture, Resources.Messages.FailedPowerShellMetaProvider));
             return null;
         }
 

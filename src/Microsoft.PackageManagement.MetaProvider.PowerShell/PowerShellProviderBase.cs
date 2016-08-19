@@ -22,7 +22,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
     using System.Threading;
     using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Internal.Utility.Platform;
-    using Messages = Microsoft.PackageManagement.MetaProvider.PowerShell.Resources.Messages;
+    using Messages = Microsoft.PackageManagement.MetaProvider.PowerShell.Internal.Resources.Messages;
     using System.Collections.Concurrent;
 
     public class PowerShellProviderBase : IDisposable {
