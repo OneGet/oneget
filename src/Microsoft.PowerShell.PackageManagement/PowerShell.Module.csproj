@@ -96,7 +96,6 @@
     <None Include="PackageManagement.format.ps1xml" />
     <None Include="PackageManagement.psd1" />
     <None Include="PackageProviderFunctions.psm1" />
-    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

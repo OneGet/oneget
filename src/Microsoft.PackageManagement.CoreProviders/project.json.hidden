@@ -14,12 +14,16 @@
 		}
 	},
 
-	"dependencies": {
-		"System.Management.Automation": "1.0.0-*",
-		"Microsoft.PackageManagement": "1.0.0-*"
-	},
+  "dependencies": {
+    "Microsoft.PackageManagement": "1.0.0-*",
+    "System.Management.Automation": "1.0.0-alpha9"
+  },
 
-  "runtimes": { "win": { } },
+  "runtimes": {
+    "win7-x64": { },
+    "win81-x64": { },
+    "win10-x64": { }
+  },
 
 	"frameworks": {
 		"net451": {
@@ -44,13 +48,17 @@
 		},
 
 		"netstandard1.6": {
-			"imports": ["dnxcore50"],
+      "imports": [ "dnxcore50", "portable-net45+win8" ],
 			"buildOptions": {
-				"define": ["CORECLR", "PORTABLE"],
-				"compile": {
-          "exclude": [ "ProgramsProvider.cs"]
-				}
-			}
-		}
+        "define": [ "CORECLR" ],
+        "compile": {
+          "exclude": [ "ProgramsProvider.cs" ]
+        }
+			},
+      "dependencies": {
+          "NETStandard.Library": "1.6.0"
+      }
+		
+    }
 	}
 }
