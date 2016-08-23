@@ -20,8 +20,8 @@
 
 #Step 1 - test setup
 $TestHome = $PSScriptRoot
-$TestBin = "$($TestHome)\..\output\Release\bin\"
-$PowerShellGetPath = "$($TestHome)\..\Providers\Inbox\PowerShellGet\"
+$TestBin = "$($TestHome)\..\src\out\PackageManagement\"
+$PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\"
 $PowerShellGetVersion = "1.0.0.1"
 $PackageManagementVersion = "1.0.0.1"
 
@@ -63,7 +63,7 @@ if(-not (Test-Path $powershellGetfolder)){
 
 
 Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
-Copy-Item "$TestBin\*.dll" $packagemanagementfolder -force -Verbose
+Copy-Item "$TestBin\net451\*.dll" $packagemanagementfolder -force -Verbose
 Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
 Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
 Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -force -Verbose

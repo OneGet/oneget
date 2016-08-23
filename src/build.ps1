@@ -35,15 +35,28 @@ if (-not (Test-Path "$solutionDir/global.json"))
     throw "Not in solution root"
 }
 
-$assemblyNames = @(
-    "Microsoft.PackageManagement",
-    "Microsoft.PackageManagement.ArchiverProviders",
-    "Microsoft.PackageManagement.CoreProviders",
-    "Microsoft.PackageManagement.MetaProvider.PowerShell",
-    "Microsoft.PackageManagement.MsiProvider",
-    "Microsoft.PackageManagement.MsuProvider",
-    "Microsoft.PowerShell.PackageManagement"
-) 
+if ($Framework -eq "netstandard1.6")
+{
+    $assemblyNames = @(
+        "Microsoft.PackageManagement",
+        "Microsoft.PackageManagement.ArchiverProviders",
+        "Microsoft.PackageManagement.CoreProviders",
+        "Microsoft.PackageManagement.MetaProvider.PowerShell",
+        "Microsoft.PowerShell.PackageManagement"
+        )
+}
+else
+{
+    $assemblyNames = @(
+        "Microsoft.PackageManagement",
+        "Microsoft.PackageManagement.ArchiverProviders",
+        "Microsoft.PackageManagement.CoreProviders",
+        "Microsoft.PackageManagement.MetaProvider.PowerShell",
+        "Microsoft.PackageManagement.MsiProvider",
+        "Microsoft.PackageManagement.MsuProvider",
+        "Microsoft.PowerShell.PackageManagement"
+        )
+}
 
 $itemsToCopyBinaries = $assemblyNames | % { "$solutionDir\$_\bin\$Configuration\$Framework\$_.dll" }
 
