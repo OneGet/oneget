@@ -8,10 +8,10 @@ install:
     - cinst -y pester
 clone_folder: c:\projects\oneget
 build_script:
-- ps: cd .\src; .\bootstrap.ps1; .\build.psd1
+- ps: cd .\src; .\bootstrap.ps1; .\build.ps1
 after_build:
 - ps: >-
-    Get-ChildItem "C:\projects\oneget\output\Release\bin" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
+    Get-ChildItem "C:\projects\oneget\out\PackageManagement\" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
 
 before_test:
 - ps: >-
