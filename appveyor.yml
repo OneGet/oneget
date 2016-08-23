@@ -8,11 +8,10 @@ install:
     - cinst -y pester
 clone_folder: c:\projects\oneget
 build_script:
-- ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451"
+- ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451"; Copy-Item "C:\projects\oneget\src\out\PackageManagement\net451\*" "C:\projects\oneget\src\out\PackageManagement"; Remove-item "C:\projects\oneget\src\out\PackageManagement\net451" -Force
 after_build:
 - ps: >-
-    Get-ChildItem "C:\projects\oneget\src\out\PackageManagement\" -File | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
-    Get-ChildItem "C:\projects\oneget\src\out\PackageManagement\net451\" -File -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
+    Get-ChildItem "C:\projects\oneget\src\out\PackageManagement\" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
 
 before_test:
 - ps: >-
