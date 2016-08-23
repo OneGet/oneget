@@ -7,8 +7,8 @@ platform: Any CPU
 install: 
     - cinst -y pester
 clone_folder: c:\projects\oneget
-build:
-  verbosity: minimal
+build_script:
+- ps: cd .\src; .\bootstrap.ps1; .\build.psd1
 after_build:
 - ps: >-
     Get-ChildItem "C:\projects\oneget\output\Release\bin" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
