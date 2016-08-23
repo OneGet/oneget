@@ -16,10 +16,7 @@
 
 	"dependencies": {
 		"System.Management.Automation": "1.0.0-alpha9",
-		"Microsoft.PackageManagement": "1.0.0-*",
-    "Microsoft.PackageManagement.CoreProviders": "1.0.0-*",
-    "Microsoft.PackageManagement.MetaProvider.PowerShell": "1.0.0-*",
-    "Microsoft.PackageManagement.ArchiverProviders": "1.0.0-*"
+		"Microsoft.PackageManagement": "1.0.0-*"
   },
 
 	"frameworks": {
@@ -41,11 +38,7 @@
 				"System.Net.Http": "",
 				"System.IO.Compression": "",
 				"System.IO.Compression.FileSystem": ""
-			},
-		  "dependencies": {
-        "Microsoft.PackageManagement.MsiProvider": "1.0.0-*",
-        "Microsoft.PackageManagement.MsuProvider": "1.0.0-*"
-      }
+			}
     },
 
 		"netstandard1.6": {
