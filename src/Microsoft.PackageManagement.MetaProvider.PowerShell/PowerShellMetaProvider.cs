@@ -135,7 +135,12 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                         throw new Exception(Resources.Messages.CantFindBasePowerShellModuleFolder);
                     }
 
-                    _baseFolder = Path.Combine(_baseFolder, "Modules", "PackageManagement");
+                    var packageProviderFunctionFolder = Path.Combine(_baseFolder, "Modules", "PackageManagement");
+
+                    if (Directory.Exists(packageProviderFunctionFolder))
+                    {
+                        _baseFolder = packageProviderFunctionFolder;
+                    }
                 }
                 return _baseFolder;
             }
