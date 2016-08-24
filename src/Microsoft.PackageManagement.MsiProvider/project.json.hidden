@@ -39,7 +39,12 @@
 				"System.Net.Http": "",
 				"System.IO.Compression": "",
 				"System.IO.Compression.FileSystem": ""
-			}
+            },
+            "buildOptions": {
+                "compile": {
+                    "exclude": [ "Resources/*" ]
+                }
+            }
 		}
 	}
 }

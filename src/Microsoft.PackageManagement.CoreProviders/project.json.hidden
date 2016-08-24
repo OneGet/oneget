@@ -44,7 +44,14 @@
 				"System.Net.Http": "",
 				"System.IO.Compression": "",
 				"System.IO.Compression.FileSystem": ""
-			}
+              },
+              "buildOptions": {
+                "compile": {
+                  "exclude": [
+                    "Resources/*"
+                  ]
+                }
+              }
 		},
 
 		"netstandard1.6": {
@@ -52,7 +59,7 @@
 			"buildOptions": {
         "define": [ "CORECLR" ],
         "compile": {
-          "exclude": [ "ProgramsProvider.cs" ]
+          "exclude": [ "ProgramsProvider.cs", "Resources/*" ]
         }
 			},
       "dependencies": {

@@ -147,8 +147,8 @@ if (-not (Test-Path "$projectRoot/global.json"))
 {
     throw "Not in solution root"
 }
-$inputFilePath = Join-Path $projectRoot "$project/Resources/Messages.resx"
-$outputFilePath = Join-Path $projectRoot "$project/Resources/Messages.Designer.cs"
+$inputFilePath = Join-Path $projectRoot "$project/resources/Messages.resx"
+$outputFilePath = Join-Path $projectRoot "$project/Messages.Designer.cs"
 
 if ($nameSpaceDict.ContainsKey($project)) {
     $className = $nameSpaceDict[$project] + ".Resources.Messages"
