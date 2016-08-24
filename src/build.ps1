@@ -81,7 +81,11 @@ try
     foreach ($assemblyName in $assemblyNames)
     {
         Write-Host "Generating resources file for $assemblyName"
-        .\New-StronglyTypedCsFileForResx.ps1 -Project $assemblyName
+        if ($Framework -eq "netstandard1.6")
+        {
+            .\New-StronglyTypedCsFileForResx.ps1 -Project $assemblyName
+        }
+
         Push-Location $assemblyName
         Write-Host "Restoring package for $assemblyName"
         dotnet restore
