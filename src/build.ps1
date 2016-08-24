@@ -42,7 +42,8 @@ if ($Framework -eq "netstandard1.6")
         "Microsoft.PackageManagement.ArchiverProviders",
         "Microsoft.PackageManagement.CoreProviders",
         "Microsoft.PackageManagement.MetaProvider.PowerShell",
-        "Microsoft.PowerShell.PackageManagement"
+        "Microsoft.PowerShell.PackageManagement",
+        "Microsoft.PackageManagement.NuGetProvider"
         )
 }
 else
@@ -54,7 +55,8 @@ else
         "Microsoft.PackageManagement.MetaProvider.PowerShell",
         "Microsoft.PackageManagement.MsiProvider",
         "Microsoft.PackageManagement.MsuProvider",
-        "Microsoft.PowerShell.PackageManagement"
+        "Microsoft.PowerShell.PackageManagement",
+        "Microsoft.PackageManagement.NuGetProvider"
         )
 }
 

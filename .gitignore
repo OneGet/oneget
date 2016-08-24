@@ -9,6 +9,7 @@
 *.msi
 *.user
 *.sln.docstates
+Messages.Designer.cs
 
 # Build results
 

@@ -5,7 +5,8 @@
         "Microsoft.PackageManagement.MetaProvider.PowerShell",
         "Microsoft.PackageManagement.MsiProvider",
         "Microsoft.PackageManagement.MsuProvider",
-        "Microsoft.PowerShell.PackageManagement"
+        "Microsoft.PowerShell.PackageManagement",
+        "Microsoft.PackageManagement.NuGetProvider"
         )]
     [string] $project
 )
@@ -16,7 +17,8 @@ $nameSpaceDict = @{
     "Microsoft.PackageManagement.MetaProvider.PowerShell" = "Microsoft.PackageManagement.MetaProvider.PowerShell.Internal";
     "Microsoft.PackageManagement.MsiProvider" = "Microsoft.PackageManagement.Msi.Internal";
     "Microsoft.PackageManagement.MsuProvider" = "Microsoft.PackageManagement.Msu.Internal";
-    "Microsoft.PowerShell.PackageManagement" = "Microsoft.PowerShell.PackageManagement"
+    "Microsoft.PowerShell.PackageManagement" = "Microsoft.PowerShell.PackageManagement";
+    "Microsoft.PackageManagement.NuGetProvider" = "Microsoft.PackageManagement.NuGetProvider"
 }
 
 function Get-StronglyTypeCsFileForResx
