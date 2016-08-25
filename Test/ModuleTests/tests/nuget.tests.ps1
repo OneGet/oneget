@@ -95,14 +95,14 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
     It "EXPECTED: Finds 100 packages should throw error" {
         $packages = Find-Package -Provider $nuget -Source $source | Select -First 100
 
-        (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction silentlycontinue) | should throw
+        {Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction silentlycontinue} | should throw
     }
 
 
     It "EXPECTED: Finds 128 packages should throw error" {
         $packages = Find-Package -Provider $nuget -Source $source | Select -First 127
 
-        (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction silentlycontinue) | should throw
+        {Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction silentlycontinue} | should throw
     }
 
     It "EXPECTED: Finds 'TestPackage' Package using fwlink" {
