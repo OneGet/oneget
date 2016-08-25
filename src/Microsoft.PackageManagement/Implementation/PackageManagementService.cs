@@ -1063,7 +1063,8 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             providerAssemblies = providerAssemblies.Concat(new[] {
                 Path.Combine(BaseDir, "Microsoft.PackageManagement.MetaProvider.PowerShell.dll"),
                 Path.Combine(BaseDir, "Microsoft.PackageManagement.ArchiverProviders.dll"),
-                Path.Combine(BaseDir, "Microsoft.PackageManagement.CoreProviders.dll"),                
+                Path.Combine(BaseDir, "Microsoft.PackageManagement.CoreProviders.dll"),
+                Path.Combine(BaseDir, "Microsoft.PackageManagement.NuGetProvider.dll"),
 #if !CORECLR
                 Path.Combine(BaseDir, "Microsoft.PackageManagement.MsuProvider.dll"),
                 Path.Combine(BaseDir, "Microsoft.PackageManagement.MsiProvider.dll")

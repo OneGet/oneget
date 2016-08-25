@@ -54,7 +54,7 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
     It "EXPECTED: Finds 'Zlib' Package" {
         $version = "1.2.8.8"
         $expectedDependencies = @("zlib.v120.windesktop.msvcstl.dyn.rt-dyn/[1.2.8.8]", "zlib.v140.windesktop.msvcstl.dyn.rt-dyn/[1.2.8.8]")
-        $zlib = find-package -name "zlib" -provider $nuget -source $source -RequiredVersion $version -forcebootstrap
+        $zlib = find-package -name "zlib" -provider $nuget -source $source -RequiredVersion $version
         $zlib.name | should match "zlib"
         $zlib.Dependencies.Count | should be 2
 
@@ -103,7 +103,7 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
     }
 
     It "EXPECTED: Finds 'TestPackage' Package using fwlink" {
-        (find-package -name "TestPackage" -provider $nuget -source $fwlink -forcebootstrap).name | should match "TestPackage"
+        (find-package -name "TestPackage" -provider $nuget -source $fwlink).name | should match "TestPackage"
     }
 
     It "EXPECTED: Finds work with dependencies loop" {
@@ -112,7 +112,7 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
 
     It "EXPECTED: Finds 'Zlib' Package with -IncludeDependencies" {
         $version = "1.2.8.8"
-        $packages = Find-Package -Name "zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -ForceBootstrap -IncludeDependencies
+        $packages = Find-Package -Name "zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -IncludeDependencies
         $packages.Count | should match 3
         $expectedPackages = @("zlib", "zlib.v120.windesktop.msvcstl.dyn.rt-dyn", "zlib.v140.windesktop.msvcstl.dyn.rt-dyn")
 
@@ -187,10 +187,10 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
     }
 
     It "EXPECTED: Finds 'awssdk' package which has more than 200 versions" {
-        (find-package -name "awssdk" -provider $nuget -source $source -forcebootstrap -AllVersions).Count -gt 200 | should be $true
+        (find-package -name "awssdk" -provider $nuget -source $source -AllVersions).Count -gt 200 | should be $true
 
         # Uncomment this once publish the new version of nuget
-        $awssdk = Find-Package -Name "awssdk" -Provider $nuget -source $source -forcebootstrap -RequiredVersion 2.3.55
+        $awssdk = Find-Package -Name "awssdk" -Provider $nuget -source $source -RequiredVersion 2.3.55
         [long]$awssdk.Meta.Attributes["downloadCount"] -ge 1023357 | should be $true
         $awssdk.Meta.Attributes["updated"] | should match "2016-03-09T01:06:54Z"
         $awssdk.TagId | should match "AWSSDK#2.3.55.0" 
@@ -249,7 +249,7 @@ Describe Save-Package -Tags @('BVT', 'DRT'){
         $newDestination = "$env:tmp\nugetinstallation"
 		
         try {
-            $packages = Save-Package -Name "zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -ForceBootstrap -Path $destination
+            $packages = Save-Package -Name "zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -Path $destination
             $packages.Count | should match 3
             
             foreach ($expectedPackage in $expectedPackages) {
@@ -537,7 +537,7 @@ Describe Install-Package -Tags @('BVT', 'DRT'){
     }
 
 	it "EXPECTED: Installs 'awssdk' Package which has more than 200 versions To Packages Directory" {
-		(install-package -name "awssdk" -provider $nuget -source $source -destination $destination -minversion 2.3 -force)
+		(install-package -name "awssdk" -provider $nuget -source $source -destination $destination -minimumversion 2.3 -force)
 		(test-path $destination\awssdk*) | should be $true
 		if (Test-Path $destination\awssdk*) {
 			(Remove-Item -Recurse -Force -Path $destination\awssdk*)
@@ -758,8 +758,8 @@ Describe Get-PackageSource -Tags @('BVT', 'DRT'){
 
     BeforeAll{
          #make sure the package repository exists
-        Register-PackageSource -Name 'NugetTemp1' -Location "https://www.PowerShellGallery.com/Api/V2/" -ProviderName 'nuget' -Trusted -ForceBootstrap -force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
-        Register-PackageSource -Name 'NugetTemp2' -Location "https://www.nuget.org/api/v2" -ProviderName 'nuget' -Trusted -ForceBootstrap -force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        Register-PackageSource -Name 'NugetTemp1' -Location "https://www.PowerShellGallery.com/Api/V2/" -ProviderName 'nuget' -Trusted -force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        Register-PackageSource -Name 'NugetTemp2' -Location "https://www.nuget.org/api/v2" -ProviderName 'nuget' -Trusted -force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
     }
     AfterAll    {
         UnRegister-PackageSource -Name 'NugetTemp1' -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
@@ -768,7 +768,7 @@ Describe Get-PackageSource -Tags @('BVT', 'DRT'){
 
     It "find-install-get-package Expect succeed" {
       
-        find-package jquery | install-package -destination $destination -force -ForceBootstrap
+        find-package jquery | install-package -destination $destination -force
         (Test-Path $destination\jquery*) | should be $true
         $a=get-package -Destination $destination -Name jquery
         $a | where { $_.Name -eq 'jQuery'  } | should be $true
@@ -782,7 +782,7 @@ Describe Get-PackageSource -Tags @('BVT', 'DRT'){
       
     It "get-packagesource--find-package, Expect succeed" {
 
-        $a=(get-packagesource | find-package jquery -ForceBootstrap)   
+        $a=(get-packagesource | find-package jquery)   
         $a | where { $_.Name -eq 'jQuery'  } | should be $true
     }
     
