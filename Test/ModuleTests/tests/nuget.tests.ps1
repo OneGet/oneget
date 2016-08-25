@@ -19,6 +19,7 @@ ipmo "$PSScriptRoot\utility.psm1"
 # Actual Tests:
 
 $source = "http://www.nuget.org/api/v2/"
+$sourceWithoutSlash = "http://www.nuget.org/api/v2"
 $fwlink = "http://go.microsoft.com/fwlink/?LinkID=623861&clcid=0x409"
 $longName = "THISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERS";
 $workingMaximumVersions = {"2.0", "2.5", "3.0"};
@@ -38,6 +39,12 @@ mkdir $destination -ea silentlycontinue
 $pkgSources = @("NUGETTEST101", "NUGETTEST202", "NUGETTEST303");
 
 $nuget = "nuget"
+
+Describe "Correct NuGet version loaded" -Tags @('BVT', 'DRT') {
+    $nugetProvider = Get-PackageProvider $nuget
+    $nugetProvider.Name | should match "NuGet"
+    $nugetProvider.Version -eq "2.8.5.206" | should be $true
+}
 
 Describe "Find-Package" -Tags @('BVT', 'DRT'){
     # make sure that packagemanagement is loaded
