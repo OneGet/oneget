@@ -87,7 +87,7 @@ try
         Push-Location $assemblyName
         Write-Host "Restoring package for $assemblyName"
         dotnet restore
-        dotnet build --framework $Framework --configuration $Configuration
+        dotnet -v build --framework $Framework --configuration $Configuration
         Pop-Location
     }
 }

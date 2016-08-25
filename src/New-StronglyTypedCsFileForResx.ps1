@@ -23,7 +23,7 @@ $nameSpaceDict = @{
 
 function Get-StronglyTypeCsFileForResx
 {
-    param($xml, $ClassName)
+    param($xml, $ClassName, $moduleName)
 
     # Example
     #
@@ -89,7 +89,7 @@ internal class {0} {{
     internal static global::System.Resources.ResourceManager ResourceManager {{
         get {{
             if (object.ReferenceEquals(resourceMan, null)) {{
-                global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("{2}", typeof({0}).GetTypeInfo().Assembly);
+                global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("{3}.resources.{2}", typeof({0}).GetTypeInfo().Assembly);
                 resourceMan = temp;
             }}
             return resourceMan;
@@ -132,7 +132,7 @@ internal class {0} {{
         }
     } | Out-String
     
-    $bodyCode = $body -f $shortClassName,$entries,$ClassName
+    $bodyCode = $body -f $shortClassName,$entries,$ClassName,$moduleName
 
     if ($NamespaceName)
     {
@@ -150,12 +150,19 @@ if (-not (Test-Path "$projectRoot/global.json"))
     throw "Not in solution root"
 }
 $inputFilePath = Join-Path $projectRoot "$project/resources/Messages.resx"
-$outputFilePath = Join-Path $projectRoot "$project/Messages.Designer.cs"
 
 if ($nameSpaceDict.ContainsKey($project)) {
     $className = $nameSpaceDict[$project] + ".Resources.Messages"
+    $outputFilePath = Join-Path $projectRoot "$project/gen/$className.cs"
 
+    if (-not (Test-Path "$projectRoot/$project/gen"))
+    {
+        md "$projectRoot/$project/gen"
+    }
+
+    $newResxFile = Join-Path $projectRoot "$project/resources/$className.resx"
+    Copy-Item $inputFilePath $newResxFile -Force
     $xml = [xml](Get-Content -raw $inputFilePath)
-    $genSource = Get-StronglyTypeCsFileForResx -xml $xml -ClassName $className
+    $genSource = Get-StronglyTypeCsFileForResx -xml $xml -ClassName $className -moduleName $project
     Set-Content -Encoding Ascii -Path $outputFilePath -Value $genSource
 }

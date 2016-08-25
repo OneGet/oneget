@@ -16,8 +16,8 @@
 
 	"dependencies": {
 		"System.Management.Automation": "1.0.0-alpha9",
-    "Microsoft.PackageManagement": "1.0.0-*",
-    "Microsoft.PackageManagement.ArchiverProviders":  "1.0.0-*"
+        "Microsoft.PackageManagement": "1.0.0-*",
+        "Microsoft.PackageManagement.ArchiverProviders":  "1.0.0-*"
 	},
 
 	"frameworks": {
@@ -42,7 +42,14 @@
             },
             "buildOptions": {
                 "compile": {
-                    "exclude": [ "Resources/*" ]
+                    "exclude": [
+                        "Resources/Messages.Designer.cs"
+                    ]
+                },
+                "embed": {
+                    "exclude": [
+                        "Resources/Messages.resx"
+                    ]
                 }
             }
 		}

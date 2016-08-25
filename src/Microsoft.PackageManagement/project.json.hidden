@@ -47,7 +47,12 @@
       "buildOptions": {
         "compile": {
           "exclude": [
-            "Resources/*"
+            "Resources/Messages.Designer.cs"
+          ]
+        },
+        "embed": {
+          "exclude": [
+            "Resources/Messages.resx"
           ]
         }
       }
@@ -60,7 +65,12 @@
         "compile": {
           "exclude": [
             "Providers/Inbox/Common/*",
-            "Resources/*"
+            "Resources/Messages.Designer.cs"
+          ]
+        },
+        "embed": {
+          "exclude": [
+            "Resources/Messages.resx"
           ]
         }
       },

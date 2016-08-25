@@ -47,7 +47,7 @@
       "buildOptions": {
         "compile": {
           "exclude": [
-            "Resources/*"
+            "Resources/Messages.resx"
           ]
         }
       }

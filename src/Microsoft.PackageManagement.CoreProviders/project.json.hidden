@@ -48,24 +48,36 @@
               "buildOptions": {
                 "compile": {
                   "exclude": [
-                    "Resources/*"
+                    "Resources/Messages.Designer.cs"
+                  ]
+                },
+                "embed": {
+                  "exclude": [
+                    "Resources/Messages.resx"
                   ]
                 }
               }
 		},
 
 		"netstandard1.6": {
-      "imports": [ "dnxcore50", "portable-net45+win8" ],
-			"buildOptions": {
-        "define": [ "CORECLR" ],
-        "compile": {
-          "exclude": [ "ProgramsProvider.cs", "Resources/*" ]
-        }
+            "imports": [ "dnxcore50", "portable-net45+win8" ],
+	        "buildOptions": {
+                "define": [ "CORECLR" ],
+                "compile": {
+                  "exclude": [
+                      "Resources/Messages.Designer.cs"
+                  ]
+                },
+                "embed": {
+                  "exclude": [
+                    "Resources/Messages.resx"
+                  ]
+                }
 			},
-      "dependencies": {
-          "NETStandard.Library": "1.6.0"
-      }
+            "dependencies": {
+            "NETStandard.Library": "1.6.0"
+            }
 		
-    }
+        }
 	}
 }

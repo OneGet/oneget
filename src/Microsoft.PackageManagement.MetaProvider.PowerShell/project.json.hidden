@@ -41,7 +41,14 @@
             },
             "buildOptions": {
                 "compile": {
-                    "exclude": [ "Resources/*" ]
+                  "exclude": [
+                    "Resources/Messages.Designer.cs"
+                  ]
+                },
+                "embed": {
+                  "exclude": [
+                    "Resources/Messages.resx"
+                  ]
                 }
             }
 		},
@@ -49,9 +56,16 @@
 		"netstandard1.6": {
 			"imports": ["dnxcore50"],
 			"buildOptions": {
-				"define": ["CORECLR"],
+			    "define": ["CORECLR"],
                 "compile": {
-                    "exclude": [ "Resources/*" ]
+                    "exclude": [
+                        "Resources/Messages.Designer.cs"
+                    ]
+                },
+                "embed": {
+                    "exclude": [
+                        "Resources/Messages.resx"
+                    ]
                 }
 			}
 		}

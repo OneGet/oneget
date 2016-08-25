@@ -42,7 +42,14 @@
             },
             "buildOptions": {
                 "compile": {
-                    "exclude": [ "Resources/*" ]
+                    "exclude": [
+                        "Resources/Messages.Designer.cs"
+                    ]
+                },
+                "embed": {
+                    "exclude": [
+                        "Resources/Messages.resx"
+                    ]
                 }
             }
 		}

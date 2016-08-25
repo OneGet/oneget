@@ -41,7 +41,14 @@
             },
             "buildOptions": {
                 "compile": {
-                    "exclude": [ "Resources/*" ]
+                    "exclude": [
+                        "Resources/Messages.Designer.cs"
+                    ]
+                },
+                "embed": {
+                    "exclude": [
+                        "Resources/Messages.resx"
+                    ]
                 }
             }
     },
@@ -51,7 +58,14 @@
 			"buildOptions": {
 				"define": ["CORECLR"],
                 "compile": {
-                    "exclude": [ "Resources/*" ]
+                    "exclude": [
+                        "Resources/Messages.Designer.cs"
+                    ]
+                },
+                "embed": {
+                    "exclude": [
+                        "Resources/Messages.resx"
+                    ]
                 }
 			}
 		}
