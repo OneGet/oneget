@@ -22,7 +22,7 @@ $source = "http://www.nuget.org/api/v2/"
 $fwlink = "http://go.microsoft.com/fwlink/?LinkID=623861&clcid=0x409"
 $longName = "THISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERS";
 $workingMaximumVersions = {"2.0", "2.5", "3.0"};
-$packageNames = @("Azurecontrib", "AWSSDK", "TestLib");
+$packageNames = @("Azurecontrib", "TestLib");
 $minimumVersions = @("1.0", "1.3", "1.5");
 $maximumVersions = @("1.8", "2.1", "2.3");
 $destination = "$env:tmp\nugettests"
@@ -38,9 +38,6 @@ mkdir $destination -ea silentlycontinue
 $pkgSources = @("NUGETTEST101", "NUGETTEST202", "NUGETTEST303");
 
 $nuget = "nuget"
-
-#bootstrap
-Install-PackageProvider -Name $nuget -Force
 
 Describe "Find-Package" -Tags @('BVT', 'DRT'){
     # make sure that packagemanagement is loaded
@@ -61,7 +58,7 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
         $zlib.name | should match "zlib"
         $zlib.Dependencies.Count | should be 2
 
-  	$dateTime = [datetime]$zlib.Meta.Attributes["published"]
+      	$dateTime = [datetime]$zlib.Meta.Attributes["published"]
         $zlib.Meta.Attributes["packageSize"] | should match "2742"
         $dateTime.Day | should be 17
         $dateTime.Month | should be 5
@@ -95,14 +92,14 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
     It "EXPECTED: Finds 100 packages should throw error" {
         $packages = Find-Package -Provider $nuget -Source $source | Select -First 100
 
-        {Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction silentlycontinue} | should throw
+        { Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction Stop } | should throw
     }
 
 
     It "EXPECTED: Finds 128 packages should throw error" {
         $packages = Find-Package -Provider $nuget -Source $source | Select -First 127
 
-        {Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction silentlycontinue} | should throw
+        { Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction Stop } | should throw
     }
 
     It "EXPECTED: Finds 'TestPackage' Package using fwlink" {
@@ -149,7 +146,7 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
         $packages.Version.Contains("1.2") | should be $true
     }
 
-    It "EXPECTED: Cannot find unlisted package with all versions and maximum versions" -Skip{
+    It "EXPECTED: Cannot find unlisted package with all versions and maximum versions" -Skip {
         $packages = find-package -name gistprovider -provider $nuget -source $dtlgallery -AllVersions -MaximumVersion 1.3
         # we should still be able to find 2 listed package (which is version 1.2 and 1.3)
         $packages.Count -eq 2 | should be $true
@@ -193,10 +190,10 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
         (find-package -name "awssdk" -provider $nuget -source $source -forcebootstrap -AllVersions).Count -gt 200 | should be $true
 
         # Uncomment this once publish the new version of nuget
-        $awssdk = Find-Package -Name "awssdk" -Provider $nuget -source $source -forcebootstrap -RequiredVersion 2.3.53
+        $awssdk = Find-Package -Name "awssdk" -Provider $nuget -source $source -forcebootstrap -RequiredVersion 2.3.55
         [long]$awssdk.Meta.Attributes["downloadCount"] -ge 1023357 | should be $true
-        $awssdk.Meta.Attributes["updated"] | should match "2015-12-15T17:46:22Z"
-        $awssdk.TagId | should match "AWSSDK#2.3.53.0" 
+        $awssdk.Meta.Attributes["updated"] | should match "2016-03-09T01:06:54Z"
+        $awssdk.TagId | should match "AWSSDK#2.3.55.0" 
     }
 
 	It "EXPECTED: Finds A Combination Of Packages With Various Versions" {
@@ -214,31 +211,31 @@ Describe "Find-Package" -Tags @('BVT', 'DRT'){
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Too Long Of Name" {
-    	(find-package -name $longName -provider $nuget -source $source -EA silentlycontinue) | should throw
+    	{ find-package -name $longName -provider $nuget -source $source -ErrorAction Stop } | should throw
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Invalid Name" {
-    	(find-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source -EA silentlycontinue) | should throw
+    	{ find-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source EA stop } | should throw
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Negative Maximum Version Parameter" {
-    	(find-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -EA silentlycontinue) | should throw
+    	{find-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Negative Minimum Version Parameter" {
-    	(find-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -EA silentlycontinue) | should throw
+    	{find-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Negative Required Version Parameter" {
-    	(find-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -EA silentlycontinue) | should throw
+    	{find-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -EA stop} | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Find Package Due To Out Of Bounds Required Version Parameter" {
-	    (find-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -EA silentlycontinue) | should throw
+	    {find-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -EA Stop} | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Find Package Due To Minimum Version Parameter Greater Than Maximum Version Parameter" {
-	    (find-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -EA silentlycontinue) | should throw
+	    {find-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -EA stop} | should throw
     }
 }
 
@@ -375,31 +372,31 @@ Describe Save-Package -Tags @('BVT', 'DRT'){
     }
 
 	It "EXPECTED: -FAILS- To Save Package Due To Too Long Of Name" {
-    	(save-package -name $longName -provider $nuget -source $source -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name $longName -provider $nuget -source $source -Path $destination -EA stop} | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Save Package Due To Invalid Name" {
-    	(save-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source -Path $destination -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Save Package Due To Negative Maximum Version Parameter" {
-    	(save-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -Path $destination -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Save Package Due To Negative Minimum Version Parameter" {
-    	(save-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -Path $destination -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Save Package Due To Negative Required Version Parameter" {
-    	(save-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -Path $destination -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Save Package Due To Out Of Bounds Required Version Parameter" {
-    	(save-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -Path $destination -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Save Package Due To Minimum Version Parameter Greater Than Maximum Version Parameter" {
-    	(save-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -Path $destination -EA stop} | should throw
     }
 }
 
@@ -540,7 +537,7 @@ Describe Install-Package -Tags @('BVT', 'DRT'){
     }
 
 	it "EXPECTED: Installs 'awssdk' Package which has more than 200 versions To Packages Directory" {
-		(install-package -name "awssdk" -provider $nuget -source $source -destination $destination -maximumversion 2.3 -force)
+		(install-package -name "awssdk" -provider $nuget -source $source -destination $destination -minversion 2.3 -force)
 		(test-path $destination\awssdk*) | should be $true
 		if (Test-Path $destination\awssdk*) {
 			(Remove-Item -Recurse -Force -Path $destination\awssdk*)
@@ -570,31 +567,31 @@ Describe Install-Package -Tags @('BVT', 'DRT'){
 	    }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Too Long Of Name" {
-    	(install-package -name $longName -provider $nuget -source $source -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name $longName -provider $nuget -source $source -destination $destination -force -EA stop} | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Install  Package Due To Invalid Name" {
-    	(install-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source -destination $destination -force -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Negative Maximum Version Parameter" {
-    	(install-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -destination $destination -force -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Negative Maximum Version Parameter" {
-    	(install-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -destination $destination -force -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Negative Maximum Version Parameter" {
-    	(install-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -destination $destination -force -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Out Of Bounds Required Version Parameter" {
-    	(install-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -destination $destination -force -EA stop} | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Install Package Due To Minimum Version Parameter Greater Than Maximum Version Parameter" {
-    	(install-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -destination $destination -force -EA stop} | should throw
 	}
 }
 
@@ -620,7 +617,7 @@ Describe Get-Package -Tags @('BVT', 'DRT'){
 
 	It "EXPECTED: -FAILS- To Get Package Due To Too Long Of Name" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(get-package -name $longName -provider $nuget -destination $destination -EA silentlycontinue) | should throw
+		{get-package -name $longName -provider $nuget -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -628,7 +625,7 @@ Describe Get-Package -Tags @('BVT', 'DRT'){
 
 	It "EXPECTED: -FAILS- To Get Package Due To Invalid Name" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(get-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -destination $destination -EA silentlycontinue) | should throw
+		{get-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -636,7 +633,7 @@ Describe Get-Package -Tags @('BVT', 'DRT'){
 
 	It "EXPECTED: -FAILS- To Get Package Due To Out Of Bounds Required Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(get-package -name "adept.nugetrunner" -provider $nuget -maximumversion "4.0" -minimumversion "1.0" -requiredversion "5.0" -destination $destination -EA silentlycontinue) | should throw
+		{get-package -name "adept.nugetrunner" -provider $nuget -maximumversion "4.0" -minimumversion "1.0" -requiredversion "5.0" -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -644,7 +641,7 @@ Describe Get-Package -Tags @('BVT', 'DRT'){
 
 	It "EXPECTED: -FAILS- To Get Package Due To Minimum Version Parameter Greater Than Maximum Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(get-package -name "adept.nugetrunner" -provider $nuget -maximumversion "3.0" -minimumversion "4.0" -destination $destination -EA silentlycontinue) | should throw
+		{get-package -name "adept.nugetrunner" -provider $nuget -maximumversion "3.0" -minimumversion "4.0" -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -669,7 +666,7 @@ Describe Uninstall-Package -Tags @('BVT', 'DRT'){
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Too Long Of Name" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name $longName -provider $nuget -destination $destination -force -EA silentlycontinue) | should throw
+		{uninstall-package -name $longName -provider $nuget -destination $destination -force -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -677,7 +674,7 @@ Describe Uninstall-Package -Tags @('BVT', 'DRT'){
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Invalid Name" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -destination $destination -EA silentlycontinue) | should throw
+		{uninstall-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -685,7 +682,7 @@ Describe Uninstall-Package -Tags @('BVT', 'DRT'){
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Out Of Bounds Required Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name "adept.nugetrunner" -provider $nuget -maximumversion "4.0" -minimumversion "1.0" -requiredversion "5.0" -destination $destination -EA silentlycontinue) | should throw
+		{uninstall-package -name "adept.nugetrunner" -provider $nuget -maximumversion "4.0" -minimumversion "1.0" -requiredversion "5.0" -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -693,7 +690,7 @@ Describe Uninstall-Package -Tags @('BVT', 'DRT'){
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Minimum Version Parameter Greater Than Maximum Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name "adept.nugetrunner" -provider $nuget -maximumversion "3.0" -minimumversion "4.0" -destination $destination -EA silentlycontinue) | should throw
+		{uninstall-package -name "adept.nugetrunner" -provider $nuget -maximumversion "3.0" -minimumversion "4.0" -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -701,7 +698,7 @@ Describe Uninstall-Package -Tags @('BVT', 'DRT'){
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Negative Maximum Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name "zlib" -provider $nuget -maximumversion "-1.5" -destination $destination -force -EA silentlycontinue) | should throw
+		{uninstall-package -name "zlib" -provider $nuget -maximumversion "-1.5" -destination $destination -force -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -709,7 +706,7 @@ Describe Uninstall-Package -Tags @('BVT', 'DRT'){
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Negative Minimum Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name "zlib" -provider $nuget -minimumversion "-1.5" -destination $destination -force -EA silentlycontinue) | should throw
+		{uninstall-package -name "zlib" -provider $nuget -minimumversion "-1.5" -destination $destination -force -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -717,7 +714,7 @@ Describe Uninstall-Package -Tags @('BVT', 'DRT'){
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Negative Required Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name "zlib" -provider $nuget -requiredversion "-1.5" -destination $destination -force -EA silentlycontinue) | should throw
+		{uninstall-package -name "zlib" -provider $nuget -requiredversion "-1.5" -destination $destination -force -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
