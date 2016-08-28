@@ -40,6 +40,8 @@ $pkgSources = @("NUGETTEST101", "NUGETTEST202", "NUGETTEST303");
 
 $nuget = "nuget"
 
+Get-PackageProvider Nuget | fl
+
 Describe "Correct NuGet version loaded" -Tags @('BVT', 'DRT') {
     $nugetProvider = Get-PackageProvider $nuget
     $nugetProvider.Name | should match "NuGet"
