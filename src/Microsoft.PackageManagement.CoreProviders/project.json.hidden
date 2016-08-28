@@ -65,7 +65,8 @@
                 "define": [ "CORECLR" ],
                 "compile": {
                   "exclude": [
-                      "Resources/Messages.Designer.cs"
+                      "Resources/Messages.Designer.cs",
+                      "ProgramsProvider.cs"
                   ]
                 },
                 "embed": {

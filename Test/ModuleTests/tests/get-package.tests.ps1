@@ -18,10 +18,6 @@ $nuget = "nuget"
 $source = "http://www.nuget.org/api/v2/"
 $destination = "$env:tmp\GetPackageTests"
 
-# Bootstrap the provider
-Get-PackageProvider -Name $nuget -Force
-# ------------------------------------------------------------------------------
-
 # Actual Tests:
 
 Describe "Get-package" -Tags @('BVT', 'DRT'){
