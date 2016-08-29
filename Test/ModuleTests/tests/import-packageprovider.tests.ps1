@@ -28,7 +28,7 @@ $InternalGallery = "https://www.powershellgallery.com/api/v2/"
 $InternalSource = 'OneGetTestSource'
 
 #make sure the package repository exists
-$a=Get-PackageSource -ForceBootstrap| select Name, Location, ProviderName
+$a=Get-PackageSource | select Name, Location, ProviderName
     
 $found = $false
 foreach ($item in $a)
@@ -41,6 +41,8 @@ foreach ($item in $a)
         }
     }
 }
+
+Get-PackageProvider NuGet
 
 Register-PackageSource -Name $InternalSource -Location $InternalGallery -ProviderName 'PowerShellGet' -Trusted -ForceBootstrap -ErrorAction SilentlyContinue
 # ------------------------------------------------------------------------------
