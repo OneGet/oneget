@@ -15,6 +15,8 @@
 ipmo "$PSScriptRoot\utility.psm1"
 $InternalGallery = "https://www.PowerShellGallery.com/api/v2/"
 
+Get-PackageProvider -Name Nuget -ErrorAction SilentlyContinue
+
 # ------------------------------------------------------------------------------
 # Actual Tests:
 
