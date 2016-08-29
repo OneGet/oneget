@@ -15,8 +15,6 @@
 ipmo "$PSScriptRoot\utility.psm1"
 $InternalGallery = "https://www.PowerShellGallery.com/api/v2/"
 
-Get-PackageProvider -Name Nuget -ErrorAction SilentlyContinue
-
 # ------------------------------------------------------------------------------
 # Actual Tests:
 
@@ -127,7 +125,7 @@ Describe "find-packageprovider" -Tags @('BVT', 'DRT'){
         $a.Version | should match "0.2"
     }
 
-   It "find-install-packageprovider nuget, Expect succeed" {
+   It "find-install-packageprovider nuget, Expect succeed" -Skip {
         $provider= find-packageprovider -name nuget -MinimumVersion 2.8.5.1 -MaximumVersion 2.8.5.123
 
         $provider | ?{ $_.Version -eq "2.8.5.122" } | should not BeNullOrEmpty

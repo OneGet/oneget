@@ -18,8 +18,6 @@ $nuget = "nuget"
 $source = "http://www.nuget.org/api/v2/"
 $destination = "$env:tmp\GetPackageTests"
 
-Get-PackageProvider NuGet
-
 # Actual Tests:
 
 Describe "Get-package" -Tags @('BVT', 'DRT'){
