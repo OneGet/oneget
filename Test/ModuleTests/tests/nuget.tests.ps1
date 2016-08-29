@@ -30,6 +30,7 @@ $destination = "$env:tmp\nugettests"
 $relativetestpath = "$env:tmp\relativepathtestnuget"
 $dependenciesSource = "$env:temp\PackageManagementDependencies"
 $dtlgallery = "https://MyTestGallery.cloudapp.net/api/v2/"
+$nugetVersion = "2.8.5.206"
 Get-ChildItem -Path $dependenciesSource -Recurse -Include *.nupkg | % { $_.IsReadOnly = $false }
 if( test-path $destination ) {
     rmdir -recurse -force $destination -ea silentlycontinue
@@ -40,12 +41,14 @@ $pkgSources = @("NUGETTEST101", "NUGETTEST202", "NUGETTEST303");
 
 $nuget = "nuget"
 
+Import-packageProvider Nuget -RequiredVersion $nugetVersion -Force
+
 Get-PackageProvider Nuget | fl
 
 Describe "Correct NuGet version loaded" -Tags @('BVT', 'DRT') {
     $nugetProvider = Get-PackageProvider $nuget
     $nugetProvider.Name | should match "NuGet"
-    $nugetProvider.Version -eq "2.8.5.206" | should be $true
+    $nugetProvider.Version -eq $nugetVersion | should be $true
 }
 
 Describe "Find-Package" -Tags @('BVT', 'DRT'){
