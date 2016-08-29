@@ -28,7 +28,7 @@ $InternalGallery = "https://www.powershellgallery.com/api/v2/"
 $InternalSource = 'OneGetTestSource'
 
 #make sure the package repository exists
-$a=Get-PackageSource -ForceBootstrap| select Name, Location, ProviderName
+$a=Get-PackageSource | select Name, Location, ProviderName
     
 $found = $false
 foreach ($item in $a)
@@ -42,11 +42,13 @@ foreach ($item in $a)
     }
 }
 
+Get-PackageProvider NuGet
+
 Register-PackageSource -Name $InternalSource -Location $InternalGallery -ProviderName 'PowerShellGet' -Trusted -ForceBootstrap -ErrorAction SilentlyContinue
 # ------------------------------------------------------------------------------
 # Actual Tests:
 
-Describe "import-packageprovider" -Tags @('BVT', 'DRT'){
+Describe "import-packageprovider" -Tags @('BVT', 'DRT') {
     # make sure that packagemanagement is loaded
     import-packagemanagement
     
@@ -66,7 +68,7 @@ Describe "import-packageprovider" -Tags @('BVT', 'DRT'){
         $x | should match "OneGetTest"
     } 
 
-    It "Import 'OneGetTestProvider' CSharp package provider with filePath from programs folder, Expect succeed" {
+    It "Import 'OneGetTestProvider' CSharp package provider with filePath from programs folder, Expect succeed" -Skip {
     
         $path = "$($ProgramProviderInstalledPath)\Microsoft.PackageManagement.OneGetTestProvider.dll" 
         $path | should Exist
@@ -94,7 +96,7 @@ Describe "import-packageprovider" -Tags @('BVT', 'DRT'){
     }   
 
           
-    It "Import a CSharp package provider with filePath from user folder -force, Expect succeed" {
+    It "Import a CSharp package provider with filePath from user folder -force, Expect succeed" -Skip {
         $path = "$($UserProviderInstalledPath)\Microsoft.PackageManagement.OneGetTestProvider.dll" 
         $path | should Exist         
         

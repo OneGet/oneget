@@ -23,7 +23,7 @@ Describe "find-packageprovider" -Tags @('BVT', 'DRT'){
     import-packagemanagement
 
     #make sure the package repository exists
-    $a=Get-PackageSource  -force| select Location, ProviderName
+    $a=Get-PackageSource | select Location, ProviderName
     
     $found = $false
     foreach ($item in $a)
@@ -38,11 +38,11 @@ Describe "find-packageprovider" -Tags @('BVT', 'DRT'){
 
     if(-not $found)
     {
-        Register-PackageSource -Name 'OneGetTestSource' -Location $InternalGallery -ProviderName 'PowerShellGet' -ForceBootstrap
+        Register-PackageSource -Name 'OneGetTestSource' -Location $InternalGallery -ProviderName 'PowerShellGet'
     }
 
     It "find-packageprovider without any parameters, Expect succeed" {
-        $a = (Find-PackageProvider -force).name 
+        $a = (Find-PackageProvider).name 
         $a -contains "TSDProvider" | should be $true
         $a -contains "nuget" | should be $true
     }
@@ -125,7 +125,7 @@ Describe "find-packageprovider" -Tags @('BVT', 'DRT'){
         $a.Version | should match "0.2"
     }
 
-   It "find-install-packageprovider nuget, Expect succeed" {
+   It "find-install-packageprovider nuget, Expect succeed" -Skip {
         $provider= find-packageprovider -name nuget -MinimumVersion 2.8.5.1 -MaximumVersion 2.8.5.123
 
         $provider | ?{ $_.Version -eq "2.8.5.122" } | should not BeNullOrEmpty

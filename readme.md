@@ -32,7 +32,7 @@ With OneGet, you can
 
 #####PackageManagement Architecture#####
 
-![Image](https://github.com/OneGet/oneget/blob/master/OneGetArchitecture.PNG?raw=true)
+![Image](./assets/OneGetArchitecture.PNG?raw=true)
 
 
 ### Building the code
@@ -48,8 +48,8 @@ With OneGet, you can
 - Resharper xUnit test runner - http://resharper-plugins.jetbrains.com/packages/xunitcontrib/2.0.0
 - Wix 3.9 : http://wixtoolset.org (only if you want to build the MSI and Installer)
 
-check out the source code 
-``` powershell 
+check out the source code
+``` powershell
 
 #clone this repository
 > git clone --recurse-submodules https://github.com/OneGet/oneget.git
@@ -66,8 +66,8 @@ check out the source code
 # BUILD using Visual Studio, or from the command line:
 
 > msbuild PackageManagement.sln /p:Configuration=Release "/p:Platform=Any CPU"
-    
-# If you want to send me changes, you should fork the project into your own 
+
+# If you want to send me changes, you should fork the project into your own
 # account first, and use that URL to clone it.
 # If you fork it later you can just change the origin by:
 
@@ -75,14 +75,14 @@ check out the source code
 > git remote rename origin original
 
 # add your repo url as the origin:
-# e.g. git@github.com:fearthecowboy/OneGet.git 
-> git remote add origin <your-repo-url> 
+# e.g. git@github.com:fearthecowboy/OneGet.git
+> git remote add origin <your-repo-url>
 
 # build & deploy binaries and run test
 build the packagemanagment.sln:
 
     msbuild PackageManagement.sln /p:Configuration=Release "/p:Platform=Any CPU"
- 
+
 cd to the test folder
 .\run-test.ps1  will copy the files generated from the build to x:\Program Files\WindowsPowerShell\Modules\PackageManagement
 and update the PowerShellGet to x:\Program Files\WindowsPowerShell\Modules\PowerShellGet. Also run the tests.
@@ -112,23 +112,23 @@ There are currently three branches in the git repository:
 
 Contributions to the OneGet project will require the signing of a CLA -- contact @jianyunt for details...
 
-In the immediate time frame, we won't be taking pull requests to the core itself, as we still have many masters at Microsoft to keep happy, and I have a lot of release process stuff I have to go thru to make them happy. 
+In the immediate time frame, we won't be taking pull requests to the core itself, as we still have many masters at Microsoft to keep happy, and I have a lot of release process stuff I have to go thru to make them happy.
 
-There are some exceptions to the where I can take Pull Requests immediately: 
+There are some exceptions to the where I can take Pull Requests immediately:
 
-> Pull Requests to the Package Providers are instantly welcome 
+> Pull Requests to the Package Providers are instantly welcome
 
 > Any unit tests, BVT tests or -Edge only features, we can take pull requests for as well
 
 > Docs, Wiki, content, designs, bugs -- everything gleefully accepted :D
-  
+
 
 ### Participating in the OneGet Community
 
-I'm eager to work with anyone who wants to help shape the future of Package Management on Windows -- your opinions, feedback and code can help everyone. 
+I'm eager to work with anyone who wants to help shape the future of Package Management on Windows -- your opinions, feedback and code can help everyone.
 
 
-### Online Meeting 
+### Online Meeting
 
 We have an online monthly meeting at the beginning of each month on Tuesday from 10am - 11am (PST). Each month may have slight shift of either the first week or the second week.  We will twitter the exact time as well as put a note on GitHub site.  (everyone welcome!)
 
@@ -152,7 +152,7 @@ Throughput Graph
 [![Throughput Graph](https://graphs.waffle.io/OneGet/oneget/throughput.svg)](https://waffle.io/OneGet/oneget/metrics)
 
 
-### Team Members 
+### Team Members
 
 | Branch | Purpose |
 | ------- | ---------------------------|
@@ -162,4 +162,3 @@ Throughput Graph
 |@Quoc|  Engineer on the team.   |
 
 [Follow us on Twitter](https://twitter.com/PSOneGet)
-

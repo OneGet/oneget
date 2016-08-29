@@ -9,6 +9,14 @@
 *.msi
 *.user
 *.sln.docstates
+Messages.Designer.cs
+
+src/Microsoft.PackageManagement.CoreProviders/resources/Microsoft.PackageManagement.Providers.Resources.Messages.resx
+src/Microsoft.PackageManagement.MetaProvider.PowerShell/resources/Microsoft.PackageManagement.MetaProvider.PowerShell.Internal.Resources.Messages.resx
+src/Microsoft.PackageManagement.MsiProvider/resources/Microsoft.PackageManagement.Msi.Internal.Resources.Messages.resx
+src/Microsoft.PackageManagement.MsuProvider/resources/Microsoft.PackageManagement.Msu.Internal.Resources.Messages.resx
+src/Microsoft.PackageManagement/resources/Microsoft.PackageManagement.Internal.Resources.Messages.resx
+src/Microsoft.PowerShell.PackageManagement/resources/Microsoft.PowerShell.PackageManagement.Resources.Messages.resx
 
 # Build results
 
@@ -18,6 +26,8 @@ x64/
 build/
 [Bb]in/
 [Oo]bj/
+[Oo]ut/
+[Gg]en/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
@@ -68,6 +78,7 @@ ipch
 packages
 *.wixobj
 
+*.lock.json
 
 *.suo
 *.wixpdb

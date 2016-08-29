@@ -7,14 +7,14 @@ platform: Any CPU
 install: 
     - cinst -y pester
 clone_folder: c:\projects\oneget
-build:
-  verbosity: minimal
+build_script:
+- ps: git submodule update --init; cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451";
 after_build:
 - ps: >-
-    Get-ChildItem "C:\projects\oneget\output\Release\bin" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
+    Get-ChildItem "C:\projects\oneget\src\out\PackageManagement\net451" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
 
 before_test:
 - ps: >-
-    Copy-Item -Recurse "c:\projects\oneget\Providers\Inbox\PowerShellGet" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Force -Verbose
+    Copy-Item -Recurse "c:\projects\oneget\src\Modules\PowerShellGet" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Force -Verbose
 
     & "c:\projects\oneget\Test\run-tests.ps1"

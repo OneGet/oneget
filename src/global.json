@@ -1,0 +1,11 @@
+{
+  "projects": [
+    "Microsoft.PackageManagement",
+    "Microsoft.PowerShell.PackageManagement",
+    "Microsoft.PackageManagement.ArchiverProviders",
+    "Microsoft.PackageManagement.CoreProviders",
+    "Microsoft.PackageManagement.MetaProvider.PowerShell",
+    "Microsoft.PackageManagement.MsiProvider",
+    "Microsoft.PackageManagement.MsuProvider"
+  ]
+}

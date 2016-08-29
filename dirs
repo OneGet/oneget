@@ -1,6 +1,0 @@
-
-DIRS=\
-	PackageManagement \
-    Providers \
-	PowerShell.Module \
-    Test 

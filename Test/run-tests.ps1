@@ -20,8 +20,8 @@
 
 #Step 1 - test setup
 $TestHome = $PSScriptRoot
-$TestBin = "$($TestHome)\..\output\Release\bin\"
-$PowerShellGetPath = "$($TestHome)\..\Providers\Inbox\PowerShellGet\"
+$TestBin = "$($TestHome)\..\src\out\PackageManagement\"
+$PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\"
 $PowerShellGetVersion = "1.0.0.1"
 $PackageManagementVersion = "1.0.0.1"
 
@@ -63,7 +63,7 @@ if(-not (Test-Path $powershellGetfolder)){
 
 
 Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
-Copy-Item "$TestBin\*.dll" $packagemanagementfolder -force -Verbose
+Copy-Item "$TestBin\net451\*.dll" $packagemanagementfolder -force -Verbose
 Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
 Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
 Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -force -Verbose
@@ -101,7 +101,7 @@ reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManage
 reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MetaProvider.PowerShell,31bf3856ad364e35"  /f
 reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsiProvider,31bf3856ad364e35"  /f
 reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsuProvider,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,31bf3856ad364e35"  /f
+reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,*"  /f
 reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.Test,31bf3856ad364e35"  /f
 reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
 reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
@@ -113,7 +113,7 @@ reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.P
 reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MetaProvider.PowerShell,31bf3856ad364e35"  /f
 reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsiProvider,31bf3856ad364e35"  /f
 reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsuProvider,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,31bf3856ad364e35"  /f
+reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,*"  /f
 reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.Test,31bf3856ad364e35"  /f
 reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
 reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
@@ -156,8 +156,8 @@ if (test-path $Env:AppData/NuGet/nuget.config) {
 
 
 
-Copy-Item  "$($Testbin)\Microsoft.PackageManagement.OneGetTestProvider.dll" "$($ProgramProviderInstalledPath)\" -force 
-Copy-Item  "$($Testbin)\Microsoft.PackageManagement.OneGetTestProvider.dll" "$($UserProviderInstalledPath)\" -force
+#Copy-Item  "$($Testbin)\Microsoft.PackageManagement.OneGetTestProvider.dll" "$($ProgramProviderInstalledPath)\" -force 
+#Copy-Item  "$($Testbin)\Microsoft.PackageManagement.OneGetTestProvider.dll" "$($UserProviderInstalledPath)\" -force
 
 Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($ProgramModulePath)\" -force
 Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($UserModulePath)\" -force
