@@ -27,6 +27,8 @@ $UserModuleFolder = "$($mydocument)\WindowsPowerShell\Modules"
 $InternalGallery = "https://www.powershellgallery.com/api/v2/"
 $InternalSource = 'OneGetTestSource'
 
+Get-PackageProvider NuGet
+
 #make sure the package repository exists
 $a=Get-PackageSource | select Name, Location, ProviderName
     
