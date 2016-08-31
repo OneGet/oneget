@@ -12,26 +12,21 @@
 #  limitations under the License.
 #
 # ------------------ PackageManagement Test  ----------------------------------------------
-ipmo "$PSScriptRoot\utility.psm1"
-
 $nuget = "nuget"
 $source = "http://www.nuget.org/api/v2/"
-$destination = "$env:tmp\GetPackageTests"
+# ------------------------------------------------------------------------------
 
 # Actual Tests:
 
-Describe "Get-package" -Tags @('BVT', 'DRT'){
+Describe "Get-package" -Tags "Feature" {
     # make sure that packagemanagement is loaded
-    import-packagemanagement
-
-    It "EXPECTED: Get-package accepts array of strings for -providername parameter" {
+    It "EXPECTED: Get-package accepts array of strings for -providername parameter" -Skip {
         $x = (get-package -providername Programs,Msi)
     }
 }
 
-Describe "Get-package with version parameter  - valid scenarios" -Tags @('BVT', 'DRT'){
-    # make sure that packagemanagement is loaded
-    import-packagemanagement
+Describe "Get-package with version parameter  - valid scenarios" -Tags "Feature" {
+    $destination = Join-Path $TestDrive GetPackageTests
 
     It "Get-package supports -AllVersions parameter" {
         $outputWithAllVersions = (Get-Package -providername Programs,Msi -AllVersions)
@@ -51,6 +46,17 @@ Describe "Get-package with version parameter  - valid scenarios" -Tags @('BVT', 
         $installedPackages = (Get-Package -Name "adept.nugetrunner" -Provider $nuget -Destination $destination -AllVersions)
         $installedPackages.Name | should be "adept.nugetrunner"
         $installedPackages.Count -eq $foundPackages.Count | should be $true        
+
+        # check that getting attributes from meta is not case sensitive
+        $packageToInspect = $installedPackages[0]
+
+        $firstDescr = $packageToInspect.Meta.Attributes["Description"]
+        # the description should not be null
+        [string]::IsNullOrWhiteSpace($firstDescr) | should be $false
+        $secondDescr = $packageToInspect.Meta.Attributes["dEsCriPtIoN"]
+
+        # the 2 descriptions should be the same
+        $firstDescr -eq $secondDescr | should be $true
         
 		if (Test-Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
@@ -58,21 +64,19 @@ Describe "Get-package with version parameter  - valid scenarios" -Tags @('BVT', 
     }    
 }
 
-Describe "Get-package with version parameter - Error scenarios" -Tags @('BVT', 'DRT'){
-    # make sure that packagemanagement is loaded
-    import-packagemanagement
+Describe "Get-package with version parameter - Error scenarios" -Tags "Feature" {
 
     It "Get-package -AllVersions -- Cannot be used with other version parameters" {
         $Error.Clear()
-        $msg = powershell 'Get-Package -AllVersions -RequiredVersion 1.0 -MinimumVersion 2.0  -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
-        $msg | should be "AllVersionsCannotBeUsedWithOtherVersionParameters,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackage"
+        Get-Package -AllVersions -RequiredVersion 1.0 -MinimumVersion 2.0  -warningaction:silentlycontinue -ea silentlycontinue
+        $ERROR[0].FullyQualifiedErrorId | should be "AllVersionsCannotBeUsedWithOtherVersionParameters,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackage"
 
     }
 
     It "Get-package -RequiredVersion -- Cannot be used with Min/Max version parameters" {
         $Error.Clear()
-        $msg = powershell 'Get-Package -RequiredVersion 1.0 -MinimumVersion 2.0 -MaximumVersion 3.0 -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
-        $msg | should be "VersionRangeAndRequiredVersionCannotBeSpecifiedTogether,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackage"
+        Get-Package -RequiredVersion 1.0 -MinimumVersion 2.0 -MaximumVersion 3.0 -warningaction:silentlycontinue -ea silentlycontinue
+        $ERROR[0].FullyQualifiedErrorId | should be "VersionRangeAndRequiredVersionCannotBeSpecifiedTogether,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackage"
 
     }
 }
