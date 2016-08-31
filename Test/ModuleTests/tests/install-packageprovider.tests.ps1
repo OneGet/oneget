@@ -534,7 +534,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
        
         $Error.Clear()
                       
-        $job=Start-Job -ScriptBlock { Install-PackageProvider -Name gistprovider  -force -Source $InternalGallery } -Credential $credential
+        $job=Start-Job -ScriptBlock { Install-PackageProvider -Name tsdprovider  -force -Source $InternalGallery } -Credential $credential
 
         Receive-Job -Wait -Job $job -ErrorVariable theError 2>&1
         $theError.FullyQualifiedErrorId | should be "InstallRequiresCurrentUserScopeParameterForNonAdminUser,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackageProvider"
@@ -544,7 +544,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
        
         $Error.Clear()
                       
-        $job=Start-Job -ScriptBlock { Install-PackageProvider -Name gistprovider  -force -Source $InternalGallery} -Credential $credential
+        $job=Start-Job -ScriptBlock { Install-PackageProvider -Name tsdprovider  -force -Source $InternalGallery} -Credential $credential
 
         Receive-Job -Wait -Job $job -ErrorVariable theError 2>&1
         $theError.FullyQualifiedErrorId | should be "InstallRequiresCurrentUserScopeParameterForNonAdminUser,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackageProvider"
@@ -553,7 +553,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
     It "install-packageprovider with AllUsers scope in a non-admin console, expect fail" {
         $Error.Clear()
                       
-        $job=Start-Job -ScriptBlock { Install-PackageProvider -Name gistprovider -force -scope AllUsers -Source $InternalGallery} -Credential $credential
+        $job=Start-Job -ScriptBlock { Install-PackageProvider -Name tsdprovider -force -scope AllUsers -Source $InternalGallery} -Credential $credential
 
         Receive-Job -Wait -Job $job -ErrorVariable theError2 2>&1
         $theError2.FullyQualifiedErrorId | should be "InstallRequiresCurrentUserScopeParameterForNonAdminUser,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackageProvider"
@@ -575,7 +575,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
     It "find and install-packageprovider without scope in a non-admin console, expect fail" {
         $Error.Clear()
                       
-        $job=Start-Job -ScriptBlock { Find-PackageProvider -Name gistprovider -Source $InternalGallery | Install-PackageProvider -force} -Credential $credential
+        $job=Start-Job -ScriptBlock { Find-PackageProvider -Name tsdprovider -Source $InternalGallery | Install-PackageProvider -force} -Credential $credential
 
         Receive-Job -Wait -Job $job -ErrorVariable theError3 2>&1
         $theError3.FullyQualifiedErrorId | should be "InstallRequiresCurrentUserScopeParameterForNonAdminUser,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackageProvider"
