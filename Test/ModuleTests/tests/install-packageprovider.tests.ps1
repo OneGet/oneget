@@ -19,7 +19,6 @@ $InternalSource2 = 'OneGetTestSource2'
 $ProviderFolder = "$env:ProgramFiles\PackageManagement\ProviderAssemblies"
 
 #make sure the package repository exists
-Cannot run these yet since powershellget not working yet
 $a=Get-PackageSource | select Name, Location, ProviderName
     
 $found = $false
