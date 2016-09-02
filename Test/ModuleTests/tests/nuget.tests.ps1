@@ -1371,7 +1371,7 @@ Describe Register-PackageSource -Tags "Feature" {
         }
 	}
 
-    it "EXPECTED: Registers a package source that requires a credential with skipvalidate" {
+    it "EXPECTED: Registers a package source that requires a credential with skipvalidate" -Skip {
         (register-packagesource -name "psgettestfeed" -provider $nuget -location $vstsFeed -SKipValidate)
         try {
             (Find-Package -Source "psgettestfeed" -Name ContosoClient -Credential $vstsCredential).Name | should be "ContosoClient"
@@ -1385,7 +1385,7 @@ Describe Register-PackageSource -Tags "Feature" {
     }
 
 
-    it "EXPECTED: Registers a package source that requires a credential" {
+    it "EXPECTED: Registers a package source that requires a credential" -Skip {
         (register-packagesource -name "psgettestfeed" -provider $nuget -location $vstsFeed -Credential $vstsCredential)
         try {
             (Find-Package -Source "psgettestfeed" -Name ContosoClient -Credential $vstsCredential).Name | should be "ContosoClient"
