@@ -480,11 +480,13 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     }
 
     It "EXPECTED: -FAILS- Find-Package with wrong source should not error out about dynamic parameter" {
+        $Error.Clear()
         find-package -source WrongSource -name zlib -erroraction silentlycontinue -Contains PackageManagement
         $Error[0].FullyQualifiedErrorId | should be "SourceNotFound,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
     }
 
     It "EXPECTED: -FAILS- Find-Package with wrong source and wrong dynamic parameter" {
+        $Error.Clear()
         find-package -source WrongSource -name zlib -erroraction silentlycontinue -WrongDynamicParameter PackageManagement
         $Error[0].FullyQualifiedErrorId | should be "SourceNotFound,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
     }
@@ -1355,7 +1357,8 @@ Describe Register-PackageSource -Tags "Feature" {
 
 	it "EXPECTED: Register a package source with a location created via new-psdrive" -Skip(-not $IsWindows) {
 	    New-PSDrive -Name xx -PSProvider FileSystem -Root $env:tmp
-        (register-packagesource -name "psdriveTest" -provider $nuget -location xx:\).name | should be "psdriveTest"
+        register-packagesource -name "psdriveTest" -provider $nuget -location xx:\
+        (Get-PackageSource PSDriveTest).name | should be "psdriveTest"
 		(unregister-packagesource -name "psdriveTest" -provider $nuget)
 	}
 
