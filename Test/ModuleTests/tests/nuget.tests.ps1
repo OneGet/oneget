@@ -34,6 +34,7 @@ $vstsFeedWithSlash = "https://powershellgettest.pkgs.visualstudio.com/DefaultCol
 #$proxyPath = "$env:tmp\ProxyConsoleProgram\Microsoft.HttpForwarder.Console.exe"
 $password = ConvertTo-SecureString "4bwvgxrbzvlxc7xgv22eehlix3enmrdwblrxkirnrc3uak23naoa" -AsPlainText -Force
 $vstsCredential = New-Object System.Management.Automation.PSCredential "quoct", $password
+$dependenciesSource = "$PSScriptRoot\..\..\Unit\Providers\Dependencies"
 
 $pkgSources = @("NUGETTEST101", "NUGETTEST202", "NUGETTEST303");
 
@@ -360,7 +361,7 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
 
     }
 
-    It "EXPECTED: Finds package with Credential" {
+    It "EXPECTED: Finds package with Credential" -Skip {
         $credPackage = Find-Package Contoso -Credential $vstsCredential -Source $vstsFeed -ProviderName $Nuget
         $credPackage.Count | should be 1
         $credPackage.Name | should match "Contoso"
@@ -660,7 +661,7 @@ Describe Save-Package -Tags "Feature" {
 		}    
     }
 
-    It "EXPECTED: Saves package with Credential" {
+    It "EXPECTED: Saves package with Credential" -Skip {
         #TODO: Need to fix this. Already opened an issue on GitHub
         Save-Package Contoso -Credential $vstsCredential -Source $vstsFeed -ProviderName $Nuget -Path $destination
         (Test-Path $destination\contoso*) | should be $true
@@ -951,7 +952,7 @@ Describe Install-Package -Tags "Feature" {
 		}
     }
 
-    It "EXPECTED: Install package with credential" {
+    It "EXPECTED: Install package with credential" -Skip {
         try {
             Install-Package -Name Contoso -Provider $nuget -Source $vstsFeed -Credential $vstsCredential -Destination $destination -Force
             Test-Path $destination\Contoso* | should be $true
@@ -1371,7 +1372,7 @@ Describe Register-PackageSource -Tags "Feature" {
         }
 	}
 
-    it "EXPECTED: Registers a package source that requires a credential with skipvalidate" {
+    it "EXPECTED: Registers a package source that requires a credential with skipvalidate" -Skip {
         (register-packagesource -name "psgettestfeed" -provider $nuget -location $vstsFeed -SKipValidate)
         try {
             (Find-Package -Source "psgettestfeed" -Name ContosoClient -Credential $vstsCredential).Name | should be "ContosoClient"
@@ -1385,7 +1386,7 @@ Describe Register-PackageSource -Tags "Feature" {
     }
 
 
-    it "EXPECTED: Registers a package source that requires a credential" {
+    it "EXPECTED: Registers a package source that requires a credential" -Skip {
         (register-packagesource -name "psgettestfeed" -provider $nuget -location $vstsFeed -Credential $vstsCredential)
         try {
             (Find-Package -Source "psgettestfeed" -Name ContosoClient -Credential $vstsCredential).Name | should be "ContosoClient"
@@ -1487,7 +1488,7 @@ Describe Set-PackageSource -Tags "Feature" {
 		(unregister-packagesource -name "nugettest2" -provider $nuget)
     }
 
-    it "EXPECTED: Set a package source that requires a credential" {
+    it "EXPECTED: Set a package source that requires a credential" -Skip {
         (register-packagesource -name "psgettestfeed" -provider $nuget -location $vstsFeed -Credential $vstsCredential)
         try {
             (Set-PackageSource -Name "psgettestfeed" -provider $nuget -NewName "psgettestfeed2" -Credential $vstsCredential)
