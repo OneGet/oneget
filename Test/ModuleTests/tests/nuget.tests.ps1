@@ -34,6 +34,7 @@ $vstsFeedWithSlash = "https://powershellgettest.pkgs.visualstudio.com/DefaultCol
 #$proxyPath = "$env:tmp\ProxyConsoleProgram\Microsoft.HttpForwarder.Console.exe"
 $password = ConvertTo-SecureString "4bwvgxrbzvlxc7xgv22eehlix3enmrdwblrxkirnrc3uak23naoa" -AsPlainText -Force
 $vstsCredential = New-Object System.Management.Automation.PSCredential "quoct", $password
+$dependenciesSource = "$PSScriptRoot\..\..\Unit\Providers\Dependencies"
 
 $pkgSources = @("NUGETTEST101", "NUGETTEST202", "NUGETTEST303");
 
@@ -321,14 +322,14 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     It "EXPECTED: Finds 100 packages should throw error" {
         $packages = Find-Package -Provider $nuget -Source $source | Select -First 100
 
-        (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction silentlycontinue) | should throw
+        { Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction Stop } | should throw
     }
 
 
     It "EXPECTED: Finds 128 packages should throw error" {
         $packages = Find-Package -Provider $nuget -Source $source | Select -First 127
 
-        (Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction silentlycontinue) | should throw
+        {Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction Stop} | should throw
     }
 
     It "EXPECTED: Finds 'TestPackage' Package using fwlink" {
@@ -360,7 +361,7 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
 
     }
 
-    It "EXPECTED: Finds package with Credential" {
+    It "EXPECTED: Finds package with Credential" -Skip {
         $credPackage = Find-Package Contoso -Credential $vstsCredential -Source $vstsFeed -ProviderName $Nuget
         $credPackage.Count | should be 1
         $credPackage.Name | should match "Contoso"
@@ -451,31 +452,31 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Too Long Of Name" {
-    	(find-package -name $longName -provider $nuget -source $source -EA silentlycontinue) | should throw
+    	{ find-package -name $longName -provider $nuget -source $source -EA Stop } | should throw
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Invalid Name" {
-    	(find-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source -EA silentlycontinue) | should throw
+    	{find-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Negative Maximum Version Parameter" {
-    	(find-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -EA silentlycontinue) | should throw
+    	{find-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Negative Minimum Version Parameter" {
-    	(find-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -EA silentlycontinue) | should throw
+    	{find-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Negative Required Version Parameter" {
-    	(find-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -EA silentlycontinue) | should throw
+    	{find-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -EA stop } | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Find Package Due To Out Of Bounds Required Version Parameter" {
-	    (find-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -EA silentlycontinue) | should throw
+	    {find-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -EA stop} | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Find Package Due To Minimum Version Parameter Greater Than Maximum Version Parameter" {
-	    (find-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -EA silentlycontinue) | should throw
+	    {find-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -EA stop} | should throw
     }
 
     It "EXPECTED: -FAILS- Find-Package with wrong source should not error out about dynamic parameter" {
@@ -660,7 +661,7 @@ Describe Save-Package -Tags "Feature" {
 		}    
     }
 
-    It "EXPECTED: Saves package with Credential" {
+    It "EXPECTED: Saves package with Credential" -Skip {
         #TODO: Need to fix this. Already opened an issue on GitHub
         Save-Package Contoso -Credential $vstsCredential -Source $vstsFeed -ProviderName $Nuget -Path $destination
         (Test-Path $destination\contoso*) | should be $true
@@ -693,39 +694,39 @@ Describe Save-Package -Tags "Feature" {
     }
 
 	It "EXPECTED: -FAILS- To Save Package Due To Too Long Of Name" {
-    	(save-package -name $longName -provider $nuget -source $source -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name $longName -provider $nuget -source $source -Path $destination -EA stop} | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Save Package Due To Invalid Name" {
-    	(save-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source -Path $destination -EA stop} | should throw
     }
 
     It "EXPECTED: -FAILS- To Save Package without folder pre-created" {
-    	(save-package -name Jquery -provider $nuget -source $source -Path "$destination\SavePackageTest\FolderDoesNotExist" -EA silentlycontinue) | should throw
+    	{save-package -name Jquery -provider $nuget -source $source -Path "$destination\SavePackageTest\FolderDoesNotExist" -EA stop} | should throw
     }
 
     It "EXPECTED: -FAILS- To Save Package -LiteralPath without folder pre-created" {
-    	(save-package -name Jquery -provider $nuget -source $source -LiteralPath "$destination\SavePackageTest\FolderDoesNotExist" -EA silentlycontinue) | should throw
+    	{save-package -name Jquery -provider $nuget -source $source -LiteralPath "$destination\SavePackageTest\FolderDoesNotExist" -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Save Package Due To Negative Maximum Version Parameter" {
-    	(save-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -Path $destination -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Save Package Due To Negative Minimum Version Parameter" {
-    	(save-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -Path $destination -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Save Package Due To Negative Required Version Parameter" {
-    	(save-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -Path $destination -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Save Package Due To Out Of Bounds Required Version Parameter" {
-    	(save-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -Path $destination -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Save Package Due To Minimum Version Parameter Greater Than Maximum Version Parameter" {
-    	(save-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -Path $destination -EA silentlycontinue) | should throw
+    	{save-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -Path $destination -EA stop} | should throw
     }
 }
 
@@ -951,7 +952,7 @@ Describe Install-Package -Tags "Feature" {
 		}
     }
 
-    It "EXPECTED: Install package with credential" {
+    It "EXPECTED: Install package with credential" -Skip {
         try {
             Install-Package -Name Contoso -Provider $nuget -Source $vstsFeed -Credential $vstsCredential -Destination $destination -Force
             Test-Path $destination\Contoso* | should be $true
@@ -1090,31 +1091,31 @@ Describe Install-Package -Tags "Feature" {
 	    }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Too Long Of Name" {
-    	(install-package -name $longName -provider $nuget -source $source -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name $longName -provider $nuget -source $source -destination $destination -force -EA stop} | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Install  Package Due To Invalid Name" {
-    	(install-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -source $source -destination $destination -force -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Negative Maximum Version Parameter" {
-    	(install-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -destination $destination -force -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Negative Maximum Version Parameter" {
-    	(install-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -destination $destination -force -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Negative Maximum Version Parameter" {
-    	(install-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -destination $destination -force -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Out Of Bounds Required Version Parameter" {
-    	(install-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -destination $destination -force -EA stop} | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Install Package Due To Minimum Version Parameter Greater Than Maximum Version Parameter" {
-    	(install-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -destination $destination -force -EA silentlycontinue) | should throw
+    	{install-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -destination $destination -force -EA stop} | should throw
 	}
 }
 
@@ -1139,7 +1140,7 @@ Describe Get-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Get Package Due To Too Long Of Name" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(get-package -name $longName -provider $nuget -destination $destination -EA silentlycontinue) | should throw
+		{get-package -name $longName -provider $nuget -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1147,7 +1148,7 @@ Describe Get-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Get Package Due To Invalid Name" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(get-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -destination $destination -EA silentlycontinue) | should throw
+		{get-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1155,7 +1156,7 @@ Describe Get-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Get Package Due To Out Of Bounds Required Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(get-package -name "adept.nugetrunner" -provider $nuget -maximumversion "4.0" -minimumversion "1.0" -requiredversion "5.0" -destination $destination -EA silentlycontinue) | should throw
+		{get-package -name "adept.nugetrunner" -provider $nuget -maximumversion "4.0" -minimumversion "1.0" -requiredversion "5.0" -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1163,7 +1164,7 @@ Describe Get-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Get Package Due To Minimum Version Parameter Greater Than Maximum Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(get-package -name "adept.nugetrunner" -provider $nuget -maximumversion "3.0" -minimumversion "4.0" -destination $destination -EA silentlycontinue) | should throw
+		{get-package -name "adept.nugetrunner" -provider $nuget -maximumversion "3.0" -minimumversion "4.0" -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1182,7 +1183,7 @@ Describe Uninstall-Package -Tags "Feature" {
 		uninstall-package -name "Jquery" -provider $nuget -destination $destination -RequiredVersion 2.1.3
       
         #the old version should be gone but the later should exist
-        (Get-Package -ProviderName nuget -RequiredVersion 2.1.3 -Name jquery -Destination $destination -EA silentlycontinue) | should throw
+        {Get-Package -ProviderName nuget -RequiredVersion 2.1.3 -Name jquery -Destination $destination -EA stop} | should throw
         (Get-Package -ProviderName nuget -RequiredVersion 2.1.4 -Name jquery -Destination $destination).Version | should be "2.1.4"
 
     }
@@ -1201,7 +1202,7 @@ Describe Uninstall-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Too Long Of Name" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name $longName -provider $nuget -destination $destination -force -EA silentlycontinue) | should throw
+		{uninstall-package -name $longName -provider $nuget -destination $destination -force -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1209,7 +1210,7 @@ Describe Uninstall-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Invalid Name" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -destination $destination -EA silentlycontinue) | should throw
+		{uninstall-package -name "1THIS_3SHOULD_5NEVER_7BE_9FOUND_11EVER" -provider $nuget -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1217,7 +1218,7 @@ Describe Uninstall-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Out Of Bounds Required Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name "adept.nugetrunner" -provider $nuget -maximumversion "4.0" -minimumversion "1.0" -requiredversion "5.0" -destination $destination -EA silentlycontinue) | should throw
+		{uninstall-package -name "adept.nugetrunner" -provider $nuget -maximumversion "4.0" -minimumversion "1.0" -requiredversion "5.0" -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1225,7 +1226,7 @@ Describe Uninstall-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Minimum Version Parameter Greater Than Maximum Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name "adept.nugetrunner" -provider $nuget -maximumversion "3.0" -minimumversion "4.0" -destination $destination -EA silentlycontinue) | should throw
+		{uninstall-package -name "adept.nugetrunner" -provider $nuget -maximumversion "3.0" -minimumversion "4.0" -destination $destination -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1233,7 +1234,7 @@ Describe Uninstall-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Negative Maximum Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name "zlib" -provider $nuget -maximumversion "-1.5" -destination $destination -force -EA silentlycontinue) | should throw
+		{uninstall-package -name "zlib" -provider $nuget -maximumversion "-1.5" -destination $destination -force -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1241,7 +1242,7 @@ Describe Uninstall-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Negative Minimum Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name "zlib" -provider $nuget -minimumversion "-1.5" -destination $destination -force -EA silentlycontinue) | should throw
+		{uninstall-package -name "zlib" -provider $nuget -minimumversion "-1.5" -destination $destination -force -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1249,7 +1250,7 @@ Describe Uninstall-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Negative Required Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		(uninstall-package -name "zlib" -provider $nuget -requiredversion "-1.5" -destination $destination -force -EA silentlycontinue) | should throw
+		{uninstall-package -name "zlib" -provider $nuget -requiredversion "-1.5" -destination $destination -force -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1487,7 +1488,7 @@ Describe Set-PackageSource -Tags "Feature" {
 		(unregister-packagesource -name "nugettest2" -provider $nuget)
     }
 
-    it "EXPECTED: Set a package source that requires a credential" {
+    it "EXPECTED: Set a package source that requires a credential" -Skip {
         (register-packagesource -name "psgettestfeed" -provider $nuget -location $vstsFeed -Credential $vstsCredential)
         try {
             (Set-PackageSource -Name "psgettestfeed" -provider $nuget -NewName "psgettestfeed2" -Credential $vstsCredential)
