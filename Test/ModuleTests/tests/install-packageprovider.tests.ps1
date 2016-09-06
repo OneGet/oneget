@@ -669,6 +669,7 @@ Describe "Get-package with mulitiple providers" -Tags "Feature" {
 }
 
 Describe "install-packageprovider Error Cases" -Tags "Feature" {
+  $destination = Join-Path $TestDrive "installpp"
 
   AfterAll {
         Unregister-PackageSource -Name OneGetTestSource -Verbose -ErrorAction SilentlyContinue
