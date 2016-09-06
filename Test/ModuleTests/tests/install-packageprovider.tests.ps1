@@ -12,6 +12,8 @@
 #  limitations under the License.
 #
 # ------------------ PackageManagement Test  -----------------------------------
+$isWindows = $true
+
 $InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
 $InternalGallery2 = "http://dtlgalleryint.cloudapp.net/api/v2/"
 $InternalSource = 'OneGetTestSource'
@@ -520,6 +522,12 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
             $credential = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $secesurestring
         }
     }
+
+
+    AfterAll {
+         # Delete the user profile
+         net user $userName /delete | Out-Null        
+    }   
     
     AfterEach {
 
