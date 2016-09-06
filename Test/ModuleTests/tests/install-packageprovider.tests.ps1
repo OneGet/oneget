@@ -542,9 +542,10 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
        
         $Error.Clear()
 
-        $block = [scriptblock]::Create("Install-PackageProvider -Name tsdprovider  -force -Source $InternalSource")
+        # have to register package source for the provider (1 time)
+        $block = [scriptblock]::Create("Register-PackageSource -Name $InternalSource -Location $InternalGallery -ProviderName 'PowerShellGet' -Trusted -ErrorAction SilentlyContinue; Install-PackageProvider -Name tsdprovider  -force -Source $InternalGallery")
                      
-        $job=Start-Job -ScriptBlock $block -Credential $credential
+        $job=Start-Job -ScriptBlock $block -Credential $credential -ArgumentList ([environment]::CurrentDirectory="C:\")
 
         Receive-Job -Wait -Job $job -ErrorVariable theError 2>&1
         $theError.FullyQualifiedErrorId | should be "InstallRequiresCurrentUserScopeParameterForNonAdminUser,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackageProvider"
@@ -553,7 +554,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
     It "install-packageprovider with AllUsers scope in a non-admin console, expect fail" {
         $Error.Clear()
 
-        $block = [scriptblock]::Create("Install-PackageProvider -Name tsdprovider  -force -scope AllUsers -Source $InternalSource")
+        $block = [scriptblock]::Create("Install-PackageProvider -Name tsdprovider  -force -scope AllUsers -Source $InternalGallery")
                      
         $job=Start-Job -ScriptBlock $block -Credential $credential
 
@@ -565,7 +566,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
     It "install-packageprovider CurrentUser scope in a non-admin console, expect succeed" {
         $Error.Clear()
 
-        $block = [scriptblock]::Create("Install-PackageProvider -Name tsdprovider  -force -scope CurrentUser -Source $InternalSource")
+        $block = [scriptblock]::Create("Install-PackageProvider -Name tsdprovider  -force -scope CurrentUser -Source $InternalGallery")
 
         $job=Start-Job -ScriptBlock $block -Credential $credential
 
@@ -577,7 +578,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
     It "find and install-packageprovider without scope in a non-admin console, expect fail" {
         $Error.Clear()
 
-        $block = [scriptblock]::Create("Find-PackageProvider -Name tsdprovider -Source $InternalSource | Install-PackageProvider -force")
+        $block = [scriptblock]::Create("Find-PackageProvider -Name tsdprovider -Source $InternalGallery | Install-PackageProvider -force")
                       
         $job=Start-Job -ScriptBlock $block -Credential $credential
 
@@ -589,7 +590,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
     It "find and install-packageprovider CurrentUser scope in a non-admin console, expect succeed" {
         $Error.Clear()
 
-        $block = [scriptblock]::Create("Find-PackageProvider -Name tsdprovider -Source $InternalSource | Install-PackageProvider -force -scope CurrentUser")
+        $block = [scriptblock]::Create("Find-PackageProvider -Name tsdprovider -Source $InternalGallery | Install-PackageProvider -force -scope CurrentUser")
                       
         $job=Start-Job -ScriptBlock $block -Credential $credential
 
