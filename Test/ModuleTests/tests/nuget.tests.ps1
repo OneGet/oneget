@@ -296,7 +296,7 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     It "EXPECTED: Finds 'Zlib' Package" {
         $version = "1.2.8.8"
         $expectedDependencies = @("zlib.v120.windesktop.msvcstl.dyn.rt-dyn/[1.2.8.8]", "zlib.v140.windesktop.msvcstl.dyn.rt-dyn/[1.2.8.8]")
-        $zlib = find-package -name "zlib" -provider $nuget -source $source -RequiredVersion $version -forcebootstrap
+        $zlib = find-package -name "zlib" -provider $nuget -source $source -RequiredVersion $version
         $zlib.name | should match "zlib"
         $zlib.Dependencies.Count | should be 2
 
@@ -333,7 +333,7 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     }
 
     It "EXPECTED: Finds 'TestPackage' Package using fwlink" {
-        (find-package -name "TestPackage" -provider $nuget -source $fwlink -forcebootstrap).name | should match "TestPackage"
+        (find-package -name "TestPackage" -provider $nuget -source $fwlink).name | should match "TestPackage"
     }
 
     It "EXPECTED: Finds work with dependencies loop" {
@@ -342,7 +342,7 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
 
     It "EXPECTED: Finds 'Zlib' Package with -IncludeDependencies" {
         $version = "1.2.8.8"
-        $packages = Find-Package -Name "zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -ForceBootstrap -IncludeDependencies
+        $packages = Find-Package -Name "zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -IncludeDependencies
         $packages.Count | should match 3
         $expectedPackages = @("zlib", "zlib.v120.windesktop.msvcstl.dyn.rt-dyn", "zlib.v140.windesktop.msvcstl.dyn.rt-dyn")
 
@@ -428,10 +428,10 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     }
 
     It "EXPECTED: Finds 'awssdk' package which has more than 200 versions" {
-        (find-package -name "awssdk" -provider $nuget -source $source -forcebootstrap -AllVersions).Count -gt 200 | should be $true
+        (find-package -name "awssdk" -provider $nuget -source $source -AllVersions).Count -gt 200 | should be $true
 
         # Uncomment this once publish the new version of nuget
-        $awssdk = Find-Package -Name "awssdk" -Provider $nuget -source $source -forcebootstrap -RequiredVersion 2.3.53
+        $awssdk = Find-Package -Name "awssdk" -Provider $nuget -source $source -RequiredVersion 2.3.53
         [long]$awssdk.Meta.Attributes["downloadCount"] -ge 1023357 | should be $true
         $awssdk.Meta.Attributes["updated"] | should match "2015-12-15T17:46:22Z"
         $awssdk.TagId | should match "AWSSDK#2.3.53.0" 
@@ -557,7 +557,7 @@ Describe Save-Package -Tags "Feature" {
         $newDestination = Join-Path $TestDrive "nugetinstallation"
 		
         try {
-            $packages = Save-Package -Name "zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -ForceBootstrap -Path $destination
+            $packages = Save-Package -Name "zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -Path $destination
             $packages.Count | should match 3
             
             foreach ($expectedPackage in $expectedPackages) {
@@ -1334,8 +1334,8 @@ Describe Get-PackageSource -Tags "Feature" {
 
     BeforeAll{
          #make sure the package repository exists
-        Register-PackageSource -Name 'NugetTemp1' -Location "https://www.PowerShellGallery.com/Api/V2/" -ProviderName 'nuget' -Trusted -ForceBootstrap -force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
-        Register-PackageSource -Name 'NugetTemp2' -Location "https://www.nuget.org/api/v2" -ProviderName 'nuget' -Trusted -ForceBootstrap -force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        Register-PackageSource -Name 'NugetTemp1' -Location "https://www.PowerShellGallery.com/Api/V2/" -ProviderName 'nuget' -Trusted -force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        Register-PackageSource -Name 'NugetTemp2' -Location "https://www.nuget.org/api/v2" -ProviderName 'nuget' -Trusted -force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
     }
     AfterAll    {
         UnRegister-PackageSource -Name 'NugetTemp1' -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
@@ -1357,7 +1357,7 @@ Describe Get-PackageSource -Tags "Feature" {
       
     It "get-packagesource--find-package, Expect succeed" {
 
-        $a=(get-packagesource | find-package jquery -ForceBootstrap)   
+        $a=(get-packagesource | find-package jquery)   
         $a | where { $_.Name -eq 'jQuery'  } | should be $true
     }
     
@@ -1378,7 +1378,7 @@ Describe Register-PackageSource -Tags "Feature" {
     $Destination = Join-Path $TestDrive "NUgettest"
 
 	it "EXPECTED: Register a package source with a location created via new-psdrive" {
-	    New-PSDrive -Name xx -PSProvider FileSystem -Root $destination	
+	    New-PSDrive -Name xx -PSProvider FileSystem -Root $env:tmp	
         (register-packagesource -name "psdriveTest" -provider $nuget -location xx:\).name | should be "psdriveTest"
 		(unregister-packagesource -name "psdriveTest" -provider $nuget)
 	}
@@ -1426,8 +1426,8 @@ Describe Register-PackageSource -Tags "Feature" {
     it "EXPECTED: PackageSource persists" {
         $persist = "persistsource"
         $pssource = "http://www.powershellgallery.com/api/v2/"
-        $redirectedOutput = "$env:tmp\nugettests\redirectedOutput.txt"
-        $redirectedError = "$env:tmp\nugettests\redirectedError.txt"
+        $redirectedOutput = "$Destination\redirectedOutput.txt"
+        $redirectedError = "$Destination\redirectedError.txt"
 
         try {
             Start-Process powershell -ArgumentList "register-packagesource -name $persist -location $pssource -provider $nuget" -wait
