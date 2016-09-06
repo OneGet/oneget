@@ -825,6 +825,28 @@ Describe "install-package with Whatif" -Tags "Feature" {
 
 Describe "install-package with Scope" -tags "Feature" {
 
+
+    BeforeAll {
+        if ($IsWindows)
+        {
+            $userName = "smartguy"
+            $password = "password%1"
+            #net user $userName /delete | Out-Null
+            net user $userName $password /add
+            $secesurestring = ConvertTo-SecureString $password -AsPlainText -Force
+            $credential = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $secesurestring
+        }
+    }
+
+
+    AfterAll {
+        if ($IsWindows)
+        {
+             # Delete the user profile
+             net user $userName /delete | Out-Null        
+        }
+    }  
+
      it "EXPECTED Success: Get and Install-Package without Scope without destination" {
             
         if ($IsWindows)
