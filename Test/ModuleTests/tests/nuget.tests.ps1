@@ -1375,7 +1375,7 @@ Describe Get-PackageSource -Tags "Feature" {
 }
 
 Describe Register-PackageSource -Tags "Feature" {
-    $Destination = Join-Path $TestDrive "NUgettest"
+    $Destination = $TestDrive   
 
 	it "EXPECTED: Register a package source with a location created via new-psdrive" {
 	    New-PSDrive -Name xx -PSProvider FileSystem -Root $env:tmp	
