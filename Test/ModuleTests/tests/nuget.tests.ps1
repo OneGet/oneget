@@ -481,13 +481,13 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
 
     It "EXPECTED: -FAILS- Find-Package with wrong source should not error out about dynamic parameter" {
         $Error.Clear()
-        find-package -source WrongSource -name zlib -erroraction silentlycontinue -Contains PackageManagement
+        find-package -source WrongSource -name zlib -provider nuget -Contains PackageManagement
         $Error[0].FullyQualifiedErrorId | should be "SourceNotFound,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
     }
 
     It "EXPECTED: -FAILS- Find-Package with wrong source and wrong dynamic parameter" {
         $Error.Clear()
-        find-package -source WrongSource -name zlib -erroraction silentlycontinue -WrongDynamicParameter PackageManagement
+        find-package -source WrongSource -name zlib -provider nuget -WrongDynamicParameter PackageManagement
         $Error[0].FullyQualifiedErrorId | should be "SourceNotFound,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
     }
 }
