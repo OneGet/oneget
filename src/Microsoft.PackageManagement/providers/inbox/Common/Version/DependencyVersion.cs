@@ -155,4 +155,62 @@ namespace Microsoft.PackageManagement.Provider.Utility
         }
     
     }
+
+    public class DependencyVersionComparerBasedOnMinVersion : IComparer<DependencyVersion>
+    {
+        /// <summary>
+        /// Return 1 if dep1.minversion gt dep2.minversion
+        /// Return 0 if dep1.minversion eq dep2.minversion
+        /// Return -1 if dep.minversion lt dep2.minversion
+        /// We consider null min version as the smallest possible value
+        /// so if dep1.minversion = null and dep2.minversion = 0.1 then we return -1 since dep1.minversion lt dep2.minversion
+        /// </summary>
+        /// <param name="dep1"></param>
+        /// <param name="dep2"></param>
+        /// <returns></returns>
+        public int Compare(DependencyVersion dep1, DependencyVersion dep2)
+        {
+            if (dep1.MinVersion == null)
+            {
+                if (dep2.MinVersion == null)
+                {
+                    return 0;
+                }
+
+                return -1;
+            }
+
+            // get here means dep1.minversion is not null
+            if (dep2.MinVersion == null)
+            {
+                return 1;
+            }
+
+            // if they are the same, the one with min inclusive is smaller
+            if (dep1.MinVersion.Equals(dep2.MinVersion))
+            {
+                if (dep1.IsMinInclusive)
+                {
+                    if (dep2.IsMinInclusive)
+                    {
+                        return 0;
+                    }
+
+                    return -1;
+                }
+
+                // reach here means dep1 is not min inclusive
+                if (dep2.IsMinInclusive)
+                {
+                    return 1;
+                }
+
+                // here means both are not mean inclusive
+                return 0;
+            }
+
+            // reach here means both are not null
+            return dep1.MinVersion.CompareTo(dep2.MinVersion);
+        }
+    }
 }

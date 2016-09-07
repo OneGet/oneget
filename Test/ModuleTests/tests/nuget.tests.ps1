@@ -994,6 +994,43 @@ Describe Install-Package -Tags "Feature" {
         $wildcardError.FullyQualifiedErrorId| should be "WildCardCharsAreNotSupported,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackage"
     }
 
+    It "EXPECTED: Install as few dependencies as possible 1" {
+        try {
+            Install-Package -Name TestModuleWithDependencyA -Provider $Nuget -source $dtlgallery -Destination $destination -Force -RequiredVersion 1.0
+            (Test-Path $destination\TestModuleWithDependencyA.1.0) | should be $true
+            (Test-Path $destination\TestModuleWithDependencyB.1.0) | should be $true
+            # should not install B
+            (Test-Path $destination\TestModuleWithDependencyB.2.0) | should be $false
+            (Test-Path $destination\TestModuleWithDependencyC.1.0) | should be $true
+            (Test-Path $destination\TestModuleWithDependencyD.1.0) | should be $true
+        }
+        finally {
+            if (Test-Path $destination\TestModuleWithDependency*) {
+                Remove-Item -Recurse -Force -Path $destination\TestModuleWithDependency*
+            }
+        }
+    }
+
+    It "EXPECTED: Install as few dependencies as possible 2" {
+        try {
+            Install-Package -Name TestModuleWithDependencyA -Provider $Nuget -source $dtlgallery -Destination $destination -Force -RequiredVersion 3.0
+            (Test-Path $destination\TestModuleWithDependencyA.3.0) | should be $true
+            (Test-Path $destination\TestModuleWithDependencyB.2.0) | should be $true
+            (Test-Path $destination\TestModuleWithDependencyE.1.0) | should be $true
+            (Test-Path $destination\TestModuleWithDependencyC.1.0) | should be $true
+            (Test-Path $destination\TestModuleWithDependencyD.1.0) | should be $true
+            # should not install f
+            (Test-Path $destination\TestModuleWithDependencyF.1.0) | should be $false
+            # should not install version 3.0 of c
+            (Test-Path $destination\TestModuleWithDependencyF.3.0) | should be $false
+        }
+        finally {
+            if (Test-Path $destination\TestModuleWithDependency*) {
+                Remove-Item -Recurse -Force -Path $destination\TestModuleWithDependency*
+            }
+        }
+    }
+
     it "EXPECTED: Installs package should decode percent-encoding string" {
         # Tab has a ++ folder
         try {
