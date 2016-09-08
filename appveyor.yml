@@ -19,4 +19,4 @@ before_test:
 
     & "c:\projects\oneget\Test\run-tests.ps1"
 
-    Install-Package PowerShell -Force
+    Install-PackageProvider PSL -Force; Install-Package PowerShell -Force -Provider PSL
