@@ -1,6 +1,10 @@
 version: 1.0.{build}
 os:
 - WMF 5
+environment:
+  matrix:
+    - test_framework: fullclr
+    - test_framework: coreclr
 configuration: Release
 platform: Any CPU
 # Install Pester
@@ -16,6 +20,8 @@ after_build:
 before_test:
 - ps: >-
     Copy-Item -Recurse "c:\projects\oneget\src\Modules\PowerShellGet" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Force -Verbose
+
+    [System.Environment]::GetEnvironmentVariable("test_framework")
 
     Install-PackageProvider PSL -Force; Install-Package PowerShell -Force -Provider PSL
 
