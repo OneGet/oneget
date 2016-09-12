@@ -23,6 +23,6 @@ before_test:
 
     [System.Environment]::GetEnvironmentVariable("test_framework")
 
-    Install-PackageProvider PSL -Force; Install-Package PowerShell -Force -Provider PSL
+    Install-PackageProvider PSL -Force; Install-Package PowerShell -Force -Provider PSL | fl
 
     & "c:\projects\oneget\Test\run-tests.ps1"
