@@ -39,19 +39,29 @@ $UserModulePath = "$($mydocument)\WindowsPowerShell\Modules"
 $ProgramModulePath = "$Env:ProgramFiles\WindowsPowerShell\Modules"
 
 
+$testframework = [System.Environment]::GetEnvironmentVariable("test_framework")
+
+if ($testframework -eq "coreclr")
+{
+    # install powershell core if test framework is coreclr
+    Install-PackageProvider PSL -Force; Install-Package PowerShell -Force -Provider PSL | fl
+}
+
 $packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
 $powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
 #$packagemanagementfolder = "$ProgramModulePath\PackageManagement"
 #$powershellGetfolder = "$ProgramModulePath\PowerShellGet"
 
-if(-not (Test-Path $packagemanagementfolder)){
-    New-Item -Path $packagemanagementfolder -ItemType Directory -Force  
-    Write-Host "Created  $packagemanagementfolder"
-} else{
-    Get-ChildItem -Path $packagemanagementfolder | %{ren "$packagemanagementfolder\$_" "$packagemanagementfolder\$_.deleteMe"}
-    Get-ChildItem -Path $packagemanagementfolder  -Recurse |  Remove-Item -force -Recurse
+if ($testframework -eq "fullclr")
+{    
+    if(-not (Test-Path $packagemanagementfolder)){
+        New-Item -Path $packagemanagementfolder -ItemType Directory -Force  
+        Write-Host "Created  $packagemanagementfolder"
+    } else{
+        Get-ChildItem -Path $packagemanagementfolder | %{ren "$packagemanagementfolder\$_" "$packagemanagementfolder\$_.deleteMe"}
+        Get-ChildItem -Path $packagemanagementfolder  -Recurse |  Remove-Item -force -Recurse
+    }
 }
-
 
 if(-not (Test-Path $powershellGetfolder)){
     New-Item -Path $powershellGetfolder -ItemType Directory -Force  
@@ -61,13 +71,15 @@ if(-not (Test-Path $powershellGetfolder)){
     Get-ChildItem -Path $powershellGetfolder  -Recurse |  Remove-Item -force -Recurse
 }
 
-
-Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
-Copy-Item "$TestBin\net451\*.dll" $packagemanagementfolder -force -Verbose
-Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
-Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
-Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -force -Verbose
-Copy-Item "$TestBin\*.ps1xml" $packagemanagementfolder -force -Verbose
+if ($testframework -eq "fullclr")
+{
+    Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
+    Copy-Item "$TestBin\net451\*.dll" $packagemanagementfolder -force -Verbose
+    Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
+    Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
+    Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -force -Verbose
+    Copy-Item "$TestBin\*.ps1xml" $packagemanagementfolder -force -Verbose
+}
 
 if(-not (Test-Path $ProgramProviderInstalledPath)){
     New-Item -Path $ProgramProviderInstalledPath -ItemType Directory -Force  
@@ -167,7 +179,10 @@ Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($ProgramModuleP
 #Step 2 - run tests
 Write-Host -fore White "Running powershell pester tests "
 
-Invoke-Pester -Path "$($TestHome)\ModuleTests\tests"
+if ($testframework -eq "fullclr")
+{
+    Invoke-Pester -Path "$($TestHome)\ModuleTests\tests"
+}
 
 Write-Host -fore White "Finished tests"
 
@@ -178,6 +193,3 @@ if (test-path $Env:AppData/NuGet/nuget.config.original ) {
 }
 
 cd $TestHome
-
-
-

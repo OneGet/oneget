@@ -21,8 +21,4 @@ before_test:
 - ps: >-
     Copy-Item -Recurse "c:\projects\oneget\src\Modules\PowerShellGet" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Force -Verbose
 
-    [System.Environment]::GetEnvironmentVariable("test_framework")
-
-    Install-PackageProvider PSL -Force; Install-Package PowerShell -Force -Provider PSL | fl
-
     & "c:\projects\oneget\Test\run-tests.ps1"
