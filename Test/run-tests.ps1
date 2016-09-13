@@ -201,7 +201,7 @@ if ($testframework -eq "coreclr")
 
     $command += "Invoke-Pester $($TestHome)\ModuleTests\tests"
 
-    Start-Process -FilePath "$powershellFolder\powershell" -ArgumentList @("-command $command") -NoNewWindow
+    Start-Process -FilePath "$powershellFolder\powershell" -ArgumentList @("-command $command") -NoNewWindow -Wait
 }
 
 Write-Host -fore White "Finished tests"
