@@ -17,6 +17,25 @@ $source = "http://www.nuget.org/api/v2/"
 # ------------------------------------------------------------------------------
 
 # Actual Tests:
+try {
+    $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
+    $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
+
+    $IsCoreCLR = $true
+    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
+    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
+    $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
+} catch {
+    # If these are already set, then they're read-only and we're done
+    try {
+        $IsCoreCLR = $false
+        $IsLinux = $false
+        $IsOSX = $false
+        $IsWindows = $true
+    }
+    catch { }
+}
+
 
 Describe "Get-package" -Tags "Feature" {
     # make sure that packagemanagement is loaded
