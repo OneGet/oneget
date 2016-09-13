@@ -44,7 +44,15 @@ $testframework = [System.Environment]::GetEnvironmentVariable("test_framework")
 if ($testframework -eq "coreclr")
 {
     # install powershell core if test framework is coreclr
-    Install-PackageProvider PSL -Force; Install-Package PowerShell -Force -Provider PSL | fl
+    Install-PackageProvider PSL -Force; $powershellCore = Install-Package PowerShell -Force -Provider PSL
+
+    $powershellVersion = $powershellCore.Version
+    # copy the bits into powershell core
+    $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion\"
+    Copy-Item "$TestBin\netstandard1.6\*.dll" $powershellFolder -Force -Verbose
+    Copy-Item "$TestBin\*.psd1" "$powershellFolder\PackageManagement" -force -Verbose
+    Copy-Item "$TestBin\*.psm1" "$powershellFolder\PackageManagement" -force -Verbose
+    Copy-Item "$TestBin\*.ps1xml" "$powershellFolder\PackageManagement" -force -Verbose
 }
 
 $packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
