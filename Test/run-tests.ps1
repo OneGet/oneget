@@ -50,9 +50,9 @@ if ($testframework -eq "coreclr")
     # copy the bits into powershell core
     $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion\"
     Copy-Item "$TestBin\netstandard1.6\*.dll" $powershellFolder -Force -Verbose
-    Copy-Item "$TestBin\*.psd1" "$powershellFolder\PackageManagement" -force -Verbose
-    Copy-Item "$TestBin\*.psm1" "$powershellFolder\PackageManagement" -force -Verbose
-    Copy-Item "$TestBin\*.ps1xml" "$powershellFolder\PackageManagement" -force -Verbose
+    Copy-Item "$TestBin\*.psd1" "$powershellFolder\Modules\PackageManagement" -force -Verbose
+    Copy-Item "$TestBin\*.psm1" "$powershellFolder\Modules\PackageManagement" -force -Verbose
+    Copy-Item "$TestBin\*.ps1xml" "$powershellFolder\Modules\PackageManagement" -force -Verbose
 }
 
 $packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
@@ -190,6 +190,18 @@ Write-Host -fore White "Running powershell pester tests "
 if ($testframework -eq "fullclr")
 {
     Invoke-Pester -Path "$($TestHome)\ModuleTests\tests"
+}
+
+if ($testframework -eq "coreclr")
+{
+    $command = "Set-ExecutionPolicy -Scope Process Unrestricted;"
+    $pesterFolder = "$powerShellFolder\Modules\Pester"
+
+    $command += "Import-Module '$pesterFolder';"
+
+    $command += "Invoke-Pester $($TestHome)\ModuleTests\tests"
+
+    Start-Process -FilePath "$powershellFolder\powershell" -ArgumentList @("-command $command") -NoNewWindow
 }
 
 Write-Host -fore White "Finished tests"
