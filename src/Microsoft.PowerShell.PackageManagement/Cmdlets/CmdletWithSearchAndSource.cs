@@ -689,15 +689,24 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                             }
 
                             WriteObject(AddPropertyToSoftwareIdentity(installedPkg));
-                            LogEvent(EventTask.Install, EventId.Install,
-                                Resources.Messages.PackageInstalled,
-                                installedPkg.Name,
-                                installedPkg.Version,
-                                installedPkg.ProviderName,
-                                installedPkg.Source ?? string.Empty,
-                                installedPkg.Status ?? string.Empty,
-                                installedPkg.InstallationPath ?? string.Empty);
-                            TraceMessage(Constants.InstallPackageTrace, installedPkg);
+
+                            try
+                            {
+                                LogEvent(EventTask.Install, EventId.Install,
+                                    Resources.Messages.PackageInstalled,
+                                    installedPkg.Name,
+                                    installedPkg.Version,
+                                    installedPkg.ProviderName,
+                                    installedPkg.Source ?? string.Empty,
+                                    installedPkg.Status ?? string.Empty,
+                                    installedPkg.InstallationPath ?? string.Empty);
+                                TraceMessage(Constants.InstallPackageTrace, installedPkg);
+                            }
+                            catch (Exception e)
+                            {
+                                Verbose(e.Message);
+                            }
+
                             triedInstallCount++;
                         }
                     }
