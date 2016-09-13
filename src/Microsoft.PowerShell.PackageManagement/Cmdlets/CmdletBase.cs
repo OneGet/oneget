@@ -39,7 +39,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Management.Automation.Runspaces;
     using System.Net;
     using Microsoft.PackageManagement.Internal.Utility.Plugin;
-
+    using System.Reflection;
 
     public delegate string GetMessageString(string messageId, string defaultText);
 
@@ -478,15 +478,34 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         //Calling PowerShell Telemetry APIs
         protected void TraceMessage(string message, SoftwareIdentity swidObject) {
 #if !UNIX
-            TelemetryAPI.TraceMessage(message,
-                new {
+            try
+            {
+                // try to load telemetry api from sma
+                // we have to check for telemetry type instead of just running try catch because if telemetryapi cannot be loaded, the error
+                // will not be caught in this try catch
+                Assembly sma = typeof(Cmdlet).GetTypeInfo().Assembly;
+
+                // this will throw if type is not found
+                Type telemetryApi = sma.GetType("Microsoft.PowerShell.Telemetry.Internal.TelemetryAPI", true);
+
+                var arg = new
+                {
                     PackageName = swidObject.Name,
                     PackageVersion = swidObject.Version,
                     PackageProviderName = swidObject.ProviderName,
                     Repository = swidObject.Source,
-                    ExuectionStatus = swidObject.Status,
+                    ExecutionStatus = swidObject.Status,
                     ExecutionTime = DateTime.Today
-                });
+                };
+
+                var traceMessageMethod = telemetryApi.GetMethod("TraceMessage").MakeGenericMethod(arg.GetType());
+
+                traceMessageMethod.Invoke(null, new object[] { message, arg });
+            }
+            catch (Exception ex)
+            {
+                Verbose(ex.Message);
+            }
 #endif
         }
 

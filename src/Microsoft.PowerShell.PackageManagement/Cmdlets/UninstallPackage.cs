@@ -168,16 +168,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                                 return false;
                             }
                             WriteObject(installedPkg);
-
-                            try
-                            {
-                                LogEvent(EventTask.Uninstall, EventId.Uninstall, Resources.Messages.PackageUnInstalled, installedPkg.Name, installedPkg.Version, installedPkg.ProviderName, installedPkg.Source ?? string.Empty, installedPkg.Status ?? string.Empty, installedPkg.InstallationPath ?? string.Empty);
-                                TraceMessage(Constants.UnInstallPackageTrace, installedPkg);
-                            }
-                            catch (Exception e)
-                            {
-                                Verbose(e.Message);
-                            }
+                            LogEvent(EventTask.Uninstall, EventId.Uninstall, Resources.Messages.PackageUnInstalled, installedPkg.Name, installedPkg.Version, installedPkg.ProviderName, installedPkg.Source ?? string.Empty, installedPkg.Status ?? string.Empty, installedPkg.InstallationPath ?? string.Empty);
+                            TraceMessage(Constants.UnInstallPackageTrace, installedPkg);
                         }
                     }
                 } catch (Exception e) {
