@@ -476,13 +476,25 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return true;
         }
 
+        private void TraceMessageHelper(string message, SoftwareIdentity swidObject)
+        {
+            TelemetryAPI.TraceMessage(message, new
+            {
+                PackageName = swidObject.Name,
+                PackageVersion = swidObject.Version,
+                PackageProviderName = swidObject.ProviderName,
+                Repository = swidObject.Source,
+                ExecutionStatus = swidObject.Status,
+                ExecutionTime = DateTime.Today
+            });
+        }
+
         #region Event and telemetry stuff
         //Calling PowerShell Telemetry APIs
         protected void TraceMessage(string message, SoftwareIdentity swidObject) {
 #if !UNIX
             try
             {
-                // initialize the telemtry api
                 if (!telemetryAPIInitialized)
                 {
                     telemetryAPIInitialized = true;
@@ -492,28 +504,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     // will not be caught in this try catch
                     Assembly sma = typeof(Cmdlet).GetTypeInfo().Assembly;
 
-                    // this will throw if type is not found
-                    TelemetryAPIType = sma.GetType("Microsoft.PowerShell.Telemetry.Internal.TelemetryAPI", true);
+                    TelemetryAPIType = sma.GetType("Microsoft.PowerShell.Telemetry.Internal.TelemetryAPI");
                 }
 
-                if (TelemetryAPIType == null)
+                if (TelemetryAPIType != null)
                 {
-                    return;
+                    // if the type exists
+                    TraceMessageHelper(message, swidObject);
                 }
-
-                var arg = new
-                {
-                    PackageName = swidObject.Name,
-                    PackageVersion = swidObject.Version,
-                    PackageProviderName = swidObject.ProviderName,
-                    Repository = swidObject.Source,
-                    ExecutionStatus = swidObject.Status,
-                    ExecutionTime = DateTime.Today
-                };
-
-                var traceMessageMethod = TelemetryAPIType.GetMethod("TraceMessage").MakeGenericMethod(arg.GetType());
-
-                traceMessageMethod.Invoke(null, new object[] { message, arg });
             }
             catch (Exception ex)
             {
