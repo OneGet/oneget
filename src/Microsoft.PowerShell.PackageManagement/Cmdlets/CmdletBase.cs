@@ -50,6 +50,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         private readonly int _callCount;
         private readonly Hashtable _dynamicOptions = new Hashtable();
         private string _bootstrapNuGet = "false";
+        private static bool telemetryAPIInitialized = false;
+        private static Type TelemetryAPIType = null;
 
         [Parameter]
         public SwitchParameter Force;
@@ -480,13 +482,24 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 #if !UNIX
             try
             {
-                // try to load telemetry api from sma
-                // we have to check for telemetry type instead of just running try catch because if telemetryapi cannot be loaded, the error
-                // will not be caught in this try catch
-                Assembly sma = typeof(Cmdlet).GetTypeInfo().Assembly;
+                // initialize the telemtry api
+                if (!telemetryAPIInitialized)
+                {
+                    telemetryAPIInitialized = true;
 
-                // this will throw if type is not found
-                Type telemetryApi = sma.GetType("Microsoft.PowerShell.Telemetry.Internal.TelemetryAPI", true);
+                    // try to load telemetry api from sma
+                    // we have to check for telemetry type instead of just running try catch because if telemetryapi cannot be loaded, the error
+                    // will not be caught in this try catch
+                    Assembly sma = typeof(Cmdlet).GetTypeInfo().Assembly;
+
+                    // this will throw if type is not found
+                    TelemetryAPIType = sma.GetType("Microsoft.PowerShell.Telemetry.Internal.TelemetryAPI", true);
+                }
+
+                if (TelemetryAPIType == null)
+                {
+                    return;
+                }
 
                 var arg = new
                 {
@@ -498,7 +511,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     ExecutionTime = DateTime.Today
                 };
 
-                var traceMessageMethod = telemetryApi.GetMethod("TraceMessage").MakeGenericMethod(arg.GetType());
+                var traceMessageMethod = TelemetryAPIType.GetMethod("TraceMessage").MakeGenericMethod(arg.GetType());
 
                 traceMessageMethod.Invoke(null, new object[] { message, arg });
             }
