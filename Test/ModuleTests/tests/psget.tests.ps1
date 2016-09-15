@@ -12,16 +12,29 @@
 #  limitations under the License.
 #
 # ------------------ PackageManagement Test  ----------------------------------------------
-ipmo "$PSScriptRoot\utility.psm1"
+try {
+    $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
+    $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
 
+    $IsCoreCLR = $true
+    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
+    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
+    $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
+} catch {
+    # If these are already set, then they're read-only and we're done
+    try {
+        $IsCoreCLR = $false
+        $IsLinux = $false
+        $IsOSX = $false
+        $IsWindows = $true
+    }
+    catch { }
+}
 
 # ------------------------------------------------------------------------------
 # Actual Tests:
 
 Describe "PSGet Message Resolver" -Tags @('BVT', 'DRT'){
-    # make sure that packagemanagement is loaded
-    import-packagemanagement
-
 
     It "Changes message" {
         # bootstrap nuget
@@ -37,8 +50,6 @@ Describe "PSGet Message Resolver" -Tags @('BVT', 'DRT'){
 }
 
 Describe "Set-PackageSource" -Tags @('BVT', 'DRT'){
-    # make sure that packagemanagement is loaded
-    import-packagemanagement
 
 	It "EXPECTED: -FAILS- To rename package source but does not remove the old source" -Skip{
         try {
@@ -73,8 +84,6 @@ Describe "Set-PackageSource" -Tags @('BVT', 'DRT'){
 }
 
 Describe Uninstall-Package -Tags @('BVT', 'DRT'){
-	# make sure packagemanagement is loaded
-	import-packagemanagement
 
     It "E2E: Uninstall all versions of a specific package - PowerShellGet provider" -skip {
         $packageName = "ContosoServer"

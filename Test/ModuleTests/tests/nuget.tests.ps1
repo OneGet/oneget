@@ -16,8 +16,24 @@
 # ------------------------------------------------------------------------------
 # Actual Tests:
 
-# Set this to true for now, we will have to put detection logic later
-$IsWindows = $true
+try {
+    $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
+    $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
+
+    $IsCoreCLR = $true
+    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
+    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
+    $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
+} catch {
+    # If these are already set, then they're read-only and we're done
+    try {
+        $IsCoreCLR = $false
+        $IsLinux = $false
+        $IsOSX = $false
+        $IsWindows = $true
+    }
+    catch { }
+}
 
 $source = "http://www.nuget.org/api/v2/"
 $sourceWithoutSlash = "http://www.nuget.org/api/v2"

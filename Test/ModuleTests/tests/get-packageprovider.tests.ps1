@@ -12,15 +12,30 @@
 #  limitations under the License.
 #
 # ------------------ PackageManagement Test  ----------------------------------------------
-ipmo "$PSScriptRoot\utility.psm1"
+try {
+    $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
+    $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
+
+    $IsCoreCLR = $true
+    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
+    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
+    $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
+} catch {
+    # If these are already set, then they're read-only and we're done
+    try {
+        $IsCoreCLR = $false
+        $IsLinux = $false
+        $IsOSX = $false
+        $IsWindows = $true
+    }
+    catch { }
+}
 
 
 # ------------------------------------------------------------------------------
 # Actual Tests:
 
 Describe "get-packageprovider" -Tags @('BVT', 'DRT'){
-    # make sure that packagemanagement is loaded
-    import-packagemanagement
 
     It "lists package providers installed" {
         $x = (get-packageprovider -name "nuget" -ForceBootstrap).name | should match "nuget"
@@ -78,8 +93,6 @@ Describe "get-packageprovider" -Tags @('BVT', 'DRT'){
 
 
 Describe "happy" -Tags @('BVT', 'DRT'){
-    # make sure that packagemanagement is loaded
-    import-packagemanagement
 
     It "looks for packages in bootstrap" {
         (find-package -provider bootstrap).Length | write-host
@@ -92,8 +105,6 @@ Describe "happy" -Tags @('BVT', 'DRT'){
 
 
 Describe "Get-PackageProvider with list" -Tags @('BVT', 'DRT'){
-    # make sure that packagemanagement is loaded
-    import-packagemanagement
 
     It "lists package providers installed" {
         $x = (Get-PackageProvider).Count -gt 1 | should be $true

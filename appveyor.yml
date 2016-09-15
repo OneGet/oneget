@@ -1,6 +1,10 @@
 version: 1.0.{build}
 os:
 - WMF 5
+environment:
+  matrix:
+    - test_framework: fullclr
+    - test_framework: coreclr
 configuration: Release
 platform: Any CPU
 # Install Pester
@@ -8,7 +12,7 @@ install:
     - cinst -y pester
 clone_folder: c:\projects\oneget
 build_script:
-- ps: git submodule update --init; cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451";
+- ps: git submodule update --init; cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451"; .\build.ps1
 after_build:
 - ps: >-
     Get-ChildItem "C:\projects\oneget\src\out\PackageManagement\net451" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
