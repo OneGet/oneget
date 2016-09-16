@@ -839,6 +839,34 @@ Describe "install-package with Whatif" -Tags "Feature" {
     }
 }
 
+Describe "Install-Package dependencies" -Tags "Feature" {
+    $tempDir = Join-Path $TestDrive "nugettesttempfolder"    
+
+    AfterEach {
+        Remove-Item "$tempDir\*" -Force -Recurse -ErrorAction SilentlyContinue
+    }
+
+    It "Skip dependencies when using -SkipDependencies" {
+        $version = "1.2.8.8"
+        $zlib = Install-Package -Provider $nuget -Source $source -Destination $tempDir -SkipDependencies -Force zlib
+
+        $zlib.Count | should be 1
+        (test-path "$tempDir\zlib*") | should be $true
+        (test-path "$tempDir\zlib.v120*") | should be $false
+        (test-path "$tempDir\zlib.v140*") | should be $false
+    }
+
+    It "Install latest stable version for dependencies instead of prerelease one" -Skip {
+        $version = "1.4.1"
+        $nancy = Install-Package -Provider $nuget -Source $source -Destination $tempDir -Force Nancy.Hosting.Self -RequiredVersion $version
+
+        $nancy.Count | should be 2
+        (Test-Path "$tempDir\Nancy*") | should be $true
+        (Test-Path "$tempDir\Nancy.Hosting.Self*") | should be $true
+        (Test-Path "$tempDir\Nancy.Hosting.Self*barney*") | should be $false
+    }
+}
+
 Describe "install-package with Scope" -tags "Feature" {
 
 
