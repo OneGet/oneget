@@ -830,10 +830,9 @@ Describe "Install-Package dependencies" -Tags "Feature" {
         Remove-Item "$tempDir\*" -Force -Recurse -ErrorAction SilentlyContinue
     }
 
-    It "Skip dependencies when using -SkipDependencyCheck" {
+    It "Skip dependencies when using -SkipDependencies" {
         $version = "1.2.8.8"
-        $expectedPackages = @("zlib", "zlib.v120.windesktop.msvcstl.dyn.rt-dyn", "zlib.v140.windesktop.msvcstl.dyn.rt-dyn")
-        $zlib = Install-Package -Provider $nuget -Source $source -Destination $tempDir -SkipDependencyCheck -Force zlib
+        $zlib = Install-Package -Provider $nuget -Source $source -Destination $tempDir -SkipDependencies -Force zlib
 
         $zlib.Count | should be 1
         (test-path "$tempDir\zlib*") | should be $true
@@ -841,7 +840,7 @@ Describe "Install-Package dependencies" -Tags "Feature" {
         (test-path "$tempDir\zlib.v140*") | should be $false
     }
 
-    It "Install latest stable version for dependencies instead of prerelease one" {
+    It "Install latest stable version for dependencies instead of prerelease one" -Skip {
         $version = "1.4.1"
         $nancy = Install-Package -Provider $nuget -Source $source -Destination $tempDir -Force Nancy.Hosting.Self -RequiredVersion $version
 
