@@ -34,9 +34,9 @@ try {
 # ------------------------------------------------------------------------------
 # Actual Tests:
 
-Describe "PSGet Message Resolver" -Tags @('BVT', 'DRT'){
+Describe "PSGet Message Resolver" -Tags @('BVT', 'DRT')  {
 
-    It "Changes message" {
+    It "Changes message" -Skip:($IsCoreCLR){
         # bootstrap nuget
         
         if ($PSCulture -eq "en-US" ) { 

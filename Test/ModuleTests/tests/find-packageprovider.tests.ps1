@@ -13,6 +13,7 @@
 #
 # ------------------ PackageManagement Test  -----------------------------------
 $InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
+
 try {
     $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
     $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
@@ -100,7 +101,7 @@ Describe "find-packageprovider" -Tags "Feature" {
     }      
 
 
-    It "EXPECTED: success 'find-packageprovider nuget -allVersions'" {
+    It "EXPECTED: success 'find-packageprovider nuget -allVersions'" -Skip:($IsCoreCLR){
         $a = find-packageprovider -name nuget -allVersions  
         $a.Count -ge 5| should be $true
 
@@ -186,16 +187,16 @@ Describe "Find-PackageProvider with Versions" -Tags "Feature" {
     2.8.5.101
     2.8.5.24#>
 
-    It "EXPECTED: success 'Find a provider  -requiredVersion 3.5'" {
+    It "EXPECTED: success 'Find a provider  -requiredVersion 3.5'" -Skip:($IsCoreCLR){
         (find-packageprovider -name Nuget -RequiredVersion 2.8.5.122).Version.ToString() | should match "2.8.5.122"
     }
  
 
-    It "EXPECTED: success 'find a provider with MinimumVersion and MaximumVersion'" {
+    It "EXPECTED: success 'find a provider with MinimumVersion and MaximumVersion'" -Skip:($IsCoreCLR){
         (find-packageprovider -name nuget -MinimumVersion 2.8.5.105 -MaximumVersion 2.8.5.123).Version.ToString() | should match "2.8.5.122"
     }
     
-    It "EXPECTED: success 'find a provider with MaximumVersion'" {
+    It "EXPECTED: success 'find a provider with MaximumVersion'" -Skip:($IsCoreCLR){
         (find-packageprovider -name nuget -MaximumVersion 2.8.5.122).Version -contains "2.8.5.122" | should be $true
     }
 }    

@@ -17,49 +17,83 @@
 #2. cd to c:\localOneGetFolder\oneget\Test
 #3. run-tests.ps1
 
+param(
+    [ValidateSet("coreclr", "fullclr")]
+    [string]$testframework = "fullclr"
+)
+
 
 #Step 1 - test setup
 $TestHome = $PSScriptRoot
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
 $PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\"
-$PowerShellGetVersion = "1.0.0.1"
-$PackageManagementVersion = "1.0.0.1"
+$PowerShellGetVersion = "1.1.0"
+$PackageManagementVersion = "1.1.0"
 
 
 #Import-Module "$($TestBin)\PackageManagement.psd1"
 
 $ProgramProviderInstalledPath = "$Env:ProgramFiles\PackageManagement\ProviderAssemblies"
-
-$LocalAppData = [Environment]::GetFolderPath("LocalApplicationData")
+$LocalAppData = $env:LocalAppdata
 $UserProviderInstalledPath = "$($LocalAppData)\PackageManagement\ProviderAssemblies"
-
-$mydocument = [Environment]::GetFolderPath("MyDocuments")
-$UserModulePath = "$($mydocument)\WindowsPowerShell\Modules"
-
 $ProgramModulePath = "$Env:ProgramFiles\WindowsPowerShell\Modules"
 
 
-$testframework = [System.Environment]::GetEnvironmentVariable("test_framework")
+$testframeworkVariable = $null
+# For appveyor runs
+try
+{
+    $testframeworkVariable = [System.Environment]::GetEnvironmentVariable("test_framework")
+}
+catch {}
+
+if ($testframeworkVariable)
+{
+    $testframework = $testframeworkVariable
+}
+
+Write-host "testframework =  $testframework"
+
+
+if ($testframework -eq "fullclr")
+{
+    $mydocument = Microsoft.PowerShell.Management\Join-Path -Path $HOME -ChildPath 'Documents\PowerShell'
+}
+else
+{
+    $mydocument = Microsoft.PowerShell.Management\Join-Path -Path $HOME -ChildPath ".local/share/powershell"
+}
+
+$UserModulePath = "$($mydocument)\WindowsPowerShell\Modules"
+$packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
+$powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
+
 
 if ($testframework -eq "coreclr")
 {
     # install powershell core if test framework is coreclr
-    Install-PackageProvider PSL -Force; $powershellCore = Install-Package PowerShell -Force -Provider PSL
+    Install-PackageProvider PSL -Force; 
+    $powershellCore = (Get-Package -provider PSL -name PowerShell)
+    if (-not $powershellCore)
+    {   
+        $powershellCore = Install-Package PowerShell -Provider PSL
+    }
 
     $powershellVersion = $powershellCore.Version
+    Write-host ("PowerShell Version {0}" -f $powershellVersion)
+
     # copy the bits into powershell core
     $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion\"
     Copy-Item "$TestBin\netstandard1.6\*.dll" $powershellFolder -Force -Verbose
     Copy-Item "$TestBin\*.psd1" "$powershellFolder\Modules\PackageManagement" -force -Verbose
     Copy-Item "$TestBin\*.psm1" "$powershellFolder\Modules\PackageManagement" -force -Verbose
     Copy-Item "$TestBin\*.ps1xml" "$powershellFolder\Modules\PackageManagement" -force -Verbose
+
+    Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
+    Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellFolder )\Modules"  -Recurse -force -verbose
 }
 
-$packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
-$powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
-#$packagemanagementfolder = "$ProgramModulePath\PackageManagement"
-#$powershellGetfolder = "$ProgramModulePath\PowerShellGet"
-
+# Setting up Packagemanagement and PowerShellGet folders
 if ($testframework -eq "fullclr")
 {    
     if(-not (Test-Path $packagemanagementfolder)){
@@ -79,6 +113,7 @@ if(-not (Test-Path $powershellGetfolder)){
     Get-ChildItem -Path $powershellGetfolder  -Recurse |  Remove-Item -force -Recurse
 }
 
+# Copying files to Packagemanagement and PowerShellGet folders
 if ($testframework -eq "fullclr")
 {
     Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
@@ -89,6 +124,7 @@ if ($testframework -eq "fullclr")
     Copy-Item "$TestBin\*.ps1xml" $packagemanagementfolder -force -Verbose
 }
 
+# Setting up provider path
 if(-not (Test-Path $ProgramProviderInstalledPath)){
     New-Item -Path $ProgramProviderInstalledPath -ItemType Directory -Force  
     Write-Host "Created  $ProgramProviderInstalledPath"
@@ -98,7 +134,7 @@ if(-not (Test-Path $ProgramProviderInstalledPath)){
 
 if(-not (Test-Path $UserProviderInstalledPath)) {
     New-Item -Path $UserProviderInstalledPath -ItemType Directory -Force  
-    Write-Host "Created  $ProgramProviderInstalledPath"
+    Write-Host "Created  $UserProviderInstalledPath"
 
 } else{
     Get-ChildItem -Path $UserProviderInstalledPath -Recurse | Remove-Item -force -Recurse -ea silentlycontinue
@@ -138,7 +174,7 @@ reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.P
 reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
 reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
 
-Restart-Service msiserver
+#Restart-Service msiserver
 
 if (Test-Path "$env:temp\PackageManagementDependencies") {
     Remove-Item -Recurse -Force "$env:temp\PackageManagementDependencies"
@@ -175,31 +211,35 @@ if (test-path $Env:AppData/NuGet/nuget.config) {
 
 
 
-
 #Copy-Item  "$($Testbin)\Microsoft.PackageManagement.OneGetTestProvider.dll" "$($ProgramProviderInstalledPath)\" -force 
 #Copy-Item  "$($Testbin)\Microsoft.PackageManagement.OneGetTestProvider.dll" "$($UserProviderInstalledPath)\" -force
 
-Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($ProgramModulePath)\" -force
-Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($UserModulePath)\" -force
-Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($ProgramModulePath)\"  -Recurse -force
-
+if ($testframework -eq "fullclr")
+{
+    Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($ProgramModulePath)\" -force -verbose
+    Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($UserModulePath)\" -force -verbose
+    Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($ProgramModulePath)\"  -Recurse -force -verbose
+}
 
 #Step 2 - run tests
 Write-Host -fore White "Running powershell pester tests "
 
 if ($testframework -eq "fullclr")
 {
+    Write-Host "FullClr: Calling Invoke-Pester $($TestHome)\ModuleTests\tests"    
     Invoke-Pester -Path "$($TestHome)\ModuleTests\tests"
 }
 
 if ($testframework -eq "coreclr")
 {
-    $command = "Set-ExecutionPolicy -Scope Process Unrestricted;"
+    $command = "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
     $pesterFolder = "$powerShellFolder\Modules\Pester"
 
     $command += "Import-Module '$pesterFolder';"
 
     $command += "Invoke-Pester $($TestHome)\ModuleTests\tests"
+
+    Write-Host "CoreCLR: Calling $command"
 
     Start-Process -FilePath "$powershellFolder\powershell" -ArgumentList @("-command $command") -NoNewWindow -Wait
 }

@@ -3,8 +3,11 @@
   "version": "1.0.0-*",
 
   "buildOptions": {
-      "warningsAsErrors": true
-  },
+        "keyFile": "../signing/35MSSharedLib1024.snk",
+        "delaySign": true,
+        "publicSign": false,
+        "warningsAsErrors": true
+    },	
 
   "configurations": {
     "Linux": {

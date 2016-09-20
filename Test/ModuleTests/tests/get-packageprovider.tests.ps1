@@ -45,7 +45,7 @@ Describe "get-packageprovider" -Tags @('BVT', 'DRT'){
         $x = (get-packageprovider -name "nuget" -verbose -Force).name | should match "nuget"
     }
 
-    It "EXPECTED:  Gets The 'Programs' Package Provider" {
+    It "EXPECTED:  Gets The 'Programs' Package Provider" -Skip:($IsCoreCLR){
         $x = (get-packageprovider -name "Programs").name | should match "Programs"
     }
     
@@ -53,25 +53,25 @@ Describe "get-packageprovider" -Tags @('BVT', 'DRT'){
         $x = (get-packageprovider -name "P*").name.Contains('PowerShellGet')| should be $true
     }
    
-    It "EXPECTED:  returns an error when asking for a provider that does not exist" {
+    It "EXPECTED:  returns an error when asking for a provider that does not exist" -Skip:($IsCoreCLR){
         $Error.Clear()
         $msg = powershell 'get-packageprovider -name NOT_EXISTS  -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
         $msg | should be "UnknownProviderFromActivatedList,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackageProvider"
     }
 
-    It "EXPECTED:  returns an error when asking for multiple providers that do not exist" {
+    It "EXPECTED:  returns an error when asking for multiple providers that do not exist" -Skip:($IsCoreCLR){
         $Error.Clear()
         $msg = powershell 'get-packageprovider -name NOT_EXISTS,NOT_EXISTS2  -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
         $msg | should be "UnknownProviderFromActivatedList,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackageProvider"
     }
     
-    It "EXPECTED:  returns an error when asking for multiple providers that do not exist -list" {
+    It "EXPECTED:  returns an error when asking for multiple providers that do not exist -list" -Skip:($IsCoreCLR){
         $Error.Clear()
         $msg = powershell 'get-packageprovider -name NOT_EXISTS,NOT_EXISTS2 -ListAvailable -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
         $msg | should be "UnknownProviders,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackageProvider"
     }
 
-    It "EXPECTED: returns swidtag conformed object for powershell-based provider" {
+    It "EXPECTED: returns swidtag conformed object for powershell-based provider" -Skip {
         $onegettest = (Get-PackageProvider OneGetTest -ListAvailable | Where-Object {$_.Version.ToString() -eq "9.9.0.0"} | Select -First 1)
 
         $onegettest.Links.Count | should be 3
@@ -111,7 +111,7 @@ Describe "Get-PackageProvider with list" -Tags @('BVT', 'DRT'){
         $y = (Get-PackageProvider -ListAvailable).Count -gt $x | should be $true
     }
 
-    It "List two providers" {
+    It "List two providers" -Skip:($IsCoreCLR){
         (get-packageprovider -name "OneGetTest" -ListAvailable).name | should match "OneGetTest"
         (get-packageprovider -name "PowerShellGet" -ListAvailable).name | should match "PowerShellGet"
 
@@ -122,7 +122,7 @@ Describe "Get-PackageProvider with list" -Tags @('BVT', 'DRT'){
         $providers | ?{ $_.name -eq "PowerShellGet" } | should not BeNullOrEmpty   
     }
        
-    It "List two providers with wildcard chars" {
+    It "List two providers with wildcard chars" -Skip:($IsCoreCLR){
         $providers = get-packageprovider -Name OneGetTest* -ListAvailable
         
         $providers | ?{ $_.name -eq "OneGetTest" } | should not BeNullOrEmpty

@@ -14,6 +14,7 @@
 # ------------------ PackageManagement Test  ----------------------------------------------
 $nuget = "nuget"
 $source = "http://www.nuget.org/api/v2/"
+
 # ------------------------------------------------------------------------------
 
 # Actual Tests:
@@ -47,7 +48,8 @@ Describe "Get-package" -Tags "Feature" {
 Describe "Get-package with version parameter  - valid scenarios" -Tags "Feature" {
     $destination = Join-Path $TestDrive GetPackageTests
 
-    It "Get-package supports -AllVersions parameter" {
+    It "Get-package supports -AllVersions parameter" -Skip:($IsCoreCLR){
+
         $outputWithAllVersions = (Get-Package -providername Programs,Msi -AllVersions)
         $outputWithoutAllVersions = (Get-Package -providername Programs,Msi)
         $outputWithAllVersions.count -ge $outputWithoutAllVersions.count | should be $true

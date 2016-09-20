@@ -12,13 +12,31 @@
 #  limitations under the License.
 #
 # ------------------ PackageManagement Test  -----------------------------------
-$isWindows = $true
 
 $InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
 $InternalGallery2 = "http://dtlgalleryint.cloudapp.net/api/v2/"
 $InternalSource = 'OneGetTestSource'
 $InternalSource2 = 'OneGetTestSource2'
 $ProviderFolder = "$env:ProgramFiles\PackageManagement\ProviderAssemblies"
+
+try {
+    $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
+    $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
+
+    $IsCoreCLR = $true
+    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
+    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
+    $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
+} catch {
+    # If these are already set, then they're read-only and we're done
+    try {
+        $IsCoreCLR = $false
+        $IsLinux = $false
+        $IsOSX = $false
+        $IsWindows = $true
+    }
+    catch { }
+}
 
 #make sure the package repository exists
 $a=Get-PackageSource | select Name, Location, ProviderName
@@ -113,13 +131,13 @@ Describe "install-packageprovider" -Tags "Feature" {
         $a | ?{ $_.Version -gt "2.8.5.202"  } | should not BeNullOrEmpty       
     }
 
-    It "install-packageprovider myalbum should imported and installed, Expect succeed" {
+    It "install-packageprovider myalbum should imported and installed, Expect succeed" -Skip:($IsCoreCLR) {
        
         $a = Install-PackageProvider -name MyAlbum -Source $InternalSource  -force
         $a | ?{ $_.name -eq "MyAlbum" } | should not BeNullOrEmpty          
     }
 
-    It "find | install-packageprovider myalbum should imported and installed, Expect succeed" {
+    It "find | install-packageprovider myalbum should imported and installed, Expect succeed" -Skip:($IsCoreCLR){
        
         $a = Find-PackageProvider -name MyAlbum -Source $InternalSource -RequiredVersion 0.1.2 | install-PackageProvider -force
         $a | ?{ $_.name -eq "MyAlbum" } | should not BeNullOrEmpty
@@ -517,7 +535,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
             $userName = "smartguy"
             $password = "password%1"
             #net user $userName /delete | Out-Null
-            net user $userName $password /add
+            net user $userName $password /add  
             $secesurestring = ConvertTo-SecureString $password -AsPlainText -Force
             $credential = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $secesurestring
         }
@@ -526,7 +544,10 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
 
     AfterAll {
          # Delete the user profile
-         net user $userName /delete | Out-Null        
+         if ($IsWindows)
+         {
+            net user $userName /delete | Out-Null    
+         }    
     }   
     
     AfterEach {
@@ -538,20 +559,20 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
         }
     }
 
-    It "install-packageprovider without scope in a non-admin console, expect fail" {
+    It "install-packageprovider without scope in a non-admin console, expect fail" -Skip:($IsCoreCLR){
        
         $Error.Clear()
 
         # have to register package source for the provider (1 time)
         $block = [scriptblock]::Create("Register-PackageSource -Name $InternalSource -Location $InternalGallery -ProviderName 'PowerShellGet' -Trusted -ErrorAction SilentlyContinue; Install-PackageProvider -Name tsdprovider  -force -Source $InternalGallery")
                      
-        $job=Start-Job -ScriptBlock $block -Credential $credential -ArgumentList ([environment]::CurrentDirectory="C:\")
+        $job=Start-Job -ScriptBlock $block -Credential $credential
 
         Receive-Job -Wait -Job $job -ErrorVariable theError 2>&1
         $theError.FullyQualifiedErrorId | should be "InstallRequiresCurrentUserScopeParameterForNonAdminUser,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackageProvider"
     } 
 
-    It "install-packageprovider with AllUsers scope in a non-admin console, expect fail" {
+    It "install-packageprovider with AllUsers scope in a non-admin console, expect fail" -Skip:($IsCoreCLR){
         $Error.Clear()
 
         $block = [scriptblock]::Create("Install-PackageProvider -Name tsdprovider  -force -scope AllUsers -Source $InternalGallery")
@@ -563,7 +584,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
 
     } 
 
-    It "install-packageprovider CurrentUser scope in a non-admin console, expect succeed" {
+    It "install-packageprovider CurrentUser scope in a non-admin console, expect succeed" -Skip:($IsCoreCLR){
         $Error.Clear()
 
         $block = [scriptblock]::Create("Install-PackageProvider -Name tsdprovider  -force -scope CurrentUser -Source $InternalGallery")
@@ -575,7 +596,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
         $a | ?{ $_.name -eq "tsdprovider" } | should not BeNullOrEmpty 
     }
 
-    It "find and install-packageprovider without scope in a non-admin console, expect fail" {
+    It "find and install-packageprovider without scope in a non-admin console, expect fail" -Skip:($IsCoreCLR){
         $Error.Clear()
 
         $block = [scriptblock]::Create("Find-PackageProvider -Name tsdprovider -Source $InternalGallery | Install-PackageProvider -force")
@@ -587,7 +608,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
 
     } 
     
-    It "find and install-packageprovider CurrentUser scope in a non-admin console, expect succeed" {
+    It "find and install-packageprovider CurrentUser scope in a non-admin console, expect succeed" -Skip:($IsCoreCLR) {
         $Error.Clear()
 
         $block = [scriptblock]::Create("Find-PackageProvider -Name tsdprovider -Source $InternalGallery | Install-PackageProvider -force -scope CurrentUser")
@@ -617,7 +638,7 @@ Describe "install-PackageProvider with Versions" -Tags "Feature" {
         $x | ?{ $_.Version.ToString() -eq "2.8.5.122" } | should not BeNullOrEmpty   
     }
     
-    It "Install, import, and get a powershell package provider-required version" {
+    It "Install, import, and get a powershell package provider-required version" -Skip:($IsCoreCLR){
         $a = (install-PackageProvider -name gistprovider -force -requiredversion 1.5 -source $InternalSource) 
         $a.Name -contains "gistprovider" | should be $true
         $a.Version -contains "1.5" | should be $true

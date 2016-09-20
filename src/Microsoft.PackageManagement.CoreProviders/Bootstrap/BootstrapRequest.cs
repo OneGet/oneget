@@ -33,6 +33,9 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
     using File = System.IO.File;
     using Directory = System.IO.Directory;
 
+    /// <summary>
+    /// OneGet bootstap provider.
+    /// </summary>
     public abstract class BootstrapRequest : Request {
         internal Uri[] _urls
         {
@@ -658,6 +661,11 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             return false;
         }
 
+        /// <summary>
+        /// Get a file path under a temp folder.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public static string GetTempFileFullPath(string filePath) {
             if (string.IsNullOrWhiteSpace(filePath)) {
                 return filePath;
