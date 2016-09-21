@@ -96,8 +96,8 @@ $packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagem
 $powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
 
 # Setting up Packagemanagement and PowerShellGet folders
-#if ($testframework -eq "fullclr")
-#{    
+if ($testframework -eq "fullclr")
+{    
     if(-not (Test-Path $packagemanagementfolder)){
         New-Item -Path $packagemanagementfolder -ItemType Directory -Force  
         Write-Host "Created  $packagemanagementfolder"
@@ -105,7 +105,7 @@ $powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
         Get-ChildItem -Path $packagemanagementfolder | %{ren "$packagemanagementfolder\$_" "$packagemanagementfolder\$_.deleteMe"}
         Get-ChildItem -Path $packagemanagementfolder  -Recurse |  Remove-Item -force -Recurse
     }
-#}
+}
 
 if(-not (Test-Path $powershellGetfolder)){
     New-Item -Path $powershellGetfolder -ItemType Directory -Force  
@@ -117,15 +117,15 @@ if(-not (Test-Path $powershellGetfolder)){
 
 
 # Copying files to Packagemanagement and PowerShellGet folders
-#if ($testframework -eq "fullclr")
-#{
+if ($testframework -eq "fullclr")
+{
     Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
     Copy-Item "$TestBin\net451\*.dll" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.ps1xml" $packagemanagementfolder -force -Verbose
-#}
+}
 
 # Setting up provider path
 if(-not (Test-Path $ProgramProviderInstalledPath)){
@@ -154,7 +154,7 @@ if(-not (Test-Path $UserModulePath)) {
 
 if ($testframework -eq "coreclr")
 {
-    # install powershell core if test framework is coreclr    
+    # install powershell core if test framework is coreclr 
     Install-PackageProvider PSL -Force; 
     $powershellCore = (Get-Package -provider PSL -name PowerShell)
     if (-not $powershellCore)
@@ -241,8 +241,10 @@ Write-Host -fore White "Running powershell pester tests "
 
 if ($testframework -eq "fullclr")
 {
-    Write-Host "FullClr: Calling Invoke-Pester $($TestHome)\ModuleTests\tests"    
-    Invoke-Pester -Path "$($TestHome)\ModuleTests\tests"
+    Write-Host "FullClr: Calling Invoke-Pester $($TestHome)\ModuleTests\tests"  
+    $command = "Invoke-Pester $($TestHome)\ModuleTests\tests"
+      
+    Start-Process -FilePath "powershell" -ArgumentList @("-command $command") -NoNewWindow -Wait
 }
 
 if ($testframework -eq "coreclr")
