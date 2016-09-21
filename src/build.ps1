@@ -63,8 +63,9 @@ else
 $itemsToCopyBinaries = $assemblyNames | % { "$solutionDir\$_\bin\$Configuration\$Framework\$_.dll" }
 
 $itemsToCopyCommon = @("$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.psd1",
-    "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageProviderFunctions.psm1",
-    "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.format.ps1xml")
+                       "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.psm1",
+                       "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageProviderFunctions.psm1",
+                       "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.format.ps1xml")
 
 $destinationDir = "$solutionDir/out/PackageManagement"
 $destinationDirBinaries = "$destinationDir/$Framework"

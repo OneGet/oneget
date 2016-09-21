@@ -171,8 +171,17 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                         // fall back to the same directory.
                         _powershellProviderFunctionsPath = Path.Combine(BaseFolder, "PackageProviderFunctions.psm1");
                         if (!File.Exists(_powershellProviderFunctionsPath)) {
-                            // oh-oh, no powershell functions file.
-                            throw new Exception(String.Format(CultureInfo.CurrentCulture, Resources.Messages.UnableToFindPowerShellFunctionsFile, _powershellProviderFunctionsPath));
+                            //Try one level upper
+                            try {
+                                _powershellProviderFunctionsPath = Path.Combine(Path.GetDirectoryName(BaseFolder), "PackageProviderFunctions.psm1");
+                            }
+                            catch { }
+
+                            if (!File.Exists(_powershellProviderFunctionsPath))
+                            {
+                                // oh-oh, no powershell functions file.
+                                throw new Exception(String.Format(CultureInfo.CurrentCulture, Resources.Messages.UnableToFindPowerShellFunctionsFile, _powershellProviderFunctionsPath));
+                            }
                         }
                     }
                 }

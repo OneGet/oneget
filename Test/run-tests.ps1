@@ -23,15 +23,42 @@ param(
 )
 
 
+# Step 0 -- remove the strongname from the binaries
+#region
+try
+{
+    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.ArchiverProviders,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.CoreProviders,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MetaProvider.PowerShell,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsiProvider,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsuProvider,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,*"  /f
+    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.Test,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
+
+
+    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.ArchiverProviders,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.CoreProviders,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MetaProvider.PowerShell,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsiProvider,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsuProvider,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,*"  /f
+    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.Test,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
+    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
+}
+catch{}
+#endregion
+
 #Step 1 - test setup
 $TestHome = $PSScriptRoot
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
 $PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\"
 $PowerShellGetVersion = "1.1.0"
 $PackageManagementVersion = "1.1.0"
-
-
-#Import-Module "$($TestBin)\PackageManagement.psd1"
 
 $ProgramProviderInstalledPath = "$Env:ProgramFiles\PackageManagement\ProviderAssemblies"
 $LocalAppData = $env:LocalAppdata
@@ -68,34 +95,9 @@ $UserModulePath = "$($mydocument)\WindowsPowerShell\Modules"
 $packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
 $powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
 
-
-if ($testframework -eq "coreclr")
-{
-    # install powershell core if test framework is coreclr
-    Install-PackageProvider PSL -Force; 
-    $powershellCore = (Get-Package -provider PSL -name PowerShell)
-    if (-not $powershellCore)
-    {   
-        $powershellCore = Install-Package PowerShell -Provider PSL
-    }
-
-    $powershellVersion = $powershellCore.Version
-    Write-host ("PowerShell Version {0}" -f $powershellVersion)
-
-    # copy the bits into powershell core
-    $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion\"
-    Copy-Item "$TestBin\netstandard1.6\*.dll" $powershellFolder -Force -Verbose
-    Copy-Item "$TestBin\*.psd1" "$powershellFolder\Modules\PackageManagement" -force -Verbose
-    Copy-Item "$TestBin\*.psm1" "$powershellFolder\Modules\PackageManagement" -force -Verbose
-    Copy-Item "$TestBin\*.ps1xml" "$powershellFolder\Modules\PackageManagement" -force -Verbose
-
-    Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
-    Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellFolder )\Modules"  -Recurse -force -verbose
-}
-
 # Setting up Packagemanagement and PowerShellGet folders
-if ($testframework -eq "fullclr")
-{    
+#if ($testframework -eq "fullclr")
+#{    
     if(-not (Test-Path $packagemanagementfolder)){
         New-Item -Path $packagemanagementfolder -ItemType Directory -Force  
         Write-Host "Created  $packagemanagementfolder"
@@ -103,7 +105,7 @@ if ($testframework -eq "fullclr")
         Get-ChildItem -Path $packagemanagementfolder | %{ren "$packagemanagementfolder\$_" "$packagemanagementfolder\$_.deleteMe"}
         Get-ChildItem -Path $packagemanagementfolder  -Recurse |  Remove-Item -force -Recurse
     }
-}
+#}
 
 if(-not (Test-Path $powershellGetfolder)){
     New-Item -Path $powershellGetfolder -ItemType Directory -Force  
@@ -113,16 +115,17 @@ if(-not (Test-Path $powershellGetfolder)){
     Get-ChildItem -Path $powershellGetfolder  -Recurse |  Remove-Item -force -Recurse
 }
 
+
 # Copying files to Packagemanagement and PowerShellGet folders
-if ($testframework -eq "fullclr")
-{
+#if ($testframework -eq "fullclr")
+#{
     Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
     Copy-Item "$TestBin\net451\*.dll" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.ps1xml" $packagemanagementfolder -force -Verbose
-}
+#}
 
 # Setting up provider path
 if(-not (Test-Path $ProgramProviderInstalledPath)){
@@ -149,32 +152,44 @@ if(-not (Test-Path $UserModulePath)) {
 }
 
 
-# remove the strongname from the binaries
+if ($testframework -eq "coreclr")
+{
+    # install powershell core if test framework is coreclr    
+    Install-PackageProvider PSL -Force; 
+    $powershellCore = (Get-Package -provider PSL -name PowerShell)
+    if (-not $powershellCore)
+    {   
+        $powershellCore = Install-Package PowerShell -Provider PSL -Force
+    }
 
-reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.ArchiverProviders,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.CoreProviders,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MetaProvider.PowerShell,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsiProvider,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsuProvider,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,*"  /f
-reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.Test,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
+    $powershellVersion = $powershellCore.Version
+    Write-host ("PowerShell Version '{0}'" -f $powershellVersion)
+
+    $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion\"
+    Write-host ("PowerShell Folder '{0}'" -f $powershellFolder)
+
+    $OneGetPath = "$powershellFolder\Modules\PackageManagement"
+    Write-host ("OneGet Folder '{0}'" -f $OneGetPath)
+
+    if(-not (Test-Path -Path $OneGetPath))
+    {
+        New-Item -Path $OneGetPath -ItemType Directory -Force -Verbose
+    }
+
+    # copy OneGet module files
+    Copy-Item "$TestBin\*.psd1" $OneGetPath -force -Verbose
+    Copy-Item "$TestBin\*.psm1" $OneGetPath -force -Verbose
+    Copy-Item "$TestBin\*.ps1xml" $OneGetPath -force -Verbose
+
+     # copy the OneGet bits into powershell core
+    Copy-Item "$TestBin\netstandard1.6\*.dll" $OneGetPath -Force -Verbose
+
+    # copy test modules
+    Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
+    Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellFolder )\Modules"  -Recurse -force -verbose
+}
 
 
-reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.ArchiverProviders,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.CoreProviders,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MetaProvider.PowerShell,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsiProvider,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsuProvider,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,*"  /f
-reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.Test,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
-reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
-
-#Restart-Service msiserver
 
 if (Test-Path "$env:temp\PackageManagementDependencies") {
     Remove-Item -Recurse -Force "$env:temp\PackageManagementDependencies"
