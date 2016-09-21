@@ -186,7 +186,7 @@ if ($testframework -eq "coreclr")
 
     # copy test modules
     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
-    Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellFolder )\Modules"  -Recurse -force -verbose
+    Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellFolder)\Modules"  -Recurse -force -verbose
 }
 
 
@@ -241,10 +241,17 @@ Write-Host -fore White "Running powershell pester tests "
 
 if ($testframework -eq "fullclr")
 {
-    Write-Host "FullClr: Calling Invoke-Pester $($TestHome)\ModuleTests\tests"  
+    Write-Host "FullClr: Calling Invoke-Pester $($TestHome)\ModuleTests\tests" 
+    $pm =Get-Module -Name PackageManagement
+
+    if($pm)
+    {
+        Write-Warning ("PackageManagement is loaded already from '{0}'" -f $pm.ModuleBase)
+    }
+      
     $command = "Invoke-Pester $($TestHome)\ModuleTests\tests"
       
-    Start-Process -FilePath "powershell" -ArgumentList @("-command $command") -NoNewWindow -Wait
+    powershell -command $command
 }
 
 if ($testframework -eq "coreclr")
@@ -258,7 +265,7 @@ if ($testframework -eq "coreclr")
 
     Write-Host "CoreCLR: Calling $command"
 
-    Start-Process -FilePath "$powershellFolder\powershell" -ArgumentList @("-command $command") -NoNewWindow -Wait
+    & "$powershellFolder\powershell" -command $command
 }
 
 Write-Host -fore White "Finished tests"
