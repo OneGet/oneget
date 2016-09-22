@@ -3,42 +3,49 @@
 #
 Set-StrictMode -Version Latest
 
+# Summary: PackageManagement is supported on Windows PowerShell 3.0 or later, Nano Server and PowerShellCore
+
 # Set up some helper variables to make it easier to work with the module
-$PSModule = $ExecutionContext.SessionState.Module
-$PSModuleRoot = $PSModule.ModuleBase
+$script:PSModule = $ExecutionContext.SessionState.Module
+$script:PSModuleRoot = $script:PSModule.ModuleBase
+
+$script:PkgMgmt = 'Microsoft.PackageManagement.dll'
+$script:PSPkgMgmt = 'Microsoft.PowerShell.PackageManagement.dll'
+
 
 # Try to import the OneGet assemblies at the same directory regardless fullclr or coreclr
-$OneGetModulePath = Join-Path -Path $PSModuleRoot -ChildPath 'Microsoft.PackageManagement.dll'
-$binaryModuleRoot = $PSModuleRoot
+$OneGetModulePath = Join-Path -Path $script:PSModuleRoot -ChildPath $script:PkgMgmt
+$binaryModuleRoot = $script:PSModuleRoot
+
 
 if(-not (Test-Path -Path $OneGetModulePath))
 {
     # Import the appropriate nested binary module based on the current PowerShell version
-    $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'fullclr'
+    $binaryModuleRoot = Join-Path -Path $script:PSModuleRoot -ChildPath 'fullclr'
 
     if (($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')) {
-        $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'coreclr'
+        $binaryModuleRoot = Join-Path -Path $script:PSModuleRoot -ChildPath 'coreclr'
     }
     
-    $OneGetModulePath = Join-Path -Path $binaryModuleRoot -ChildPath 'Microsoft.PackageManagement.dll'
+    $OneGetModulePath = Join-Path -Path $binaryModuleRoot -ChildPath $script:PkgMgmt
 }
 
+$PSOneGetModulePath = Join-Path -Path $binaryModuleRoot -ChildPath $script:PSPkgMgmt
 $OneGetModule = Import-Module -Name $OneGetModulePath -PassThru
-
-$PSOneGetModulePath = Join-Path -Path $binaryModuleRoot -ChildPath 'Microsoft.PowerShell.PackageManagement.dll'
 $PSOneGetModule = Import-Module -Name $PSOneGetModulePath -PassThru
+
 
 # When the module is unloaded, remove the nested binary module that was loaded with it
 if($OneGetModule)
 {
-    $PSModule.OnRemove = {
+    $script:PSModule.OnRemove = {
         Remove-Module -ModuleInfo $OneGetModule
     }
 }
 
 if($PSOneGetModule)
 {
-    $PSModule.OnRemove = {
+    $script:PSModule.OnRemove = {
         Remove-Module -ModuleInfo $PSOneGetModule
     }
 }
