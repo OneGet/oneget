@@ -1,3 +1,4 @@
+![Appveyor Build status](https://ci.appveyor.com/api/projects/status/0q1frhm84pp83syh/branch/master?svg=true)
 
 # PackageManagement (aka OneGet)
 
