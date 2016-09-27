@@ -56,8 +56,8 @@ catch{}
 $TestHome = $PSScriptRoot
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
 $PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\"
-$PowerShellGetVersion = "1.1.0"
-$PackageManagementVersion = "1.1.0"
+$PowerShellGetVersion = "1.1.0.0"
+$PackageManagementVersion = "1.1.0.0"
 
 $testframeworkVariable = $null
 # For appveyor runs
