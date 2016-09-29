@@ -1409,7 +1409,7 @@ Describe Get-PackageProvider -Tags "Feature" {
     	(get-packageprovider -name $nuget).name | should be $nuget
     }
 
-    it "EXPECTED: Should not raise pending reboot operations" {
+    it "EXPECTED: Should not raise pending reboot operations" -Skip:($IsCoreCLR){
         $count = (get-itemproperty "hklm:\system\currentcontrolset\control\session manager").PendingFileRenameOperations.Count
         $providers = powershell "get-packageprovider"
         $countAfter = (get-itemproperty "hklm:\system\currentcontrolset\control\session manager").PendingFileRenameOperations.Count
