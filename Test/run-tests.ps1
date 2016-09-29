@@ -23,8 +23,7 @@ param(
 )
 
 
-# Step 0 -- remove the strongname from the binaries
-#region
+#region Step 0 -- remove the strongname from the binaries
 try
 {
     reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.ArchiverProviders,31bf3856ad364e35"  /f
@@ -53,18 +52,12 @@ try
 catch{}
 #endregion
 
-#Step 1 - test setup
+#region Step 1 - test setup
 $TestHome = $PSScriptRoot
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
 $PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\"
-$PowerShellGetVersion = "1.1.0"
-$PackageManagementVersion = "1.1.0"
-
-$ProgramProviderInstalledPath = "$Env:ProgramFiles\PackageManagement\ProviderAssemblies"
-$LocalAppData = $env:LocalAppdata
-$UserProviderInstalledPath = "$($LocalAppData)\PackageManagement\ProviderAssemblies"
-$ProgramModulePath = "$Env:ProgramFiles\WindowsPowerShell\Modules"
-
+$PowerShellGetVersion = "1.1.0.0"
+$PackageManagementVersion = "1.1.0.0"
 
 $testframeworkVariable = $null
 # For appveyor runs
@@ -79,7 +72,27 @@ if ($testframeworkVariable)
     $testframework = $testframeworkVariable
 }
 
-Write-host "testframework =  $testframework"
+# Get the current OS
+try {
+    $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
+    $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
+
+    $IsCoreCLR = $true
+    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
+    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
+    $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
+} catch {
+    # If these are already set, then they're read-only and we're done
+    try {
+        $IsCoreCLR = $false
+        $IsLinux = $false
+        $IsOSX = $false
+        $IsWindows = $true
+    }
+    catch { }
+}
+
+Write-host ("testframework={0}, IsCoreCLR={1}, IsLinux={2}, IsOSX={3}, IsWindows={4}" -f $testframework, $IsCoreCLR, $IsLinux, $IsOSX, $IsWindows)
 
 
 if ($testframework -eq "fullclr")
@@ -91,13 +104,19 @@ else
     $mydocument = Microsoft.PowerShell.Management\Join-Path -Path $HOME -ChildPath ".local/share/powershell"
 }
 
-$UserModulePath = "$($mydocument)\WindowsPowerShell\Modules"
-$packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
-$powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
 
 # Setting up Packagemanagement and PowerShellGet folders
 if ($testframework -eq "fullclr")
 {    
+    $ProgramProviderInstalledPath = "$Env:ProgramFiles\PackageManagement\ProviderAssemblies"
+    $LocalAppData = $env:LocalAppdata
+    $UserProviderInstalledPath = "$($LocalAppData)\PackageManagement\ProviderAssemblies"
+    $ProgramModulePath = "$Env:ProgramFiles\WindowsPowerShell\Modules"
+
+    $UserModulePath = "$($mydocument)\WindowsPowerShell\Modules"
+    $packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
+    $powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
+
     if(-not (Test-Path $packagemanagementfolder)){
         New-Item -Path $packagemanagementfolder -ItemType Directory -Force  
         Write-Host "Created  $packagemanagementfolder"
@@ -105,70 +124,131 @@ if ($testframework -eq "fullclr")
         Get-ChildItem -Path $packagemanagementfolder | %{ren "$packagemanagementfolder\$_" "$packagemanagementfolder\$_.deleteMe"}
         Get-ChildItem -Path $packagemanagementfolder  -Recurse |  Remove-Item -force -Recurse
     }
-}
-
-if(-not (Test-Path $powershellGetfolder)){
-    New-Item -Path $powershellGetfolder -ItemType Directory -Force  
-    Write-Host "Created  $powershellGetfolder"
-} else{
-    Get-ChildItem -Path $powershellGetfolder | %{ren "$powershellGetfolder\$_" "$powershellGetfolder\$_.deleteMe"}
-    Get-ChildItem -Path $powershellGetfolder  -Recurse |  Remove-Item -force -Recurse
-}
 
 
-# Copying files to Packagemanagement and PowerShellGet folders
-if ($testframework -eq "fullclr")
-{
+    if(-not (Test-Path $powershellGetfolder)){
+        New-Item -Path $powershellGetfolder -ItemType Directory -Force  
+        Write-Host "Created  $powershellGetfolder"
+    } else{
+        Get-ChildItem -Path $powershellGetfolder | %{ren "$powershellGetfolder\$_" "$powershellGetfolder\$_.deleteMe"}
+        Get-ChildItem -Path $powershellGetfolder  -Recurse |  Remove-Item -force -Recurse
+    }
+
+
+    # Copying files to Packagemanagement and PowerShellGet folders
     Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
     Copy-Item "$TestBin\net451\*.dll" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.ps1xml" $packagemanagementfolder -force -Verbose
+
+
+    # Setting up provider path
+    if(-not (Test-Path $ProgramProviderInstalledPath)){
+        New-Item -Path $ProgramProviderInstalledPath -ItemType Directory -Force  
+        Write-Host "Created  $ProgramProviderInstalledPath"
+    } else{
+        Get-ChildItem -Path $ProgramProviderInstalledPath -Recurse | Remove-Item -force -Recurse -ea silentlycontinue
+    }
+
+    if(-not (Test-Path $UserProviderInstalledPath)) {
+        New-Item -Path $UserProviderInstalledPath -ItemType Directory -Force  
+        Write-Host "Created  $UserProviderInstalledPath"
+
+    } else{
+        Get-ChildItem -Path $UserProviderInstalledPath -Recurse | Remove-Item -force -Recurse -ea silentlycontinue
+    }
+
+    if(-not (Test-Path $UserModulePath)) {
+        New-Item -Path $UserModulePath -ItemType Directory -Force  
+        Write-Host "Created  $UserModulePath"
+
+    } else{
+        Get-ChildItem -Path $UserModulePath -Recurse | Remove-Item -force -Recurse -ea silentlycontinue
+    }
+
+    
+    # Clean up
+    if (Test-Path "$env:temp\PackageManagementDependencies") {
+        Remove-Item -Recurse -Force "$env:temp\PackageManagementDependencies"
+    }
+
+    Copy-Item "$($TestHome)\Unit\Providers\Dependencies" "$env:tmp\PackageManagementDependencies" -Recurse -Force
+
+
+    if (test-path $Env:AppData/NuGet/nuget.config) {
+        copy -force $Env:AppData/NuGet/nuget.config $Env:AppData/NuGet/nuget.config.original -ea silentlycontinue
+        rm -force $Env:AppData/NuGet/nuget.config  -ea silentlycontinue
+    }
+
+    # Copy test dependencies
+
+    #Copy-Item  "$($Testbin)\Microsoft.PackageManagement.OneGetTestProvider.dll" "$($ProgramProviderInstalledPath)\" -force 
+    #Copy-Item  "$($Testbin)\Microsoft.PackageManagement.OneGetTestProvider.dll" "$($UserProviderInstalledPath)\" -force
+   
+    Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($ProgramModulePath)\" -force -verbose
+    Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($UserModulePath)\" -force -verbose
+    Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($ProgramModulePath)\"  -Recurse -force -verbose
 }
-
-# Setting up provider path
-if(-not (Test-Path $ProgramProviderInstalledPath)){
-    New-Item -Path $ProgramProviderInstalledPath -ItemType Directory -Force  
-    Write-Host "Created  $ProgramProviderInstalledPath"
-} else{
-    Get-ChildItem -Path $ProgramProviderInstalledPath -Recurse | Remove-Item -force -Recurse -ea silentlycontinue
-}
-
-if(-not (Test-Path $UserProviderInstalledPath)) {
-    New-Item -Path $UserProviderInstalledPath -ItemType Directory -Force  
-    Write-Host "Created  $UserProviderInstalledPath"
-
-} else{
-    Get-ChildItem -Path $UserProviderInstalledPath -Recurse | Remove-Item -force -Recurse -ea silentlycontinue
-}
-
-if(-not (Test-Path $UserModulePath)) {
-    New-Item -Path $UserModulePath -ItemType Directory -Force  
-    Write-Host "Created  $UserModulePath"
-
-} else{
-    Get-ChildItem -Path $UserModulePath -Recurse | Remove-Item -force -Recurse -ea silentlycontinue
-}
-
 
 if ($testframework -eq "coreclr")
 {
     # install powershell core if test framework is coreclr 
-    Install-PackageProvider PSL -Force; 
-    $powershellCore = (Get-Package -provider PSL -name PowerShell)
-    if (-not $powershellCore)
-    {   
-        $powershellCore = Install-Package PowerShell -Provider PSL -Force
+
+    If($IsWindows)
+    {
+        Install-PackageProvider PSL -Force -verbose
+        $powershellCore = (Get-Package -provider PSL -name PowerShell -ErrorAction SilentlyContinue)
+        if ($powershellCore)
+        {
+            Write-Warning ("PowerShell already installed" -f $powershellCore.Name)
+        }
+        else
+        {   
+            $powershellCore = Install-Package PowerShell -Provider PSL -Force -verbose
+        }
+
+        $powershellVersion = $powershellCore.Version
+        Write-host ("PowerShell Version '{0}'" -f $powershellVersion)
+
+        $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
+        Write-host ("PowerShell Folder '{0}'" -f $powershellFolder)
+
+    }
+    else
+    {
+        # TODO: On Linux, need to grab PowerShellCore
+
     }
 
-    $powershellVersion = $powershellCore.Version
-    Write-host ("PowerShell Version '{0}'" -f $powershellVersion)
+    # Workaround: delete installed PackageManagement files   
+    $assemblyNames = @(
+        "Microsoft.PackageManagement",
+        "Microsoft.PackageManagement.ArchiverProviders",
+        "Microsoft.PackageManagement.CoreProviders",
+        "Microsoft.PackageManagement.MetaProvider.PowerShell",
+        "Microsoft.PowerShell.PackageManagement",
+        "Microsoft.PackageManagement.NuGetProvider"
+        )
+ 
+    foreach ($assemblyName in $assemblyNames)
+    {
+        $dll = "$powershellFolder\$assemblyName.dll"
+        if (Test-Path ($dll))
+        {
+            Remove-Item -Path $dll -Verbose -force
+        }
 
-    $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion\"
-    Write-host ("PowerShell Folder '{0}'" -f $powershellFolder)
+        $ni = "$powershellFolder\$assemblyName.ni.dll"
+        if (Test-Path ($ni))
+        {
+            Remove-Item -Path $ni -Verbose -force
+        }
+    }
 
-    $OneGetPath = "$powershellFolder\Modules\PackageManagement"
+
+    $OneGetPath = "$powershellFolder\Modules\PackageManagement\$PackageManagementVersion\"
     Write-host ("OneGet Folder '{0}'" -f $OneGetPath)
 
     if(-not (Test-Path -Path $OneGetPath))
@@ -182,62 +262,22 @@ if ($testframework -eq "coreclr")
     Copy-Item "$TestBin\*.ps1xml" $OneGetPath -force -Verbose
 
      # copy the OneGet bits into powershell core
-    Copy-Item "$TestBin\netstandard1.6\*.dll" $OneGetPath -Force -Verbose
+    $OneGetBinaryPath ="$OneGetPath\coreclr"
+    if(-not (Test-Path -Path $OneGetBinaryPath))
+    {
+        New-Item -Path $OneGetBinaryPath -ItemType Directory -Force -Verbose
+    }
+    Copy-Item "$TestBin\netstandard1.6\*.dll" $OneGetBinaryPath -Force -Verbose
 
     # copy test modules
     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
     Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellFolder)\Modules"  -Recurse -force -verbose
 }
 
-
-
-if (Test-Path "$env:temp\PackageManagementDependencies") {
-    Remove-Item -Recurse -Force "$env:temp\PackageManagementDependencies"
-}
-
-Copy-Item "$($TestHome)\Unit\Providers\Dependencies" "$env:tmp\PackageManagementDependencies" -Recurse -Force
-
-
-# remove existing nuget provider.
-if (test-path $Env:ProgramFiles/PackageManagement/ProviderAssemblies/nuget-anycpu.exe) {
-    ren $Env:ProgramFiles/PackageManagement/ProviderAssemblies/nuget-anycpu.exe "nuget-anycpu.$(Get-Random).deleteme"
-    rm -force $Env:ProgramFiles/PackageManagement/ProviderAssemblies/*.deleteme -ea silentlycontinue
-}
-
-if (test-path $Env:LocalAppData/PackageManagement/ProviderAssemblies/nuget-anycpu.exe) {
-    ren $Env:LocalAppData/PackageManagement/ProviderAssemblies/nuget-anycpu.exe "nuget-anycpu.$(Get-Random).deleteme"
-    rm -force $Env:LocalAppData/PackageManagement/ProviderAssemblies/*.deleteme  -ea silentlycontinue
-}
-
-if (test-path $Env:ProgramFiles/PackageManagement/ProviderAssemblies/nuget-anycpu.exe) {
-    ren $Env:ProgramFiles/PackageManagement/ProviderAssemblies/nuget-anycpu.exe "nuget-anycpu.$(Get-Random).deleteme"
-    rm -force $Env:ProgramFiles/PackageManagement/ProviderAssemblies/*.deleteme -ea silentlycontinue
-}
-
-if (test-path $Env:LocalAppData/PackageManagement/ProviderAssemblies/nuget-anycpu.exe) {
-    ren $Env:LocalAppData/PackageManagement/ProviderAssemblies/nuget-anycpu.exe "nuget-anycpu.$(Get-Random).deleteme"
-    rm -force $Env:LocalAppData/PackageManagement/ProviderAssemblies/*.deleteme  -ea silentlycontinue
-}
-
-if (test-path $Env:AppData/NuGet/nuget.config) {
-    copy -force $Env:AppData/NuGet/nuget.config $Env:AppData/NuGet/nuget.config.original -ea silentlycontinue
-    rm -force $Env:AppData/NuGet/nuget.config  -ea silentlycontinue
-}
-
-
-
-#Copy-Item  "$($Testbin)\Microsoft.PackageManagement.OneGetTestProvider.dll" "$($ProgramProviderInstalledPath)\" -force 
-#Copy-Item  "$($Testbin)\Microsoft.PackageManagement.OneGetTestProvider.dll" "$($UserProviderInstalledPath)\" -force
-
-if ($testframework -eq "fullclr")
-{
-    Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($ProgramModulePath)\" -force -verbose
-    Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($UserModulePath)\" -force -verbose
-    Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($ProgramModulePath)\"  -Recurse -force -verbose
-}
+#endregion
 
 #Step 2 - run tests
-Write-Host -fore White "Running powershell pester tests "
+Write-Host "Running powershell pester tests "
 
 if ($testframework -eq "fullclr")
 {
@@ -263,7 +303,7 @@ if ($testframework -eq "coreclr")
 
     $command += "Invoke-Pester $($TestHome)\ModuleTests\tests"
 
-    Write-Host "CoreCLR: Calling $command"
+    Write-Host "CoreCLR: Calling $powershellFolder\powershell -command  $command"
 
     & "$powershellFolder\powershell" -command $command
 }
