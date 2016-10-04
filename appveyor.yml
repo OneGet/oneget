@@ -12,7 +12,8 @@ install:
     - cinst -y pester
 clone_folder: c:\projects\oneget
 build_script:
-- ps: git submodule update --init; cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451"; .\build.ps1
+- git submodule update --init
+- ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451"; .\build.ps1 -framework "netstandard1.6"
 after_build:
 - ps: >-
     Get-ChildItem "C:\projects\oneget\src\out\PackageManagement\net451" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }

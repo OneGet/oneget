@@ -38,7 +38,7 @@ try {
 # Actual Tests:
 
 Describe "find-packageprovider" -Tags "Feature" {
-    #make sure the package repository exists
+    <#make sure the package repository exists
     $a=Get-PackageSource  | select Location, ProviderName
     
     $found = $false
@@ -55,6 +55,13 @@ Describe "find-packageprovider" -Tags "Feature" {
     if(-not $found)
     {
         Register-PackageSource -Name 'OneGetTestSource' -Location $InternalGallery -ProviderName 'PowerShellGet' -ErrorAction SilentlyContinue
+    }#>
+
+    BeforeAll{        
+        Get-PackageProvider -Name NuGet -Force -ForceBootstrap
+        Get-PackageProvider -Verbose
+        Register-PackageSource -Name 'OneGetTestSource' -Location $InternalGallery -ProviderName 'PowerShellGet' -ErrorAction SilentlyContinue -force -ForceBootstrap
+    
     }
 
     It "find-packageprovider without any parameters, Expect succeed" {

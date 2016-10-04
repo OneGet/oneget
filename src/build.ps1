@@ -2,7 +2,7 @@
     [ValidateSet("net451", "netstandard1.6")]
     [string]$Framework = "netstandard1.6",
 
-    [ValidateSet("Debug", "Release")]
+    [ValidateSet("Debug", "Release", "Linux")]
     [string]$Configuration = "Debug"
 )
 
