@@ -55,8 +55,11 @@ catch{}
 #region Step 1 - test setup
 $TestHome = $PSScriptRoot
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
-$PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\"
-$PowerShellGetVersion = "1.0.0.1"
+$PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\PowerShellGet"
+
+$psGetModuleManifest = Test-ModuleManifest "$PowerShellGetPath\PowerShellGet.psd1"
+$PowerShellGetVersion = $psGetModuleManifest.Version.ToString()
+
 $PackageManagementVersion = "1.1.0.0"
 
 $testframeworkVariable = $null
@@ -219,6 +222,7 @@ if ($testframework -eq "coreclr")
     else
     {
         # TODO: On Linux, need to grab PowerShellCore
+        # set up powershellFolder
 
     }
 
@@ -249,7 +253,7 @@ if ($testframework -eq "coreclr")
 
 
     $OneGetPath = "$powershellFolder\Modules\PackageManagement\$PackageManagementVersion\"
-    Write-host ("OneGet Folder '{0}'" -f $OneGetPath)
+    Write-Verbose ("OneGet Folder '{0}'" -f $OneGetPath)
 
     if(-not (Test-Path -Path $OneGetPath))
     {
@@ -267,7 +271,26 @@ if ($testframework -eq "coreclr")
     {
         New-Item -Path $OneGetBinaryPath -ItemType Directory -Force -Verbose
     }
+    else{
+        Get-ChildItem -Path $OneGetBinaryPath | %{ren "$OneGetBinaryPath\$_" "$OneGetBinaryPath\$_.deleteMe"}
+        Get-ChildItem -Path $OneGetBinaryPath  -Recurse |  Remove-Item -force -Recurse
+    }
+
+
     Copy-Item "$TestBin\netstandard1.6\*.dll" $OneGetBinaryPath -Force -Verbose
+
+    $PSGetPath = "$powershellFolder\Modules\PowerShellGet\$PowerShellGetVersion\"
+
+    Write-Verbose ("PowerShellGet Folder '{0}'" -f $PSGetPath)
+
+    if(-not (Test-Path -Path $PSGetPath))
+    {
+        New-Item -Path $PSGetPath -ItemType Directory -Force -Verbose
+    }
+
+
+    # Copying files to Packagemanagement and PowerShellGet folders
+    Copy-Item "$PowerShellGetPath\*" $PSGetPath -force -verbose
 
     # copy test modules
     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
@@ -305,7 +328,7 @@ if ($testframework -eq "coreclr")
 
     Write-Host "CoreCLR: Calling $powershellFolder\powershell -command  $command"
 
-    & "$powershellFolder\powershell" -command $command
+    & "$powershellFolder\powershell" -command "& {get-packageprovider -verbose; $command}"
 }
 
 Write-Host -fore White "Finished tests"

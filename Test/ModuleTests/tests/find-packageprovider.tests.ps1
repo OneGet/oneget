@@ -70,7 +70,7 @@ Describe "find-packageprovider" -Tags "Feature" {
     }
     
     It "find-packageprovider -name, Expect succeed" {
-        $a = (Find-PackageProvider -name nuget).name 
+        $a = (Find-PackageProvider -name nuget -Force).name 
         $a -contains "GistProvider" | should be $false
     }
             

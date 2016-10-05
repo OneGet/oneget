@@ -13,13 +13,10 @@ install:
 clone_folder: c:\projects\oneget
 build_script:
 - git submodule update --init
-- ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451"; .\build.ps1 -framework "netstandard1.6"
+- ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451" Release; .\build.ps1 -framework "netstandard1.6" Release
 after_build:
-- ps: >-
-    Get-ChildItem "C:\projects\oneget\src\out\PackageManagement\net451" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
-
+- ps: Get-ChildItem "C:\projects\oneget\src\out\PackageManagement\net451" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
+- ps: Get-ChildItem "C:\projects\oneget\src\out\PackageManagement\netstandard1.6" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName "$_.Name.Core" -DeploymentName releasebits -Type Auto }
 before_test:
 - ps: >-
-    Copy-Item -Recurse "c:\projects\oneget\src\Modules\PowerShellGet" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Force -Verbose
-
     & "c:\projects\oneget\Test\run-tests.ps1"
