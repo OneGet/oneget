@@ -1,5 +1,5 @@
 
-language: c#
+language: cpp
 
 git:
   depth: 1000
