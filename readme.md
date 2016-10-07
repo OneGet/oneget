@@ -1,5 +1,3 @@
-![Appveyor Build status](https://ci.appveyor.com/api/projects/status/0q1frhm84pp83syh/branch/master?svg=true)
-
 ### Build status - Master
 
 | AppVeyor (Windows)       | Travis CI (Linux / macOS) |
