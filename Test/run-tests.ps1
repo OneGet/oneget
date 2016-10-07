@@ -32,7 +32,7 @@ try
     reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MetaProvider.PowerShell,31bf3856ad364e35"  /f
     reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsiProvider,31bf3856ad364e35"  /f
     reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsuProvider,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,*"  /f
+    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,31bf3856ad364e35"  /f
     reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.Test,31bf3856ad364e35"  /f
     reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
     reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
@@ -44,7 +44,7 @@ try
     reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MetaProvider.PowerShell,31bf3856ad364e35"  /f
     reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsiProvider,31bf3856ad364e35"  /f
     reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsuProvider,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,*"  /f
+    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,31bf3856ad364e35"  /f
     reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.Test,31bf3856ad364e35"  /f
     reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
     reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
@@ -55,9 +55,15 @@ catch{}
 #region Step 1 - test setup
 $TestHome = $PSScriptRoot
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
-$PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\"
-$PowerShellGetVersion = "1.1.0.0"
-$PackageManagementVersion = "1.1.0.0"
+$PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\PowerShellGet"
+
+# Get PowerShellGet version
+$psGetModuleManifest = Test-ModuleManifest "$PowerShellGetPath\PowerShellGet.psd1"
+$PowerShellGetVersion = $psGetModuleManifest.Version.ToString()
+
+# Get OneGet version
+$packageManagementManifest = Test-ModuleManifest "$TestBin\PackageManagement.psd1"
+$PackageManagementVersion = $packageManagementManifest.Version.ToString()
 
 $testframeworkVariable = $null
 # For appveyor runs
@@ -219,6 +225,7 @@ if ($testframework -eq "coreclr")
     else
     {
         # TODO: On Linux, need to grab PowerShellCore
+        # set up powershellFolder
 
     }
 
@@ -249,7 +256,7 @@ if ($testframework -eq "coreclr")
 
 
     $OneGetPath = "$powershellFolder\Modules\PackageManagement\$PackageManagementVersion\"
-    Write-host ("OneGet Folder '{0}'" -f $OneGetPath)
+    Write-Verbose ("OneGet Folder '{0}'" -f $OneGetPath)
 
     if(-not (Test-Path -Path $OneGetPath))
     {
@@ -267,7 +274,26 @@ if ($testframework -eq "coreclr")
     {
         New-Item -Path $OneGetBinaryPath -ItemType Directory -Force -Verbose
     }
+    else{
+        Get-ChildItem -Path $OneGetBinaryPath | %{ren "$OneGetBinaryPath\$_" "$OneGetBinaryPath\$_.deleteMe"}
+        Get-ChildItem -Path $OneGetBinaryPath  -Recurse |  Remove-Item -force -Recurse
+    }
+
+
     Copy-Item "$TestBin\netstandard1.6\*.dll" $OneGetBinaryPath -Force -Verbose
+
+    $PSGetPath = "$powershellFolder\Modules\PowerShellGet\$PowerShellGetVersion\"
+
+    Write-Verbose ("PowerShellGet Folder '{0}'" -f $PSGetPath)
+
+    if(-not (Test-Path -Path $PSGetPath))
+    {
+        New-Item -Path $PSGetPath -ItemType Directory -Force -Verbose
+    }
+
+
+    # Copying files to Packagemanagement and PowerShellGet folders
+    Copy-Item "$PowerShellGetPath\*" $PSGetPath -force -verbose -Recurse
 
     # copy test modules
     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
@@ -291,7 +317,7 @@ if ($testframework -eq "fullclr")
       
     $command = "Invoke-Pester $($TestHome)\ModuleTests\tests"
       
-    powershell -command $command
+    Powershell -command "& {get-packageprovider -verbose; $command}"
 }
 
 if ($testframework -eq "coreclr")
@@ -305,7 +331,7 @@ if ($testframework -eq "coreclr")
 
     Write-Host "CoreCLR: Calling $powershellFolder\powershell -command  $command"
 
-    & "$powershellFolder\powershell" -command $command
+    & "$powershellFolder\powershell" -command "& {get-packageprovider -verbose; $command}"
 }
 
 Write-Host -fore White "Finished tests"

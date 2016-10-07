@@ -82,7 +82,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                         return Enumerable.Empty<Feed>();
                     }
 
-#if !PORTABLE
+#if !UNIX
                     // we don't do bootstrap on core powershell
                     if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable()) {
                         Warning(Constants.Messages.NetworkNotAvailable);
@@ -510,7 +510,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
         /// <returns></returns>
         internal Package GetProviderFromFile(string filePath, bool copyFileToTemp = false, bool suppressErrorsAndWarnings = false) {
             
-#if PORTABLE
+#if UNIX
             // not supported on core powershell
             return null;
 #else

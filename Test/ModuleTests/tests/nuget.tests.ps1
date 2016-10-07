@@ -614,7 +614,7 @@ Describe Save-Package -Tags "Feature" {
             }
 
 		    if (Test-Path $destination\zlib*) {
-			    Remove-Item $destination\zlib* -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+			    Remove-Item $destination\zlib* -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
 		    }
 
         }
@@ -640,7 +640,7 @@ Describe Save-Package -Tags "Feature" {
             }
 
 		    if (Test-Path $destination\zlib*) {
-			    Remove-Item $destination\zlib*
+			    Remove-Item $destination\zlib* -Force
 		    }
 
         }
@@ -654,7 +654,7 @@ Describe Save-Package -Tags "Feature" {
         }
         finally {
             if (Test-Path $destination\ModuleWithDependenciesLoop*) {
-                Remove-Item $destination\ModuleWithDependenciesLoop*
+                Remove-Item $destination\ModuleWithDependenciesLoop* -Force
             }
         }
     }
@@ -666,7 +666,7 @@ Describe Save-Package -Tags "Feature" {
         }
         finally {
             if (Test-Path $destination\TestPackage*) {
-                Remove-Item $destination\TestPackage*
+                Remove-Item $destination\TestPackage* -Force
             }
         }
     }
@@ -675,7 +675,7 @@ Describe Save-Package -Tags "Feature" {
 		(save-package -name "awssdk" -provider $nuget -source $source -Path $destination)
 		(test-path $destination\awssdk*) | should be $true
 		if (Test-Path $destination\awssdk*) {
-			rm $destination\awssdk*
+			rm $destination\awssdk* -Force
 		}    
     }
 
@@ -685,7 +685,7 @@ Describe Save-Package -Tags "Feature" {
         (Test-Path $destination\contoso*) | should be $true
 
         if (Test-Path $destination\contoso*) {
-            Remove-Item $destination\contoso*
+            Remove-Item $destination\contoso* -Force
         }
     }
 
@@ -696,7 +696,7 @@ Describe Save-Package -Tags "Feature" {
 				save-package -name $x -source $source -provider $nuget -minimumversion $y -maximumversion $z -Path $destination
 				(Test-Path -Path $destination\$x*) | should be $true
 				if (Test-Path -Path $destination\$x*) {
-					rm $destination\$x*
+					rm $destination\$x* -Force
 					}
 				}
 			}
@@ -707,7 +707,7 @@ Describe Save-Package -Tags "Feature" {
 	    (find-package -name "zlib" -provider $nuget -source $source | save-package -Path $destination)
 	    (Test-Path -Path $destination\zlib*) | should be $true
 	    if (Test-Path -Path $destination\zlib*) {
-		    Remove-Item $destination\zlib*
+		    Remove-Item $destination\zlib* -Force
         }
     }
 
@@ -766,7 +766,7 @@ Describe "save-package with Whatif" -Tags "Feature" {
     AfterEach {
         if(Test-Path $tempFile)
         {
-            Remove-Item $tempFile -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            Remove-Item $tempFile -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
         }
     }
 
@@ -785,7 +785,7 @@ Describe "save-package with Whatif" -Tags "Feature" {
         Test-Path C:\foof | should be $false
 
 
-        Remove-Item $whatif -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        Remove-Item $whatif -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
         }
     }
 
@@ -810,7 +810,7 @@ Describe "install-package with Whatif" -Tags "Feature" {
     AfterEach {
         if(Test-Path $tempFile)
         {
-            Remove-Item $tempFile -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            Remove-Item $tempFile -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
         }
     }
 
@@ -829,7 +829,7 @@ Describe "install-package with Whatif" -Tags "Feature" {
             $transcriptContent | where { $_.Contains( $whatif ) } | should be $true
             Test-Path $installationPath | should be $false
 
-            Remove-Item $whatif -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            Remove-Item $whatif -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
         }
     }
 

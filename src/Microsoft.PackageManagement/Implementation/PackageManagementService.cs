@@ -38,9 +38,8 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
     using Messages = Resources.Messages;
     using Directory = System.IO.Directory;
     using File = System.IO.File;
-#if CORECLR
     using System.Management.Automation;
-#endif
+    using System.Management.Automation.Runspaces;
 
     /// <summary>
     ///     The Client API is designed for use by installation hosts:
@@ -858,7 +857,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             Version maximumVersion,
             ProviderOption providerOption = ProviderOption.LatestVersion) {
 
-#if PORTABLE
+#if UNIX
             return Enumerable.Empty<string>();
 #else
             //We don't need to scan provider assemblies on corepowershell.
@@ -973,7 +972,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
         //Return all providers under the providerAssemblies folder
         internal IEnumerable<string> AllProvidersFromProviderAssembliesLocation(IHostApi request) {
-#if !PORTABLE
+#if !UNIX
             // don't need this for core powershell
             try {
 
@@ -989,7 +988,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
         //return the providers with latest version under the providerAssemblies folder
         //This method only gets called during the initialization, i.e. LoadProviders().
         private IEnumerable<string> ProvidersWithLatestVersionFromProviderAssembliesLocation(IHostApi request) {
-#if !PORTABLE
+#if !UNIX
             // don't need this for core powershell
             try {
                 var providerPaths = ScanAllProvidersFromProviderAssembliesLocation(request, null, null, null, null, ProviderOption.LatestVersion).WhereNotNull().ToArray();
@@ -1038,28 +1037,28 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                 throw new ArgumentNullException("request");
             }
 
-            //looks like registry needs to be here for supporting .msi packages
-            var providerAssemblies = (_initialized ? Enumerable.Empty<string>() : _defaultProviders)
-                .Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\PACKAGEMANAGEMENT"))
-                .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\PACKAGEMANAGEMENT"));
+            var providerAssemblies = Enumerable.Empty<string>();
+#if !UNIX
+            //On PowerShell FullCLR , we will need to search providerassemblies folder
+            var pshome = RunPowerShellCommand(request, "$PSHome");
+            if (!string.IsNullOrWhiteSpace(pshome) && pshome.EndsWith(@"\WindowsPowerShell\v1.0", StringComparison.OrdinalIgnoreCase))
+            {
+                request.Debug("Current running environment: Windows PowerShell.");
 
-            providerAssemblies = providerAssemblies.Concat(ProvidersWithLatestVersionFromProviderAssembliesLocation(request));
+                //looks like registry needs to be here for supporting .msi packages
+                providerAssemblies = (_initialized ? Enumerable.Empty<string>() : _defaultProviders)
+                    .Concat(GetProvidersFromRegistry(Registry.LocalMachine, "SOFTWARE\\MICROSOFT\\PACKAGEMANAGEMENT"))
+                    .Concat(GetProvidersFromRegistry(Registry.CurrentUser, "SOFTWARE\\MICROSOFT\\PACKAGEMANAGEMENT"));
 
-#if DEEP_DEBUG
-            providerAssemblies = providerAssemblies.ToArray();
+                providerAssemblies = providerAssemblies.Concat(ProvidersWithLatestVersionFromProviderAssembliesLocation(request));
 
-            foreach (var each in providerAssemblies) {
-                request.Debug("possible assembly: {0}".format(each));
+                // find modules that have manifests
+                // expand this out to validate the assembly is ok for this instance of PackageManagement.
+                providerAssemblies = providerAssemblies.Where(each => Manifest.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
+
             }
 #endif
-
-            // find modules that have manifests
-            // todo: expand this out to validate the assembly is ok for this instance of PackageManagement.
-            providerAssemblies = providerAssemblies.Where(each => Manifest.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
-
             // add inbox assemblies (don't require manifests, because they are versioned with the core)
-#if !COMMUNITY_BUILD
-            // todo: these should just be strong-named references. for now, just load them from the same directory.
             providerAssemblies = providerAssemblies.Concat(new[] {
                 Path.Combine(BaseDir, "Microsoft.PackageManagement.MetaProvider.PowerShell.dll"),
                 Path.Combine(BaseDir, "Microsoft.PackageManagement.ArchiverProviders.dll"),
@@ -1070,7 +1069,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                 Path.Combine(BaseDir, "Microsoft.PackageManagement.MsiProvider.dll")
 #endif
             });
-#endif
+
 
 #if DEEP_DEBUG
             providerAssemblies = providerAssemblies.ToArray();
@@ -1116,6 +1115,35 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             }
         }
 #endif
+
+        private static string RunPowerShellCommand(IHostApi request, string commandName)
+        {
+            var iis = InitialSessionState.CreateDefault2();
+            using (Runspace rs = RunspaceFactory.CreateRunspace(iis))
+            {
+                using (PowerShell powershell = PowerShell.Create())
+                {
+                    try
+                    {
+                        rs.Open();
+                        powershell.Runspace = rs;
+                        powershell.AddScript(commandName);                                    
+                        var retval = powershell.Invoke().FirstOrDefault();
+                        if (retval != null)
+                        {
+                            return retval.ToString();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        request.Verbose(ex.Message);
+                    }
+                }
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Dynamic providers are the ones that are not installed with the core itself.
         /// </summary>
@@ -1198,7 +1226,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                     }
                 } catch (Exception e) {
                     e.Dump(request);
-
+                    request.Verbose(e.Message);
                     lock (_providerFiles) {
                         // can't create hash from file? 
                         // we're not going to try and load this.
@@ -1294,7 +1322,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                 }
 
                 var asmVersion = GetAssemblyVersion(assembly);
-                request.Debug("Acquiring providers for assembly" + assemblyPath);
+                request.Verbose("Acquiring providers for assembly: " + assemblyPath);
 
                 assembly.FindCompatibleTypes<IMetaProvider>().AsyncForEach(metaProviderClass => {
                     request.Debug("Registering providers via metaproviders for assembly " + metaProviderClass);

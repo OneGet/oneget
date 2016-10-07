@@ -1,6 +1,9 @@
-[submodule "Test/ModuleTests/Pester"]
-	path = Test/ModuleTests/Pester
-	url = https://github.com/pester/Pester.git
 [submodule "src/Microsoft.PackageManagement.NuGetProvider"]
 	path = src/Microsoft.PackageManagement.NuGetProvider
-	url = https://github.com/OneGet/NuGetProvider
+	url = https://github.com/OneGet/NuGetProvider.git
+
+[submodule "src/Modules/PowerShellGet"]
+	
+	path = src/Modules/PowerShellGet
+	
+	url = https://github.com/PowerShell/PowerShellGet.git
