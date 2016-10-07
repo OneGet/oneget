@@ -1043,7 +1043,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             var pshome = RunPowerShellCommand(request, "$PSHome");
             if (!string.IsNullOrWhiteSpace(pshome) && pshome.EndsWith(@"\WindowsPowerShell\v1.0", StringComparison.OrdinalIgnoreCase))
             {
-                request.Debug("Current running environment: PowerShell FullCRL.");
+                request.Debug("Current running environment: Windows PowerShell.");
 
                 //looks like registry needs to be here for supporting .msi packages
                 providerAssemblies = (_initialized ? Enumerable.Empty<string>() : _defaultProviders)
@@ -1128,9 +1128,11 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                         rs.Open();
                         powershell.Runspace = rs;
                         powershell.AddScript(commandName);                                    
-                        var f = powershell.Invoke().FirstOrDefault();
-
-                        return f.ToString();
+                        var retval = powershell.Invoke().FirstOrDefault();
+                        if (retval != null)
+                        {
+                            return retval.ToString();
+                        }
                     }
                     catch (Exception ex)
                     {

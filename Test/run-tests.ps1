@@ -57,10 +57,13 @@ $TestHome = $PSScriptRoot
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
 $PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\PowerShellGet"
 
+# Get PowerShellGet version
 $psGetModuleManifest = Test-ModuleManifest "$PowerShellGetPath\PowerShellGet.psd1"
 $PowerShellGetVersion = $psGetModuleManifest.Version.ToString()
 
-$PackageManagementVersion = "1.1.0.0"
+# Get OneGet version
+$packageManagementManifest = Test-ModuleManifest "$TestBin\PackageManagement.psd1"
+$PackageManagementVersion = $packageManagementManifest.Version.ToString()
 
 $testframeworkVariable = $null
 # For appveyor runs
@@ -290,7 +293,7 @@ if ($testframework -eq "coreclr")
 
 
     # Copying files to Packagemanagement and PowerShellGet folders
-    Copy-Item "$PowerShellGetPath\*" $PSGetPath -force -verbose
+    Copy-Item "$PowerShellGetPath\*" $PSGetPath -force -verbose -Recurse
 
     # copy test modules
     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
