@@ -1,5 +1,16 @@
 ![Appveyor Build status](https://ci.appveyor.com/api/projects/status/0q1frhm84pp83syh/branch/master?svg=true)
 
+### Build status - Master
+
+| AppVeyor (Windows)       | Travis CI (Linux / macOS) |
+|--------------------------|--------------------------|
+| [![av-image][]][av-site] | [![tv-image][]][tv-site] |
+
+[tv-image]: https://travis-ci.org/OneGet/oneget.svg?branch=master
+[tv-site]: https://travis-ci.org/OneGet/oneget/branches
+[av-image]: https://ci.appveyor.com/api/projects/status/0q1frhm84pp83syh/branch/master?svg=true
+[av-site]: https://ci.appveyor.com/project/OneGet/oneget
+
 # PackageManagement (aka OneGet)
 
 
