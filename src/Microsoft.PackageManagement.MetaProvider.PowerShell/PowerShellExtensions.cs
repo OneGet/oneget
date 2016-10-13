@@ -102,7 +102,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                 foreach (var arg in args) {
                     powershell.AddArgument(arg);
                 }
-#if DEBUG
+#if !CORECLR
                 NativeMethods.OutputDebugString("[Cmdlet:debugging] -- InvokeFunction ({0}, {1})".format(command, args.Select( each => (each ?? "<NULL>").ToString()).JoinWithComma(), powershell.InvocationStateInfo.Reason));
 #endif
             

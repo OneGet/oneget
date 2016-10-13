@@ -9,13 +9,7 @@
         "warningsAsErrors": true
     },
 
-	"configurations": {
-		"Linux": {
-			"buildOptions": {
-				"define": ["UNIX"]
-			}
-		}
-	},
+
 
 	"dependencies": {
 		"System.Management.Automation": "1.0.0-alpha9",
@@ -59,17 +53,18 @@
 		"netstandard1.6": {
       "imports": [ "dnxcore50" ],
 			"buildOptions": {
-				"define": ["CORECLR"],
-                "compile": {
-                    "exclude": [
-                        "Resources/Messages.Designer.cs"
-                    ]
-                },
-                "embed": {
-                    "exclude": [
-                        "Resources/Messages.resx"
-                    ]
-                }
+        "define": [ "CORECLR" ],
+        "debugType": "portable",
+        "compile": {
+            "exclude": [
+                "Resources/Messages.Designer.cs"
+            ]
+        },
+        "embed": {
+            "exclude": [
+                "Resources/Messages.resx"
+            ]
+        }
 			}
 		}
 	}

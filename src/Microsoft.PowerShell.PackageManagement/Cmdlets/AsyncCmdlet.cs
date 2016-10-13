@@ -81,9 +81,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 #if DEBUG
         private static object __lock = new object();
         private void Log(string category, string text) {
+#if !CORECLR
             lock (__lock) {
                 NativeMethods.OutputDebugString("[Cmdlet:{0}][Thread:{1}][{2}] {3}".format(GetType().Name, Thread.CurrentThread.ManagedThreadId, category, text));
             }
+#endif
         }
 #endif
 

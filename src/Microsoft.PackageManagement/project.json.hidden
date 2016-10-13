@@ -9,13 +9,6 @@
         "warningsAsErrors": true
     },	
 
-  "configurations": {
-    "Linux": {
-      "buildOptions": {
-        "define": [ "UNIX" ]
-      }
-    }
-  },  
   
   "dependencies": {
     "System.Management.Automation": "1.0.0-alpha9"
@@ -62,9 +55,10 @@
     },
 
     "netstandard1.6": {
-      "imports": [ "dnxcore50", "portable-net45+win8" ],
+      "imports": [ "dnxcore50"],
       "buildOptions": {
-        "define": [ "CORECLR", "PORTABLE" ],
+        "define": [ "CORECLR" ],
+        "debugType": "portable",
         "compile": {
           "exclude": [
             "Providers/Inbox/Common/*",

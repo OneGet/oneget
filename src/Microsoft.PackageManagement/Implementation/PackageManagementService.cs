@@ -13,6 +13,8 @@
 //  limitations under the License.
 //  
 
+
+
 namespace Microsoft.PackageManagement.Internal.Implementation {
     using System;
     using System.Collections;
@@ -40,7 +42,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
     using File = System.IO.File;
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
-
+    
     /// <summary>
     ///     The Client API is designed for use by installation hosts:
     ///     - PackageManagement Powershell Cmdlets
@@ -848,8 +850,26 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             _packageProviders.ParallelForEach(each => AddToProviderCacheTable(each.Key, each.Value));
         }
 
-        //Scan through the well-known providerAssemblies folder to find the providers that met the condition.
         internal IEnumerable<string> ScanAllProvidersFromProviderAssembliesLocation(
+            IHostApi request,
+            string providerName,
+            Version requiredVersion,
+            Version minimumVersion,
+            Version maximumVersion,
+            ProviderOption providerOption = ProviderOption.LatestVersion)
+        {
+            //We don't need to scan provider assemblies on corepowershell.
+            if (!OSInformation.IsWindowsPowerShell) {
+                 return Enumerable.Empty<string>();
+            }
+
+            // apply the following for FullClr or Nano server only
+            return  ScanAllProvidersFromProviderAssembliesLocationPrivate(request, providerName, requiredVersion,
+                minimumVersion, maximumVersion, providerOption);
+        }
+
+        //Scan through the well-known providerAssemblies folder to find the providers that met the condition.
+        private IEnumerable<string> ScanAllProvidersFromProviderAssembliesLocationPrivate(
             IHostApi request,
             string providerName,
             Version requiredVersion,
@@ -857,10 +877,6 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             Version maximumVersion,
             ProviderOption providerOption = ProviderOption.LatestVersion) {
 
-#if UNIX
-            return Enumerable.Empty<string>();
-#else
-            //We don't need to scan provider assemblies on corepowershell.
 
             //if provider is installed in providername\version format
             var providerFolder = ProviderAssembliesLocation.Distinct(new PathEqualityComparer(PathCompareOption.Full)).SelectMany(Directory.EnumerateDirectories);
@@ -915,7 +931,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                     var files = Directory.EnumerateFiles(assemblyFolder)
                         .Where(file => (file != null) && (Path.GetExtension(file).EqualsIgnoreCase(".dll") || Path.GetExtension(file).EqualsIgnoreCase(".exe"))
                                         // we only check for dll that has manifest attached to it. (In case there are supporting assemblies in this folder)
-                                        && Manifest.LoadFrom(file).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())))
+                                        && PlatformUtility.LoadFrom(file).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())))
                         .ToArray();
 
                     //if found more than one dll with manifest is installed under a version folder, this is not allowed. warning here as enumerating for providers should continue
@@ -925,7 +941,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                     }
 
                     // find modules that have the provider manifests
-                    var filelist = files.Where(each => Manifest.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
+                    var filelist = files.Where(each => PlatformUtility.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
 
                     if (!filelist.Any()) {
                         continue;
@@ -961,26 +977,26 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                     //the provider is installed at the top level.
 
                     // find modules that have the provider manifests
-                    if (Manifest.LoadFrom(provider).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable()))) {
+                    if (PlatformUtility.LoadFrom(provider).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable()))) {
 
                         yield return provider;
                     }
                 }
             }
-#endif
         }
 
         //Return all providers under the providerAssemblies folder
         internal IEnumerable<string> AllProvidersFromProviderAssembliesLocation(IHostApi request) {
-#if !UNIX
+
             // don't need this for core powershell
             try {
-
-                return ScanAllProvidersFromProviderAssembliesLocation(request, null, null, null, null, ProviderOption.AllProvider).WhereNotNull().ToArray();
+                if (OSInformation.IsWindowsPowerShell) {
+                    return ScanAllProvidersFromProviderAssembliesLocation(request, null, null, null, null, ProviderOption.AllProvider).WhereNotNull().ToArray();
+                }
             } catch (Exception ex) {
                 request.Debug(ex.Message);
             }
-#endif
+
             return Enumerable.Empty<string>();
         }
 
@@ -988,9 +1004,16 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
         //return the providers with latest version under the providerAssemblies folder
         //This method only gets called during the initialization, i.e. LoadProviders().
         private IEnumerable<string> ProvidersWithLatestVersionFromProviderAssembliesLocation(IHostApi request) {
-#if !UNIX
+
             // don't need this for core powershell
-            try {
+            if (!OSInformation.IsWindowsPowerShell)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            // apply the following for FullClr or Nano server only
+            try
+            {
                 var providerPaths = ScanAllProvidersFromProviderAssembliesLocation(request, null, null, null, null, ProviderOption.LatestVersion).WhereNotNull().ToArray();
 
                 var notRootAssemblies = providerPaths.Where(each => !ProviderAssembliesLocation.ContainsIgnoreCase(Path.GetDirectoryName(each))).ToArray();
@@ -1022,7 +1045,6 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             {
                 request.Debug(ex.Message);
             }
-#endif
 
             return Enumerable.Empty<string>();
         }
@@ -1038,10 +1060,9 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             }
 
             var providerAssemblies = Enumerable.Empty<string>();
-#if !UNIX
-            //On PowerShell FullCLR , we will need to search providerassemblies folder
-            var pshome = RunPowerShellCommand(request, "$PSHome");
-            if (!string.IsNullOrWhiteSpace(pshome) && pshome.EndsWith(@"\WindowsPowerShell\v1.0", StringComparison.OrdinalIgnoreCase))
+
+            //On PowerShell FullCLR or Nano, we will need to search providerassemblies folder   
+            if (OSInformation.IsWindowsPowerShell)
             {
                 request.Debug("Current running environment: Windows PowerShell.");
 
@@ -1054,10 +1075,9 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
 
                 // find modules that have manifests
                 // expand this out to validate the assembly is ok for this instance of PackageManagement.
-                providerAssemblies = providerAssemblies.Where(each => Manifest.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
-
+                providerAssemblies = providerAssemblies.Where(each => PlatformUtility.LoadFrom(each).Any(manifest => Swidtag.IsSwidtag(manifest) && new Swidtag(manifest).IsApplicable(new Hashtable())));
             }
-#endif
+
             // add inbox assemblies (don't require manifests, because they are versioned with the core)
             providerAssemblies = providerAssemblies.Concat(new[] {
                 Path.Combine(BaseDir, "Microsoft.PackageManagement.MetaProvider.PowerShell.dll"),
@@ -1115,34 +1135,6 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             }
         }
 #endif
-
-        private static string RunPowerShellCommand(IHostApi request, string commandName)
-        {
-            var iis = InitialSessionState.CreateDefault2();
-            using (Runspace rs = RunspaceFactory.CreateRunspace(iis))
-            {
-                using (PowerShell powershell = PowerShell.Create())
-                {
-                    try
-                    {
-                        rs.Open();
-                        powershell.Runspace = rs;
-                        powershell.AddScript(commandName);                                    
-                        var retval = powershell.Invoke().FirstOrDefault();
-                        if (retval != null)
-                        {
-                            return retval.ToString();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        request.Verbose(ex.Message);
-                    }
-                }
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// Dynamic providers are the ones that are not installed with the core itself.

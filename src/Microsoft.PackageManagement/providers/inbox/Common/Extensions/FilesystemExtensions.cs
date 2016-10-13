@@ -114,19 +114,6 @@ namespace Microsoft.PackageManagement.Provider.Utility {
             return;
         }
 
-        ///// <summary>
-        /////     File move abstraction that can be implemented to handle non-windows platforms
-        ///// </summary>
-        ///// <param name="sourceFile"></param>
-        ///// <param name="destinationFile"></param>
-        //public static void MoveFileOverwrite(string sourceFile, string destinationFile) {
-        //    NativeMethods.MoveFileEx(sourceFile, destinationFile, MoveFileFlags.ReplaceExisting);
-        //}
-
-        //public static void MoveFileAtNextBoot(string sourceFile, string destinationFile) {
-        //    NativeMethods.MoveFileEx(sourceFile, destinationFile, MoveFileFlags.DelayUntilReboot);
-        //}
-
         public static string GenerateTemporaryFilename(this string filename) {
             string ext = null;
             string name = null;

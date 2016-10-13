@@ -59,6 +59,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
     </Reference>
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
@@ -94,13 +95,30 @@
     <Compile Include="Packaging\ResourceCollection.cs" />
     <Compile Include="Packaging\SoftwareIdentityVersionComparer.cs" />
     <Compile Include="Packaging\SoftwareIdentityNameVersionComparer.cs" />
-    <Compile Include="Providers\IArchiver.cs" />
     <Compile Include="Api\ICoreApi.cs" />
+    <Compile Include="Providers\IArchiver.cs" />
+    <Compile Include="Providers\inbox\Common\Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Providers\inbox\Common\Extensions\EqualityComparer.cs" />
+    <Compile Include="Providers\inbox\Common\Extensions\Extensions.cs" />
+    <Compile Include="Providers\inbox\Common\Extensions\FilesystemExtensions.cs" />
+    <Compile Include="Providers\inbox\Common\Extensions\MutableEnumerable.cs" />
+    <Compile Include="Providers\inbox\Common\Extensions\ReEnumerable.cs" />
+    <Compile Include="Utility\Platform\OSInformation.cs" />
+    <Compile Include="Utility\Platform\PlatformUtility.cs" />
+    <Compile Include="Providers\inbox\Common\Utility\PathUtility.cs" />
+    <Compile Include="Providers\inbox\Common\Utility\XmlUtility.cs" />
+    <Compile Include="Providers\inbox\Common\Version\SemanticVersion.cs" />
+    <Compile Include="Providers\inbox\Common\Version\SemanticVersionTypeConverter.cs" />
+    <Compile Include="Providers\IPackageProvider.cs" />
     <Compile Include="Providers\IDownloader.cs" />
+    <Compile Include="Providers\IMetaProvider.cs" />
+    <Compile Include="Providers\IProvider.cs" />
+    <Compile Include="Providers\inbox\Common\Extensions\CollectionExtensions.cs" />
+    <Compile Include="Providers\inbox\Common\Utility\FileUtility.cs" />
+    <Compile Include="Providers\inbox\Common\Version\DependencyVersion.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Packaging\Iso19770_2.cs" />
     <Compile Include="Packaging\SoftwareMetadata.cs" />
-    <Compile Include="Providers\IPackageProvider.cs" />
     <Compile Include="Api\IRequest.cs" />
     <Compile Include="Implementation\ProviderBase.cs" />
     <Compile Include="Implementation\Archiver.cs" />
@@ -115,13 +133,11 @@
     <Compile Include="Packaging\PackageSource.cs" />
     <Compile Include="Packaging\Payload.cs" />
     <Compile Include="Implementation\PackageProvider.cs" />
-    <Compile Include="Providers\IMetaProvider.cs" />
     <Compile Include="Implementation\Downloader.cs" />
     <Compile Include="IPackageManagementService.cs" />
     <Compile Include="Implementation\Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PackageManager.cs" />
-    <Compile Include="Providers\IProvider.cs" />
     <Compile Include="Packaging\Swidtag.cs" />
     <Compile Include="Resources\Messages.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -158,8 +174,6 @@
     <Compile Include="Utility\Extensions\Types.cs" />
     <Compile Include="Utility\Platform\AdminPrivilege.cs" />
     <Compile Include="Utility\Platform\AsyncProcess.cs" />
-    <Compile Include="Utility\Platform\Manifest.cs" />
-    <Compile Include="Utility\Platform\MoveFileFlags.cs" />
     <Compile Include="Utility\Platform\NativeMethods.cs" />
     <Compile Include="Utility\Platform\WinTrustData.cs" />
     <Compile Include="Utility\Platform\WinTrustFileInfo.cs" />

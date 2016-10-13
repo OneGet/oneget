@@ -12,14 +12,8 @@
 #  limitations under the License.
 #
 # ------------------ PackageManagement Test  -----------------------------------
-
-$InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
-$InternalGallery2 = "http://dtlgalleryint.cloudapp.net/api/v2/"
-$InternalSource = 'OneGetTestSource'
-$InternalSource2 = 'OneGetTestSource2'
-$ProviderFolder = "$env:ProgramFiles\PackageManagement\ProviderAssemblies"
-
 try {
+    $WindowsPowerShell = $PSHOME.Trim('\').EndsWith('\WindowsPowerShell\v1.0', [System.StringComparison]::OrdinalIgnoreCase)    
     $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
     $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
 
@@ -34,9 +28,16 @@ try {
         $IsLinux = $false
         $IsOSX = $false
         $IsWindows = $true
+        $WindowsPowerShell = $true
     }
     catch { }
 }
+
+$InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
+$InternalGallery2 = "http://dtlgalleryint.cloudapp.net/api/v2/"
+$InternalSource = 'OneGetTestSource'
+$InternalSource2 = 'OneGetTestSource2'
+$ProviderFolder = "$env:ProgramFiles\PackageManagement\ProviderAssemblies"
 
 #make sure the package repository exists
 $a=Get-PackageSource | select Name, Location, ProviderName
@@ -260,7 +261,15 @@ Describe "install-packageprovider with local source" -Tags "Feature" {
 #>
 
 Describe "Install-Save-Package with multiple sources" -Tags "Feature" {
-    $destination = Join-Path $TestDrive "installpp"
+  
+    BeforeEach{
+        if(-not (test-path $TestDrive) ) {
+            if($IsWindows) { mkdir $TestDrive -ea silentlycontinue}
+            else{mkdir $TestDrive -p}
+        }
+
+        $destination = Join-Path $TestDrive "installpp"
+    }
 
     It "install-package with array of registered sources with a single provider, Expect succeed" {
 
@@ -394,9 +403,9 @@ Describe "Install-Save-Package with multiple sources" -Tags "Feature" {
             $x | ?{ $_.name -eq "jquery" } | should not BeNullOrEmpty
 
         
-            (test-path "$destination\jquery*") | should be $true
-            if (test-path "$destination\jquery*") {
-                Remove-Item $destination\jquery* -force -Recurse
+            (test-path "$destination\jQuery*") | should be $true
+            if (test-path "$destination\jQuery*") {
+                Remove-Item $destination\jQuery* -force -Recurse
             }
         }
         finally
@@ -465,9 +474,9 @@ Describe "Install-Save-Package with multiple sources" -Tags "Feature" {
         # not reliable because the source can be the source name
         #$x | ?{ $_.Source -eq "https://www.nuget.org/api/v2" } | should not BeNullOrEmpty
         
-        (test-path "$destination\jquery*") | should be $true
-        if (test-path "$destination\jquery*") {
-            Remove-Item $destination\jquery* -force -Recurse
+        (test-path "$destination\jQuery*") | should be $true
+        if (test-path "$destination\jQuery*") {
+            Remove-Item $destination\jQuery* -force -Recurse
         }
     }
 }
@@ -487,7 +496,7 @@ Describe "Install-Save-Package with multiple sources" -Tags "Feature" {
         }
     }
 
-     It "install-packageprovider -name nuget with whatif, Expect succeed" {
+     It "install-packageprovider -name nuget with whatif, Expect succeed" -Skip:(-not $WindowsPowerShell){
        
        if($PSCulture -eq 'en-US'){
 
@@ -691,7 +700,14 @@ Describe "Get-package with mulitiple providers" -Tags "Feature" {
 }
 
 Describe "install-packageprovider Error Cases" -Tags "Feature" {
-  $destination = Join-Path $TestDrive "installpp"
+  BeforeEach{
+        if(-not (test-path $TestDrive) ) {
+               if($IsWindows) { mkdir $TestDrive -ea silentlycontinue}
+               else{mkdir $TestDrive -p}
+        }
+
+        $destination = Join-Path $TestDrive "installpp"
+    }
 
   AfterAll {
         Unregister-PackageSource -Name OneGetTestSource -Verbose -ErrorAction SilentlyContinue
@@ -736,10 +752,11 @@ Describe "install-packageprovider Error Cases" -Tags "Feature" {
         $providers | ?{ $_.Source -match $InternalSource2 } | should not BeNullOrEmpty
 
         if(-not (test-path $destination) ) {
-             mkdir $destination -ea silentlycontinue
+               if($IsWindows) { mkdir $destination -ea silentlycontinue}
+               else{mkdir $destination -p}
         }
-       
-        save-package -name gistprovider -Source @($InternalSource,$InternalSource2) -path $destination -warningaction:silentlycontinue -ErrorVariable theError2  -ErrorAction SilentlyContinue
+            
+        save-package -name gistprovider -Source @($InternalSource,$InternalSource2) -path $destination -warningaction:silentlycontinue -ErrorVariable theError2  -ErrorAction SilentlyContinue 
         
         $theError2.FullyQualifiedErrorId| should BeNullOrEmpty
     }

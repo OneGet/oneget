@@ -13,8 +13,8 @@
 #
 # ------------------ PackageManagement Test  -----------------------------------
 $InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
-
 try {
+    $WindowsPowerShell = $PSHOME.Trim('\').EndsWith('\WindowsPowerShell\v1.0', [System.StringComparison]::OrdinalIgnoreCase)    
     $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
     $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
 
@@ -29,6 +29,7 @@ try {
         $IsLinux = $false
         $IsOSX = $false
         $IsWindows = $true
+        $WindowsPowerShell = $true
     }
     catch { }
 }
@@ -69,7 +70,7 @@ Describe "find-packageprovider" -Tags "Feature" {
         $a -contains "TSDProvider" | should be $true
     }
     
-    It "find-packageprovider -name, Expect succeed" {
+    It "find-packageprovider -name, Expect succeed" -Skip:(-not $WindowsPowerShell){
         $a = (Find-PackageProvider -name nuget -Force).name 
         $a -contains "GistProvider" | should be $false
     }
@@ -110,7 +111,7 @@ Describe "find-packageprovider" -Tags "Feature" {
 
     It "EXPECTED: success 'find-packageprovider nuget -allVersions'" -Skip:($IsCoreCLR){
         $a = find-packageprovider -name nuget -allVersions  
-        $a.Count -ge 5| should be $true
+        $a.Count -ge 4| should be $true
 
         $b = find-packageprovider -allVersions 
         $b.Count -gt $a.Count| should be $true

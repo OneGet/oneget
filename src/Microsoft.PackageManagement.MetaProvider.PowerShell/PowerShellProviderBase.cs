@@ -169,7 +169,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
         internal void CancelRequest() {
             if (!_reentrancyLock.WaitOne(0)) {
                 // it's running right now.
-#if DEBUG
+#if !CORECLR
                     NativeMethods.OutputDebugString("[Cmdlet:debugging] -- Stopping powershell script.");
 #endif
                 lock (_stopLock) {
