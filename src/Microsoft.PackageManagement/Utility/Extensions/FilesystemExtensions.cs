@@ -185,8 +185,8 @@ namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
                 }
 
                 // is this a unc path?
-                if (string.IsNullOrWhiteSpace(pathUri.Host)) {
-#if !UNIX
+                if (string.IsNullOrWhiteSpace(pathUri.Host) && (!OSInformation.IsWindows)) {
+                   
                     // no, this is a drive:\path path
                     // use API to resolve out the drive letter to see if it is a remote
                     var drive = pathUri.Segments[1].Replace('/', '\\'); // the zero segment is always just '/'
@@ -200,7 +200,6 @@ namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
                             return pathUri.Segments.Skip(2).Aggregate(sb.ToString().Trim(), (current, item) => current + item);
                         }
                     }
-#endif
                 }
                 // not a remote (or resovably-remote) path or
                 // it is already a path that is in it's correct form (via localpath)

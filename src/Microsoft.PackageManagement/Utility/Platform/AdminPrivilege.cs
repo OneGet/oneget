@@ -26,14 +26,18 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
         ///     Administrators group and it is elevated. Returns false if the token does not.
         /// </returns>
         public static bool IsElevated {
-            get {
-#if UNIX
-                return string.Equals(System.Environment.GetEnvironmentVariable("SUDO_UID"), "1000");
-#else
-                var id = WindowsIdentity.GetCurrent();
-                var principal = new WindowsPrincipal(id);
-                return principal.IsInRole(WindowsBuiltInRole.Administrator);
-#endif
+            get
+            {
+                if (!OSInformation.IsWindows)
+                {
+                    return string.Equals(System.Environment.GetEnvironmentVariable("SUDO_UID"), "1000");
+                }
+                else
+                {
+                    var id = WindowsIdentity.GetCurrent();
+                    var principal = new WindowsPrincipal(id);
+                    return principal.IsInRole(WindowsBuiltInRole.Administrator);
+                }
             }
         }
     }

@@ -12,7 +12,7 @@
 //  limitations under the License.
 //  
 
-#if !UNIX
+
 namespace Microsoft.PackageManagement.Internal.Utility.Platform {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -45,6 +45,9 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
         Validate = 0x00000008,
     }
 
+    /// <summary>
+    /// DisposableModule is only used by Manifest.LoadFrom().
+    /// </summary>
     public class DisposableModule : IDisposable {
         private Module _module;
 
@@ -226,18 +229,23 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
     internal delegate bool EnumResourceLanguages(Module module, ResourceType type, ResourceId resourceId, LanguageId language, Unused unused);
 
     internal static class NativeMethods {
+        // WNetGetConnection is only used in CanonicalizePath() which is for Windows only. Safe for non-Windows.
         [DllImport("mpr.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int WNetGetConnection([MarshalAs(UnmanagedType.LPTStr)] string localName, [MarshalAs(UnmanagedType.LPTStr)] StringBuilder remoteName, ref int length);
 
-        [DllImport("user32")]
-        internal static extern int LoadString(Module module, uint stringId, StringBuilder buffer, int bufferSize);
-
+        // WNetGetConnection is only used in CanonicalizePath() which is for Windows only. Safe for non-Windows.
         [DllImport("wintrust.dll", ExactSpelling = true, SetLastError = false, CharSet = CharSet.Unicode)]
         internal static extern WinVerifyTrustResult WinVerifyTrust(IntPtr hwnd, [MarshalAs(UnmanagedType.LPStruct)] Guid pgActionID, WinTrustData pWVTData);
 
 #if !CORECLR
+
+        //     The following method:
+        //        LoadLibraryEx, EnumResourceTypesExW, EnumResourceNamesExW, EnumResourceLanguagesExW, FindResourceExW
+        //        LoadResource, LockResource, SizeofResource, FreeLibrary 
+        //     are only called in Manifest.LoadFrom(), which is used on WindowsPowerShell only.
+        // 
         /// <summary>
-        ///     Loads the specified module into the address space of the calling process.
+        ///     Loads the specified module into the address space of the calling process. 
         /// </summary>
         /// <param name="filename">The name of the module.</param>
         /// <param name="unused">This parameter is reserved for future use.</param>
@@ -246,11 +254,8 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern Module LoadLibraryEx(string filename, Unused unused, LoadLibraryFlags dwFlags);
 
-        [DllImport("kernel32.dll", EntryPoint = "MoveFileEx", CharSet = CharSet.Unicode)]
-        internal static extern bool MoveFileEx(string lpExistingFileName, string lpNewFileName, MoveFileFlags dwFlags);
-
         /// <summary>
-        ///     Enumerates resource types within a binary.
+        ///     Enumerates resource types within a binary. 
         /// </summary>
         /// <param name="module">Handle to a module to search.</param>
         /// <param name="callback">Pointer to the function to be called for each resource type.</param>
@@ -285,8 +290,6 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern void OutputDebugString(string debugMessageText);
 #else
-        [DllImport("api-ms-win-core-file-l2-1-1.dll", EntryPoint="MoveFileEx", CharSet=CharSet.Unicode)]
-        internal static extern bool MoveFileEx(string lpExistingFileName, string lpNewFileName, MoveFileFlags dwFlags);
         /// <summary>
         ///     Loads the specified module into the address space of the calling process.
         /// </summary>
@@ -331,10 +334,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
         [DllImport("api-ms-win-core-libraryloader-l1-2-0.dll")]
         internal static extern bool FreeLibrary(Module instance);
 
-        [DllImport("api-ms-win-core-debug-l1-1-1", CharSet=CharSet.Unicode, EntryPoint="OutputDebugStringW")]
-        public static extern void OutputDebugString(string debugMessageText);
 #endif
     }
 }
-#endif
 

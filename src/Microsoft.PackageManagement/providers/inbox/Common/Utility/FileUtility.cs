@@ -1,4 +1,5 @@
-﻿namespace Microsoft.PackageManagement.Provider.Utility
+﻿
+namespace Microsoft.PackageManagement.Provider.Utility
 {
     using System;
     using System.Collections.Generic;
@@ -7,9 +8,41 @@
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Threading;
+    using Microsoft.PackageManagement.Internal.Utility.Platform;
 
+
+    /// <summary>
+    /// These are platform abstractions and platform specific implementations
+    /// </summary>
     public static class FileUtility 
     {
+        private static string _currentUserhomeDirectory = null;
+        private static string _allUserhomeDirectory = null;
+
+        internal static string CurrentUserHomeDirectory
+        {
+            get
+            {
+                if (_currentUserhomeDirectory != null) { return _currentUserhomeDirectory; }
+
+                _currentUserhomeDirectory = Path.Combine(OSInformation.IsWindows ? Environment.GetEnvironmentVariable("USERPROFILE") : Environment.GetEnvironmentVariable("HOME"));
+                _currentUserhomeDirectory = _currentUserhomeDirectory ?? string.Empty;
+                return _currentUserhomeDirectory;
+            }
+        }
+
+        internal static string AllUserHomeDirectory
+        {
+            get
+            {
+                if (_allUserhomeDirectory != null) { return _allUserhomeDirectory; }
+
+                _allUserhomeDirectory = Path.Combine(OSInformation.IsWindows ? Environment.GetEnvironmentVariable("ProgramFiles") : Environment.GetEnvironmentVariable("HOME"));
+                _allUserhomeDirectory = _allUserhomeDirectory ?? string.Empty;
+                return _allUserhomeDirectory;
+            }
+        }
+
         public static string GetTempFileFullPath(string fileExtension)
         {
            

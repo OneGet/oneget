@@ -12,6 +12,7 @@
 //  limitations under the License.
 //
 
+
 namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System;
     using System.Collections;
@@ -40,6 +41,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Net;
     using Microsoft.PackageManagement.Internal.Utility.Plugin;
     using System.Reflection;
+    using Microsoft.PackageManagement.Internal.Utility.Platform;
 
     public delegate string GetMessageString(string messageId, string defaultText);
 
@@ -492,9 +494,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         #region Event and telemetry stuff
         //Calling PowerShell Telemetry APIs
         protected void TraceMessage(string message, SoftwareIdentity swidObject) {
-#if !UNIX
+
             try
             {
+                if (!OSInformation.IsWindowsPowerShell) {
+                    return;
+                }
+
                 if (!telemetryAPIInitialized)
                 {
                     telemetryAPIInitialized = true;
@@ -517,7 +523,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             {
                 Verbose(ex.Message);
             }
-#endif
         }
 
         protected enum EventTask {
@@ -540,7 +545,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         protected void LogEvent(EventTask task, EventId id, string context, string name, string version, string providerName, string source, string status, string destinationPath)
         {
-#if !UNIX
+            if (!OSInformation.IsWindowsPowerShell) {
+                return;
+            }
+
             var iis = InitialSessionState.CreateDefault2();
 
             using (Runspace rs = RunspaceFactory.CreateRunspace(iis))
@@ -568,7 +576,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     }
                 }
             }
-#endif
         }
 
         #endregion

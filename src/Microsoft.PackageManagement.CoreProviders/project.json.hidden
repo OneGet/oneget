@@ -9,13 +9,7 @@
         "warningsAsErrors": true
     },
 
-	"configurations": {
-		"Linux": {
-			"buildOptions": {
-				"define": ["UNIX"]
-			}
-		}
-	},
+
 
   "dependencies": {
     "Microsoft.PackageManagement": "1.0.0-*",
@@ -63,10 +57,11 @@
 		},
 
 		"netstandard1.6": {
-            "imports": [ "dnxcore50", "portable-net45+win8" ],
+          "imports": [ "dnxcore50" ],
 	        "buildOptions": {
-                "define": [ "CORECLR" ],
-                "compile": {
+            "define": [ "CORECLR" ],
+             "debugType": "portable",
+             "compile": {
                   "exclude": [
                       "Resources/Messages.Designer.cs",
                       "ProgramsProvider.cs"
@@ -77,7 +72,7 @@
                     "Resources/Messages.resx"
                   ]
                 }
-			},
+			      },
             "dependencies": {
             "NETStandard.Library": "1.6.0"
             }

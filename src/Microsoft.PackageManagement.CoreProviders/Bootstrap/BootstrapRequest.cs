@@ -81,25 +81,34 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                         Verbose(Resources.Messages.UseLocalSource, LocalSource.FirstOrDefault());                        
                         return Enumerable.Empty<Feed>();
                     }
+                    // apply the following for FullClr or Nano server only
+                    if (OSInformation.IsWindowsPowerShell)
+                    {
+                        // we don't do bootstrap on core powershell
+                        if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+                        {
+                            Warning(Constants.Messages.NetworkNotAvailable);
+                            Warning(string.Format(CultureInfo.CurrentCulture, Resources.Messages.ProviderBootstrapFailed));
+                        }
 
-#if !UNIX
-                    // we don't do bootstrap on core powershell
-                    if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable()) {
-                        Warning(Constants.Messages.NetworkNotAvailable);
-                        Warning(string.Format(CultureInfo.CurrentCulture, Resources.Messages.ProviderBootstrapFailed));
+                        // right now, we only have one feed (can have many urls tho')
+                        // so we just return a single feed in the collection
+                        // but later, we can expand it to support multiple feeds.
+                        var feed = new Feed(this, _urls);
+                        if (feed.IsValid)
+                        {
+                            _feeds = feed.SingleItemAsEnumerable().ReEnumerable();
+                        }
+                        else
+                        {
+                            Warning(Constants.Messages.ProviderSwidtagUnavailable);
+                            return Enumerable.Empty<Feed>();
+                        }
                     }
-
-                    // right now, we only have one feed (can have many urls tho')
-                    // so we just return a single feed in the collection
-                    // but later, we can expand it to support multiple feeds.
-                    var feed = new Feed(this, _urls);
-                    if (feed.IsValid) {
-                        _feeds = feed.SingleItemAsEnumerable().ReEnumerable();
-                    } else {
-                        Warning(Constants.Messages.ProviderSwidtagUnavailable);
-                        return Enumerable.Empty<Feed>();
+                    else
+                    {
+                        _feeds = Enumerable.Empty<Feed>();
                     }
-#endif
                 }
                 return _feeds;
             }
@@ -509,11 +518,14 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
         /// <param name="copyFileToTemp"></param>
         /// <returns></returns>
         internal Package GetProviderFromFile(string filePath, bool copyFileToTemp = false, bool suppressErrorsAndWarnings = false) {
-            
-#if UNIX
-            // not supported on core powershell
-            return null;
-#else
+
+            if (!OSInformation.IsWindowsPowerShell)
+            {
+                // not supported on core powershell
+                return null;
+            }
+
+            // apply the following for FullClr or Nano server only
             if (string.IsNullOrWhiteSpace(filePath) && !System.IO.File.Exists(filePath)) {
                 Warning(Constants.Messages.FileNotFound, filePath);              
                 return null;
@@ -540,7 +552,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                         return null;
                     }
 
-                    manifests = Manifest.LoadFrom(tempFile).ToArray();
+                    manifests = PlatformUtility.LoadFrom(tempFile).ToArray();
                 }
                 finally {
                     if (!string.IsNullOrWhiteSpace(tempFile)) {
@@ -549,7 +561,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                 }
             } else {
                 // providers have the provider manifest embeded?
-                manifests = Manifest.LoadFrom(filePath).ToArray();
+                manifests = PlatformUtility.LoadFrom(filePath).ToArray();
             }
 
             if (!manifests.Any()) {
@@ -574,7 +586,6 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
             }
 
             return null;
-#endif
         }
 
         /// <summary>

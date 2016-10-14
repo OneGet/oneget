@@ -81,11 +81,14 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
         /// <param name="providerPath"></param>
         public void SetSwidTag(string providerPath)
         {
-#if !UNIX
+            if (!OSInformation.IsWindowsPowerShell) {
+                return;
+            }
+
             if (!string.IsNullOrWhiteSpace(providerPath))
             {
                 // check whether there is swidtag attached to the provider path
-                var swid = Manifest.LoadFrom(providerPath).FirstOrDefault(manifest => Swidtag.IsSwidtag(manifest));
+                var swid = PlatformUtility.LoadFrom(providerPath).FirstOrDefault(manifest => Swidtag.IsSwidtag(manifest));
 
                 if (swid != null)
                 {
@@ -93,7 +96,6 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                     SetSwidTag(new XDocument(new XDeclaration("1.0", "UTF-8", "yes"), swid));
                 }
             }
-#endif
         }
 
         public IEnumerable<string> SupportedFileExtensions {

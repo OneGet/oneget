@@ -17,6 +17,7 @@
 # Actual Tests:
 
 try {
+    $WindowsPowerShell = $PSHOME.Trim('\').EndsWith('\WindowsPowerShell\v1.0', [System.StringComparison]::OrdinalIgnoreCase)    
     $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
     $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
 
@@ -31,16 +32,18 @@ try {
         $IsLinux = $false
         $IsOSX = $false
         $IsWindows = $true
+        $WindowsPowerShell = $true
     }
     catch { }
 }
+
 
 $source = "http://www.nuget.org/api/v2/"
 $sourceWithoutSlash = "http://www.nuget.org/api/v2"
 $fwlink = "http://go.microsoft.com/fwlink/?LinkID=623861&clcid=0x409"
 $longName = "THISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERS";
 $workingMaximumVersions = {"2.0", "2.5", "3.0"};
-$packageNames = @("Azurecontrib", "AWSSDK", "TestLib");
+$packageNames = @("AzureContrib", "AWSSDK", "TestLib");
 $minimumVersions = @("1.0", "1.3", "1.5");
 $maximumVersions = @("1.8", "2.1", "2.3");
 $dtlgallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
@@ -118,7 +121,7 @@ Describe "Find, Get, Save, and Install-Package with Culture" -Tags "Feature" {
 
 Describe "Event Test" -Tags "Feature" {
  
-    it "EXPECTED: install a package should raise event" -Skip:($IsCoreCLR -and (-not $IsWindows)) {
+    it "EXPECTED: install a package should raise event" -Skip:(-not $WindowsPowerShell) {
      
         Install-Package EntityFramework -ProviderName nuget -requiredVersion 6.1.3  -Destination $TestDrive -source 'http://www.nuget.org/api/v2/' -force
         
@@ -163,7 +166,7 @@ Describe "Event Test" -Tags "Feature" {
                
 	}
 
-    it "EXPECTED: install a package should report destination" -Skip:($IsCoreCLR -and (-not $IsWindows)) {
+    it "EXPECTED: install a package should report destination" -Skip:(-not $WindowsPowerShell) {
 
         Import-PackageProvider OneGetTest -Force
         Install-Package Bla -ProviderName OneGetTest -Force
@@ -210,7 +213,7 @@ Describe "Event Test" -Tags "Feature" {
                
 	}
 
-    it "EXPECTED: uninstall a package should raise event" -Skip:($IsCoreCLR -and (-not $IsWindows)) {
+    it "EXPECTED: uninstall a package should raise event" -Skip:(-not $WindowsPowerShell) {
      
         Install-Package EntityFramework -ProviderName nuget -requiredVersion 6.1.3  -Destination $TestDrive -source 'http://www.nuget.org/api/v2/' -force 
         UnInstall-Package EntityFramework -ProviderName nuget -Destination $TestDrive
@@ -256,7 +259,7 @@ Describe "Event Test" -Tags "Feature" {
                
 	}
 
-    it "EXPECTED: save a package should raise event" -Skip:($IsCoreCLR -and (-not $IsWindows)) {
+    it "EXPECTED: save a package should raise event" -Skip:(-not $WindowsPowerShell) {
      
         save-Package EntityFramework -ProviderName nuget -path $TestDrive -requiredVersion 6.1.3 -source 'http://www.nuget.org/api/v2/' -force
 
@@ -508,9 +511,17 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     }
 }
 
-Describe Save-Package -Tags "Feature" {
+Describe "Save-Package" -Tags "Feature" {
 	# make sure packagemanagement is loaded
-    $destination = $TestDrive
+    BeforeEach{
+        if(-not (test-path $TestDrive) ) {
+               if($IsWindows) { mkdir $TestDrive -ea silentlycontinue}
+               else{mkdir $TestDrive -p}
+        }
+
+        $destination = $TestDrive
+    }
+   
 
     It "EXPECTED success: save-package path should be created with -force " {
         $dest = "$destination\NeverEverExists"
@@ -537,8 +548,15 @@ Describe Save-Package -Tags "Feature" {
         }
     }
 
-    It "EXPECTED success: save-package -LiteralPath" {
-        $dest = "$destination\NeverEverExists"
+    It "EXPECTED success: save-package -LiteralPath2" {
+        if($IsWindows)
+        {
+            $dest = "$destination\NeverEverExists"
+        }
+        else
+        {
+            $dest = "$destination/NeverEverExists"
+        }
         $package = save-package -LiteralPath $dest -ProviderName nuget -Source $dtlgallery -name TSDProvider -force
        
         $package.Name | should be "TSDProvider"
@@ -591,8 +609,12 @@ Describe Save-Package -Tags "Feature" {
 
                 $match | should be $true
             }        
+           
+            if(-not (test-path $newDestination) ) {
+               if($IsWindows) { mkdir $newDestination -ea silentlycontinue}
+               else{mkdir $newDestination -p}
+            }
 
-            mkdir $newDestination
             # make sure we can install the package. To do this, we need to save the dependencies first
             (save-package -name "zlib.v120.windesktop.msvcstl.dyn.rt-dyn" -RequiredVersion $version -provider $nuget -source $source -path $destination)
             (save-package -name "zlib.v140.windesktop.msvcstl.dyn.rt-dyn" -RequiredVersion $version -provider $nuget -source $source -path $destination)
@@ -673,19 +695,19 @@ Describe Save-Package -Tags "Feature" {
 
     It "EXPECTED: Saves 'awssdk' package which has more than 200 versions" {
 		(save-package -name "awssdk" -provider $nuget -source $source -Path $destination)
-		(test-path $destination\awssdk*) | should be $true
-		if (Test-Path $destination\awssdk*) {
-			rm $destination\awssdk* -Force
+		(test-path $destination\AWSSDK*) | should be $true
+		if (Test-Path $destination\AWSSDK*) {
+			rm $destination\AWSSDK* -Force
 		}    
     }
 
     It "EXPECTED: Saves package with Credential" -Skip {
         #TODO: Need to fix this. Already opened an issue on GitHub
         Save-Package Contoso -Credential $vstsCredential -Source $vstsFeed -ProviderName $Nuget -Path $destination
-        (Test-Path $destination\contoso*) | should be $true
+        (Test-Path $destination\Contoso*) | should be $true
 
-        if (Test-Path $destination\contoso*) {
-            Remove-Item $destination\contoso* -Force
+        if (Test-Path $destination\Contoso*) {
+            Remove-Item $destination\Contoso* -Force
         }
     }
 
@@ -797,11 +819,14 @@ Describe "save-package with Whatif" -Tags "Feature" {
 
 
 Describe "install-package with Whatif" -Tags "Feature" {
-    # make sure that packagemanagement is loaded
-    #import-packagemanagement
-    $installationPath = Join-Path $TestDrive "InstallationPath"
 
     BeforeEach{
+        if(-not (test-path $TestDrive) ) {
+               if($IsWindows) { mkdir $TestDrive -ea silentlycontinue}
+               else{mkdir $TestDrive -p}
+        }
+        $installationPath = Join-Path $TestDrive "InstallationPath"
+
         $tempFile = [System.IO.Path]::GetTempFileName() 
         $whatif = "What if: Performing the operation";
         Remove-Item c:\foof -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
@@ -899,18 +924,18 @@ Describe "install-package with Scope" -tags "Feature" {
         if ($IsWindows)
         {
             $ProgramFiles = [System.Environment]::GetEnvironmentVariable("ProgramFiles")
-            $UserInstalledLocation = "$($ProgramFiles)\Nuget\Packages"
+            $UserInstalledLocation = "$($ProgramFiles)\PackageManagement\Nuget\Packages"
         }
         else
         {
-            $UserInstalledLocation = "$HOME\.local\share\PackageManagement\NuGet\Packages"
+            $UserInstalledLocation = "$HOME\PackageManagement\NuGet\Packages"
         }
         
         if (Test-Path $UserInstalledLocation) {
                 Remove-Item -Recurse -Force -Path $UserInstalledLocation -ErrorAction SilentlyContinue
         }
 
-        $package = install-package -ProviderName nuget  -source  $dtlgallery -name  gistprovider -RequiredVersion 0.6 -force
+        $package = install-package -ProviderName nuget  -source  $dtlgallery -name  gistprovider -RequiredVersion 0.6 -force -verbose
     
         $package.Name | Should Match "GistProvider"
 
@@ -918,7 +943,7 @@ Describe "install-package with Scope" -tags "Feature" {
 
         $packages | ?{ $_.Name -eq "GistProvider" } | should not BeNullOrEmpty
    
-        (Test-Path "$UserInstalledLocation\GistProvider*") | should be $true
+        (Test-Path "$UserInstalledLocation\GistProvider*" -Verbose) | should be $true
 	}
 
     it "EXPECTED Success: Get and Install-Package AllUsers Scope Without destination" {
@@ -926,11 +951,11 @@ Describe "install-package with Scope" -tags "Feature" {
         if ($IsWindows)
         {
             $ProgramFiles = [System.Environment]::GetEnvironmentVariable("ProgramFiles")
-            $UserInstalledLocation = "$($ProgramFiles)\Nuget\Packages"
+            $UserInstalledLocation = "$($ProgramFiles)\PackageManagement\Nuget\Packages"
         }
         else
         {
-            $UserInstalledLocation = "$HOME\.local\share\PackageManagement\NuGet\Packages"
+            $UserInstalledLocation = "$HOME\PackageManagement\NuGet\Packages"
         }
         
         if (Test-Path $UserInstalledLocation) {
@@ -1463,10 +1488,26 @@ Describe Get-PackageSource -Tags "Feature" {
 }
 
 Describe Register-PackageSource -Tags "Feature" {
-    $Destination = $TestDrive   
+    BeforeEach{
+        if(-not (test-path $TestDrive) ) {
+               if($IsWindows) { mkdir $TestDrive -ea silentlycontinue}
+               else{mkdir $TestDrive -p}
+        }
+
+        $destination = $TestDrive
+    } 
 
 	it "EXPECTED: Register a package source with a location created via new-psdrive" {
-	    New-PSDrive -Name xx -PSProvider FileSystem -Root $env:tmp	
+        if($IsWindows)
+        {
+            $root = $env:tmp
+        }
+        else
+        {
+            $root="/tmp"
+        }
+
+	    New-PSDrive -Name xx -PSProvider FileSystem -Root $root	
         (register-packagesource -name "psdriveTest" -provider $nuget -location xx:\).name | should be "psdriveTest"
 		(unregister-packagesource -name "psdriveTest" -provider $nuget)
 	}

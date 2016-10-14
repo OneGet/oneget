@@ -215,7 +215,7 @@ Describe "import-packageprovider Error Cases" -Tags "Feature" {
         $ERROR[0].FullyQualifiedErrorId | should be "NoMatchFoundForCriteria,Microsoft.PowerShell.PackageManagement.Cmdlets.ImportPackageProvider"
     }
    
-   It "EXPECTED:  returns an error when asking for a provider with file full path and version" {
+   It "EXPECTED:  returns an error when asking for a provider with file full path and version" -Skip:($IsCoreCLR) {
         $Error.Clear()
         import-packageprovider -name "$($ProgramModulePath)\PSChained1Provider.psm1" -RequiredVersion 9.9.9  -warningaction:silentlycontinue -ea silentlycontinue
         $ERROR[0].FullyQualifiedErrorId | should be "FullProviderFilePathVersionNotAllowed,Microsoft.PowerShell.PackageManagement.Cmdlets.ImportPackageProvider"
