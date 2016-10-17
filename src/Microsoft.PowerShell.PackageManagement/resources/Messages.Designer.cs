@@ -980,7 +980,7 @@ namespace Microsoft.PowerShell.PackageManagement.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to User declined to install untrusted package ({0})..
+        ///   Looks up a localized string similar to User declined to install package ({0})..
         /// </summary>
         public static string UserDeclinedUntrustedPackageInstall {
             get {

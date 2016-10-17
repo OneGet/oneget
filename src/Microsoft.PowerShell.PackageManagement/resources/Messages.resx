@@ -339,7 +339,7 @@
     <value>??? not used ???</value>
   </data>
   <data name="UserDeclinedUntrustedPackageInstall" xml:space="preserve">
-    <value>User declined to install untrusted package ({0}).</value>
+    <value>User declined to install package ({0}).</value>
     <comment>provider names</comment>
   </data>
   <data name="UnknownProviders" xml:space="preserve">
