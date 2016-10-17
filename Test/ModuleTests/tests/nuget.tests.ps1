@@ -529,6 +529,16 @@ Describe "Save-Package" -Tags "Feature" {
        
         $package.Name | should be "TSDProvider"
         (test-path "$dest\TSDProvider*") | should be $true
+
+        # now let's run save-package from the local repository
+        $dest2 = "$destination\NeverEverExists2"
+        $package2 = save-package -name TSDProvider -path $dest2 -source $dest -provider $nuget -force
+        $package2.Name | should be "TSDProvider"
+        (test-path "$dest2\TSDProvider*") | should be $true
+
+        if (test-path "$dest2") {
+            Remove-Item $dest2 -force -Recurse
+        }
         if (test-path "$dest\TSDProvider*") {
             Remove-Item $dest\TSDProvider* -force
         }

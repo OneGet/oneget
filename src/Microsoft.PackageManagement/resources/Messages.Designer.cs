@@ -637,7 +637,7 @@ namespace Microsoft.PackageManagement.Internal.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to User declined to install untrusted package &apos;{0}&apos;..
+        ///   Looks up a localized string similar to User declined to install package &apos;{0}&apos;..
         /// </summary>
         public static string UserDeclinedUntrustedPackageInstall {
             get {

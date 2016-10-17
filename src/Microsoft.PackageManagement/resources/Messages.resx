@@ -238,7 +238,7 @@
     <value>Uri Scheme '{0}' is not supported.</value>
   </data>
   <data name="UserDeclinedUntrustedPackageInstall" xml:space="preserve">
-    <value>User declined to install untrusted package '{0}'.</value>
+    <value>User declined to install package '{0}'.</value>
     <comment>0 -package name</comment>
   </data>
   <data name="FailedPowerShellMetaProvider" xml:space="preserve">
