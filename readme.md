@@ -7,7 +7,8 @@
 [tv-image]: https://travis-ci.org/OneGet/oneget.svg?branch=master
 [tv-site]: https://travis-ci.org/OneGet/oneget/branches
 [av-image]: https://ci.appveyor.com/api/projects/status/0q1frhm84pp83syh/branch/master?svg=true
-[av-site]: https://ci.appveyor.com/project/OneGet/oneget
+[av-site]: https://ci.appveyor.com/project/jianyunt/oneget
+
 
 # PackageManagement (aka OneGet)
 
