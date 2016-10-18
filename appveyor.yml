@@ -13,6 +13,7 @@ install:
 clone_folder: c:\projects\oneget
 build_script:
 - git submodule update --init
+- ps: nuget locals all -clear
 - ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451" Release; .\build.ps1 -framework "netstandard1.6" Release
 after_build:
 - ps: Get-ChildItem "C:\projects\oneget\src\out\PackageManagement\net451" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
