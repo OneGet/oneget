@@ -540,10 +540,10 @@ Describe "Save-Package" -Tags "Feature" {
             Remove-Item $dest2 -force -Recurse
         }
         if (test-path "$dest\TSDProvider*") {
-            Remove-Item $dest\TSDProvider* -force
+            Remove-Item $dest\TSDProvider* -force -Recurse
         }
         if (test-path "$dest") {
-            Remove-Item $dest -force
+            Remove-Item $dest -force -Recurse
         }
     }
 
@@ -554,7 +554,7 @@ Describe "Save-Package" -Tags "Feature" {
         $package.Name | should be "TSDProvider"
         (test-path "$destination\TSDProvider*") | should be $true
         if (test-path "$destination\TSDProvider*") {
-            Remove-Item $destination\TSDProvider* -force
+            Remove-Item $destination\TSDProvider* -force -Recurse
         }
     }
 
@@ -572,10 +572,10 @@ Describe "Save-Package" -Tags "Feature" {
         $package.Name | should be "TSDProvider"
         (test-path "$dest\TSDProvider*") | should be $true
         if (test-path "$dest\TSDProvider*") {
-            Remove-Item $dest\TSDProvider* -force
+            Remove-Item $dest\TSDProvider* -force -Recurse
         }
         if (test-path "$dest") {
-            Remove-Item $dest -force
+            Remove-Item $dest -force -Recurse
         }
     }
 
@@ -585,7 +585,7 @@ Describe "Save-Package" -Tags "Feature" {
         $package.Name | should be "TSDProvider"
         (test-path "$destination\TSDProvider*") | should be $true
         if (test-path "$destination\TSDProvider*") {
-            Remove-Item $destination\TSDProvider* -force
+            Remove-Item $destination\TSDProvider* -force -Recurse
         }
     }
 
@@ -642,11 +642,11 @@ Describe "Save-Package" -Tags "Feature" {
         }
         finally {
             if (Test-Path $newDestination) {
-                Remove-Item -Recurse -Force -Path $newDestination -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+                Remove-Item -Recurse -Force -Path $newDestination -ErrorAction SilentlyContinue -WarningAction SilentlyContinue 
             }
 
 		    if (Test-Path $destination\zlib*) {
-			    Remove-Item $destination\zlib* -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
+			    Remove-Item $destination\zlib* -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force -Recurse
 		    }
 
         }
@@ -672,7 +672,7 @@ Describe "Save-Package" -Tags "Feature" {
             }
 
 		    if (Test-Path $destination\zlib*) {
-			    Remove-Item $destination\zlib* -Force
+			    Remove-Item $destination\zlib* -Force -Recurse
 		    }
 
         }
@@ -686,7 +686,7 @@ Describe "Save-Package" -Tags "Feature" {
         }
         finally {
             if (Test-Path $destination\ModuleWithDependenciesLoop*) {
-                Remove-Item $destination\ModuleWithDependenciesLoop* -Force
+                Remove-Item $destination\ModuleWithDependenciesLoop* -Force -Recurse
             }
         }
     }
@@ -698,7 +698,7 @@ Describe "Save-Package" -Tags "Feature" {
         }
         finally {
             if (Test-Path $destination\TestPackage*) {
-                Remove-Item $destination\TestPackage* -Force
+                Remove-Item $destination\TestPackage* -Force -Recurse
             }
         }
     }
@@ -707,7 +707,7 @@ Describe "Save-Package" -Tags "Feature" {
 		(save-package -name "awssdk" -provider $nuget -source $source -Path $destination)
 		(test-path $destination\AWSSDK*) | should be $true
 		if (Test-Path $destination\AWSSDK*) {
-			rm $destination\AWSSDK* -Force
+			rm $destination\AWSSDK* -Force -Recurse
 		}    
     }
 
@@ -717,7 +717,7 @@ Describe "Save-Package" -Tags "Feature" {
         (Test-Path $destination\Contoso*) | should be $true
 
         if (Test-Path $destination\Contoso*) {
-            Remove-Item $destination\Contoso* -Force
+            Remove-Item $destination\Contoso* -Force -Recurse
         }
     }
 
@@ -728,7 +728,7 @@ Describe "Save-Package" -Tags "Feature" {
 				save-package -name $x -source $source -provider $nuget -minimumversion $y -maximumversion $z -Path $destination
 				(Test-Path -Path $destination\$x*) | should be $true
 				if (Test-Path -Path $destination\$x*) {
-					rm $destination\$x* -Force
+					rm $destination\$x* -Force -Recurse
 					}
 				}
 			}
@@ -739,7 +739,7 @@ Describe "Save-Package" -Tags "Feature" {
 	    (find-package -name "zlib" -provider $nuget -source $source | save-package -Path $destination)
 	    (Test-Path -Path $destination\zlib*) | should be $true
 	    if (Test-Path -Path $destination\zlib*) {
-		    Remove-Item $destination\zlib* -Force
+		    Remove-Item $destination\zlib* -Force -Recurse
         }
     }
 
