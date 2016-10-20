@@ -45,6 +45,7 @@ namespace Microsoft.PackageManagement.Provider.Utility
             Timer timer = null;
             CancellationTokenSource cts = null;
             bool cleanUp = true;
+            HttpResponseMessage result = null;
 
             Action cleanUpAction = () =>
             {
@@ -114,12 +115,12 @@ namespace Microsoft.PackageManagement.Provider.Utility
 
                     if (task.IsCompleted && task is Task<HttpResponseMessage>)
                     {
-                        var result = (task as Task<HttpResponseMessage>).Result;
+                        result = (task as Task<HttpResponseMessage>).Result;
 
                         // if success, returns result
                         if (result.IsSuccessStatusCode)
                         {
-                            return result;
+                            break;
                         }
 
                         // otherwise, we have to retry again
@@ -161,7 +162,7 @@ namespace Microsoft.PackageManagement.Provider.Utility
                 }
             }
 
-            return null;
+            return result;
         }
 
         

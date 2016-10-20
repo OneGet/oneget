@@ -127,6 +127,10 @@
   <data name="FailToExtract" xml:space="preserve">
     <value>Cannot extract from '{0}' to '{1}'</value>
   </data>
+  <data name="HashAlgorithmNotSupported" xml:space="preserve">
+    <value>'{0}': hash algorithm '{1}'  is not supported when FIPS enabled.</value>
+    <comment>0 - provider name. 1 - hash algorithm</comment>
+  </data>
   <data name="FailToInstallZipFolder" xml:space="preserve">
     <value>Fail to extract zip package '{0}': '{1}'</value>
     <comment>0 - package path, 1 - exception message</comment>
