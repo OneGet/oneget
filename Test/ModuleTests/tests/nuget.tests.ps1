@@ -704,10 +704,10 @@ Describe "Save-Package" -Tags "Feature" {
     }
 
     It "EXPECTED: Saves 'awssdk' package which has more than 200 versions" {
-		(save-package -name "awssdk" -provider $nuget -source $source -Path $destination)
+		(save-package -name "awssdk" -provider $nuget -source $source -Path $destination -verbose)
 		(test-path $destination\AWSSDK*) | should be $true
 		if (Test-Path $destination\AWSSDK*) {
-			rm $destination\AWSSDK* -Force -Recurse
+			Remove-Item $destination\AWSSDK* -Force -Recurse -verbose
 		}    
     }
 
@@ -725,10 +725,10 @@ Describe "Save-Package" -Tags "Feature" {
 		foreach ($x in $packageNames) {
 			foreach ($y in $minimumVersions) {
 				foreach ($z in $maximumVersions) {
-				save-package -name $x -source $source -provider $nuget -minimumversion $y -maximumversion $z -Path $destination -force
+				save-package -name $x -source $source -provider $nuget -minimumversion $y -maximumversion $z -Path $destination -force -verbose
 				(Test-Path -Path $destination\$x*) | should be $true
 				if (Test-Path -Path $destination\$x*) {
-					rm $destination\$x* -Force -Recurse
+					Remove-Item $destination\$x* -Force -Recurse -verbose
 					}
 				}
 			}
@@ -1208,10 +1208,10 @@ Describe Install-Package -Tags "Feature" {
     }
 
 	it "EXPECTED: Installs 'awssdk' Package which has more than 200 versions To Packages Directory" -Skip:($IsCoreCLR){
-		(install-package -name "awssdk" -provider $nuget -source $source -destination $destination -maximumversion 2.3 -force)
+		(install-package -name "awssdk" -provider $nuget -source $source -destination $destination -maximumversion 2.3 -force -Verbose)
 		(test-path $destination\awssdk*) | should be $true
 		if (Test-Path $destination\awssdk*) {
-			(Remove-Item -Recurse -Force -Path $destination\awssdk*)
+			(Remove-Item -Recurse -Force -Path $destination\awssdk* -Verbose)
 		}
     }
 
@@ -1219,10 +1219,10 @@ Describe Install-Package -Tags "Feature" {
 		foreach ($x in $packageNames) {
 			foreach ($y in $minimumVersions) {
 				foreach ($z in $maximumVersions) {
-				(install-package -name $x -source $source -provider $nuget -minimumversion $y -maximumversion $z -destination $destination -force)
+				(install-package -name $x -source $source -provider $nuget -minimumversion $y -maximumversion $z -destination $destination -force -Verbose)
 				(Test-Path -Path $destination\$x*) | should be $true
 				if (Test-Path -Path $destination\$x*) {
-					(Remove-Item -Recurse -Force -Path $destination\$x* -ErrorAction SilentlyContinue)
+					(Remove-Item -Recurse -Force -Path $destination\$x* -ErrorAction SilentlyContinue -Verbose)
 					}
 				}
 			}
@@ -1230,10 +1230,10 @@ Describe Install-Package -Tags "Feature" {
     }
 
 	It "EXPECTED: Installs 'Zlib' Package After Having The Provider Piped" {
-	    (find-package -name "zlib" -provider $nuget -source $source | install-package -destination $destination -force)
+	    (find-package -name "zlib" -provider $nuget -source $source | install-package -destination $destination -force -Verbose)
 	    (Test-Path -Path $destination\zlib*) | should be $true
 	    if (Test-Path -Path $destination\zlib*) {
-		    (Remove-Item -Recurse -Force -Path $destination\zlib* -ErrorAction SilentlyContinue)
+		    (Remove-Item -Recurse -Force -Path $destination\zlib* -ErrorAction SilentlyContinue -Verbose)
 		    }
 	    }
 

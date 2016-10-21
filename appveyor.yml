@@ -21,8 +21,9 @@ build_script:
 - ps: nuget locals all -clear
 - ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451" Release; .\build.ps1 -framework "netstandard1.6" Release
 after_build:
-- ps: Get-ChildItem "C:\projects\oneget\src\out\PackageManagement\net451" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName releasebits -Type Auto }
-- ps: Get-ChildItem "C:\projects\oneget\src\out\PackageManagement\netstandard1.6" -Recurse | % { Push-AppveyorArtifact $_.FullName -FileName "$_.Name.Core" -DeploymentName releasebits -Type Auto }
+- ps:  Push-AppveyorArtifact "C:\projects\oneget\src\out\OneGet.FullClr.zip" -DeploymentName releasebits -Type Auto
+- ps:  Push-AppveyorArtifact "C:\projects\oneget\src\out\OneGet.CoreClr.zip" -DeploymentName releasebits -Type Auto
+
 before_test:
 - ps: >-
     & "c:\projects\oneget\Test\run-tests.ps1"

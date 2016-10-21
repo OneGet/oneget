@@ -37,6 +37,7 @@ if (-not (Test-Path "$solutionDir/global.json"))
 
 if ($Framework -eq "netstandard1.6")
 {
+    $packageFramework ="coreclr"
     $assemblyNames = @(
         "Microsoft.PackageManagement",
         "Microsoft.PackageManagement.ArchiverProviders",
@@ -48,6 +49,7 @@ if ($Framework -eq "netstandard1.6")
 }
 else
 {
+    $packageFramework ="fullclr"
     $assemblyNames = @(
         "Microsoft.PackageManagement",
         "Microsoft.PackageManagement.ArchiverProviders",
@@ -69,7 +71,7 @@ $itemsToCopyCommon = @("$solutionDir\Microsoft.PowerShell.PackageManagement\Pack
                        "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.format.ps1xml")
 
 $destinationDir = "$solutionDir/out/PackageManagement"
-$destinationDirBinaries = "$destinationDir/$Framework"
+$destinationDirBinaries = "$destinationDir/$packageFramework"
 
 # rename project.json.hidden to project.json
 foreach ($assemblyName in $assemblyNames)
@@ -110,6 +112,22 @@ finally
     }
 }
 
+
 CopyToDestinationDir $itemsToCopyCommon $destinationDir
 CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
 CopyToDestinationDir $itemsToCopyPdbs $destinationDirBinaries
+
+#Packing
+$sourcePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($destinationDir)
+$packagePath= Split-Path -Path $sourcePath
+$zipFilePath = Join-Path $packagePath "OneGet.$packageFramework.zip"
+$packageFileName = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($zipFilePath)
+
+if(test-path $packageFileName)
+{
+    Remove-Item $packageFileName -force
+}
+
+Add-Type -assemblyname System.IO.Compression.FileSystem
+Write-Verbose "Zipping $sourcePath into $packageFileName" -verbose
+[System.IO.Compression.ZipFile]::CreateFromDirectory($sourcePath, $packageFileName) 
