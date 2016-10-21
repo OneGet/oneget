@@ -143,7 +143,7 @@ if ($testframework -eq "fullclr")
 
     # Copying files to Packagemanagement and PowerShellGet folders
     Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
-    Copy-Item "$TestBin\net451\*.dll" $packagemanagementfolder -force -Verbose
+    Copy-Item "$TestBin\fullclr\*.dll" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -force -Verbose
@@ -280,7 +280,7 @@ if ($testframework -eq "coreclr")
     }
 
 
-    Copy-Item "$TestBin\netstandard1.6\*.dll" $OneGetBinaryPath -Force -Verbose
+    Copy-Item "$TestBin\coreclr\*.dll" $OneGetBinaryPath -Force -Verbose
 
     $PSGetPath = "$powershellFolder\Modules\PowerShellGet\$PowerShellGetVersion\"
 
