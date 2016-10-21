@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.Win32;
+
 namespace Microsoft.PackageManagement.Internal.Utility.Platform
 {
     using System;
@@ -15,7 +17,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
         private static readonly string _dollarPSHome = "$PSHome";
         private static bool? _isWindows = null;
         private static bool? _isWindowsPowerShell = null;
-
+        private static bool? _IsFipsEnabled = null;
 
         /// <summary>
         /// True if the current platform is Windows.
@@ -91,5 +93,30 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
             }
             return string.Empty;
         }
-    }
+
+        internal static bool IsFipsEnabled
+        {
+            get
+            {
+                if (_IsFipsEnabled.HasValue) { return _IsFipsEnabled.Value; }
+
+                if (OSInformation.IsWindows)
+                {
+                    // see here about FIPS: https://blogs.msdn.microsoft.com/shawnfa/2005/05/16/enforcing-fips-certified-cryptography/
+                    // FIPS enabled,  HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy\Enabled is 1
+                    // otherwise, it is 0.
+                    using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy"))
+                    {
+                        _IsFipsEnabled = (key != null) && ((int) key.GetValue("Enabled", 0) == 1);
+                    }
+                }
+                else
+                {
+                    _IsFipsEnabled = false;
+                }
+
+                return _IsFipsEnabled.Value;
+            }
+        }
+    }  
 }

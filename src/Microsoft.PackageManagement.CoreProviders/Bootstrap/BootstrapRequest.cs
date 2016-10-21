@@ -376,13 +376,32 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                 HashAlgorithm hashAlgorithm = null;
 
                 if (hashtag.Equals(Iso19770_2.Hash.Hash512)) {
+#if !CORECLR
+                    hashAlgorithm = OSInformation.IsFipsEnabled ? (HashAlgorithm)new SHA512CryptoServiceProvider() : SHA512.Create();
+#else
                     hashAlgorithm = SHA512.Create();
+#endif
                     packageHash = fileTag.GetAttribute(Iso19770_2.Hash.Hash512);
                 } else if (hashtag.Equals(Iso19770_2.Hash.Hash256)) {
-                    hashAlgorithm = SHA256.Create();
+#if !CORECLR
+                    hashAlgorithm = OSInformation.IsFipsEnabled ? (HashAlgorithm)new SHA256CryptoServiceProvider() : SHA256.Create();
+#else        
+                    hashAlgorithm = SHA256.Create();          
+#endif
                     packageHash = fileTag.GetAttribute(Iso19770_2.Hash.Hash256);
                 } else if (hashtag.Equals(Iso19770_2.Hash.Md5)) {
-                    hashAlgorithm = MD5.Create();
+                    
+                    if (OSInformation.IsFipsEnabled)
+                    {
+                        //error out as M5 hash algorithms is not supported 
+                        Error(ErrorCategory.InvalidOperation, "hashAlgorithm", Resources.Messages.HashAlgorithmNotSupported, "Bootstrap", Iso19770_2.Hash.Md5);
+                        return false;
+                    }
+                    else
+                    {
+                        hashAlgorithm = MD5.Create();
+                    }
+                
                     packageHash = fileTag.GetAttribute(Iso19770_2.Hash.Md5);
                 } else {
                     //hash algorithm not supported, we support 512, 256, md5 only 

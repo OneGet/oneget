@@ -7,6 +7,11 @@ environment:
     - test_framework: coreclr
 configuration: Release
 platform: Any CPU
+
+init:
+
+- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
 # Install Pester
 install: 
     - cinst -y pester

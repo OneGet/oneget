@@ -725,7 +725,7 @@ Describe "Save-Package" -Tags "Feature" {
 		foreach ($x in $packageNames) {
 			foreach ($y in $minimumVersions) {
 				foreach ($z in $maximumVersions) {
-				save-package -name $x -source $source -provider $nuget -minimumversion $y -maximumversion $z -Path $destination
+				save-package -name $x -source $source -provider $nuget -minimumversion $y -maximumversion $z -Path $destination -force
 				(Test-Path -Path $destination\$x*) | should be $true
 				if (Test-Path -Path $destination\$x*) {
 					rm $destination\$x* -Force -Recurse
