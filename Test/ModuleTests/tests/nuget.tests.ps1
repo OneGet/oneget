@@ -721,7 +721,7 @@ Describe "Save-Package" -Tags "Feature" {
         }
     }
 
-	it "EXPECTED: Saves Various Packages With Various Version Parameters To Packages Directory" {
+	it "EXPECTED: Saves Various Packages With Various Version Parameters To Packages Directory" -Skip {
 		foreach ($x in $packageNames) {
 			foreach ($y in $minimumVersions) {
 				foreach ($z in $maximumVersions) {
