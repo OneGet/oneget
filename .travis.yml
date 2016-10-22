@@ -1,5 +1,5 @@
 
-language: cpp
+language: c#
 
 git:
   depth: 1000
@@ -16,6 +16,26 @@ matrix:
     - os: osx
   fast_finish: true
 
+
+addons:
+  artifacts:
+    paths: $(ls powershell*{deb,pkg} | tr "\n" ":")
+
+
 install:
-  - return 1
+  - export PATH=~/.dotnet:$PATH
+  - pushd tools
+  - ./download.sh
+  - popd
+  # Default 2.0.0 Ruby is buggy
+  # Default bundler version is buggy
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then rvm use 2.2.1; gem uninstall bundler -v1.13.1; fi
+
+script: ./tools/travis.sh
+
+
+
+
+
+
 
