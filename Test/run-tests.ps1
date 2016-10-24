@@ -76,7 +76,7 @@ if($IsWindows)
 #endregion
 
 #region Step 1 - test setup
-$TestHome = $PSScriptRoot
+$TestHome = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PSScriptRoot)
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
 $PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\PowerShellGet"
 
@@ -228,9 +228,8 @@ if ($testframework -eq "coreclr")
     }
     else
     {
-        # TODO: On Linux, need to grab PowerShellCore
-        # set up powershellFolder
-
+        # set up powershellFolder On Linux
+        $powershellFolder = (Get-Module -Name Microsoft.PowerShell.Utility).ModuleBase
     }
 
     # Workaround: delete installed PackageManagement files   
@@ -326,13 +325,19 @@ if ($testframework -eq "fullclr")
 
 if ($testframework -eq "coreclr")
 {
-    $command = "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
-    $pesterFolder = "$powerShellFolder\Modules\Pester"
+    $command =""
+    $testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
+    if($IsWindows)
+    {
+        $command = "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
+    }
+    
 
-    $command += "Import-Module '$pesterFolder';"
+    $command += "Import-Module 'Pester';"
 
-    $command += "Invoke-Pester $($TestHome)\ModuleTests\tests"
+    $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
 
+ 
     Write-Host "CoreCLR: Calling $powershellFolder\powershell -command  $command"
 
     if($IsWindows)
@@ -342,6 +347,12 @@ if ($testframework -eq "coreclr")
     else
     {
       & powershell -command "& {get-packageprovider -verbose; $command}"
+    }
+
+    $x = [xml](Get-Content -raw $testResultsFile)
+    if ([int]$x.'test-results'.failures -gt 0)
+    {
+        throw "$($x.'test-results'.failures) tests failed"
     }
 }
 

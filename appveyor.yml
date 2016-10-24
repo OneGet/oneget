@@ -45,7 +45,5 @@ deploy_script:
 
 
 test_script:
-- ps: >-
-    & "c:\projects\oneget\Test\run-tests.ps1"
-
-
+ - ps: >-
+     & "c:\projects\oneget\Test\run-tests.ps1"

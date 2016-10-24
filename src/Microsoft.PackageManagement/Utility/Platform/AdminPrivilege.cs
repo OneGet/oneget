@@ -30,7 +30,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
             {
                 if (!OSInformation.IsWindows)
                 {
-                    return string.Equals(System.Environment.GetEnvironmentVariable("SUDO_UID"), "1000");
+                    return OSInformation.IsSudoUser;
                 }
                 else
                 {

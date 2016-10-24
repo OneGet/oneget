@@ -15,9 +15,11 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
     public static class OSInformation
     {
         private static readonly string _dollarPSHome = "$PSHome";
+        private static readonly string _sudoUser = "whoami";
         private static bool? _isWindows = null;
         private static bool? _isWindowsPowerShell = null;
-        private static bool? _IsFipsEnabled = null;
+        private static bool? _isSudoUser = null;
+        private static bool? _isFipsEnabled = null;
 
         /// <summary>
         /// True if the current platform is Windows.
@@ -74,6 +76,27 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
         }
 
 
+        public static bool IsSudoUser
+        {
+            get
+            {
+                if (_isSudoUser.HasValue) { return _isSudoUser.Value; }
+
+                var sodoUser = RunPowerShellCommand(_sudoUser);
+
+                if (!string.IsNullOrWhiteSpace(sodoUser) && sodoUser.Equals("root", StringComparison.OrdinalIgnoreCase))
+                {
+                    _isSudoUser = true;
+                }
+                else
+                {
+                    _isSudoUser = false;
+                }
+                return _isSudoUser.Value;
+            }
+        }
+
+
         private static string RunPowerShellCommand(string commandName)
         {
             var iis = InitialSessionState.CreateDefault2();
@@ -98,7 +121,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
         {
             get
             {
-                if (_IsFipsEnabled.HasValue) { return _IsFipsEnabled.Value; }
+                if (_isFipsEnabled.HasValue) { return _isFipsEnabled.Value; }
 
                 if (OSInformation.IsWindows)
                 {
@@ -107,15 +130,15 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
                     // otherwise, it is 0.
                     using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy"))
                     {
-                        _IsFipsEnabled = (key != null) && ((int) key.GetValue("Enabled", 0) == 1);
+                        _isFipsEnabled = (key != null) && ((int) key.GetValue("Enabled", 0) == 1);
                     }
                 }
                 else
                 {
-                    _IsFipsEnabled = false;
+                    _isFipsEnabled = false;
                 }
 
-                return _IsFipsEnabled.Value;
+                return _isFipsEnabled.Value;
             }
         }
     }  

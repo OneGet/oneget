@@ -707,7 +707,7 @@ Describe "Save-Package" -Tags "Feature" {
 		(save-package -name "awssdk" -provider $nuget -source $source -Path $destination -verbose)
 		(test-path $destination\AWSSDK*) | should be $true
 		if (Test-Path $destination\AWSSDK*) {
-			Remove-Item $destination\AWSSDK* -Force -Recurse -verbose
+			Remove-Item $destination\AWSSDK* -Force -Recurse
 		}    
     }
 
@@ -1233,7 +1233,7 @@ Describe Install-Package -Tags "Feature" {
 	    (find-package -name "zlib" -provider $nuget -source $source | install-package -destination $destination -force -Verbose)
 	    (Test-Path -Path $destination\zlib*) | should be $true
 	    if (Test-Path -Path $destination\zlib*) {
-		    (Remove-Item -Recurse -Force -Path $destination\zlib* -ErrorAction SilentlyContinue -Verbose)
+		    (Remove-Item -Recurse -Force -Path $destination\zlib* -ErrorAction SilentlyContinue)
 		    }
 	    }
 
