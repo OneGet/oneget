@@ -79,18 +79,36 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
         public static bool IsSudoUser
         {
             get
-            {
+            {            
                 if (_isSudoUser.HasValue) { return _isSudoUser.Value; }
-
-                var sodoUser = RunPowerShellCommand(_sudoUser);
-
-                if (!string.IsNullOrWhiteSpace(sodoUser) && sodoUser.Equals("root", StringComparison.OrdinalIgnoreCase))
+                if (IsWindows)
                 {
-                    _isSudoUser = true;
+                    _isSudoUser = false;
                 }
                 else
                 {
-                    _isSudoUser = false;
+                    //See some articles from LINUX forum: sudo users have id eqaul to 0
+                    // https://ubuntuforums.org/showthread.php?t=479255 
+                    // http://stackoverflow.com/questions/18215973/how-to-check-if-running-as-root-in-a-bash-script
+                    // 
+                    var sodoUserId = RunPowerShellCommand("id -u");
+                    if (!string.IsNullOrWhiteSpace(sodoUserId) && sodoUserId.Equals("0", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _isSudoUser = true;
+                    }
+                    else
+                    {
+                        //give it another try
+                        var sodoUser = RunPowerShellCommand(_sudoUser);
+                        if (!string.IsNullOrWhiteSpace(sodoUser) && sodoUser.Equals("root", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _isSudoUser = true;
+                        }
+                        else
+                        {
+                            _isSudoUser = false;
+                        }
+                    }
                 }
                 return _isSudoUser.Value;
             }

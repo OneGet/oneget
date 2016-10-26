@@ -26,23 +26,26 @@ build_script:
 
 deploy_script: 
   - ps: |
-      Import-Module -Name c:\projects\oneget\tools\NewNuspec.psm1 -Force
-      Set-Location C:\projects\oneget\src\out\PackageManagement
       # Creating NuGet package artifact
-      New-Nuspec -packageName PackageManagement  -version $env:APPVEYOR_BUILD_VERSION -author "Microsoft" -owners "Microsoft" -licenseUrl "https://github.com/OneGet/oneget/blob/master/LICENSE" -projectUrl "https://oneget.org" -packageDescription $env:APPVEYOR_PROJECT_NAME -tags "PSEdition_Core PSEdition_Desktop Linux Mac PSModule" -destinationPath .
-      nuget pack ".\PackageManagement.nuspec" -outputdirectory ..\.
-      $nuGetPackageName = "PackageManagement." + $env:APPVEYOR_BUILD_VERSION + ".nupkg"
-
-      @(
-            # You can add other artifacts here
-            "C:\projects\oneget\src\out\OneGet.FullClr.zip",
-            "C:\projects\oneget\src\out\OneGet.CoreClr.zip",
-            "C:\projects\oneget\src\out\$nuGetPackageName"
-      ) | % { 
-             Write-Host "Pushing package $_ as Appveyor artifact"
-            Push-AppveyorArtifact $_
+      $testframeworkEnv = [System.Environment]::GetEnvironmentVariable("test_framework")
+      if ($testframeworkEnv -eq "coreclr")
+      {
+            Import-Module PackageManagement -force
+            Get-Module -Name PackageManagement
+            Register-PSRepository -Name Local -SourceLocation C:\projects\oneget\src\out -verbose
+            Publish-Module -path C:\projects\oneget\src\out\PackageManagement -Repository Local -verbose
+            $nuGetPackageName=(Get-ChildItem C:\projects\oneget\src\out\PackageManagement*.nupkg).Name
+      
+            @(
+                  # You can add other artifacts here
+                  "C:\projects\oneget\src\out\OneGet.FullClr.zip",
+                  "C:\projects\oneget\src\out\OneGet.CoreClr.zip",
+                  "C:\projects\oneget\src\out\$nuGetPackageName"
+            ) | % { 
+                   Write-Host "Pushing package $_ as Appveyor artifact"
+                  Push-AppveyorArtifact $_
+            }
       }
-
 
 test_script:
  - ps: >-

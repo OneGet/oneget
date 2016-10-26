@@ -25,6 +25,10 @@ param(
 
 #region Step 0 -- remove the strongname from the binaries
 # Get the current OS
+$IsCoreCLR = $false
+$IsLinux = $false
+$IsOSX = $false
+$IsWindows = $true
 try {
     $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
     $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
@@ -33,16 +37,8 @@ try {
     $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
     $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
     $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
-} catch {
-    # If these are already set, then they're read-only and we're done
-    try {
-        $IsCoreCLR = $false
-        $IsLinux = $false
-        $IsOSX = $false
-        $IsWindows = $true
-    }
-    catch { }
-}
+} catch { }
+
 
 if($IsWindows)
 {
