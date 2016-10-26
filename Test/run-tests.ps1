@@ -331,9 +331,9 @@ if ($testframework -eq "coreclr")
     {
         $command = "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
     }
-    
 
-    $command += "Import-Module 'Pester';"
+    $pesterFolder = "$powershellFolder\Modules\Pester"
+    $command += "Import-Module '$pesterFolder';"
 
     $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
 

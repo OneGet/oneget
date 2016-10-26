@@ -18,7 +18,8 @@ matrix:
 
 
 addons:
-  artifacts: true
+  artifacts:
+    paths: $(ls ./src/out/OneGet.coreclr.zip | tr "\n" ":")
 
 
 install:
