@@ -29,7 +29,8 @@ Function CopyToDestinationDir($itemsToCopy, $destination)
     }
 }
 
-$solutionDir = Split-Path $MyInvocation.InvocationName
+$solutionPath = Split-Path $MyInvocation.InvocationName
+$solutionDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($solutionPath)
 if (-not (Test-Path "$solutionDir/global.json"))
 {
     throw "Not in solution root"
@@ -78,7 +79,7 @@ foreach ($assemblyName in $assemblyNames)
 {
     if (Test-Path ("$solutionDir\$assemblyName\project.json.hidden"))
     {
-        mv "$solutionDir\$assemblyName\project.json.hidden" "$solutionDir\$assemblyName\project.json"
+        Move-Item "$solutionDir\$assemblyName\project.json.hidden" "$solutionDir\$assemblyName\project.json"
     }
 }
 
@@ -102,12 +103,12 @@ finally
     {
         if (Test-Path ("$solutionDir\$assemblyName\project.json"))
         {
-            mv "$solutionDir\$assemblyName\project.json" "$solutionDir\$assemblyName\project.json.hidden"
+            Move-Item "$solutionDir\$assemblyName\project.json" "$solutionDir\$assemblyName\project.json.hidden"
         }
 
         if (Test-Path ("$solutionDir\$assemblyName\project.lock.json"))
         {
-            remove-item "$solutionDir\$assemblyName\project.lock.json"
+            Remove-Item "$solutionDir\$assemblyName\project.lock.json"
         }
     }
 }
@@ -128,6 +129,9 @@ if(test-path $packageFileName)
     Remove-Item $packageFileName -force
 }
 
-Add-Type -assemblyname System.IO.Compression.FileSystem
+if ($packageFramework -eq "fullclr")
+{
+  Add-Type -assemblyname System.IO.Compression.FileSystem
+}
 Write-Verbose "Zipping $sourcePath into $packageFileName" -verbose
 [System.IO.Compression.ZipFile]::CreateFromDirectory($sourcePath, $packageFileName) 

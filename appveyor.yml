@@ -20,10 +20,33 @@ build_script:
 - git submodule update --init
 - ps: nuget locals all -clear
 - ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451" Release; .\build.ps1 -framework "netstandard1.6" Release
-after_build:
-- ps:  Push-AppveyorArtifact "C:\projects\oneget\src\out\OneGet.FullClr.zip" -DeploymentName releasebits -Type Auto
-- ps:  Push-AppveyorArtifact "C:\projects\oneget\src\out\OneGet.CoreClr.zip" -DeploymentName releasebits -Type Auto
 
-before_test:
-- ps: >-
-    & "c:\projects\oneget\Test\run-tests.ps1"
+
+
+
+deploy_script: 
+  - ps: |
+      # Creating NuGet package artifact
+      $testframeworkEnv = [System.Environment]::GetEnvironmentVariable("test_framework")
+      if ($testframeworkEnv -eq "coreclr")
+      {
+            Import-Module PackageManagement -force
+            Get-Module -Name PackageManagement
+            Register-PSRepository -Name Local -SourceLocation C:\projects\oneget\src\out -verbose
+            Publish-Module -path C:\projects\oneget\src\out\PackageManagement -Repository Local -verbose
+            $nuGetPackageName=(Get-ChildItem C:\projects\oneget\src\out\PackageManagement*.nupkg).Name
+      
+            @(
+                  # You can add other artifacts here
+                  "C:\projects\oneget\src\out\OneGet.FullClr.zip",
+                  "C:\projects\oneget\src\out\OneGet.CoreClr.zip",
+                  "C:\projects\oneget\src\out\$nuGetPackageName"
+            ) | % { 
+                   Write-Host "Pushing package $_ as Appveyor artifact"
+                  Push-AppveyorArtifact $_
+            }
+      }
+
+test_script:
+ - ps: >-
+     & "c:\projects\oneget\Test\run-tests.ps1"

@@ -24,36 +24,57 @@ param(
 
 
 #region Step 0 -- remove the strongname from the binaries
-try
+# Get the current OS
+$IsCoreCLR = $false
+$IsLinux = $false
+$IsOSX = $false
+$IsWindows = $true
+
+$runtimeInfo = ($null -ne ('System.Runtime.InteropServices.RuntimeInformation' -as [Type]))
+if($runtimeInfo)
 {
-    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.ArchiverProviders,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.CoreProviders,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MetaProvider.PowerShell,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsiProvider,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsuProvider,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.Test,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
+    $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
+    $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
 
-
-    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.ArchiverProviders,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.CoreProviders,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MetaProvider.PowerShell,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsiProvider,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsuProvider,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.Test,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
-    reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
+    $IsCoreCLR = $true
+    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
+    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
+    $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
 }
-catch{}
+
+if($IsWindows)
+{
+  try
+  {
+      reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.ArchiverProviders,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.CoreProviders,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MetaProvider.PowerShell,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsiProvider,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsuProvider,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.Test,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
+  
+  
+      reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.ArchiverProviders,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.CoreProviders,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MetaProvider.PowerShell,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsiProvider,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.MsuProvider,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.NuGetProvider,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.Test,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PowerShell.PackageManagement,31bf3856ad364e35"  /f
+      reg ADD "HKLM\Software\Wow6432Node\Microsoft\StrongName\Verification\Microsoft.PackageManagement.OneGetTestProvider,31bf3856ad364e35"  /f
+  }
+  catch{}
+}
 #endregion
 
 #region Step 1 - test setup
-$TestHome = $PSScriptRoot
+$TestHome = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PSScriptRoot)
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
 $PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\PowerShellGet"
 
@@ -78,25 +99,6 @@ if ($testframeworkVariable)
     $testframework = $testframeworkVariable
 }
 
-# Get the current OS
-try {
-    $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
-    $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
-
-    $IsCoreCLR = $true
-    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
-    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
-    $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
-} catch {
-    # If these are already set, then they're read-only and we're done
-    try {
-        $IsCoreCLR = $false
-        $IsLinux = $false
-        $IsOSX = $false
-        $IsWindows = $true
-    }
-    catch { }
-}
 
 Write-host ("testframework={0}, IsCoreCLR={1}, IsLinux={2}, IsOSX={3}, IsWindows={4}" -f $testframework, $IsCoreCLR, $IsLinux, $IsOSX, $IsWindows)
 
@@ -224,9 +226,8 @@ if ($testframework -eq "coreclr")
     }
     else
     {
-        # TODO: On Linux, need to grab PowerShellCore
-        # set up powershellFolder
-
+        # set up powershellFolder On Linux
+        $powershellFolder = (Get-Module -Name Microsoft.PowerShell.Utility).ModuleBase
     }
 
     # Workaround: delete installed PackageManagement files   
@@ -322,16 +323,35 @@ if ($testframework -eq "fullclr")
 
 if ($testframework -eq "coreclr")
 {
-    $command = "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
-    $pesterFolder = "$powerShellFolder\Modules\Pester"
+    $command =""
+    $testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
+    if($IsWindows)
+    {
+        $command = "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
+    }
 
+    $pesterFolder = "$powershellFolder\Modules\Pester"
     $command += "Import-Module '$pesterFolder';"
 
-    $command += "Invoke-Pester $($TestHome)\ModuleTests\tests"
+    $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
 
+ 
     Write-Host "CoreCLR: Calling $powershellFolder\powershell -command  $command"
 
-    & "$powershellFolder\powershell" -command "& {get-packageprovider -verbose; $command}"
+    if($IsWindows)
+    {
+      & "$powershellFolder\powershell" -command "& {get-packageprovider -verbose; $command}"
+    }
+    else
+    {
+      & powershell -command "& {get-packageprovider -verbose; $command}"
+    }
+
+    $x = [xml](Get-Content -raw $testResultsFile)
+    if ([int]$x.'test-results'.failures -gt 0)
+    {
+        throw "$($x.'test-results'.failures) tests failed"
+    }
 }
 
 Write-Host -fore White "Finished tests"
