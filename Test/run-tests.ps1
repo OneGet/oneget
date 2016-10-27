@@ -29,7 +29,10 @@ $IsCoreCLR = $false
 $IsLinux = $false
 $IsOSX = $false
 $IsWindows = $true
-try {
+
+$runtimeInfo = ($null -ne ('System.Runtime.InteropServices.RuntimeInformation' -as [Type]))
+if($runtimeInfo)
+{
     $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
     $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
 
@@ -37,8 +40,7 @@ try {
     $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
     $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
     $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
-} catch { }
-
+}
 
 if($IsWindows)
 {
