@@ -1,4 +1,4 @@
-﻿# Use the .NET Core APIs to determine the current platform; if a runtime
+# Use the .NET Core APIs to determine the current platform; if a runtime
 # exception is thrown, we are on FullCLR, not .NET Core.
 try {
     $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
@@ -34,7 +34,11 @@ function Start-DotnetBootstrap {
         ConfirmImpact="High")]
     param(
         [string]$Channel = "rel-1.0.0",
-        [string]$Version = "latest"
+        #[string]$Version = "latest",
+        # we currently pin dotnet-cli version, because tool
+        # is currently migrating to msbuild toolchain
+        # and requires constant updates to our build process.
+        [string]$Version = "1.0.0-preview3-003930"              
     )
 
     # Install ours and .NET's dependencies
