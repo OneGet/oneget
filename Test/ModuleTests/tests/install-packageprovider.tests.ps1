@@ -606,6 +606,14 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
         $a | ?{ $_.name -eq "tsdprovider" } | should not BeNullOrEmpty 
     }
 
+     It "install-packageprovider CurrentUser scope , expect succeed"{
+ 
+        $package = Install-PackageProvider -Name tsdprovider -force -scope CurrentUser -Source $InternalGallery
+    
+        $package.Name | Should Match "tsdprovider"
+
+    }
+
     It "find and install-packageprovider without scope in a non-admin console, expect fail" -Skip:($IsCoreCLR){
         $Error.Clear()
 

@@ -1,6 +1,4 @@
 ﻿
-using Microsoft.Win32;
-
 namespace Microsoft.PackageManagement.Internal.Utility.Platform
 {
     using System;
@@ -8,6 +6,8 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
     using System.Runtime.InteropServices;
+    using System.IO;
+    using Microsoft.Win32;
 
     /// <summary>
     /// These are platform abstractions and platform specific implementations
@@ -20,6 +20,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
         private static bool? _isWindowsPowerShell = null;
         private static bool? _isSudoUser = null;
         private static bool? _isFipsEnabled = null;
+        private static string _allUserhomeDirectory = null;
 
         /// <summary>
         /// True if the current platform is Windows.
@@ -75,6 +76,155 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
             }
         }
 
+        //
+        //Summary of pathes we are using
+        //On Windows ---- Current user:
+
+        //NuGet.config is under               %appdata%\NuGet\NuGet.config
+        //NuGet packages installation path:   %localappdata%\PackageManagement\NuGet\packages
+        //OneGet bootstrapping provider path: %localappdata%\PackageManagement\ProviderAssemblies
+
+
+        //On Windows ---- AllUsers:
+
+        //NuGet packages installation path:    %programfiles\PackageManagement\NuGet\packages
+        //OneGet bootstrapping provider path:  %programfiles\PackageManagement\ProviderAssemblies
+
+
+        //On Linux/Mac --- Current User:
+
+        //NuGet.config path:                    /$home/.config/PackageManagement/NuGet/NuGet.config
+        //NuGet packages install path:          /$home/.local/share/PackageManagement/NuGet/Packages
+        //OneGet bootrapping provider path:     disabled on non-windows
+
+        //On Linux/Mac - AllUsers: 
+
+        //NuGet packages install path:          /usr/local/share/PackageManagement/NuGet/Packages
+        //OneGet bootstrapping provider path:   disabled on non-windows
+
+
+        public static string ConfigLocation
+        {
+            //$home/.config/
+            get { return SelectDirectory(XDG_Type.CONFIG); }
+        }
+
+        public static string DataHomeLocation
+        {
+            //$home/.local/share/
+            get { return SelectDirectory(XDG_Type.DATA); }
+        }
+
+        public static string AllUserLocation
+        {
+            //usr/local/share/
+            //equivalent to programfiles folder
+            get { return SelectDirectory(XDG_Type.ALL_USER); }
+        }
+
+        //~ alluser, e.g., programfiles
+        internal static string AllUserHomeDirectory
+        {
+            get
+            {
+                if (_allUserhomeDirectory != null) { return _allUserhomeDirectory; }
+ 
+                _allUserhomeDirectory = Path.Combine(OSInformation.IsWindows ? Environment.GetEnvironmentVariable("ProgramFiles") : AllUserLocation);
+                _allUserhomeDirectory = _allUserhomeDirectory ?? string.Empty;
+                return _allUserhomeDirectory;
+            }
+        }
+
+        public static string ProgramFilesDirectory
+        {
+            get { return AllUserHomeDirectory; }
+        }
+
+        //~ currentuser
+        public static string LocalAppDataDirectory
+        {
+            get
+            {
+                var dataHome = Environment.GetEnvironmentVariable("localappdata");
+                if (!IsWindows)
+                {
+                    dataHome = DataHomeLocation;
+                }
+                return dataHome;
+            }
+        }
+
+
+        // Note: Watch out any path changes in /src/System.Management.Automation/CoreCLR/CorePsPlatform.cs
+            
+        /// <summary>
+        /// X Desktop Group configuration type enum.
+        /// </summary>
+        public enum XDG_Type
+        {
+            /// <summary> XDG_CONFIG_HOME/powershell </summary>
+            CONFIG,
+            /// <summary> XDG_DATA_HOME/powershell </summary>
+            DATA,
+            /// <summary>/usr/local/share/</summary>
+            ALL_USER
+
+        }
+
+        //Note: Keep in sync with /src/System.Management.Automation/CoreCLR/CorePsPlatform.cs
+        internal static string SelectDirectory(XDG_Type dirpath)
+        {
+
+            string xdgconfighome = System.Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+            string xdgdatahome = System.Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+
+            //this is equivalent to $env:appdata. NuGet.config is under $env:appdata\NuGet\Config on Windows
+            string xdgConfigHomeDefault = Path.Combine(System.Environment.GetEnvironmentVariable("HOME"), ".config");
+
+            //$HOME/.local/share/powershell is equivalent to MyDucument folder, i.e. "$Home\Document\WindowsPowerShell"
+            string xdgDataHomeDefault = Path.Combine(System.Environment.GetEnvironmentVariable("HOME"), ".local", "share");
+
+            switch (dirpath)
+            {
+                case XDG_Type.CONFIG:
+                    //the user has set XDG_CONFIG_HOME corresponding to profile path
+                    if (string.IsNullOrEmpty(xdgconfighome))
+                    {
+                        //xdg values have not been set, use the default config
+                        return xdgConfigHomeDefault;
+                    }
+                    else
+                    {
+                        return Path.Combine(xdgconfighome);
+                    }
+
+                case XDG_Type.DATA:
+                    //equivalent to MyDocument folder
+                   
+                    if (string.IsNullOrEmpty(xdgdatahome))
+                    {
+                        // create the xdg folder if needed
+                        if (!Directory.Exists(xdgDataHomeDefault))
+                        {
+                            Directory.CreateDirectory(xdgDataHomeDefault);
+                        }
+                        return xdgDataHomeDefault;
+                    }
+                    else
+                    {
+                        return Path.Combine(xdgdatahome);
+                    }
+               
+                
+                case XDG_Type.ALL_USER:
+                    //equivalent to programfiles folder
+                    // shared_modules: "/usr/local/share/powershell/Modules";
+                    return "/usr/local/share";
+
+                default:                 
+                    return string.Empty;
+            }
+        }
 
         public static bool IsSudoUser
         {
@@ -113,7 +263,6 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
                 return _isSudoUser.Value;
             }
         }
-
 
         private static string RunPowerShellCommand(string commandName)
         {

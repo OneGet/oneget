@@ -30,7 +30,10 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
             {
                 if (!OSInformation.IsWindows)
                 {
-                    return OSInformation.IsSudoUser;
+                    //it is not possible to detect whether a user is an admin/sudo or not on Linux
+                    //try out first and will log error later.
+                    return true;
+                    //return OSInformation.IsSudoUser;
                 }
                 else
                 {

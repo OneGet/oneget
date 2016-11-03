@@ -25,24 +25,16 @@ param(
 
 #region Step 0 -- remove the strongname from the binaries
 # Get the current OS
-$IsCoreCLR = $false
-$IsLinux = $false
-$IsOSX = $false
-$IsWindows = $true
-
-$runtimeInfo = ($null -ne ('System.Runtime.InteropServices.RuntimeInformation' -as [Type]))
-if($runtimeInfo)
+try
 {
-    $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
-    $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
+$script:IsLinux = (Get-Variable -Name IsLinux -ErrorAction Ignore) -and $IsLinux
+$script:IsOSX = (Get-Variable -Name IsOSX -ErrorAction Ignore) -and $IsOSX
+$script:IsCoreCLR = (Get-Variable -Name IsCoreCLR -ErrorAction Ignore) -and $IsCoreCLR
+$script:IsWindows = (Get-Variable -Name IsWindows -ErrorAction Ignore) -or $IsWindows -or (-not $script:IsLinux)
+}catch{ } # on linux "Cannot overwrite variable IsLinux because it is read-only" 
 
-    $IsCoreCLR = $true
-    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
-    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
-    $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
-}
 
-if($IsWindows)
+if($script:IsWindows)
 {
   try
   {
@@ -100,7 +92,7 @@ if ($testframeworkVariable)
 }
 
 
-Write-host ("testframework={0}, IsCoreCLR={1}, IsLinux={2}, IsOSX={3}, IsWindows={4}" -f $testframework, $IsCoreCLR, $IsLinux, $IsOSX, $IsWindows)
+Write-host ("testframework={0}, IsCoreCLR={1}, IsLinux={2}, IsOSX={3}, IsWindows={4}" -f $testframework, $script:IsCoreCLR, $script:IsLinux, $script:IsOSX, $script:IsWindows)
 
 
 if ($testframework -eq "fullclr")
@@ -204,7 +196,7 @@ if ($testframework -eq "coreclr")
 {
     # install powershell core if test framework is coreclr 
 
-    If($IsWindows)
+    If($script:IsWindows)
     {
         Install-PackageProvider PSL -Force -verbose
         $powershellCore = (Get-Package -provider PSL -name PowerShell -ErrorAction SilentlyContinue)
@@ -325,7 +317,7 @@ if ($testframework -eq "coreclr")
 {
     $command =""
     $testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
-    if($IsWindows)
+    if($script:IsWindows)
     {
         $command = "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
     }
@@ -338,7 +330,7 @@ if ($testframework -eq "coreclr")
  
     Write-Host "CoreCLR: Calling $powershellFolder\powershell -command  $command"
 
-    if($IsWindows)
+    if($script:IsWindows)
     {
       & "$powershellFolder\powershell" -command "& {get-packageprovider -verbose; $command}"
     }
