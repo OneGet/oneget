@@ -477,14 +477,14 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                         try {
                             return new PowerShellPackageProvider(ps, result, requiredVersion);
                         } catch (Exception e) {
-                            e.Dump();
+                            e.Dump(request);
                         }
                     }
                 }
             } catch (Exception e) {
                 // something didn't go well.
                 // skip it.
-                e.Dump();
+                e.Dump(request);
                 if (logWarning) {
                     request.Warning(e.Message);
                 }

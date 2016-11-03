@@ -37,6 +37,7 @@ try {
     catch { }
 }
 
+$LinuxProgramFilesFolder="/usr/local/share/PackageManagement/NuGet/Packages"
 
 $source = "http://www.nuget.org/api/v2/"
 $sourceWithoutSlash = "http://www.nuget.org/api/v2"
@@ -938,7 +939,7 @@ Describe "install-package with Scope" -tags "Feature" {
         }
         else
         {
-            $UserInstalledLocation = "$HOME\PackageManagement\NuGet\Packages"
+            $UserInstalledLocation = $LinuxProgramFilesFolder
         }
         
         if (Test-Path $UserInstalledLocation) {
@@ -965,7 +966,7 @@ Describe "install-package with Scope" -tags "Feature" {
         }
         else
         {
-            $UserInstalledLocation = "$HOME\PackageManagement\NuGet\Packages"
+            $UserInstalledLocation = $LinuxProgramFilesFolder
         }
         
         if (Test-Path $UserInstalledLocation) {
