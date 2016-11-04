@@ -161,8 +161,9 @@ jQuery              3.1.1            test             jQuery is a new kind of Ja
 
 <br/>
 
-### Get PackageManagement(OneGet)
-You can download the latest PackageManagment from [PowerShellGallery](https://www.powershellgallery.com).
+### Try the latest PackageManagement (OneGet)
+
+You can run `install-module PowerShellGet` to install the latest PackageManagment and PowerShellGet from [PowerShellGallery](https://www.powershellgallery.com).
 [pscore]:https://github.com/PowerShell/PowerShell
 
 ### Downloading the Source Code
@@ -203,7 +204,34 @@ If successfully built above, you should be able to see a folder:
       PackageManagement.psm1
       PackageProviderFunctions.psm1
 ```
-You can copy the entire `\oneget\src\out\PackageManagement` folder to your
+
+### Deploying it
+
+#### Generate PackageManagement.nupkg
+We can use `publish-module` to create a .nupkg. Assuming you want to put the generated .nupkg in c:\test folder.  You can do something like below. Note I cloned to E:\OneGet folder.
+ ```powershell
+cd E:\OneGet\oneget\src\out\PackageManagement
+Register-PSRepository -name local -SourceLocation c:\test
+Get-PSRepository
+Publish-Module -path .\ -Repository local
+PS E:\OneGet\oneget\src\out\PackageManagement> dir c:\test\PackageManagement*.nupkg
+
+    Directory: C:\test
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        11/4/2016   4:15 PM        1626335 PackageManagement.1.1.0.0.nupkg
+```
+Then you can do
+```powershell
+find-module -Repository local
+install-module -Repository local -Name PackageManagement
+```
+to get the newly built PackageManagement on your machines.
+
+#### Manual copy
+You can also manually copy the OneGet binaries. For example, copy the entire `E:\OneGet\oneget\src\out\PackageManagement` folder you just built to your
 `$env:Programfiles\WindowsPowerShell\Modules\PackageManagement\#onegetversion\`
 
 If you are running within PowerShellCore,
@@ -213,8 +241,6 @@ or copy to `/opt/microsoft/powershell/<psversion>/Modules/PackageManagement/#one
 if you are running on Linux or Mac.
 
 **Note**: OneGet version number can be found from the PackageManagement.psd1 file.
-
-That's it.
 
 ### Testing the code
 ```PowerShell
@@ -299,3 +325,12 @@ Throughput Graph
 |@Quoc|  Engineer on the team.   |
 
 [Follow us on Twitter](https://twitter.com/PSOneGet)
+
+### More Resources
+- [NuGet Provider Repo](https://github.com/OneGet/NuGetProvider)
+- [PowerShellGet Repo](https://github.com/PowerShell/PowerShellGet)
+- [MisoftDockerProvider](https://github.com/OneGet/MicrosoftDockerProvider)
+- [NanoServerPackage](https://github.com/OneGet/NanoServerPackage)
+- Want to write a provider? Checkout our [sample provider](https://www.powershellgallery.com/packages/MyAlbum/)
+- Wanna to download packages from http://Chocolatey.org, try out [ChocolateyGet provider](https://www.powershellgallery.com/items?q=ChocolateyGet&x=15&y=13)
+- Wanna to control which packages to use and where to get them from base for your organization, checkout [PSL provider](https://github.com/OneGet/PSLProvider)
