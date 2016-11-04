@@ -27,11 +27,20 @@ param(
 # Get the current OS
 try
 {
-$script:IsLinux = (Get-Variable -Name IsLinux -ErrorAction Ignore) -and $IsLinux
-$script:IsOSX = (Get-Variable -Name IsOSX -ErrorAction Ignore) -and $IsOSX
-$script:IsCoreCLR = (Get-Variable -Name IsCoreCLR -ErrorAction Ignore) -and $IsCoreCLR
-$script:IsWindows = (Get-Variable -Name IsWindows -ErrorAction Ignore) -or $IsWindows -or (-not $script:IsLinux)
-}catch{ } # on linux "Cannot overwrite variable IsLinux because it is read-only" 
+    $script:IsLinux = (Get-Variable -Name IsLinux -ErrorAction Ignore) -and $IsLinux
+    $script:IsOSX = (Get-Variable -Name IsOSX -ErrorAction Ignore) -and $IsOSX
+    $script:IsCoreCLR = (Get-Variable -Name IsCoreCLR -ErrorAction Ignore) -and $IsCoreCLR
+    $script:IsWindows = $true
+
+    $runtimeInfo = ($null -ne ('System.Runtime.InteropServices.RuntimeInformation' -as [Type]))
+    if($runtimeInfo)
+    {
+        $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
+        $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
+       
+        $script:IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
+    }
+}catch{ } # on linux error from PowerShell: "Cannot overwrite variable IsLinux because it is read-only". Tracking PowerShellCore issue#2609.
 
 
 if($script:IsWindows)
