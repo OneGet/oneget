@@ -327,10 +327,11 @@ Throughput Graph
 [Follow us on Twitter](https://twitter.com/PSOneGet)
 
 ### More Resources
-- [NuGet Provider Repo](https://github.com/OneGet/NuGetProvider)
-- [PowerShellGet Repo](https://github.com/PowerShell/PowerShellGet)
-- [MisoftDockerProvider](https://github.com/OneGet/MicrosoftDockerProvider)
+- [NuGet Provider](https://github.com/OneGet/NuGetProvider)
+- [PowerShellGet Provider](https://github.com/PowerShell/PowerShellGet)
+- [MicrosoftDockerProvider](https://github.com/OneGet/MicrosoftDockerProvider)
 - [NanoServerPackage](https://github.com/OneGet/NanoServerPackage)
+- Checkout OneGet providers from our Community such as Gistprovider, OfficeProvider, 0Install and more from powershellgallery.com or simply run Find-PackageProvider cmdlet.
 - Want to write a provider? Checkout our [sample provider](https://www.powershellgallery.com/packages/MyAlbum/)
 - Wanna to download packages from http://Chocolatey.org, try out [ChocolateyGet provider](https://www.powershellgallery.com/items?q=ChocolateyGet&x=15&y=13)
 - Wanna to control which packages to use and where to get them from base for your organization, checkout [PSL provider](https://github.com/OneGet/PSLProvider)
