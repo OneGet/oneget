@@ -329,7 +329,7 @@ Throughput Graph
 ### More Resources
 - [NuGet Provider Repo](https://github.com/OneGet/NuGetProvider)
 - [PowerShellGet Repo](https://github.com/PowerShell/PowerShellGet)
-- [MisoftDockerProvider](https://github.com/OneGet/MicrosoftDockerProvider)
+- [MicrosoftDockerProvider](https://github.com/OneGet/MicrosoftDockerProvider)
 - [NanoServerPackage](https://github.com/OneGet/NanoServerPackage)
 - Want to write a provider? Checkout our [sample provider](https://www.powershellgallery.com/packages/MyAlbum/)
 - Wanna to download packages from http://Chocolatey.org, try out [ChocolateyGet provider](https://www.powershellgallery.com/items?q=ChocolateyGet&x=15&y=13)
