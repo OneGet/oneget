@@ -704,7 +704,7 @@ Describe "Save-Package" -Tags "Feature" {
         }
     }
 
-    It "EXPECTED: Saves 'awssdk' package which has more than 200 versions" {
+    It "EXPECTED: Saves 'awssdk' package which has more than 200 versions" -Skip {
 		(save-package -name "awssdk" -provider $nuget -source $source -Path $destination -verbose)
 		(test-path $destination\AWSSDK*) | should be $true
 		if (Test-Path $destination\AWSSDK*) {
@@ -1208,7 +1208,7 @@ Describe Install-Package -Tags "Feature" {
         }
     }
 
-	it "EXPECTED: Installs 'awssdk' Package which has more than 200 versions To Packages Directory" -Skip:($IsCoreCLR){
+	it "EXPECTED: Installs 'awssdk' Package which has more than 200 versions To Packages Directory" -Skip {
 		(install-package -name "awssdk" -provider $nuget -source $source -destination $destination -maximumversion 2.3 -force -Verbose)
 		(test-path $destination\awssdk*) | should be $true
 		if (Test-Path $destination\awssdk*) {
