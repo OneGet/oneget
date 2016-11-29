@@ -75,7 +75,13 @@ function Start-DotnetBootstrap {
         brew install $Deps
     }
 
-    $obtainUrl = "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain"
+
+    # this url is temporarely workaround because of https://github.com/dotnet/cli/issues/4715
+ 
+    #$obtainUrl = "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain"
+
+    $obtainUrl = "https://raw.githubusercontent.com/dotnet/cli/9855dc0088cf7e56e24860c734f33fe8353f38a6/scripts/obtain"
+	  
 
     # Install for Linux and OS X
     if ($IsLinux -or $IsOSX) {

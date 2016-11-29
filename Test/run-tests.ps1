@@ -130,8 +130,8 @@ if ($testframework -eq "fullclr")
         New-Item -Path $packagemanagementfolder -ItemType Directory -Force  
         Write-Host "Created  $packagemanagementfolder"
     } else{
-        Get-ChildItem -Path $packagemanagementfolder | %{ren "$packagemanagementfolder\$_" "$packagemanagementfolder\$_.deleteMe"}
-        Get-ChildItem -Path $packagemanagementfolder  -Recurse |  Remove-Item -force -Recurse
+        Get-ChildItem -Path $packagemanagementfolder | %{ren "$packagemanagementfolder\$_" "$packagemanagementfolder\$_.deleteMe" -ErrorAction SilentlyContinue}
+        Get-ChildItem -Path $packagemanagementfolder  -Recurse |  Remove-Item -force -Recurse -ErrorAction SilentlyContinue
     }
 
 
@@ -277,8 +277,8 @@ if ($testframework -eq "coreclr")
         New-Item -Path $OneGetBinaryPath -ItemType Directory -Force -Verbose
     }
     else{
-        Get-ChildItem -Path $OneGetBinaryPath | %{ren "$OneGetBinaryPath\$_" "$OneGetBinaryPath\$_.deleteMe"}
-        Get-ChildItem -Path $OneGetBinaryPath  -Recurse |  Remove-Item -force -Recurse
+        Get-ChildItem -Path $OneGetBinaryPath | %{ren "$OneGetBinaryPath\$_" "$OneGetBinaryPath\$_.deleteMe" -ErrorAction SilentlyContinue}
+        Get-ChildItem -Path $OneGetBinaryPath  -Recurse |  Remove-Item -force -Recurse -ErrorAction SilentlyContinue
     }
 
 
