@@ -207,15 +207,27 @@ if ($testframework -eq "coreclr")
 
     If($script:IsWindows)
     {
-        Install-PackageProvider PSL -Force -verbose
-        $powershellCore = (Get-Package -provider PSL -name PowerShell -ErrorAction SilentlyContinue)
-        if ($powershellCore)
+        if($env:APPVEYOR_SCHEDULED_BUILD -eq 'True')
         {
-            Write-Warning ("PowerShell already installed" -f $powershellCore.Name)
+            # for the daily run, we need to install PowerShellCore from github.com/powershell/powershell appveryor artifacts
+
+            $powershellMSIPackage = Get-PowerShellCoreBuild -Verbose
+
+            Write-Verbose $powershellMSIPackage
+            $powershellCore = Install-Package  $powershellMSIPackage -provider msi -verbose -force
         }
         else
-        {   
-            $powershellCore = Install-Package PowerShell -Provider PSL -Force -verbose
+        {
+            Install-PackageProvider PSL -Force -verbose
+            $powershellCore = (Get-Package -provider PSL -name PowerShell -ErrorAction SilentlyContinue)
+            if ($powershellCore)
+            {
+                Write-Warning ("PowerShell already installed" -f $powershellCore.Name)
+            }
+            else
+            {   
+                $powershellCore = Install-Package PowerShell -Provider PSL -Force -verbose
+            }
         }
 
         $powershellVersion = $powershellCore.Version
