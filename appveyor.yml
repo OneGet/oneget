@@ -19,6 +19,7 @@ clone_folder: c:\projects\oneget
 build_script:
 - git submodule update --init
 - ps: nuget locals all -clear
+- ps: import-module c:\projects\oneget\test\TestUtility.psm1 -force
 - ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451" Release; .\build.ps1 -framework "netstandard1.6" Release
 
 
