@@ -33,7 +33,8 @@ deploy_script:
       {
             Import-Module PackageManagement -force
             Get-Module -Name PackageManagement
-            Register-PSRepository -Name Local -SourceLocation C:\projects\oneget\src\out -verbose
+            Get-PackageProvider -Name NuGet -Force
+            Register-PSRepository -Name Local -SourceLocation C:\projects\oneget\src\out -verbose 
             Publish-Module -path C:\projects\oneget\src\out\PackageManagement -Repository Local -verbose
             $nuGetPackageName=(Get-ChildItem C:\projects\oneget\src\out\PackageManagement*.nupkg).Name
       
