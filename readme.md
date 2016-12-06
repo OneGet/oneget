@@ -1,23 +1,33 @@
-### Build status - Master
+### Build Status - Master
 
 | AppVeyor (Windows)       | Travis CI (Linux / macOS) |
 |--------------------------|--------------------------|
 | [![av-image][]][av-site] | [![tv-image][]][tv-site] |
+
 
 [tv-image]: https://travis-ci.org/OneGet/oneget.svg?branch=master
 [tv-site]: https://travis-ci.org/OneGet/oneget/branches
 [av-image]: https://ci.appveyor.com/api/projects/status/0q1frhm84pp83syh/branch/master?svg=true
 [av-site]: https://ci.appveyor.com/project/jianyunt/oneget
 
+### Build Status - Nightly Builds
+|AppVeyor (Windows)                  |
+|------------------------------------|
+| [![av-nightimage][]][av-nightsite] |
+
+[av-nightimage]: https://ci.appveyor.com/api/projects/status/87d07mj8s9eyhfst/branch/master?svg=true
+[av-nightsite]:https://ci.appveyor.com/project/jianyunt/oneget-weumx
 
 # PackageManagement (aka OneGet)
 
 
 ### What's New
-Follow our [News Panel](https://github.com/OneGet/oneget/wiki/News-Panel).
-
-Check out the PackageManagement and PowershellGet Modules in [PowerShellGallery.com](https://www.PowerShellGallery.com)
-
+PackageManagement is supported in Windows, Linux and MacOS now.
+We periodically make binary drop to [PowerShellCore][pscore],
+meaning PackageManagement is a part of PowerShell Core releases.
+Also PackageManagement and PowershellGet Modules are regularly getting updated in [PowerShellGallery.com.](https://www.PowerShellGallery.com)
+[pscore]: https://github.com/PowerShell/PowerShell.
+Thus checkout the latest version from PowerShellGallery.com.
 
 ### Get Started!
 
@@ -26,8 +36,9 @@ OneGet is shipped in Win10 and Windows Server 2016! For downlevel OS, you can in
 You can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notified of every new build.
 
 
-* Learn how to [use the PowerShell cmdlets](https://github.com/OneGet/oneget/wiki/cmdlets), [try some samples](https://github.com/PowerShell/PowerShell-Docs/blob/staging/wmf/5.0/oneget_cmdlets.md), or read [our MSDN Technet docs](https://technet.microsoft.com/en-us/library/mt422622.aspx)
+* Learn how to [use the PowerShell OneGet cmdlets](https://github.com/OneGet/oneget/wiki/cmdlets) and [try some samples](https://github.com/PowerShell/PowerShell-Docs/blob/staging/wmf/5.0/oneget_cmdlets.md)
 * Read our [General Q and A](https://github.com/OneGet/oneget/wiki/Q-and-A)
+* Read [Writing OneGet Provider Guidelines](./docs/writepowershellbasedprovider.md)
 * Learn about the [8 Laws of Software Installation](https://github.com/OneGet/oneget/wiki/8-Laws-of-Software-Installation)
 * [General Troubleshooting](https://github.com/OneGet/oneget/wiki/General-Troubleshooting)
 * Check out more help information [in our wiki page](https://github.com/oneget/oneget/wiki)
