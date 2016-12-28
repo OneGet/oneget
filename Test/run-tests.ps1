@@ -178,6 +178,7 @@ if ($testframework -eq "fullclr")
     Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mfl" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
     New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
     Copy-Item "Examples\*.ps1" (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
+
     # Setting up provider path
     if(-not (Test-Path $ProgramProviderInstalledPath)){
         New-Item -Path $ProgramProviderInstalledPath -ItemType Directory -Force  
@@ -294,16 +295,21 @@ if ($testframework -eq "coreclr")
     Copy-Item "$TestBin\*.psd1" $OneGetPath -force -Verbose
     Copy-Item "$TestBin\*.psm1" $OneGetPath -force -Verbose
     Copy-Item "$TestBin\*.ps1xml" $OneGetPath -force -Verbose
-    Copy-Item "$TestBin\DSCResources\*.psm1" (Join-Path -Path $OneGetPath -ChildPath "DSCResources")
-    Copy-Item "$TestBin\DSCResources\*.psd1" (Join-Path -Path $OneGetPath -ChildPath "DSCResources")
-    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.psm1" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagement")
-    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.psd1" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagement")
-    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.mof" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagement")
-    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.mfl" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagement")
-    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.psm1" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagementSource")
-    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.psd1" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagementSource")
-    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mof" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagementSource")
-    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mfl" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources")
+    Copy-Item "$TestBin\DSCResources\*.psm1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources")
+    Copy-Item "$TestBin\DSCResources\*.psd1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources")
+    New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.psm1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.psd1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.mof" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.mfl" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
+    New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.psm1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.psd1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mof" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mfl" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
+    Copy-Item "Examples\*.ps1" (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
 
      # copy the OneGet bits into powershell core
     $OneGetBinaryPath ="$OneGetPath\coreclr"
