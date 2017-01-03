@@ -373,6 +373,10 @@ if ($testframework -eq "fullclr")
     $command = "Invoke-Pester $($TestHome)\ModuleTests\tests"
       
     Powershell -command "& {get-packageprovider -verbose; $command}"
+
+    $command = "Invoke-Pester $($TestHome)\DSCTests\tests"
+      
+    Powershell -command "& {get-packageprovider -verbose; $command}"
 }
 
 if ($testframework -eq "coreclr")

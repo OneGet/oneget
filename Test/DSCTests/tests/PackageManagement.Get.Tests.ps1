@@ -65,10 +65,12 @@ Describe -Name "PackageManagement Get-TargetResource Basic Test" -Tags "BVT" {
         It "Get-TargetResource with the Mandatory Parameters: Check Absent" {
 
             # Calling Get-TargetResource in the NugetPackage resource 
-            $result = MSFT_PackageManagement\Get-TargetResource -Name "MyTestPackage" -Verbose
+            $result = MSFT_PackageManagement\Get-TargetResource -Name "MyTestPackage" -Verbose | Where-Object {$_.Name -eq "MyTestPackage"}
 
-            # Validate the result
-            $result.Ensure | should be "Absent"
+            # Validate the result if any result was returned
+            if ($result -ne $null) {
+                $result.Ensure | should be "Absent"
+            }
         }
 
         It "Get-TargetResource with the Mandatory Parameters: Check Present" {
