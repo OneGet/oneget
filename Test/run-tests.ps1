@@ -410,6 +410,28 @@ if ($testframework -eq "coreclr")
     {
         throw "$($x.'test-results'.failures) tests failed"
     }
+
+    $command =""
+    $command += "Import-Module '$pesterFolder';"
+
+    $command += "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+
+    Write-Host "CoreCLR: Calling $powershellFolder\powershell -command  $command"
+
+    if($script:IsWindows)
+    {
+      & "$powershellFolder\powershell" -command "& {get-packageprovider -verbose; $command}"
+    }
+    else
+    {
+      & powershell -command "& {get-packageprovider -verbose; $command}"
+    }
+
+    $x = [xml](Get-Content -raw $testResultsFile)
+    if ([int]$x.'test-results'.failures -gt 0)
+    {
+        throw "$($x.'test-results'.failures) tests failed"
+    }
 }
 
 Write-Host -fore White "Finished tests"
