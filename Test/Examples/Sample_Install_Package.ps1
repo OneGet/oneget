@@ -23,7 +23,7 @@ configuration Sample_Install_Package
     )
 
 
-    Import-DscResource -Module PackageManagement -ModuleVersion 1.1.1.0
+    Import-DscResource -Module PackageManagement -ModuleVersion 1.1.2.0
 
     Node $NodeName
     {               
@@ -34,7 +34,7 @@ configuration Sample_Install_Package
             Ensure      = "Present"
             Name        = "psgallery"
             ProviderName= "PowerShellGet"
-            SourceUri   = "https://www.powershellgallery.com/api/v2/"  
+            SourceLocation   = "https://www.powershellgallery.com/api/v2/"  
             InstallationPolicy ="Trusted"
         }
 

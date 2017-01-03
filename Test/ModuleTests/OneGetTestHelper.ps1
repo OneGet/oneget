@@ -53,7 +53,7 @@ configuration Sample_InstallPester
         [string]$DestinationPath       
     )
 
-    Import-DscResource -Module PackageManagement -ModuleVersion 1.1.1.0
+    Import-DscResource -Module PackageManagement -ModuleVersion 1.1.2.0
 
     Node "localhost"
     {
@@ -65,7 +65,7 @@ configuration Sample_InstallPester
             Ensure      = "Present"
             Name        = "Mynuget"
             ProviderName= "Nuget" 
-            SourceUri   = "http://nuget.org/api/v2/"    
+            SourceLocation   = "http://nuget.org/api/v2/"    
             InstallationPolicy ="Trusted"
         }   
         
@@ -532,7 +532,7 @@ function RegisterPackageSource
 
         MSFT_PackageManagementSource\Set-TargetResource -Name $name `
                                              -providerName $ProviderName `
-                                             -SourceUri $SourceUri `
+                                             -SourceLocation $SourceUri `
                                              -SourceCredential $Credential `
                                              -InstallationPolicy $InstallationPolicy `
                                              -Verbose `
@@ -580,12 +580,12 @@ Function UnRegisterSource
 
     Write-Verbose -Message ("Calling function '$($MyInvocation.mycommand)'") -Verbose
 
-    $getResult = MSFT_PackageManagementSource\Get-TargetResource -Name $name -providerName $ProviderName -SourceUri $SourceUri -Verbose
+    $getResult = MSFT_PackageManagementSource\Get-TargetResource -Name $name -providerName $ProviderName -SourceLocation $SourceUri -Verbose
 
     if ($getResult.Ensure -ieq "Present")
     {
         #Unregister it
-        MSFT_PackageManagementSource\Set-TargetResource -Name $name -providerName $ProviderName -SourceUri $SourceUri -Verbose -Ensure Absent               
+        MSFT_PackageManagementSource\Set-TargetResource -Name $name -providerName $ProviderName -SourceLocation $SourceUri -Verbose -Ensure Absent               
     }
 }
 
