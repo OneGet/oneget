@@ -12,7 +12,7 @@
   
   "dependencies": {
     "System.Management.Automation": "1.0.0-alpha9",
-	"Microsoft.Management.Infrastructure": "1.0.0-alpha-01"
+	"Microsoft.Management.Infrastructure": "1.0.0-alpha04"
   },
   
   "runtimes": {
