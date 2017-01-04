@@ -263,6 +263,20 @@ if ($testframework -eq "coreclr")
         $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
         Write-host ("PowerShell Folder '{0}'" -f $powershellFolder)
 
+        # Setup MMI for Core CLR
+        Write-Host "Setting up Microsoft Management Infrastructure for Core CLR"
+        $mmiDownloadLocation = "https://powershell.myget.org/F/powershell-core/api/v2/package/Microsoft.Management.Infrastructure/1.0.0-alpha05"
+        $mmiNugetPackage = "$TestBin\Microsoft.Management.Infrastructure.1.0.0-alpha05.nupkg"
+        (new-object net.webclient).DownloadFile($mmiDownloadLocation, $mmiNugetPackage)
+        Register-PackageSource -Name "TestBinPackages" -Location $TestBin -Trusted -ProviderName NuGet
+        register-packagesource -name "TestNugetSource" -location https://nuget.org/api/v2 -trusted -providername NuGet
+        # Install dependencies from nuget.org
+        Install-Package NETStandard.Library -Source "TestNugetSource"
+        Install-Package System.Runtime.CompilerServices.VisualC -Source "TestNugetSource"
+        Install-Package System.Runtime.Serialization.Xml -Source "TestNugetSource"
+        Install-Package System.Threading.ThreadPool -Source "TestNugetSource"
+        Install-Package System.Security.SecureString -Source "TestNugetSource"
+        Install-Package Microsoft.Management.Infrastructure -Source "TestBinPackages"
     }
     else
     {
