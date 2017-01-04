@@ -90,6 +90,7 @@ if($script:IsWindows)
 $TestHome = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PSScriptRoot)
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
 $PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\PowerShellGet"
+$CoreCLRTestHome = "$($TestHome)\..\Test"
 
 # Get PowerShellGet version
 $psGetModuleManifest = Test-ModuleManifest "$PowerShellGetPath\PowerShellGet.psd1"
@@ -321,7 +322,7 @@ if ($testframework -eq "coreclr")
     Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mof" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagementSource")
     Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mfl" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagementSource")
     New-DirectoryIfNotExist (Join-Path -Path $OneGetPath -ChildPath "Examples")
-    Copy-Item "Examples\*.ps1" (Join-Path -Path $OneGetPath -ChildPath "Examples")
+    Copy-Item "$CoreCLRTestHome\Examples\*.ps1" (Join-Path -Path $OneGetPath -ChildPath "Examples")
 
      # copy the OneGet bits into powershell core
     $OneGetBinaryPath ="$OneGetPath\coreclr"
