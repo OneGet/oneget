@@ -48,7 +48,7 @@ deploy_script:
                   "C:\projects\oneget\src\out\OneGet.FullClr.zip",
                   "C:\projects\oneget\src\out\OneGet.CoreClr.zip",
                   "C:\projects\oneget\src\out\$nuGetPackageName",
-                  "C:\projects\oneget\src\out\$mmiNugetPackage"
+                  "$mmiNugetPackage"
             ) | % { 
                    Write-Host "Pushing package $_ as Appveyor artifact"
                   Push-AppveyorArtifact $_
