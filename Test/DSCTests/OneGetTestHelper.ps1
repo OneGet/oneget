@@ -285,7 +285,7 @@ Function Import-ModulesToSetupTest
 
     $moduleChildPath="DSCResources\$($ModuleChildPath)"
 
-    $script:Module = Get-Module -Name "PackageManagement" -ListAvailable
+    $script:Module = Get-LatestModuleByName -moduleName "PackageManagement"
 
     $modulePath = Microsoft.PowerShell.Management\Join-Path -Path $script:Module.ModuleBase -ChildPath $moduleChildPath
 
@@ -763,3 +763,18 @@ function IsAdmin
     return $false
 }
 
+function Get-LatestModuleByName {
+    param(
+        [string]$moduleName
+    )
+
+    $allModulesSorted = Get-Module -Name $moduleName -ListAvailable | Sort-Object -Property Version -Descending
+    $topVersion = $allModulesSorted[0].Version
+    $topModules = $allModulesSorted | Where-Object {$_.Version -eq $topVersion}
+    if ($topModules.Count -eq 1) {
+        $topModules[0]
+    } else {
+        $topModules = $topModules | %{ @{Module=$_;Time=((Get-ItemProperty $_.Path).LastWriteTime)} } | Sort-Object { $_.Time -as [DateTime] } -Descending | %{ $_.Module }
+        $topModules[0]
+    }
+}
