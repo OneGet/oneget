@@ -384,14 +384,26 @@ if ($testframework -eq "fullclr")
     {
         Write-Warning ("PackageManagement is loaded already from '{0}'" -f $pm.ModuleBase)
     }
-      
-    $command = "Invoke-Pester $($TestHome)\ModuleTests\tests"
-      
-    Powershell -command "& {get-packageprovider -verbose; $command}"
 
-    $command = "Invoke-Pester $($TestHome)\DSCTests\tests"
+    $testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
+    $command = "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
       
     Powershell -command "& {get-packageprovider -verbose; $command}"
+    $x = [xml](Get-Content -raw $testResultsFile)
+    if ([int]$x.'test-results'.failures -gt 0)
+    {
+        throw "$($x.'test-results'.failures) tests failed"
+    }
+
+    $testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
+    $command = "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+      
+    Powershell -command "& {get-packageprovider -verbose; $command}"
+    $x = [xml](Get-Content -raw $testResultsFile)
+    if ([int]$x.'test-results'.failures -gt 0)
+    {
+        throw "$($x.'test-results'.failures) tests failed"
+    }
 }
 
 if ($testframework -eq "coreclr")
@@ -425,10 +437,10 @@ if ($testframework -eq "coreclr")
     {
         throw "$($x.'test-results'.failures) tests failed"
     }
-
+<#  Disabling DSC tests for Core CLR for now.
     $command =""
     $command += "Import-Module '$pesterFolder';"
-
+    $testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
     $command += "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
 
     Write-Host "CoreCLR: Calling $powershellFolder\powershell -command  $command"
@@ -446,7 +458,7 @@ if ($testframework -eq "coreclr")
     if ([int]$x.'test-results'.failures -gt 0)
     {
         throw "$($x.'test-results'.failures) tests failed"
-    }
+    }#>
 }
 
 Write-Host -fore White "Finished tests"
