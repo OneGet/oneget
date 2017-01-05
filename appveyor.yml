@@ -29,9 +29,6 @@ deploy_script:
   - ps: |
       # Creating NuGet package artifact
       $testframeworkEnv = [System.Environment]::GetEnvironmentVariable("test_framework")
-      # Latest known MMI version. Can remove once PowerShell Core has this integrated.
-      $mmiDownloadLocation = "https://powershell.myget.org/F/powershell-core/api/v2/package/Microsoft.Management.Infrastructure/1.0.0-alpha05"
-      $mmiNugetPackage = "C:\projects\oneget\src\out\mmi.nupkg"
       if ($testframeworkEnv -eq "coreclr")
       {
             Import-Module PackageManagement -force
@@ -40,15 +37,12 @@ deploy_script:
             Register-PSRepository -Name Local -SourceLocation C:\projects\oneget\src\out -verbose 
             Publish-Module -path C:\projects\oneget\src\out\PackageManagement -Repository Local -verbose
             $nuGetPackageName=(Get-ChildItem C:\projects\oneget\src\out\PackageManagement*.nupkg).Name
-            # Setup MMI artifact for Core CLR
-            (new-object net.webclient).DownloadFile($mmiDownloadLocation, $mmiNugetPackage)
 
             @(
                   # You can add other artifacts here
                   "C:\projects\oneget\src\out\OneGet.FullClr.zip",
                   "C:\projects\oneget\src\out\OneGet.CoreClr.zip",
-                  "C:\projects\oneget\src\out\$nuGetPackageName",
-                  "$mmiNugetPackage"
+                  "C:\projects\oneget\src\out\$nuGetPackageName"
             ) | % { 
                    Write-Host "Pushing package $_ as Appveyor artifact"
                   Push-AppveyorArtifact $_
@@ -58,6 +52,3 @@ deploy_script:
 test_script:
  - ps: >-
      & "c:\projects\oneget\Test\run-tests.ps1"
-
-on_finish:
- - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
