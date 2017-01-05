@@ -185,7 +185,7 @@ case "$OSTYPE" in
 
         # Install DSC
         get_url() {
-            release=v1.1.1-29
+            release=v1.1.1-294
             echo "https://github.com/Microsoft/PowerShell-DSC-for-Linux/releases/download/$release/$1"
         }
 
@@ -232,7 +232,7 @@ case "$OSTYPE" in
                     echo "ERROR: DSC failed to install!" >&2
                     exit "$success"
                 fi
-                
+
                 # Resolve dependencies
                 sudo apt-get install -f
                 ;;
