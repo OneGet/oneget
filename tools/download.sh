@@ -125,6 +125,7 @@ if [[ "$success" != 0 ]]; then
     exit "$success"
 fi
 
+: '
 case "$OSTYPE" in
     linux*)
         # Install OMI and DSC for Linux
@@ -250,4 +251,4 @@ case "$OSTYPE" in
         ;;
     darwin*)
         # TODO: Need to do anything here?
-esac
+esac'

@@ -29,9 +29,6 @@ function New-DirectoryIfNotExist {
 
     if(-not (Test-Path $dir)){ 
         $null = New-Item -Path $dir -ItemType Directory -Force 
-        $true
-    } else {
-        $false
     }
 }
 
@@ -262,7 +259,7 @@ if ($testframework -eq "coreclr")
 
         $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
         Write-host ("PowerShell Folder '{0}'" -f $powershellFolder)
-
+        <# Note: Disabled while Core CLR/Linux is disabled for DSC testing
         # Setup MMI for Core CLR
         Write-Host "Setting up Microsoft Management Infrastructure for Core CLR"
         $mmiDownloadLocation = "https://powershell.myget.org/F/powershell-core/api/v2/package/Microsoft.Management.Infrastructure/1.0.0-alpha05"
@@ -276,7 +273,7 @@ if ($testframework -eq "coreclr")
         Install-Package System.Runtime.Serialization.Xml -Source "TestNugetSource"
         Install-Package System.Threading.ThreadPool -Source "TestNugetSource"
         Install-Package System.Security.SecureString -Source "TestNugetSource"
-        Install-Package Microsoft.Management.Infrastructure -Source "TestBinPackages"
+        Install-Package Microsoft.Management.Infrastructure -Source "TestBinPackages"#>
     }
     else
     {
