@@ -70,16 +70,30 @@ $itemsToCopyCommon = @("$solutionDir\Microsoft.PowerShell.PackageManagement\Pack
                        "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.psm1",
                        "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageProviderFunctions.psm1",
                        "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.format.ps1xml")
+					   
+$dscResourceItemsCommon = @("$solutionDir\Microsoft.PackageManagement.DscResources\PackageManagementDscUtilities.psm1",
+                      "$solutionDir\Microsoft.PackageManagement.DscResources\PackageManagementDscUtilities.strings.psd1")
+			
+$dscResourceItemsPackage = @("$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagement\MSFT_PackageManagement.psm1",
+					  "$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagement\MSFT_PackageManagement.schema.mfl",
+					  "$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagement\MSFT_PackageManagement.schema.mof",
+					  "$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagement\MSFT_PackageManagement.strings.psd1")
+					  
+$dscResourceItemsPackageSource = @("$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.psm1",
+					  "$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.schema.mfl",
+					  "$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.schema.mof",
+					  "$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.strings.psd1")
 
 $destinationDir = "$solutionDir/out/PackageManagement"
 $destinationDirBinaries = "$destinationDir/$packageFramework"
+$destinationDirDscResourcesBase = "$destinationDir/DSCResources"
 
 # rename project.json.hidden to project.json
 foreach ($assemblyName in $assemblyNames)
 {
     if (Test-Path ("$solutionDir\$assemblyName\project.json.hidden"))
     {
-        Move-Item "$solutionDir\$assemblyName\project.json.hidden" "$solutionDir\$assemblyName\project.json"
+        Move-Item "$solutionDir\$assemblyName\project.json.hidden" "$solutionDir\$assemblyName\project.json" -Force
     }
 }
 
@@ -117,6 +131,9 @@ finally
 CopyToDestinationDir $itemsToCopyCommon $destinationDir
 CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
 CopyToDestinationDir $itemsToCopyPdbs $destinationDirBinaries
+CopyToDestinationDir $dscResourceItemsCommon $destinationDirDscResourcesBase
+CopyToDestinationDir $dscResourceItemsPackage (Join-Path -Path $destinationDirDscResourcesBase -ChildPath "MSFT_PackageManagement")
+CopyToDestinationDir $dscResourceItemsPackageSource (Join-Path -Path $destinationDirDscResourcesBase -ChildPath "MSFT_PackageManagementSource")
 
 #Packing
 $sourcePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($destinationDir)

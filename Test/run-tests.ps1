@@ -22,6 +22,15 @@ param(
     [string]$testframework = "fullclr"
 )
 
+function New-DirectoryIfNotExist {
+    param(
+        [string]$dir
+    )
+
+    if(-not (Test-Path $dir)){ 
+        $null = New-Item -Path $dir -ItemType Directory -Force 
+    }
+}
 
 #region Step 0 -- remove the strongname from the binaries
 # Get the current OS
@@ -78,6 +87,7 @@ if($script:IsWindows)
 $TestHome = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PSScriptRoot)
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
 $PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\PowerShellGet"
+$CoreCLRTestHome = "$($TestHome)\..\Test"
 
 # Get PowerShellGet version
 $psGetModuleManifest = Test-ModuleManifest "$PowerShellGetPath\PowerShellGet.psd1"
@@ -151,7 +161,21 @@ if ($testframework -eq "fullclr")
     Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.ps1xml" $packagemanagementfolder -force -Verbose
-
+    New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources")
+    Copy-Item "$TestBin\DSCResources\*.psm1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources")
+    Copy-Item "$TestBin\DSCResources\*.psd1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources")
+    New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.psm1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.psd1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.mof" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.mfl" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
+    New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.psm1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.psd1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mof" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mfl" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
+    Copy-Item "Examples\*.ps1" (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
 
     # Setting up provider path
     if(-not (Test-Path $ProgramProviderInstalledPath)){
@@ -235,7 +259,21 @@ if ($testframework -eq "coreclr")
 
         $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
         Write-host ("PowerShell Folder '{0}'" -f $powershellFolder)
-
+        <# Note: Disabled while Core CLR/Linux is disabled for DSC testing
+        # Setup MMI for Core CLR
+        Write-Host "Setting up Microsoft Management Infrastructure for Core CLR"
+        $mmiDownloadLocation = "https://powershell.myget.org/F/powershell-core/api/v2/package/Microsoft.Management.Infrastructure/1.0.0-alpha05"
+        $mmiNugetPackage = "$TestBin\Microsoft.Management.Infrastructure.1.0.0-alpha05.nupkg"
+        (new-object net.webclient).DownloadFile($mmiDownloadLocation, $mmiNugetPackage)
+        Register-PackageSource -Name "TestBinPackages" -Location $TestBin -Trusted -ProviderName NuGet
+        register-packagesource -name "TestNugetSource" -location https://nuget.org/api/v2 -trusted -providername NuGet
+        # Install dependencies from nuget.org
+        Install-Package NETStandard.Library -Source "TestNugetSource"
+        Install-Package System.Runtime.CompilerServices.VisualC -Source "TestNugetSource"
+        Install-Package System.Runtime.Serialization.Xml -Source "TestNugetSource"
+        Install-Package System.Threading.ThreadPool -Source "TestNugetSource"
+        Install-Package System.Security.SecureString -Source "TestNugetSource"
+        Install-Package Microsoft.Management.Infrastructure -Source "TestBinPackages"#>
     }
     else
     {
@@ -281,6 +319,21 @@ if ($testframework -eq "coreclr")
     Copy-Item "$TestBin\*.psd1" $OneGetPath -force -Verbose
     Copy-Item "$TestBin\*.psm1" $OneGetPath -force -Verbose
     Copy-Item "$TestBin\*.ps1xml" $OneGetPath -force -Verbose
+    New-DirectoryIfNotExist (Join-Path -Path $OneGetPath -ChildPath "DSCResources")
+    Copy-Item "$TestBin\DSCResources\*.psm1" (Join-Path -Path $OneGetPath -ChildPath "DSCResources")
+    Copy-Item "$TestBin\DSCResources\*.psd1" (Join-Path -Path $OneGetPath -ChildPath "DSCResources")
+    New-DirectoryIfNotExist (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagement")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.psm1" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagement")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.psd1" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagement")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.mof" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagement")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.mfl" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagement")
+    New-DirectoryIfNotExist (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.psm1" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.psd1" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mof" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mfl" (Join-Path -Path $OneGetPath -ChildPath "DSCResources\MSFT_PackageManagementSource")
+    New-DirectoryIfNotExist (Join-Path -Path $OneGetPath -ChildPath "Examples")
+    Copy-Item "$CoreCLRTestHome\Examples\*.ps1" (Join-Path -Path $OneGetPath -ChildPath "Examples")
 
      # copy the OneGet bits into powershell core
     $OneGetBinaryPath ="$OneGetPath\coreclr"
@@ -328,10 +381,26 @@ if ($testframework -eq "fullclr")
     {
         Write-Warning ("PackageManagement is loaded already from '{0}'" -f $pm.ModuleBase)
     }
-      
-    $command = "Invoke-Pester $($TestHome)\ModuleTests\tests"
+
+    $testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
+    $command = "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
       
     Powershell -command "& {get-packageprovider -verbose; $command}"
+    $x = [xml](Get-Content -raw $testResultsFile)
+    if ([int]$x.'test-results'.failures -gt 0)
+    {
+        throw "$($x.'test-results'.failures) tests failed"
+    }
+
+    $testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
+    $command = "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+      
+    Powershell -command "& {get-packageprovider -verbose; $command}"
+    $x = [xml](Get-Content -raw $testResultsFile)
+    if ([int]$x.'test-results'.failures -gt 0)
+    {
+        throw "$($x.'test-results'.failures) tests failed"
+    }
 }
 
 if ($testframework -eq "coreclr")
@@ -365,6 +434,28 @@ if ($testframework -eq "coreclr")
     {
         throw "$($x.'test-results'.failures) tests failed"
     }
+<#  Disabling DSC tests for Core CLR for now.
+    $command =""
+    $command += "Import-Module '$pesterFolder';"
+    $testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
+    $command += "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+
+    Write-Host "CoreCLR: Calling $powershellFolder\powershell -command  $command"
+
+    if($script:IsWindows)
+    {
+      & "$powershellFolder\powershell" -command "& {get-packageprovider -verbose; $command}"
+    }
+    else
+    {
+      & powershell -command "& {get-packageprovider -verbose; $command}"
+    }
+
+    $x = [xml](Get-Content -raw $testResultsFile)
+    if ([int]$x.'test-results'.failures -gt 0)
+    {
+        throw "$($x.'test-results'.failures) tests failed"
+    }#>
 }
 
 Write-Host -fore White "Finished tests"
