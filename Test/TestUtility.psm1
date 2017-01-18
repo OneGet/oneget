@@ -275,7 +275,6 @@ function Register-Repository
     )
 
     Write-Verbose -Message "Register-Repository called" -Verbose
-    Write-Debug "Params: $Name - $SourceLocation - $PublishLocation - $InstallationPolicy - $Ensure"
     # Calling the following to trigger Bootstrap provider for the first time use PackageManagement
     Get-PackageSource -ProviderName Nuget -ForceBootstrap -WarningAction Ignore 
 

@@ -359,9 +359,7 @@ if ($testframework -eq "coreclr")
 }
 
 # Set up test repositories for DSC tests
-Write-Debug "Setting up test repos"
 New-TestRepositoryModules -RepositoryRootDirectory "$PSScriptRoot\DSCTests"
-Write-Debug "Finished setting up test repos"
 
 #endregion
 
