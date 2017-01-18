@@ -22,15 +22,7 @@ param(
     [string]$testframework = "fullclr"
 )
 
-function New-DirectoryIfNotExist {
-    param(
-        [string]$dir
-    )
-
-    if(-not (Test-Path $dir)){ 
-        $null = New-Item -Path $dir -ItemType Directory -Force 
-    }
-}
+Import-Module "$PSScriptRoot\TestUtility.psm1" -Force
 
 #region Step 0 -- remove the strongname from the binaries
 # Get the current OS
@@ -365,6 +357,11 @@ if ($testframework -eq "coreclr")
     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
     Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellFolder)\Modules"  -Recurse -force -verbose
 }
+
+# Set up test repositories for DSC tests
+Write-Debug "Setting up test repos"
+New-TestRepositoryModules -RepositoryRootDirectory "$PSScriptRoot\DSCTests"
+Write-Debug "Finished setting up test repos"
 
 #endregion
 
