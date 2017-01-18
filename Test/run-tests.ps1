@@ -358,8 +358,10 @@ if ($testframework -eq "coreclr")
     Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellFolder)\Modules"  -Recurse -force -verbose
 }
 
-# Set up test repositories for DSC tests
-New-TestRepositoryModules -RepositoryRootDirectory "$PSScriptRoot\DSCTests"
+# Set up test repositories for DSC tests when on Windows (DSC tests)
+if ($script:IsWindows) {
+    New-TestRepositoryModules -RepositoryRootDirectory "$PSScriptRoot\DSCTests"
+}
 
 #endregion
 
