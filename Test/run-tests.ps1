@@ -433,7 +433,9 @@ if ($testframework -eq "coreclr")
     {
         throw "$($x.'test-results'.failures) tests failed"
     }
-<#  Disabling DSC tests for Core CLR for now.
+    <#  Disable DSC tests for Linux for now. #>
+    If($script:IsWindows)
+    {
     $command =""
     $command += "Import-Module '$pesterFolder';"
     $testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
@@ -454,7 +456,8 @@ if ($testframework -eq "coreclr")
     if ([int]$x.'test-results'.failures -gt 0)
     {
         throw "$($x.'test-results'.failures) tests failed"
-    }#>
+    }
+    }
 }
 
 Write-Host -fore White "Finished tests"
