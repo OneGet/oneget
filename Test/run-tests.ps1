@@ -243,14 +243,28 @@ if ($testframework -eq "coreclr")
         else
         {
             Install-PackageProvider PSL -Force -verbose
-            $powershellCore = (Get-Package -provider PSL -name PowerShell -ErrorAction SilentlyContinue)
+            $expectedPsCoreVersion = "6.0.0.14"
+	    if ([Environment]::OSVersion.Version.Major -eq 6) {
+                Write-Verbose "Assuming OS is Win 8.1 (includes Win Server 2012 R2)"
+		$pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL.json"
+	    } else {
+		Write-Verbose "Assuming OS is Win 10"
+		$pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL.json"
+	    }
+
+            $powershellCore = (Get-Package -provider PSL -name PowerShell -requiredversion $expectedPsCoreVersion -ErrorAction SilentlyContinue)
             if ($powershellCore)
             {
                 Write-Warning ("PowerShell already installed" -f $powershellCore.Name)
             }
             else
             {   
-                $powershellCore = Install-Package PowerShell -Provider PSL -Force -verbose
+		$pslPackageSource = Get-PackageSource | Where-Object { $_.Location -eq $pslLocation } | Select-Object -first 1
+		if ($pslPackageSource -eq $null) {
+		    $pslPackageSource = Register-PackageSource PSCorePSLSource -ProviderName PSL -Location $pslLocation -Trusted
+		}
+
+                $powershellCore = Install-Package PowerShell -Provider PSL -Source $pslPackageSource.Name -Force -verbose
             }
         }
 
