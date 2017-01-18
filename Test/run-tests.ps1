@@ -244,14 +244,14 @@ if ($testframework -eq "coreclr")
         {
             Install-PackageProvider PSL -Force -verbose
             $expectedPsCoreVersion = "6.0.0.14"
-	    if ([Environment]::OSVersion.Version.Major -eq 6) {
+            if ([Environment]::OSVersion.Version.Major -eq 6) {
                 Write-Verbose "Assuming OS is Win 8.1 (includes Win Server 2012 R2)"
-		$pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL.json"
-	    } else {
-		Write-Verbose "Assuming OS is Win 10"
-		$pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL.json"
-	    }
-
+                $pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL.json"
+            } else {
+                Write-Verbose "Assuming OS is Win 10"
+                $pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL.json"
+            }
+            
             $powershellCore = (Get-Package -provider PSL -name PowerShell -requiredversion $expectedPsCoreVersion -ErrorAction SilentlyContinue)
             if ($powershellCore)
             {
@@ -259,10 +259,10 @@ if ($testframework -eq "coreclr")
             }
             else
             {   
-		$pslPackageSource = Get-PackageSource | Where-Object { $_.Location -eq $pslLocation } | Select-Object -first 1
-		if ($pslPackageSource -eq $null) {
-		    $pslPackageSource = Register-PackageSource PSCorePSLSource -ProviderName PSL -Location $pslLocation -Trusted
-		}
+                $pslPackageSource = Get-PackageSource | Where-Object { $_.Location -eq $pslLocation } | Select-Object -first 1
+                if ($pslPackageSource -eq $null) {
+                    $pslPackageSource = Register-PackageSource PSCorePSLSource -ProviderName PSL -Location $pslLocation -Trusted
+                }
 
                 $powershellCore = Install-Package PowerShell -Provider PSL -Source $pslPackageSource.Name -Force -verbose
             }
