@@ -152,6 +152,16 @@ function SetupPackageManagementTest
     Import-ModulesToSetupTest -ModuleChildPath  "MSFT_PackageManagement\MSFT_PackageManagement.psm1"
 
     $script:DestinationPath = "$CurrentDirectory\TestResult\PackageManagementTest" 
+    if ((Get-Variable -Name IsCoreCLR -ErrorAction Ignore) -and $IsCoreCLR) {
+        # Assume the latest version is the version we're using (it'd be nice to have a better way to do this)
+        $latestPsVersion = get-childitem "$Env:ProgramFiles\PowerShell" | where-object {$_.Name -match '[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+'} | sort-object ($_.Name -as [Version]) -descending | select-object -first 1 | %{ $_.Name }
+        Write-Verbose -Message "PSVersion: $latestPsVersion" -Verbose
+        $script:PSModuleBase = "$Env:ProgramFiles\PowerShell\$latestPsVersion\modules"
+        Write-Verbose -Message "Path $script:PSModuleBase" -Verbose
+    } else {
+        Write-Verbose -Message "Setting up test as Full CLR" -Verbose
+        $script:PSModuleBase = "$env:ProgramFiles\windowspowershell\modules"
+    }
 
     UnRegisterAllSource
 
