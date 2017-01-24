@@ -360,6 +360,7 @@ if ($testframework -eq "coreclr")
 
 # Set up test repositories for DSC tests when on Windows (DSC tests)
 if ($script:IsWindows) {
+    Import-Module PackageManagement -Force
     Setup-TestRepositoryPathVars -RepositoryRootDirectory "$PSScriptRoot\DSCTests"
     New-TestRepositoryModules -RepositoryRootDirectory "$PSScriptRoot\DSCTests"
 }
