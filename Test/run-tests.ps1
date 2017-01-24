@@ -167,7 +167,7 @@ if ($testframework -eq "fullclr")
     Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mof" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
     Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mfl" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
     New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
-    Copy-Item "Examples\*.ps1" (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
+    Copy-Item "$TestHome\Examples\*.ps1" (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
 
     # Setting up provider path
     if(-not (Test-Path $ProgramProviderInstalledPath)){
