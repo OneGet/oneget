@@ -131,67 +131,74 @@ function New-DirectoryIfNotExist {
     }
 }
 
-function New-TestRepositoryModules {
+function Setup-TestRepositoryPathVars {
     param(
         [string]$RepositoryRootDirectory
     )
+    
+    $script:LocalRepositoryPath  = "$RepositoryRootDirectory\LocalRepository"
+    $script:LocalRepositoryPath1 = "$RepositoryRootDirectory\LocalRepository1"
+    $script:LocalRepositoryPath2 = "$RepositoryRootDirectory\LocalRepository2"
+    $script:LocalRepositoryPath3 = "$RepositoryRootDirectory\LocalRepository3"
+    $script:LocalRepository      = "LocalRepository"
+}
 
+function New-TestRepositoryModules {
     # These values are shared between this and OneGetTestHelper.ps1 due to old test framework arch
     # Should do some work later to clean up the coupling
-    $LocalRepositoryPath  = "$RepositoryRootDirectory\LocalRepository"
-    $LocalRepositoryPath1 = "$RepositoryRootDirectory\LocalRepository1"
-    $LocalRepositoryPath2 = "$RepositoryRootDirectory\LocalRepository2"
-    $LocalRepositoryPath3 = "$RepositoryRootDirectory\LocalRepository3"
-    $LocalRepository      = "LocalRepository"
+    
+    if (($null -eq $script:LocalRepositoryPath) -or ("" -eq $script:LocalRepositoryPath)) {
+        throw
+    }
 
-    New-DirectoryIfNotExist -dir $LocalRepositoryPath
-    New-DirectoryIfNotExist -dir $LocalRepositoryPath1
-    New-DirectoryIfNotExist -dir $LocalRepositoryPath2
-    New-DirectoryIfNotExist -dir $LocalRepositoryPath3
+    New-DirectoryIfNotExist -dir $script:LocalRepositoryPath
+    New-DirectoryIfNotExist -dir $script:LocalRepositoryPath1
+    New-DirectoryIfNotExist -dir $script:LocalRepositoryPath2
+    New-DirectoryIfNotExist -dir $script:LocalRepositoryPath3
 
     # Clear the directories from previous runs
-    Remove-Item $LocalRepositoryPath\* -Recurse
-    Remove-Item $LocalRepositoryPath1\* -Recurse
-    Remove-Item $LocalRepositoryPath2\* -Recurse
-    Remove-Item $LocalRepositoryPath3\* -Recurse
+    Remove-Item $script:LocalRepositoryPath\* -Recurse
+    Remove-Item $script:LocalRepositoryPath1\* -Recurse
+    Remove-Item $script:LocalRepositoryPath2\* -Recurse
+    Remove-Item $script:LocalRepositoryPath3\* -Recurse
 
     # Ensure LocalRepository is registered while we're setting it up
-    Register-Repository -Name $LocalRepository -InstallationPolicy Trusted -Ensure Present -SourceLocation $LocalRepositoryPath -PublishLocation $LocalRepositoryPath
+    Register-Repository -Name $script:LocalRepository -InstallationPolicy Trusted -Ensure Present
 
     # Create module, publish module, remove module
     Write-Debug "PSScriptRoot: $PSScriptRoot"
     New-DirectoryIfNotExist -dir "$PSScriptRoot\ModuleTemp"
     New-EmptyModule -ModulePath "$PSScriptRoot\ModuleTemp" -ModuleVersion "12.0.1" -ModuleName "MyTestPackage"
-    Publish-TestModule -ModulePath (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestPackage") -LocalRepository $LocalRepository
+    Publish-TestModule -ModulePath (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestPackage") -LocalRepository $script:LocalRepository
     Remove-Item (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestPackage") -Recurse
 
     New-EmptyModule -ModulePath "$PSScriptRoot\ModuleTemp" -ModuleVersion "12.0.1.1" -ModuleName "MyTestPackage"
-    Publish-TestModule -ModulePath (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestPackage") -LocalRepository $LocalRepository
+    Publish-TestModule -ModulePath (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestPackage") -LocalRepository $script:LocalRepository
     Remove-Item (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestPackage") -Recurse
     
     New-EmptyModule -ModulePath "$PSScriptRoot\ModuleTemp" -ModuleVersion "15.2.1" -ModuleName "MyTestPackage"
-    Publish-TestModule -ModulePath (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestPackage") -LocalRepository $LocalRepository
+    Publish-TestModule -ModulePath (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestPackage") -LocalRepository $script:LocalRepository
     Remove-Item (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestPackage") -Recurse
 
     New-EmptyModule -ModulePath "$PSScriptRoot\ModuleTemp" -ModuleVersion "1.1" -ModuleName "MyTestModule"
-    Publish-TestModule -ModulePath (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestModule") -LocalRepository $LocalRepository
+    Publish-TestModule -ModulePath (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestModule") -LocalRepository $script:LocalRepository
     Remove-Item (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestModule") -Recurse
 
     New-EmptyModule -ModulePath "$PSScriptRoot\ModuleTemp" -ModuleVersion "1.1.2" -ModuleName "MyTestModule"
-    Publish-TestModule -ModulePath (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestModule") -LocalRepository $LocalRepository
+    Publish-TestModule -ModulePath (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestModule") -LocalRepository $script:LocalRepository
     Remove-Item (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestModule") -Recurse
 
     New-EmptyModule -ModulePath "$PSScriptRoot\ModuleTemp" -ModuleVersion "3.2.1" -ModuleName "MyTestModule"
-    Publish-TestModule -ModulePath (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestModule") -LocalRepository $LocalRepository
+    Publish-TestModule -ModulePath (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestModule") -LocalRepository $script:LocalRepository
     Remove-Item (Join-Path -Path "$PSScriptRoot\ModuleTemp" -ChildPath "MyTestModule") -Recurse
 
     # Replicate
-    Copy-Item -Path "$LocalRepositoryPath\*" -Destination $LocalRepositoryPath1 -Recurse -force -Verbose
-    Copy-Item -Path "$LocalRepositoryPath\*" -Destination $LocalRepositoryPath2 -Recurse -force -Verbose
-    Copy-Item -Path "$LocalRepositoryPath\*" -Destination $LocalRepositoryPath3 -Recurse -force -Verbose
+    Copy-Item -Path "$script:LocalRepositoryPath\*" -Destination $script:LocalRepositoryPath1 -Recurse -force -Verbose
+    Copy-Item -Path "$script:LocalRepositoryPath\*" -Destination $script:LocalRepositoryPath2 -Recurse -force -Verbose
+    Copy-Item -Path "$script:LocalRepositoryPath\*" -Destination $script:LocalRepositoryPath3 -Recurse -force -Verbose
 
     # Now that we're done setting it up, unregister before the tests start
-    Register-Repository -Name $LocalRepository -InstallationPolicy Trusted -Ensure Absent -SourceLocation $LocalRepositoryPath -PublishLocation $LocalRepositoryPath
+    Register-Repository -Name $script:LocalRepository -InstallationPolicy Trusted -Ensure Absent
 }
 
 function New-EmptyModule {
@@ -260,10 +267,10 @@ function Register-Repository
         $Name,
 
         [System.String]
-        $SourceLocation,
+        $SourceLocation=$script:LocalRepositoryPath,
    
         [System.String]
-        $PublishLocation,
+        $PublishLocation=$script:LocalRepositoryPath,
 
         [ValidateSet("Trusted","Untrusted")]
         [System.String]
