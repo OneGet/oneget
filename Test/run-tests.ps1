@@ -362,7 +362,7 @@ if ($testframework -eq "coreclr")
 if ($script:IsWindows) {
     # Run these in another context because SNV was just setup
     $localRepoCommand = "Import-Module `"$PSScriptRoot\TestUtility.psm1`" -Force"
-    $localRepoCommand += "Setup-TestRepositoryPathVars -RepositoryRootDirectory `"$PSScriptRoot\DSCTests`""
+    $localRepoCommand += ";Setup-TestRepositoryPathVars -RepositoryRootDirectory `"$PSScriptRoot\DSCTests`""
     $localRepoCommand += ";New-TestRepositoryModules -RepositoryRootDirectory `"$PSScriptRoot\DSCTests`""
     powershell -command "& {$localRepoCommand}"
 }
