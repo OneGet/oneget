@@ -360,9 +360,11 @@ if ($testframework -eq "coreclr")
 
 # Set up test repositories for DSC tests when on Windows (DSC tests)
 if ($script:IsWindows) {
-    Import-Module PackageManagement -Force
-    Setup-TestRepositoryPathVars -RepositoryRootDirectory "$PSScriptRoot\DSCTests"
-    New-TestRepositoryModules -RepositoryRootDirectory "$PSScriptRoot\DSCTests"
+    # Run these in another context because SNV was just setup
+    $localRepoCommand = "Import-Module `"$PSScriptRoot\TestUtility.psm1`" -Force"
+    $localRepoCommand += "Setup-TestRepositoryPathVars -RepositoryRootDirectory `"$PSScriptRoot\DSCTests`""
+    $localRepoCommand += ";New-TestRepositoryModules -RepositoryRootDirectory `"$PSScriptRoot\DSCTests`""
+    powershell -command "& {$localRepoCommand}"
 }
 
 #endregion
