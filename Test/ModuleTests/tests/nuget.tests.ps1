@@ -1459,7 +1459,11 @@ Describe Get-PackageSource -Tags "Feature" {
     BeforeAll{
          #make sure the package repository exists
         Register-PackageSource -Name 'NugetTemp1' -Location "https://www.PowerShellGallery.com/Api/V2/" -ProviderName 'nuget' -Trusted -force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        Write-Host "BeforeAll package sources"
+        Get-PackageSource | %{ Write-Host $_.Name }
         Register-PackageSource -Name 'NugetTemp2' -Location "https://www.nuget.org/api/v2" -ProviderName 'nuget' -Trusted -force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        Write-Host "BeforeAll package sources after setup"
+        Get-PackageSource | %{ Write-Host $_.Name }
     }
     AfterAll    {
         UnRegister-PackageSource -Name 'NugetTemp1' -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
@@ -1474,7 +1478,8 @@ Describe Get-PackageSource -Tags "Feature" {
     }
    
     It "get-packageprovider--find-package, Expect succeed" {
-
+        Write-Host "During test package sources"
+        Get-PackageSource | %{ Write-Host $_.Name }
         $a=(get-packageprovider -name nuget| find-package  -Name jquery )   
         $a | where { $_.Name -eq 'jQuery'  } | should be $true
     }     
