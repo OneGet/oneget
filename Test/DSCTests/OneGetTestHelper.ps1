@@ -119,103 +119,6 @@ Function InstallPester
  }
 
 
-Function SetupLocalRepository
-{
-    <#
-    .SYNOPSIS
-
-    This is a helper function to setup a local repostiory/package resouce to speed up the test execution
-
-    .PARAMETER PSModule
-    Provides whether you are testing PowerShell Modules or Packages.
-
-    #>
-
-    param
-    (
-        [Switch]$PSModule
-    )
-
-    Write-Verbose -Message ("Calling function '$($MyInvocation.mycommand)'") -Verbose
-    
-    # Create the LocalRepository path if does not exist
-    if (-not ( Test-Path -Path $script:LocalRepositoryPath))
-    {
-        New-Item -Path $script:LocalRepositoryPath -ItemType Directory -Force  
-        New-Item -Path $script:LocalRepositoryPath1 -ItemType Directory -Force  
-        New-Item -Path $script:LocalRepositoryPath2 -ItemType Directory -Force  
-        New-Item -Path $script:LocalRepositoryPath3 -ItemType Directory -Force  
-    }
-
-    # UnRegister repository/sources
-    UnRegisterAllSource
-
-    # Register the local repository
-    RegisterRepository -Name $script:LocalRepository -InstallationPolicy Trusted -Ensure Present
-
-    # Create test modules for the test automation
-    if ($PSModule)
-    {
-        # Set up for PSModule testing
-        CreateTestModuleInLocalRepository -ModuleName "MyTestModule"  -ModuleVersion "1.1"    -LocalRepository $script:LocalRepository
-        CreateTestModuleInLocalRepository -ModuleName "MyTestModule"  -ModuleVersion "1.1.2"  -LocalRepository $script:LocalRepository
-        CreateTestModuleInLocalRepository -ModuleName "MyTestModule"  -ModuleVersion "3.2.1"  -LocalRepository $script:LocalRepository
-    }
-    else
-    {
-        #Setup for nuget and others testing
-        CreateTestModuleInLocalRepository -ModuleName "MyTestPackage" -ModuleVersion "12.0.1"   -LocalRepository $script:LocalRepository
-        CreateTestModuleInLocalRepository -ModuleName "MyTestPackage" -ModuleVersion "12.0.1.1" -LocalRepository $script:LocalRepository
-        CreateTestModuleInLocalRepository -ModuleName "MyTestPackage" -ModuleVersion "15.2.1"   -LocalRepository $script:LocalRepository
-    }
-
-    # Replica the repository    
-    Copy-Item -Path "$script:LocalRepositoryPath\*" -Destination $script:LocalRepositoryPath1 -Recurse -force -Verbose
-    Copy-Item -Path "$script:LocalRepositoryPath\*" -Destination $script:LocalRepositoryPath2 -Recurse -force -Verbose
-    Copy-Item -Path "$script:LocalRepositoryPath\*" -Destination $script:LocalRepositoryPath3 -Recurse -force -Verbose
-}
-
-Function SetupPSModuleTest
-{
-    <#
-    .SYNOPSIS
-
-    This is a helper function for a PSModule test
-
-    #>
-
-    Write-Verbose -Message ("Calling function '$($MyInvocation.mycommand)'") -Verbose
-
-    #Need to import resource MSFT_PSModule.psm1
-    Import-ModulesToSetupTest -ModuleChildPath  "MSFT_PSModule\MSFT_PSModule.psm1"  
-
-    SetupLocalRepository -PSModule 
-
-    # Install Pester and import it
-    InstallPester      
-}
-
-Function SetupNugetTest
-{
-    <#
-    .SYNOPSIS
-
-    This is a helper function for a Nuget test
-
-    #>
-    Write-Verbose -Message ("Calling function '$($MyInvocation.mycommand)'") -Verbose
-
-    #Import MSFT_NugetPackage.psm1 module
-    Import-ModulesToSetupTest -ModuleChildPath  "MSFT_NugetPackage\MSFT_NugetPackage.psm1"
-    
-    $script:DestinationPath = "$CurrentDirectory\TestResult\NugetTest" 
-
-    SetupLocalRepository
-
-    # Install Pester and import it
-    InstallPester
- }
-
 Function SetupOneGetSourceTest
 {
     <#
@@ -228,7 +131,7 @@ Function SetupOneGetSourceTest
 
     Import-ModulesToSetupTest -ModuleChildPath  "MSFT_PackageManagementSource\MSFT_PackageManagementSource.psm1"
 
-    SetupLocalRepository
+    UnRegisterAllSource
 
     # Install Pester and import it
     InstallPester 
@@ -249,13 +152,18 @@ function SetupPackageManagementTest
     Import-ModulesToSetupTest -ModuleChildPath  "MSFT_PackageManagement\MSFT_PackageManagement.psm1"
 
     $script:DestinationPath = "$CurrentDirectory\TestResult\PackageManagementTest" 
-
-    SetupLocalRepository
-    if ($SetupPSModuleRepository) 
-    {
-        SetupLocalRepository -PSModule 
+    if ((Get-Variable -Name IsCoreCLR -ErrorAction Ignore) -and $IsCoreCLR) {
+        # Assume the latest version is the version we're using (it'd be nice to have a better way to do this)
+        $latestPsVersion = get-childitem "$Env:ProgramFiles\PowerShell" | where-object {$_.Name -match '[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+'} | sort-object ($_.Name -as [Version]) -descending | select-object -first 1 | %{ $_.Name }
+        Write-Verbose -Message "PSVersion: $latestPsVersion" -Verbose
+        $script:PSModuleBase = "$Env:ProgramFiles\PowerShell\$latestPsVersion\modules"
+        Write-Verbose -Message "Path $script:PSModuleBase" -Verbose
+    } else {
+        Write-Verbose -Message "Setting up test as Full CLR" -Verbose
         $script:PSModuleBase = "$env:ProgramFiles\windowspowershell\modules"
     }
+
+    UnRegisterAllSource
 
     # Install Pester and import it
     InstallPester 
@@ -295,94 +203,6 @@ Function Import-ModulesToSetupTest
     #c:\Program Files\WindowsPowerShell\Modules
     $script:InstallationFolder = "$($script:Module.ModuleBase)" 
  }
-
-function RegisterRepository
-{
-    <#
-    .SYNOPSIS
-
-    This is a helper function to register/unregister the PowerShell repository
-
-    .PARAMETER Name
-    Provides the repository Name.
-
-    .PARAMETER SourceLocation
-    Provides the source location.
-
-    .PARAMETER PublishLocation
-    Provides the publish location.
-
-    .PARAMETER InstallationPolicy
-    Determines whether you trust the source repository.
-
-    .PARAMETER Ensure
-    Determines whether the repository to be registered or unregistered.
-    #>
-
-    param
-    (
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $Name,
-
-        [System.String]
-        $SourceLocation=$script:LocalRepositoryPath,
-   
-           [System.String]
-        $PublishLocation=$script:LocalRepositoryPath,
-
-        [ValidateSet("Trusted","Untrusted")]
-        [System.String]
-        $InstallationPolicy="Trusted",
-
-        [ValidateSet("Present","Absent")]
-        [System.String]
-        $Ensure="Present"
-    )
-
-    Write-Verbose -Message "RegisterRepository called" -Verbose
-
-    # Calling the following to trigger Bootstrap provider for the first time use PackageManagement
-    Get-PackageSource -ProviderName Nuget -ForceBootstrap -WarningAction Ignore 
-
-    $psrepositories = PowerShellGet\get-PSRepository
-    $registeredRepository = $null
-    $isRegistered = $false
-
-    #Check if the repository has been registered already
-    foreach ($repository in $psrepositories)
-    {
-        # The PSRepository is considered as "exists" if either the Name or Source Location are in used
-        $isRegistered = ($repository.SourceLocation -ieq $SourceLocation) -or ($repository.Name -ieq $Name) 
-
-        if ($isRegistered)
-        {
-            $registeredRepository = $repository
-            break;
-        }
-    }
-
-    if($Ensure -ieq "Present")
-    {       
-        # If the repository has already been registered, unregister it.
-        if ($isRegistered -and ($null -ne $registeredRepository))
-        {
-            Unregister-PSRepository -Name $registeredRepository.Name
-        }       
-
-        PowerShellGet\Register-PSRepository -Name $Name -SourceLocation $SourceLocation -PublishLocation $PublishLocation -InstallationPolicy $InstallationPolicy
-    }
-    else
-    {
-        # The repository has already been registered
-        if (-not $isRegistered)
-        {
-            return
-        }
-
-        PowerShellGet\UnRegister-PSRepository -Name $Name
-    }            
-}
 
 function RestoreRepository
 {

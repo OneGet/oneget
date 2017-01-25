@@ -14,6 +14,7 @@
 $CurrentDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 .  "$CurrentDirectory\..\OneGetTestHelper.ps1"
+Import-Module "$CurrentDirectory\..\TestUtility.psm1" -Force
 
 if (-not (IsAdmin))
 {
@@ -26,8 +27,9 @@ if (-not (IsAdmin))
 #
  
 # Calling the setup function 
+Setup-TestRepositoryPathVars -RepositoryRootDirectory "$CurrentDirectory"
 SetupPackageManagementTest -SetupPSModuleRepository
- 
+
 Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
 
     BeforeAll {
@@ -37,8 +39,8 @@ Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
     BeforeEach {
 
         #Remove all left over files if exists
-        Remove-Item "$PSModuleBase\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue      
-        Remove-Item "$PSModuleBase\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue     
+        Remove-Item "$script:PSModuleBase\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue      
+        Remove-Item "$script:PSModuleBase\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue     
     }
 
     AfterEach {
@@ -47,8 +49,8 @@ Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
 
     AfterAll {
         # Remove all left over files if exists
-        Remove-Item "$PSModuleBase\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue      
-        Remove-Item "$PSModuleBase\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue     
+        Remove-Item "$script:PSModuleBase\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue      
+        Remove-Item "$script:PSModuleBase\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue     
      
         RestoreRepository $script:OriginalRepository
     }
@@ -58,13 +60,13 @@ Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
         It "Set, Test-TargetResource with Trusted Source, No Versions Specified: Check Installed" {
            
             #Register a local module repository to make the test run faster
-            RegisterRepository -Name "LocalRepository" -InstallationPolicy Trusted -Ensure Present
+            Register-Repository -Name "LocalRepository" -InstallationPolicy Trusted -Ensure Present -SourceLocation $script:LocalRepositoryPath -PublishLocation $script:LocalRepositoryPath
 
             # 'BeforeEach' removes all specific modules under the $module path, so it is expected Set-Target* should success in the installation
             MSFT_PackageManagement\Set-TargetResource -name "MyTestModule" -Source $LocalRepository  -Ensure Present -Verbose
 
             # Validate the module is installed
-            Test-Path -Path "$PSModuleBase\MyTestModule\3.2.1" | should be $true
+            Test-Path -Path "$script:PSModuleBase\MyTestModule\3.2.1" | should be $true
             
             # Uninstalling the module
             MSFT_PackageManagement\Set-TargetResource -name "MyTestModule" -Source $LocalRepository  -Ensure Absent -Verbose
@@ -73,13 +75,13 @@ Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
             $result = MSFT_PackageManagement\Test-TargetResource -name "MyTestModule" -Source $LocalRepository  -Ensure Absent
             $result| should be $true
 
-            Test-Path -Path "$PSModuleBase\MyTestModule\3.2.1" | should be $false
+            Test-Path -Path "$script:PSModuleBase\MyTestModule\3.2.1" | should be $false
         }
 
         It "Set, Test-TargetResource with Trusted Source, No respository Specified: Check Installed" {
            
             #Register a local module repository to make the test run faster
-            RegisterRepository -Name "LocalRepository" -InstallationPolicy Trusted -Ensure Present
+            Register-Repository -Name "LocalRepository" -InstallationPolicy Trusted -Ensure Present -SourceLocation $script:LocalRepositoryPath -PublishLocation $script:LocalRepositoryPath
 
             # 'BeforeEach' removes all specific modules under the $module path, so it is expected Set-Target* should success in the installation
             MSFT_PackageManagement\Set-TargetResource -name "MyTestModule" -Ensure Present -Verbose
@@ -106,11 +108,11 @@ Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
             {
                 $returnVal = CleanupRepository
                 
-                RegisterRepository -Name "LocalRepository1" -InstallationPolicy Untrusted -Ensure Present -SourceLocation $LocalRepositoryPath1 -PublishLocation $LocalRepositoryPath1
+                Register-Repository -Name "LocalRepository1" -InstallationPolicy Untrusted -Ensure Present -SourceLocation $LocalRepositoryPath1 -PublishLocation $LocalRepositoryPath1
 
-                RegisterRepository -Name "LocalRepository2" -InstallationPolicy Trusted -Ensure Present -SourceLocation $LocalRepositoryPath2 -PublishLocation $LocalRepositoryPath2
+                Register-Repository -Name "LocalRepository2" -InstallationPolicy Trusted -Ensure Present -SourceLocation $LocalRepositoryPath2 -PublishLocation $LocalRepositoryPath2
 
-                RegisterRepository -Name "LocalRepository3" -InstallationPolicy Untrusted -Ensure Present -SourceLocation $LocalRepositoryPath3 -PublishLocation $LocalRepositoryPath3
+                Register-Repository -Name "LocalRepository3" -InstallationPolicy Untrusted -Ensure Present -SourceLocation $LocalRepositoryPath3 -PublishLocation $LocalRepositoryPath3
                 
                 # User's installation policy is untrusted
                 MSFT_PackageManagement\Set-TargetResource -name "MyTestModule" -Ensure "Present" -Verbose -Source "LocalRepository2"
@@ -123,11 +125,11 @@ Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
                 RestoreRepository -RepositoryInfo $returnVal
                 # Unregistering the repository sources
             
-                RegisterRepository -Name "LocalRepository1" -Ensure Absent -SourceLocation $LocalRepositoryPath1 -PublishLocation $LocalRepositoryPath1
+                Register-Repository -Name "LocalRepository1" -Ensure Absent -SourceLocation $LocalRepositoryPath1 -PublishLocation $LocalRepositoryPath1
 
-                RegisterRepository -Name "LocalRepository2" -Ensure Absent -SourceLocation $LocalRepositoryPath2 -PublishLocation $LocalRepositoryPath2
+                Register-Repository -Name "LocalRepository2" -Ensure Absent -SourceLocation $LocalRepositoryPath2 -PublishLocation $LocalRepositoryPath2
 
-                RegisterRepository -Name "LocalRepository3" -Ensure Absent -SourceLocation $LocalRepositoryPath3 -PublishLocation $LocalRepositoryPath3
+                Register-Repository -Name "LocalRepository3" -Ensure Absent -SourceLocation $LocalRepositoryPath3 -PublishLocation $LocalRepositoryPath3
             }
         }  
                     
@@ -137,7 +139,7 @@ Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
     Context "PackageManagement Set-TargetResource Error Cases" {
 
         #Register a local module repository to make the test run faster
-        RegisterRepository -Name "LocalRepository" -InstallationPolicy Trusted -Ensure Present
+        Register-Repository -Name "LocalRepository" -InstallationPolicy Trusted -Ensure Present -SourceLocation $script:LocalRepositoryPath -PublishLocation $script:LocalRepositoryPath
 
         It "Set-TargetResource with module not found for the install: Check Error" {
 

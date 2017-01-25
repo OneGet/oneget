@@ -1457,6 +1457,9 @@ Describe Get-PackageSource -Tags "Feature" {
     $destination = Join-Path $TestDrive "NuGetPackages"
 
     BeforeAll{
+        # Make sure there are no other package sources for nuget. The default 'nuget.org' location conflicts with the only location that works for this test.
+        Get-PackageSource | Where-Object { $_.ProviderName -eq 'NuGet' } | Unregister-PackageSource
+
          #make sure the package repository exists
         Register-PackageSource -Name 'NugetTemp1' -Location "https://www.PowerShellGallery.com/Api/V2/" -ProviderName 'nuget' -Trusted -force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         Register-PackageSource -Name 'NugetTemp2' -Location "https://www.nuget.org/api/v2" -ProviderName 'nuget' -Trusted -force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
@@ -1474,7 +1477,7 @@ Describe Get-PackageSource -Tags "Feature" {
     }
    
     It "get-packageprovider--find-package, Expect succeed" {
-
+        
         $a=(get-packageprovider -name nuget| find-package  -Name jquery )   
         $a | where { $_.Name -eq 'jQuery'  } | should be $true
     }     

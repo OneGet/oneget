@@ -22,15 +22,7 @@ param(
     [string]$testframework = "fullclr"
 )
 
-function New-DirectoryIfNotExist {
-    param(
-        [string]$dir
-    )
-
-    if(-not (Test-Path $dir)){ 
-        $null = New-Item -Path $dir -ItemType Directory -Force 
-    }
-}
+Import-Module "$PSScriptRoot\TestUtility.psm1" -Force
 
 #region Step 0 -- remove the strongname from the binaries
 # Get the current OS
@@ -175,7 +167,7 @@ if ($testframework -eq "fullclr")
     Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mof" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
     Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mfl" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
     New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
-    Copy-Item "Examples\*.ps1" (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
+    Copy-Item "$TestHome\Examples\*.ps1" (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
 
     # Setting up provider path
     if(-not (Test-Path $ProgramProviderInstalledPath)){
@@ -243,14 +235,28 @@ if ($testframework -eq "coreclr")
         else
         {
             Install-PackageProvider PSL -Force -verbose
-            $powershellCore = (Get-Package -provider PSL -name PowerShell -ErrorAction SilentlyContinue)
+            $expectedPsCoreVersion = "6.0.0.14"
+            if ([Environment]::OSVersion.Version.Major -eq 6) {
+                Write-Verbose "Assuming OS is Win 8.1 (includes Win Server 2012 R2)"
+                $pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL.json"
+            } else {
+                Write-Verbose "Assuming OS is Win 10"
+                $pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL.json"
+            }
+
+            $powershellCore = (Get-Package -provider PSL -name PowerShell -requiredversion $expectedPsCoreVersion -ErrorAction SilentlyContinue)
             if ($powershellCore)
             {
                 Write-Warning ("PowerShell already installed" -f $powershellCore.Name)
             }
             else
             {   
-                $powershellCore = Install-Package PowerShell -Provider PSL -Force -verbose
+                $pslPackageSource = Get-PackageSource | Where-Object { $_.Location -eq $pslLocation } | Select-Object -first 1
+                if ($pslPackageSource -eq $null) {
+                    $pslPackageSource = Register-PackageSource PSCorePSLSource -ProviderName PSL -Location $pslLocation -Trusted
+                }
+
+                $powershellCore = Install-Package PowerShell -Provider PSL -Source $pslPackageSource.Name -Force -verbose
             }
         }
 
@@ -259,21 +265,6 @@ if ($testframework -eq "coreclr")
 
         $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
         Write-host ("PowerShell Folder '{0}'" -f $powershellFolder)
-        <# Note: Disabled while Core CLR/Linux is disabled for DSC testing
-        # Setup MMI for Core CLR
-        Write-Host "Setting up Microsoft Management Infrastructure for Core CLR"
-        $mmiDownloadLocation = "https://powershell.myget.org/F/powershell-core/api/v2/package/Microsoft.Management.Infrastructure/1.0.0-alpha05"
-        $mmiNugetPackage = "$TestBin\Microsoft.Management.Infrastructure.1.0.0-alpha05.nupkg"
-        (new-object net.webclient).DownloadFile($mmiDownloadLocation, $mmiNugetPackage)
-        Register-PackageSource -Name "TestBinPackages" -Location $TestBin -Trusted -ProviderName NuGet
-        register-packagesource -name "TestNugetSource" -location https://nuget.org/api/v2 -trusted -providername NuGet
-        # Install dependencies from nuget.org
-        Install-Package NETStandard.Library -Source "TestNugetSource"
-        Install-Package System.Runtime.CompilerServices.VisualC -Source "TestNugetSource"
-        Install-Package System.Runtime.Serialization.Xml -Source "TestNugetSource"
-        Install-Package System.Threading.ThreadPool -Source "TestNugetSource"
-        Install-Package System.Security.SecureString -Source "TestNugetSource"
-        Install-Package Microsoft.Management.Infrastructure -Source "TestBinPackages"#>
     }
     else
     {
@@ -367,6 +358,15 @@ if ($testframework -eq "coreclr")
     Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellFolder)\Modules"  -Recurse -force -verbose
 }
 
+# Set up test repositories for DSC tests when on Windows (DSC tests)
+if ($script:IsWindows) {
+    # Run these in another context because SNV was just setup
+    $localRepoCommand = "Import-Module `"$PSScriptRoot\TestUtility.psm1`" -Force"
+    $localRepoCommand += ";Setup-TestRepositoryPathVars -RepositoryRootDirectory `"$PSScriptRoot\DSCTests`""
+    $localRepoCommand += ";New-TestRepositoryModules -RepositoryRootDirectory `"$PSScriptRoot\DSCTests`""
+    powershell -command "& {$localRepoCommand}"
+}
+
 #endregion
 
 #Step 2 - run tests
@@ -434,7 +434,9 @@ if ($testframework -eq "coreclr")
     {
         throw "$($x.'test-results'.failures) tests failed"
     }
-<#  Disabling DSC tests for Core CLR for now.
+    <#  Disable DSC tests for Linux for now. #>
+    If($script:IsWindows)
+    {
     $command =""
     $command += "Import-Module '$pesterFolder';"
     $testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
@@ -455,7 +457,8 @@ if ($testframework -eq "coreclr")
     if ([int]$x.'test-results'.failures -gt 0)
     {
         throw "$($x.'test-results'.failures) tests failed"
-    }#>
+    }
+    }
 }
 
 Write-Host -fore White "Finished tests"
