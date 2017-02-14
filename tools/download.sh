@@ -124,3 +124,131 @@ if [[ "$success" != 0 ]]; then
     echo "ERROR: PowerShell failed to install!" >&2
     exit "$success"
 fi
+
+: '
+case "$OSTYPE" in
+    linux*)
+        # Install OMI and DSC for Linux
+        get_url() {
+            release=v1.1.0-0
+            echo "https://github.com/Microsoft/omi/releases/download/$release/$1"
+        }
+
+        source /etc/os-release
+        case "$ID" in
+            centos*)
+                if ! hash curl 2>/dev/null; then
+                    echo "curl not found, installing..."
+                    sudo yum install -y curl
+                fi
+
+                package=omi-1.1.0.ssl_100.x64.rpm
+                ;;
+            ubuntu)
+                if ! hash curl 2>/dev/null; then
+                    echo "curl not found, installing..."
+                    sudo apt-get install -y curl
+                fi
+                        
+                package=omi-1.1.0.ssl_100.x64.deb
+                ;;
+        esac
+        echo "Downloading $package"
+        curl -L -o "$package" $(get_url "$package")
+
+        if [[ ! -r "$package" ]]; then
+            echo "ERROR: $package failed to download! Aborting..." >&2
+            exit 1
+        fi
+
+        source /etc/os-release
+        echo "Installing OMI with sudo..."
+        case "$ID" in
+            centos*)
+                # yum automatically resolves dependencies for local packages
+                sudo yum install "./$package"
+                ;;
+            ubuntu)
+                # dpkg does not automatically resolve dependencies, but spouts ugly errors
+                sudo dpkg -i "./$package" &> /dev/null
+                # Resolve dependencies
+                sudo apt-get install -f
+                ;;
+            *)
+        esac
+
+        success=$?
+
+        if [[ "$success" != 0 ]]; then
+            echo "ERROR: OMI failed to install!" >&2
+            exit "$success"
+        fi
+
+        # Install DSC
+        get_url() {
+            release=v1.1.1-294
+            echo "https://github.com/Microsoft/PowerShell-DSC-for-Linux/releases/download/$release/$1"
+        }
+
+        source /etc/os-release
+        case "$ID" in
+            centos*)
+                if ! hash curl 2>/dev/null; then
+                    echo "curl not found, installing..."
+                    sudo yum install -y curl
+                fi
+
+                package=dsc-1.1.1-294.ssl_100.x64.rpm
+                ;;
+            ubuntu)
+                if ! hash curl 2>/dev/null; then
+                    echo "curl not found, installing..."
+                    sudo apt-get install -y curl
+                fi
+                        
+                package=dsc-1.1.1-294.ssl_100.x64.deb
+                ;;
+        esac
+        echo "Downloading $package"
+        curl -L -o "$package" $(get_url "$package")
+
+        if [[ ! -r "$package" ]]; then
+            echo "ERROR: $package failed to download! Aborting..." >&2
+            exit 1
+        fi
+
+        source /etc/os-release
+        echo "Installing DSC with sudo..."
+        case "$ID" in
+            centos)
+                # yum automatically resolves dependencies for local packages
+                sudo yum install "./$package"
+                ;;
+            ubuntu)
+                # dpkg does not automatically resolve dependencies, but spouts ugly errors
+                sudo dpkg -i "./$package" &> /dev/null
+                success=$?
+
+                if [[ "$success" != 0 ]]; then
+                    echo "ERROR: DSC failed to install!" >&2
+                    exit "$success"
+                fi
+
+                # Resolve dependencies
+                sudo apt-get install -f
+                ;;
+            *)
+        esac
+
+        success=$?
+
+        if [[ "$success" != 0 ]]; then
+            echo "ERROR: DSC failed to install!" >&2
+            exit "$success"
+        fi
+
+        powershell -noprofile -c '"Congratulations! PowerShell DSC for Linux is installed!"'
+        ;;
+    darwin*)
+        # TODO: Need to do anything here?
+esac'

@@ -37,7 +37,7 @@ deploy_script:
             Register-PSRepository -Name Local -SourceLocation C:\projects\oneget\src\out -verbose 
             Publish-Module -path C:\projects\oneget\src\out\PackageManagement -Repository Local -verbose
             $nuGetPackageName=(Get-ChildItem C:\projects\oneget\src\out\PackageManagement*.nupkg).Name
-      
+
             @(
                   # You can add other artifacts here
                   "C:\projects\oneget\src\out\OneGet.FullClr.zip",
