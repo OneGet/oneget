@@ -38,7 +38,7 @@ function Start-DotnetBootstrap {
         # we currently pin dotnet-cli version, because tool
         # is currently migrating to msbuild toolchain
         # and requires constant updates to our build process.
-        [string]$Version = "1.0.0-preview3-003930"              
+        [string]$Version = "2.0.0-preview1-005952"              
     )
 
     # Install ours and .NET's dependencies

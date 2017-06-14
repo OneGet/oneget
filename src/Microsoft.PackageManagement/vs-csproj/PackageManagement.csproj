@@ -1,0 +1,448 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7044B856-6D51-498F-90F9-01F219909F79}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.PackageManagement.Internal</RootNamespace>
+    <AssemblyName>Microsoft.PackageManagement</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), PackageManagement.sln))\</SolutionDir>
+    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\PackageManagement.sln</SolutionPath>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DelaySign>true</DelaySign>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\../signing/35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props')" />
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PSBeforeBuild><![CDATA[
+     $v2 = ((Get-Date).Year).ToString().SubString(2)
+     $v3 = ((Get-Date).DayOfYear)
+     $v4 = ([int](((get-date).Ticks - ((get-date).Date).Ticks) / 13200000)).ToString()
+     $v = "1.$v2.$v3.$v4"
+     $txt = (get-content $(SolutionDir)assembly-version.cs) -replace "\d*\.\d*\.\d*\.\d*",$v
+     set-content -path $(SolutionDir)assembly-version.cs -Value $txt
+    ]]></PSBeforeBuild>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\ErrorCategory.cs" />
+    <Compile Include="..\Implementation\ActionRequestObject.cs">
+	  <Link>Implementation\ActionRequestObject.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\EnumerableRequestObject.cs">
+	  <Link>Implementation\EnumerableRequestObject.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\DictionaryRequestObject.cs">
+	  <Link>Implementation\DictionaryRequestObject.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\DynamicOptionRequestObject.cs">
+	  <Link>Implementation\DynamicOptionRequestObject.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\FuncRequestObject.cs">
+	  <Link>Implementation\FuncRequestObject.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\DefaultPackageProvider.cs">
+	  <Link>Implementation\DefaultPackageProvider.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\PackageDetailsRequestObject.cs">
+	  <Link>Implementation\PackageDetailsRequestObject.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\ProviderServicesImpl.cs">
+	  <Link>Implementation\ProviderServicesImpl.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\RequestObject.cs">
+	  <Link>Implementation\RequestObject.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\PackageSourceRequestObject.cs">
+	  <Link>Implementation\PackageSourceRequestObject.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\SoftwareIdentityRequestObject.cs">
+	  <Link>Implementation\SoftwareIdentityRequestObject.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\AttributeIndexer.cs">
+	  <Link>Packaging\AttributeIndexer.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\BaseElement.cs">
+	  <Link>Packaging\BaseElement.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\Directory.cs">
+	  <Link>Packaging\Directory.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\DynamicOption.cs">
+	  <Link>Packaging\DynamicOption.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\File.cs">
+	  <Link>Packaging\File.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\FilesystemItem.cs">
+	  <Link>Packaging\FilesystemItem.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\MediaQuery.cs">
+	  <Link>Packaging\MediaQuery.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\MetadataIndexer.cs">
+	  <Link>Packaging\MetadataIndexer.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\OptionCategory.cs">
+	  <Link>Packaging\OptionCategory.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\OptionType.cs">
+	  <Link>Packaging\OptionType.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\PackageManagementService.cs">
+	  <Link>Implementation\PackageManagementService.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\Request.cs">
+	  <Link>Implementation\Request.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\Process.cs">
+	  <Link>Implementation\Process.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\Resource.cs">
+	  <Link>Implementation\Resource.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\ResourceCollection.cs">
+	  <Link>Implementation\ResourceCollection.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\SoftwareIdentityVersionComparer.cs">
+	  <Link>Implementation\SoftwareIdentityVersionComparer.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\SoftwareIdentityNameVersionComparer.cs">
+	  <Link>Implementation\SoftwareIdentityNameVersionComparer.cs</Link>
+	</Compile>
+    <Compile Include="..\Api\ICoreApi.cs">
+	  <Link>Api\ICoreApi.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\IArchiver.cs">
+	  <Link>Providers\SoftwareIdentityRequestObject.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Extensions\EnumerableExtensions.cs">
+	  <Link>Providers\inbox\Common\Extensions\EnumerableExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Extensions\EqualityComparer.cs">
+	  <Link>Providers\inbox\Common\Extensions\EqualityComparer.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Extensions\Extensions.cs">
+	  <Link>Providers\inbox\Common\Extensions\Extensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Extensions\FilesystemExtensions.cs">
+	  <Link>Providers\inbox\Common\Extensions\FilesystemExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Extensions\MutableEnumerable.cs">
+	  <Link>Providers\inbox\Common\Extensions\MutableEnumerable.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Extensions\ReEnumerable.cs">
+	  <Link>Providers\inbox\Common\Extensions\ReEnumerable.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Platform\OSInformation.cs">
+	  <Link>Utility\Platform\OSInformation.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Platform\PlatformUtility.cs">
+	  <Link>Utility\Platform\PlatformUtility.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Utility\PathUtility.cs">
+	  <Link>Providers\inbox\Common\Utility\PathUtility.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Utility\XmlUtility.cs">
+	  <Link>Providers\inbox\Common\Utility\XmlUtility.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Version\SemanticVersion.cs">
+	  <Link>Providers\inbox\Common\Version\SemanticVersion.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Version\SemanticVersionTypeConverter.cs">
+	  <Link>Providers\inbox\Common\Version\SemanticVersionTypeConverter.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\IPackageProvider.cs">
+	  <Link>Providers\IPackageProvider.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\IDownloader.cs">
+	  <Link>Providers\IDownloader.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\IMetaProvider.cs">
+	  <Link>Providers\IMetaProvider.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\IProvider.cs">
+	  <Link>Providers\IProvider.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Extensions\CollectionExtensions.cs">
+	  <Link>Providers\inbox\Common\Extensions\CollectionExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Utility\FileUtility.cs">
+	  <Link>Providers\inbox\Common\Utility\FileUtility.cs</Link>
+	</Compile>
+    <Compile Include="..\Providers\inbox\Common\Version\DependencyVersion.cs">
+	  <Link>Providers\inbox\Common\Version\DependencyVersion.cs</Link>
+	</Compile>
+    <Compile Include="..\Constants.cs" />
+    <Compile Include="..\Packaging\Iso19770_2.cs">
+	  <Link>Packaging\Iso19770_2.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\SoftwareMetadata.cs">
+	  <Link>Packaging\SoftwareMetadata.cs</Link>
+	</Compile>
+    <Compile Include="..\Api\IRequest.cs">
+	  <Link>Api\IRequest.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\ProviderBase.cs">
+	  <Link>Implementation\ProviderBase.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\Archiver.cs">
+	  <Link>Implementation\Archiver.cs</Link>
+	</Compile>
+    <Compile Include="..\Api\IResponseApi.cs">
+	  <Link>Api\IResponseApi.cs</Link>
+	</Compile>
+    <Compile Include="..\Api\IProviderServices.cs">
+	  <Link>Api\IProviderServices.cs</Link>
+	</Compile>
+    <Compile Include="..\Api\IHostAPI.cs">
+	  <Link>Api\IHostAPI.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\Entity.cs">
+	  <Link>Packaging\Entity.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\Evidence.cs">
+	  <Link>Packaging\Evidence.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\Link.cs">
+	  <Link>Packaging\Link.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\Meta.cs">
+	  <Link>Packaging\Meta.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\SoftwareIdentity.cs">
+	  <Link>Packaging\SoftwareIdentity.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\PackageSource.cs">
+	  <Link>Packaging\PackageSource.cs</Link>
+	</Compile>
+    <Compile Include="..\Packaging\Payload.cs">
+	  <Link>Packaging\Payload.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\PackageProvider.cs">
+	  <Link>Implementation\PackageProvider.cs</Link>
+	</Compile>
+    <Compile Include="..\Implementation\Downloader.cs">
+	  <Link>Implementation\Downloader.cs</Link>
+	</Compile>
+    <Compile Include="..\IPackageManagementService.cs" />
+    <Compile Include="..\Implementation\Extensions.cs">
+	  <Link>Implementation\Extensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Properties\AssemblyInfo.cs">
+	  <Link>Properties\AssemblyInfo.cs</Link>
+	</Compile>
+    <Compile Include="..\PackageManager.cs" />
+    <Compile Include="..\Packaging\Swidtag.cs">
+	  <Link>Packaging\Swidtag.cs</Link>
+	</Compile>
+    <Compile Include="..\Resources\Messages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Messages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="..\Utility\Async\AsyncAction.cs">
+	  <Link>Utility\Async\AsyncAction.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Async\AsyncActionExtensions.cs">
+	  <Link>Utility\Async\AsyncActionExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Async\EmptyAsyncEnumerable.cs">
+	  <Link>Utility\Async\EmptyAsyncEnumerable.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Async\IAsyncAction.cs">
+	  <Link>Utility\Async\IAsyncAction.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Async\IAsyncEnumerable.cs">
+	  <Link>Utility\Async\IAsyncEnumerable.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Async\IAsyncValue.cs">
+	  <Link>Utility\Async\IAsyncValue.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Collections\BlockingCollection.cs">
+	  <Link>Utility\Collections\BlockingCollection.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Collections\CancellableEnumerator.cs">
+	  <Link>Utility\Collections\CancellableEnumerator.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Collections\EnumerableExtensions.cs">
+	  <Link>Utility\Collections\EnumerableExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Collections\FilenameEqualityComparer.cs">
+	  <Link>Utility\Collections\FilenameEqualityComparer.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Collections\ICancellableEnumerator.cs">
+	  <Link>Utility\Collections\ICancellableEnumerator.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Collections\List.cs">
+	  <Link>Utility\Collections\List.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Collections\MutableEnumerable.cs">
+	  <Link>Utility\Collections\MutableEnumerable.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Collections\OrderedDictionary.cs">
+	  <Link>Utility\Collections\OrderedDictionary.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Collections\PathEqualityComparer.cs">
+	  <Link>Utility\Collections\PathEqualityComparer.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Collections\ReEnumerable.cs">
+	  <Link>Utility\Collections\ReEnumerable.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Extensions\CollectionExtensions.cs">
+	  <Link>Utility\Extensions\CollectionExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Extensions\DelegateExtensions.cs">
+	  <Link>Utility\Extensions\DelegateExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Extensions\DictionaryExtensions.cs">
+	  <Link>Utility\Extensions\DictionaryExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Extensions\EqualityComparer.cs">
+	  <Link>Utility\Extensions\EqualityComparer.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Extensions\ExceptionExtensions.cs">
+	  <Link>Utility\Extensions\ExceptionExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Extensions\FilesystemExtensions.cs">
+	  <Link>Utility\Extensions\FilesystemExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Extensions\HashtableExtensions.cs">
+	  <Link>Utility\Extensions\HashtableExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Extensions\Singleon.cs">
+	  <Link>Utility\Extensions\Singleon.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Extensions\StringExtensions.cs">
+	  <Link>Utility\Extensions\StringExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Extensions\TaskExtensions.cs">
+	  <Link>Utility\Extensions\TaskExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Extensions\ThreadPerTaskScheduler.cs">
+	  <Link>Utility\Extensions\ThreadPerTaskScheduler.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Extensions\Types.cs">
+	  <Link>Utility\Extensions\Types.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Platform\AdminPrivilege.cs">
+	  <Link>Utility\Platform\AdminPrivilege.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Platform\AsyncProcess.cs">
+	  <Link>Utility\Platform\AsyncProcess.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Platform\NativeMethods.cs">
+	  <Link>Utility\Platform\NativeMethods.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Platform\WinTrustData.cs">
+	  <Link>Utility\Platform\WinTrustData.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Platform\WinTrustFileInfo.cs">
+	  <Link>Utility\Platform\WinTrustFileInfo.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Plugin\AssignableTypeComparer.cs">
+	  <Link>Utility\Plugin\AssignableTypeComparer.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Plugin\DynamicInterface.cs">
+	  <Link>Utility\Plugin\DynamicInterface.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Plugin\DynamicInterfaceExtensions.cs">
+	  <Link>Utility\Plugin\DynamicInterfaceExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Plugin\DynamicType.cs">
+	  <Link>Utility\Plugin\DynamicType.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Plugin\DynamicTypeExtensions.cs">
+	  <Link>Utility\Plugin\DynamicTypeExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Plugin\FluentIlExtensions.cs">
+	  <Link>Utility\Plugin\FluentIlExtensions.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Plugin\RequiredAttribute.cs">
+	  <Link>Utility\Plugin\RequiredAttribute.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Plugin\WrappedDelegate.cs">
+	  <Link>Utility\Plugin\WrappedDelegate.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Versions\FourPartVersion.cs">
+	  <Link>Utility\Versions\FourPartVersion.cs</Link>
+	</Compile>
+    <Compile Include="..\Utility\Versions\TwoPartVersion.cs">
+	  <Link>Utility\Versions\TwoPartVersion.cs</Link>
+	</Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\Resources\Messages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ReadMe.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="BeforeBuild" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PowerShell ScriptBlock="$(PSBeforeBuild)" />
+  </Target>
+  <UsingTask TaskName="PowerShell" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <ScriptBlock ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll" />
+      <Code Type="Class" Language="cs"><![CDATA[
+    public class PowerShell : Microsoft.Build.Tasks.Exec {
+        public string ScriptBlock {set { EchoOff=true; Command = string.Format( "@powershell \"Invoke-Command -ScriptBlock {{ $errorActionPreference='Stop'; {0} ; exit $LASTEXITCODE }} \"",  value.Replace("\"","\\\"").Replace("\r\n",";").Replace("\n",";").Replace("\r",";")); } }
+    }]]></Code>
+    </Task>
+  </UsingTask>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  -->
+</Project>
