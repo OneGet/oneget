@@ -155,8 +155,11 @@ internal class {0} {{
 }
 
 $projectRoot = Split-Path $MyInvocation.InvocationName
-if (-not (Test-Path "$projectRoot/global.json"))
-{
+$topLevel = git rev-parse --show-toplevel
+$topLevel = $toplevel.Replace('/', '\')
+$expectedRoot = Join-Path $topLevel 'src'
+$actualRoot = Resolve-Path $projectRoot
+if ($expectedRoot -ne $actualRoot) {
     throw "Not in solution root"
 }
 $inputFilePath = Join-Path $projectRoot "$project/resources/Messages.resx"
