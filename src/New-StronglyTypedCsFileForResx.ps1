@@ -21,6 +21,16 @@ $nameSpaceDict = @{
     "Microsoft.PackageManagement.NuGetProvider" = "Microsoft.PackageManagement.NuGetProvider"
 }
 
+$moduleNameDict = @{
+    "Microsoft.PackageManagement" = "Microsoft.PackageManagement";
+    "Microsoft.PackageManagement.CoreProviders" = "Microsoft.PackageManagement.CoreProviders";
+    "Microsoft.PackageManagement.MetaProvider.PowerShell" = "Microsoft.PackageManagement.MetaProvider.PowerShell";
+    "Microsoft.PackageManagement.MsiProvider" = "Microsoft.PackageManagement.MsiProvider";
+    "Microsoft.PackageManagement.MsuProvider" = "Microsoft.PackageManagement.MsuProvider";
+    "Microsoft.PowerShell.PackageManagement" = "Microsoft.PowerShell.PackageManagement";
+    "Microsoft.PackageManagement.NuGetProvider" = "NuGetProvider"
+}
+
 function Get-StronglyTypeCsFileForResx
 {
     param($xml, $ClassName, $moduleName)
@@ -163,6 +173,10 @@ if ($nameSpaceDict.ContainsKey($project)) {
     $newResxFile = Join-Path $projectRoot "$project/resources/$className.resx"
     Copy-Item $inputFilePath $newResxFile -Force
     $xml = [xml](Get-Content -raw $inputFilePath)
-    $genSource = Get-StronglyTypeCsFileForResx -xml $xml -ClassName $className -moduleName $project
+    $moduleName = $project
+    if ($moduleNameDict.ContainsKey($project)) {
+        $moduleName = $moduleNameDict[$project]
+    }
+    $genSource = Get-StronglyTypeCsFileForResx -xml $xml -ClassName $className -moduleName $moduleName
     Set-Content -Encoding Ascii -Path $outputFilePath -Value $genSource
 }
