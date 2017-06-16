@@ -453,7 +453,7 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
         # Uncomment this once publish the new version of nuget
         $awssdk = Find-Package -Name "awssdk" -Provider $nuget -source $source -RequiredVersion 2.3.53
         [long]$awssdk.Meta.Attributes["downloadCount"] -ge 1023357 | should be $true
-        $awssdk.Meta.Attributes["updated"] | should match "2015-12-15T17:46:22Z"
+        $awssdk.Meta.Attributes["updated"] | should match "2015-12-16T01:46:22Z"
         $awssdk.TagId | should match "AWSSDK#2.3.53.0" 
     }
 
