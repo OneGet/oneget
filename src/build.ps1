@@ -29,6 +29,32 @@ Function CopyToDestinationDir($itemsToCopy, $destination)
     }
 }
 
+Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $configuration, $ext, $solutionDir)
+{
+    if (-not (Test-Path $destination))
+    {
+        New-Item -ItemType Directory $destination -Force
+    }
+    foreach ($file in $itemsToCopy)
+    {
+        # Set by AppVeyor
+        $platform = [System.Environment]::GetEnvironmentVariable('platform')
+        if (-not $platform) {
+            # If not set at all, try Any CPU
+            $platform = 'Any CPU'
+        }
+
+        $fullPath = Join-Path -Path $solutionDir -ChildPath $file | Join-Path -ChildPath 'bin' | Join-Path -ChildPath $configuration | Join-Path -ChildPath $framework | Join-Path -ChildPath "$file$ext"
+        $fullPathWithPlatform = Join-Path -Path $solutionDir -ChildPath $file | Join-Path -ChildPath 'bin' | Join-Path -ChildPath $platform | Join-Path -ChildPath $configuration | Join-Path -ChildPath $framework | Join-Path -ChildPath "$file$ext"
+		if (Test-Path $fullPath)
+        {
+            Copy-Item -Path $fullPath -Destination (Join-Path $destination "$file$ext") -Verbose -Force
+        } elseif (Test-Path $fullPathWithPlatform) {
+            Copy-Item -Path $fullPathWithPlatform -Destination (Join-Path $destination "$file$ext") -Verbose -Force
+        }
+    }
+}
+
 $solutionPath = Split-Path $MyInvocation.InvocationName
 $solutionDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($solutionPath)
 
@@ -104,8 +130,8 @@ finally
 
 
 CopyToDestinationDir $itemsToCopyCommon $destinationDir
-CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
-CopyToDestinationDir $itemsToCopyPdbs $destinationDirBinaries
+CopyBinariesToDestinationDir $assemblyNames $destinationDirBinaries $Framework $Configuration '.dll' $solutionDir
+CopyBinariesToDestinationDir $assemblyNames $destinationDirBinaries $Framework $Configuration '.pdb' $solutionDir
 CopyToDestinationDir $dscResourceItemsCommon $destinationDirDscResourcesBase
 CopyToDestinationDir $dscResourceItemsPackage (Join-Path -Path $destinationDirDscResourcesBase -ChildPath "MSFT_PackageManagement")
 CopyToDestinationDir $dscResourceItemsPackageSource (Join-Path -Path $destinationDirDscResourcesBase -ChildPath "MSFT_PackageManagementSource")
