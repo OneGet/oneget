@@ -31,10 +31,6 @@ Function CopyToDestinationDir($itemsToCopy, $destination)
 
 $solutionPath = Split-Path $MyInvocation.InvocationName
 $solutionDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($solutionPath)
-if (-not (Test-Path "$solutionDir/global.json"))
-{
-    throw "Not in solution root"
-}
 
 if ($Framework -eq "netstandard1.6")
 {
@@ -88,15 +84,6 @@ $destinationDir = "$solutionDir/out/PackageManagement"
 $destinationDirBinaries = "$destinationDir/$packageFramework"
 $destinationDirDscResourcesBase = "$destinationDir/DSCResources"
 
-# rename project.json.hidden to project.json
-foreach ($assemblyName in $assemblyNames)
-{
-    if (Test-Path ("$solutionDir\$assemblyName\project.json.hidden"))
-    {
-        Move-Item "$solutionDir\$assemblyName\project.json.hidden" "$solutionDir\$assemblyName\project.json" -Force
-    }
-}
-
 try
 {
     foreach ($assemblyName in $assemblyNames)
@@ -106,25 +93,13 @@ try
         Push-Location $assemblyName
         Write-Host "Restoring package for $assemblyName"
         dotnet restore
-        dotnet -v build --framework $Framework --configuration $Configuration
+        dotnet build --framework $Framework --configuration $Configuration
+        dotnet publish --framework $Framework --configuration $Configuration
         Pop-Location
     }
 }
 finally
 {
-    # rename project.json to project.json.hidden
-    foreach ($assemblyName in $assemblyNames)
-    {
-        if (Test-Path ("$solutionDir\$assemblyName\project.json"))
-        {
-            Move-Item "$solutionDir\$assemblyName\project.json" "$solutionDir\$assemblyName\project.json.hidden"
-        }
-
-        if (Test-Path ("$solutionDir\$assemblyName\project.lock.json"))
-        {
-            Remove-Item "$solutionDir\$assemblyName\project.lock.json"
-        }
-    }
 }
 
 
