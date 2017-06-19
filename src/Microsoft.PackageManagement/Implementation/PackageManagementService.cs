@@ -1303,12 +1303,8 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             try {
 
                 Assembly assembly = null;
-
-#if !CORECLR
                 assembly = Assembly.LoadFrom(assemblyPath);
-#else
-                assembly = Microsoft.PowerShell.CoreCLR.AssemblyExtensions.LoadFrom(assemblyPath);
-#endif
+
                 if (assembly == null) {
                     return false;
                 }

@@ -1,6 +1,6 @@
 ﻿param(
-    [ValidateSet("net451", "netstandard1.6")]
-    [string]$Framework = "netstandard1.6",
+    [ValidateSet("net451", "netcoreapp2.0")]
+    [string]$Framework = "netcoreapp2.0",
 
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug"
@@ -58,7 +58,7 @@ Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $c
 $solutionPath = Split-Path $MyInvocation.InvocationName
 $solutionDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($solutionPath)
 
-if ($Framework -eq "netstandard1.6")
+if ($Framework -eq "netcoreapp2.0")
 {
     $packageFramework ="coreclr"
     $assemblyNames = @(
