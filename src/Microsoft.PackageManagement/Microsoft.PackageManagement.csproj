@@ -70,7 +70,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <PackageReference Update="Microsoft.NETCore.App" Version="2.0.0-preview1-002106-00" />
+    <PackageReference Update="Microsoft.NETCore.App" Version="2.0.0-preview1-002111-00" />
     <PackageReference Include="NETStandard.Library" Version="2.0.0-preview1-25301-01" />
     <PackageReference Include="NETStandard.Library.NETFramework" Version="2.0.0-preview1-25305-02" />
     <PackageReference Include="Microsoft.CSharp" Version="4.4.0-preview1-25305-02" />
@@ -98,6 +98,9 @@
     <PackageReference Include="System.Security.AccessControl" Version="4.4.0-preview1-25305-02" />
     <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.0" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.0" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.4.0-preview1-25305-02" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="4.4.0-preview1-25305-02" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.4.0-preview1-25305-02" />
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
     <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
     <PackageReference Include="System.Xml.XPath.XmlDocument" Version="4.3.0-preview1-24530-04" />
