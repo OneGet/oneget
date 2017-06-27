@@ -235,7 +235,6 @@ if ($testframework -eq "coreclr")
         else
         {
             Install-PackageProvider PSL -Force -verbose
-            $expectedPsCoreVersion = "6.0.0.14"
             if ([Environment]::OSVersion.Version.Major -eq 6) {
                 Write-Verbose "Assuming OS is Win 8.1 (includes Win Server 2012 R2)"
                 $pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL.json"
@@ -244,7 +243,7 @@ if ($testframework -eq "coreclr")
                 $pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL.json"
             }
 
-            $powershellCore = (Get-Package -provider PSL -name PowerShell -requiredversion $expectedPsCoreVersion -ErrorAction SilentlyContinue)
+            $powershellCore = (Get-Package -provider msi -name PowerShell-6.0.0-beta* -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
             if ($powershellCore)
             {
                 Write-Warning ("PowerShell already installed" -f $powershellCore.Name)
@@ -261,9 +260,14 @@ if ($testframework -eq "coreclr")
         }
 
         $powershellVersion = $powershellCore.Version
-        Write-host ("PowerShell Version '{0}'" -f $powershellVersion)
-
         $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
+        if (-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'powershell.exe'))) {
+            # Everything after "PowerShell-"
+            $powershellVersion = $powershellCore.Name.Substring(11)
+            $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
+        }
+
+        Write-host ("PowerShell Version '{0}'" -f $powershellVersion)
         Write-host ("PowerShell Folder '{0}'" -f $powershellFolder)
     }
     else
