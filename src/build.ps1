@@ -1,6 +1,6 @@
 ﻿param(
-    [ValidateSet("net451", "netstandard1.6")]
-    [string]$Framework = "netstandard1.6",
+    [ValidateSet("net451", "netcoreapp2.0")]
+    [string]$Framework = "netcoreapp2.0",
 
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug"
@@ -33,7 +33,7 @@ Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $c
 {
     if (-not (Test-Path $destination))
     {
-        New-Item -ItemType Directory $destination -Force
+        $null = New-Item -ItemType Directory $destination -Force
     }
     foreach ($file in $itemsToCopy)
     {
@@ -51,14 +51,17 @@ Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $c
             Copy-Item -Path $fullPath -Destination (Join-Path $destination "$file$ext") -Verbose -Force
         } elseif (Test-Path $fullPathWithPlatform) {
             Copy-Item -Path $fullPathWithPlatform -Destination (Join-Path $destination "$file$ext") -Verbose -Force
+        } else {
+            return $false
         }
     }
+    return $true
 }
 
 $solutionPath = Split-Path $MyInvocation.InvocationName
 $solutionDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($solutionPath)
 
-if ($Framework -eq "netstandard1.6")
+if ($Framework -eq "netcoreapp2.0")
 {
     $packageFramework ="coreclr"
     $assemblyNames = @(
@@ -130,7 +133,9 @@ finally
 
 
 CopyToDestinationDir $itemsToCopyCommon $destinationDir
-CopyBinariesToDestinationDir $assemblyNames $destinationDirBinaries $Framework $Configuration '.dll' $solutionDir
+if (-not (CopyBinariesToDestinationDir $assemblyNames $destinationDirBinaries $Framework $Configuration '.dll' $solutionDir)) {
+    throw 'Build failed'
+}
 CopyBinariesToDestinationDir $assemblyNames $destinationDirBinaries $Framework $Configuration '.pdb' $solutionDir
 CopyToDestinationDir $dscResourceItemsCommon $destinationDirDscResourcesBase
 CopyToDestinationDir $dscResourceItemsPackage (Join-Path -Path $destinationDirDscResourcesBase -ChildPath "MSFT_PackageManagement")
