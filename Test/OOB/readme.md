@@ -1,0 +1,1 @@
+This folder contains tests that execute outside of the usual PowerShell or PowerShell Core instance.

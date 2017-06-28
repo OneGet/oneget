@@ -323,3 +323,17 @@ function Register-Repository
         PowerShellGet\UnRegister-PSRepository -Name $Name
     }            
 }
+
+function Install-PowerShellCore {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]
+        $PSLLocation
+    )
+    $pslPackageSource = Get-PackageSource | Where-Object { $_.Location -eq $PSLLocation } | Select-Object -first 1
+    if ($pslPackageSource -eq $null) {
+        $pslPackageSource = Register-PackageSource "$PSLLocation" -ProviderName PSL -Location $PSLLocation -Trusted
+    }
+
+    Install-Package PowerShell -Provider PSL -Source $pslPackageSource.Name -Force -verbose
+}
