@@ -6,10 +6,9 @@ Microsoft.PowerShell.Utility\Import-LocalizedData  LocalizedData -filename Packa
 
 # Summary: PackageManagement is supported on Windows PowerShell 3.0 or later, Nano Server and PowerShellCore
 $isCore = ($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')
-Write-Verbose "Core: $isCore"
 if ($isCore)
 {
-    # PackageManagement only versions of PowerShell Core built on .NETCoreApp 2.0 and above
+    # PackageManagement only works on versions of PowerShell Core built on .NETCoreApp 2.0 and above
     # The following API was added in PackageManagement as a dependency
     $loadFromMethod = [System.Reflection.Assembly].GetMethods() | Where-Object { $_.Name -eq 'LoadFrom' }
     if (-not $loadFromMethod)
