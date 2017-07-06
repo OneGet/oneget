@@ -9,6 +9,6 @@
 ConvertFrom-StringData @'
 ###PSLOC
 
-    OldPowerShellCoreVersion=PowerShell Core {0} is no longer supported by Package Management. Please update to the most recent version of PowerShell Core to get the latest features and bug fixes.
+    OldPowerShellCoreVersion=PackageManagement no longer supports PowerShell Core '{0}'. Please install the latest version of PowerShell Core and try again.
 ###PSLOC
 '@
