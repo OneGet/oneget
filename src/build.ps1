@@ -93,6 +93,7 @@ $itemsToCopyPdbs = $assemblyNames | % { "$solutionDir\$_\bin\$Configuration\$Fra
 
 $itemsToCopyCommon = @("$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.psd1",
                        "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.psm1",
+                       "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.Resources.psd1",
                        "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageProviderFunctions.psm1",
                        "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.format.ps1xml")
 					   
