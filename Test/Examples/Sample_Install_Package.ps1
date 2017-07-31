@@ -23,7 +23,7 @@ configuration Sample_Install_Package
     )
 
 
-    Import-DscResource -Module PackageManagement -ModuleVersion 1.1.4.0
+    Import-DscResource -Module PackageManagement -ModuleVersion 1.1.5.0
 
     Node $NodeName
     {               
