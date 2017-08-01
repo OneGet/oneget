@@ -313,18 +313,18 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
         $ERROR[0].FullyQualifiedErrorId | should be "NoMatchFoundForCriteria,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
 	}
 
-    It "EXPECTED: Finds 'Zlib' Package" {
-        $version = "1.2.8.8"
-        $expectedDependencies = @("zlib.v120.windesktop.msvcstl.dyn.rt-dyn/[1.2.8.8]", "zlib.v140.windesktop.msvcstl.dyn.rt-dyn/[1.2.8.8]")
-        $zlib = find-package -name "zlib" -provider $nuget -source $source -RequiredVersion $version
-        $zlib.name | should match "zlib"
-        $zlib.Dependencies.Count | should be 2
+    It "EXPECTED: Finds 'grpc.dependencies.zlib' Package" {
+        $version = "1.2.8.10"
+        $expectedDependencies = @("grpc.dependencies.zlib.redist/1.2.8.10")
+        $zlib = find-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -RequiredVersion $version
+        $zlib.name | should match "grpc.dependencies.zlib"
+        $zlib.Dependencies.Count | should be 1
 
-        $zlib.Meta.Attributes["packageSize"] | should match "2742"
+        $zlib.Meta.Attributes["packageSize"] | should match "7995520"
 
-        [long]$zlib.Meta.Attributes["versionDownloadCount"] -ge 4961 | should be $true
+        [long]$zlib.Meta.Attributes["versionDownloadCount"] -ge 7640 | should be $true
         $zlib.Meta.Attributes["requireLicenseAcceptance"] | should match "False"
-        $zlib.TagId | should match "zlib#1.2.8.8"
+        $zlib.TagId | should match "grpc.dependencies.zlib#1.2.8.10"
         
         foreach ($dep in $zlib.Dependencies) {
             $match = $false
@@ -360,16 +360,16 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
         (find-package -name "ModuleWithDependenciesLoop" -provider $nuget -source "$dependenciesSource\SimpleDependenciesLoop").name | should match "ModuleWithDependenciesLoop"
     }
 
-    It "EXPECTED: Finds 'Zlib' Package with -IncludeDependencies" {
-        $version = "1.2.8.8"
-        $packages = Find-Package -Name "zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -IncludeDependencies
-        $packages.Count | should match 3
-        $expectedPackages = @("zlib", "zlib.v120.windesktop.msvcstl.dyn.rt-dyn", "zlib.v140.windesktop.msvcstl.dyn.rt-dyn")
+    It "EXPECTED: Finds 'grpc.dependencies.zlib' Package with -IncludeDependencies" {
+        $version = "1.2.8.10"
+        $packages = Find-Package -Name "grpc.dependencies.zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -IncludeDependencies
+        $packages.Count | should match 2
+        $expectedPackages = @("grpc.dependencies.zlib","grpc.dependencies.zlib.redist")
 
         foreach ($expectedPackage in $expectedPackages) {
             $match = $false
             foreach ($package in $packages) {
-                # All the packages have the same version for zlib
+                # All the packages have the same version for grpc.dependencies.zlib
                 if ($package.Name -match $expectedPackage -and $package.Version -match $version) {
                     $match = $true
                     break
@@ -467,8 +467,8 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
 		}
     }
 
-	It "EXPECTED: Finds 'Zlib' Package After Piping The Provider" {
-    	(get-packageprovider -name $nuget | find-package -name zlib -source $source ).name | should be "zlib"
+	It "EXPECTED: Finds 'grpc.dependencies.zlib' Package After Piping The Provider" {
+    	(get-packageprovider -name $nuget | find-package -name grpc.dependencies.zlib -source $source ).name | should be "grpc.dependencies.zlib"
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Too Long Of Name" {
@@ -480,34 +480,34 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Negative Maximum Version Parameter" {
-    	{find-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -EA stop} | should throw
+    	{find-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -maximumversion "-1.5" -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Negative Minimum Version Parameter" {
-    	{find-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -EA stop} | should throw
+    	{find-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -minimumversion "-1.5" -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Find Package Due To Negative Required Version Parameter" {
-    	{find-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -EA stop } | should throw
+    	{find-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -requiredversion "-1.5" -EA stop } | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Find Package Due To Out Of Bounds Required Version Parameter" {
-	    {find-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -EA stop} | should throw
+	    {find-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -EA stop} | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Find Package Due To Minimum Version Parameter Greater Than Maximum Version Parameter" {
-	    {find-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -EA stop} | should throw
+	    {find-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -EA stop} | should throw
     }
 
     It "EXPECTED: -FAILS- Find-Package with wrong source should not error out about dynamic parameter" {
         $Error.Clear()
-        find-package -source WrongSource -name zlib -provider nuget -Contains PackageManagement -ErrorVariable errorVar -ErrorAction SilentlyContinue 
+        find-package -source WrongSource -name grpc.dependencies.zlib -provider nuget -Contains PackageManagement -ErrorVariable errorVar -ErrorAction SilentlyContinue 
         $errorVar.FullyQualifiedErrorId | should be "SourceNotFound,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
     }
 
     It "EXPECTED: -FAILS- Find-Package with wrong source and wrong dynamic parameter" {
         $Error.Clear()
-        find-package -source WrongSource -name zlib -provider nuget -WrongDynamicParameter PackageManagement -ErrorVariable errorVar -ErrorAction SilentlyContinue        
+        find-package -source WrongSource -name grpc.dependencies.zlib -provider nuget -WrongDynamicParameter PackageManagement -ErrorVariable errorVar -ErrorAction SilentlyContinue        
         $errorVar.FullyQualifiedErrorId | should be "SourceNotFound,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
     }
 }
@@ -596,14 +596,14 @@ Describe "Save-Package" -Tags "Feature" {
         $wildcardError.FullyQualifiedErrorId | should be "WildCardCharsAreNotSupported,Microsoft.PowerShell.PackageManagement.Cmdlets.SavePackage"
     }
 
-	it "EXPECTED: Saves 'Zlib' Package To Packages Directory" -Skip:($IsCoreCLR) {
-        $version = "1.2.8.8"
-        $expectedPackages = @("zlib", "zlib.v120.windesktop.msvcstl.dyn.rt-dyn", "zlib.v140.windesktop.msvcstl.dyn.rt-dyn")
+	it "EXPECTED: Saves 'grpc.dependencies.zlib' Package To Packages Directory" -Skip:($IsCoreCLR) {
+        $version = "1.2.8.10"
+        $expectedPackages = @("grpc.dependencies.zlib","grpc.dependencies.zlib.redist")
         $newDestination = Join-Path $TestDrive "nugetinstallation"
 		
         try {
-            $packages = Save-Package -Name "zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -Path $destination
-            $packages.Count | should match 3
+            $packages = Save-Package -Name "grpc.dependencies.zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -Path $destination
+            $packages.Count | should match 2
             
             foreach ($expectedPackage in $expectedPackages) {
                 #each of the expected package should be there
@@ -627,19 +627,16 @@ Describe "Save-Package" -Tags "Feature" {
             }
 
             # make sure we can install the package. To do this, we need to save the dependencies first
-            (save-package -name "zlib.v120.windesktop.msvcstl.dyn.rt-dyn" -RequiredVersion $version -provider $nuget -source $source -path $destination)
-            (save-package -name "zlib.v140.windesktop.msvcstl.dyn.rt-dyn" -RequiredVersion $version -provider $nuget -source $source -path $destination)
+            (save-package -name "grpc.dependencies.zlib.redist" -RequiredVersion $version -provider $nuget -source $source -path $destination)
 
-		    (install-package -name "zlib" -provider $nuget -source $destination -destination $newDestination -force -RequiredVersion $version)
-		    (test-path "$newDestination\zlib.1.2*") | should be $true
+		    (install-package -name "grpc.dependencies.zlib" -provider $nuget -source $destination -destination $newDestination -force -RequiredVersion $version)
+		    (test-path "$newDestination\grpc.dependencies.zlib.1.2*") | should be $true
 
             # Test that we have the nupkg file
-            (test-path "$newDestination\zlib.1.2*\zlib*.nupkg") | should be $true
+            (test-path "$newDestination\grpc.dependencies.zlib.1.2*\grpc.dependencies.zlib*.nupkg") | should be $true
             # Test that dependencies are installed
-            (test-path "$newDestination\zlib.v120*") | should be $true
-            (test-path "$newDestination\zlib.v120*\zlib.v120*.nupkg") | should be $true
-            (test-path "$newDestination\zlib.v140*") | should be $true
-            (test-path "$newDestination\zlib.v140*\zlib.v140*.nupkg") | should be $true
+            (test-path "$newDestination\grpc.dependencies.zlib.redist*") | should be $true
+            (test-path "$newDestination\grpc.dependencies.zlib.redist*\grpc.dependencies.zlib.redist*.nupkg") | should be $true
         }
         finally {
             if (Test-Path $newDestination) {
@@ -736,11 +733,11 @@ Describe "Save-Package" -Tags "Feature" {
 		}
 	}
 
-	It "EXPECTED: Saves 'Zlib' Package After Having The Provider Piped" {
-	    (find-package -name "zlib" -provider $nuget -source $source | save-package -Path $destination)
-	    (Test-Path -Path $destination\zlib*) | should be $true
-	    if (Test-Path -Path $destination\zlib*) {
-		    Remove-Item $destination\zlib* -Force -Recurse
+	It "EXPECTED: Saves 'grpc.dependencies.zlib' Package After Having The Provider Piped" {
+	    (find-package -name "grpc.dependencies.zlib" -provider $nuget -source $source | save-package -Path $destination)
+	    (Test-Path -Path $destination\grpc.dependencies.zlib*) | should be $true
+	    if (Test-Path -Path $destination\grpc.dependencies.zlib*) {
+		    Remove-Item $destination\grpc.dependencies.zlib* -Force -Recurse
         }
     }
 
@@ -870,7 +867,7 @@ Describe "install-package with Whatif" -Tags "Feature" {
     }
 
      It "install-package -name nuget with whatif where package has a dependencies, Expect succeed" {
-        {install-Package -name zlib -source https://www.nuget.org/api/v2/ `
+        {install-Package -name grpc.dependencies.zlib -source https://www.nuget.org/api/v2/ `
             -ProviderName NuGet -destination $installationPath -whatif} | should not throw
     }
 }
@@ -886,13 +883,12 @@ Describe "Install-Package dependencies" -Tags "Feature" {
 	$pkg = Get-PackageProvider -Name NuGet
 	if($pkg.Version -le "2.8.5.205") { return }
 
-        $version = "1.2.8.8"
-        $zlib = Install-Package -Provider $nuget -Source $source -Destination $tempDir -SkipDependencies -Force zlib
+        $version = "1.2.8.10"
+        $zlib = Install-Package -Provider $nuget -Source $source -Destination $tempDir -SkipDependencies -Force grpc.dependencies.zlib
 
         $zlib.Count | should be 1
-        (test-path "$tempDir\zlib*") | should be $true
-        (test-path "$tempDir\zlib.v120*") | should be $false
-        (test-path "$tempDir\zlib.v140*") | should be $false
+        (test-path "$tempDir\grpc.dependencies.zlib*") | should be $true
+        (test-path "$tempDir\grpc.dependencies.zlib.redist*") | should be $false
     }
 
     It "Install latest stable version for dependencies instead of prerelease one" -Skip {
@@ -1230,11 +1226,11 @@ Describe Install-Package -Tags "Feature" {
 		}
     }
 
-	It "EXPECTED: Installs 'Zlib' Package After Having The Provider Piped" {
-	    (find-package -name "zlib" -provider $nuget -source $source | install-package -destination $destination -force -Verbose)
-	    (Test-Path -Path $destination\zlib*) | should be $true
-	    if (Test-Path -Path $destination\zlib*) {
-		    (Remove-Item -Recurse -Force -Path $destination\zlib* -ErrorAction SilentlyContinue)
+	It "EXPECTED: Installs 'grpc.dependencies.zlib' Package After Having The Provider Piped" {
+	    (find-package -name "grpc.dependencies.zlib" -provider $nuget -source $source | install-package -destination $destination -force -Verbose)
+	    (Test-Path -Path $destination\grpc.dependencies.zlib*) | should be $true
+	    if (Test-Path -Path $destination\grpc.dependencies.zlib*) {
+		    (Remove-Item -Recurse -Force -Path $destination\grpc.dependencies.zlib* -ErrorAction SilentlyContinue)
 		    }
 	    }
 
@@ -1247,23 +1243,23 @@ Describe Install-Package -Tags "Feature" {
     }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Negative Maximum Version Parameter" {
-    	{install-package -name "zlib" -provider $nuget -source $source -maximumversion "-1.5" -destination $destination -force -EA stop} | should throw
+    	{install-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -maximumversion "-1.5" -destination $destination -force -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Negative Maximum Version Parameter" {
-    	{install-package -name "zlib" -provider $nuget -source $source -minimumversion "-1.5" -destination $destination -force -EA stop} | should throw
+    	{install-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -minimumversion "-1.5" -destination $destination -force -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Negative Maximum Version Parameter" {
-    	{install-package -name "zlib" -provider $nuget -source $source -requiredversion "-1.5" -destination $destination -force -EA stop} | should throw
+    	{install-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -requiredversion "-1.5" -destination $destination -force -EA stop} | should throw
     }
 
 	It "EXPECTED: -FAILS- To Install Package Due To Out Of Bounds Required Version Parameter" {
-    	{install-package -name "zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -destination $destination -force -EA stop} | should throw
+    	{install-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -minimumversion "1.0" -maximumversion "1.5" -requiredversion "2.0" -destination $destination -force -EA stop} | should throw
 	}
 
 	It "EXPECTED: -FAILS- To Install Package Due To Minimum Version Parameter Greater Than Maximum Version Parameter" {
-    	{install-package -name "zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -destination $destination -force -EA stop} | should throw
+    	{install-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -minimumversion "1.5" -maximumversion "1.0" -destination $destination -force -EA stop} | should throw
 	}
 }
 
@@ -1382,7 +1378,7 @@ Describe Uninstall-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Negative Maximum Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		{uninstall-package -name "zlib" -provider $nuget -maximumversion "-1.5" -destination $destination -force -EA stop} | should throw
+		{uninstall-package -name "grpc.dependencies.zlib" -provider $nuget -maximumversion "-1.5" -destination $destination -force -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1390,7 +1386,7 @@ Describe Uninstall-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Negative Minimum Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		{uninstall-package -name "zlib" -provider $nuget -minimumversion "-1.5" -destination $destination -force -EA stop} | should throw
+		{uninstall-package -name "grpc.dependencies.zlib" -provider $nuget -minimumversion "-1.5" -destination $destination -force -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1398,7 +1394,7 @@ Describe Uninstall-Package -Tags "Feature" {
 
 	It "EXPECTED: -FAILS- To Uninstall Package Due To Negative Required Version Parameter" {
 		(install-package -name "adept.nugetrunner" -provider $nuget -source $source -destination $destination -force)
-		{uninstall-package -name "zlib" -provider $nuget -requiredversion "-1.5" -destination $destination -force -EA stop} | should throw
+		{uninstall-package -name "grpc.dependencies.zlib" -provider $nuget -requiredversion "-1.5" -destination $destination -force -EA stop} | should throw
 		if (Test-Path -Path $destination\adept.nugetrunner*) {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
@@ -1699,7 +1695,7 @@ Describe Check-ForCorrectError -Tags "Feature" {
 
     it "EXPECTED: returns a correct error for install-package with dynamic parameter when package source is wrong" {
         $Error.Clear()
-        install-package -provider $nuget -source http://wrongsource/api/v2 zlib -Destination C:\destination -ea silentlycontinue
+        install-package -provider $nuget -source http://wrongsource/api/v2 grpc.dependencies.zlib -Destination C:\destination -ea silentlycontinue
         $Error[0].FullyQualifiedErrorId | should be "SourceNotFound,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackage"
     }
 
