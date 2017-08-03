@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B4ED8E4C-01B6-4440-AFC7-DC73D08201B5}</ProjectGuid>
+    <ProjectGuid>{C06032D8-C31A-492A-86F3-5CC4ED19BD8E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.PackageManagement.Archivers.Internal</RootNamespace>
-    <AssemblyName>Microsoft.PackageManagement.ArchiverProviders</AssemblyName>
+    <RootNamespace>Microsoft.PackageManagement.Providers</RootNamespace>
+    <AssemblyName>Microsoft.PackageManagement.CoreProviders</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), PackageManagement.sln))\</SolutionDir>
     <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\PackageManagement.sln</SolutionPath>
@@ -19,7 +19,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>../signing/35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\../signing/35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <DelaySign>true</DelaySign>
@@ -29,7 +29,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -43,6 +43,11 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -50,50 +55,44 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CabArchiver.cs" />
-    <Compile Include="Compression\ArchiveException.cs" />
-    <Compile Include="Compression\ArchiveFileInfo.cs" />
-    <Compile Include="Compression\ArchiveFileStreamContext.cs" />
-    <Compile Include="Compression\ArchiveInfo.cs" />
-    <Compile Include="Compression\ArchiveProgressEventArgs.cs" />
-    <Compile Include="Compression\ArchiveProgressType.cs" />
-    <Compile Include="Compression\BasicUnpackStreamContext.cs" />
-    <Compile Include="Compression\CargoStream.cs" />
-    <Compile Include="Compression\Cab\CabEngine.cs" />
-    <Compile Include="Compression\Cab\CabException.cs" />
-    <Compile Include="Compression\Cab\CabFileInfo.cs" />
-    <Compile Include="Compression\Cab\CabInfo.cs" />
-    <Compile Include="Compression\Cab\CabPacker.cs" />
-    <Compile Include="Compression\Cab\CabUnpacker.cs" />
-    <Compile Include="Compression\Cab\CabWorker.cs" />
-    <Compile Include="Compression\Cab\HandleManager.cs" />
-    <Compile Include="Compression\Cab\NativeMethods.cs" />
-    <Compile Include="Compression\Zip\ConcatStream.cs" />
-    <Compile Include="Compression\Zip\CrcStream.cs" />
-    <Compile Include="Compression\Zip\ZipCompressionMethod.cs" />
-    <Compile Include="Compression\Zip\ZipEngine.cs" />
-    <Compile Include="Compression\Zip\ZipException.cs" />
-    <Compile Include="Compression\Zip\ZipFileInfo.cs" />
-    <Compile Include="Compression\Zip\ZipFormat.cs" />
-    <Compile Include="Compression\Zip\ZipInfo.cs" />
-    <Compile Include="Compression\Zip\ZipPacker.cs" />
-    <Compile Include="Compression\Zip\ZipUnpacker.cs" />
-    <Compile Include="Compression\CompressionEngine.cs" />
-    <Compile Include="Compression\CompressionLevel.cs" />
-    <Compile Include="Compression\DuplicateStream.cs" />
-    <Compile Include="Compression\IPackStreamContext.cs" />
-    <Compile Include="Compression\IUnpackStreamContext.cs" />
-    <Compile Include="Compression\OffsetStream.cs" />
-    <Compile Include="Compression\SafeNativeMethods.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ZipArchiver.cs" />
+    <Compile Include="..\Bootstrap\BootstrapProvider.cs">
+      <Link>Bootstrap\BootstrapProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Bootstrap\BootstrapRequest.cs">
+      <Link>Bootstrap\BootstrapRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Bootstrap\Feed.cs">
+      <Link>Bootstrap\Feed.cs</Link>
+    </Compile>
+    <Compile Include="..\Bootstrap\Package.cs">
+      <Link>Bootstrap\Package.cs</Link>
+    </Compile>
+    <Compile Include="..\ProgramsProvider.cs" />
+    <Compile Include="..\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Bootstrap\Swid.cs">
+      <Link>Bootstrap\Swid.cs</Link>
+    </Compile>
+    <Compile Include="..\Resources\Messages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Messages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="..\WebDownloader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="project.json.hidden" />
-    <None Include="provider.manifest" />
+    <EmbeddedResource Include="..\Resources\Messages.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Microsoft.PackageManagement.Providers.Internal.Resources</CustomToolNamespace>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.PackageManagement\PackageManagement.csproj">
+    <None Include="..\provider.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Microsoft.PackageManagement\vs-csproj\PackageManagement.csproj">
       <Project>{7044b856-6d51-498f-90f9-01f219909f79}</Project>
       <Name>PackageManagement</Name>
     </ProjectReference>
@@ -101,13 +100,13 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>:Locate MT.EXE Tool:
-set MTEXE=$(SolutionDir)\..\tools\mt.exe
+set MTEXE=$(SolutionDir)..\tools\mt.exe
 
 :Run the tool to add the manifest to the binary.
 
-"%25MTEXE%25" -manifest $(ProjectDir)provider.manifest -outputresource:$(TargetPath);#101</PostBuildEvent>
+"%25MTEXE%25" -manifest $(ProjectDir)..\provider.manifest -outputresource:$(TargetPath);#101</PostBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

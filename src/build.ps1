@@ -1,6 +1,6 @@
 ﻿param(
-    [ValidateSet("net451", "netstandard1.6")]
-    [string]$Framework = "netstandard1.6",
+    [ValidateSet("net451", "netcoreapp2.0")]
+    [string]$Framework = "netcoreapp2.0",
 
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug"
@@ -29,14 +29,39 @@ Function CopyToDestinationDir($itemsToCopy, $destination)
     }
 }
 
-$solutionPath = Split-Path $MyInvocation.InvocationName
-$solutionDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($solutionPath)
-if (-not (Test-Path "$solutionDir/global.json"))
+Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $configuration, $ext, $solutionDir)
 {
-    throw "Not in solution root"
+    if (-not (Test-Path $destination))
+    {
+        $null = New-Item -ItemType Directory $destination -Force
+    }
+    foreach ($file in $itemsToCopy)
+    {
+        # Set by AppVeyor
+        $platform = [System.Environment]::GetEnvironmentVariable('platform')
+        if (-not $platform) {
+            # If not set at all, try Any CPU
+            $platform = 'Any CPU'
+        }
+
+        $fullPath = Join-Path -Path $solutionDir -ChildPath $file | Join-Path -ChildPath 'bin' | Join-Path -ChildPath $configuration | Join-Path -ChildPath $framework | Join-Path -ChildPath "$file$ext"
+        $fullPathWithPlatform = Join-Path -Path $solutionDir -ChildPath $file | Join-Path -ChildPath 'bin' | Join-Path -ChildPath $platform | Join-Path -ChildPath $configuration | Join-Path -ChildPath $framework | Join-Path -ChildPath "$file$ext"
+		if (Test-Path $fullPath)
+        {
+            Copy-Item -Path $fullPath -Destination (Join-Path $destination "$file$ext") -Verbose -Force
+        } elseif (Test-Path $fullPathWithPlatform) {
+            Copy-Item -Path $fullPathWithPlatform -Destination (Join-Path $destination "$file$ext") -Verbose -Force
+        } else {
+            return $false
+        }
+    }
+    return $true
 }
 
-if ($Framework -eq "netstandard1.6")
+$solutionPath = Split-Path $MyInvocation.InvocationName
+$solutionDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($solutionPath)
+
+if ($Framework -eq "netcoreapp2.0")
 {
     $packageFramework ="coreclr"
     $assemblyNames = @(
@@ -68,6 +93,7 @@ $itemsToCopyPdbs = $assemblyNames | % { "$solutionDir\$_\bin\$Configuration\$Fra
 
 $itemsToCopyCommon = @("$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.psd1",
                        "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.psm1",
+                       "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.Resources.psd1",
                        "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageProviderFunctions.psm1",
                        "$solutionDir\Microsoft.PowerShell.PackageManagement\PackageManagement.format.ps1xml")
 					   
@@ -88,15 +114,6 @@ $destinationDir = "$solutionDir/out/PackageManagement"
 $destinationDirBinaries = "$destinationDir/$packageFramework"
 $destinationDirDscResourcesBase = "$destinationDir/DSCResources"
 
-# rename project.json.hidden to project.json
-foreach ($assemblyName in $assemblyNames)
-{
-    if (Test-Path ("$solutionDir\$assemblyName\project.json.hidden"))
-    {
-        Move-Item "$solutionDir\$assemblyName\project.json.hidden" "$solutionDir\$assemblyName\project.json" -Force
-    }
-}
-
 try
 {
     foreach ($assemblyName in $assemblyNames)
@@ -106,31 +123,21 @@ try
         Push-Location $assemblyName
         Write-Host "Restoring package for $assemblyName"
         dotnet restore
-        dotnet -v build --framework $Framework --configuration $Configuration
+        dotnet build --framework $Framework --configuration $Configuration
+        dotnet publish --framework $Framework --configuration $Configuration
         Pop-Location
     }
 }
 finally
 {
-    # rename project.json to project.json.hidden
-    foreach ($assemblyName in $assemblyNames)
-    {
-        if (Test-Path ("$solutionDir\$assemblyName\project.json"))
-        {
-            Move-Item "$solutionDir\$assemblyName\project.json" "$solutionDir\$assemblyName\project.json.hidden"
-        }
-
-        if (Test-Path ("$solutionDir\$assemblyName\project.lock.json"))
-        {
-            Remove-Item "$solutionDir\$assemblyName\project.lock.json"
-        }
-    }
 }
 
 
 CopyToDestinationDir $itemsToCopyCommon $destinationDir
-CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
-CopyToDestinationDir $itemsToCopyPdbs $destinationDirBinaries
+if (-not (CopyBinariesToDestinationDir $assemblyNames $destinationDirBinaries $Framework $Configuration '.dll' $solutionDir)) {
+    throw 'Build failed'
+}
+CopyBinariesToDestinationDir $assemblyNames $destinationDirBinaries $Framework $Configuration '.pdb' $solutionDir
 CopyToDestinationDir $dscResourceItemsCommon $destinationDirDscResourcesBase
 CopyToDestinationDir $dscResourceItemsPackage (Join-Path -Path $destinationDirDscResourcesBase -ChildPath "MSFT_PackageManagement")
 CopyToDestinationDir $dscResourceItemsPackageSource (Join-Path -Path $destinationDirDscResourcesBase -ChildPath "MSFT_PackageManagementSource")
