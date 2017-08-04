@@ -453,7 +453,7 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
         # Uncomment this once publish the new version of nuget
         $awssdk = Find-Package -Name "awssdk" -Provider $nuget -source $source -RequiredVersion 2.3.53
         [long]$awssdk.Meta.Attributes["downloadCount"] -ge 1023357 | should be $true
-        $awssdk.Meta.Attributes["updated"] | should match "2015-12-16T01:46:22Z"
+        $awssdk.Meta.Attributes["updated"] | should match "2015-12-15T17:46:22Z"
         $awssdk.TagId | should match "AWSSDK#2.3.53.0" 
     }
 
@@ -643,34 +643,34 @@ Describe "Save-Package" -Tags "Feature" {
                 Remove-Item -Recurse -Force -Path $newDestination -ErrorAction SilentlyContinue -WarningAction SilentlyContinue 
             }
 
-		    if (Test-Path $destination\zlib*) {
-			    Remove-Item $destination\zlib* -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force -Recurse
+		    if (Test-Path $destination\grpc.dependencies.zlib*) {
+			    Remove-Item $destination\grpc.dependencies.zlib* -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force -Recurse
 		    }
 
         }
     }
 
-    it "EXPECTED: Saves 'Zlib' Package to Packages Directory and install it without dependencies" {
-        $version = "1.2.8.8"
+    it "EXPECTED: Saves 'grpc.dependencies.zlib' Package to Packages Directory and install it without dependencies" {
+        $version = "1.2.8.10"
         $newDestination = "$TestDrive\newdestination\nugetinstallation"
 
         try {
-		    (save-package -name "zlib" -provider $nuget -source $source -Path $destination -RequiredVersion $version)
-		    (test-path $destination\zlib*) | should be $true
-            remove-item $destination\zlib.v1* -force -Recurse -ErrorAction SilentlyContinue 
+		    (save-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -Path $destination -RequiredVersion $version)
+		    (test-path $destination\grpc.dependencies.zlib*) | should be $true
+            remove-item $destination\grpc.dependencies.zlib.redist* -force -Recurse -ErrorAction SilentlyContinue 
 
             $Error.Clear()
-            install-package -name zlib -provider $nuget -source $destination -destination $newDestination -force -RequiredVersion $version -ErrorAction SilentlyContinue
+            install-package -name grpc.dependencies.zlib -provider $nuget -source $destination -destination $newDestination -force -RequiredVersion $version -ErrorAction SilentlyContinue
             $Error[0].FullyQualifiedErrorId | should match "UnableToFindDependencyPackage,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackage"
-            (Test-Path "$newDestination\zlib*") | should be $false
+            (Test-Path "$newDestination\grpc.dependencies.zlib*") | should be $false
         }
         finally {
             if (Test-Path $newDestination) {
                 Remove-Item -Recurse -Force -Path $newDestination
             }
 
-		    if (Test-Path $destination\zlib*) {
-			    Remove-Item $destination\zlib* -Force -Recurse
+		    if (Test-Path $destination\grpc.dependencies.zlib*) {
+			    Remove-Item $destination\grpc.dependencies.zlib* -Force -Recurse
 		    }
 
         }
@@ -1043,15 +1043,14 @@ Describe Install-Package -Tags "Feature" {
     $destination = Join-Path $TestDrive "NugetPackages"
     $relativetestpath = Join-Path $TestDrive "RelativeTestPath"
  
-	it "EXPECTED: Installs 'Zlib' Package To Packages Directory" {
-        $version = "1.2.8.8"
-		(install-package -name "zlib" -provider $nuget -source $source -destination $destination -force -RequiredVersion $version)
-		(test-path $destination\zlib.1.2*) | should be $true
+	it "EXPECTED: Installs 'grpc.dependencies.zlib' Package To Packages Directory" {
+        $version = "1.2.8.10"
+		(install-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -destination $destination -force -RequiredVersion $version)
+		(test-path $destination\grpc.dependencies.zlib*) | should be $true
         # Test that dependencies are installed
-        (test-path $destination\zlib.v120*) | should be $true
-        (test-path $destination\zlib.v140*) | should be $true
-		if (Test-Path $destination\zlib*) {
-			(Remove-Item -Recurse -Force -Path $destination\zlib*)
+        (test-path $destination\grpc.dependencies.zlib.redist*) | should be $true
+		if (Test-Path $destination\grpc.dependencies.zlib*) {
+			(Remove-Item -Recurse -Force -Path $destination\grpc.dependencies.zlib*)
 		}
     }
 
