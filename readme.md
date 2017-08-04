@@ -25,9 +25,11 @@
 PackageManagement is supported in Windows, Linux and MacOS now.
 We periodically make binary drop to [PowerShellCore][pscore],
 meaning PackageManagement is a part of PowerShell Core releases.
-Also PackageManagement and PowershellGet Modules are regularly getting updated in [PowerShellGallery.com.](https://www.PowerShellGallery.com)
-[pscore]: https://github.com/PowerShell/PowerShell.
+Also PackageManagement and PowershellGet Modules are regularly getting updated in [PowerShellGallery.com](https://www.PowerShellGallery.com).
+
 Thus checkout the latest version from PowerShellGallery.com.
+
+[pscore]: https://github.com/PowerShell/PowerShell
 
 ### Get Started!
 
@@ -47,7 +49,7 @@ You can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notifie
 [WMF5.0]: https://www.microsoft.com/en-us/download/details.aspx?id=50395
 [WMF5.1]: https://www.microsoft.com/en-us/download/details.aspx?id=53347
 
-#### What is PackageManagement (OneGet)?
+### What is PackageManagement (OneGet)?
 
 OneGet is a Windows package manager, renamed as PackageManagement. It is a unified interface to package management systems and aims to make Software Discovery, Installation and Inventory (SDII) work via a common set of cmdlets (and eventually a set of APIs). Regardless of the installation technology underneath, users can use these common cmdlets to install/uninstall packages, add/remove/query package repositories, and query a system for the software installed.
 
@@ -56,7 +58,7 @@ With OneGet, you can
 * Search and filter your repositories to find the packages you need
 * Seamlessly install and uninstall packages from one or more repositories with a single PowerShell command
 
-#####PackageManagement Architecture#####
+#### PackageManagement Architecture
 
 ![Image](./assets/OneGetArchitecture.PNG?raw=true)
 
@@ -107,7 +109,7 @@ You are installing the modules from an untrusted repository. If you trust this r
 you sure you want to install the modules from 'gallery'?
 [Y] Yes  [A] Yes to All  [N] No  [L] No to All  [S] Suspend  [?] Help (default is "N"): y
 
-# 4. Find out if a module installed
+# 4. Find out if a module is installed
 
 PS E:\> Get-InstalledModule -name xjea
 
@@ -115,13 +117,13 @@ Version    Name        Repository      Description
 -------    ----        ----------       -----------
 0.3.0.0    xJea        gallery          Module with DSC Resources for Just Enough Admin (JEA)..
 
-# 5. Unisntall a module
+# 5. Uninstall a module
 
 PS E:\> Uninstall-Module -name xjea
 ```
-<br/>
+
 #### Working with http://www.NuGet.org repository
-<br/>
+
 ```powershell
 
 # find a package from the nuget repository
@@ -167,22 +169,18 @@ PS E:\> find-package -Source test -name jquery
 Name                Version          Source           Summary
 ----                -------          ------           -------
 jQuery              3.1.1            test             jQuery is a new kind of JavaScript Library....
-
 ```
-
-<br/>
 
 ### Try the latest PackageManagement (OneGet)
 
 You can run `install-module PowerShellGet` to install the latest PackageManagment and PowerShellGet from [PowerShellGallery](https://www.powershellgallery.com).
-[pscore]:https://github.com/PowerShell/PowerShell
 
 ### Downloading the Source Code
-OneGet repo has a number of other repositories embeded as submodules. To make things say, you can just clone recursively:
+OneGet repo has a number of other repositories embeded as submodules. To make things easy, you can just clone recursively:
 ```powershell
 git clone --recursive https://github.com/OneGet/oneget.git
 ```
-If you already cloned but forgot to use --recursive, you can update submodules manually:
+If you already cloned but forgot to use `--recursive`, you can update submodules manually:
 ```powershell
 git submodule update --init
 ```
@@ -190,9 +188,7 @@ git submodule update --init
 ### Building the code
 
 ``` powershell
-
-After clone this repository, go to the project folder
-
+# After cloning this repository, go to the project folder:
 > cd oneget
 > cd src
 
@@ -204,17 +200,17 @@ After clone this repository, go to the project folder
 
 #building OneGet for coreclr
 > .\build.ps1 netstandard1.6
+```
 
 If successfully built above, you should be able to see a folder:
-\oneget\src\out\PackageManagement gets created. The layout looks like below:
+`oneget\src\out\PackageManagement\` whose layout looks like below:
 
-      coreclr
-      fullclr
-      PackageManagement.format.ps1xml
-      PackageManagement.psd1
-      PackageManagement.psm1
-      PackageProviderFunctions.psm1
-```
+ * `coreclr`
+ * `fullclr`
+ * `PackageManagement.format.ps1xml`
+ * `PackageManagement.psd1`
+ * `PackageManagement.psm1`
+ * `PackageProviderFunctions.psm1`
 
 ### Deploying it
 
@@ -259,10 +255,7 @@ if you are running on Linux or Mac.
 > cd Test
 > & '.\run-tests.ps1' fullclr
 > & '.\run-tests.ps1' coreclr
-
-
 ```
-
 
 ### Understanding the OneGet code repository
 
