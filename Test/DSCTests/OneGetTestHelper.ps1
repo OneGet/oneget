@@ -53,7 +53,7 @@ configuration Sample_InstallPester
         [string]$DestinationPath       
     )
 
-    Import-DscResource -Module PackageManagement -ModuleVersion 1.1.4.0
+    Import-DscResource -Module PackageManagement -ModuleVersion 1.1.5.0
 
     Node "localhost"
     {
@@ -153,8 +153,7 @@ function SetupPackageManagementTest
 
     $script:DestinationPath = "$CurrentDirectory\TestResult\PackageManagementTest" 
     if ((Get-Variable -Name IsCoreCLR -ErrorAction Ignore) -and $IsCoreCLR) {
-        # Assume the latest version is the version we're using (it'd be nice to have a better way to do this)
-        $latestPsVersion = get-childitem "$Env:ProgramFiles\PowerShell" | where-object {$_.Name -match '[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+'} | sort-object ($_.Name -as [Version]) -descending | select-object -first 1 | %{ $_.Name }
+        $latestPsVersion = $PSVersionTable.GitCommitId.Substring(1)
         Write-Verbose -Message "PSVersion: $latestPsVersion" -Verbose
         $script:PSModuleBase = "$Env:ProgramFiles\PowerShell\$latestPsVersion\modules"
         Write-Verbose -Message "Path $script:PSModuleBase" -Verbose

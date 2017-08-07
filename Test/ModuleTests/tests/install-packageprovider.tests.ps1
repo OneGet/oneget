@@ -40,22 +40,26 @@ $InternalSource2 = 'OneGetTestSource2'
 $ProviderFolder = "$env:ProgramFiles\PackageManagement\ProviderAssemblies"
 
 #make sure the package repository exists
-$a=Get-PackageSource | select Name, Location, ProviderName
+$a= try { Get-PackageSource | select Name, Location, ProviderName } catch { $null }
     
 $found = $false
-foreach ($item in $a)
-{       
-    #name contains "." foo.bar for example for the registered sources internally
-    if($item.ProviderName -eq "PowerShellGet")
-    {
-        if (($item.Location -eq $InternalGallery) -or ($item.Location -eq $InternalGallery2)) {
-            Unregister-PackageSource $item.Name -Provider "PowerShellGet" -ErrorAction SilentlyContinue
+if ($a) {
+    foreach ($item in $a)
+    {       
+        #name contains "." foo.bar for example for the registered sources internally
+        if($item.ProviderName -eq "PowerShellGet")
+        {
+            if (($item.Location -eq $InternalGallery) -or ($item.Location -eq $InternalGallery2)) {
+                Unregister-PackageSource $item.Name -Provider "PowerShellGet" -ErrorAction SilentlyContinue
+            }
         }
     }
 }
 
-Register-PackageSource -Name $InternalSource -Location $InternalGallery -ProviderName 'PowerShellGet' -Trusted -ErrorAction SilentlyContinue
-Register-PackageSource -Name $InternalSource2 -Location $InternalGallery2 -ProviderName 'PowerShellGet' -ErrorAction SilentlyContinue
+try {
+    Register-PackageSource -Name $InternalSource -Location $InternalGallery -ProviderName 'PowerShellGet' -Trusted -ErrorAction SilentlyContinue
+    Register-PackageSource -Name $InternalSource2 -Location $InternalGallery2 -ProviderName 'PowerShellGet' -ErrorAction SilentlyContinue
+} catch {}
 #>
 
 # ------------------------------------------------------------------------------

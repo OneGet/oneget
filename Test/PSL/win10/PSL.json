@@ -1,13 +1,13 @@
 {
 	"PowerShell": {
-		"displayName": "PowerShell_6.0.0.14",
-		"source": "https://github.com/PowerShell/PowerShell/releases/download/v6.0.0-alpha.14/PowerShell_6.0.0.14-alpha.14-win10-x64.msi",			   
+		"displayName": "PowerShell_6.0.0-beta.3",
+		"source": "https://github.com/PowerShell/PowerShell/releases/download/v6.0.0-beta.3/PowerShell-6.0.0-beta.3-win10-win2016-x64.msi",			   
 		"hash": {
 			"algorithm": "sha512",
-			"hashCode": "783F2793FE854B889591551621BBDF1C577FDA8FBFDF1321AAC22256133A82FC568F8405F312B2D7E90948446D960AC7778332620A3AEC6AA2299CFC5A5F81EB"
+			"hashCode": "A517AF70C759D8F41FAAB35B2DAD2BD9B27A12D8144F911E0463841850D1AB686318D1C7D70116459DB04C6B7B6E0D8AFBAEE28BABE19F0353FFE2CEC5C0C2A0"
 		},
 		"summary": "Powershell",
 		"type": "msi",
-		"version": "6.0.0.14"
+		"version": "6.0.0-beta.3"
 	}
 }

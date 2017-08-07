@@ -21,6 +21,16 @@ $nameSpaceDict = @{
     "Microsoft.PackageManagement.NuGetProvider" = "Microsoft.PackageManagement.NuGetProvider"
 }
 
+$moduleNameDict = @{
+    "Microsoft.PackageManagement" = "Microsoft.PackageManagement";
+    "Microsoft.PackageManagement.CoreProviders" = "Microsoft.PackageManagement.CoreProviders";
+    "Microsoft.PackageManagement.MetaProvider.PowerShell" = "Microsoft.PackageManagement.MetaProvider.PowerShell";
+    "Microsoft.PackageManagement.MsiProvider" = "Microsoft.PackageManagement.MsiProvider";
+    "Microsoft.PackageManagement.MsuProvider" = "Microsoft.PackageManagement.MsuProvider";
+    "Microsoft.PowerShell.PackageManagement" = "Microsoft.PowerShell.PackageManagement";
+    "Microsoft.PackageManagement.NuGetProvider" = "NuGetProvider"
+}
+
 function Get-StronglyTypeCsFileForResx
 {
     param($xml, $ClassName, $moduleName)
@@ -145,8 +155,11 @@ internal class {0} {{
 }
 
 $projectRoot = Split-Path $MyInvocation.InvocationName
-if (-not (Test-Path "$projectRoot/global.json"))
-{
+$topLevel = git rev-parse --show-toplevel
+$topLevel = $toplevel.Replace('/', '\')
+$expectedRoot = Join-Path $topLevel 'src'
+$actualRoot = Resolve-Path $projectRoot
+if ($expectedRoot -ne $actualRoot) {
     throw "Not in solution root"
 }
 $inputFilePath = Join-Path $projectRoot "$project/resources/Messages.resx"
@@ -163,6 +176,10 @@ if ($nameSpaceDict.ContainsKey($project)) {
     $newResxFile = Join-Path $projectRoot "$project/resources/$className.resx"
     Copy-Item $inputFilePath $newResxFile -Force
     $xml = [xml](Get-Content -raw $inputFilePath)
-    $genSource = Get-StronglyTypeCsFileForResx -xml $xml -ClassName $className -moduleName $project
+    $moduleName = $project
+    if ($moduleNameDict.ContainsKey($project)) {
+        $moduleName = $moduleNameDict[$project]
+    }
+    $genSource = Get-StronglyTypeCsFileForResx -xml $xml -ClassName $className -moduleName $moduleName
     Set-Content -Encoding Ascii -Path $outputFilePath -Value $genSource
 }

@@ -1,0 +1,13 @@
+{
+	"PowerShell": {
+		"displayName": "PowerShell_6.0.0.14",
+		"source": "https://github.com/PowerShell/PowerShell/releases/download/v6.0.0-alpha.14/PowerShell_6.0.0.14-alpha.14-win81-x64.msi",			   
+		"hash": {
+			"algorithm": "sha512",
+			"hashCode": "910AB4E34B5CAA7DCCF356773BE924766B68F8CA633D82D7C5418E7B7CA8A7682838A7CC87D8A953A244B64FB1506E9162F19D218B892E76E06B2D1D5102B149"
+		},
+		"summary": "Powershell",
+		"type": "msi",
+		"version": "6.0.0.14"
+	}
+}

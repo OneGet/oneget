@@ -33,12 +33,12 @@ function Start-DotnetBootstrap {
         SupportsShouldProcess=$true,
         ConfirmImpact="High")]
     param(
-        [string]$Channel = "rel-1.0.0",
+        [string]$Channel = "preview",
         #[string]$Version = "latest",
         # we currently pin dotnet-cli version, because tool
         # is currently migrating to msbuild toolchain
         # and requires constant updates to our build process.
-        [string]$Version = "1.0.0-preview3-003930"              
+        [string]$Version = "2.0.0-preview2-006388"              
     )
 
     # Install ours and .NET's dependencies
@@ -75,12 +75,7 @@ function Start-DotnetBootstrap {
         brew install $Deps
     }
 
-
-    # this url is temporarely workaround because of https://github.com/dotnet/cli/issues/4715
- 
-    #$obtainUrl = "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain"
-
-    $obtainUrl = "https://raw.githubusercontent.com/dotnet/cli/9855dc0088cf7e56e24860c734f33fe8353f38a6/scripts/obtain"
+    $obtainUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain"
 	  
 
     # Install for Linux and OS X
