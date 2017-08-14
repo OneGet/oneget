@@ -13,7 +13,8 @@ if ($isCore)
     $loadFromMethod = [System.Reflection.Assembly].GetMethods() | Where-Object { $_.Name -eq 'LoadFrom' }
     if (-not $loadFromMethod)
     {
-        throw $LocalizedData.OldPowerShellCoreVersion
+        $psVersionString = $PSVersionTable.PSVersion.ToString()
+        throw ($LocalizedData.OldPowerShellCoreVersion -f $psVersionString)
     }
 }
 
