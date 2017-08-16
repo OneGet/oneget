@@ -13,8 +13,12 @@ if ($isCore)
     $loadFromMethod = [System.Reflection.Assembly].GetMethods() | Where-Object { $_.Name -eq 'LoadFrom' }
     if (-not $loadFromMethod)
     {
-        $psCoreVersion = $PSVersionTable.GitCommitId
-        throw ($LocalizedData.OldPowerShellCoreVersion -f $psCoreVersion)
+        if ($PSVersionTable.ContainsKey('GitCommitId')) {
+            $psVersionString = $PSVersionTable.GitCommitId
+        } else {
+            $psVersionString = $PSVersionTable.PSVersion.ToString()
+        }
+        throw ($LocalizedData.OldPowerShellCoreVersion -f $psVersionString)
     }
 }
 
