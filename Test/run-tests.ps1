@@ -435,7 +435,7 @@ if ($testframework -eq "coreclr")
     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
     Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellFolder)\Modules"  -Recurse -force -verbose
 
-    if ($powershellLegacyFolder) {
+    if ($powershellLegacyFolder -and $script:IsWindows) {
         $PSGetPath = "$powershellLegacyFolder\Modules\PowerShellGet\$PowerShellGetVersion\"
 
         Write-Verbose ("Legacy PowerShellGet Folder '{0}'" -f $PSGetPath)
@@ -556,7 +556,7 @@ if ($testframework -eq "coreclr")
             throw "$($x.'test-results'.failures) tests failed"
         }
     }
-    if ($powershellLegacyFolder) {
+    if ($powershellLegacyFolder -and $script:IsWindows) {
         # Tests on legacy version of PowerShell Core
         $command = ""
         $command += "Import-Module '$pesterFolder';`$global:IsLegacyTestRun=`$true;"
@@ -565,14 +565,7 @@ if ($testframework -eq "coreclr")
 
         Write-Host "(Legacy) CoreCLR: Calling $powershellLegacyFolder\powershell -command  $command"
 
-        if($script:IsWindows)
-        {
-            & "$powershellLegacyFolder\powershell" -command "& {$command}"
-        }
-        else
-        {
-            & powershell -command "& {$command}"
-        }
+        & "$powershellLegacyFolder\powershell" -command "& {$command}"
 
         $x = [xml](Get-Content -raw $testResultsFile)
         if ([int]$x.'test-results'.failures -gt 0)
