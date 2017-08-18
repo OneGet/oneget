@@ -1,5 +1,5 @@
 ﻿param(
-    [ValidateSet("net451", "netcoreapp2.0")]
+    [ValidateSet("net451", "netcoreapp2.0", "netstandard1.6")]
     [string]$Framework = "netcoreapp2.0",
 
     [ValidateSet("Debug", "Release")]
@@ -61,7 +61,7 @@ Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $c
 $solutionPath = Split-Path $MyInvocation.InvocationName
 $solutionDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($solutionPath)
 
-if ($Framework -eq "netcoreapp2.0")
+if (($Framework -eq "netcoreapp2.0") -or ($Framework -eq "netstandard1.6"))
 {
     $packageFramework ="coreclr"
     $assemblyNames = @(
@@ -111,7 +111,7 @@ $dscResourceItemsPackageSource = @("$solutionDir\Microsoft.PackageManagement.Dsc
 					  "$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.strings.psd1")
 
 $destinationDir = "$solutionDir/out/PackageManagement"
-$destinationDirBinaries = "$destinationDir/$packageFramework"
+$destinationDirBinaries = "$destinationDir/$packageFramework/$Framework"
 $destinationDirDscResourcesBase = "$destinationDir/DSCResources"
 
 try
@@ -153,9 +153,6 @@ if(test-path $packageFileName)
     Remove-Item $packageFileName -force
 }
 
-if ($packageFramework -eq "fullclr")
-{
-  Add-Type -assemblyname System.IO.Compression.FileSystem
-}
+Add-Type -assemblyname System.IO.Compression.FileSystem
 Write-Verbose "Zipping $sourcePath into $packageFileName" -verbose
 [System.IO.Compression.ZipFile]::CreateFromDirectory($sourcePath, $packageFileName) 

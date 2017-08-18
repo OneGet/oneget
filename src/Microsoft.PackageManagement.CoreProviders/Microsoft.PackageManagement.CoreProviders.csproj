@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net451;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net451;netcoreapp2.0;netstandard1.6</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.PackageManagement.CoreProviders</AssemblyName>
@@ -9,8 +9,9 @@
     <SignAssembly>true</SignAssembly>
     <PackageId>Microsoft.PackageManagement.CoreProviders</PackageId>
     <RuntimeIdentifiers>win7-x64;win81-x64;win10-x64</RuntimeIdentifiers>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <PackageTargetFallback Condition=" ('$(TargetFramework)' == 'netcoreapp2.0') Or ('$(TargetFramework)' == 'netstandard1.6') ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">2.0.0</NetStandardImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -28,7 +29,7 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
     <PackageReference Include="System.Management.Automation" Version="6.0.0-beta.2" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup Condition=" ('$(TargetFramework)' == 'net451') Or ('$(TargetFramework)' == 'netstandard1.6') ">
     <PackageReference Include="System.Management.Automation" Version="1.0.0-alpha9" />
   </ItemGroup>
 
@@ -63,7 +64,12 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+    <DefineConstants>$(DefineConstants);CORECLR;COREv1</DefineConstants>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+  
+  <ItemGroup Condition=" ('$(TargetFramework)' == 'netcoreapp2.0') Or ('$(TargetFramework)' == 'netstandard1.6') ">
     <Compile Remove="Resources\Messages.Designer.cs;ProgramsProvider.cs" />
     <EmbeddedResource Remove="Resources\Messages.resx" />
   </ItemGroup>
