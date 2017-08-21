@@ -111,7 +111,14 @@ $dscResourceItemsPackageSource = @("$solutionDir\Microsoft.PackageManagement.Dsc
 					  "$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.strings.psd1")
 
 $destinationDir = "$solutionDir/out/PackageManagement"
-$destinationDirBinaries = "$destinationDir/$packageFramework/$Framework"
+if (($Framework -eq "netcoreapp2.0") -or ($Framework -eq "netstandard1.6"))
+{
+    $destinationDirBinaries = "$destinationDir/$packageFramework/$Framework"
+} else 
+{
+    $destinationDirBinaries = "$destinationDir/$packageFramework"
+}
+
 $destinationDirDscResourcesBase = "$destinationDir/DSCResources"
 
 try

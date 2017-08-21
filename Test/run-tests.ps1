@@ -148,7 +148,7 @@ if ($testframework -eq "fullclr")
 
     # Copying files to Packagemanagement and PowerShellGet folders
     Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
-    Copy-Item "$TestBin\fullclr\net451\*.dll" $packagemanagementfolder -force -Verbose
+    Copy-Item "$TestBin\fullclr\*.dll" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.ps1" $packagemanagementfolder -force -Verbose

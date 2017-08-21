@@ -18,7 +18,7 @@ if ($isCore)
         $binarySubPath = Join-Path -Path 'coreclr' -ChildPath 'netstandard1.6'
     }
 } else {
-    $binarySubPath = Join-Path -Path 'fullclr' -ChildPath 'net451'
+    $binarySubPath = 'fullclr'
 }
 
 # Set up some helper variables to make it easier to work with the module
