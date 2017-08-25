@@ -6,20 +6,19 @@ Microsoft.PowerShell.Utility\Import-LocalizedData  LocalizedData -filename Packa
 
 # Summary: PackageManagement is supported on Windows PowerShell 3.0 or later, Nano Server and PowerShellCore
 $isCore = ($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')
+$binarySubPath = ''
 if ($isCore)
 {
-    # PackageManagement only works on versions of PowerShell Core built on .NETCoreApp 2.0 and above
-    # The following API was added in PackageManagement as a dependency
+    # Using the Assembly.LoadFrom API to determine if this is netcoreapp2.0 or if it's older
     $loadFromMethod = [System.Reflection.Assembly].GetMethods() | Where-Object { $_.Name -eq 'LoadFrom' }
-    if (-not $loadFromMethod)
+    if ($loadFromMethod)
     {
-        if ($PSVersionTable.ContainsKey('GitCommitId')) {
-            $psVersionString = $PSVersionTable.GitCommitId
-        } else {
-            $psVersionString = $PSVersionTable.PSVersion.ToString()
-        }
-        throw ($LocalizedData.OldPowerShellCoreVersion -f $psVersionString)
+        $binarySubPath = Join-Path -Path 'coreclr' -ChildPath 'netcoreapp2.0'
+    } else {
+        $binarySubPath = Join-Path -Path 'coreclr' -ChildPath 'netstandard1.6'
     }
+} else {
+    $binarySubPath = 'fullclr'
 }
 
 # Set up some helper variables to make it easier to work with the module
@@ -38,12 +37,7 @@ $binaryModuleRoot = $script:PSModuleRoot
 if(-not (Test-Path -Path $OneGetModulePath))
 {
     # Import the appropriate nested binary module based on the current PowerShell version
-    $binaryModuleRoot = Join-Path -Path $script:PSModuleRoot -ChildPath 'fullclr'
-
-    if ($isCore) {
-        $binaryModuleRoot = Join-Path -Path $script:PSModuleRoot -ChildPath 'coreclr'
-    }
-    
+    $binaryModuleRoot = Join-Path -Path $script:PSModuleRoot -ChildPath $binarySubPath
     $OneGetModulePath = Join-Path -Path $binaryModuleRoot -ChildPath $script:PkgMgmt
 }
 
