@@ -4,7 +4,7 @@ try {
     $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
     $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
 
-    $IsCoreCLR = $true
+    $IsCoreCLR = ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core')
     $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
     $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
     $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)

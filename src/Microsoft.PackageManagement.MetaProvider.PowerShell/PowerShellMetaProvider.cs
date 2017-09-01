@@ -179,8 +179,19 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
 
                             if (!File.Exists(_powershellProviderFunctionsPath))
                             {
-                                // oh-oh, no powershell functions file.
-                                throw new Exception(String.Format(CultureInfo.CurrentCulture, Resources.Messages.UnableToFindPowerShellFunctionsFile, _powershellProviderFunctionsPath));
+                                // For now just try another level - sometimes this is the framework directory (e.g. net451)
+                                // Need to fix the BaseFolder calculation
+                                try
+                                {
+                                    _powershellProviderFunctionsPath = Path.Combine(Path.GetDirectoryName(BaseFolder), "..", "PackageProviderFunctions.psm1");
+                                }
+                                catch { }
+
+                                if (!File.Exists(_powershellProviderFunctionsPath))
+                                {
+                                    // oh-oh, no powershell functions file.
+                                    throw new Exception(String.Format(CultureInfo.CurrentCulture, Resources.Messages.UnableToFindPowerShellFunctionsFile, _powershellProviderFunctionsPath));
+                                }
                             }
                         }
                     }
@@ -478,6 +489,26 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                             return new PowerShellPackageProvider(ps, result, requiredVersion);
                         } catch (Exception e) {
                             e.Dump(request);
+                        }
+                    }
+                    else if (ps.HadErrors)
+                    {
+                        foreach (var errorMessage in ps.Streams.Error.Select(e => e.ErrorDetails).Select(ed => ed.Message))
+                        {
+                            if (logWarning)
+                            {
+                                request.Warning(errorMessage);
+                            }
+                        }
+                    }
+                }
+                else if (ps.HadErrors)
+                {
+                    foreach (var errorMessage in ps.Streams.Error.Select(e => e.ErrorDetails).Select(ed => ed.Message))
+                    {
+                        if (logWarning)
+                        {
+                            request.Warning(errorMessage);
                         }
                     }
                 }
