@@ -71,10 +71,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         public override bool ProcessRecordAsync() {
             
-            ValidateVersion(RequiredVersion);
-            ValidateVersion(MinimumVersion);
-            ValidateVersion(MaximumVersion);
-
             // If AllVersions is specified, make sure other version parameters are not supplied
             if (AllVersions.IsPresent)
             {
