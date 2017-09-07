@@ -1312,6 +1312,18 @@ Describe Get-Package -Tags "Feature" {
 			(Remove-Item -Recurse -Force -Path $destination\adept.nugetrunner*)
 		}
     }
+
+    It "Get-Package -RequiredVersion with prerelease version, Expect error" {
+        $package =  Get-Package -Name FooPackage -RequiredVersion '3.0.0-rc-3' -ErrorVariable ev -ErrorAction SilentlyContinue
+        $package | Should BeNullOrEmpty
+        $ev.FullyQualifiedErrorId | should be 'NoMatchFound,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackage'
+    }
+
+    It "Get-Package with prerelease version in -MinimumVersion and -MaximumVersion, Expect error" {
+        $package =  Get-Package -Name FooPackage -MinimumVersion '3.0.0-rc-3' -MaximumVersion '3.0.0-rc-3' -ErrorVariable ev -ErrorAction SilentlyContinue
+        $package | Should BeNullOrEmpty
+        $ev.FullyQualifiedErrorId | should be 'NoMatchFound,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackage'
+    }
 }
 
 Describe Uninstall-Package -Tags "Feature" {
@@ -1431,6 +1443,18 @@ Describe Uninstall-Package -Tags "Feature" {
         $Error.Clear()
         $package =  uninstall-package -name " " -warningaction:silentlycontinue -ErrorVariable wildcardError -ErrorAction SilentlyContinue        
         $wildcardError.FullyQualifiedErrorId | should be "WhitespacesAreNotSupported,Microsoft.PowerShell.PackageManagement.Cmdlets.UninstallPackage"
+    }
+
+    It "Uninstall-Package -RequiredVersion with prerelease version, Expect error" {
+        $package =  Uninstall-Package -Name FooPackage -RequiredVersion '3.0.0-rc-3' -ErrorVariable ev -ErrorAction SilentlyContinue
+        $package | Should BeNullOrEmpty
+        $ev.FullyQualifiedErrorId | should be 'NoMatchFound,Microsoft.PowerShell.PackageManagement.Cmdlets.UninstallPackage'
+    }
+
+    It "Uninstall-Package with prerelease version in -MinimumVersion and -MaximumVersion, Expect error" {
+        $package =  Uninstall-Package -Name FooPackage -MinimumVersion '3.0.0-rc-3' -MaximumVersion '3.0.0-rc-3' -ErrorVariable ev -ErrorAction SilentlyContinue
+        $package | Should BeNullOrEmpty
+        $ev.FullyQualifiedErrorId | should be 'NoMatchFound,Microsoft.PowerShell.PackageManagement.Cmdlets.UninstallPackage'
     }
 }
 
