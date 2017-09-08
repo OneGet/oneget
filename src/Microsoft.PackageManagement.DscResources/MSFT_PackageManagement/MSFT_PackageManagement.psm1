@@ -57,6 +57,9 @@ function Get-TargetResource
     .PARAMETER AdditionalParameters
     Provider specific parameters that are passed as an Hashtable. For example, for NuGet provider you can
     pass additional parameters like DestinationPath.
+
+    .PARAMETER AllowClobber
+    Imports the module even if function names conflict with functions allread available on the machine.
     #>
 
     [CmdletBinding()]
@@ -91,7 +94,11 @@ function Get-TargetResource
         $ProviderName,
         
         [Parameter()]
-        [Microsoft.Management.Infrastructure.CimInstance[]]$AdditionalParameters        
+        [Microsoft.Management.Infrastructure.CimInstance[]]$AdditionalParameters,
+        
+        [Parameter()]
+        [System.Boolean]
+        $AllowClobber=$false
     )
     
     $ensure = "Absent"
@@ -107,6 +114,7 @@ function Get-TargetResource
          }
     }
     $null = $PSBoundParameters.Remove("AdditionalParameters")
+    $null = $PSBoundParameters.Remove("AllowClobber")
     
     $verboseMessage =$localizedData.StartGetPackage -f (GetMessageFromParameterDictionary $PSBoundParameters),$env:PSModulePath
     Write-Verbose -Message $verboseMessage
@@ -155,6 +163,7 @@ function Get-TargetResource
                 ProviderName       = $result.ProviderName
                 Source             = $result.source
                 RequiredVersion    = $result.Version
+                AllowClobber       = $AllowClobber
             } 
     } 
 }
@@ -201,6 +210,9 @@ function Test-TargetResource
     .PARAMETER AdditionalParameters
     Provider specific parameters that are passed as an Hashtable. For example, for NuGet provider you can
     pass additional parameters like DestinationPath.
+
+    .PARAMETER AllowClobber
+    Imports the module even if function names conflict with functions allread available on the machine.
     #>
 
     [CmdletBinding()]
@@ -239,7 +251,11 @@ function Test-TargetResource
         $ProviderName,
         
         [Parameter()]
-        [Microsoft.Management.Infrastructure.CimInstance[]]$AdditionalParameters         
+        [Microsoft.Management.Infrastructure.CimInstance[]]$AdditionalParameters,
+        
+        [Parameter()]
+        [System.Boolean]
+        $AllowClobber=$false    
     )
 
     
@@ -301,6 +317,9 @@ function Set-TargetResource
     .PARAMETER AdditionalParameters
     Provider specific parameters that are passed as an Hashtable. For example, for NuGet provider you can
     pass additional parameters like DestinationPath.
+
+    .PARAMETER AllowClobber
+    Imports the module even if function names conflict with functions allread available on the machine.
     #>
 
     [CmdletBinding()]
@@ -338,7 +357,11 @@ function Set-TargetResource
         $ProviderName,
         
         [Parameter()]
-        [Microsoft.Management.Infrastructure.CimInstance[]]$AdditionalParameters        
+        [Microsoft.Management.Infrastructure.CimInstance[]]$AdditionalParameters,
+        
+        [Parameter()]
+        [System.Boolean]
+        $AllowClobber=$false   
     )
 
     Write-Verbose -Message ($localizedData.StartSetPackage -f (GetMessageFromParameterDictionary $PSBoundParameters))
@@ -355,23 +378,23 @@ function Set-TargetResource
     }
 
     $PSBoundParameters.Remove("AdditionalParameters")
-
+    $PSBoundParameters.Remove("AllowClobber")
        
-        # We do not want others to control the behavior of ErrorAction
-        # while calling Install-Package/Uninstall-Package.
-        $PSBoundParameters.Remove("ErrorAction")
-        if ($Ensure -eq "Present")
-        {
-            PackageManagement\Install-Package @PSBoundParameters -ErrorAction Stop
-        }   
-        else
-        {
-            # we dont source location for uninstalling an already
-            # installed package
-            $PSBoundParameters.Remove("Source")
-            # Ensure is Absent
-            PackageManagement\Uninstall-Package @PSBoundParameters -ErrorAction Stop
-        }
+    # We do not want others to control the behavior of ErrorAction
+    # while calling Install-Package/Uninstall-Package.
+    $PSBoundParameters.Remove("ErrorAction")
+    if ($Ensure -eq "Present")
+    {
+        PackageManagement\Install-Package @PSBoundParameters -AllowClobber:$AllowClobber -ErrorAction Stop
+    }   
+    else
+    {
+        # we dont source location for uninstalling an already
+        # installed package
+        $PSBoundParameters.Remove("Source")
+        # Ensure is Absent
+        PackageManagement\Uninstall-Package @PSBoundParameters -AllowClobber:$AllowClobber -ErrorAction Stop
+    }
  }
  
  function GetMessageFromParameterDictionary
