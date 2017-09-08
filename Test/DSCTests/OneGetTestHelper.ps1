@@ -155,7 +155,18 @@ function SetupPackageManagementTest
     if ((Get-Variable -Name IsCoreCLR -ErrorAction Ignore) -and $IsCoreCLR) {
         $latestPsVersion = $PSVersionTable.GitCommitId.Substring(1)
         Write-Verbose -Message "PSVersion: $latestPsVersion" -Verbose
-        $script:PSModuleBase = "$Env:ProgramFiles\PowerShell\$latestPsVersion\modules"
+        $moduleBaseCandidate = "$Env:ProgramFiles\PowerShell\$latestPsVersion\modules"
+        # Trim off excess from the GitCommitId for daily builds of PSCore
+        while (($latestPsVersion.Length -gt 1) -and (-not (Test-Path $moduleBaseCandidate)))
+        {
+            $latestPsVersion = $latestPsVersion.Substring(0, $latestPsVersion.Length-1)
+            $moduleBaseCandidate = "$Env:ProgramFiles\PowerShell\$latestPsVersion\modules"
+        }
+        if (-not (Test-Path $moduleBaseCandidate))
+        {
+            throw "Failed to find module base from GitCommitId $($PSVersionTable.GitCommitId)"
+        }
+        $script:PSModuleBase = $moduleBaseCandidate
         Write-Verbose -Message "Path $script:PSModuleBase" -Verbose
     } else {
         Write-Verbose -Message "Setting up test as Full CLR" -Verbose
