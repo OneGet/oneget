@@ -65,7 +65,7 @@ configuration Sample_InstallPester
             Ensure      = "Present"
             Name        = "Mynuget"
             ProviderName= "Nuget" 
-            SourceLocation   = "http://nuget.org/api/v2/"    
+            SourceLocation   = "$env:NUGET_API_URL"    
             InstallationPolicy ="Trusted"
         }   
         

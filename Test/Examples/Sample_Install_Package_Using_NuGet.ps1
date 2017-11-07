@@ -50,7 +50,7 @@ configuration Sample_Install_Package_Using_NuGet
             Ensure      = "Present"
             Name        = "MyNuget"
             ProviderName= "Nuget"
-            SourceLocation   = "http://nuget.org/api/v2/"  
+            SourceLocation   = "$env:NUGET_API_URL"  
             InstallationPolicy ="Trusted"
         }   
         
