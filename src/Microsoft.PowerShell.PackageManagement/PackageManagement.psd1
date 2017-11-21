@@ -19,21 +19,21 @@
     Author = "Microsoft Corporation"
     CompanyName = "Microsoft Corporation"
     Copyright = "(C) Microsoft Corporation. All rights reserved."
-    HelpInfoUri = "http://go.microsoft.com/fwlink/?linkid=392040"
+    HelpInfoUri = "https://go.microsoft.com/fwlink/?linkid=855962"
     ModuleVersion = "1.1.7.0"
     PowerShellVersion = "3.0"
     ClrVersion = "4.0"
     RootModule = "PackageManagement.psm1"
-	Description = 'PackageManagement (a.k.a. OneGet) is a new way to discover and install software packages from around the web. 
- It is a manager or multiplexor of existing package managers (also called package providers) that unifies Windows package management with a single Windows PowerShell interface. With PackageManagement, you can do the following. 
-  - Manage a list of software repositories in which packages can be searched, acquired and installed 
-  - Discover software packages 
+	Description = 'PackageManagement (a.k.a. OneGet) is a new way to discover and install software packages from around the web.
+ It is a manager or multiplexor of existing package managers (also called package providers) that unifies Windows package management with a single Windows PowerShell interface. With PackageManagement, you can do the following.
+  - Manage a list of software repositories in which packages can be searched, acquired and installed
+  - Discover software packages
   - Seamlessly install, uninstall, and inventory packages from one or more software repositories'
 
     CmdletsToExport = @(
         'Find-Package',
         'Get-Package',
-        'Get-PackageProvider', 
+        'Get-PackageProvider',
         'Get-PackageSource',
         'Install-Package',
         'Import-PackageProvider'
@@ -49,9 +49,9 @@
 	FormatsToProcess  = @('PackageManagement.format.ps1xml')
 
 	PrivateData = @{
-        PSData = @{        
+        PSData = @{
             Tags = @('PackageManagement', 'PSEdition_Core', 'PSEdition_Desktop', 'Linux', 'Mac')
             ProjectUri = 'https://oneget.org'
-        } 
+        }
     }
 }
