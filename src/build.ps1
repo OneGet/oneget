@@ -138,6 +138,7 @@ foreach ($currentFramework in $frameworks)
             .\New-StronglyTypedCsFileForResx.ps1 -Project $assemblyName
             Push-Location $assemblyName
             Write-Host "Restoring package for $assemblyName"
+			$env:EMBEDPROVIDERMANIFEST = 'true'
             dotnet restore
             dotnet build --framework $currentFramework --configuration $Configuration
             dotnet publish --framework $currentFramework --configuration $Configuration
