@@ -342,14 +342,14 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     }
 
     It "EXPECTED: Finds 100 packages should throw error" {
-        $packages = Get-Content "Packages_100.txt"
+        $packages = Get-Content "$PSScriptRoot\..\..\Packages_100.txt"
 
         { Find-Package -ProviderName $nuget -Source $source -Name $packages -ErrorAction Stop } | should throw
     }
 
 
     It "EXPECTED: Finds 128 packages should throw error" {
-        $packages = Get-Content "Packages_128.txt"
+        $packages = Get-Content "$PSScriptRoot\..\..\Packages_128.txt"
 
         {Find-Package -ProviderName $nuget -Source $source -Name $packages -ErrorAction Stop} | should throw
     }
