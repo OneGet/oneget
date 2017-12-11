@@ -41,6 +41,12 @@ namespace Microsoft.PackageManagement.Provider.Utility
         {
             // try downloading for 3 times
             int remainingTry = 3;
+            return GetHttpResponse(httpClient, query, isCanceled, logRetry, verbose, debug, remainingTry);
+        }
+
+        internal static HttpResponseMessage GetHttpResponse(HttpClient httpClient, string query, Func<bool> isCanceled, Action<string, int> logRetry, Action<string> verbose, Action<string> debug, int remainingTry = 3)
+        {
+            // try downloading for 3 times
             object timerLock = new object();
             Timer timer = null;
             CancellationTokenSource cts = null;
@@ -165,7 +171,6 @@ namespace Microsoft.PackageManagement.Provider.Utility
             return result;
         }
 
-        
         internal static string UriCombine(string query, string append)
         {
             if (String.IsNullOrWhiteSpace(query)) return append;
