@@ -3,7 +3,9 @@
     [string]$Framework = "netcoreapp2.0",
 
     [ValidateSet("Debug", "Release")]
-    [string]$Configuration = "Debug"
+    [string]$Configuration = "Debug",
+	
+	[switch]$EmbedProviderManifest
 )
 
 Function Test-DotNetRestore
@@ -138,7 +140,11 @@ foreach ($currentFramework in $frameworks)
             .\New-StronglyTypedCsFileForResx.ps1 -Project $assemblyName
             Push-Location $assemblyName
             Write-Host "Restoring package for $assemblyName"
-			$env:EMBEDPROVIDERMANIFEST = 'true'
+			if ($EmbedProviderManifest) {
+				$env:EMBEDPROVIDERMANIFEST = 'true'
+			} else {
+				$env:EMBEDPROVIDERMANIFEST = ''
+			}
             dotnet restore
             dotnet build --framework $currentFramework --configuration $Configuration
             dotnet publish --framework $currentFramework --configuration $Configuration
