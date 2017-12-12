@@ -50,6 +50,5 @@ deploy_script:
       }
 
 test_script:
- - ps: |
-     & "c:\projects\oneget\Test\run-tests.ps1" -nugetApiVersion v2
-     & "c:\projects\oneget\Test\run-tests.ps1" -nugetApiVersion v3
+ - ps: >-
+     & "c:\projects\oneget\Test\run-tests.ps1" -nugetApiVersion all
