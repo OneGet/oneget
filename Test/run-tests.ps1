@@ -254,7 +254,7 @@ if ($testframework -eq "coreclr")
                 $pslLocationLegacy = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL_6.0.0.14.json"
             }
 
-            $powershellCore = (Get-Package -provider msi -name PowerShell-6.0.0-beta* -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
+            $powershellCore = (Get-Package -provider msi -name PowerShell-6.0.0* -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
             if ($powershellCore)
             {
                 Write-Warning ("PowerShell already installed" -f $powershellCore.Name)
