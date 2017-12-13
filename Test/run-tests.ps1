@@ -223,8 +223,8 @@ if ($testframework -eq "fullclr")
 }
 
 $powershellLegacyFolder = ''
-$powershellCoreExe = 'powershell.exe'
-$powershellLegacyExe = 'powershell.exe'
+$powershellCoreFilePath = 'powershell'
+$powershellLegacyFilePath = 'powershell'
 if ($testframework -eq "coreclr")
 {
     # install powershell core if test framework is coreclr 
@@ -279,7 +279,9 @@ if ($testframework -eq "coreclr")
         $powershellVersion = $powershellCore.Version
         $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
         if ((-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'powershell.exe'))) -and
-                -not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'pwsh.exe'))) {
+                -not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'pwsh.exe')) -and 
+                (-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'powershell'))) -and
+                -not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'pwsh'))) {
             # Everything after "PowerShell-"
             $powershellVersion = $powershellCore.Name.Substring(11)
             $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
@@ -292,10 +294,10 @@ if ($testframework -eq "coreclr")
         {
             $powershellLegacyFolder = "$Env:ProgramFiles\PowerShell\$($powershellCoreLegacy.Version)"
             Write-host ("Legacy PowerShell Folder '{0}'" -f $powershellLegacyFolder)
-            if (-not (Test-Path "$powershellLegacyFolder\$powershellLegacyExe")) {
-                $powershellLegacyExe = "pwsh.exe"
-                if (-not (Test-Path "$powershellLegacyFolder\$powershellLegacyExe")) {
-                    throw "Couldn't find Legacy PowerShell Core exe path in folder: $powershellLegacyExe"
+            if ((-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe")) -and (-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath"))) {
+                $powershellLegacyFilePath = "pwsh"
+                if ((-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe")) -and (-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath"))) {
+                    throw "Couldn't find Legacy PowerShell Core exe path in folder: $powershellLegacyFolder"
                 }
             }
         }
@@ -306,9 +308,11 @@ if ($testframework -eq "coreclr")
         $powershellFolder = (Get-Module -Name Microsoft.PowerShell.Utility).ModuleBase
     }
 
-    if (-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath $powershellCoreExe))) {
-        $powershellCoreExe = "pwsh.exe"
-        if (-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath $powershellCoreExe))) {
+    if ((-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath "$powershellCoreFilePath.exe"))) -and
+         -not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath $powershellCoreFilePath))) {
+        $powershellCoreFilePath = "pwsh"
+        if ((-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath "$powershellCoreFilePath.exe"))) -and
+             -not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath $powershellCoreFilePath))) {
             throw "Couldn't find PowerShell Core exe path in folder: $powershellFolder"
         }
     }
