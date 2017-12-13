@@ -300,6 +300,10 @@ if ($testframework -eq "coreclr")
                     throw "Couldn't find Legacy PowerShell Core exe path in folder: $powershellLegacyFolder"
                 }
             }
+
+            if (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe") {
+                $powershellLegacyFilePath = "$powershellLegacyFilePath.exe"
+            }
         }
     }
     else
@@ -315,6 +319,10 @@ if ($testframework -eq "coreclr")
              -not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath $powershellCoreFilePath))) {
             throw "Couldn't find PowerShell Core exe path in folder: $powershellFolder"
         }
+    }
+
+    if (Test-Path "$powershellLegacyFolder\$powershellCoreFilePath.exe") {
+        $powershellLegacyFilePath = "$powershellCoreFilePath.exe"
     }
 
     # Workaround: delete installed PackageManagement files   
@@ -565,15 +573,15 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 		$command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
 
 	 
-		Write-Host "CoreCLR: Calling $powershellFolder\$powershellCoreExe -command  $command"
+		Write-Host "CoreCLR: Calling $powershellFolder\$powershellCoreFilePath -command  $command"
 
 		if($script:IsWindows)
 		{
-		  & "$powershellFolder\$powershellCoreExe" -command "& {get-packageprovider -verbose; $command}"
+		  & "$powershellFolder\$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
 		}
 		else
 		{
-		  & "$powershellCoreExe" -command "& {get-packageprovider -verbose; $command}"
+		  & "$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
 		}
 
 		$x = [xml](Get-Content -raw $testResultsFile)
@@ -589,15 +597,15 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			$testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
 			$command += "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
 
-			Write-Host "CoreCLR: Calling $powershellFolder\$powershellCoreExe -command  $command"
+			Write-Host "CoreCLR: Calling $powershellFolder\$powershellCoreFilePath -command  $command"
 
 			if($script:IsWindows)
 			{
-				& "$powershellFolder\$powershellCoreExe" -command "& {get-packageprovider -verbose; $command}"
+				& "$powershellFolder\$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
 			}
 			else
 			{
-				& "$powershellCoreExe" -command "& {get-packageprovider -verbose; $command}"
+				& "$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
 			}
 
 			$x = [xml](Get-Content -raw $testResultsFile)
@@ -613,9 +621,9 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			$testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
 			$command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -Tag Legacy"
 
-			Write-Host "(Legacy) CoreCLR: Calling $powershellLegacyFolder\$powershellLegacyExe -command  $command"
+			Write-Host "(Legacy) CoreCLR: Calling $powershellLegacyFolder\$powershellCoreFilePath -command  $command"
 
-			& "$powershellLegacyFolder\$powershellLegacyExe" -command "& {$command}"
+			& "$powershellLegacyFolder\$powershellCoreFilePath" -command "& {$command}"
 
 			$x = [xml](Get-Content -raw $testResultsFile)
 			if ([int]$x.'test-results'.failures -gt 0)
