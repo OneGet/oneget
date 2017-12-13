@@ -167,10 +167,16 @@ function SetupPackageManagementTest
             throw "Failed to find module base from GitCommitId $($PSVersionTable.GitCommitId)"
         }
         $script:PSModuleBase = $moduleBaseCandidate
+        $script:PSModuleBaseAlt = ((Resolve-Path -Path $moduleBaseCandidate\..\..\Modules).Path)
+        if (-not (Test-Path -Path $script:PSModuleBaseAlt)) {
+            $script:PSModuleBaseAlt = $script:PSModuleBase
+        }
         Write-Verbose -Message "Path $script:PSModuleBase" -Verbose
+        Write-Verbose -Message "Alt Path $script:PSModuleBaseAlt" -Verbose
     } else {
         Write-Verbose -Message "Setting up test as Full CLR" -Verbose
         $script:PSModuleBase = "$env:ProgramFiles\windowspowershell\modules"
+        $script:PSModuleBaseAlt = $script:PSModuleBase
     }
 
     UnRegisterAllSource

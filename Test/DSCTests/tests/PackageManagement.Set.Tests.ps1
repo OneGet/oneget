@@ -12,10 +12,8 @@
 
 
 $CurrentDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
-
 .  "$CurrentDirectory\..\OneGetTestHelper.ps1"
 Import-Module "$CurrentDirectory\..\TestUtility.psm1" -Force
-
 if (-not (IsAdmin))
 {
   throw "This test script requires to be run from an elevated PowerShell session. Launch an elevated PowerShell session and try again."
@@ -40,7 +38,7 @@ Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
 
         #Remove all left over files if exists
         Remove-Item "$script:PSModuleBase\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue      
-        Remove-Item "$script:PSModuleBase\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue     
+        Remove-Item "$script:PSModuleBaseAlt\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue     
     }
 
     AfterEach {
@@ -50,7 +48,7 @@ Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
     AfterAll {
         # Remove all left over files if exists
         Remove-Item "$script:PSModuleBase\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue      
-        Remove-Item "$script:PSModuleBase\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue     
+        Remove-Item "$script:PSModuleBaseAlt\MyTestModule" -Recurse -Force  -ErrorAction SilentlyContinue     
      
         RestoreRepository $script:OriginalRepository
     }
@@ -66,7 +64,7 @@ Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
             MSFT_PackageManagement\Set-TargetResource -name "MyTestModule" -Source $LocalRepository  -Ensure Present -Verbose
 
             # Validate the module is installed
-            Test-Path -Path "$script:PSModuleBase\MyTestModule\3.2.1" | should be $true
+            ((Test-Path -Path "$script:PSModuleBase\MyTestModule\3.2.1") -or (Test-Path -Path "$script:PSModuleBaseAlt\MyTestModule\3.2.1")) | should be $true
             
             # Uninstalling the module
             MSFT_PackageManagement\Set-TargetResource -name "MyTestModule" -Source $LocalRepository  -Ensure Absent -Verbose
@@ -75,7 +73,7 @@ Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
             $result = MSFT_PackageManagement\Test-TargetResource -name "MyTestModule" -Source $LocalRepository  -Ensure Absent
             $result| should be $true
 
-            Test-Path -Path "$script:PSModuleBase\MyTestModule\3.2.1" | should be $false
+            ((Test-Path -Path "$script:PSModuleBase\MyTestModule\3.2.1") -or (Test-Path -Path "$script:PSModuleBaseAlt\MyTestModule\3.2.1")) | should be $false
         }
 
         It "Set, Test-TargetResource with Trusted Source, No respository Specified: Check Installed" {
@@ -87,7 +85,7 @@ Describe -Name  "PackageManagement Set-TargetResource Basic Test" -Tags "BVT" {
             MSFT_PackageManagement\Set-TargetResource -name "MyTestModule" -Ensure Present -Verbose
 
             # Validate the module is installed
-            Test-Path -Path "$PSModuleBase\MyTestModule\3.2.1" | should be $true
+            ((Test-Path -Path "$PSModuleBase\MyTestModule\3.2.1") -or (Test-Path -Path "$script:PSModuleBaseAlt\MyTestModule\3.2.1")) | should be $true
 
             # Uninstalling the module
             MSFT_PackageManagement\Set-TargetResource -name "MyTestModule" -Ensure Absent -Verbose
