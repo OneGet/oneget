@@ -306,9 +306,9 @@ if ($testframework -eq "coreclr")
         $powershellFolder = (Get-Module -Name Microsoft.PowerShell.Utility).ModuleBase
     }
 
-    if (-not (Test-Path "$powershellFolder\$powershellCoreExe")) {
+    if (-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath $powershellCoreExe))) {
         $powershellCoreExe = "pwsh.exe"
-        if (-not (Test-Path "$powershellFolder\$powershellCoreExe")) {
+        if (-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath $powershellCoreExe))) {
             throw "Couldn't find PowerShell Core exe path in folder: $powershellFolder"
         }
     }
