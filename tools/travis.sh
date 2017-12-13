@@ -6,5 +6,4 @@ git submodule update --init
 
 
 powershell -c "cd src; ./bootstrap.ps1; ./build.ps1 -framework "netcoreapp2.0" Release; ./build.ps1 -framework "netstandard1.6" Release"
-sudo powershell -c "cd Test;  ./run-tests.ps1 coreclr -nugetApiVersion v2"
-sudo powershell -c "cd Test;  ./run-tests.ps1 coreclr -nugetApiVersion v3"
+sudo powershell -c "cd Test;  ./run-tests.ps1 coreclr -nugetApiVersion $1"
