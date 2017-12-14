@@ -16,10 +16,12 @@
 #1. git clone the oneget
 #2. cd to c:\localOneGetFolder\oneget\Test
 #3. run-tests.ps1
-
+[CmdletBinding()]
 param(
     [ValidateSet("coreclr", "fullclr")]
-    [string]$testframework = "fullclr"
+    [string]$testframework = "fullclr",
+    [ValidateSet("v2", "v3", "all")]
+    [string]$nugetApiVersion = "v2"
 )
 
 Import-Module "$PSScriptRoot\TestUtility.psm1" -Force
@@ -102,9 +104,12 @@ if ($testframeworkVariable)
     $testframework = $testframeworkVariable
 }
 
-
-Write-host ("testframework={0}, IsCoreCLR={1}, IsLinux={2}, IsOSX={3}, IsWindows={4}" -f $testframework, $script:IsCoreCLR, $script:IsLinux, $script:IsOSX, $script:IsWindows)
-
+$allNugetApiVersions = @()
+if ($nugetApiVersion -eq 'all') {
+	$allNugetApiVersions = @('v2','v3')
+} else {
+	$allNugetApiVersions += $nugetApiVersion
+}
 
 if ($testframework -eq "fullclr")
 {
@@ -218,6 +223,8 @@ if ($testframework -eq "fullclr")
 }
 
 $powershellLegacyFolder = ''
+$powershellCoreFilePath = 'powershell'
+$powershellLegacyFilePath = 'powershell'
 if ($testframework -eq "coreclr")
 {
     # install powershell core if test framework is coreclr 
@@ -247,7 +254,7 @@ if ($testframework -eq "coreclr")
                 $pslLocationLegacy = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL_6.0.0.14.json"
             }
 
-            $powershellCore = (Get-Package -provider msi -name PowerShell-6.0.0-beta* -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
+            $powershellCore = (Get-Package -provider msi -name PowerShell-6.0.0* -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
             if ($powershellCore)
             {
                 Write-Warning ("PowerShell already installed" -f $powershellCore.Name)
@@ -271,7 +278,10 @@ if ($testframework -eq "coreclr")
 
         $powershellVersion = $powershellCore.Version
         $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
-        if (-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'powershell.exe'))) {
+        if ((-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'powershell.exe'))) -and
+                -not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'pwsh.exe')) -and 
+                (-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'powershell'))) -and
+                -not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'pwsh'))) {
             # Everything after "PowerShell-"
             $powershellVersion = $powershellCore.Name.Substring(11)
             $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
@@ -284,12 +294,35 @@ if ($testframework -eq "coreclr")
         {
             $powershellLegacyFolder = "$Env:ProgramFiles\PowerShell\$($powershellCoreLegacy.Version)"
             Write-host ("Legacy PowerShell Folder '{0}'" -f $powershellLegacyFolder)
+            if ((-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe")) -and (-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath"))) {
+                $powershellLegacyFilePath = "pwsh"
+                if ((-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe")) -and (-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath"))) {
+                    throw "Couldn't find Legacy PowerShell Core exe path in folder: $powershellLegacyFolder"
+                }
+            }
+
+            if (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe") {
+                $powershellLegacyFilePath = "$powershellLegacyFilePath.exe"
+            }
         }
     }
     else
     {
         # set up powershellFolder On Linux
         $powershellFolder = (Get-Module -Name Microsoft.PowerShell.Utility).ModuleBase
+    }
+
+    if ((-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath "$powershellCoreFilePath.exe"))) -and
+         -not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath $powershellCoreFilePath))) {
+        $powershellCoreFilePath = "pwsh"
+        if ((-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath "$powershellCoreFilePath.exe"))) -and
+             -not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath $powershellCoreFilePath))) {
+            throw "Couldn't find PowerShell Core exe path in folder: $powershellFolder"
+        }
+    }
+
+    if (Test-Path "$powershellLegacyFolder\$powershellCoreFilePath.exe") {
+        $powershellLegacyFilePath = "$powershellCoreFilePath.exe"
     }
 
     # Workaround: delete installed PackageManagement files   
@@ -455,126 +488,151 @@ if ($testframework -eq "coreclr")
     }
 }
 
-# Set up test repositories for DSC tests when on Windows (DSC tests)
-if ($script:IsWindows) {
-    # Run these in another context because SNV was just setup
-    $localRepoCommand = "Import-Module `"$PSScriptRoot\TestUtility.psm1`" -Force"
-    $localRepoCommand += ";Setup-TestRepositoryPathVars -RepositoryRootDirectory `"$PSScriptRoot\DSCTests`""
-    $localRepoCommand += ";New-TestRepositoryModules -RepositoryRootDirectory `"$PSScriptRoot\DSCTests`""
-    powershell -command "& {$localRepoCommand}"
-}
-
 #endregion
 
-#Step 2 - run tests
-Write-Host "Running powershell pester tests "
+foreach ($currentNugetApiVersion in $allNugetApiVersions) {
+	Write-host ("testframework={0}, IsCoreCLR={1}, IsLinux={2}, IsOSX={3}, IsWindows={4}, NugetApiVersion={5}" -f $testframework, $script:IsCoreCLR, $script:IsLinux, $script:IsOSX, $script:IsWindows, $currentNugetApiVersion)
+	if ($currentNugetApiVersion -eq 'v2') {
+		$nugetApiUrl = "https://nuget.org/api/v2/"
+		$nugetApiUrlAlternate = "https://nuget.org/api/v2"
+	} else {
+		$nugetApiUrl = "https://api.nuget.org/v3/index.json"
+		$nugetApiUrlAlternate = "https://api.nuget.org/v3/index.json"
+	}
 
-if ($testframework -eq "fullclr")
-{
-    Write-Host "FullClr: Calling Invoke-Pester $($TestHome)\ModuleTests\tests" 
-    $pm =Get-Module -Name PackageManagement
-
-    if($pm)
-    {
-        Write-Warning ("PackageManagement is loaded already from '{0}'" -f $pm.ModuleBase)
+	Write-Verbose -Message "Using NuGet API URL: $nugetApiUrl"
+	Write-Verbose -Message "Using NuGet API URL: $nugetApiUrlAlternate"
+	
+    # Set up test repositories for DSC tests when on Windows (DSC tests)
+    if ($script:IsWindows) {
+        # Run these in another context because SNV was just setup
+        $localRepoCommand = "Import-Module `"$PSScriptRoot\TestUtility.psm1`" -Force"
+        $localRepoCommand += ";Setup-TestRepositoryPathVars -RepositoryRootDirectory `"$PSScriptRoot\DSCTests`""
+        $localRepoCommand += ";New-TestRepositoryModules -RepositoryRootDirectory `"$PSScriptRoot\DSCTests`""
+        powershell -command "& {$localRepoCommand}"
     }
 
-    $testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
-    $command = "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
-      
-    Powershell -command "& {get-packageprovider -verbose; $command}"
-    $x = [xml](Get-Content -raw $testResultsFile)
-    if ([int]$x.'test-results'.failures -gt 0)
-    {
-        throw "$($x.'test-results'.failures) tests failed"
-    }
+	#Step 2 - run tests
+	Write-Host "Running powershell pester tests "
 
-    $testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
-    $command = "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
-      
-    Powershell -command "& {get-packageprovider -verbose; $command}"
-    $x = [xml](Get-Content -raw $testResultsFile)
-    if ([int]$x.'test-results'.failures -gt 0)
-    {
-        throw "$($x.'test-results'.failures) tests failed"
-    }
+	if ($testframework -eq "fullclr")
+	{
+		try
+		{
+			$env:NUGET_API_URL = $nugetApiUrl
+			$env:NUGET_API_URL_ALTERNATE = $nugetApiUrlAlternate
+			$env:NUGET_API_VERSION = $currentNugetApiVersion
+			Write-Host "FullClr: Calling Invoke-Pester $($TestHome)\ModuleTests\tests" 
+			$pm =Get-Module -Name PackageManagement
+
+			if($pm)
+			{
+				Write-Warning ("PackageManagement is loaded already from '{0}'" -f $pm.ModuleBase)
+			}
+
+			$testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
+			$command = "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+			
+			Powershell -command "& {get-packageprovider -verbose; $command}"
+			$x = [xml](Get-Content -raw $testResultsFile)
+			if ([int]$x.'test-results'.failures -gt 0)
+			{
+				throw "$($x.'test-results'.failures) tests failed"
+			}
+
+			$testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
+			$command = "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+			
+			Powershell -command "& {get-packageprovider -verbose; $command}"
+			$x = [xml](Get-Content -raw $testResultsFile)
+			if ([int]$x.'test-results'.failures -gt 0)
+			{
+				throw "$($x.'test-results'.failures) tests failed"
+			}
+		} catch {}
+		finally
+		{
+			Remove-Item Env:\NUGET_API_URL
+			Remove-Item Env:\NUGET_API_URL_ALTERNATE
+			Remove-Item Env:\NUGET_API_VERSION
+		}
+	}
+
+	if ($testframework -eq "coreclr")
+	{
+        $pesterFolder = "$powershellFolder\Modules\Pester"
+		$command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = `'$nugetApiUrlAlternate`';`$env:NUGET_API_VERSION = `'$currentNugetApiVersion`';"
+		$testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
+		if($script:IsWindows)
+		{
+			$command += "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
+		}
+		
+		$command += "Import-Module '$pesterFolder';"
+
+		$command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+
+	 
+		Write-Host "CoreCLR: Calling $powershellFolder\$powershellCoreFilePath -command  $command"
+
+		if($script:IsWindows)
+		{
+		  & "$powershellFolder\$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
+		}
+		else
+		{
+		  & "$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
+		}
+
+		$x = [xml](Get-Content -raw $testResultsFile)
+		if ([int]$x.'test-results'.failures -gt 0)
+		{
+			throw "$($x.'test-results'.failures) tests failed"
+		}
+		<#  Disable DSC tests for Linux for now. #>
+		If($script:IsWindows)
+		{
+			$command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = '$nugetApiUrlAlternate';`$env:NUGET_API_VERSION = '$currentNugetApiVersion';"
+			$command += "Import-Module '$pesterFolder';"
+			$testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
+			$command += "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+
+			Write-Host "CoreCLR: Calling $powershellFolder\$powershellCoreFilePath -command  $command"
+
+			if($script:IsWindows)
+			{
+				& "$powershellFolder\$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
+			}
+			else
+			{
+				& "$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
+			}
+
+			$x = [xml](Get-Content -raw $testResultsFile)
+			if ([int]$x.'test-results'.failures -gt 0)
+			{
+				throw "$($x.'test-results'.failures) tests failed"
+			}
+		}
+		if ($powershellLegacyFolder -and $script:IsWindows) {
+			# Tests on legacy version of PowerShell Core
+			$command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = '$nugetApiUrlAlternate';`$env:NUGET_API_VERSION = '$currentNugetApiVersion';"
+			$command += "Import-Module '$pesterFolder';`$global:IsLegacyTestRun=`$true;"
+			$testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
+			$command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -Tag Legacy"
+
+			Write-Host "(Legacy) CoreCLR: Calling $powershellLegacyFolder\$powershellCoreFilePath -command  $command"
+
+			& "$powershellLegacyFolder\$powershellCoreFilePath" -command "& {$command}"
+
+			$x = [xml](Get-Content -raw $testResultsFile)
+			if ([int]$x.'test-results'.failures -gt 0)
+			{
+				throw "$($x.'test-results'.failures) tests failed"
+			}
+		}
+	}
 }
-
-if ($testframework -eq "coreclr")
-{
-    $command =""
-    $testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
-    if($script:IsWindows)
-    {
-        $command = "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
-    }
-
-    $pesterFolder = "$powershellFolder\Modules\Pester"
-    $command += "Import-Module '$pesterFolder';"
-
-    $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
-
- 
-    Write-Host "CoreCLR: Calling $powershellFolder\powershell -command  $command"
-
-    if($script:IsWindows)
-    {
-      & "$powershellFolder\powershell" -command "& {get-packageprovider -verbose; $command}"
-    }
-    else
-    {
-      & powershell -command "& {get-packageprovider -verbose; $command}"
-    }
-
-    $x = [xml](Get-Content -raw $testResultsFile)
-    if ([int]$x.'test-results'.failures -gt 0)
-    {
-        throw "$($x.'test-results'.failures) tests failed"
-    }
-    <#  Disable DSC tests for Linux for now. #>
-    If($script:IsWindows)
-    {
-        $command = ""
-        $command += "Import-Module '$pesterFolder';"
-        $testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
-        $command += "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
-
-        Write-Host "CoreCLR: Calling $powershellFolder\powershell -command  $command"
-
-        if($script:IsWindows)
-        {
-            & "$powershellFolder\powershell" -command "& {get-packageprovider -verbose; $command}"
-        }
-        else
-        {
-            & powershell -command "& {get-packageprovider -verbose; $command}"
-        }
-
-        $x = [xml](Get-Content -raw $testResultsFile)
-        if ([int]$x.'test-results'.failures -gt 0)
-        {
-            throw "$($x.'test-results'.failures) tests failed"
-        }
-    }
-    if ($powershellLegacyFolder -and $script:IsWindows) {
-        # Tests on legacy version of PowerShell Core
-        $command = ""
-        $command += "Import-Module '$pesterFolder';`$global:IsLegacyTestRun=`$true;"
-        $testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
-        $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -Tag Legacy"
-
-        Write-Host "(Legacy) CoreCLR: Calling $powershellLegacyFolder\powershell -command  $command"
-
-        & "$powershellLegacyFolder\powershell" -command "& {$command}"
-
-        $x = [xml](Get-Content -raw $testResultsFile)
-        if ([int]$x.'test-results'.failures -gt 0)
-        {
-            throw "$($x.'test-results'.failures) tests failed"
-        }
-    }
-}
-
 Write-Host -fore White "Finished tests"
 
 #Step3 - cleanup
