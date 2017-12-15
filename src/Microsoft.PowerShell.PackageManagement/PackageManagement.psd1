@@ -20,7 +20,7 @@
     CompanyName = "Microsoft Corporation"
     Copyright = "(C) Microsoft Corporation. All rights reserved."
     HelpInfoUri = "https://go.microsoft.com/fwlink/?linkid=855962"
-    ModuleVersion = "1.1.7.0"
+    ModuleVersion = "1.2.0.0"
     PowerShellVersion = "3.0"
     ClrVersion = "4.0"
     RootModule = "PackageManagement.psm1"
