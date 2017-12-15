@@ -9,7 +9,6 @@
     <SignAssembly>true</SignAssembly>
     <PackageId>Microsoft.PackageManagement</PackageId>
     <RuntimeIdentifiers>win7-x64;win81-x64;win10-x64</RuntimeIdentifiers>
-    <PackageTargetFallback Condition=" ('$(TargetFramework)' == 'netcoreapp2.0') Or ('$(TargetFramework)' == 'netstandard1.6') ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">2.0.0</NetStandardImplicitPackageVersion>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
@@ -104,7 +103,6 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
     <PackageReference Update="Microsoft.NETCore.App" Version="2.0.0-preview1-002111-00" />
     <PackageReference Include="NETStandard.Library" Version="2.0.0-preview1-25301-01" />
-    <PackageReference Include="NETStandard.Library.NETFramework" Version="2.0.0-preview1-25305-02" />
     <PackageReference Include="Microsoft.CSharp" Version="4.4.0-preview1-25305-02" />
     <PackageReference Include="Microsoft.Win32.Registry.AccessControl" Version="4.4.0-preview1-25305-02" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.4.0-preview1-25305-02" />

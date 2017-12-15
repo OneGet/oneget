@@ -13,7 +13,6 @@
 #
 # ------------------ PackageManagement Test  ----------------------------------------------
 $nuget = "nuget"
-$source = "http://www.nuget.org/api/v2/"
 
 # ------------------------------------------------------------------------------
 
@@ -57,7 +56,7 @@ Describe "Get-package with version parameter  - valid scenarios" -Tags "Feature"
     }
 
     It "E2E: Get-package supports -AllVersions parameter for a specific package - with multiple versions from Nuget" {
-        ($foundPackages = Find-Package -Name "adept.nugetrunner" -Provider $nuget -Source $source -AllVersions)        
+        ($foundPackages = Find-Package -Name "adept.nugetrunner" -Provider $nuget -Source $env:NUGET_API_URL -AllVersions)        
 
         foreach ($package in $foundPackages) 
         {

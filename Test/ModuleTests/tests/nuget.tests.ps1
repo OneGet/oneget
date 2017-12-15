@@ -39,8 +39,8 @@ try {
 
 $LinuxProgramFilesFolder="/usr/local/share/PackageManagement/NuGet/Packages"
 
-$source = "http://www.nuget.org/api/v2/"
-$sourceWithoutSlash = "http://www.nuget.org/api/v2"
+$source = $env:NUGET_API_URL
+$sourceWithoutSlash = $env:NUGET_API_URL_ALTERNATE
 $fwlink = "http://go.microsoft.com/fwlink/?LinkID=623861&clcid=0x409"
 $longName = "THISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERS";
 $workingMaximumVersions = {"2.0", "2.5", "3.0"};
@@ -124,7 +124,7 @@ Describe "Event Test" -Tags "Feature" {
  
     it "EXPECTED: install a package should raise event" -Skip:(-not $WindowsPowerShell) {
      
-        Install-Package EntityFramework -ProviderName nuget -requiredVersion 6.1.3  -Destination $TestDrive -source 'http://www.nuget.org/api/v2/' -force
+        Install-Package EntityFramework -ProviderName nuget -requiredVersion 6.1.3  -Destination $TestDrive -source $source -force
         
         $retryCount= 5
         while($retryCount -gt 0)
@@ -155,7 +155,7 @@ Describe "Event Test" -Tags "Feature" {
             $event.Message | Should Match "Package=EntityFramework"  
             $event.Message | Should Match "Version=6.1.3"  
             $event.Message | Should Match "Provider=NuGet"   
-            $event.Message | Should Match "Source=http://www.nuget.org/api/v2/" 
+            $event.Message | Should Match "Source=$source" 
             #$event.Message | Should Match ([regex]::Escape("DestinationPath=$env:tmp"))
 
         }       
@@ -216,7 +216,7 @@ Describe "Event Test" -Tags "Feature" {
 
     it "EXPECTED: uninstall a package should raise event" -Skip:(-not $WindowsPowerShell) {
      
-        Install-Package EntityFramework -ProviderName nuget -requiredVersion 6.1.3  -Destination $TestDrive -source 'http://www.nuget.org/api/v2/' -force 
+        Install-Package EntityFramework -ProviderName nuget -requiredVersion 6.1.3  -Destination $TestDrive -source $source -force 
         UnInstall-Package EntityFramework -ProviderName nuget -Destination $TestDrive
 
         $retryCount= 5
@@ -262,7 +262,7 @@ Describe "Event Test" -Tags "Feature" {
 
     it "EXPECTED: save a package should raise event" -Skip:(-not $WindowsPowerShell) {
      
-        save-Package EntityFramework -ProviderName nuget -path $TestDrive -requiredVersion 6.1.3 -source 'http://www.nuget.org/api/v2/' -force
+        save-Package EntityFramework -ProviderName nuget -path $TestDrive -requiredVersion 6.1.3 -source $source -force
 
         $retryCount= 5
         while($retryCount -gt 0)
@@ -294,7 +294,7 @@ Describe "Event Test" -Tags "Feature" {
             $event.Message | Should Match "Package=EntityFramework"  
             $event.Message | Should Match "Version=6.1.3"  
             $event.Message | Should Match "Provider=NuGet"   
-            $event.Message | Should Match "Source=http://www.nuget.org/api/v2/"
+            $event.Message | Should Match "Source=$source"
             # $event.Message | should Match ([regex]::Escape("DestinationPath=$env:tmp"))
         }       
         else 
@@ -321,8 +321,10 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
         $zlib.Dependencies.Count | should be 1
 
         $zlib.Meta.Attributes["packageSize"] | should match "7995520"
-
-        [long]$zlib.Meta.Attributes["versionDownloadCount"] -ge 7640 | should be $true
+        if ($env:NUGET_API_VERSION -eq 'v2')
+        {
+            [long]$zlib.Meta.Attributes["versionDownloadCount"] -ge 7640 | should be $true
+        }
         $zlib.Meta.Attributes["requireLicenseAcceptance"] | should match "False"
         $zlib.TagId | should match "grpc.dependencies.zlib#1.2.8.10"
         
@@ -340,16 +342,16 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     }
 
     It "EXPECTED: Finds 100 packages should throw error" {
-        $packages = Find-Package -Provider $nuget -Source $source | Select -First 100
+        $packages = Get-Content "$PSScriptRoot\..\..\Packages_100.txt"
 
-        { Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction Stop } | should throw
+        { Find-Package -ProviderName $nuget -Source $source -Name $packages -ErrorAction Stop } | should throw
     }
 
 
     It "EXPECTED: Finds 128 packages should throw error" {
-        $packages = Find-Package -Provider $nuget -Source $source | Select -First 127
+        $packages = Get-Content "$PSScriptRoot\..\..\Packages_128.txt"
 
-        {Find-Package -ProviderName $nuget -Source $source -Name $packages.Name -ErrorAction Stop} | should throw
+        {Find-Package -ProviderName $nuget -Source $source -Name $packages -ErrorAction Stop} | should throw
     }
 
     It "EXPECTED: Finds 'TestPackage' Package using fwlink" {
@@ -452,9 +454,16 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
 
         # Uncomment this once publish the new version of nuget
         $awssdk = Find-Package -Name "awssdk" -Provider $nuget -source $source -RequiredVersion 2.3.53
-        [long]$awssdk.Meta.Attributes["downloadCount"] -ge 1023357 | should be $true
-        $awssdk.Meta.Attributes["updated"] | should match "2015-12-15T17:46:22Z"
-        $awssdk.TagId | should match "AWSSDK#2.3.53.0" 
+        # Currently v3 doesn't get this metadata
+        if ($env:NUGET_API_VERSION -eq 'v2')
+        {
+            [long]$awssdk.Meta.Attributes["downloadCount"] -ge 1023357 | should be $true
+            $awssdk.Meta.Attributes["updated"] | should match "2015-12-15T17:46:22Z"
+            $awssdk.TagId | should match "AWSSDK#2.3.53.0" 
+        } else {
+            # For v3, the tag is going to be normalized
+            $awssdk.TagId | should match "AWSSDK#2.3.53" 
+        }
     }
 
 	It "EXPECTED: Finds A Combination Of Packages With Various Versions" {
@@ -820,7 +829,7 @@ Describe "save-package with Whatif" -Tags "Feature" {
     }
 
      It "install-package -name nuget with whatif where package has a dependencies, Expect succeed" {
-        {Save-Package -name zlib -source https://www.nuget.org/api/v2/ `
+        {Save-Package -name zlib -source $source `
             -ProviderName NuGet -Path $tempDir -whatif} | should not throw
     }
 }
@@ -867,7 +876,7 @@ Describe "install-package with Whatif" -Tags "Feature" {
     }
 
      It "install-package -name nuget with whatif where package has a dependencies, Expect succeed" {
-        {install-Package -name grpc.dependencies.zlib -source https://www.nuget.org/api/v2/ `
+        {install-Package -name grpc.dependencies.zlib -source $source `
             -ProviderName NuGet -destination $installationPath -whatif} | should not throw
     }
 }

@@ -38,7 +38,7 @@ configuration Sample_Install_Package_Using_NuGet
         [string]$InstallationPolicy
     )
 
-    Import-DscResource -Module PackageManagement -ModuleVersion 1.1.7.0
+    Import-DscResource -Module PackageManagement -ModuleVersion 1.2.0.0
 
     Node $NodeName
     {
@@ -50,7 +50,7 @@ configuration Sample_Install_Package_Using_NuGet
             Ensure      = "Present"
             Name        = "MyNuget"
             ProviderName= "Nuget"
-            SourceLocation   = "http://nuget.org/api/v2/"  
+            SourceLocation   = "$env:NUGET_API_URL"  
             InstallationPolicy ="Trusted"
         }   
         
