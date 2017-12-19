@@ -105,7 +105,7 @@ Describe "find-packageprovider" -Tags "Feature" {
         $a -contains "TSDProvider" | should be $true
 
         $b = (Find-PackageProvider -name TSDP* -AllVersions).name 
-        $b.Count -ge $a.Count | should be $true
+        $b.Count -ge $a.Count | should be $false
     }      
 
 

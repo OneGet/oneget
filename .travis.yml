@@ -10,6 +10,9 @@ os:
 sudo: required
 dist: trusty
 osx_image: xcode7.3
+env:
+    - api=v2
+    - api=v3
 
 matrix:
   allow_failures:
@@ -34,7 +37,7 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then rvm use 2.2.1; gem uninstall bundler -v1.13.1; fi
 
 script: 
-  - ./tools/travis.sh
+  - ./tools/travis.sh $api
 
 
 
