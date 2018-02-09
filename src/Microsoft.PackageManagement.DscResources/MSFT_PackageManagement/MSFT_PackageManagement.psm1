@@ -54,6 +54,17 @@ function Get-TargetResource
     Specifies a package provider name to which to scope your package search. You can get package provider names 
     by running the Get-PackageProvider cmdlet.
 
+    .PARAMETER Force
+    Forces the installation of modules. If a module of the same name and version already exists on the computer, 
+    this parameter overwrites the existing module with one of the same name that was found by the command.
+
+    .PARAMETER AllowClobber
+    Allows the installation of modules regardless of if other existing module on the computer have cmdlets
+    of the same name
+
+    .PARAMETER SkipPublisherCheck
+    Allows the installation of modules that have not been catalog signed
+
     .PARAMETER AdditionalParameters
     Provider specific parameters that are passed as an Hashtable. For example, for NuGet provider you can
     pass additional parameters like DestinationPath.
@@ -89,6 +100,18 @@ function Get-TargetResource
         [Parameter()]
         [System.String]
         $ProviderName,
+
+        [Parameter()]
+        [Switch]
+        $Force,
+
+        [Parameter()]
+        [Switch]
+        $AllowClobber,
+
+        [Parameter()]
+        [Switch]
+        $SkipPublisherCheck,
         
         [Parameter()]
         [Microsoft.Management.Infrastructure.CimInstance[]]$AdditionalParameters        
@@ -198,6 +221,17 @@ function Test-TargetResource
     Specifies a package provider name to which to scope your package search. You can get package provider names 
     by running the Get-PackageProvider cmdlet.
 
+    .PARAMETER Force
+    Forces the installation of modules. If a module of the same name and version already exists on the computer, 
+    this parameter overwrites the existing module with one of the same name that was found by the command.
+
+    .PARAMETER AllowClobber
+    Allows the installation of modules regardless of if other existing module on the computer have cmdlets
+    of the same name
+
+    .PARAMETER SkipPublisherCheck
+    Allows the installation of modules that have not been catalog signed
+
     .PARAMETER AdditionalParameters
     Provider specific parameters that are passed as an Hashtable. For example, for NuGet provider you can
     pass additional parameters like DestinationPath.
@@ -237,6 +271,18 @@ function Test-TargetResource
         [Parameter()]
         [System.String]
         $ProviderName,
+
+        [Parameter()]
+        [Switch]
+        $Force,
+
+        [Parameter()]
+        [Switch]
+        $AllowClobber,
+
+        [Parameter()]
+        [Switch]
+        $SkipPublisherCheck,
         
         [Parameter()]
         [Microsoft.Management.Infrastructure.CimInstance[]]$AdditionalParameters         
@@ -298,6 +344,17 @@ function Set-TargetResource
     Specifies a package provider name to which to scope your package search. You can get package provider names 
     by running the Get-PackageProvider cmdlet.
 
+    .PARAMETER Force
+    Forces the installation of modules. If a module of the same name and version already exists on the computer, 
+    this parameter overwrites the existing module with one of the same name that was found by the command.
+
+    .PARAMETER AllowClobber
+    Allows the installation of modules regardless of if other existing module on the computer have cmdlets
+    of the same name
+
+    .PARAMETER SkipPublisherCheck
+    Allows the installation of modules that have not been catalog signed
+
     .PARAMETER AdditionalParameters
     Provider specific parameters that are passed as an Hashtable. For example, for NuGet provider you can
     pass additional parameters like DestinationPath.
@@ -336,6 +393,18 @@ function Set-TargetResource
         [Parameter()]
         [System.String]
         $ProviderName,
+
+        [Parameter()]
+        [Switch]
+        $Force,
+
+        [Parameter()]
+        [Switch]
+        $AllowClobber,
+
+        [Parameter()]
+        [Switch]
+        $SkipPublisherCheck,
         
         [Parameter()]
         [Microsoft.Management.Infrastructure.CimInstance[]]$AdditionalParameters        
