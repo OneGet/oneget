@@ -168,7 +168,7 @@ function SetupPackageManagementTest
         }
         $script:PSModuleBase = $moduleBaseCandidate
         $script:PSModuleBaseAlt = Resolve-Path -Path $moduleBaseCandidate\..\..\Modules -ErrorAction Ignore | Select-Object -ExpandProperty Path
-        if ((-not $script:PSModuleBaseAlt) -and (-not (Test-Path -Path $script:PSModuleBaseAlt))) {
+        if ((-not $script:PSModuleBaseAlt) -or (-not (Test-Path -Path $script:PSModuleBaseAlt))) {
             $script:PSModuleBaseAlt = $script:PSModuleBase
         }
         Write-Verbose -Message "Path $script:PSModuleBase" -Verbose
