@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>{name}</id>
+    <version>{version}</version>
+    <authors>{authors}</authors>
+    <owners>{owners}</owners>
+    <licenseUrl>https://github.com/OneGet/oneget/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/OneGet/oneget</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>PackageManagement (a.k.a. OneGet) is a new way to discover and install software packages from around the web. 
+ It is a manager or multiplexor of existing package managers (also called package providers) that unifies Windows package management with a single Windows PowerShell interface. With PackageManagement, you can do the following. 
+  - Manage a list of software repositories in which packages can be searched, acquired and installed 
+  - Discover software packages 
+  - Seamlessly install, uninstall, and inventory packages from one or more software repositories</description>
+    <summary>PackageManagement (a.k.a. OneGet) is a new way to discover and install software packages from around the web.</summary>
+    <releaseNotes>{releaseNotes}</releaseNotes>
+    <copyright>Copyright 2018</copyright>
+    <tags>PowerShell PackageManagement OneGet PSCore</tags>
+  </metadata>
+</package>

@@ -67,6 +67,15 @@ if ($Framework -eq "all")
     $frameworks = @($Framework)
 }
 
+$providersFromPackages = @(
+    @{
+        'Name' = 'Microsoft.PowerShell.PackageManagement.NuGetProvider'
+        'ProviderName' = 'NuGet'
+        'Location' = 'https://powershell.myget.org/F/powershellmodule/api/v2'
+        'Paths' = @('lib\{framework}\*.dll')
+    }
+)
+$unregisterPackageSources = @()
 foreach ($currentFramework in $frameworks)
 {
     $solutionPath = Split-Path $MyInvocation.InvocationName
@@ -80,8 +89,7 @@ foreach ($currentFramework in $frameworks)
             "Microsoft.PackageManagement.ArchiverProviders",
             "Microsoft.PackageManagement.CoreProviders",
             "Microsoft.PackageManagement.MetaProvider.PowerShell",
-            "Microsoft.PowerShell.PackageManagement",
-            "Microsoft.PackageManagement.NuGetProvider"
+            "Microsoft.PowerShell.PackageManagement"
             )
     }
     else
@@ -94,8 +102,7 @@ foreach ($currentFramework in $frameworks)
             "Microsoft.PackageManagement.MetaProvider.PowerShell",
             "Microsoft.PackageManagement.MsiProvider",
             "Microsoft.PackageManagement.MsuProvider",
-            "Microsoft.PowerShell.PackageManagement",
-            "Microsoft.PackageManagement.NuGetProvider"
+            "Microsoft.PowerShell.PackageManagement"
             )
     }
 
@@ -165,6 +172,49 @@ foreach ($currentFramework in $frameworks)
     CopyToDestinationDir $dscResourceItemsPackage (Join-Path -Path $destinationDirDscResourcesBase -ChildPath "MSFT_PackageManagement")
     CopyToDestinationDir $dscResourceItemsPackageSource (Join-Path -Path $destinationDirDscResourcesBase -ChildPath "MSFT_PackageManagementSource")
 
+    # Download and copy providers from packages
+    foreach ($providerPackageInfo in $providersFromPackages) {
+        Write-Host "Pulling package from MyGet: $($providerPackageInfo.Name)"
+        $packageSource = Get-PackageSource -Location $providerPackageInfo.Location -ProviderName $providerPackageInfo.ProviderName
+        if (-not $packageSource) {
+            $packageSource = Register-PackageSource -Name ([Guid]::NewGuid().ToString()) -Location $providerPackageInfo.Location -ProviderName $providerPackageInfo.ProviderName -Trusted
+            Write-Host "Registered package source: $($providerPackageInfo.Location)"
+            $unregisterPackageSources += $packageSource
+        }
+
+        $package = Find-Package -Name $providerPackageInfo.Name -Source $packageSource.Name -ErrorAction Ignore
+        if ($package) {
+            $tempDir = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath ([System.IO.Path]::GetRandomFileName())
+            $null = New-Item -Path $tempDir -ItemType Directory
+            try {
+                $null = $package | Save-Package -Path $tempDir -AllowPrereleaseVersions
+                if ($providerPackageInfo.ProviderName -eq 'NuGet') {
+                    $nupkgPath = Get-ChildItem -Path (Join-Path -Path $tempDir -ChildPath "$($providerPackageInfo.Name)*.nupkg") | Select-Object -First 1
+                    if ($nupkgPath) {
+                        $zipPath = Join-Path -Path $tempDir -ChildPath "temp.zip"
+                        Copy-Item -Path $nupkgPath.FullName -Destination $zipPath
+                        Expand-Archive -Path $zipPath -DestinationPath $tempDir
+                        foreach ($relativePath in $providerPackageInfo.Paths) {
+                            $frameworkToReplace = $currentFramework
+                            $relativePath = $relativePath.Replace("{framework}", $frameworkToReplace)
+                            foreach ($item in (Get-ChildItem -Path (Join-Path -Path $tempDir -ChildPath $relativePath))) {
+                                Copy-Item -Path $item.FullName -Destination $destinationDirBinaries
+                            }
+                        }
+                    } else {
+                        Write-Host "Failed to locate downloaded NuGet package"
+                    }
+                }
+            } finally {
+                if (Test-Path -Path $tempDir) {
+                    $null = Remove-Item -Path $tempDir -Recurse -Force
+                }
+            }
+        } else {
+            Write-Host "Couldn't find package."
+        }
+    }
+
     #Packing
     $sourcePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($destinationDir)
     $packagePath= Split-Path -Path $sourcePath
@@ -179,4 +229,8 @@ foreach ($currentFramework in $frameworks)
     Add-Type -assemblyname System.IO.Compression.FileSystem
     Write-Verbose "Zipping $sourcePath into $packageFileName" -verbose
     [System.IO.Compression.ZipFile]::CreateFromDirectory($sourcePath, $packageFileName) 
+}
+
+foreach ($unregisterPackageSource in $unregisterPackageSources) {
+    $unregisterPackageSource | Unregister-PackageSource
 }
