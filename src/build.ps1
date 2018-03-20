@@ -71,8 +71,7 @@ $providersFromPackages = @(
     @{
         'Name' = 'Microsoft.PowerShell.PackageManagement.NuGetProvider'
         'ProviderName' = 'NuGet'
-        #'Location' = 'https://powershell.myget.org/F/powershellmodule/api/v2'
-        'Location' = 'E:\Packages_bk\PackagesTesting'
+        'Location' = 'https://powershell.myget.org/F/powershellmodule/api/v2'
         'Paths' = @('lib\{framework}\*.dll')
     }
 )
