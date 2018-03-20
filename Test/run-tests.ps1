@@ -26,6 +26,9 @@ param(
 
 Import-Module "$PSScriptRoot\TestUtility.psm1" -Force
 
+# Set default TLS version to one supported by GitHub, in case PSCore needs to be downloaded
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 #region Step 0 -- remove the strongname from the binaries
 # Get the current OS
 try
