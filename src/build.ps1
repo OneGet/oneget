@@ -174,9 +174,11 @@ foreach ($currentFramework in $frameworks)
 
     # Download and copy providers from packages
     foreach ($providerPackageInfo in $providersFromPackages) {
+        Write-Host "Pulling package from MyGet: $($providerPackageInfo.Name)"
         $packageSource = Get-PackageSource -Location $providerPackageInfo.Location -ProviderName $providerPackageInfo.ProviderName
         if (-not $packageSource) {
             $packageSource = Register-PackageSource -Name ([Guid]::NewGuid().ToString()) -Location $providerPackageInfo.Location -ProviderName $providerPackageInfo.ProviderName -Trusted
+            Write-Host "Registered package source: $($providerPackageInfo.Location)"
             $unregisterPackageSources += $packageSource
         }
 
@@ -199,6 +201,8 @@ foreach ($currentFramework in $frameworks)
                                 Copy-Item -Path $item.FullName -Destination $destinationDirBinaries
                             }
                         }
+                    } else {
+                        Write-Host "Failed to locate downloaded NuGet package"
                     }
                 }
             } finally {
@@ -206,6 +210,8 @@ foreach ($currentFramework in $frameworks)
                     $null = Remove-Item -Path $tempDir -Recurse -Force
                 }
             }
+        } else {
+            Write-Host "Couldn't find package."
         }
     }
 
