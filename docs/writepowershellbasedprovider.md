@@ -179,7 +179,7 @@ function Find-Package {
 In the above example, we enumerate files with extension .png,
 check if the file name matches what a user is looking for ($name), construct the swidtag object and return it to OneGet.
 
-`New-SoftwareIdentity` is the utility function for you to use. It's defined the PackageProviderFunctions.psm1. You can find it under  $env:ProgramFiles\WindowsPowerShell\Modules\PackageManagement. SoftwareIdentity object is the protocol that provider and OneGet communicate. It is also used as the output object of OneGet cmdlets.
+`New-SoftwareIdentity` is the utility function for you to use. It's defined the PackageProviderFunctions.psm1. You can find it under  $env:ProgramFiles\WindowsPowerShell\Modules\PackageManagement. SoftwareIdentity object is the protocol that provider and OneGet communicate. It is also used as the output object of OneGet cmdlets. Functions from PackageProviderFunctions will be accessible to your provider automaticaly without any additional action.
 
 As you can see, SoftwareIdentity object contains name and version of package, source location where the package comes from, and summary description, etc.
 Ignore FastPackageReference for now. We will discuss it later.
