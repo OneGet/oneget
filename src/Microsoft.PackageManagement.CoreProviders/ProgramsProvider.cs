@@ -187,20 +187,24 @@ namespace Microsoft.PackageManagement.Providers.Internal {
                         }
 
                         var productName = "";
-
+                        
+                        // In what Use Case would a software not have a DisplayName???
                         if (!properties.TryGetValue("DisplayName", out productName)) {
                             // no product name?
                             continue;
                         }
 
                         if (!string.IsNullOrWhiteSpace(productName) && (string.IsNullOrWhiteSpace(name) || wildcardPattern.IsMatch(productName))) {
-
+                            
+                            // There is no guarentee that this will pull anything suggest pulling from DisplayName or from the executable path (file info)
                             var productVersion = properties.Get("DisplayVersion") ?? "";
                             var publisher = properties.Get("Publisher") ?? "";
+                            
+                            // This should pull based off *UnistallString using like
                             var uninstallString = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
-                            var comments = properties.Get("Comments") ?? "";
-
                             var fp = hive + @"\" + subkey;
+                            
+                            var comments = properties.Get("Comments") ?? "";
 
                             if (!string.IsNullOrEmpty(requiredVersion)) {
                                 if (SoftwareIdentityVersionComparer.CompareVersions("unknown", requiredVersion, productVersion) != 0) {
