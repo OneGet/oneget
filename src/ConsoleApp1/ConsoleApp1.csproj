@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{0A76F855-9586-4602-B576-224E477C35A8}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ConsoleApp1</RootNamespace>
+    <AssemblyName>ConsoleApp1</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.PackageManagement.ArchiverProviders\vs-csproj\Archivers.csproj">
+      <Project>{b4ed8e4c-01b6-4440-afc7-dc73d08201b5}</Project>
+      <Name>Archivers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.PackageManagement.CoreProviders\vs-csproj\CoreProviders.csproj">
+      <Project>{c06032d8-c31a-492a-86f3-5cc4ed19bd8e}</Project>
+      <Name>CoreProviders</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.PackageManagement.MetaProvider.PowerShell\vs-csproj\PowerShell.MetaProvider.csproj">
+      <Project>{ebeb46b5-3683-4d9f-939b-b1b2bbeea369}</Project>
+      <Name>PowerShell.MetaProvider</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.PackageManagement.MsiProvider\vs-csproj\MsiProvider.csproj">
+      <Project>{51dd1de7-25fa-44ef-92c4-f475e6f6ddc0}</Project>
+      <Name>MsiProvider</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.PackageManagement.MsuProvider\vs-csproj\MsuProvider.csproj">
+      <Project>{83c9a4e3-48ad-4105-8e06-d2304b932e42}</Project>
+      <Name>MsuProvider</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.PackageManagement\vs-csproj\PackageManagement.csproj">
+      <Project>{7044b856-6d51-498f-90f9-01f219909f79}</Project>
+      <Name>PackageManagement</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.PowerShell.PackageManagement\vs-csproj\PowerShell.Module.csproj">
+      <Project>{f2133ac2-39dd-4321-a3b1-8bdbcdff743e}</Project>
+      <Name>PowerShell.Module</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

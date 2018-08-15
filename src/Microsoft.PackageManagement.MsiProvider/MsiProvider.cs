@@ -195,7 +195,7 @@ namespace Microsoft.PackageManagement.Msi.Internal {
                     installed = installed.Where(each => (FourPartVersion)each.ProductVersion <= (FourPartVersion)max);
                 }
             }
-            // make sure we don't enumerate more once
+            // make sure we don't enumerate more than once
             installed = installed.ReEnumerable();
 
             // dump out results.
