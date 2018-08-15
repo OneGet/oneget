@@ -9,8 +9,8 @@ namespace Microsoft.PowerShell.PackageManagement.Utility
     /// </summary>
     internal class InternalWebProxy : IWebProxy
     {
-        Uri _proxyUri;
-        ICredentials _credentials;
+        private Uri _proxyUri;
+        private ICredentials _credentials;
 
         public InternalWebProxy(Uri uri, ICredentials credentials)
         {

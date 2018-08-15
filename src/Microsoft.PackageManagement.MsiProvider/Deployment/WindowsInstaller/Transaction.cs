@@ -135,7 +135,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public void Join(TransactionAttributes attributes)
         {
             IntPtr hChangeOfOwnerEvent;
-            uint ret = NativeMethods.MsiJoinTransaction((int) this.Handle, (int) attributes, out hChangeOfOwnerEvent);
+            uint ret = NativeMethods.MsiJoinTransaction((int)this.Handle, (int)attributes, out hChangeOfOwnerEvent);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -187,13 +187,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             int hTransaction;
             IntPtr hChangeOfOwnerEvent;
-            uint ret = NativeMethods.MsiBeginTransaction(transactionName, (int) attributes, out hTransaction, out hChangeOfOwnerEvent);
+            uint ret = NativeMethods.MsiBeginTransaction(transactionName, (int)attributes, out hTransaction, out hChangeOfOwnerEvent);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
             }
 
-            return new IntPtr[] { (IntPtr) hTransaction, hChangeOfOwnerEvent };
+            return new IntPtr[] { (IntPtr)hTransaction, hChangeOfOwnerEvent };
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]

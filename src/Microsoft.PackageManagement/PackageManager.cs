@@ -12,7 +12,8 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.Internal {
+namespace Microsoft.PackageManagement.Internal
+{
     using Implementation;
 
     /// <summary>
@@ -29,14 +30,19 @@ namespace Microsoft.PackageManagement.Internal {
     /// ]]>
     ///     </example>
     /// </summary>
-    internal static class PackageManager {
+    internal static class PackageManager
+    {
         private static readonly object _lockObject = new object();
         internal static IPackageManagementService _instance;
 
-        public static IPackageManagementService Instance {
-            get {
-                lock (_lockObject) {
-                    if (_instance == null) {
+        public static IPackageManagementService Instance
+        {
+            get
+            {
+                lock (_lockObject)
+                {
+                    if (_instance == null)
+                    {
                         _instance = new PackageManagementService();
                     }
                 }

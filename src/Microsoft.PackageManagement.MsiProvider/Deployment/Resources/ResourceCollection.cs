@@ -96,7 +96,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             IntPtr module = NativeMethods.LoadLibraryEx(resFile, IntPtr.Zero, NativeMethods.LOAD_LIBRARY_AS_DATAFILE);
             try
             {
-                if (!NativeMethods.EnumResourceNames(module, (string) type, new NativeMethods.EnumResNamesProc(this.EnumResNames), IntPtr.Zero))
+                if (!NativeMethods.EnumResourceNames(module, (string)type, new NativeMethods.EnumResNamesProc(this.EnumResNames), IntPtr.Zero))
                 {
                     int err = Marshal.GetLastWin32Error();
                     throw new IOException(String.Format(CultureInfo.InvariantCulture, "EnumResourceNames error. Error code: {0}", err));
@@ -127,7 +127,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             IntPtr module = NativeMethods.LoadLibraryEx(resFile, IntPtr.Zero, NativeMethods.LOAD_LIBRARY_AS_DATAFILE);
             try
             {
-                if (!NativeMethods.EnumResourceLanguages(module, (string) type, name, new NativeMethods.EnumResLangsProc(this.EnumResLangs), IntPtr.Zero))
+                if (!NativeMethods.EnumResourceLanguages(module, (string)type, name, new NativeMethods.EnumResLangsProc(this.EnumResLangs), IntPtr.Zero))
                 {
                     int err = Marshal.GetLastWin32Error();
                     throw new IOException(String.Format(CultureInfo.InvariantCulture, "EnumResourceLanguages error. Error code: {0}", err));
@@ -162,7 +162,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         private bool EnumResLangs(IntPtr module, IntPtr type, IntPtr name, ushort langId, IntPtr param)
         {
             Resource res;
-            if (((int) type) == ResourceType.Version.IntegerValue)
+            if (((int)type) == ResourceType.Version.IntegerValue)
             {
                 res = new VersionResource(ResourceNameToString(name), langId);
             }
@@ -256,7 +256,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         {
             get
             {
-                return (Resource) this.resources[index];
+                return (Resource)this.resources[index];
             }
             set
             {
@@ -352,7 +352,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable) this.resources).GetEnumerator();
+            return ((IEnumerable)this.resources).GetEnumerator();
         }
 
         bool ICollection<Resource>.IsReadOnly

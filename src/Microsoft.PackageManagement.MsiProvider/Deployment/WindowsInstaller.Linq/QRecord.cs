@@ -314,7 +314,6 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                             s.AppendFormat(" {0} `{1}` = ?", (i == 0 ? "WHERE" : "AND"), key);
                             int index = this.TableInfo.Columns.IndexOf(key);
                             updateRec[indexes.Count + i + 1] = this.Values[index];
-
                         }
 
                         string updateSql = s.ToString();

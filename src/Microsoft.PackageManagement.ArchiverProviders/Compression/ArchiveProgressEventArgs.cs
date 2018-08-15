@@ -71,8 +71,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             this.currentFileBytesProcessed = currentFileBytesProcessed;
             this.currentFileTotalBytes = currentFileTotalBytes;
             this.currentArchiveName = currentArchiveName;
-            this.currentArchiveNumber = (short) currentArchiveNumber;
-            this.totalArchives = (short) totalArchives;
+            this.currentArchiveNumber = (short)currentArchiveNumber;
+            this.totalArchives = (short)totalArchives;
             this.currentArchiveBytesProcessed = currentArchiveBytesProcessed;
             this.currentArchiveTotalBytes = currentArchiveTotalBytes;
             this.fileBytesProcessed = fileBytesProcessed;
@@ -269,43 +269,43 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
 
 #if DEBUG
 
-    /// <summary>
-    /// Creates a string representation of the progress event.
-    /// </summary>
-    /// <returns>a listing of all event parameters and values</returns>
-    public override string ToString()
-    {
-        string formatString =
-            "{0}\n" +
-            "\t CurrentFileName              = {1}\n" +
-            "\t CurrentFileNumber            = {2}\n" +
-            "\t TotalFiles                   = {3}\n" +
-            "\t CurrentFileBytesProcessed    = {4}\n" +
-            "\t CurrentFileTotalBytes        = {5}\n" +
-            "\t CurrentArchiveName           = {6}\n" +
-            "\t CurrentArchiveNumber         = {7}\n" +
-            "\t TotalArchives                = {8}\n" +
-            "\t CurrentArchiveBytesProcessed = {9}\n" +
-            "\t CurrentArchiveTotalBytes     = {10}\n" +
-            "\t FileBytesProcessed           = {11}\n" +
-            "\t TotalFileBytes               = {12}\n";
-        return String.Format(
-            System.Globalization.CultureInfo.InvariantCulture,
-            formatString,
-            this.ProgressType,
-            this.CurrentFileName,
-            this.CurrentFileNumber,
-            this.TotalFiles,
-            this.CurrentFileBytesProcessed,
-            this.CurrentFileTotalBytes,
-            this.CurrentArchiveName,
-            this.CurrentArchiveNumber,
-            this.TotalArchives,
-            this.CurrentArchiveBytesProcessed,
-            this.CurrentArchiveTotalBytes,
-            this.FileBytesProcessed,
-            this.TotalFileBytes);
-    }
+        /// <summary>
+        /// Creates a string representation of the progress event.
+        /// </summary>
+        /// <returns>a listing of all event parameters and values</returns>
+        public override string ToString()
+        {
+            string formatString =
+                "{0}\n" +
+                "\t CurrentFileName              = {1}\n" +
+                "\t CurrentFileNumber            = {2}\n" +
+                "\t TotalFiles                   = {3}\n" +
+                "\t CurrentFileBytesProcessed    = {4}\n" +
+                "\t CurrentFileTotalBytes        = {5}\n" +
+                "\t CurrentArchiveName           = {6}\n" +
+                "\t CurrentArchiveNumber         = {7}\n" +
+                "\t TotalArchives                = {8}\n" +
+                "\t CurrentArchiveBytesProcessed = {9}\n" +
+                "\t CurrentArchiveTotalBytes     = {10}\n" +
+                "\t FileBytesProcessed           = {11}\n" +
+                "\t TotalFileBytes               = {12}\n";
+            return String.Format(
+                System.Globalization.CultureInfo.InvariantCulture,
+                formatString,
+                this.ProgressType,
+                this.CurrentFileName,
+                this.CurrentFileNumber,
+                this.TotalFiles,
+                this.CurrentFileBytesProcessed,
+                this.CurrentFileTotalBytes,
+                this.CurrentArchiveName,
+                this.CurrentArchiveNumber,
+                this.TotalArchives,
+                this.CurrentArchiveBytesProcessed,
+                this.CurrentArchiveTotalBytes,
+                this.FileBytesProcessed,
+                this.TotalFileBytes);
+        }
 
 #endif
     }

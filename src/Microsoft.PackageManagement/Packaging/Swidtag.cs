@@ -1,18 +1,19 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement.Internal.Packaging {
+namespace Microsoft.PackageManagement.Internal.Packaging
+{
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -23,11 +24,13 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
     using Utility.Collections;
     using Utility.Extensions;
 
-    public class Swidtag : BaseElement {
+    public class Swidtag : BaseElement
+    {
         internal XDocument _swidTag;
 
         public Swidtag(XDocument document)
-            : base(document) {
+            : base(document)
+        {
             _swidTag = document;
             ChangeCurrentNameSpace();
         }
@@ -35,13 +38,15 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         public Swidtag()
             : this(new XDocument(
                 new XDeclaration("1.0", "UTF-8", "yes"),
-                new XElement(Iso19770_2.Elements.SoftwareIdentity))) {
+                new XElement(Iso19770_2.Elements.SoftwareIdentity)))
+        {
         }
 
         public Swidtag(XElement xmlDocument)
             : this(new XDocument(
                 new XDeclaration("1.0", "UTF-8", "yes"),
-                xmlDocument)) {
+                xmlDocument))
+        {
         }
 
         internal void SetSwidTag(XDocument swidTag)
@@ -63,13 +68,12 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
 
                 foreach (XElement el in _swidTag.Root.DescendantsAndSelf())
                 {
-
                     el.Name = Iso19770_2.Namespace.Iso19770_2.GetName(el.Name.LocalName);
 
                     List<XAttribute> atList = el.Attributes().ToList();
 
                     el.Attributes().Remove();
-                    
+
                     foreach (XAttribute at in atList)
                     {
                         el.Add(new XAttribute(Iso19770_2.Namespace.Iso19770_2.GetName(at.Name.LocalName), at.Value));
@@ -78,18 +82,22 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
             }
         }
 
-        public string SwidTagText {
-            get {
-                var stringBuilder = new StringBuilder();
+        public string SwidTagText
+        {
+            get
+            {
+                StringBuilder stringBuilder = new StringBuilder();
 
-                var settings = new XmlWriterSettings {
+                XmlWriterSettings settings = new XmlWriterSettings
+                {
                     OmitXmlDeclaration = false,
                     Indent = true,
                     NewLineOnAttributes = true,
                     NamespaceHandling = NamespaceHandling.OmitDuplicates
                 };
 
-                using (var xmlWriter = XmlWriter.Create(stringBuilder, settings)) {
+                using (XmlWriter xmlWriter = XmlWriter.Create(stringBuilder, settings))
+                {
                     _swidTag.Save(xmlWriter);
                 }
 
@@ -97,142 +105,114 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
             }
         }
 
-        public static bool IsSwidtag(XElement xmlDocument) {
+        public static bool IsSwidtag(XElement xmlDocument)
+        {
             return xmlDocument.Name == Iso19770_2.Elements.SoftwareIdentity || xmlDocument.Name == Iso19770_2.Elements.SoftwareIdentityCurrent;
         }
 
-        public bool IsApplicable(Hashtable environment) {
+        public bool IsApplicable(Hashtable environment)
+        {
             return MediaQuery.IsApplicable(AppliesToMedia, environment);
         }
 
-        public IEnumerable<string> Dependencies
-        {
-            get
-            {
-                return Links.Where(each => Iso19770_2.Relationship.Requires == each.Relationship).Select(each => each.HRef).WhereNotNull().Select(each => Uri.UnescapeDataString(each.ToString())).ReEnumerable();
-            }
-        }
+        public IEnumerable<string> Dependencies => Links.Where(each => Iso19770_2.Relationship.Requires == each.Relationship).Select(each => each.HRef).WhereNotNull().Select(each => Uri.UnescapeDataString(each.ToString())).ReEnumerable();
 
         #region Attributes
 
-        public bool? IsCorpus {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Corpus).IsTruePreserveNull();
-            }
-            internal set {
-                if (value != null) {
+        public bool? IsCorpus
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Corpus).IsTruePreserveNull();
+            internal set
+            {
+                if (value != null)
+                {
                     AddAttribute(Iso19770_2.Attributes.Corpus, value.ToString());
                 }
             }
         }
 
-        public virtual string Name {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Name);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.Name, value);
-            }
+        public virtual string Name
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Name);
+            internal set => AddAttribute(Iso19770_2.Attributes.Name, value);
         }
 
-        public string Version {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Version);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.Version, value);
-            }
+        public string Version
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Version);
+            internal set => AddAttribute(Iso19770_2.Attributes.Version, value);
         }
 
-        public string VersionScheme {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.VersionScheme);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.VersionScheme, value);
-            }
+        public string VersionScheme
+        {
+            get => GetAttribute(Iso19770_2.Attributes.VersionScheme);
+            internal set => AddAttribute(Iso19770_2.Attributes.VersionScheme, value);
         }
 
-        public string TagVersion {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.TagVersion);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.TagVersion, value);
-            }
+        public string TagVersion
+        {
+            get => GetAttribute(Iso19770_2.Attributes.TagVersion);
+            internal set => AddAttribute(Iso19770_2.Attributes.TagVersion, value);
         }
 
-        public string TagId {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.TagId);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.TagId, value);
-            }
+        public string TagId
+        {
+            get => GetAttribute(Iso19770_2.Attributes.TagId);
+            internal set => AddAttribute(Iso19770_2.Attributes.TagId, value);
         }
 
-        public bool? IsPatch {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Patch).IsTruePreserveNull();
-            }
-            internal set {
-                if (value != null) {
+        public bool? IsPatch
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Patch).IsTruePreserveNull();
+            internal set
+            {
+                if (value != null)
+                {
                     AddAttribute(Iso19770_2.Attributes.Patch, value.ToString());
                 }
             }
         }
 
-        public bool? IsSupplemental {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Supplemental).IsTruePreserveNull();
-            }
-            internal set {
-                if (value != null) {
+        public bool? IsSupplemental
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Supplemental).IsTruePreserveNull();
+            internal set
+            {
+                if (value != null)
+                {
                     AddAttribute(Iso19770_2.Attributes.Supplemental, value.ToString());
                 }
             }
         }
 
-        public string AppliesToMedia {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Media);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.Media, value);
-            }
+        public string AppliesToMedia
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Media);
+            internal set => AddAttribute(Iso19770_2.Attributes.Media, value);
         }
 
-        #endregion
+        #endregion Attributes
 
         #region Elements
 
-        public IEnumerable<SoftwareMetadata> Meta {
-            get {
-                return Element.Elements(Iso19770_2.Elements.Meta).Select(each => new SoftwareMetadata(each)).ReEnumerable();
-            }
-        }
+        public IEnumerable<SoftwareMetadata> Meta => Element.Elements(Iso19770_2.Elements.Meta).Select(each => new SoftwareMetadata(each)).ReEnumerable();
 
-        internal SoftwareMetadata AddMeta() {
+        internal SoftwareMetadata AddMeta()
+        {
             return AddElement(new SoftwareMetadata());
         }
 
-        public IEnumerable<Link> Links {
-            get {
-                return Element.Elements(Iso19770_2.Elements.Link).Select(each => new Link(each)).ReEnumerable();
-            }
-        }
+        public IEnumerable<Link> Links => Element.Elements(Iso19770_2.Elements.Link).Select(each => new Link(each)).ReEnumerable();
 
-        internal Link AddLink(Uri referenceUri, string relationship) {
+        internal Link AddLink(Uri referenceUri, string relationship)
+        {
             return AddElement(new Link(referenceUri, relationship));
         }
 
-        public IEnumerable<Entity> Entities {
-            get {
-                return Element.Elements(Iso19770_2.Elements.Entity).Select(each => new Entity(each)).ReEnumerable();
-            }
-        }
+        public IEnumerable<Entity> Entities => Element.Elements(Iso19770_2.Elements.Entity).Select(each => new Entity(each)).ReEnumerable();
 
-        internal Entity AddEntity(string name, string regId, string role) {
+        internal Entity AddEntity(string name, string regId, string role)
+        {
             return AddElement(new Entity(name, regId, role));
         }
 
@@ -252,20 +232,18 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         ///     component may be included in payload, but not installed on
         ///     the device).
         /// </summary>
-        public Payload Payload {
-            get {
-                return Element.Elements(Iso19770_2.Elements.Payload).Select(each => new Payload(each)).FirstOrDefault();
-            }
-        }
+        public Payload Payload => Element.Elements(Iso19770_2.Elements.Payload).Select(each => new Payload(each)).FirstOrDefault();
 
         /// <summary>
         ///     Adds a Payload resource collection element.
         /// </summary>
         /// <returns>The ResourceCollection added. If the Payload already exists, returns the current Payload.</returns>
-        internal Payload AddPayload() {
+        internal Payload AddPayload()
+        {
             // should we just detect and add the evidence element when a provider is adding items to the evidence
             // instead of requiring someone to explicitly add the element?
-            if (Element.Elements(Iso19770_2.Elements.Payload).Any()) {
+            if (Element.Elements(Iso19770_2.Elements.Payload).Any())
+            {
                 return Payload;
             }
             return AddElement(new Payload());
@@ -282,25 +260,23 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         ///     evidence for why software is believed to be installed on the
         ///     device is provided in the Evidence element.
         /// </summary>
-        public Evidence Evidence {
-            get {
-                return Element.Elements(Iso19770_2.Elements.Evidence).Select(each => new Evidence(each)).FirstOrDefault();
-            }
-        }
+        public Evidence Evidence => Element.Elements(Iso19770_2.Elements.Evidence).Select(each => new Evidence(each)).FirstOrDefault();
 
         /// <summary>
         ///     Adds an Evidence element.
         /// </summary>
         /// <returns>The added Evidence element. If the Evidence element already exists, returns the current element.</returns>
-        internal Evidence AddEvidence() {
+        internal Evidence AddEvidence()
+        {
             // should we just detect and add the evidence element when a provider is adding items to the evidence
             // instead of requiring someone to explicitly add the element?
-            if (Element.Elements(Iso19770_2.Elements.Evidence).Any()) {
+            if (Element.Elements(Iso19770_2.Elements.Evidence).Any())
+            {
                 return Evidence;
             }
             return AddElement(new Evidence());
         }
 
-        #endregion
+        #endregion Elements
     }
 }

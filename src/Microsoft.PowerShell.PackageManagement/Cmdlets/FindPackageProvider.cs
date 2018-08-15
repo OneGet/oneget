@@ -14,27 +14,29 @@
 
 namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Management.Automation;
     using Microsoft.PackageManagement.Implementation;
     using Microsoft.PackageManagement.Internal.Api;
     using Microsoft.PackageManagement.Internal.Packaging;
     using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Internal.Utility.Plugin;
     using Microsoft.PackageManagement.Packaging;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Management.Automation;
     using Utility;
 
-    [Cmdlet("Find", Constants.Nouns.PackageProviderNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkId=626939"), OutputType(new Type[1] {typeof(SoftwareIdentity)})]
-    public sealed class FindPackageProvider : CmdletWithSearchAndSource {
+    [Cmdlet("Find", Constants.Nouns.PackageProviderNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkId=626939"), OutputType(new Type[1] { typeof(SoftwareIdentity) })]
+    public sealed class FindPackageProvider : CmdletWithSearchAndSource
+    {
         private const string FilterOnTag = "FilterOnTag";
 
-        public FindPackageProvider() : base(new[] {OptionCategory.Package}) {
+        public FindPackageProvider() : base(new[] { OptionCategory.Package })
+        {
             //this will include bootstrap provider
             ShouldSelectAllProviders = true;
         }
-       
+
         [Parameter(ValueFromPipelineByPropertyName = true, Position = 0)]
         public override string[] Name { get; set; }
 
@@ -56,48 +58,58 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         [Parameter]
         public SwitchParameter IncludeDependencies { get; set; }
-    
-        protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
-            //this will supress the dynamic parameters from the parent classes
-            //Noop       
-        }
 
+        protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments)
+        {
+            //this will supress the dynamic parameters from the parent classes
+            //Noop
+        }
 
         protected override DynamicOption[] CachedDynamicOptions
         {
             //this will suppress the dynamic parameters from parent classes
             get
             {
-                return new[] {new DynamicOption()};
+                return new[] { new DynamicOption() };
             }
         }
 
-        public override bool ProcessRecordAsync() {
+        public override bool ProcessRecordAsync()
+        {
             ValidateVersion(RequiredVersion);
             ValidateVersion(MinimumVersion);
             ValidateVersion(MaximumVersion);
 
-            if (RequiredVersion != null) {
-                if ((!string.IsNullOrWhiteSpace(MaximumVersion)) || (!string.IsNullOrWhiteSpace(MinimumVersion))) {
+            if (RequiredVersion != null)
+            {
+                if ((!string.IsNullOrWhiteSpace(MaximumVersion)) || (!string.IsNullOrWhiteSpace(MinimumVersion)))
+                {
                     Error(Constants.Errors.VersionRangeAndRequiredVersionCannotBeSpecifiedTogether);
                     return false;
                 }
             }
             //Error out for the case where multiple provider names with any version specififed
-            if (Name.IsNullOrEmpty()) {
-                if ((!string.IsNullOrWhiteSpace(RequiredVersion)) || (!string.IsNullOrWhiteSpace(MinimumVersion)) || (!string.IsNullOrWhiteSpace(MaximumVersion))) {
-                    Error(Constants.Errors.MultipleNamesWithVersionNotAllowed);
-                    return false;
-                }
-            } else {
-                if (((Name.Length > 1) || Name.Any(each => each.ContainsWildcards())) &&
-                    ((!string.IsNullOrWhiteSpace(RequiredVersion)) || (!string.IsNullOrWhiteSpace(MinimumVersion)) || (!string.IsNullOrWhiteSpace(MaximumVersion)))) {
+            if (Name.IsNullOrEmpty())
+            {
+                if ((!string.IsNullOrWhiteSpace(RequiredVersion)) || (!string.IsNullOrWhiteSpace(MinimumVersion)) || (!string.IsNullOrWhiteSpace(MaximumVersion)))
+                {
                     Error(Constants.Errors.MultipleNamesWithVersionNotAllowed);
                     return false;
                 }
             }
-            if (AllVersions.IsPresent) {
-                if ((!string.IsNullOrWhiteSpace(RequiredVersion)) || (!string.IsNullOrWhiteSpace(MinimumVersion)) || (!string.IsNullOrWhiteSpace(MaximumVersion))) {
+            else
+            {
+                if (((Name.Length > 1) || Name.Any(each => each.ContainsWildcards())) &&
+                    ((!string.IsNullOrWhiteSpace(RequiredVersion)) || (!string.IsNullOrWhiteSpace(MinimumVersion)) || (!string.IsNullOrWhiteSpace(MaximumVersion))))
+                {
+                    Error(Constants.Errors.MultipleNamesWithVersionNotAllowed);
+                    return false;
+                }
+            }
+            if (AllVersions.IsPresent)
+            {
+                if ((!string.IsNullOrWhiteSpace(RequiredVersion)) || (!string.IsNullOrWhiteSpace(MinimumVersion)) || (!string.IsNullOrWhiteSpace(MaximumVersion)))
+                {
                     Error(Constants.Errors.AllVersionsCannotBeUsedWithOtherVersionParameters);
                     return false;
                 }
@@ -109,7 +121,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         }
 
         /// <summary>
-        /// Select existing providers on the system that will be used for searching any package providers in the repositories. 
+        /// Select existing providers on the system that will be used for searching any package providers in the repositories.
         /// </summary>
         protected override IEnumerable<PackageProvider> SelectedProviders
         {
@@ -136,7 +148,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 {
                     GetOptionValues = new Func<string, IEnumerable<string>>(key =>
                     {
-                        if (key.EqualsIgnoreCase(FilterOnTag)) {
+                        if (key.EqualsIgnoreCase(FilterOnTag))
+                        {
                             return ProviderFilters;
                         }
 
@@ -146,44 +159,55 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             return host;
         }
 
-        protected override bool EnsurePackageIsProvider(SoftwareIdentity package) {
+        protected override bool EnsurePackageIsProvider(SoftwareIdentity package)
+        {
             //Make sure the package is a provider package
             return ValidatePackageProvider(package);
         }
 
-        protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {
-
+        protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package)
+        {
             Debug("Calling ProcessPackage SearchKey = '{0}' and provider name ='{1}'", searchKey, package.ProviderName);
-            try {
+            try
+            {
                 base.ProcessPackage(provider, searchKey, package);
 
                 // output to console
                 WriteObject(AddPropertyToSoftwareIdentity(package));
 
-                if (IncludeDependencies) {
+                if (IncludeDependencies)
+                {
                     var missingDependencies = new HashSet<string>();
-                    foreach (var dep in package.Dependencies) {
+                    foreach (var dep in package.Dependencies)
+                    {
                         var dependendcies = PackageManagementService.FindPackageByCanonicalId(dep, this);
                         var depPkg = dependendcies.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).FirstOrDefault();
 
-                        if (depPkg == null) {
+                        if (depPkg == null)
+                        {
                             missingDependencies.Add(dep);
                             Warning(Constants.Messages.UnableToFindDependencyPackage, dep);
-                        } else {
+                        }
+                        else
+                        {
                             ProcessPackage(depPkg.Provider, searchKey.Select(each => each + depPkg.Name).ToArray(), depPkg);
                         }
                     }
-                    if (missingDependencies.Any()) {
+                    if (missingDependencies.Any())
+                    {
                         Error(Constants.Errors.UnableToFindDependencyPackage, missingDependencies.JoinWithComma());
                     }
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Debug("Calling ProcessPackage {0}", ex.Message);
             }
         }
 
-        public override bool EndProcessingAsync() {
-                return CheckUnmatchedPackages();
+        public override bool EndProcessingAsync()
+        {
+            return CheckUnmatchedPackages();
         }
     }
 }

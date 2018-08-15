@@ -143,6 +143,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         }
 
 #if !CORECLR
+
         /// <summary>
         /// Closes the underlying stream, effectively closing ALL duplicates.
         /// </summary>
@@ -150,6 +151,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         {
             this.source.Close();
         }
+
 #endif
 
         /// <summary>

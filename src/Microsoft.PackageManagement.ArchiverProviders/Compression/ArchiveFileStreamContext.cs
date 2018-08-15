@@ -115,7 +115,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             this.files = files;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Properties
 
@@ -204,7 +204,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             }
         }
 
-        #endregion
+        #endregion Properties
 
         #region IPackStreamContext Members
 
@@ -278,7 +278,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
 
             if (this.enableOffsetOpen)
             {
-                if (compressionEngine == null) {
+                if (compressionEngine == null)
+                {
                     throw new ArgumentNullException("compressionEngine");
                 }
 
@@ -434,7 +435,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             return null;
         }
 
-        #endregion
+        #endregion IPackStreamContext Members
 
         #region IUnpackStreamContext Members
 
@@ -470,7 +471,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
 
             if (this.enableOffsetOpen)
             {
-                if (compressionEngine == null) {
+                if (compressionEngine == null)
+                {
                     throw new ArgumentNullException("compressionEngine");
                 }
                 long offset = compressionEngine.FindArchiveOffset(
@@ -641,7 +643,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             }
         }
 
-        #endregion
+        #endregion IUnpackStreamContext Members
 
         #region Private utility methods
 
@@ -677,6 +679,6 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             return filePath;
         }
 
-        #endregion
+        #endregion Private utility methods
     }
 }

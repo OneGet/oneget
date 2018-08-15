@@ -12,36 +12,43 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets
+{
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Async;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Packaging;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.PackageManagement.Internal.Packaging;
-    using Microsoft.PackageManagement.Internal.Utility.Async;
-    using Microsoft.PackageManagement.Internal.Utility.Extensions;
-    using Microsoft.PackageManagement.Packaging;
     using Utility;
 
     [Cmdlet(VerbsLifecycle.Unregister, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "https://go.microsoft.com/fwlink/?LinkID=517143")]
-    public sealed class UnregisterPackageSource : CmdletWithSource {
+    public sealed class UnregisterPackageSource : CmdletWithSource
+    {
         public UnregisterPackageSource()
-            : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
+            : base(new[] { OptionCategory.Provider, OptionCategory.Source })
+        {
         }
 
-        protected override IEnumerable<string> ParameterSets {
-            get {
-                return new[] {Constants.ParameterSets.SourceByInputObjectSet, Constants.ParameterSets.SourceBySearchSet};
+        protected override IEnumerable<string> ParameterSets
+        {
+            get
+            {
+                return new[] { Constants.ParameterSets.SourceByInputObjectSet, Constants.ParameterSets.SourceBySearchSet };
             }
         }
 
-
-        protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
-            if (!IsInvocation) {
+        protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments)
+        {
+            if (!IsInvocation)
+            {
                 var providerNames = PackageManagementService.AllProviderNames;
                 var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
-                if (whatsOnCmdline != null) {
+                if (whatsOnCmdline != null)
+                {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
                 }
 
@@ -54,7 +61,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     new ValidateSetAttribute(providerNames.ToArray())
                 }));
             }
-            else {
+            else
+            {
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true,
@@ -67,14 +75,17 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         [Alias("Name")]
         [Parameter(Position = 0, ParameterSetName = Constants.ParameterSets.SourceBySearchSet)]
-        public string Source {get; set;}
+        public string Source { get; set; }
 
         [Parameter(ParameterSetName = Constants.ParameterSets.SourceBySearchSet)]
-        public string Location {get; set;}
+        public string Location { get; set; }
 
-        public override IEnumerable<string> Sources {
-            get {
-                if (string.IsNullOrWhiteSpace(Source)) {
+        public override IEnumerable<string> Sources
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Source))
+                {
                     return new string[0];
                 }
                 return new[] {
@@ -83,16 +94,22 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        public override bool ProcessRecordAsync() {
-            if (IsSourceByObject) {
-                foreach (var source in InputObject) {
-                    if (Stopping) {
+        public override bool ProcessRecordAsync()
+        {
+            if (IsSourceByObject)
+            {
+                foreach (var source in InputObject)
+                {
+                    if (Stopping)
+                    {
                         return false;
                     }
 
                     var provider = SelectProviders(source.ProviderName).FirstOrDefault();
-                    if (provider == null) {
-                        if (string.IsNullOrWhiteSpace(source.ProviderName)) {
+                    if (provider == null)
+                    {
+                        if (string.IsNullOrWhiteSpace(source.ProviderName))
+                        {
                             return Error(Constants.Errors.UnableToFindProviderForSource, source.Name);
                         }
                         return Error(Constants.Errors.UnknownProvider, source.ProviderName);
@@ -102,8 +119,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 return true;
             }
 
-
-            if (string.IsNullOrWhiteSpace(Source) && string.IsNullOrWhiteSpace(Location)) {
+            if (string.IsNullOrWhiteSpace(Source) && string.IsNullOrWhiteSpace(Location))
+            {
                 Error(Constants.Errors.NameOrLocationRequired);
                 return false;
             }
@@ -111,25 +128,31 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             // otherwise, we're just deleting a source by name
             var prov = SelectedProviders.ToArray();
 
-            if (Stopping) {
+            if (Stopping)
+            {
                 return false;
             }
 
-            if (prov.Length == 0) {
-                if (ProviderName.IsNullOrEmpty() || string.IsNullOrWhiteSpace(ProviderName[0])) {
+            if (prov.Length == 0)
+            {
+                if (ProviderName.IsNullOrEmpty() || string.IsNullOrWhiteSpace(ProviderName[0]))
+                {
                     return Error(Constants.Errors.UnableToFindProviderForSource, Source ?? Location);
                 }
                 return Error(Constants.Errors.UnknownProvider, ProviderName[0]);
             }
 
-            if (prov.Length > 0) {
+            if (prov.Length > 0)
+            {
                 var sources = prov.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Location))).ToArray()).ToArray();
 
-                if (sources.Length == 0) {
+                if (sources.Length == 0)
+                {
                     return Error(Constants.Errors.SourceNotFound, Source ?? Location);
                 }
 
-                if (sources.Length > 1) {
+                if (sources.Length > 1)
+                {
                     return Error(Constants.Errors.SourceFoundInMultipleProviders, Source ?? Location, prov.Select(each => each.ProviderName).JoinWithComma());
                 }
 
@@ -139,11 +162,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return true;
         }
 
-        public bool Unregister(PackageSource source) {
-            if (source == null) {
+        public bool Unregister(PackageSource source)
+        {
+            if (source == null)
+            {
                 throw new ArgumentNullException("source");
             }
-            if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, source.Name, source.Location, source.ProviderName), FormatMessageString(Constants.Messages.ActionUnregisterPackageSource)).Result) {
+            if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, source.Name, source.Location, source.ProviderName), FormatMessageString(Constants.Messages.ActionUnregisterPackageSource)).Result)
+            {
                 source.Provider.RemovePackageSource(source.Name, this).Wait();
                 return true;
             }

@@ -13,11 +13,13 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
     using System.Security;
 
 #if !CORECLR
+
     [SuppressUnmanagedCodeSecurity]
 #endif
     internal static class SafeNativeMethods
     {
 #if !CORECLR
+
         [DllImport("kernel32.dll", SetLastError = true)]
 #else
         [DllImport("api-ms-win-core-kernel32-legacy-l1-1-1.dll", SetLastError=true)]
@@ -27,6 +29,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             short wFatDate, short wFatTime, out long fileTime);
 
 #if !CORECLR
+
         [DllImport("kernel32.dll", SetLastError = true)]
 #else
         [DllImport("api-ms-win-core-kernel32-legacy-l1-1-1.dll", SetLastError=true)]

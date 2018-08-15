@@ -12,12 +12,14 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
-    public class Dependency {
-        public string ProviderName {get; set;}
-        public string PackageName {get; set;}
-        public string Version {get; set;}
-        public string Source {get; set;}
-        public string AppliesTo {get; set;}
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell
+{
+    public class Dependency
+    {
+        public string ProviderName { get; set; }
+        public string PackageName { get; set; }
+        public string Version { get; set; }
+        public string Source { get; set; }
+        public string AppliesTo { get; set; }
     }
 }

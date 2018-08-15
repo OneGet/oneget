@@ -312,13 +312,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             int recordHandle;
             int typesFlag = types ? 1 : 0;
             uint ret = RemotableNativeMethods.MsiViewGetColumnInfo(
-                (int) view.Handle, (uint) typesFlag, out recordHandle);
+                (int)view.Handle, (uint)typesFlag, out recordHandle);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
             }
 
-            using (Record rec = new Record((IntPtr) recordHandle, true, null))
+            using (Record rec = new Record((IntPtr)recordHandle, true, null))
             {
                 int count = rec.FieldCount;
                 IList<string> columnsList = new List<string>(count);
@@ -328,8 +328,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 for (int field = 1; field <= count; field++)
                 {
                     uint bufSize = 256;
-                    StringBuilder buf = new StringBuilder((int) bufSize);
-                    ret = RemotableNativeMethods.MsiRecordGetString((int) rec.Handle, (uint) field, buf, ref bufSize);
+                    StringBuilder buf = new StringBuilder((int)bufSize);
+                    ret = RemotableNativeMethods.MsiRecordGetString((int)rec.Handle, (uint)field, buf, ref bufSize);
                     if (ret != 0)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret);

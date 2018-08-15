@@ -12,27 +12,34 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
+{
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using System.Collections;
     using System.Linq;
-    using Microsoft.PackageManagement.Internal.Utility.Extensions;
 
-    public abstract class Yieldable {
+    public abstract class Yieldable
+    {
         protected Hashtable _details;
 
-        public Hashtable Details {
-            get {
+        public Hashtable Details
+        {
+            get
+            {
                 return _details ?? (_details = new Hashtable());
             }
-            internal set {
+            internal set
+            {
                 _details = value;
             }
         }
 
         public abstract bool YieldResult(PsRequest r);
 
-        protected virtual bool YieldDetails(PsRequest r) {
-            if (_details != null && _details.Count > 0) {
+        protected virtual bool YieldDetails(PsRequest r)
+        {
+            if (_details != null && _details.Count > 0)
+            {
                 // we need to send this back as a set of key/path & value  pairs.
                 return _details.Flatten().All(kvp => r.YieldKeyValuePair(kvp.Key, kvp.Value));
             }

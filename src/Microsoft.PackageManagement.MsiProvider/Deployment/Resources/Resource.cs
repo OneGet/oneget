@@ -135,7 +135,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal void Load(IntPtr module)
         {
-            IntPtr resourceInfo = NativeMethods.FindResourceEx(module, (string) this.ResourceType, this.Name, (ushort) this.Locale);
+            IntPtr resourceInfo = NativeMethods.FindResourceEx(module, (string)this.ResourceType, this.Name, (ushort)this.Locale);
             if (resourceInfo != IntPtr.Zero)
             {
                 uint resourceLength = NativeMethods.SizeofResource(module, resourceInfo);
@@ -201,11 +201,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
                 {
                     // A numeric-named resource must be saved via the integer version of UpdateResource.
                     IntPtr intName = new IntPtr(Int32.Parse(this.Name.Substring(1), CultureInfo.InvariantCulture));
-                    updateSuccess = NativeMethods.UpdateResource(updateHandle, new IntPtr(this.ResourceType.IntegerValue), intName, (ushort) this.Locale, dataPtr, (uint) dataLength);
+                    updateSuccess = NativeMethods.UpdateResource(updateHandle, new IntPtr(this.ResourceType.IntegerValue), intName, (ushort)this.Locale, dataPtr, (uint)dataLength);
                 }
                 else
                 {
-                    updateSuccess = NativeMethods.UpdateResource(updateHandle, (string) this.ResourceType, this.Name, (ushort) this.Locale, dataPtr, (uint) dataLength);
+                    updateSuccess = NativeMethods.UpdateResource(updateHandle, (string)this.ResourceType, this.Name, (ushort)this.Locale, dataPtr, (uint)dataLength);
                 }
                 if (!updateSuccess)
                 {

@@ -38,7 +38,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             for (uint i = 0; true; i++)
             {
                 uint ret = NativeMethods.MsiEnumRelatedProducts(upgradeCode, 0, i, buf);
-                if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS) break;
+                if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS) break;
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
@@ -92,7 +92,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             StringBuilder targetSidBuf = new StringBuilder(40);
             for (uint i = 0; ; i++)
             {
-                uint targetSidBufSize = (uint) targetSidBuf.Capacity;
+                uint targetSidBufSize = (uint)targetSidBuf.Capacity;
                 uint ret = NativeMethods.MsiEnumProductsEx(
                     productCode,
                     userSid,
@@ -102,9 +102,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     out targetContext,
                     targetSidBuf,
                     ref targetSidBufSize);
-                if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                if (ret == (uint)NativeMethods.Error.MORE_DATA)
                 {
-                    targetSidBuf.Capacity = (int) ++targetSidBufSize;
+                    targetSidBuf.Capacity = (int)++targetSidBufSize;
                     ret = NativeMethods.MsiEnumProductsEx(
                         productCode,
                         userSid,
@@ -116,7 +116,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         ref targetSidBufSize);
                 }
 
-                if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS)
+                if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
                 {
                     break;
                 }
@@ -280,7 +280,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 else
                 {
                     int installState = NativeMethods.MsiQueryProductState(this.ProductCode);
-                    return (InstallState) installState;
+                    return (InstallState)installState;
                 }
             }
         }
@@ -626,7 +626,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 else
                 {
                     StringBuilder buf = new StringBuilder(40);
-                    uint bufSize = (uint) buf.Capacity;
+                    uint bufSize = (uint)buf.Capacity;
                     uint ret;
 
                     if (this.Context == UserContexts.UserManaged ||
@@ -640,9 +640,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                             propertyName,
                             buf,
                             ref bufSize);
-                        if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                        if (ret == (uint)NativeMethods.Error.MORE_DATA)
                         {
-                            buf.Capacity = (int) ++bufSize;
+                            buf.Capacity = (int)++bufSize;
                             ret = NativeMethods.MsiGetProductInfoEx(
                                 this.ProductCode,
                                 this.UserSid,
@@ -659,9 +659,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                             propertyName,
                             buf,
                             ref bufSize);
-                        if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                        if (ret == (uint)NativeMethods.Error.MORE_DATA)
                         {
-                            buf.Capacity = (int) ++bufSize;
+                            buf.Capacity = (int)++bufSize;
                             ret = NativeMethods.MsiGetProductInfo(
                                 this.ProductCode,
                                 propertyName,
@@ -713,7 +713,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
                 }
-                return (InstallState) installState;
+                return (InstallState)installState;
             }
         }
 
@@ -748,7 +748,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
                 }
-                return (InstallState) installState;
+                return (InstallState)installState;
             }
         }
 

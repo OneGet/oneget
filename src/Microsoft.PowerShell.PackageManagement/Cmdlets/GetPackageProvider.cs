@@ -12,69 +12,87 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets
+{
+    using Microsoft.PackageManagement.Internal.Utility.Collections;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.PackageManagement.Internal.Utility.Collections;
-    using Microsoft.PackageManagement.Internal.Utility.Extensions;
 
     [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageProviderNoun, HelpUri = "https://go.microsoft.com/fwlink/?LinkID=517136")]
-    public sealed class GetPackageProvider : CmdletBase {
-        protected override IEnumerable<string> ParameterSets {
-            get {
-                return new[] {"",};
+    public sealed class GetPackageProvider : CmdletBase
+    {
+        protected override IEnumerable<string> ParameterSets
+        {
+            get
+            {
+                return new[] { "", };
             }
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(Position = 0)]
-        public string[] Name {get; set;}
+        public string[] Name { get; set; }
 
         [Parameter]
-        public SwitchParameter ListAvailable {get; set;}
+        public SwitchParameter ListAvailable { get; set; }
 
-        public override bool ProcessRecordAsync() {
-
-            if (Name.IsNullOrEmpty()) {
+        public override bool ProcessRecordAsync()
+        {
+            if (Name.IsNullOrEmpty())
+            {
                 var providers = ListAvailable.IsPresent ? PackageManagementService.GetAvailableProviders(this, Name).ReEnumerable() : SelectProviders(Name).ReEnumerable();
 
                 var providerOrdered = providers.OrderBy(each => each.ProviderName);
                 // Get all available providers
-                foreach (var p in providerOrdered) {
+                foreach (var p in providerOrdered)
+                {
                     WriteObject(p);
                 }
-            } else {
+            }
+            else
+            {
                 ProcessProvidersFilteredByName();
             }
 
             return true;
         }
 
-        private void ProcessProvidersFilteredByName() {
-            //Do not log error when a provider is not found in the list returned by SelectProviders(). This allows the searching continues 
+        private void ProcessProvidersFilteredByName()
+        {
+            //Do not log error when a provider is not found in the list returned by SelectProviders(). This allows the searching continues
             //in the list of providers that are not loaded.
             ShouldLogError = false;
             var notfound = new List<string>();
-            foreach (var name in Name) {
-                var providers = ListAvailable.IsPresent ? PackageManagementService.GetAvailableProviders(this, new[] {name}).ReEnumerable() : SelectProviders(name).ReEnumerable();
-                if (providers.Any()) {
+            foreach (var name in Name)
+            {
+                var providers = ListAvailable.IsPresent ? PackageManagementService.GetAvailableProviders(this, new[] { name }).ReEnumerable() : SelectProviders(name).ReEnumerable();
+                if (providers.Any())
+                {
                     var providerOrdered = providers.OrderByDescending(each => each.ProviderName);
 
-                    foreach (var provider in providerOrdered) {
+                    foreach (var provider in providerOrdered)
+                    {
                         WriteObject(provider);
                     }
-                } else {
+                }
+                else
+                {
                     notfound.Add(name);
                 }
             }
 
             //Error out if the specific provider is not found
-            if (notfound.Any()) {
-                if (notfound.Count == 1) {
+            if (notfound.Any())
+            {
+                if (notfound.Count == 1)
+                {
                     Error(ListAvailable.IsPresent ? Constants.Errors.UnknownProvider : Constants.Errors.UnknownProviderFromActivatedList, notfound.FirstOrDefault());
-                } else {
+                }
+                else
+                {
                     Error(ListAvailable.IsPresent ? Constants.Errors.UnknownProviders : Constants.Errors.UnknownProviderFromActivatedList, notfound.JoinWithComma());
                 }
             }
@@ -82,4 +100,3 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
     }
 }
-

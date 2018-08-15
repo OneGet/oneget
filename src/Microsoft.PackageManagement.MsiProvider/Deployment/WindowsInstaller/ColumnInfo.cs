@@ -49,18 +49,30 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             switch (Char.ToLower(columnDefinition[0], CultureInfo.InvariantCulture))
             {
-                case 'i': this.type = typeof(Int32);
+                case 'i':
+                    this.type = typeof(Int32);
                     break;
-                case 'j': this.type = typeof(Int32); this.isTemporary = true;
+
+                case 'j':
+                    this.type = typeof(Int32); this.isTemporary = true;
                     break;
-                case 'g': this.type = typeof(String); this.isTemporary = true;
+
+                case 'g':
+                    this.type = typeof(String); this.isTemporary = true;
                     break;
-                case 'l': this.type = typeof(String); this.isLocalizable = true;
+
+                case 'l':
+                    this.type = typeof(String); this.isLocalizable = true;
                     break;
-                case 's': this.type = typeof(String);
+
+                case 's':
+                    this.type = typeof(String);
                     break;
-                case 'v': this.type = typeof(Stream);
+
+                case 'v':
+                    this.type = typeof(Stream);
                     break;
+
                 default: throw new InstallerException();
             }
 

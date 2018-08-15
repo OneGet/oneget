@@ -73,7 +73,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <param name="arrayIndex">offset into the array</param>
         public void CopyTo(ComponentInfo[] array, int arrayIndex)
         {
-            if (array == null) {
+            if (array == null)
+            {
                 throw new ArgumentNullException("array");
             }
             foreach (ComponentInfo component in this)
@@ -118,10 +119,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 compView.Execute();
 
                 foreach (Record compRec in compView) using (compRec)
-                {
-                    string comp = compRec.GetString(1);
-                    yield return new ComponentInfo(this.session, comp);
-                }
+                    {
+                        string comp = compRec.GetString(1);
+                        yield return new ComponentInfo(this.session, comp);
+                    }
             }
         }
 
@@ -171,10 +172,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 int installedState, actionState;
-                uint ret = RemotableNativeMethods.MsiGetComponentState((int) this.session.Handle, this.name, out installedState, out actionState);
+                uint ret = RemotableNativeMethods.MsiGetComponentState((int)this.session.Handle, this.name, out installedState, out actionState);
                 if (ret != 0)
                 {
-                    if (ret == (uint) NativeMethods.Error.UNKNOWN_COMPONENT)
+                    if (ret == (uint)NativeMethods.Error.UNKNOWN_COMPONENT)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret, this.name);
                     }
@@ -183,7 +184,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         throw InstallerException.ExceptionFromReturnCode(ret);
                     }
                 }
-                return (InstallState) installedState;
+                return (InstallState)installedState;
             }
         }
 
@@ -204,10 +205,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 int installedState, actionState;
-                uint ret = RemotableNativeMethods.MsiGetComponentState((int) this.session.Handle, this.name, out installedState, out actionState);
+                uint ret = RemotableNativeMethods.MsiGetComponentState((int)this.session.Handle, this.name, out installedState, out actionState);
                 if (ret != 0)
                 {
-                    if (ret == (uint) NativeMethods.Error.UNKNOWN_COMPONENT)
+                    if (ret == (uint)NativeMethods.Error.UNKNOWN_COMPONENT)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret, this.name);
                     }
@@ -216,15 +217,15 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         throw InstallerException.ExceptionFromReturnCode(ret);
                     }
                 }
-                return (InstallState) actionState;
+                return (InstallState)actionState;
             }
 
             set
             {
-                uint ret = RemotableNativeMethods.MsiSetComponentState((int) this.session.Handle, this.name, (int) value);
+                uint ret = RemotableNativeMethods.MsiSetComponentState((int)this.session.Handle, this.name, (int)value);
                 if (ret != 0)
                 {
-                    if (ret == (uint) NativeMethods.Error.UNKNOWN_COMPONENT)
+                    if (ret == (uint)NativeMethods.Error.UNKNOWN_COMPONENT)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret, this.name);
                     }
@@ -253,25 +254,25 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             for (uint i = 0; true; i++)
             {
                 int cost, tempCost;
-                uint driveBufSize = (uint) driveBuf.Capacity;
+                uint driveBufSize = (uint)driveBuf.Capacity;
                 uint ret = RemotableNativeMethods.MsiEnumComponentCosts(
-                    (int) this.session.Handle,
+                    (int)this.session.Handle,
                     this.name,
                     i,
-                    (int) installState,
+                    (int)installState,
                     driveBuf,
                     ref driveBufSize,
                     out cost,
                     out tempCost);
-                if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS) break;
-                if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS) break;
+                if (ret == (uint)NativeMethods.Error.MORE_DATA)
                 {
-                    driveBuf.Capacity = (int) ++driveBufSize;
+                    driveBuf.Capacity = (int)++driveBufSize;
                     ret = RemotableNativeMethods.MsiEnumComponentCosts(
-                        (int) this.session.Handle,
+                        (int)this.session.Handle,
                         this.name,
                         i,
-                        (int) installState,
+                        (int)installState,
                         driveBuf,
                         ref driveBufSize,
                         out cost,

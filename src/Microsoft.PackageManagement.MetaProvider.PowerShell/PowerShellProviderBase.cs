@@ -12,20 +12,19 @@
 //  limitations under the License.
 //
 
-using Microsoft.PackageManagement.Internal.Utility.Platform;
-
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Management.Automation;
-    using System.Threading;
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
+{
     using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Internal.Utility.Platform;
-    using Messages = Microsoft.PackageManagement.MetaProvider.PowerShell.Internal.Resources.Messages;
+    using System;
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Management.Automation;
+    using System.Threading;
+    using Messages = Microsoft.PackageManagement.MetaProvider.PowerShell.Internal.Resources.Messages;
 
-    public class PowerShellProviderBase : IDisposable {
+    public class PowerShellProviderBase : IDisposable
+    {
         private object _lock = new Object();
         protected PSModuleInfo _module;
         private PowerShell _powershell;
@@ -33,8 +32,10 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
         private readonly Dictionary<string, CommandInfo> _allCommands = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, CommandInfo> _methods = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
 
-        public PowerShellProviderBase(PowerShell ps, PSModuleInfo module) {
-            if (module == null) {
+        public PowerShellProviderBase(PowerShell ps, PSModuleInfo module)
+        {
+            if (module == null)
+            {
                 throw new ArgumentNullException("module");
             }
 
@@ -43,36 +44,46 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
 
             // combine all the cmdinfos we care about
             // but normalize the keys as we go (remove any '-' '_' chars)
-            foreach (var k in _module.ExportedAliases.Keys) {
+            foreach (var k in _module.ExportedAliases.Keys)
+            {
                 _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedAliases[k]);
             }
-            foreach (var k in _module.ExportedCmdlets.Keys) {
+            foreach (var k in _module.ExportedCmdlets.Keys)
+            {
                 _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedCmdlets[k]);
             }
-            foreach (var k in _module.ExportedFunctions.Keys) {
+            foreach (var k in _module.ExportedFunctions.Keys)
+            {
                 _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedFunctions[k]);
             }
         }
 
-        public string ModulePath {
-            get {
+        public string ModulePath
+        {
+            get
+            {
                 return _module.Path;
             }
         }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing) {
-            if (disposing) {
-                if (_powershell != null) {
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_powershell != null)
+                {
                     _powershell.Dispose();
                     _powershell = null;
                 }
 
-                if (_reentrancyLock != null) {
+                if (_reentrancyLock != null)
+                {
                     _reentrancyLock.Dispose();
                     _reentrancyLock = null;
                 }
@@ -81,48 +92,61 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
             }
         }
 
-        internal CommandInfo GetMethod(string methodName) {
-            return _methods.GetOrAdd(methodName, () => {
-                if (_allCommands.ContainsKey(methodName)) {
+        internal CommandInfo GetMethod(string methodName)
+        {
+            return _methods.GetOrAdd(methodName, () =>
+            {
+                if (_allCommands.ContainsKey(methodName))
+                {
                     return _allCommands[methodName];
                 }
 
                 // try simple plurals to single
-                if (methodName.EndsWith("s", StringComparison.OrdinalIgnoreCase)) {
+                if (methodName.EndsWith("s", StringComparison.OrdinalIgnoreCase))
+                {
                     var meth = methodName.Substring(0, methodName.Length - 1);
-                    if (_allCommands.ContainsKey(meth)) {
+                    if (_allCommands.ContainsKey(meth))
+                    {
                         return _allCommands[meth];
                     }
                 }
 
                 // try words like Dependencies to Dependency
-                if (methodName.EndsWith("cies", StringComparison.OrdinalIgnoreCase)) {
+                if (methodName.EndsWith("cies", StringComparison.OrdinalIgnoreCase))
+                {
                     var meth = methodName.Substring(0, methodName.Length - 4) + "cy";
-                    if (_allCommands.ContainsKey(meth)) {
+                    if (_allCommands.ContainsKey(meth))
+                    {
                         return _allCommands[meth];
                     }
                 }
 
                 // try IsFoo to Test-IsFoo
-                if (methodName.IndexOf("Is", StringComparison.OrdinalIgnoreCase) == 0) {
+                if (methodName.IndexOf("Is", StringComparison.OrdinalIgnoreCase) == 0)
+                {
                     var meth = "test" + methodName;
-                    if (_allCommands.ContainsKey(meth)) {
+                    if (_allCommands.ContainsKey(meth))
+                    {
                         return _allCommands[meth];
                     }
                 }
 
-                if (methodName.IndexOf("add", StringComparison.OrdinalIgnoreCase) == 0) {
+                if (methodName.IndexOf("add", StringComparison.OrdinalIgnoreCase) == 0)
+                {
                     // try it with 'register' instead
                     var result = GetMethod("register" + methodName.Substring(3));
-                    if (result != null) {
+                    if (result != null)
+                    {
                         return result;
                     }
                 }
 
-                if (methodName.IndexOf("remove", StringComparison.OrdinalIgnoreCase) == 0) {
+                if (methodName.IndexOf("remove", StringComparison.OrdinalIgnoreCase) == 0)
+                {
                     // try it with 'register' instead
                     var result = GetMethod("unregister" + methodName.Substring(6));
-                    if (result != null) {
+                    if (result != null)
+                    {
                         return result;
                     }
                 }
@@ -135,14 +159,17 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
             // module.ExportedFunctions.FirstOrDefault().Value.Parameters.Values.First().ParameterType
         }
 
-        internal object CallPowerShellWithoutRequest(string method, params object[] args) {
+        internal object CallPowerShellWithoutRequest(string method, params object[] args)
+        {
             var cmdInfo = GetMethod(method);
-            if (cmdInfo == null) {
+            if (cmdInfo == null)
+            {
                 return null;
             }
 
             var result = _powershell.InvokeFunction<object>(cmdInfo.Name, null, null, args);
-            if (result == null) {
+            if (result == null)
+            {
                 // failure!
                 throw new Exception(Messages.PowershellScriptFunctionReturnsNull.format(_module.Name, method));
             }
@@ -152,10 +179,13 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
 
         // lock is on this instance only
 
-        internal void ReportErrors(PsRequest request, IEnumerable<ErrorRecord> errors) {
-            foreach (var error in errors) {
+        internal void ReportErrors(PsRequest request, IEnumerable<ErrorRecord> errors)
+        {
+            foreach (var error in errors)
+            {
                 request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject == null ? null : error.TargetObject.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
-                if (!string.IsNullOrWhiteSpace(error.Exception.StackTrace)) {
+                if (!string.IsNullOrWhiteSpace(error.Exception.StackTrace))
+                {
                     // give a debug hint if we have a script stack trace. How nice of us.
                     // the exception stack trace gives better stack than the script stack trace
                     request.Debug(Constants.ScriptStackTrace, error.Exception.StackTrace);
@@ -166,24 +196,31 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
         private IAsyncResult _stopResult;
         private object _stopLock = new object();
 
-        internal void CancelRequest() {
-            if (!_reentrancyLock.WaitOne(0)) {
+        internal void CancelRequest()
+        {
+            if (!_reentrancyLock.WaitOne(0))
+            {
                 // it's running right now.
 #if !CORECLR
-                    NativeMethods.OutputDebugString("[Cmdlet:debugging] -- Stopping powershell script.");
+                NativeMethods.OutputDebugString("[Cmdlet:debugging] -- Stopping powershell script.");
 #endif
-                lock (_stopLock) {
-                    if (_stopResult == null) {
+                lock (_stopLock)
+                {
+                    if (_stopResult == null)
+                    {
                         _stopResult = _powershell.BeginStop(ar => { }, null);
                     }
                 }
             }
         }
 
-        internal object CallPowerShell(PsRequest request, params object[] args) {
+        internal object CallPowerShell(PsRequest request, params object[] args)
+        {
             // the lock ensures that we're not re-entrant into the same powershell runspace
-            lock (_lock) {
-                if (!_reentrancyLock.WaitOne(0)) {
+            lock (_lock)
+            {
+                if (!_reentrancyLock.WaitOne(0))
+                {
                     // this lock is set to false, meaning we're still in a call **ON THIS THREAD**
                     // this is bad karma -- powershell won't let us call into the runspace again
                     // we're going to throw an error here because this indicates that the currently
@@ -191,8 +228,9 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                     // into this provider. That's just bad bad bad.
                     throw new Exception("Reentrancy Violation in powershell module");
                 }
-                
-                try {
+
+                try
+                {
                     // otherwise, this is the first time we've been here during this call.
                     _reentrancyLock.Reset();
 
@@ -223,12 +261,18 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                     }
 
                     return finalValue;
-                } catch (CmdletInvocationException cie) {
+                }
+                catch (CmdletInvocationException cie)
+                {
                     var error = cie.ErrorRecord;
                     request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject == null ? null : error.TargetObject.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
-                } finally {
-                    lock (_stopLock) {
-                        if (_stopResult != null){
+                }
+                finally
+                {
+                    lock (_stopLock)
+                    {
+                        if (_stopResult != null)
+                        {
                             _powershell.EndStop(_stopResult);
                             _stopResult = null;
                         }
@@ -260,7 +304,6 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
                 // add the error so we can report them later
                 errors.Add(error);
             }
-        
         }
 
         private void output_DataAdded(object sender, DataAddedEventArgs e, PsRequest request, ref object finalValue)

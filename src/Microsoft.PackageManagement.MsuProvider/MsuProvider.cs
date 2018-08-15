@@ -12,19 +12,21 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.Msu.Internal {
+namespace Microsoft.PackageManagement.Msu.Internal
+{
+    using Archivers.Internal.Compression.Cab;
+    using PackageManagement.Internal;
+    using PackageManagement.Internal.Implementation;
+    using PackageManagement.Internal.Utility.Extensions;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
-    using Archivers.Internal.Compression.Cab;
-    using PackageManagement.Internal;
-    using PackageManagement.Internal.Implementation;
-    using PackageManagement.Internal.Utility.Extensions;
 
-    public class MsuProvider {
+    public class MsuProvider
+    {
         /// <summary>
         ///     The name of this Package Provider
         /// </summary>
@@ -44,7 +46,8 @@ namespace Microsoft.PackageManagement.Msu.Internal {
         ///     Returns the name of the Provider.
         /// </summary>
         /// <returns>The name of this proivder (uses the constant declared at the top of the class)</returns>
-        public string GetPackageProviderName() {
+        public string GetPackageProviderName()
+        {
             return ProviderName;
         }
 
@@ -55,8 +58,10 @@ namespace Microsoft.PackageManagement.Msu.Internal {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void InitializeProvider(Request request) {
-            if( request == null ) {
+        public void InitializeProvider(Request request)
+        {
+            if (request == null)
+            {
                 throw new ArgumentNullException("request");
             }
 
@@ -71,14 +76,17 @@ namespace Microsoft.PackageManagement.Msu.Internal {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetFeatures(Request request) {
-            if( request == null ) {
+        public void GetFeatures(Request request)
+        {
+            if (request == null)
+            {
                 throw new ArgumentNullException("request");
             }
 
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
-            foreach (var feature in _features) {
+            foreach (var feature in _features)
+            {
                 request.Yield(feature);
             }
         }
@@ -91,15 +99,18 @@ namespace Microsoft.PackageManagement.Msu.Internal {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetDynamicOptions(string category, Request request) {
-            if( request == null ) {
+        public void GetDynamicOptions(string category, Request request)
+        {
+            if (request == null)
+            {
                 throw new ArgumentNullException("request");
             }
 
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetDynamicOptions' '{1}'", ProviderName, category);
 
-            switch ((category ?? string.Empty).ToLowerInvariant()) {
+            switch ((category ?? string.Empty).ToLowerInvariant())
+            {
                 case "install":
                     // options required for install/uninstall/getinstalledpackages
                     break;
@@ -132,11 +143,14 @@ namespace Microsoft.PackageManagement.Msu.Internal {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void FindPackageByFile(string file, int id, Request request) {
-            if( request == null ) {
+        public void FindPackageByFile(string file, int id, Request request)
+        {
+            if (request == null)
+            {
                 throw new ArgumentNullException("request");
             }
-            if( string.IsNullOrWhiteSpace(file) ) {
+            if (string.IsNullOrWhiteSpace(file))
+            {
                 throw new ArgumentNullException("file");
             }
 
@@ -150,7 +164,8 @@ namespace Microsoft.PackageManagement.Msu.Internal {
                 request.YieldSoftwareIdentity(file, info.Name, null, null, null, null, null, file, info.Name);
 
                 var files = info.GetFiles();
-                foreach (var i in files) {
+                foreach (var i in files)
+                {
                     // read the properties file
                     if (i.FullNameExtension == ".txt")
                     {
@@ -182,7 +197,8 @@ namespace Microsoft.PackageManagement.Msu.Internal {
         /// </param>
         public void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request)
         {
-            if( request == null ) {
+            if (request == null)
+            {
                 throw new ArgumentNullException("request");
             }
 
@@ -226,17 +242,20 @@ namespace Microsoft.PackageManagement.Msu.Internal {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void InstallPackage(string fastPackageReference, Request request) {
-            if( request == null ) {
+        public void InstallPackage(string fastPackageReference, Request request)
+        {
+            if (request == null)
+            {
                 throw new ArgumentNullException("request");
             }
-            if( string.IsNullOrWhiteSpace(fastPackageReference) ) {
+            if (string.IsNullOrWhiteSpace(fastPackageReference))
+            {
                 throw new ArgumentNullException("fastPackageReference");
             }
 
             string errorLogFolder = Path.GetTempPath() + Guid.NewGuid();
             DirectoryInfo errorDir = Directory.CreateDirectory(errorLogFolder);
-            string errorLogPath = errorLogFolder + "\\msuLog.evtx";       
+            string errorLogPath = errorLogFolder + "\\msuLog.evtx";
 
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InstallPackage' '{1}'", ProviderName, fastPackageReference);
@@ -249,7 +268,7 @@ namespace Microsoft.PackageManagement.Msu.Internal {
                 request.Verbose("Provider '{0}', Package '{1}': Installation succeeded", ProviderName, fastPackageReference);
             }
             else if (exitCode == 3010) //Exit code: 3010 (0xBC2) ERROR_SUCCESS_REBOOT_REQUIRED
-            {                
+            {
                 request.Warning(Resources.Messages.InstallRequiresReboot);
             }
             else
@@ -257,15 +276,17 @@ namespace Microsoft.PackageManagement.Msu.Internal {
                 request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.InvalidOperation, fastPackageReference, Resources.Messages.InstallFailed, fastPackageReference, String.Format(CultureInfo.CurrentCulture, "0x{0:X}", exitCode), errorLogPath);
             }
 
-            try {
+            try
+            {
                 if (exitCode == 0 || exitCode == 3010)
                 {
                     if (errorDir.Exists)
                         errorDir.Delete(true);
                 }
-            } catch {
             }
-            
+            catch
+            {
+            }
         }
 
         /// <summary>
@@ -276,11 +297,14 @@ namespace Microsoft.PackageManagement.Msu.Internal {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void UninstallPackage(string fastPackageReference, Request request) {
-            if( request == null ) {
+        public void UninstallPackage(string fastPackageReference, Request request)
+        {
+            if (request == null)
+            {
                 throw new ArgumentNullException("request");
             }
-            if( string.IsNullOrWhiteSpace(fastPackageReference) ) {
+            if (string.IsNullOrWhiteSpace(fastPackageReference))
+            {
                 throw new ArgumentNullException("fastPackageReference");
             }
 

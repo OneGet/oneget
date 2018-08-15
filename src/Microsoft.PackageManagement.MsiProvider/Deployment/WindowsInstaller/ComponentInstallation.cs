@@ -35,7 +35,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 for (uint i = 0; true; i++)
                 {
                     uint ret = NativeMethods.MsiEnumComponents(i, buf);
-                    if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS) break;
+                    if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS) break;
                     if (ret != 0)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret);
@@ -61,13 +61,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             UserContexts installedContext;
             for (uint i = 0; true; i++)
             {
-                uint  ret = NativeMethods.MsiEnumComponentsEx(szUserSid, dwContext, i, buf, out installedContext, szSid, ref pcchSid);
-                if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                uint ret = NativeMethods.MsiEnumComponentsEx(szUserSid, dwContext, i, buf, out installedContext, szSid, ref pcchSid);
+                if (ret == (uint)NativeMethods.Error.MORE_DATA)
                 {
-                    szSid.EnsureCapacity((int) ++pcchSid);
+                    szSid.EnsureCapacity((int)++pcchSid);
                     ret = NativeMethods.MsiEnumComponentsEx(szUserSid, dwContext, i, buf, out installedContext, szSid, ref pcchSid);
                 }
-                if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS) break;
+                if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS) break;
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
@@ -75,6 +75,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 yield return new ComponentInstallation(buf.ToString(), szSid.ToString(), installedContext);
             }
         }
+
         private static string GetProductCode(string component)
         {
             StringBuilder buf = new StringBuilder(40);
@@ -183,8 +184,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     uint ret = this.Context == UserContexts.None ?
                             NativeMethods.MsiEnumClients(this.ComponentCode, i, buf) :
                             NativeMethods.MsiEnumClientsEx(this.ComponentCode, this.UserSid, this.Context, i, buf, out installedContext, null, ref chSid);
-                    if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS) break;
-                    else if (ret == (uint) NativeMethods.Error.UNKNOWN_COMPONENT) break;
+                    if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS) break;
+                    else if (ret == (uint)NativeMethods.Error.UNKNOWN_COMPONENT) break;
                     if (ret != 0)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret);
@@ -216,7 +217,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                             this.ProductCode, this.ComponentCode, null, ref bufSize) :
                         NativeMethods.MsiGetComponentPathEx(
                             this.ProductCode, this.ComponentCode, this.UserSid, this.Context, null, ref bufSize);
-                    return (InstallState) installState;
+                    return (InstallState)installState;
                 }
                 else
                 {
@@ -250,34 +251,34 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 StringBuilder buf = new StringBuilder(256);
-                uint bufSize = (uint) buf.Capacity;
+                uint bufSize = (uint)buf.Capacity;
                 InstallState installState;
 
                 if (this.ProductCode != null)
                 {
                     installState = (this.Context == UserContexts.None) ?
-                        (InstallState) NativeMethods.MsiGetComponentPath(
+                        (InstallState)NativeMethods.MsiGetComponentPath(
                             this.ProductCode, this.ComponentCode, buf, ref bufSize) :
-                        (InstallState) NativeMethods.MsiGetComponentPathEx(
+                        (InstallState)NativeMethods.MsiGetComponentPathEx(
                             this.ProductCode, this.ComponentCode, this.UserSid, this.Context, buf, ref bufSize);
                     if (installState == InstallState.MoreData)
                     {
-                        buf.Capacity = (int) ++bufSize;
+                        buf.Capacity = (int)++bufSize;
                         installState = (this.Context == UserContexts.None) ?
-                            (InstallState) NativeMethods.MsiGetComponentPath(
+                            (InstallState)NativeMethods.MsiGetComponentPath(
                                 this.ProductCode, this.ComponentCode, buf, ref bufSize) :
-                            (InstallState) NativeMethods.MsiGetComponentPathEx(
+                            (InstallState)NativeMethods.MsiGetComponentPathEx(
                                 this.ProductCode, this.ComponentCode, this.UserSid, this.Context, buf, ref bufSize);
                     }
                 }
                 else
                 {
-                    installState = (InstallState) NativeMethods.MsiLocateComponent(
+                    installState = (InstallState)NativeMethods.MsiLocateComponent(
                         this.ComponentCode, buf, ref bufSize);
                     if (installState == InstallState.MoreData)
                     {
-                        buf.Capacity = (int) ++bufSize;
-                        installState = (InstallState) NativeMethods.MsiLocateComponent(
+                        buf.Capacity = (int)++bufSize;
+                        installState = (InstallState)NativeMethods.MsiLocateComponent(
                             this.ComponentCode, buf, ref bufSize);
                     }
                 }
@@ -315,20 +316,20 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 StringBuilder dataBuf = new StringBuilder(255);
                 for (uint i = 0; ; i++)
                 {
-                    uint qualBufSize = (uint) qualBuf.Capacity;
-                    uint dataBufSize = (uint) dataBuf.Capacity;
+                    uint qualBufSize = (uint)qualBuf.Capacity;
+                    uint dataBufSize = (uint)dataBuf.Capacity;
                     uint ret = NativeMethods.MsiEnumComponentQualifiers(
                         this.ComponentCode, i, qualBuf, ref qualBufSize, dataBuf, ref dataBufSize);
-                    if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                    if (ret == (uint)NativeMethods.Error.MORE_DATA)
                     {
-                        qualBuf.Capacity = (int) ++qualBufSize;
-                        dataBuf.Capacity = (int) ++dataBufSize;
+                        qualBuf.Capacity = (int)++qualBufSize;
+                        dataBuf.Capacity = (int)++dataBufSize;
                         ret = NativeMethods.MsiEnumComponentQualifiers(
                             this.ComponentCode, i, qualBuf, ref qualBufSize, dataBuf, ref dataBufSize);
                     }
 
-                    if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS ||
-                        ret == (uint) NativeMethods.Error.UNKNOWN_COMPONENT)
+                    if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS ||
+                        ret == (uint)NativeMethods.Error.UNKNOWN_COMPONENT)
                     {
                         break;
                     }

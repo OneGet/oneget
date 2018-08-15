@@ -51,8 +51,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("transformFile");
             }
 
-            uint ret = NativeMethods.MsiDatabaseGenerateTransform((int) this.Handle, (int) referenceDatabase.Handle, transformFile, 0, 0);
-            if (ret == (uint) NativeMethods.Error.NO_DATA)
+            uint ret = NativeMethods.MsiDatabaseGenerateTransform((int)this.Handle, (int)referenceDatabase.Handle, transformFile, 0, 0);
+            if (ret == (uint)NativeMethods.Error.NO_DATA)
             {
                 return false;
             }
@@ -99,11 +99,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
 
             uint ret = NativeMethods.MsiCreateTransformSummaryInfo(
-                (int) this.Handle,
-                (int) referenceDatabase.Handle,
+                (int)this.Handle,
+                (int)referenceDatabase.Handle,
                 transformFile,
-                (int) errors,
-                (int) validations);
+                (int)errors,
+                (int)validations);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -157,7 +157,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             using (SummaryInfo transformSummInfo = new SummaryInfo(transformFile, false))
             {
                 int errorConditions = transformSummInfo.CharacterCount & 0xFFFF;
-                errorConditionsToSuppress = (TransformErrors) errorConditions;
+                errorConditionsToSuppress = (TransformErrors)errorConditions;
             }
             this.ApplyTransform(transformFile, errorConditionsToSuppress);
         }
@@ -181,7 +181,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("transformFile");
             }
 
-            uint ret = NativeMethods.MsiDatabaseApplyTransform((int) this.Handle, transformFile, (int) errorConditionsToSuppress);
+            uint ret = NativeMethods.MsiDatabaseApplyTransform((int)this.Handle, transformFile, (int)errorConditionsToSuppress);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -249,19 +249,19 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 thisProductLanguage = Int32.Parse(thisProductLang, CultureInfo.InvariantCulture.NumberFormat);
             }
 
-            if ((validateFlags & (int) TransformValidations.Product) != 0 &&
+            if ((validateFlags & (int)TransformValidations.Product) != 0 &&
                 thisProductCode != targetProductCode)
             {
                 return false;
             }
 
-            if ((validateFlags & (int) TransformValidations.UpgradeCode) != 0 &&
+            if ((validateFlags & (int)TransformValidations.UpgradeCode) != 0 &&
                 thisUpgradeCode != upgradeCode)
             {
                 return false;
             }
 
-            if ((validateFlags & (int) TransformValidations.Language) != 0 &&
+            if ((validateFlags & (int)TransformValidations.Language) != 0 &&
                 targetProductLanguage != 0 && thisProductLanguage != targetProductLanguage)
             {
                 return false;
@@ -269,18 +269,18 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             Version thisProductVer = new Version(thisProductVersion);
             Version targetProductVer = new Version(targetProductVersion);
-            if ((validateFlags & (int) TransformValidations.UpdateVersion) != 0)
+            if ((validateFlags & (int)TransformValidations.UpdateVersion) != 0)
             {
                 if (thisProductVer.Major != targetProductVer.Major) return false;
                 if (thisProductVer.Minor != targetProductVer.Minor) return false;
                 if (thisProductVer.Build != targetProductVer.Build) return false;
             }
-            else if ((validateFlags & (int) TransformValidations.MinorVersion) != 0)
+            else if ((validateFlags & (int)TransformValidations.MinorVersion) != 0)
             {
                 if (thisProductVer.Major != targetProductVer.Major) return false;
                 if (thisProductVer.Minor != targetProductVer.Minor) return false;
             }
-            else if ((validateFlags & (int) TransformValidations.MajorVersion) != 0)
+            else if ((validateFlags & (int)TransformValidations.MajorVersion) != 0)
             {
                 if (thisProductVer.Major != targetProductVer.Major) return false;
             }

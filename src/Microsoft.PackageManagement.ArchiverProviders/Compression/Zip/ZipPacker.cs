@@ -418,7 +418,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
             CrcStream fileCrcStream = new CrcStream(fileStream);
 
             ConcatStream concatStream = new ConcatStream(
-                delegate(ConcatStream s)
+                delegate (ConcatStream s)
                 {
                     Stream sourceStream = s.Source;
                     bytesWritten += sourceStream.Position - writeStartPosition;

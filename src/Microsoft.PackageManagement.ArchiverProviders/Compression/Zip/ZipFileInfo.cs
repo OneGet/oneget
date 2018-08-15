@@ -82,6 +82,5 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
                 return this.compressionMethod;
             }
         }
-
     }
 }

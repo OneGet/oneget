@@ -12,8 +12,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+
 #if !CORECLR
-    using System.Security.Permissions;
 #endif
 
     /// <summary>
@@ -167,7 +167,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         {
             get
             {
-                return (ArchiveInfo) this.archiveInfo;
+                return (ArchiveInfo)this.archiveInfo;
             }
 
             internal set

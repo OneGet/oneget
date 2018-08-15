@@ -91,7 +91,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 return false;
             }
-            ShortcutTarget st = (ShortcutTarget) obj;
+            ShortcutTarget st = (ShortcutTarget)obj;
             return this.productCode == st.productCode
                 && this.feature == st.feature
                 && this.componentCode == st.componentCode;

@@ -143,9 +143,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 this.installation.InstallationCode,
                 this.installation.UserSid,
                 this.installation.Context,
-                (uint) type | (uint) this.installation.InstallationType,
+                (uint)type | (uint)this.installation.InstallationType,
                 item,
-                (uint) index);
+                (uint)index);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -221,7 +221,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <param name="arrayIndex">offset into the destination array where copying begins</param>
         public void CopyTo(string[] array, int arrayIndex)
         {
-            if (array == null) {
+            if (array == null)
+            {
                 throw new ArgumentNullException("array");
             }
             foreach (string source in this)
@@ -250,7 +251,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 this.installation.InstallationCode,
                 this.installation.UserSid,
                 this.installation.Context,
-                (uint) type | (uint) this.installation.InstallationType,
+                (uint)type | (uint)this.installation.InstallationType,
                 item);
             if (ret != 0)
             {
@@ -270,11 +271,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public IEnumerator<string> GetEnumerator()
         {
             StringBuilder sourceBuf = new StringBuilder(256);
-            uint sourceBufSize = (uint) sourceBuf.Capacity;
+            uint sourceBufSize = (uint)sourceBuf.Capacity;
             for (uint i = 0; true; i++)
             {
                 uint ret = this.EnumSources(sourceBuf, i, NativeMethods.SourceType.Network);
-                if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS)
+                if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
                 {
                     break;
                 }
@@ -291,7 +292,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             for (uint i = 0; true; i++)
             {
                 uint ret = this.EnumSources(sourceBuf, i, NativeMethods.SourceType.Url);
-                if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS)
+                if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
                 {
                     break;
                 }
@@ -329,7 +330,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 this.installation.InstallationCode,
                 this.installation.UserSid,
                 this.installation.Context,
-                (uint) this.installation.InstallationType);
+                (uint)this.installation.InstallationType);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -442,20 +443,20 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     this.installation.InstallationCode,
                     this.installation.UserSid,
                     this.installation.Context,
-                    (uint) this.installation.InstallationType,
+                    (uint)this.installation.InstallationType,
                     property,
                     buf,
                     ref bufSize);
                 if (ret != 0)
                 {
-                    if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                    if (ret == (uint)NativeMethods.Error.MORE_DATA)
                     {
-                        buf.Capacity = (int) ++bufSize;
+                        buf.Capacity = (int)++bufSize;
                         ret = NativeMethods.MsiSourceListGetInfo(
                             this.installation.InstallationCode,
                             this.installation.UserSid,
                             this.installation.Context,
-                            (uint) this.installation.InstallationType,
+                            (uint)this.installation.InstallationType,
                             property,
                             buf,
                             ref bufSize);
@@ -463,8 +464,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
                     if (ret != 0)
                     {
-                        if (ret == (uint) NativeMethods.Error.UNKNOWN_PRODUCT ||
-                            ret == (uint) NativeMethods.Error.UNKNOWN_PROPERTY)
+                        if (ret == (uint)NativeMethods.Error.UNKNOWN_PRODUCT ||
+                            ret == (uint)NativeMethods.Error.UNKNOWN_PROPERTY)
                         {
                             throw new ArgumentOutOfRangeException("property");
                         }
@@ -482,13 +483,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     this.installation.InstallationCode,
                     this.installation.UserSid,
                     this.installation.Context,
-                    (uint) this.installation.InstallationType,
+                    (uint)this.installation.InstallationType,
                     property,
                     value);
                 if (ret != 0)
                 {
-                    if (ret == (uint) NativeMethods.Error.UNKNOWN_PRODUCT ||
-                        ret == (uint) NativeMethods.Error.UNKNOWN_PROPERTY)
+                    if (ret == (uint)NativeMethods.Error.UNKNOWN_PRODUCT ||
+                        ret == (uint)NativeMethods.Error.UNKNOWN_PROPERTY)
                     {
                         throw new ArgumentOutOfRangeException("property");
                     }
@@ -506,7 +507,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 this.installation.InstallationCode,
                 this.installation.UserSid,
                 this.installation.Context,
-                (uint) type | (uint) this.installation.InstallationType);
+                (uint)type | (uint)this.installation.InstallationType);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -515,24 +516,24 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         private uint EnumSources(StringBuilder sourceBuf, uint i, NativeMethods.SourceType sourceType)
         {
-            int enumType = (this.installation.InstallationType | (int) sourceType);
-            uint sourceBufSize = (uint) sourceBuf.Capacity;
+            int enumType = (this.installation.InstallationType | (int)sourceType);
+            uint sourceBufSize = (uint)sourceBuf.Capacity;
             uint ret = NativeMethods.MsiSourceListEnumSources(
                 this.installation.InstallationCode,
                 this.installation.UserSid,
                 this.installation.Context,
-                (uint) enumType,
+                (uint)enumType,
                 i,
                 sourceBuf,
                 ref sourceBufSize);
-            if (ret == (uint) NativeMethods.Error.MORE_DATA)
+            if (ret == (uint)NativeMethods.Error.MORE_DATA)
             {
-                sourceBuf.Capacity = (int) ++sourceBufSize;
+                sourceBuf.Capacity = (int)++sourceBufSize;
                 ret = NativeMethods.MsiSourceListEnumSources(
                     this.installation.InstallationCode,
                     this.installation.UserSid,
                     this.installation.Context,
-                    (uint) enumType,
+                    (uint)enumType,
                     i,
                     sourceBuf,
                     ref sourceBufSize);

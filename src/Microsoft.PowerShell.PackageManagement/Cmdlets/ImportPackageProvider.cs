@@ -14,21 +14,21 @@
 
 namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 {
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Diagnostics.CodeAnalysis;
     using System.Management.Automation;
-    using System.Linq; 
-    using Microsoft.PackageManagement.Internal.Utility.Extensions;
-    using Microsoft.PackageManagement.Internal.Packaging;
 
     [Cmdlet("Import", Constants.Nouns.PackageProviderNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkId=626942")]
-    public sealed class ImportPackageProvider : CmdletBase {
-
-        protected override IEnumerable<string> ParameterSets {
-            get {
-                return new[] {""};
+    public sealed class ImportPackageProvider : CmdletBase
+    {
+        protected override IEnumerable<string> ParameterSets
+        {
+            get
+            {
+                return new[] { "" };
             }
         }
 
@@ -37,29 +37,33 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         public string[] Name { get; set; }
 
         [Parameter]
-        public string RequiredVersion {get; set;}
+        public string RequiredVersion { get; set; }
 
         [Parameter]
-        public string MinimumVersion {get; set;}
+        public string MinimumVersion { get; set; }
 
         [Parameter]
-        public string MaximumVersion {get; set;}
+        public string MaximumVersion { get; set; }
 
-        public override bool BeginProcessingAsync() {
+        public override bool BeginProcessingAsync()
+        {
             ValidateVersion(RequiredVersion);
             ValidateVersion(MinimumVersion);
             ValidateVersion(MaximumVersion);
 
-            //Error out for the case where requiredVersion with with maximumVersion or minimumVersion       
-            if (!string.IsNullOrWhiteSpace(RequiredVersion)) {
-                if (!string.IsNullOrWhiteSpace(MaximumVersion) || !string.IsNullOrWhiteSpace(MinimumVersion)) {
+            //Error out for the case where requiredVersion with with maximumVersion or minimumVersion
+            if (!string.IsNullOrWhiteSpace(RequiredVersion))
+            {
+                if (!string.IsNullOrWhiteSpace(MaximumVersion) || !string.IsNullOrWhiteSpace(MinimumVersion))
+                {
                     Error(Constants.Errors.VersionRangeAndRequiredVersionCannotBeSpecifiedTogether);
                     return false;
                 }
             }
 
             if (!string.IsNullOrWhiteSpace(MaximumVersion) && !string.IsNullOrWhiteSpace(MinimumVersion)
-                && new Version(MaximumVersion) < new Version(MinimumVersion)) {
+                && new Version(MaximumVersion) < new Version(MinimumVersion))
+            {
                 Error(Constants.Errors.MinimumVersionMustBeLessThanMaximumVersion, MinimumVersion, MaximumVersion);
                 return false;
             }
@@ -67,7 +71,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             return true;
         }
 
-        public override bool ProcessRecordAsync() {
+        public override bool ProcessRecordAsync()
+        {
             //Error out for the case where multiple provider names with any version specififed
             if (((!Name.IsNullOrEmpty() && Name.Length > 1) || Name[0].ContainsWildcards())
                 && ((RequiredVersion != null) || (MinimumVersion != null) || (MaximumVersion != null)))
@@ -76,38 +81,47 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 return false;
             }
 
-            foreach (var path in Name) {
+            foreach (var path in Name)
+            {
                 var isRooted = false;
 
                 var resolvedPath = path;
 
-                if (!string.IsNullOrWhiteSpace(path)) {
-                    if (IsRooted(path)) {
-                        if ((RequiredVersion != null) || (MaximumVersion !=null) || (MinimumVersion !=null)) {
+                if (!string.IsNullOrWhiteSpace(path))
+                {
+                    if (IsRooted(path))
+                    {
+                        if ((RequiredVersion != null) || (MaximumVersion != null) || (MinimumVersion != null))
+                        {
                             Error(Constants.Errors.FullProviderFilePathVersionNotAllowed);
                         }
 
-                        try {
-                           ProviderInfo provider = null;
+                        try
+                        {
+                            ProviderInfo provider = null;
                             Collection<string> resolvedPaths = GetResolvedProviderPathFromPSPath(path, out provider);
 
                             // Ensure the path is a single path from the file system provider
                             if ((resolvedPaths.Count > 1) ||
-                                (!String.Equals(provider.Name, "FileSystem", StringComparison.OrdinalIgnoreCase))) {
+                                (!String.Equals(provider.Name, "FileSystem", StringComparison.OrdinalIgnoreCase)))
+                            {
                                 Error(Constants.Errors.FilePathMustBeFileSystemPath, path);
                                 return false;
                             }
                             resolvedPath = resolvedPaths[0];
 
                             isRooted = true;
-                        } catch (Exception ex) {
+                        }
+                        catch (Exception ex)
+                        {
                             Error(Constants.Errors.FileNotFound, ex.Message);
                             return true;
                         }
                     }
 
                     foreach (var p in PackageManagementService.ImportPackageProvider(this, resolvedPath, RequiredVersion.ToVersion(),
-                        MinimumVersion.ToVersion(), MaximumVersion.ToVersion(), isRooted, Force.IsPresent)) {
+                        MinimumVersion.ToVersion(), MaximumVersion.ToVersion(), isRooted, Force.IsPresent))
+                    {
                         WriteObject(p);
                     }
                 }
@@ -116,7 +130,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             return true;
         }
 
-        public override bool EndProcessingAsync() {
+        public override bool EndProcessingAsync()
+        {
             return base.EndProcessingAsync();
         }
     }

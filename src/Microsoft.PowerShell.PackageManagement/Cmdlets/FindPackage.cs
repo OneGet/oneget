@@ -12,37 +12,40 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets
+{
+    using Microsoft.PackageManagement.Implementation;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Packaging;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.PackageManagement.Implementation;
-    using Microsoft.PackageManagement.Internal.Implementation;
-    using Microsoft.PackageManagement.Internal.Packaging;
-    using Microsoft.PackageManagement.Internal.Utility.Extensions;
-    using Microsoft.PackageManagement.Packaging;
-    using Utility;
 
     [Cmdlet(VerbsCommon.Find, Constants.Nouns.PackageNoun, HelpUri = "https://go.microsoft.com/fwlink/?LinkID=517132"), OutputType(new Type[1] { typeof(SoftwareIdentity) })]
-    public sealed class FindPackage : CmdletWithSearchAndSource {
+    public sealed class FindPackage : CmdletWithSearchAndSource
+    {
         public FindPackage()
             : base(new[] {
                 OptionCategory.Provider, OptionCategory.Source, OptionCategory.Package
-            }) {
+            })
+        {
         }
 
-        protected override IEnumerable<string> ParameterSets {
-            get {
-                return new[] {"",};
+        protected override IEnumerable<string> ParameterSets
+        {
+            get
+            {
+                return new[] { "", };
             }
         }
 
         [Parameter]
-        public SwitchParameter IncludeDependencies {get; set;}
+        public SwitchParameter IncludeDependencies { get; set; }
 
         [Parameter]
-        public override SwitchParameter AllVersions {get; set;}
+        public override SwitchParameter AllVersions { get; set; }
 
         public override bool BeginProcessingAsync()
         {
@@ -62,18 +65,20 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             ProcessPackage(provider, searchKey, package, IncludeDependencies ? new HashSet<string>() : null);
         }
 
-        private void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package, HashSet<string> processedDependencies) {
-
-            try {
-
+        private void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package, HashSet<string> processedDependencies)
+        {
+            try
+            {
                 base.ProcessPackage(provider, searchKey, package);
-            
+
                 // return the object to the caller now.
                 WriteObject(AddPropertyToSoftwareIdentity(package));
 
-                if (IncludeDependencies) {
+                if (IncludeDependencies)
+                {
                     var missingDependencies = new HashSet<string>();
-                    foreach (var dep in package.Dependencies) {
+                    foreach (var dep in package.Dependencies)
+                    {
                         // note: future work may be needed if the package sources currently selected by the user don't
                         // contain the dependencies.
 
@@ -96,18 +101,20 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                             }
                         }
                     }
-                    if (missingDependencies.Any()) {
+                    if (missingDependencies.Any())
+                    {
                         Error(Constants.Errors.UnableToFindDependencyPackage, missingDependencies.JoinWithComma());
                     }
                 }
-            } catch (Exception ex) {
-
+            }
+            catch (Exception ex)
+            {
                 Debug("Calling ProcessPackage {0}", ex.ToString());
             }
         }
 
-
-        public override bool EndProcessingAsync() {
+        public override bool EndProcessingAsync()
+        {
             return CheckUnmatchedPackages();
         }
     }

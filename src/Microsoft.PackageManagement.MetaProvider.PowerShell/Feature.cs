@@ -12,30 +12,38 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell
+{
+    using Internal;
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Internal;
 
-    public class Feature : Yieldable {
+    public class Feature : Yieldable
+    {
         private KeyValuePair<string, string[]> _pair;
 
-        public Feature(string name) : this(name, new string[0]) {
+        public Feature(string name) : this(name, new string[0])
+        {
         }
 
-        public Feature(string name, string value) : this(name, new[] {value}) {
+        public Feature(string name, string value) : this(name, new[] { value })
+        {
         }
 
-        public Feature(string name, string[] values) {
+        public Feature(string name, string[] values)
+        {
             _pair = new KeyValuePair<string, string[]>(name, values);
         }
 
-        public override bool YieldResult(PsRequest r) {
-            if (r == null) {
+        public override bool YieldResult(PsRequest r)
+        {
+            if (r == null)
+            {
                 throw new ArgumentNullException("r");
             }
-            if (_pair.Value.Length == 0) {
+            if (_pair.Value.Length == 0)
+            {
                 return r.YieldKeyValuePair(_pair.Key, null);
             }
             return _pair.Value.All(each => r.YieldKeyValuePair(_pair.Key, each));

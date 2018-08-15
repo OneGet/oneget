@@ -48,6 +48,5 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             : this(null, null)
         {
         }
-
     }
 }

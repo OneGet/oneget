@@ -43,7 +43,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             }
             set
             {
-                rawStringVersionInfo.Key = ((ushort) value).ToString("x4", CultureInfo.InvariantCulture) + rawStringVersionInfo.Key.Substring(4, 4);
+                rawStringVersionInfo.Key = ((ushort)value).ToString("x4", CultureInfo.InvariantCulture) + rawStringVersionInfo.Key.Substring(4, 4);
                 this.parent.dirty = true;
             }
         }
@@ -101,7 +101,6 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             value = this[key];
             return value != null;
         }
-
 
         void ICollection<KeyValuePair<string, string>>.Add(KeyValuePair<string, string> item)
         {

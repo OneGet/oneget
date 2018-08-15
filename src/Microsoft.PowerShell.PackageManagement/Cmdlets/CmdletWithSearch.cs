@@ -12,35 +12,40 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets
+{
+    using Microsoft.PackageManagement.Internal.Packaging;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Management.Automation;
-    using Microsoft.PackageManagement.Internal.Packaging;
 
-    public abstract class CmdletWithSearch : CmdletWithProvider {
+    public abstract class CmdletWithSearch : CmdletWithProvider
+    {
         protected CmdletWithSearch(OptionCategory[] categories)
-            : base(categories) {
+            : base(categories)
+        {
         }
 
-        protected override IEnumerable<string> ParameterSets {
-            get {
-                return new[] {""};
+        protected override IEnumerable<string> ParameterSets
+        {
+            get
+            {
+                return new[] { "" };
             }
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(Position = 0)]
-        public virtual string[] Name {get; set;}
-     
-        [Parameter]
-        public virtual string RequiredVersion {get; set;}
+        public virtual string[] Name { get; set; }
 
         [Parameter]
-        public virtual string MinimumVersion {get; set;}
+        public virtual string RequiredVersion { get; set; }
 
         [Parameter]
-        public virtual string MaximumVersion {get; set;}
+        public virtual string MinimumVersion { get; set; }
+
+        [Parameter]
+        public virtual string MaximumVersion { get; set; }
 
         [Parameter]
         public virtual SwitchParameter AllVersions { get; set; }

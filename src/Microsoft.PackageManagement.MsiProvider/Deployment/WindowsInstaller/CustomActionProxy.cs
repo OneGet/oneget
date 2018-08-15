@@ -67,7 +67,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 RemotableNativeMethods.RemotingDelegate = remotingDelegate;
 
                 sessionHandle = RemotableNativeMethods.MakeRemoteHandle(sessionHandle);
-                session = new Session((IntPtr) sessionHandle, false);
+                session = new Session((IntPtr)sessionHandle, false);
                 if (string.IsNullOrWhiteSpace(entryPoint))
                 {
                     throw new ArgumentNullException("entryPoint");
@@ -80,7 +80,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     out className,
                     out methodName))
                 {
-                    return (int) ActionResult.Failure;
+                    return (int)ActionResult.Failure;
                 }
                 session.Log("Calling custom action {0}!{1}.{2}", assemblyName, className, methodName);
 
@@ -91,7 +91,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     methodName);
                 if (method == null)
                 {
-                    return (int) ActionResult.Failure;
+                    return (int)ActionResult.Failure;
                 }
             }
             catch (Exception ex)
@@ -105,7 +105,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     }
                     catch (Exception) { }
                 }
-                return (int) ActionResult.Failure;
+                return (int)ActionResult.Failure;
             }
 
             try
@@ -135,19 +135,19 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     }
                 }
 
-                ActionResult result = (ActionResult) method.Invoke(null, args);
+                ActionResult result = (ActionResult)method.Invoke(null, args);
                 session.Close();
-                return (int) result;
+                return (int)result;
             }
             catch (InstallCanceledException)
             {
-                return (int) ActionResult.UserExit;
+                return (int)ActionResult.UserExit;
             }
             catch (Exception ex)
             {
                 session.Log("Exception thrown by custom action:");
                 session.Log(ex.ToString());
-                return (int) ActionResult.Failure;
+                return (int)ActionResult.Failure;
             }
         }
 
@@ -211,7 +211,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 IDictionary config;
                 try
                 {
-                    config = (IDictionary) ConfigurationManager.GetSection("customActions");
+                    config = (IDictionary)ConfigurationManager.GetSection("customActions");
                 }
                 catch (ConfigurationException cex)
                 {
@@ -219,7 +219,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     session.Log(cex.ToString());
                     return false;
                 }
-                fullEntryPoint = (string) config[entryPoint];
+                fullEntryPoint = (string)config[entryPoint];
                 if (fullEntryPoint == null)
                 {
                     session.Log(

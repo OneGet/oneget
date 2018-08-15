@@ -142,6 +142,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         }
 
 #if !CORECLR
+
         /// <summary>
         /// Closes the source stream and also closes the additional objects that are carried.
         /// </summary>
@@ -154,6 +155,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
                 cargoObject.Dispose();
             }
         }
+
 #endif
 
         /// <summary>
@@ -170,7 +172,6 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
                 {
                     cargoObject.Dispose();
                 }
-
             }
         }
 

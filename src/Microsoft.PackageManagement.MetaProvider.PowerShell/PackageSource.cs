@@ -12,13 +12,16 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell
+{
+    using Internal;
     using System;
     using System.Collections;
-    using Internal;
 
-    public class PackageSource : Yieldable {
-        public PackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated) {
+    public class PackageSource : Yieldable
+    {
+        public PackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated)
+        {
             Name = name;
             Location = location;
             IsTrusted = isTrusted;
@@ -27,28 +30,32 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
         }
 
         public PackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated, Hashtable details)
-            : this(name, location, isTrusted, isRegistered, isValidated) {
+            : this(name, location, isTrusted, isRegistered, isValidated)
+        {
             _details = details;
         }
-
 
         public PackageSource(string name, string location, bool isTrusted, bool isRegistered, Hashtable details)
-            : this(name, location, isTrusted, isRegistered,false) {
+            : this(name, location, isTrusted, isRegistered, false)
+        {
             _details = details;
         }
 
-        public string Name {get; set;}
-        public string Location {get; set;}
-        public bool IsTrusted {get; set;}
+        public string Name { get; set; }
+        public string Location { get; set; }
+        public bool IsTrusted { get; set; }
         public bool IsRegistered { get; set; }
 
-        public bool IsValidated {get; set;}
-        public override bool YieldResult(PsRequest r) {
-            if (r == null) {
+        public bool IsValidated { get; set; }
+
+        public override bool YieldResult(PsRequest r)
+        {
+            if (r == null)
+            {
                 throw new ArgumentNullException("r");
             }
 
-            return r.YieldPackageSource(Name, Location, IsTrusted, IsRegistered,IsValidated) && YieldDetails(r);
+            return r.YieldPackageSource(Name, Location, IsTrusted, IsRegistered, IsValidated) && YieldDetails(r);
         }
     }
 }

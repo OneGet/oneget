@@ -77,7 +77,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <returns>A stream where extracted file bytes are to be written.</returns>
         public Stream OpenFileWriteStream(string path, long fileSize, DateTime lastWriteTime)
         {
-            this.fileStream = new MemoryStream(new byte[fileSize], 0, (int) fileSize, true, true);
+            this.fileStream = new MemoryStream(new byte[fileSize], 0, (int)fileSize, true, true);
             return this.fileStream;
         }
 

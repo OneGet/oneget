@@ -12,24 +12,27 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets
+{
+    using Microsoft.PackageManagement.Implementation;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Collections;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Packaging;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.PackageManagement.Implementation;
-    using Microsoft.PackageManagement.Internal.Implementation;
-    using Microsoft.PackageManagement.Internal.Packaging;
-    using Microsoft.PackageManagement.Internal.Utility.Collections;
-    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Utility;
-    using Microsoft.PackageManagement.Packaging;
 
-    public abstract class CmdletWithProvider : CmdletBase {
+    public abstract class CmdletWithProvider : CmdletBase
+    {
         private readonly OptionCategory[] _optionCategories;
-        protected CmdletWithProvider(OptionCategory[] categories) {
+
+        protected CmdletWithProvider(OptionCategory[] categories)
+        {
             _optionCategories = categories;
         }
 
@@ -45,16 +48,20 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         private IEnumerable<PackageSource> _resolvedUserSpecifiedSource;
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "Used in a powershell parameter.")]
-        public string[] ProviderName {
-            get {
-                if (!_providerName.IsNullOrEmpty()) {
+        public string[] ProviderName
+        {
+            get
+            {
+                if (!_providerName.IsNullOrEmpty())
+                {
                     //meaning a user specifies -ProviderName, we will use it
                     return _providerName;
                 }
-                //need to call it so that cases like get-packagesource | find-package -name Jquery will work 
+                //need to call it so that cases like get-packagesource | find-package -name Jquery will work
                 return GetDynamicParameterValue<string[]>("ProviderName");
             }
-            set {
+            set
+            {
                 _providerName = value;
             }
         }
@@ -62,22 +69,24 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         protected bool IsFailingEarly;
         protected Dictionary<string, string> UserSpecifiedSourcesList = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        protected virtual IEnumerable<PackageProvider> SelectedProviders {
-            get {
-
+        protected virtual IEnumerable<PackageProvider> SelectedProviders
+        {
+            get
+            {
                 var didUserSpecifyProviders = !ProviderName.IsNullOrEmpty();
                 var registeredSources = Enumerable.Empty<PackageSource>();
-
 
                 // filter on provider names  - if they specify a provider name, narrow to only those provider names.
                 // if this is an actual invocation, this will attempt to bootstrap a provider that the user specified
                 // (which will require a prompt or -force or -forcebootstrap )
                 var providers = SelectProviders(ProviderName).ReEnumerable();
 
-                if (!providers.Any()) {
+                if (!providers.Any())
+                {
                     // the user gave us provider names that we're not able to resolve.
 
-                    if (IsInvocation) {
+                    if (IsInvocation)
+                    {
                         // and we're in an actual cmdlet invocation.
                         QueueHeldMessage(() => Error(Constants.Errors.UnknownProviders, ProviderName.JoinWithComma()));
                         IsFailingEarly = true;
@@ -91,7 +100,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 var didUserSpecifySources = userSpecifiedSources.Any();
 
                 // filter out providers that don't have the sources that have been specified (only if we have specified a source!)
-                if (didUserSpecifySources) {
+                if (didUserSpecifySources)
+                {
                     // sources must actually match a name or location. Keeps providers from being a bit dishonest
 
                     var potentialSources = providers.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing))
@@ -103,20 +113,22 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                     // save the resolved package source name and location
                     potentialSources.SerialForEach(src => UserSpecifiedSourcesList.AddOrSet(src.Name, src.Location));
-                
+
                     // prefer registered sources
                     registeredSources = potentialSources.Where(source => source.IsRegistered).ReEnumerable();
 
                     _resolvedUserSpecifiedSource = registeredSources.Any() ? registeredSources : potentialSources;
                     var filteredproviders = registeredSources.Any() ? registeredSources.Select(source => source.Provider).Distinct().ReEnumerable() : potentialSources.Select(source => source.Provider).Distinct().ReEnumerable();
 
-                    if (!filteredproviders.Any()) {
+                    if (!filteredproviders.Any())
+                    {
                         // we've filtered out everything!
 
-                        if (!didUserSpecifyProviders) {
+                        if (!didUserSpecifyProviders)
+                        {
                             // if cmdlet is generating parameter, we have to log error that source is wrong
-                            if (IsInvocation && CmdletState >= AsyncCmdletState.GenerateParameters ) {
-                                
+                            if (IsInvocation && CmdletState >= AsyncCmdletState.GenerateParameters)
+                            {
                                 // user didn't actually specify provider(s), the sources can't be tied to any particular provider
                                 QueueHeldMessage(() => Error(Constants.Errors.SourceNotFound, userSpecifiedSources.JoinWithComma()));
                                 IsFailingEarly = true;
@@ -128,11 +140,15 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         // they gave us both provider name(s) and source(s)
                         // and the source(s) aren't found in the providers they listed
                         // we should log the correct error about the source. if not we will get wrong error about dynamic parameters.
-                        if (IsInvocation &&  CmdletState >= AsyncCmdletState.GenerateParameters ) {
-                            if (providers.Count() < 2) {
+                        if (IsInvocation && CmdletState >= AsyncCmdletState.GenerateParameters)
+                        {
+                            if (providers.Count() < 2)
+                            {
                                 QueueHeldMessage(() => Error(Constants.Errors.SourceNotFound, userSpecifiedSources.JoinWithComma()));
                                 IsFailingEarly = true;
-                            } else {
+                            }
+                            else
+                            {
                                 var providerNames = providers.Select(each => each.Name).JoinWithComma();
                                 QueueHeldMessage(() => Error(Constants.Errors.NoMatchForProvidersAndSources, providerNames, userSpecifiedSources.JoinWithComma()));
                                 IsFailingEarly = true;
@@ -146,7 +162,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     providers = filteredproviders;
                 }
 
-
                 // filter on: dynamic options - if they specify any dynamic options, limit the provider set to providers with those options.
                 var result = FilterProvidersUsingDynamicParameters(providers, registeredSources, didUserSpecifyProviders, didUserSpecifySources).ToArray();
 
@@ -157,7 +172,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     // that don't fit with the providers and sources that they initially asked for.
 
                     if (didUserSpecifyProviders) {
-
                         if (didUserSpecifySources) {
                             // user said provider and source and the dynamic parameters imply providers they didn't select
                             if (IsInvocation) {
@@ -173,7 +187,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         }
                         // return empty set
                         return result;
-
                     }
 
                     if (didUserSpecifySources) {
@@ -193,36 +206,38 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                     if (IsInvocation) {
                         // error
-
                     }
-
                 }
                 */
                 return result;
             }
         }
 
-
-        private IEnumerable<PackageProvider> FilterProvidersUsingDynamicParameters(MutableEnumerable<PackageProvider> providers, IEnumerable<PackageSource> userSpecifiedRegisteredSources,  bool didUserSpecifyProviders, bool didUserSpecifySources) {
+        private IEnumerable<PackageProvider> FilterProvidersUsingDynamicParameters(MutableEnumerable<PackageProvider> providers, IEnumerable<PackageSource> userSpecifiedRegisteredSources, bool didUserSpecifyProviders, bool didUserSpecifySources)
+        {
             var excluded = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
 
             var setparameters = DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).ReEnumerable();
 
             var matchedProviders = (setparameters.Any() ? providers.Where(p => setparameters.All(each => each.Options.Any(opt => opt.ProviderName == p.ProviderName))) : providers).ReEnumerable();
 
-            foreach (var provider in matchedProviders) {
+            foreach (var provider in matchedProviders)
+            {
                 // if a 'required' parameter is not filled in, the provider should not be returned.
                 // we'll collect these for warnings at the end of the filter.
                 var missingRequiredParameters = DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => !each.IsSet && each.IsRequiredForProvider(provider.ProviderName)).ReEnumerable();
-                if (!missingRequiredParameters.Any()) {
+                if (!missingRequiredParameters.Any())
+                {
                     yield return provider;
-                } else {
+                }
+                else
+                {
                     Collection<string> missingOptions = new Collection<string>();
                     foreach (var missingRequiredParameter in missingRequiredParameters)
                     {
                         foreach (var option in missingRequiredParameter.Options)
                         {
-                    // remember these so we can warn later.
+                            // remember these so we can warn later.
                             missingOptions.Add(option.Name);
                         }
                     }
@@ -240,13 +255,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 // that don't fit with the providers and sources that they initially asked for.
 
                 if (didUserSpecifyProviders || didUserSpecifySources) {
-
                     if (IsInvocation) {
                         QueueHeldMessage(() => Error(Errors.ExcludedProvidersDueToMissingRequiredParameter, excluded.Keys, userSpecifiedSources.JoinWithComma()));
                     }
 
                     yield break;
-
                 }
 
                 if (didUserSpecifySources) {
@@ -266,15 +279,16 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                 if (IsInvocation) {
                     // error
-
                 }
-
             }
             */
 
-            if (ProviderName != null && ProviderName.Any()) {
-                foreach (var providerName in ProviderName) {
-                    if (excluded.ContainsKey(providerName)) {
+            if (ProviderName != null && ProviderName.Any())
+            {
+                foreach (var providerName in ProviderName)
+                {
+                    if (excluded.ContainsKey(providerName))
+                    {
                         Error(Constants.Errors.SpecifiedProviderMissingRequiredOption, providerName, excluded[providerName].JoinWithComma());
                     }
                 }
@@ -282,7 +296,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
             // these warnings only show for providers that would have otherwise be selected.
             // if not for the missing required parameter.
-            foreach (var mp in excluded.OrderBy(each => each.Key)) {
+            foreach (var mp in excluded.OrderBy(each => each.Key))
+            {
                 string optionsValue = mp.Value.JoinWithComma();
 
                 if (userSpecifiedRegisteredSources.Any())
@@ -303,23 +318,27 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-
-        protected virtual void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
-            if (!IsInvocation) {
+        protected virtual void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments)
+        {
+            if (!IsInvocation)
+            {
                 var providerNames = PackageManagementService.AllProviderNames;
                 var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
-                if (whatsOnCmdline != null) {
+                if (whatsOnCmdline != null)
+                {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
                 }
 
-                DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof (string[]), new Collection<Attribute> {
+                DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true
                     },
                     new AliasAttribute("Provider"),
                     new ValidateSetAttribute(providerNames.ToArray())
                 }));
-            } else {
+            }
+            else
+            {
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true
@@ -329,15 +348,17 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        protected bool ActualGenerateDynamicParameters(Dictionary<string,object> unboundArguments ) {
-            if (CachedStaticParameters == null) {
+        protected bool ActualGenerateDynamicParameters(Dictionary<string, object> unboundArguments)
+        {
+            if (CachedStaticParameters == null)
+            {
                 // we're in the second call, we're just looking to find out what the static parameters actually are.
                 // we're gonna just skip generating the dynamic parameters on this call.
                 return true;
             }
 
-            try {
-
+            try
+            {
                 unboundArguments = unboundArguments ?? new Dictionary<string, object>();
 
                 // if there are unbound arguments that are owned by a provider, we can narrow the rest of the
@@ -345,9 +366,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 var dynamicOptions = CachedDynamicOptions;
 
                 var keys = unboundArguments.Keys.ToArray();
-                if (keys.Length > 0) {
+                if (keys.Length > 0)
+                {
                     var acceptableProviders = CachedDynamicOptions.Where(option => keys.ContainsAnyOfIgnoreCase(option.Name)).Select(option => option.ProviderName).Distinct().ToArray();
-                    if (acceptableProviders.Length > 0) {
+                    if (acceptableProviders.Length > 0)
+                    {
                         dynamicOptions = dynamicOptions.Where(option => acceptableProviders.Contains(option.ProviderName)).ToArray();
                     }
                 }
@@ -359,37 +382,47 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                 var staticParameters = GetType().Get<Dictionary<string, ParameterMetadata>>("MyInvocation.MyCommand.Parameters");
 
-                foreach (var md in dynamicOptions) {
-                    if (string.IsNullOrWhiteSpace(md.Name)) {
+                foreach (var md in dynamicOptions)
+                {
+                    if (string.IsNullOrWhiteSpace(md.Name))
+                    {
                         continue;
                     }
 
-                    if (DynamicParameterDictionary.ContainsKey(md.Name)) {
+                    if (DynamicParameterDictionary.ContainsKey(md.Name))
+                    {
                         // todo: if the dynamic parameters from two providers aren't compatible, then what?
 
                         // for now, we're just going to mark the existing parameter as also used by the second provider to specify it.
                         var crdp = DynamicParameterDictionary[md.Name] as CustomRuntimeDefinedParameter;
 
-                        if (crdp == null) {
+                        if (crdp == null)
+                        {
                             // the package provider is trying to overwrite a parameter that is already dynamically defined by the BaseCmdlet.
                             // just ignore it.
                             continue;
                         }
 
-                        if (IsInvocation) {
+                        if (IsInvocation)
+                        {
                             // this is during an actual execution
                             crdp.Options.Add(md);
-                        } else {
+                        }
+                        else
+                        {
                             // this is for metadata sake. (get-help, etc)
                             crdp.IncludeInParameterSet(md, IsInvocation, ParameterSets);
                         }
-                    } else {
+                    }
+                    else
+                    {
                         // check if the dynamic parameter is a static parameter first.
 
                         // this can happen if we make a common dynamic parameter into a proper static one
                         // and a provider didn't know that yet.
 
-                        if (staticParameters != null && staticParameters.ContainsKey(md.Name)) {
+                        if (staticParameters != null && staticParameters.ContainsKey(md.Name))
+                        {
                             // don't add it.
                             continue;
                         }
@@ -397,41 +430,53 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         DynamicParameterDictionary.Add(md.Name, new CustomRuntimeDefinedParameter(md, IsInvocation, ParameterSets));
                     }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 e.Dump();
             }
             return true;
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "It's a performance thing.")]
-        protected PackageProvider[] CachedSelectedProviders {
-            get {
+        protected PackageProvider[] CachedSelectedProviders
+        {
+            get
+            {
                 return GetType().GetOrAdd(() => SelectedProviders.ToArray(), "CachedSelectedProviders");
             }
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "It's a performance thing.")]
-        protected virtual DynamicOption[] CachedDynamicOptions {
-            get {
+        protected virtual DynamicOption[] CachedDynamicOptions
+        {
+            get
+            {
                 return GetType().GetOrAdd(() => CachedSelectedProviders.SelectMany(provider => _optionCategories.SelectMany(category => provider.GetDynamicOptions(category, this.SuppressErrorsAndWarnings(IsProcessing)))).ToArray(), "CachedDynamicOptions");
             }
         }
 
-        protected Dictionary<string, ParameterMetadata> CachedStaticParameters {
-            get {
+        protected Dictionary<string, ParameterMetadata> CachedStaticParameters
+        {
+            get
+            {
                 return GetType().Get<Dictionary<string, ParameterMetadata>>("MyInvocation.MyCommand.Parameters");
             }
         }
 
-        public override bool GenerateDynamicParameters() {
+        public override bool GenerateDynamicParameters()
+        {
             var thisIsFirstObject = false;
-            try {
-                if (!IsReentrantLocked) {
+            try
+            {
+                if (!IsReentrantLocked)
+                {
                     // we're not locked at this point. Let's turn on the lock.
                     IsReentrantLocked = true;
                     thisIsFirstObject = true;
 
-                    try {
+                    try
+                    {
                         // do all the work that we need to during the lock
                         // this includes:
                         //      one-time-per-call work
@@ -439,7 +484,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         //      modifying parameter validation sets
                         //
 
-                        if (MyInvocation != null && MyInvocation.MyCommand != null && MyInvocation.MyCommand.Parameters != null) {
+                        if (MyInvocation != null && MyInvocation.MyCommand != null && MyInvocation.MyCommand.Parameters != null)
+                        {
                             GetType().AddOrSet(MyInvocation.MyCommand.Parameters, "MyInvocation.MyCommand.Parameters");
                         }
 #if DEEP_DEBUG
@@ -456,19 +502,17 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         }
 #endif
 
-
                         // the second time, it will generate all the parameters, including the dynamic ones.
                         // (not that we currently need it, but if you do, you gotta do it here!)
                         // var all_parameters = MyInvocation.MyCommand.Parameters;
 
                         // ask for the unbound arguments.
-                          var unbound = UnboundArguments;
-                          if (unbound.ContainsKey("ProviderName") || unbound.ContainsKey("Provider"))
-                          {
-                            var pName = unbound.ContainsKey("ProviderName")?unbound["ProviderName"]:unbound["Provider"] ;
+                        var unbound = UnboundArguments;
+                        if (unbound.ContainsKey("ProviderName") || unbound.ContainsKey("Provider"))
+                        {
+                            var pName = unbound.ContainsKey("ProviderName") ? unbound["ProviderName"] : unbound["Provider"];
                             if (pName != null)
                             {
-
                                 if (pName.GetType().IsArray)
                                 {
                                     ProviderName = pName as string[] ?? (((object[])pName).Select(p => p.ToString()).ToArray());
@@ -477,10 +521,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                                 {
                                     ProviderName = new[] { pName.ToString() };
                                 }
-                             
+
                                 // a user specifies -providerName
                                 _isUserSpecifyOneProviderName = (ProviderName.Count() == 1);
-                                
                             }
                         }
 
@@ -488,7 +531,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         // and we can potentially narrow the provider selection based
                         // on arguments the user specified.
 
-                        if (null== CachedSelectedProviders || IsFailingEarly || IsCanceled ) {
+                        if (null == CachedSelectedProviders || IsFailingEarly || IsCanceled)
+                        {
 #if DEEP_DEBUG
                             Console.WriteLine("»»» Cancelled before we got finished doing dynamic parameters");
 #endif
@@ -506,8 +550,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         // at this point, we're actually calling to have the dynamic parameters generated
                         // that are expected to be used.
                         return ActualGenerateDynamicParameters(unbound);
-
-                    } finally {
+                    }
+                    finally
+                    {
                         IsReentrantLocked = false;
                     }
                 }
@@ -517,12 +562,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 // to know what the parameters that it's about to generate would be.
                 // Yeah, you heard me.
                 return ActualGenerateDynamicParameters(null);
-
-            } finally
+            }
+            finally
             {
-                if (thisIsFirstObject) {
+                if (thisIsFirstObject)
+                {
                     // clean up our once-per-call data.
-                    GetType().Remove<PackageProvider[]>( "CachedSelectedProviders");
+                    GetType().Remove<PackageProvider[]>("CachedSelectedProviders");
                     GetType().Remove<Dictionary<string, ParameterMetadata>>("MyInvocation.MyCommand.Parameters");
                     GetType().Remove<DynamicOption[]>("CachedDynamicOptions");
                 }
@@ -567,14 +613,15 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 return _useDefaultSourceFormat;
             }
         }
+
         private string GetSoftwareIdentityTypeName(SoftwareIdentity package)
         {
-            if(_initializedTypeName)
+            if (_initializedTypeName)
             {
                 return _softwareIdentityTypeName;
             }
 
-            //check if a user specifies -source with a long source name such as http://www.powershellgallery.com/api/v2, 
+            //check if a user specifies -source with a long source name such as http://www.powershellgallery.com/api/v2,
             // if so we will choose the longsource column format.
             if (!UseDefaultSourceFormat)
             {
@@ -617,7 +664,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             var typeName = GetSoftwareIdentityTypeName(package);
 
             // For the find-package -providername nuget case, we can return right away.
-            if (!_hasTypeNameChanged) {
+            if (!_hasTypeNameChanged)
+            {
                 return package;
             }
 

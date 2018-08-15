@@ -36,7 +36,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     Marshal.ThrowExceptionForHR(hr);
                 }
 
-                return new Version((int) dllVersionInfo[1], (int) dllVersionInfo[2], (int) dllVersionInfo[3]);
+                return new Version((int)dllVersionInfo[1], (int)dllVersionInfo[2], (int)dllVersionInfo[3]);
             }
         }
 
@@ -126,7 +126,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     msgModule,
                     new IntPtr(RT_RCDATA),
                     new IntPtr(errorNumber),
-                    (ushort) lcid);
+                    (ushort)lcid);
                 if (resourceInfo != IntPtr.Zero)
                 {
                     IntPtr resourceData = NativeMethods.LoadResource(
@@ -159,17 +159,17 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     // They're actually in MUI files, and the redirection happens automatically here.
 
                     const uint FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200;
-                    const uint FORMAT_MESSAGE_FROM_HMODULE   = 0x00000800;
+                    const uint FORMAT_MESSAGE_FROM_HMODULE = 0x00000800;
                     const uint MESSAGE_OFFSET = 20000; // Not documented, but observed on Vista
 
                     StringBuilder buf = new StringBuilder(1024);
                     uint formatCount = NativeMethods.FormatMessage(
                         FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS,
                         msgModule,
-                        (uint) errorNumber + MESSAGE_OFFSET,
-                        (ushort) lcid,
+                        (uint)errorNumber + MESSAGE_OFFSET,
+                        (ushort)lcid,
                         buf,
-                        (uint) buf.Capacity,
+                        (uint)buf.Capacity,
                         IntPtr.Zero);
 
                     return formatCount != 0 ? buf.ToString().Trim() : null;
@@ -211,7 +211,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("errorRecord");
             }
             int errorNumber;
-            if (errorRecord.FieldCount < 1 || (errorNumber = (int) errorRecord.GetInteger(1)) == 0)
+            if (errorRecord.FieldCount < 1 || (errorNumber = (int)errorRecord.GetInteger(1)) == 0)
             {
                 throw new ArgumentOutOfRangeException("errorRecord");
             }
@@ -242,16 +242,16 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             StringBuilder version = new StringBuilder(20);
             uint verBufSize = 0, langBufSize = 0;
             uint ret = NativeMethods.MsiGetFileVersion(path, version, ref verBufSize, null, ref langBufSize);
-            if (ret == (uint) NativeMethods.Error.MORE_DATA)
+            if (ret == (uint)NativeMethods.Error.MORE_DATA)
             {
-                version.Capacity = (int) ++verBufSize;
+                version.Capacity = (int)++verBufSize;
                 ret = NativeMethods.MsiGetFileVersion(path, version, ref verBufSize, null, ref langBufSize);
             }
 
-            if (ret != 0 && ret != (uint) NativeMethods.Error.FILE_INVALID)
+            if (ret != 0 && ret != (uint)NativeMethods.Error.FILE_INVALID)
             {
-                if (ret == (uint) NativeMethods.Error.FILE_NOT_FOUND ||
-                   ret == (uint) NativeMethods.Error.ACCESS_DENIED)
+                if (ret == (uint)NativeMethods.Error.FILE_NOT_FOUND ||
+                   ret == (uint)NativeMethods.Error.ACCESS_DENIED)
                 {
                     throw new FileNotFoundException(null, path);
                 }
@@ -280,16 +280,16 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             StringBuilder language = new StringBuilder("", 10);
             uint verBufSize = 0, langBufSize = 0;
             uint ret = NativeMethods.MsiGetFileVersion(path, null, ref verBufSize, language, ref langBufSize);
-            if (ret == (uint) NativeMethods.Error.MORE_DATA)
+            if (ret == (uint)NativeMethods.Error.MORE_DATA)
             {
-                language.Capacity = (int) ++langBufSize;
+                language.Capacity = (int)++langBufSize;
                 ret = NativeMethods.MsiGetFileVersion(path, null, ref verBufSize, language, ref langBufSize);
             }
 
-            if (ret != 0 && ret != (uint) NativeMethods.Error.FILE_INVALID)
+            if (ret != 0 && ret != (uint)NativeMethods.Error.FILE_INVALID)
             {
-                if (ret == (uint) NativeMethods.Error.FILE_NOT_FOUND ||
-                    ret == (uint) NativeMethods.Error.ACCESS_DENIED)
+                if (ret == (uint)NativeMethods.Error.FILE_NOT_FOUND ||
+                    ret == (uint)NativeMethods.Error.ACCESS_DENIED)
                 {
                     throw new FileNotFoundException(null, path);
                 }
@@ -325,8 +325,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             uint ret = NativeMethods.MsiGetFileHash(path, 0, tempHash);
             if (ret != 0)
             {
-                if (ret == (uint) NativeMethods.Error.FILE_NOT_FOUND ||
-                    ret == (uint) NativeMethods.Error.ACCESS_DENIED)
+                if (ret == (uint)NativeMethods.Error.FILE_NOT_FOUND ||
+                    ret == (uint)NativeMethods.Error.ACCESS_DENIED)
                 {
                     throw new FileNotFoundException(null, path);
                 }
@@ -338,7 +338,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             for (int i = 0; i < 4; i++)
             {
-                hash[i] = unchecked ((int) tempHash[i + 1]);
+                hash[i] = unchecked((int)tempHash[i + 1]);
             }
         }
 
@@ -392,7 +392,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
 
             uint ret = NativeMethods.MsiVerifyPackage(packagePath);
-            if (ret == (uint) NativeMethods.Error.INSTALL_PACKAGE_INVALID)
+            if (ret == (uint)NativeMethods.Error.INSTALL_PACKAGE_INVALID)
             {
                 return false;
             }
@@ -464,7 +464,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             for (uint i = 0; i < cFiles; i++)
             {
-                int hFileRec = Marshal.ReadInt32(phFileRecords, (int) i);
+                int hFileRec = Marshal.ReadInt32(phFileRecords, (int)i);
 
                 using (Record fileRec = new Record(hFileRec, true, null))
                 {

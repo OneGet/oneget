@@ -12,40 +12,38 @@
 //  limitations under the License.
 //
 
-
-namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets
+{
+    using Microsoft.PackageManagement.Implementation;
+    using Microsoft.PackageManagement.Internal;
+    using Microsoft.PackageManagement.Internal.Api;
+    using Microsoft.PackageManagement.Internal.Utility.Async;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Utility.Platform;
+    using Microsoft.PackageManagement.Internal.Utility.Plugin;
+    using Microsoft.PackageManagement.Packaging;
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
-    using System.Security;
-    using System.Threading;
-    using Microsoft.PackageManagement;
-    using Microsoft.PackageManagement.Implementation;
-    using Microsoft.PackageManagement.Internal;
-    using Microsoft.PackageManagement.Internal.Api;
-    using Microsoft.PackageManagement.Internal.Implementation;
-    using Microsoft.PackageManagement.Internal.Utility.Async;
-    using Microsoft.PackageManagement.Internal.Utility.Extensions;
-    using Resources;
-    using Utility;
-    using Constants = PackageManagement.Constants;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Globalization;
-    using Microsoft.PackageManagement.Packaging;
-    using Telemetry.Internal;
     using System.Management.Automation.Runspaces;
     using System.Net;
-    using Microsoft.PackageManagement.Internal.Utility.Plugin;
     using System.Reflection;
-    using Microsoft.PackageManagement.Internal.Utility.Platform;
+    using System.Security;
+    using System.Threading;
+    using Telemetry.Internal;
+    using Utility;
+    using Constants = PackageManagement.Constants;
 
     public delegate string GetMessageString(string messageId, string defaultText);
 
-    public abstract class CmdletBase : AsyncCmdlet, IHostApi {
+    public abstract class CmdletBase : AsyncCmdlet, IHostApi
+    {
         private static int _globalCallCount = 1;
         private static readonly object _lockObject = new object();
         private bool _messageResolverNotResponding = false;
@@ -63,7 +61,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         private GetMessageString _messageResolver;
 
-        protected CmdletBase() {
+        protected CmdletBase()
+        {
             _callCount = _globalCallCount++;
             ShouldLogError = true;
         }
@@ -79,24 +78,31 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     filePath.StartsWith(@"~\", StringComparison.Ordinal));
         }
 
-        protected void ValidateVersion(string version) {
-            if (string.IsNullOrWhiteSpace(version)) {
+        protected void ValidateVersion(string version)
+        {
+            if (string.IsNullOrWhiteSpace(version))
+            {
                 return;
             }
-            try {
+            try
+            {
                 Version.Parse(version);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Error(Constants.Errors.InvalidVersion, version, ex.Message);
             }
         }
 
-        protected bool ShouldLogError {get; set;}
+        protected bool ShouldLogError { get; set; }
 
         protected bool ShouldSelectAllProviders { get; set; }
 
-        protected bool WaitForActivity<T>(IEnumerable<IAsyncEnumerable<T>> enumerables) {
+        protected bool WaitForActivity<T>(IEnumerable<IAsyncEnumerable<T>> enumerables)
+        {
             var handles = enumerables.Select(each => each.Ready).ConcatSingleItem(CancellationEvent.Token.WaitHandle).ToArray();
-            if (handles.Length > 1) {
+            if (handles.Length > 1)
+            {
                 if (handles.Length <= 64)
                 {
                     // less than or equal to 64 handles so we can use waithandle
@@ -106,7 +112,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 {
                     // throw error saying we don't support
                     Error(Constants.Errors.TooManyPackages, handles.Length);
-                    
+
                     //// divide handles in chunks of 64 each
                     //int numberOfTasks = (int)Math.Ceiling(handles.Length / 64.0);
                     //var cts = new CancellationTokenSource();
@@ -139,33 +145,46 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return false;
         }
 
-        protected abstract IEnumerable<string> ParameterSets {get;}
+        protected abstract IEnumerable<string> ParameterSets { get; }
 
-        protected bool IsPackageBySearch {
-            get {
+        protected bool IsPackageBySearch
+        {
+            get
+            {
                 return ParameterSetName == Constants.ParameterSets.PackageBySearchSet;
             }
         }
 
-        protected bool IsPackageByObject {
-            get {
+        protected bool IsPackageByObject
+        {
+            get
+            {
                 return ParameterSetName == Constants.ParameterSets.PackageByInputObjectSet;
             }
         }
 
-        protected bool IsSourceByObject {
-            get {
+        protected bool IsSourceByObject
+        {
+            get
+            {
                 return ParameterSetName == Constants.ParameterSets.SourceByInputObjectSet;
             }
         }
 
-        protected internal IPackageManagementService PackageManagementService {
-            get {
-                lock (_lockObject) {
-                    if (!IsCanceled && !IsInitialized) {
-                        try {
+        protected internal IPackageManagementService PackageManagementService
+        {
+            get
+            {
+                lock (_lockObject)
+                {
+                    if (!IsCanceled && !IsInitialized)
+                    {
+                        try
+                        {
                             IsInitialized = PackageManager.Instance.Initialize(this);
-                        } catch (Exception e) {
+                        }
+                        catch (Exception e)
+                        {
                             e.Dump();
                         }
                     }
@@ -174,11 +193,15 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        protected int TimeOut {
-            get {
-                if (IsInvocation) {
+        protected int TimeOut
+        {
+            get
+            {
+                if (IsInvocation)
+                {
                     var t = GetDynamicParameterValue<int>("Timeout");
-                    if (t > 0) {
+                    if (t > 0)
+                    {
                         return t;
                     }
                 }
@@ -187,11 +210,15 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        protected int Responsiveness {
-            get {
-                if (IsInvocation) {
+        protected int Responsiveness
+        {
+            get
+            {
+                if (IsInvocation)
+                {
                     var t = GetDynamicParameterValue<int>("Responsiveness");
-                    if (t > 0) {
+                    if (t > 0)
+                    {
                         return t;
                     }
                 }
@@ -199,57 +226,70 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        public GetMessageString MessageResolver {
-            get {
+        public GetMessageString MessageResolver
+        {
+            get
+            {
                 return _messageResolver ?? (_messageResolver = GetDynamicParameterValue<GetMessageString>("MessageResolver"));
             }
         }
 
         #region Implementing IHostApi
 
-        public Hashtable DynamicOptions {
-            get {
+        public Hashtable DynamicOptions
+        {
+            get
+            {
                 return _dynamicOptions;
             }
         }
 
-        public virtual IEnumerable<string> Sources {
-            get {
+        public virtual IEnumerable<string> Sources
+        {
+            get
+            {
                 return null;
             }
-            set {
+            set
+            {
             }
         }
 
-        public virtual IEnumerable<string> OptionKeys {
-            get {
+        public virtual IEnumerable<string> OptionKeys
+        {
+            get
+            {
                 return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys);
             }
         }
 
-        protected bool GenerateCommonDynamicParameters() {
-            if (IsInvocation) {
+        protected bool GenerateCommonDynamicParameters()
+        {
+            if (IsInvocation)
+            {
                 // only generate these parameters if there is an actual call happening.
                 // this prevents get-help from showing them.
-                DynamicParameterDictionary.Add("Timeout", new RuntimeDefinedParameter("Timeout", typeof (int), new Collection<Attribute> {
+                DynamicParameterDictionary.Add("Timeout", new RuntimeDefinedParameter("Timeout", typeof(int), new Collection<Attribute> {
                     new ParameterAttribute()
                 }));
 
-                DynamicParameterDictionary.Add("Responsiveness", new RuntimeDefinedParameter("Responsiveness", typeof (int), new Collection<Attribute> {
+                DynamicParameterDictionary.Add("Responsiveness", new RuntimeDefinedParameter("Responsiveness", typeof(int), new Collection<Attribute> {
                     new ParameterAttribute()
                 }));
 
-                DynamicParameterDictionary.Add("MessageResolver", new RuntimeDefinedParameter("MessageResolver", typeof (GetMessageString), new Collection<Attribute> {
+                DynamicParameterDictionary.Add("MessageResolver", new RuntimeDefinedParameter("MessageResolver", typeof(GetMessageString), new Collection<Attribute> {
                     new ParameterAttribute()
                 }));
             }
             return true;
         }
-        
-        public override string GetMessageString(string messageText, string defaultText) {
+
+        public override string GetMessageString(string messageText, string defaultText)
+        {
             messageText = DropMsgPrefix(messageText);
 
-            if (string.IsNullOrWhiteSpace(defaultText) || defaultText.IndexOf("MSG:", StringComparison.OrdinalIgnoreCase) == 0) {
+            if (string.IsNullOrWhiteSpace(defaultText) || defaultText.IndexOf("MSG:", StringComparison.OrdinalIgnoreCase) == 0)
+            {
                 defaultText = Messages.ResourceManager.GetString(messageText);
             }
 
@@ -259,16 +299,19 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             //Once the delegate is blocked, it's blocked for the subsequence log message calls for the current cmdlet, find-module. Note that the
             //next cmdlet, install-module has no impact on the delegate blocking issue, meaning all messages are expected to be logged for install-module.
             //_messageResolverNotResponding is for avoiding continuously waiting for unresponsive MessageResolver delegate.
-            if (MessageResolver != null && !_messageResolverNotResponding) {
+            if (MessageResolver != null && !_messageResolverNotResponding)
+            {
                 // if the consumer has specified a MessageResolver delegate, we need to call it on the main thread
                 // because powershell won't let us use the default runspace from another thread.
 
                 // if we are anywhere but the end of the pipeline, the delegate here would block on stuff later in the pipe
                 // and since we're blocking *that* based on the the resolution of this, we're better off just skipping
                 // the message resolution for things earlier in the pipeline.
-                _messageResolverNotResponding = !ExecuteOnMainThread(() =>{
+                _messageResolverNotResponding = !ExecuteOnMainThread(() =>
+                {
                     result = MessageResolver(messageText, defaultText);
-                    if (string.IsNullOrWhiteSpace(result)) {
+                    if (string.IsNullOrWhiteSpace(result))
+                    {
                         result = null;
                     }
                     return true;
@@ -278,14 +321,16 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return result ?? Messages.ResourceManager.GetString(messageText) ?? defaultText;
         }
 
-        public virtual bool AskPermission(string permission) {
+        public virtual bool AskPermission(string permission)
+        {
 #if DEBUG
             Message(Constants.Messages.NotImplemented, permission);
 #endif
             return true;
         }
 
-        public virtual IEnumerable<string> GetOptionValues(string key) {
+        public virtual IEnumerable<string> GetOptionValues(string key)
+        {
             // try to see whether the key is a dynamic parameter first. if we cannot find it then go to bound parameters.
             var dynamicValues = DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Name == key).SelectMany(each => each.GetValues(this));
             if (dynamicValues.Any())
@@ -293,19 +338,23 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 return dynamicValues;
             }
 
-            if (MyInvocation.BoundParameters.ContainsKey(key)) {
+            if (MyInvocation.BoundParameters.ContainsKey(key))
+            {
                 var value = MyInvocation.BoundParameters[key];
-                if (value is string || value is int) {
+                if (value is string || value is int)
+                {
                     return new[] {
                         MyInvocation.BoundParameters[key].ToString()
                     };
                 }
-                if (value is SwitchParameter) {
+                if (value is SwitchParameter)
+                {
                     return new[] {
                         ((SwitchParameter)MyInvocation.BoundParameters[key]).IsPresent.ToString()
                     };
                 }
-                if (value is string[]) {
+                if (value is string[])
+                {
                     return ((string[])value);
                 }
                 return new[] {
@@ -324,19 +373,24 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        public virtual string CredentialUsername {
-            get {
+        public virtual string CredentialUsername
+        {
+            get
+            {
                 return null;
             }
         }
 
-        public virtual SecureString CredentialPassword {
-            get {
+        public virtual SecureString CredentialPassword
+        {
+            get
+            {
                 return null;
             }
         }
 
-        public virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource) {
+        public virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource)
+        {
 #if DEBUG
             Message(Constants.Messages.NotImplemented, packageSource);
 #endif
@@ -353,7 +407,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 noToAll = shouldContinueResult.noToAll;
                 return shouldContinueResult.result;
             }
-                
+
             return false;
         }
 
@@ -362,9 +416,12 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return base.ShouldContinue(query, caption).Result;
         }
 
-        public virtual bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination) {
-            try {
-                if (Force || ForceBootstrap) {
+        public virtual bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination)
+        {
+            try
+            {
+                if (Force || ForceBootstrap)
+                {
                     return true;
                 }
 
@@ -376,28 +433,36 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         !string.IsNullOrWhiteSpace(providerType) && providerType.Equals(Constants.AssemblyProviderType) ?
                             FormatMessageString(Constants.Messages.BootstrapManualAssembly, providerName, location, destination) :
                             FormatMessageString(Constants.Messages.BootstrapManualInstall, providerName, location))).Result;
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 e.Dump();
             }
             return false;
         }
 
-        public virtual bool IsInteractive {
-            get {
+        public virtual bool IsInteractive
+        {
+            get
+            {
                 return IsInvocation;
             }
         }
 
-        public virtual int CallCount {
-            get {
+        public virtual int CallCount
+        {
+            get
+            {
                 return _callCount;
             }
         }
 
-        #endregion
+        #endregion Implementing IHostApi
 
-        protected override void Init() {
-            if (!IsInitialized) {
+        protected override void Init()
+        {
+            if (!IsInitialized)
+            {
                 // get the service ( forces initialization )
                 var x = PackageManagementService;
             }
@@ -435,43 +500,53 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        protected IEnumerable<PackageProvider> SelectProviders(string[] names) {
-            if (names.IsNullOrEmpty()) {
+        protected IEnumerable<PackageProvider> SelectProviders(string[] names)
+        {
+            if (names.IsNullOrEmpty())
+            {
                 return ShouldSelectAllProviders ? PackageManagementService.SelectProviders(null, PackageManagementHost.SuppressErrorsAndWarnings(IsProcessing))
-                     : PackageManagementService.SelectProviders(null, PackageManagementHost.SuppressErrorsAndWarnings(IsProcessing)).Where(each => !each.Features.ContainsKey(Microsoft.PackageManagement.Internal.Constants.Features.AutomationOnly));               
-                
+                     : PackageManagementService.SelectProviders(null, PackageManagementHost.SuppressErrorsAndWarnings(IsProcessing)).Where(each => !each.Features.ContainsKey(Microsoft.PackageManagement.Internal.Constants.Features.AutomationOnly));
             }
             // you can manually ask for any provider by name, if it is for automation only.
-            if (IsInvocation) {
-            
+            if (IsInvocation)
+            {
                 return names.SelectMany(each => PackageManagementService.SelectProviders(each, this));
             }
             return names.SelectMany(each => PackageManagementService.SelectProviders(each, PackageManagementHost.SuppressErrorsAndWarnings(IsProcessing)));
         }
 
-        protected IEnumerable<PackageProvider> SelectProviders(string name) {
+        protected IEnumerable<PackageProvider> SelectProviders(string name)
+        {
             // you can manually ask for any provider by name, if it is for automation only.
-            if (IsInvocation) {
+            if (IsInvocation)
+            {
                 var result = PackageManagementService.SelectProviders(name, PackageManagementHost).ToArray();
-                if ((result.Length == 0) && ShouldLogError) {
+                if ((result.Length == 0) && ShouldLogError)
+                {
                     Error(Constants.Errors.UnknownProvider, name);
                 }
                 return result;
             }
 
             var r = PackageManagementService.SelectProviders(name, PackageManagementHost.SuppressErrorsAndWarnings(IsProcessing)).ToArray();
-            if ((r.Length == 0) && ShouldLogError){
-                Error(Constants.Errors.UnknownProvider, name);               
+            if ((r.Length == 0) && ShouldLogError)
+            {
+                Error(Constants.Errors.UnknownProvider, name);
             }
             return r;
         }
 
-        public override bool ConsumeDynamicParameters() {
+        public override bool ConsumeDynamicParameters()
+        {
             // pull data from dynamic parameters and place them into the DynamicOptions collection.
-            foreach (var rdp in DynamicParameterDictionary.Keys.Select(d => DynamicParameterDictionary[d]).Where(rdp => rdp.IsSet)) {
-                if (rdp.ParameterType == typeof (SwitchParameter)) {
+            foreach (var rdp in DynamicParameterDictionary.Keys.Select(d => DynamicParameterDictionary[d]).Where(rdp => rdp.IsSet))
+            {
+                if (rdp.ParameterType == typeof(SwitchParameter))
+                {
                     _dynamicOptions[rdp.Name] = true;
-                } else {
+                }
+                else
+                {
                     _dynamicOptions[rdp.Name] = rdp.Value;
                 }
             }
@@ -492,12 +567,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
         #region Event and telemetry stuff
-        //Calling PowerShell Telemetry APIs
-        protected void TraceMessage(string message, SoftwareIdentity swidObject) {
 
+        //Calling PowerShell Telemetry APIs
+        protected void TraceMessage(string message, SoftwareIdentity swidObject)
+        {
             try
             {
-                if (!OSInformation.IsWindowsPowerShell) {
+                if (!OSInformation.IsWindowsPowerShell)
+                {
                     return;
                 }
 
@@ -525,14 +602,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        protected enum EventTask {
+        protected enum EventTask
+        {
             None = 0,
             Install = 1,
             Uninstall = 2,
             Download = 3
         }
 
-        
         //We use Microsoft-Windows-PowerShell event source to log PackageManagement events.
         //4101... is the eventid of Microsoft-Windows-PowerShell event provider
         //You can find the events in Microsoft-Windows-PowerShell event log
@@ -545,7 +622,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         protected void LogEvent(EventTask task, EventId id, string context, string name, string version, string providerName, string source, string status, string destinationPath)
         {
-            if (!OSInformation.IsWindowsPowerShell) {
+            if (!OSInformation.IsWindowsPowerShell)
+            {
                 return;
             }
 
@@ -578,6 +656,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        #endregion
+        #endregion Event and telemetry stuff
     }
 }

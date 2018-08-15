@@ -1,25 +1,27 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement.Internal.Packaging {
+namespace Microsoft.PackageManagement.Internal.Packaging
+{
+    using Microsoft.PackageManagement.Internal.Utility.Versions;
     using System;
     using System.Collections;
     using System.Globalization;
     using System.Text.RegularExpressions;
-    using Microsoft.PackageManagement.Internal.Utility.Versions;
 
-    public class MediaQuery {
+    public class MediaQuery
+    {
 #if MEDIA_QUERY_DOCUMENTATION
          An expression that the document evaluator can use to determine if the
         target of the link is applicable to the current platform (the host
@@ -160,29 +162,25 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
                 }
 
                 string currentEnvironmentalValue = environmentDetail[environmentAttribute].ToString();
-                Version currentVersion;
-                Double currentDouble;
                 int comparison = 0;
 
                 // check whether currentEnvironmentalValue is a version
-                if (Version.TryParse(currentEnvironmentalValue, out currentVersion))
+                if (Version.TryParse(currentEnvironmentalValue, out Version currentVersion))
                 {
                     // this means the value should be version as well
-                    Version expectedVersion;
 
-                    if (!Version.TryParse(expectedEnvironmentValue, out expectedVersion))
+                    if (!Version.TryParse(expectedEnvironmentValue, out Version expectedVersion))
                     {
                         return false;
                     }
 
-                    comparison = ((FourPartVersion)expectedVersion).CompareTo((FourPartVersion)currentVersion);
+                    comparison = ((FourPartVersion)expectedVersion).CompareTo(currentVersion);
                 }
-                else if (Double.TryParse(currentEnvironmentalValue, out currentDouble))
+                else if (double.TryParse(currentEnvironmentalValue, out double currentDouble))
                 {
                     // this means value should be double as well
-                    Double expectedDouble;
 
-                    if (!Double.TryParse(expectedEnvironmentValue, out expectedDouble))
+                    if (!double.TryParse(expectedEnvironmentValue, out double expectedDouble))
                     {
                         return false;
                     }
@@ -317,7 +315,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
                         result = true;
                         cleanup = true;
                     }
-                    
+
                     // otherwise we continue evaluating
                 }
 
@@ -375,7 +373,8 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         /// <param name="mediaQuery"></param>
         /// <param name="environment"></param>
         /// <returns></returns>
-        public static bool IsApplicable(string mediaQuery, Hashtable environment) {
+        public static bool IsApplicable(string mediaQuery, Hashtable environment)
+        {
             // no media query given or empty environment table then don't check
             if (string.IsNullOrWhiteSpace(mediaQuery) || environment == null || environment.Count == 0)
             {

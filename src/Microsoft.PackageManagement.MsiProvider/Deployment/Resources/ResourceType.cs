@@ -18,55 +18,76 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
     internal class ResourceType
     {
         // Silence warnings about doc-comments
-        #pragma warning disable 1591
+#pragma warning disable 1591
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType None { get { return "#0"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType Cursor { get { return "#1"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType Bitmap { get { return "#2"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType Icon { get { return "#3"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType Menu { get { return "#4"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType Dialog { get { return "#5"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType String { get { return "#6"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType FontDir { get { return "#7"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType Font { get { return "#8"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType Accelerator { get { return "#9"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType RCData { get { return "#10"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType MessageTable { get { return "#11"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType GroupCursor { get { return "#12"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType GroupIcon { get { return "#14"; } }
-        public static ResourceType Version       { get { return "#16"; } }
+
+        public static ResourceType Version { get { return "#16"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType DialogInclude { get { return "#17"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType PlugPlay { get { return "#19"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType Vxd { get { return "#20"; } }
+
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ani")]
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType AniCursor { get { return "#21"; } }
+
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ani")]
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType AniIcon { get { return "#22"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType Html { get { return "#23"; } }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static ResourceType Manifest { get { return "#24"; } }
 
-        #pragma warning restore 1591
+#pragma warning restore 1591
 
         private string resourceType;
 
@@ -139,16 +160,16 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             {
                 switch (this.IntegerValue)
                 {
-                    case  0: return "None";
-                    case  1: return "Cursor";
-                    case  2: return "Bitmap";
-                    case  3: return "Icon";
-                    case  4: return "Menu";
-                    case  5: return "Dialog";
-                    case  6: return "String";
-                    case  7: return "FontDir";
-                    case  8: return "Font";
-                    case  9: return "Accelerator";
+                    case 0: return "None";
+                    case 1: return "Cursor";
+                    case 2: return "Bitmap";
+                    case 3: return "Icon";
+                    case 4: return "Menu";
+                    case 5: return "Dialog";
+                    case 6: return "String";
+                    case 7: return "FontDir";
+                    case 8: return "Font";
+                    case 9: return "Accelerator";
                     case 10: return "RCData";
                     case 11: return "MessageTable";
                     case 12: return "GroupCursor";
@@ -223,4 +244,3 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         }
     }
 }
-

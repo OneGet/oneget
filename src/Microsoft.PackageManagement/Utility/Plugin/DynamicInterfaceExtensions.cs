@@ -1,25 +1,25 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 namespace Microsoft.PackageManagement.Internal.Utility.Plugin
 {
+    using Collections;
+    using Extensions;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using Collections;
-    using Extensions;
 
     public static class DynamicInterfaceExtensions
     {
@@ -142,11 +142,11 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
 
         private static IEnumerable<MethodInfo> DisambiguateMethodsBySignature(params IEnumerable<MethodInfo>[] setsOfMethods)
         {
-            var unique = new HashSet<string>();
+            HashSet<string> unique = new HashSet<string>();
 
             return setsOfMethods.SelectMany(methodSet => methodSet.ReEnumerable()).Where(method =>
             {
-                var sig = method.ToSignatureString();
+                string sig = method.ToSignatureString();
                 if (!unique.Contains(sig))
                 {
                     unique.Add(sig);
@@ -160,9 +160,9 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
         {
             return _virtualMethodsCache.GetOrAdd(type, () =>
             {
-                var methods = (type.GetTypeInfo().IsInterface
-                    ? (IEnumerable<MethodInfo>)type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance)
-                    : (IEnumerable<MethodInfo>)type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance).Where(each => each.IsAbstract || each.IsVirtual));
+                IEnumerable<MethodInfo> methods = (type.GetTypeInfo().IsInterface
+                    ? type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance)
+                    : type.GetMethods(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance).Where(each => each.IsAbstract || each.IsVirtual));
 
                 methods = methods.Where(each => each.Name != "Dispose");
 
@@ -184,7 +184,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
                 }
 #endif
 
-                var interfaceMethods = type.GetInterfaces().Where(each => each != typeof(IDisposable)).SelectMany(GetVirtualMethods);
+                IEnumerable<MethodInfo> interfaceMethods = type.GetInterfaces().Where(each => each != typeof(IDisposable)).SelectMany(GetVirtualMethods);
 
                 return DisambiguateMethodsBySignature(methods, interfaceMethods).ToArray();
             });
@@ -194,7 +194,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
         {
             return _requiredMethodsCache.GetOrAdd(type, () =>
             {
-                var i = type.GetVirtualMethods().Where(each => each.GetCustomAttributes(true).Any(attr => attr.GetType().Name.Equals("RequiredAttribute", StringComparison.OrdinalIgnoreCase))).ToArray();
+                MethodInfo[] i = type.GetVirtualMethods().Where(each => each.GetCustomAttributes(true).Any(attr => attr.GetType().Name.Equals("RequiredAttribute", StringComparison.OrdinalIgnoreCase))).ToArray();
                 return i;
             });
         }
@@ -222,7 +222,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
             {
                 return type.Name;
             }
-            var typeName = type.GetGenericTypeDefinition().Name;
+            string typeName = type.GetGenericTypeDefinition().Name;
             typeName = typeName.Substring(0, typeName.IndexOf('`'));
             return typeName + "<" + string.Join(",", type.GetGenericArguments().Select(NiceName).ToArray()) + ">";
         }
@@ -233,14 +233,14 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
             {
                 return type.FullName;
             }
-            var typeName = type.GetGenericTypeDefinition().FullName;
+            string typeName = type.GetGenericTypeDefinition().FullName;
             typeName = typeName.Substring(0, typeName.IndexOf('`'));
             return typeName + "<" + string.Join(",", type.GetGenericArguments().Select(NiceName).ToArray()) + ">";
         }
 
         internal static Func<string, bool> GenerateInstancesSupportsMethod(object[] actualInstance)
         {
-            var ism = actualInstance.Select(GenerateInstanceSupportsMethod).ToArray();
+            Func<string, bool>[] ism = actualInstance.Select(GenerateInstanceSupportsMethod).ToArray();
             return (s) => ism.Any(each => each(s));
         }
 
@@ -250,7 +250,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
             // to see if the method is actually supposed to be used.
             // this enables an implementor to physically implement the function in the class
             // yet treat it as if it didn't. (see the PowerShellPackageProvider)
-            var imiMethodInfo = actualInstance.GetType().GetMethod("IsMethodImplemented", new[] {
+            MethodInfo imiMethodInfo = actualInstance.GetType().GetMethod("IsMethodImplemented", new[] {
                 typeof (string)
             });
             return imiMethodInfo == null ? (s) => true : actualInstance.CreateProxiedDelegate<Func<string, bool>>(imiMethodInfo);
@@ -277,24 +277,24 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
                     throw new Exception("Delegate '{0}' can not be created from Delegate '{1}'.".format(typeof(TInterface).NiceName(), instance.GetType().NiceName()));
                 }
 
-                var instanceSupportsMethod = GenerateInstanceSupportsMethod(instance);
-                var instanceType = instance.GetType();
+                Func<string, bool> instanceSupportsMethod = GenerateInstanceSupportsMethod(instance);
+                Type instanceType = instance.GetType();
 
-                var instanceMethods = instanceType.GetPublicMethods();
-                var instanceFields = instanceType.GetPublicDelegateFields();
-                var instanceProperties = instanceType.GetPublicDelegateProperties();
+                MethodInfo[] instanceMethods = instanceType.GetPublicMethods();
+                FieldInfo[] instanceFields = instanceType.GetPublicDelegateFields();
+                PropertyInfo[] instanceProperties = instanceType.GetPublicDelegateProperties();
 
                 if (!instanceSupportsMethod(typeof(TInterface).Name))
                 {
                     throw new Exception("Generation of Delegate '{0}' not supported from object.".format(typeof(TInterface).NiceName()));
                 }
 
-                var method = instanceMethods.FindMethod(typeof(TInterface));
+                MethodInfo method = instanceMethods.FindMethod(typeof(TInterface));
                 if (method != null)
                 {
                     return instance.CreateProxiedDelegate<TInterface>(method);
                 }
-                var instanceDelegate = instanceFields.FindDelegate(instance, typeof(TInterface)) ?? instanceProperties.FindDelegate(instance, typeof(TInterface));
+                Delegate instanceDelegate = instanceFields.FindDelegate(instance, typeof(TInterface)) ?? instanceProperties.FindDelegate(instance, typeof(TInterface));
                 if (instanceDelegate != null)
                 {
                     if (instanceDelegate is TInterface)
@@ -324,9 +324,12 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
 #if FRAMEWORKv45
             return t.IsConstructedGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>);
 #else
-            try {
-                return t.GetGenericTypeDefinition() == typeof (IEnumerable<>);
-            } catch {
+            try
+            {
+                return t.GetGenericTypeDefinition() == typeof(IEnumerable<>);
+            }
+            catch
+            {
             }
             return false;
 #endif
@@ -345,7 +348,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
                 () => assembly.DefinedTypes.Where(each => each.IsPublic && !each.IsEnum && !each.IsInterface && !each.IsAbstract && each.AsType().GetDefaultConstructor() != null && each.BaseType != typeof (MulticastDelegate)).Select(item => item.AsType()).ToArray());
 #else
             return _creatableTypesCache.GetOrAdd(assembly,
-                () => assembly.GetTypes().Where(each => each.IsPublic && !each.IsEnum && !each.IsInterface && !each.IsAbstract && each.GetDefaultConstructor() != null && each.BaseType != typeof (MulticastDelegate)).ToArray());
+                () => assembly.GetTypes().Where(each => each.IsPublic && !each.IsEnum && !each.IsInterface && !each.IsAbstract && each.GetDefaultConstructor() != null && each.BaseType != typeof(MulticastDelegate)).ToArray());
 #endif
         }
     }

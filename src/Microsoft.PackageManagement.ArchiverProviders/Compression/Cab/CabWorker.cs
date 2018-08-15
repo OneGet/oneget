@@ -37,19 +37,20 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         // Progress data
         protected string currentFileName;
-        protected int    currentFileNumber;
-        protected int    totalFiles;
-        protected long   currentFileBytesProcessed;
-        protected long   currentFileTotalBytes;
-        protected short  currentFolderNumber;
-        protected long   currentFolderTotalBytes;
+
+        protected int currentFileNumber;
+        protected int totalFiles;
+        protected long currentFileBytesProcessed;
+        protected long currentFileTotalBytes;
+        protected short currentFolderNumber;
+        protected long currentFolderTotalBytes;
         protected string currentArchiveName;
-        protected short  currentArchiveNumber;
-        protected short  totalArchives;
-        protected long   currentArchiveBytesProcessed;
-        protected long   currentArchiveTotalBytes;
-        protected long   fileBytesProcessed;
-        protected long   totalFileBytes;
+        protected short currentArchiveNumber;
+        protected short totalArchives;
+        protected long currentArchiveBytesProcessed;
+        protected long currentArchiveTotalBytes;
+        protected long fileBytesProcessed;
+        protected long totalFileBytes;
 
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         protected CabWorker(CabEngine cabEngine)
@@ -210,7 +211,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         internal IntPtr CabAllocMem(int byteCount)
         {
-            IntPtr memPointer = Marshal.AllocHGlobal((IntPtr) byteCount);
+            IntPtr memPointer = Marshal.AllocHGlobal((IntPtr)byteCount);
             return memPointer;
         }
 
@@ -242,7 +243,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         internal virtual int CabReadStreamEx(int streamHandle, IntPtr memory, int cb, out int err, IntPtr pv)
         {
             Stream stream = this.streamHandles[streamHandle];
-            int count = (int) cb;
+            int count = (int)cb;
             if (count > this.buf.Length)
             {
                 this.buf = new byte[count];
@@ -261,7 +262,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         internal virtual int CabWriteStreamEx(int streamHandle, IntPtr memory, int cb, out int err, IntPtr pv)
         {
             Stream stream = this.streamHandles[streamHandle];
-            int count = (int) cb;
+            int count = (int)cb;
             if (count > this.buf.Length)
             {
                 this.buf = new byte[count];
@@ -292,7 +293,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         internal virtual int CabSeekStreamEx(int streamHandle, int offset, int seekOrigin, out int err, IntPtr pv)
         {
             Stream stream = this.streamHandles[streamHandle];
-            offset = (int) stream.Seek(offset, (SeekOrigin) seekOrigin);
+            offset = (int)stream.Seek(offset, (SeekOrigin)seekOrigin);
             err = 0;
             return offset;
         }

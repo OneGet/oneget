@@ -1,18 +1,19 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement.Internal.Packaging {
+namespace Microsoft.PackageManagement.Internal.Packaging
+{
     using System;
     using System.Xml.Linq;
     using Utility.Extensions;
@@ -27,16 +28,20 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
     ///     critical for streamlining software discovery scenarios that
     ///     these are kept consistent.
     /// </summary>
-    public class Link : BaseElement {
+    public class Link : BaseElement
+    {
         internal Link(XElement element)
-            : base(element) {
-            if (element.Name != Iso19770_2.Elements.Link) {
+            : base(element)
+        {
+            if (element.Name != Iso19770_2.Elements.Link)
+            {
                 throw new ArgumentException("Element is not of type 'Link'", "element");
             }
         }
 
         internal Link(Uri href, string relationship)
-            : base(new XElement(Iso19770_2.Elements.Link)) {
+            : base(new XElement(Iso19770_2.Elements.Link))
+        {
             HRef = href;
             Relationship = relationship;
         }
@@ -47,13 +52,10 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         ///     Items with the same artifact name should be considered mirrors
         ///     of each other (so download from wherever works).
         /// </summary>
-        public string Artifact {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Artifact);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.Artifact, value);
-            }
+        public string Artifact
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Artifact);
+            internal set => AddAttribute(Iso19770_2.Attributes.Artifact, value);
         }
 
         /// <summary>
@@ -81,18 +83,18 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         ///     would retrieve swidtags that matched a specific persistentId
         ///     See XPATH query standard : http://www.w3.org/TR/xpath20/
         /// </summary>
-        public Uri HRef {
-            get {
-                var v = GetAttribute(Iso19770_2.Attributes.HRef);
-                Uri result;
-                if (v != null && Uri.TryCreate(v, UriKind.Absolute, out result)) {
+        public Uri HRef
+        {
+            get
+            {
+                string v = GetAttribute(Iso19770_2.Attributes.HRef);
+                if (v != null && Uri.TryCreate(v, UriKind.Absolute, out Uri result))
+                {
                     return result;
                 }
                 return null;
             }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.HRef, value.ToString());
-            }
+            internal set => AddAttribute(Iso19770_2.Attributes.HRef, value.ToString());
         }
 
         /// <summary>
@@ -101,37 +103,28 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         ///     A hint to the consumer of the link to what the target item is
         ///     applicable for.
         /// </summary>
-        public string Media {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Media);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.Media, value);
-            }
+        public string Media
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Media);
+            internal set => AddAttribute(Iso19770_2.Attributes.Media, value);
         }
 
         /// <summary>
         ///     Determines the relative strength of ownership of the target piece of software.
         /// </summary>
-        public string Ownership {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Ownership);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.Ownership, value);
-            }
+        public string Ownership
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Ownership);
+            internal set => AddAttribute(Iso19770_2.Attributes.Ownership, value);
         }
 
         /// <summary>
         ///     The relationship between this SWID and the target file.
         /// </summary>
-        public string Relationship {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Relationship);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.Relationship, value);
-            }
+        public string Relationship
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Relationship);
+            internal set => AddAttribute(Iso19770_2.Attributes.Relationship, value);
         }
 
         /// <summary>
@@ -140,28 +133,23 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         ///     See http://www.iana.org/assignments/media-types/media-types.xhtml
         ///     for more details on link type.
         /// </summary>
-        public string MediaType {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.MediaType);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.MediaType, value);
-            }
+        public string MediaType
+        {
+            get => GetAttribute(Iso19770_2.Attributes.MediaType);
+            internal set => AddAttribute(Iso19770_2.Attributes.MediaType, value);
         }
 
         /// <summary>
         ///     Determines if the target software is a hard requirement or not
         /// </summary>
-        public string Use {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Use);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.Use, value);
-            }
+        public string Use
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Use);
+            internal set => AddAttribute(Iso19770_2.Attributes.Use, value);
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return "{0}:{1}".format(Relationship, HRef);
         }
     }

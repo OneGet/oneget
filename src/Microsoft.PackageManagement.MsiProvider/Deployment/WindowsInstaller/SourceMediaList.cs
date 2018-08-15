@@ -70,8 +70,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 this.installation.InstallationCode,
                 this.installation.UserSid,
                 this.installation.Context,
-                (uint) this.installation.InstallationType,
-                (uint) item.DiskId,
+                (uint)this.installation.InstallationType,
+                (uint)item.DiskId,
                 item.VolumeLabel,
                 item.DiskPrompt);
 
@@ -94,7 +94,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 this.installation.InstallationCode,
                 this.installation.UserSid,
                 this.installation.Context,
-                (uint) NativeMethods.SourceType.Media | (uint) this.installation.InstallationType);
+                (uint)NativeMethods.SourceType.Media | (uint)this.installation.InstallationType);
 
             if (ret != 0)
             {
@@ -131,7 +131,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <param name="arrayIndex">offset into the destination array where copying begins</param>
         public void CopyTo(MediaDisk[] array, int arrayIndex)
         {
-            if (array == null) {
+            if (array == null)
+            {
                 throw new ArgumentNullException("array");
             }
             foreach (MediaDisk mediaDisk in this)
@@ -154,8 +155,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 this.installation.InstallationCode,
                 this.installation.UserSid,
                 this.installation.Context,
-                (uint) this.installation.InstallationType,
-                (uint) diskId);
+                (uint)this.installation.InstallationType,
+                (uint)diskId);
 
             if (ret != 0)
             {
@@ -181,16 +182,16 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             uint diskId;
             StringBuilder volumeBuf = new StringBuilder(40);
-            uint volumeBufSize = (uint) volumeBuf.Capacity;
+            uint volumeBufSize = (uint)volumeBuf.Capacity;
             StringBuilder promptBuf = new StringBuilder(80);
-            uint promptBufSize = (uint) promptBuf.Capacity;
+            uint promptBufSize = (uint)promptBuf.Capacity;
             for (uint i = 0; true; i++)
             {
                 uint ret = NativeMethods.MsiSourceListEnumMediaDisks(
                     this.installation.InstallationCode,
                     this.installation.UserSid,
                     this.installation.Context,
-                    (uint) this.installation.InstallationType,
+                    (uint)this.installation.InstallationType,
                     i,
                     out diskId,
                     volumeBuf,
@@ -198,16 +199,16 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     promptBuf,
                     ref promptBufSize);
 
-                if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                if (ret == (uint)NativeMethods.Error.MORE_DATA)
                 {
-                    volumeBuf.Capacity = (int) ++volumeBufSize;
-                    promptBuf.Capacity = (int) ++promptBufSize;
+                    volumeBuf.Capacity = (int)++volumeBufSize;
+                    promptBuf.Capacity = (int)++promptBufSize;
 
                     ret = NativeMethods.MsiSourceListEnumMediaDisks(
                         this.installation.InstallationCode,
                         this.installation.UserSid,
                         this.installation.Context,
-                        (uint) this.installation.InstallationType,
+                        (uint)this.installation.InstallationType,
                         i,
                         out diskId,
                         volumeBuf,
@@ -216,7 +217,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         ref promptBufSize);
                 }
 
-                if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS)
+                if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
                 {
                     break;
                 }
@@ -226,7 +227,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     throw InstallerException.ExceptionFromReturnCode(ret);
                 }
 
-                yield return new MediaDisk((int) diskId, volumeBuf.ToString(), promptBuf.ToString());
+                yield return new MediaDisk((int)diskId, volumeBuf.ToString(), promptBuf.ToString());
             }
         }
 

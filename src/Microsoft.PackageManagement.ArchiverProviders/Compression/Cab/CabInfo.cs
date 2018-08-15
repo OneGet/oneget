@@ -9,7 +9,6 @@
 
 namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 {
-    using System;
     using System.Collections.Generic;
 
     /// <summary>

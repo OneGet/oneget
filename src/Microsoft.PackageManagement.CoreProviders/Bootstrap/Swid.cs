@@ -1,56 +1,62 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
-    using System;
-    using System.Globalization;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Xml.Linq;
+namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
+{
     using PackageManagement.Internal;
     using PackageManagement.Internal.Api;
     using PackageManagement.Internal.Implementation;
     using PackageManagement.Internal.Packaging;
     using PackageManagement.Internal.Utility.Extensions;
     using PackageManagement.Internal.Utility.Plugin;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Xml.Linq;
 
-    internal class Swid {
+    internal class Swid
+    {
         private const int SwidDownloadTimeout = 40000;
         internal readonly BootstrapRequest _request;
         internal readonly Swidtag _swidtag;
         private bool _timedOut;
 
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Swid(BootstrapRequest request, Swidtag swidtag) {
+        internal Swid(BootstrapRequest request, Swidtag swidtag)
+        {
             _request = request;
             _swidtag = swidtag;
         }
 
-        internal Swid(BootstrapRequest request, IEnumerable<Link> mirrors) {
+        internal Swid(BootstrapRequest request, IEnumerable<Link> mirrors)
+        {
             _request = request;
             _swidtag = DownloadSwidtag(mirrors, request);
         }
 
-        internal Swid(BootstrapRequest request, IEnumerable<Uri> mirrors) {
+        internal Swid(BootstrapRequest request, IEnumerable<Uri> mirrors)
+        {
             _request = request;
             _swidtag = DownloadSwidtag(mirrors, request);
         }
 
-        internal Uri Location {get;  set;}
+        internal Uri Location { get; set; }
 
-        private IRequest DownloadRequest {
-            get {
+        private IRequest DownloadRequest
+        {
+            get
+            {
                 _timedOut = false;
                 // overrides the Warning to check for timed out messages.
                 return new object[] {
@@ -73,51 +79,66 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
         }
 
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        protected IEnumerable<IGrouping<string, Link>> Artifacts {
-            get {
+        protected IEnumerable<IGrouping<string, Link>> Artifacts
+        {
+            get
+            {
                 return IsValid ? _swidtag.Links.GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
             }
         }
 
-        protected IEnumerable<IGrouping<string, Link>> Feeds {
-            get {
+        protected IEnumerable<IGrouping<string, Link>> Feeds
+        {
+            get
+            {
                 return IsValid
                     ? _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Feed).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
             }
         }
 
-        protected IEnumerable<IGrouping<string, Link>> Packages {
-            get {
+        protected IEnumerable<IGrouping<string, Link>> Packages
+        {
+            get
+            {
                 return IsValid
                     ? _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Package).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact)
                     : Enumerable.Empty<IGrouping<string, Link>>();
             }
         }
 
-        protected IEnumerable<IGrouping<string, Link>> More {
-            get {
+        protected IEnumerable<IGrouping<string, Link>> More
+        {
+            get
+            {
                 return _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Supplemental).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact);
             }
         }
 
-        internal virtual bool IsValid {
-            get {
+        internal virtual bool IsValid
+        {
+            get
+            {
                 return _swidtag != null;
             }
         }
 
-        private Swidtag DownloadSwidtag(IEnumerable<Uri> locations, BootstrapRequest request) {            
-            foreach (var location in locations.WhereNotNull()) {
-                try {
+        private Swidtag DownloadSwidtag(IEnumerable<Uri> locations, BootstrapRequest request)
+        {
+            foreach (var location in locations.WhereNotNull())
+            {
+                try
+                {
                     var filename = FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory();
                     DownloadSwidtagToFile(filename, location);
 
-                    if (_timedOut) {
+                    if (_timedOut)
+                    {
                         // try one more time...
                         DownloadSwidtagToFile(filename, location);
                     }
 
-                    if (filename.FileExists()) {
+                    if (filename.FileExists())
+                    {
                         try
                         {
                             var document = XDocument.Load(filename);
@@ -132,16 +153,19 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                             System.IO.File.Delete(filename);
                         }
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     e.Dump(request);
                 }
             }
             return null;
         }
 
-        private string DownloadSwidtagToFile(string filename, Uri location) {
+        private string DownloadSwidtagToFile(string filename, Uri location)
+        {
             return _request.RetryDownload(
-                    (uri) => 
+                    (uri) =>
                         {
                             if (_request.ProviderServices == null)
                             {
@@ -157,16 +181,20 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap {
                 );
         }
 
-        internal Swidtag DownloadSwidtag(IEnumerable<Link> locations, BootstrapRequest request) {
+        internal Swidtag DownloadSwidtag(IEnumerable<Link> locations, BootstrapRequest request)
+        {
             return DownloadSwidtag(locations.Where(link => link != null && link.HRef != null).Select(link => link.HRef), request);
         }
 
-        protected IEnumerable<IGrouping<string, Link>> PackagesFilteredByName(string name) {
-            if (string.IsNullOrWhiteSpace(name)) {
+        protected IEnumerable<IGrouping<string, Link>> PackagesFilteredByName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
                 return Packages;
             }
 
-            return Packages.Where(packageGroup => {
+            return Packages.Where(packageGroup =>
+            {
                 var n = packageGroup.FirstOrDefault().Attributes[Iso19770_2.Discovery.Name];
                 return (string.IsNullOrEmpty(n) || name.EqualsIgnoreCase(n));
             });

@@ -1,13 +1,11 @@
-﻿
-namespace Microsoft.PackageManagement.Internal.Utility.Platform
+﻿namespace Microsoft.PackageManagement.Internal.Utility.Platform
 {
+    using Microsoft.Win32;
     using System;
+    using System.IO;
     using System.Linq;
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
-    using System.Runtime.InteropServices;
-    using System.IO;
-    using Microsoft.Win32;
 
     /// <summary>
     /// These are platform abstractions and platform specific implementations
@@ -50,9 +48,9 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
         /// <summary>
         /// true, on Windows FullCLR or Nano Server
         /// false, on PowerShellCore which can be Linux, Windows PowerShellCore.
-        /// 
-        /// Is CORECLR will be 'true' for both PowerShellCore and Nano 
-        /// 
+        ///
+        /// Is CORECLR will be 'true' for both PowerShellCore and Nano
+        ///
         /// </summary>
         public static bool IsWindowsPowerShell
         {
@@ -60,7 +58,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
             {
                 if (_isWindowsPowerShell.HasValue) { return _isWindowsPowerShell.Value; }
 
-                var psHomePath = RunPowerShellCommand(_dollarPSHome);
+                string psHomePath = RunPowerShellCommand(_dollarPSHome);
 
                 if (!string.IsNullOrWhiteSpace(psHomePath) &&
                     psHomePath.TrimEnd(new char[] { '\\' })
@@ -84,12 +82,10 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
         //NuGet packages installation path:   %localappdata%\PackageManagement\NuGet\packages
         //OneGet bootstrapping provider path: %localappdata%\PackageManagement\ProviderAssemblies
 
-
         //On Windows ---- AllUsers:
 
         //NuGet packages installation path:    %programfiles\PackageManagement\NuGet\packages
         //OneGet bootstrapping provider path:  %programfiles\PackageManagement\ProviderAssemblies
-
 
         //On Linux/Mac --- Current User:
 
@@ -97,30 +93,16 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
         //NuGet packages install path:          /$home/.local/share/PackageManagement/NuGet/Packages
         //OneGet bootrapping provider path:     disabled on non-windows
 
-        //On Linux/Mac - AllUsers: 
+        //On Linux/Mac - AllUsers:
 
         //NuGet packages install path:          /usr/local/share/PackageManagement/NuGet/Packages
         //OneGet bootstrapping provider path:   disabled on non-windows
 
+        public static string ConfigLocation => SelectDirectory(XDG_Type.CONFIG);
 
-        public static string ConfigLocation
-        {
-            //$home/.config/
-            get { return SelectDirectory(XDG_Type.CONFIG); }
-        }
+        public static string DataHomeLocation => SelectDirectory(XDG_Type.DATA);
 
-        public static string DataHomeLocation
-        {
-            //$home/.local/share/
-            get { return SelectDirectory(XDG_Type.DATA); }
-        }
-
-        public static string AllUserLocation
-        {
-            //usr/local/share/
-            //equivalent to programfiles folder
-            get { return SelectDirectory(XDG_Type.ALL_USER); }
-        }
+        public static string AllUserLocation => SelectDirectory(XDG_Type.ALL_USER);
 
         //~ alluser, e.g., programfiles
         internal static string AllUserHomeDirectory
@@ -128,24 +110,21 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
             get
             {
                 if (_allUserhomeDirectory != null) { return _allUserhomeDirectory; }
- 
+
                 _allUserhomeDirectory = Path.Combine(OSInformation.IsWindows ? Environment.GetEnvironmentVariable("ProgramFiles") : AllUserLocation);
                 _allUserhomeDirectory = _allUserhomeDirectory ?? string.Empty;
                 return _allUserhomeDirectory;
             }
         }
 
-        public static string ProgramFilesDirectory
-        {
-            get { return AllUserHomeDirectory; }
-        }
+        public static string ProgramFilesDirectory => AllUserHomeDirectory;
 
         //~ currentuser
         public static string LocalAppDataDirectory
         {
             get
             {
-                var dataHome = Environment.GetEnvironmentVariable("localappdata");
+                string dataHome = Environment.GetEnvironmentVariable("localappdata");
                 if (!IsWindows)
                 {
                     dataHome = DataHomeLocation;
@@ -154,9 +133,8 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
             }
         }
 
-
         // Note: Watch out any path changes in /src/System.Management.Automation/CoreCLR/CorePsPlatform.cs
-            
+
         /// <summary>
         /// X Desktop Group configuration type enum.
         /// </summary>
@@ -164,17 +142,17 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
         {
             /// <summary> XDG_CONFIG_HOME/powershell </summary>
             CONFIG,
+
             /// <summary> XDG_DATA_HOME/powershell </summary>
             DATA,
+
             /// <summary>/usr/local/share/</summary>
             ALL_USER
-
         }
 
         //Note: Keep in sync with /src/System.Management.Automation/CoreCLR/CorePsPlatform.cs
         internal static string SelectDirectory(XDG_Type dirpath)
         {
-
             string xdgconfighome = System.Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
             string xdgdatahome = System.Environment.GetEnvironmentVariable("XDG_DATA_HOME");
 
@@ -200,7 +178,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
 
                 case XDG_Type.DATA:
                     //equivalent to MyDocument folder
-                   
+
                     if (string.IsNullOrEmpty(xdgdatahome))
                     {
                         // create the xdg folder if needed
@@ -214,14 +192,13 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
                     {
                         return Path.Combine(xdgdatahome);
                     }
-               
-                
+
                 case XDG_Type.ALL_USER:
                     //equivalent to programfiles folder
                     // shared_modules: "/usr/local/share/powershell/Modules";
                     return "/usr/local/share";
 
-                default:                 
+                default:
                     return string.Empty;
             }
         }
@@ -229,7 +206,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
         public static bool IsSudoUser
         {
             get
-            {            
+            {
                 if (_isSudoUser.HasValue) { return _isSudoUser.Value; }
                 if (IsWindows)
                 {
@@ -238,10 +215,10 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
                 else
                 {
                     //See some articles from LINUX forum: sudo users have id eqaul to 0
-                    // https://ubuntuforums.org/showthread.php?t=479255 
+                    // https://ubuntuforums.org/showthread.php?t=479255
                     // http://stackoverflow.com/questions/18215973/how-to-check-if-running-as-root-in-a-bash-script
-                    // 
-                    var sodoUserId = RunPowerShellCommand("id -u");
+                    //
+                    string sodoUserId = RunPowerShellCommand("id -u");
                     if (!string.IsNullOrWhiteSpace(sodoUserId) && sodoUserId.Equals("0", StringComparison.OrdinalIgnoreCase))
                     {
                         _isSudoUser = true;
@@ -249,7 +226,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
                     else
                     {
                         //give it another try
-                        var sodoUser = RunPowerShellCommand(_sudoUser);
+                        string sodoUser = RunPowerShellCommand(_sudoUser);
                         if (!string.IsNullOrWhiteSpace(sodoUser) && sodoUser.Equals("root", StringComparison.OrdinalIgnoreCase))
                         {
                             _isSudoUser = true;
@@ -266,7 +243,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
 
         private static string RunPowerShellCommand(string commandName)
         {
-            var iis = InitialSessionState.CreateDefault2();
+            InitialSessionState iis = InitialSessionState.CreateDefault2();
             using (Runspace rs = RunspaceFactory.CreateRunspace(iis))
             {
                 using (PowerShell powershell = PowerShell.Create())
@@ -274,7 +251,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
                     rs.Open();
                     powershell.Runspace = rs;
                     powershell.AddScript(commandName);
-                    var retval = powershell.Invoke().FirstOrDefault();
+                    PSObject retval = powershell.Invoke().FirstOrDefault();
                     if (retval != null)
                     {
                         return retval.ToString();
@@ -295,9 +272,9 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
                     // see here about FIPS: https://blogs.msdn.microsoft.com/shawnfa/2005/05/16/enforcing-fips-certified-cryptography/
                     // FIPS enabled,  HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy\Enabled is 1
                     // otherwise, it is 0.
-                    using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy"))
+                    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy"))
                     {
-                        _isFipsEnabled = (key != null) && ((int) key.GetValue("Enabled", 0) == 1);
+                        _isFipsEnabled = (key != null) && ((int)key.GetValue("Enabled", 0) == 1);
                     }
                 }
                 else
@@ -308,5 +285,5 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform
                 return _isFipsEnabled.Value;
             }
         }
-    }  
+    }
 }

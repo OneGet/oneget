@@ -1,25 +1,26 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-
-namespace Microsoft.PackageManagement.Internal.Utility.Platform {
+namespace Microsoft.PackageManagement.Internal.Utility.Platform
+{
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using System.Text;
 
-    internal enum WinVerifyTrustResult : uint {
+    internal enum WinVerifyTrustResult : uint
+    {
         Success = 0,
         ProviderUnknown = 0x800b0001, // The trust provider is not recognized on this system
         ActionUnknown = 0x800b0002, // The trust provider does not support the specified action
@@ -29,7 +30,8 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
     }
 
     [Flags]
-    internal enum LoadLibraryFlags : uint {
+    internal enum LoadLibraryFlags : uint
+    {
         DontResolveDllReferences = 0x00000001,
         AsDatafile = 0x00000002,
         LoadWithAlteredSearchPath = 0x00000008,
@@ -38,7 +40,8 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
     }
 
     [Flags]
-    internal enum ResourceEnumFlags : uint {
+    internal enum ResourceEnumFlags : uint
+    {
         None = 0x00000000,
         LanguageNeutral = 0x00000001,
         Mui = 0x00000002,
@@ -48,56 +51,59 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
     /// <summary>
     /// DisposableModule is only used by Manifest.LoadFrom().
     /// </summary>
-    public class DisposableModule : IDisposable {
+    public class DisposableModule : IDisposable
+    {
         private Module _module;
 
-        public bool IsInvalid {
-            get {
-                return _module.IsInvalid;
-            }
-        }
+        public bool IsInvalid => _module.IsInvalid;
 
-        public void Dispose() {
+        public void Dispose()
+        {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        public void Dispose(bool disposing) {
-            if (disposing) {
+        public void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
                 _module.Free();
             }
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2225:OperatorOverloadsHaveNamedAlternates", Justification = "There is no need for such.")]
-        public static implicit operator Module(DisposableModule instance) {
+        public static implicit operator Module(DisposableModule instance)
+        {
             return instance._module;
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2225:OperatorOverloadsHaveNamedAlternates", Justification = "There is no need for such.")]
-        public static implicit operator DisposableModule(Module module) {
-            return new DisposableModule {
+        public static implicit operator DisposableModule(Module module)
+        {
+            return new DisposableModule
+            {
                 _module = module
             };
         }
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    public struct Module {
+    public struct Module
+    {
         [FieldOffset(0)]
         public IntPtr handle;
 
-        public Module(IntPtr ptr) {
+        public Module(IntPtr ptr)
+        {
             handle = ptr;
         }
 
-        public bool IsInvalid {
-            get {
-                return handle == IntPtr.Zero;
-            }
-        }
+        public bool IsInvalid => handle == IntPtr.Zero;
 
-        public void Free() {
-            if (!IsInvalid) {
+        public void Free()
+        {
+            if (!IsInvalid)
+            {
                 NativeMethods.FreeLibrary(this);
             }
 
@@ -106,7 +112,8 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    public struct ResourceType {
+    public struct ResourceType
+    {
         public static ResourceType None = new ResourceType(0);
         public static ResourceType Cursor = new ResourceType(1);
         public static ResourceType Bitmap = new ResourceType(2);
@@ -133,93 +140,84 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
         [FieldOffset(0)]
         public IntPtr handle;
 
-        public ResourceType(IntPtr ptr) {
+        public ResourceType(IntPtr ptr)
+        {
             handle = ptr;
         }
 
-        public ResourceType(int ptr) {
+        public ResourceType(int ptr)
+        {
             handle = (IntPtr)ptr;
         }
 
-        public bool IsInvalid {
-            get {
-                return handle == IntPtr.Zero;
-            }
-        }
+        public bool IsInvalid => handle == IntPtr.Zero;
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    public struct ResourceId {
+    public struct ResourceId
+    {
         [FieldOffset(0)]
         public IntPtr handle;
 
-        public ResourceId(IntPtr ptr) {
+        public ResourceId(IntPtr ptr)
+        {
             handle = ptr;
         }
 
-        public bool IsInvalid {
-            get {
-                return handle == IntPtr.Zero;
-            }
-        }
+        public bool IsInvalid => handle == IntPtr.Zero;
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    public struct Resource {
+    public struct Resource
+    {
         [FieldOffset(0)]
         public IntPtr handle;
 
-        public Resource(IntPtr ptr) {
+        public Resource(IntPtr ptr)
+        {
             handle = ptr;
         }
 
-        public bool IsInvalid {
-            get {
-                return handle == IntPtr.Zero;
-            }
-        }
+        public bool IsInvalid => handle == IntPtr.Zero;
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    public struct ResourceData {
+    public struct ResourceData
+    {
         [FieldOffset(0)]
         public IntPtr handle;
 
-        public ResourceData(IntPtr ptr) {
+        public ResourceData(IntPtr ptr)
+        {
             handle = ptr;
         }
 
-        public bool IsInvalid {
-            get {
-                return handle == IntPtr.Zero;
-            }
-        }
+        public bool IsInvalid => handle == IntPtr.Zero;
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    public struct Unused {
+    public struct Unused
+    {
         internal static Unused Nothing;
 
         [FieldOffset(0)]
         public IntPtr handle;
 
-        public Unused(IntPtr ptr) {
+        public Unused(IntPtr ptr)
+        {
             handle = ptr;
         }
 
-        public bool IsInvalid {
-            get {
-                return handle == IntPtr.Zero;
-            }
-        }
+        public bool IsInvalid => handle == IntPtr.Zero;
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    internal struct LanguageId {
+    internal struct LanguageId
+    {
         internal static LanguageId None;
 
         [FieldOffset(0)]
-        private UInt16 value;
+        private readonly ushort value;
     }
 
     internal delegate bool EnumResourceTypes([MarshalAs(UnmanagedType.SysInt)] Module module, ResourceType type, Unused unused);
@@ -228,7 +226,8 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
 
     internal delegate bool EnumResourceLanguages(Module module, ResourceType type, ResourceId resourceId, LanguageId language, Unused unused);
 
-    internal static class NativeMethods {
+    internal static class NativeMethods
+    {
         // WNetGetConnection is only used in CanonicalizePath() which is for Windows only. Safe for non-Windows.
         [DllImport("mpr.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int WNetGetConnection([MarshalAs(UnmanagedType.LPTStr)] string localName, [MarshalAs(UnmanagedType.LPTStr)] StringBuilder remoteName, ref int length);
@@ -241,11 +240,11 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
 
         //     The following method:
         //        LoadLibraryEx, EnumResourceTypesExW, EnumResourceNamesExW, EnumResourceLanguagesExW, FindResourceExW
-        //        LoadResource, LockResource, SizeofResource, FreeLibrary 
+        //        LoadResource, LockResource, SizeofResource, FreeLibrary
         //     are only called in Manifest.LoadFrom(), which is used on WindowsPowerShell only.
-        // 
+        //
         /// <summary>
-        ///     Loads the specified module into the address space of the calling process. 
+        ///     Loads the specified module into the address space of the calling process.
         /// </summary>
         /// <param name="filename">The name of the module.</param>
         /// <param name="unused">This parameter is reserved for future use.</param>
@@ -255,7 +254,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
         internal static extern Module LoadLibraryEx(string filename, Unused unused, LoadLibraryFlags dwFlags);
 
         /// <summary>
-        ///     Enumerates resource types within a binary. 
+        ///     Enumerates resource types within a binary.
         /// </summary>
         /// <param name="module">Handle to a module to search.</param>
         /// <param name="callback">Pointer to the function to be called for each resource type.</param>
@@ -289,6 +288,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern void OutputDebugString(string debugMessageText);
+
 #else
         /// <summary>
         ///     Loads the specified module into the address space of the calling process.
@@ -337,4 +337,3 @@ namespace Microsoft.PackageManagement.Internal.Utility.Platform {
 #endif
     }
 }
-

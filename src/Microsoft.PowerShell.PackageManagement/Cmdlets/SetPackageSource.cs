@@ -12,27 +12,29 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets
+{
+    using Microsoft.PackageManagement.Internal.Api;
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Utility.Plugin;
+    using Microsoft.PackageManagement.Packaging;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.PackageManagement.Internal.Api;
-    using Microsoft.PackageManagement.Internal.Packaging;
-    using Microsoft.PackageManagement.Internal.Utility.Async;
-    using Microsoft.PackageManagement.Internal.Utility.Extensions;
-    using Microsoft.PackageManagement.Internal.Utility.Plugin;
-    using Microsoft.PackageManagement.Packaging;
-    using Utility;
     using System.Security;
+    using Utility;
 
     [Cmdlet(VerbsCommon.Set, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, DefaultParameterSetName = Constants.ParameterSets.SourceBySearchSet, HelpUri = "https://go.microsoft.com/fwlink/?LinkID=517141")]
-    public sealed class SetPackageSource : CmdletWithProvider {
+    public sealed class SetPackageSource : CmdletWithProvider
+    {
         [Parameter(ValueFromPipeline = true, ParameterSetName = Constants.ParameterSets.SourceByInputObjectSet, Mandatory = true)]
         public PackageSource InputObject;
 
-        public SetPackageSource() : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
+        public SetPackageSource() : base(new[] { OptionCategory.Provider, OptionCategory.Source })
+        {
         }
 
         [Parameter]
@@ -62,7 +64,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         [Parameter]
         public PSCredential Credential { get; set; }
-        
+
         public override string CredentialUsername
         {
             get
@@ -79,17 +81,22 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        protected override IEnumerable<string> ParameterSets {
-            get {
-                return new[] {Constants.ParameterSets.SourceByInputObjectSet, Constants.ParameterSets.SourceBySearchSet};
+        protected override IEnumerable<string> ParameterSets
+        {
+            get
+            {
+                return new[] { Constants.ParameterSets.SourceByInputObjectSet, Constants.ParameterSets.SourceBySearchSet };
             }
         }
 
-        protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
-            if (!IsInvocation) {
+        protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments)
+        {
+            if (!IsInvocation)
+            {
                 var providerNames = PackageManagementService.AllProviderNames;
                 var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
-                if (whatsOnCmdline != null) {
+                if (whatsOnCmdline != null)
+                {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
                 }
 
@@ -102,7 +109,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     new ValidateSetAttribute(providerNames.ToArray())
                 }));
             }
-            else {
+            else
+            {
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true,
@@ -115,23 +123,26 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         [Alias("SourceName")]
         [Parameter(Position = 0, ParameterSetName = Constants.ParameterSets.SourceBySearchSet)]
-        public string Name {get; set;}
+        public string Name { get; set; }
 
         [Parameter(ParameterSetName = Constants.ParameterSets.SourceBySearchSet)]
-        public string Location {get; set;}
+        public string Location { get; set; }
 
         [Parameter]
-        public string NewLocation {get; set;}
+        public string NewLocation { get; set; }
 
         [Parameter]
-        public string NewName {get; set;}
+        public string NewName { get; set; }
 
         [Parameter]
-        public SwitchParameter Trusted {get; set;}
+        public SwitchParameter Trusted { get; set; }
 
-        public override IEnumerable<string> Sources {
-            get {
-                if (string.IsNullOrWhiteSpace(Name) && string.IsNullOrWhiteSpace(Location)) {
+        public override IEnumerable<string> Sources
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Name) && string.IsNullOrWhiteSpace(Location))
+                {
                     return Microsoft.PackageManagement.Internal.Constants.Empty;
                 }
 
@@ -148,8 +159,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         ///     to implement a given API, if we put in delegates to handle some of the functions
         ///     they will get called instead of the implementation in the current class. ('this')
         /// </summary>
-        private IHostApi UpdatePackageSourceRequest {
-            get {
+        private IHostApi UpdatePackageSourceRequest
+        {
+            get
+            {
                 return new object[] {
                     new {
                         // override the GetOptionKeys and the GetOptionValues on the fly.
@@ -167,22 +180,26 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        private void UpdatePackageSource(PackageSource source) {
-            if (WhatIf) {
-
+        private void UpdatePackageSource(PackageSource source)
+        {
+            if (WhatIf)
+            {
                 var p = new PSObject(source);
 
-                if (!string.IsNullOrWhiteSpace(NewName)) {
+                if (!string.IsNullOrWhiteSpace(NewName))
+                {
                     p.Properties.Remove("Name");
-                    p.Properties.Add( new PSNoteProperty("Name",NewName));
+                    p.Properties.Add(new PSNoteProperty("Name", NewName));
                 }
 
-                if (!string.IsNullOrWhiteSpace(NewLocation)) {
+                if (!string.IsNullOrWhiteSpace(NewLocation))
+                {
                     p.Properties.Remove("Location");
                     p.Properties.Add(new PSNoteProperty("Location", NewLocation));
                 }
 
-                if (Trusted.IsPresent) {
+                if (Trusted.IsPresent)
+                {
                     p.Properties.Remove("Trusted");
                     p.Properties.Add(new PSNoteProperty("Trusted", Trusted.ToBool()));
                 }
@@ -190,21 +207,25 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 WriteObject(p);
                 return;
             }
-            if (string.IsNullOrWhiteSpace(NewName)) {
+            if (string.IsNullOrWhiteSpace(NewName))
+            {
                 // this is a replacement of an existing package source, we're *not* changing the name. (easy)
 
-                foreach (var src in source.Provider.AddPackageSource(string.IsNullOrWhiteSpace(NewName) ? source.Name : NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted, UpdatePackageSourceRequest)) {
+                foreach (var src in source.Provider.AddPackageSource(string.IsNullOrWhiteSpace(NewName) ? source.Name : NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted, UpdatePackageSourceRequest))
+                {
                     WriteObject(src);
                 }
-
-            } else {
+            }
+            else
+            {
                 // we're renaming a source.
                 // a bit more messy at this point
                 // create a new package source first
 
                 bool removed = false;
 
-                foreach (var src in source.Provider.AddPackageSource(NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted.IsPresent ? Trusted.ToBool() : source.IsTrusted, this)) {
+                foreach (var src in source.Provider.AddPackageSource(NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted.IsPresent ? Trusted.ToBool() : source.IsTrusted, this))
+                {
                     WriteObject(src);
                     if (!removed)
                     {
@@ -217,14 +238,17 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        public override bool ProcessRecordAsync() {
-            if (IsSourceByObject) {
+        public override bool ProcessRecordAsync()
+        {
+            if (IsSourceByObject)
+            {
                 // we've already got the package source
                 UpdatePackageSource(InputObject);
                 return true;
             }
 
-            if (string.IsNullOrWhiteSpace(Name) && string.IsNullOrWhiteSpace(Location)) {
+            if (string.IsNullOrWhiteSpace(Name) && string.IsNullOrWhiteSpace(Location))
+            {
                 Error(Constants.Errors.NameOrLocationRequired);
                 return false;
             }
@@ -232,26 +256,32 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             // otherwise, we're just changing a source by name
             var prov = SelectedProviders.ToArray();
 
-            if (Stopping) {
+            if (Stopping)
+            {
                 return false;
             }
 
-            if (prov.Length == 0) {
-                if (ProviderName.IsNullOrEmpty() || string.IsNullOrWhiteSpace(ProviderName[0])) {
+            if (prov.Length == 0)
+            {
+                if (ProviderName.IsNullOrEmpty() || string.IsNullOrWhiteSpace(ProviderName[0]))
+                {
                     return Error(Constants.Errors.UnableToFindProviderForSource, Name ?? Location);
                 }
                 return Error(Constants.Errors.UnknownProvider, ProviderName[0]);
             }
 
-            if (prov.Length > 0) {
+            if (prov.Length > 0)
+            {
                 var sources = prov.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered &&
                                                                                                        (Name == null || source.Name.EqualsIgnoreCase(Name)) || (Location == null || source.Location.EqualsIgnoreCase(Location))).ToArray()).ToArray();
 
-                if (sources.Length == 0) {
+                if (sources.Length == 0)
+                {
                     return Error(Constants.Errors.SourceNotFound, Name);
                 }
 
-                if (sources.Length > 1) {
+                if (sources.Length > 1)
+                {
                     return Error(Constants.Errors.SourceFoundInMultipleProviders, Name, prov.Select(each => each.ProviderName).JoinWithComma());
                 }
 

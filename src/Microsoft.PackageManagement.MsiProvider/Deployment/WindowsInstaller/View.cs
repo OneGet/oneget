@@ -165,9 +165,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public void Execute(Record executeParams)
         {
             uint ret = RemotableNativeMethods.MsiViewExecute(
-                (int) this.Handle,
-                (executeParams != null ? (int) executeParams.Handle : 0));
-            if (ret == (uint) NativeMethods.Error.BAD_QUERY_SYNTAX)
+                (int)this.Handle,
+                (executeParams != null ? (int)executeParams.Handle : 0));
+            if (ret == (uint)NativeMethods.Error.BAD_QUERY_SYNTAX)
             {
                 throw new BadQuerySyntaxException(this.sql);
             }
@@ -204,8 +204,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public Record Fetch()
         {
             int recordHandle;
-            uint ret = RemotableNativeMethods.MsiViewFetch((int) this.Handle, out recordHandle);
-            if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS)
+            uint ret = RemotableNativeMethods.MsiViewFetch((int)this.Handle, out recordHandle);
+            if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
             {
                 return null;
             }
@@ -214,7 +214,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw InstallerException.ExceptionFromReturnCode(ret);
             }
 
-            Record r = new Record((IntPtr) recordHandle, true, this);
+            Record r = new Record((IntPtr)recordHandle, true, this);
             r.IsFormatStringInvalid = true;
             return r;
         }
@@ -270,7 +270,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("record");
             }
 
-            uint ret = RemotableNativeMethods.MsiViewModify((int) this.Handle, (int) mode, (int) record.Handle);
+            uint ret = RemotableNativeMethods.MsiViewModify((int)this.Handle, (int)mode, (int)record.Handle);
             if (mode == ViewModifyMode.Insert || mode == ViewModifyMode.InsertTemporary)
             {
                 record.IsFormatStringInvalid = true;
@@ -435,9 +435,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("record");
             }
 
-            uint ret = RemotableNativeMethods.MsiViewModify((int) this.Handle, (int) ViewModifyMode.Seek, (int) record.Handle);
+            uint ret = RemotableNativeMethods.MsiViewModify((int)this.Handle, (int)ViewModifyMode.Seek, (int)record.Handle);
             record.IsFormatStringInvalid = true;
-            if (ret == (uint) NativeMethods.Error.FUNCTION_FAILED)
+            if (ret == (uint)NativeMethods.Error.FUNCTION_FAILED)
             {
                 return false;
             }
@@ -475,8 +475,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("record");
             }
 
-            uint ret = RemotableNativeMethods.MsiViewModify((int) this.Handle, (int) ViewModifyMode.Merge, (int) record.Handle);
-            if (ret == (uint) NativeMethods.Error.FUNCTION_FAILED)
+            uint ret = RemotableNativeMethods.MsiViewModify((int)this.Handle, (int)ViewModifyMode.Merge, (int)record.Handle);
+            if (ret == (uint)NativeMethods.Error.FUNCTION_FAILED)
             {
                 return false;
             }
@@ -609,31 +609,31 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private ICollection<ValidationErrorInfo> InternalValidate(ViewModifyMode mode, Record record)
         {
-            uint ret = RemotableNativeMethods.MsiViewModify((int) this.Handle, (int) mode, (int) record.Handle);
-            if (ret == (uint) NativeMethods.Error.INVALID_DATA)
+            uint ret = RemotableNativeMethods.MsiViewModify((int)this.Handle, (int)mode, (int)record.Handle);
+            if (ret == (uint)NativeMethods.Error.INVALID_DATA)
             {
                 ICollection<ValidationErrorInfo> errorInfo = new List<ValidationErrorInfo>();
                 while (true)
                 {
                     uint bufSize = 40;
-                    StringBuilder column = new StringBuilder("", (int) bufSize);
-                    int error = RemotableNativeMethods.MsiViewGetError((int) this.Handle, column, ref bufSize);
+                    StringBuilder column = new StringBuilder("", (int)bufSize);
+                    int error = RemotableNativeMethods.MsiViewGetError((int)this.Handle, column, ref bufSize);
                     if (error == -2 /*MSIDBERROR_MOREDATA*/)
                     {
-                        column.Capacity = (int) ++bufSize;
-                        error = RemotableNativeMethods.MsiViewGetError((int) this.Handle, column, ref bufSize);
+                        column.Capacity = (int)++bufSize;
+                        error = RemotableNativeMethods.MsiViewGetError((int)this.Handle, column, ref bufSize);
                     }
 
                     if (error == -3 /*MSIDBERROR_INVALIDARG*/)
                     {
-                        throw InstallerException.ExceptionFromReturnCode((uint) NativeMethods.Error.INVALID_PARAMETER);
+                        throw InstallerException.ExceptionFromReturnCode((uint)NativeMethods.Error.INVALID_PARAMETER);
                     }
                     else if (error == 0 /*MSIDBERROR_NOERROR*/)
                     {
                         break;
                     }
 
-                    errorInfo.Add(new ValidationErrorInfo((ValidationError) error, column.ToString()));
+                    errorInfo.Add(new ValidationErrorInfo((ValidationError)error, column.ToString()));
                 }
 
                 return errorInfo;

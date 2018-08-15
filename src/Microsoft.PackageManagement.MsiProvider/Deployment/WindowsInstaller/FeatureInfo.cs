@@ -73,7 +73,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <param name="arrayIndex">offset into the array</param>
         public void CopyTo(FeatureInfo[] array, int arrayIndex)
         {
-            if (array == null) {
+            if (array == null)
+            {
                 throw new ArgumentNullException("array");
             }
             foreach (FeatureInfo feature in this)
@@ -118,10 +119,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 featureView.Execute();
 
                 foreach (Record featureRec in featureView) using (featureRec)
-                {
-                    string feature = featureRec.GetString(1);
-                    yield return new FeatureInfo(this.session, feature);
-                }
+                    {
+                        string feature = featureRec.GetString(1);
+                        yield return new FeatureInfo(this.session, feature);
+                    }
             }
         }
 
@@ -171,10 +172,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 int installState, actionState;
-                uint ret = RemotableNativeMethods.MsiGetFeatureState((int) this.session.Handle, this.name, out installState, out actionState);
+                uint ret = RemotableNativeMethods.MsiGetFeatureState((int)this.session.Handle, this.name, out installState, out actionState);
                 if (ret != 0)
                 {
-                    if (ret == (uint) NativeMethods.Error.UNKNOWN_FEATURE)
+                    if (ret == (uint)NativeMethods.Error.UNKNOWN_FEATURE)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret, this.name);
                     }
@@ -184,11 +185,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     }
                 }
 
-                if (installState == (int) InstallState.Advertised)
+                if (installState == (int)InstallState.Advertised)
                 {
                     return InstallState.Advertised;
                 }
-                return (InstallState) installState;
+                return (InstallState)installState;
             }
         }
 
@@ -212,10 +213,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 int installState, actionState;
-                uint ret = RemotableNativeMethods.MsiGetFeatureState((int) this.session.Handle, this.name, out installState, out actionState);
+                uint ret = RemotableNativeMethods.MsiGetFeatureState((int)this.session.Handle, this.name, out installState, out actionState);
                 if (ret != 0)
                 {
-                    if (ret == (uint) NativeMethods.Error.UNKNOWN_FEATURE)
+                    if (ret == (uint)NativeMethods.Error.UNKNOWN_FEATURE)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret, this.name);
                     }
@@ -224,15 +225,15 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         throw InstallerException.ExceptionFromReturnCode(ret);
                     }
                 }
-                return (InstallState) actionState;
+                return (InstallState)actionState;
             }
 
             set
             {
-                uint ret = RemotableNativeMethods.MsiSetFeatureState((int) this.session.Handle, this.name, (int) value);
+                uint ret = RemotableNativeMethods.MsiSetFeatureState((int)this.session.Handle, this.name, (int)value);
                 if (ret != 0)
                 {
-                    if (ret == (uint) NativeMethods.Error.UNKNOWN_FEATURE)
+                    if (ret == (uint)NativeMethods.Error.UNKNOWN_FEATURE)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret, this.name);
                     }
@@ -260,10 +261,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 List<InstallState> states = new List<InstallState>();
                 uint installState;
-                uint ret = RemotableNativeMethods.MsiGetFeatureValidStates((int) this.session.Handle, this.name, out installState);
+                uint ret = RemotableNativeMethods.MsiGetFeatureValidStates((int)this.session.Handle, this.name, out installState);
                 if (ret != 0)
                 {
-                    if (ret == (uint) NativeMethods.Error.UNKNOWN_FEATURE)
+                    if (ret == (uint)NativeMethods.Error.UNKNOWN_FEATURE)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret, this.name);
                     }
@@ -273,11 +274,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     }
                 }
 
-                for (int i = 1; i <= (int) InstallState.Default; i++)
+                for (int i = 1; i <= (int)InstallState.Default; i++)
                 {
-                    if (((int) installState & (1 << i)) != 0)
+                    if (((int)installState & (1 << i)) != 0)
                     {
-                        states.Add((InstallState) i);
+                        states.Add((InstallState)i);
                     }
                 }
                 return states.AsReadOnly();
@@ -314,7 +315,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 uint descBufSize = 0;
                 uint attr;
                 uint ret = NativeMethods.MsiGetFeatureInfo(
-                    (int) this.session.Handle,
+                    (int)this.session.Handle,
                     this.name,
                     out attr,
                     null,
@@ -329,7 +330,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
                 // Values for attributes that MsiGetFeatureInfo returns are
                 // double the values in the Attributes column of the Feature Table.
-                attributes = (FeatureAttributes) (attr >> 1);
+                attributes = (FeatureAttributes)(attr >> 1);
 
                 // MsiGetFeatureInfo MSDN documentation indicates
                 // NOUNSUPPORTEDADVERTISE is 32.  Conversion above changes this to 16
@@ -355,7 +356,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
                 // Values for attributes that MsiSetFeatureAttributes uses are
                 // double the values in the Attributes column of the Feature Table.
-                uint attr = ((uint) attributes) << 1;
+                uint attr = ((uint)attributes) << 1;
 
                 // MsiSetFeatureAttributes MSDN documentation indicates
                 // NOUNSUPPORTEDADVERTISE is 32.  Conversion above changes this to 64
@@ -364,10 +365,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 if ((attr & noUnsupportedAdvertiseDbl) == noUnsupportedAdvertiseDbl)
                 {
                     attr &= ~noUnsupportedAdvertiseDbl;
-                    attr |= (uint) FeatureAttributes.NoUnsupportedAdvertise;
+                    attr |= (uint)FeatureAttributes.NoUnsupportedAdvertise;
                 }
 
-                uint ret = RemotableNativeMethods.MsiSetFeatureAttributes((int) this.session.Handle, this.name, attr);
+                uint ret = RemotableNativeMethods.MsiSetFeatureAttributes((int)this.session.Handle, this.name, attr);
 
                 if (ret != (uint)NativeMethods.Error.SUCCESS)
                 {
@@ -398,11 +399,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 StringBuilder titleBuf = new StringBuilder(80);
-                uint titleBufSize = (uint) titleBuf.Capacity;
+                uint titleBufSize = (uint)titleBuf.Capacity;
                 uint descBufSize = 0;
                 uint attr;
                 uint ret = NativeMethods.MsiGetFeatureInfo(
-                    (int) this.session.Handle,
+                    (int)this.session.Handle,
                     this.name,
                     out attr,
                     titleBuf,
@@ -410,11 +411,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     null,
                     ref descBufSize);
 
-                if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                if (ret == (uint)NativeMethods.Error.MORE_DATA)
                 {
-                    titleBuf.Capacity = (int) ++titleBufSize;
+                    titleBuf.Capacity = (int)++titleBufSize;
                     ret = NativeMethods.MsiGetFeatureInfo(
-                        (int) this.session.Handle,
+                        (int)this.session.Handle,
                         this.name,
                         out attr,
                         titleBuf,
@@ -448,10 +449,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 StringBuilder descBuf = new StringBuilder(256);
                 uint titleBufSize = 0;
-                uint descBufSize = (uint) descBuf.Capacity;
+                uint descBufSize = (uint)descBuf.Capacity;
                 uint attr;
                 uint ret = NativeMethods.MsiGetFeatureInfo(
-                    (int) this.session.Handle,
+                    (int)this.session.Handle,
                     this.name,
                     out attr,
                     null,
@@ -459,11 +460,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     descBuf,
                     ref descBufSize);
 
-                if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                if (ret == (uint)NativeMethods.Error.MORE_DATA)
                 {
-                    descBuf.Capacity = (int) ++descBufSize;
+                    descBuf.Capacity = (int)++descBufSize;
                     ret = NativeMethods.MsiGetFeatureInfo(
-                        (int) this.session.Handle,
+                        (int)this.session.Handle,
                         this.name,
                         out attr,
                         null,
@@ -500,10 +501,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             int cost;
             uint ret = RemotableNativeMethods.MsiGetFeatureCost(
-                (int) this.session.Handle,
+                (int)this.session.Handle,
                 this.name,
                 (includeParents ? MSICOSTTREE_PARENTS : 0) | (includeChildren ? MSICOSTTREE_CHILDREN : 0),
-                (int) installState,
+                (int)installState,
                 out cost);
             if (ret != 0)
             {

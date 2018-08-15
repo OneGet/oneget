@@ -21,7 +21,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         private UserContexts context;
 
         internal InstallationPart(string id, string productCode)
-	    : this(id, productCode, null, UserContexts.None)
+        : this(id, productCode, null, UserContexts.None)
         {
         }
 
@@ -86,5 +86,4 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get;
         }
     }
-
 }

@@ -1,44 +1,49 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-using Microsoft.PackageManagement.Internal.Utility.Platform;
-
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
+{
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PackageManagement.Internal.Utility.Platform;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
     using System.Threading;
-    using Microsoft.PackageManagement.Internal.Utility.Extensions;
-    using Microsoft.PackageManagement.Internal.Utility.Platform;
 
-    internal static class PowerShellExtensions {
-        internal static PowerShell Clear(this PowerShell powershell) {
-            if (powershell != null) {
+    internal static class PowerShellExtensions
+    {
+        internal static PowerShell Clear(this PowerShell powershell)
+        {
+            if (powershell != null)
+            {
                 powershell.WaitForReady();
                 powershell.Commands = new PSCommand();
             }
             return powershell;
         }
 
-        internal static PSModuleInfo ImportModule(this PowerShell powershell, string name, bool force = false) {
-            if (powershell != null) {
+        internal static PSModuleInfo ImportModule(this PowerShell powershell, string name, bool force = false)
+        {
+            if (powershell != null)
+            {
                 powershell.Clear().AddCommand("Import-Module");
                 powershell.AddParameter("Name", name);
                 powershell.AddParameter("PassThru");
 
-                if (force) {
+                if (force)
+                {
                     powershell.AddParameter("Force");
                 }
                 return powershell.Invoke<PSModuleInfo>().ToArray().FirstOrDefault();
@@ -46,8 +51,10 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
             return null;
         }
 
-        internal static IEnumerable<PSModuleInfo> TestModuleManifest(this PowerShell powershell, string path) {
-            if (powershell != null) {
+        internal static IEnumerable<PSModuleInfo> TestModuleManifest(this PowerShell powershell, string path)
+        {
+            if (powershell != null)
+            {
                 return powershell
                     .Clear()
                     .AddCommand("Test-ModuleManifest")
@@ -71,8 +78,10 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
             return Enumerable.Empty<PSModuleInfo>();
         }
 
-        internal static PowerShell SetVariable(this PowerShell powershell, string variable, object value) {
-            if (powershell != null) {
+        internal static PowerShell SetVariable(this PowerShell powershell, string variable, object value)
+        {
+            if (powershell != null)
+            {
                 powershell
                     .Clear()
                     .AddCommand("Set-Variable")
@@ -95,17 +104,19 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
         /// <param name="args"></param>
         /// <returns></returns>
         internal static T InvokeFunction<T>(this PowerShell powershell, string command,
-            EventHandler<DataAddedEventArgs> outputAction, EventHandler<DataAddedEventArgs> errorAction, params object[] args) {
-
-            if (powershell != null) {
+            EventHandler<DataAddedEventArgs> outputAction, EventHandler<DataAddedEventArgs> errorAction, params object[] args)
+        {
+            if (powershell != null)
+            {
                 powershell.Clear().AddCommand(command);
-                foreach (var arg in args) {
+                foreach (var arg in args)
+                {
                     powershell.AddArgument(arg);
                 }
 #if !CORECLR
-                NativeMethods.OutputDebugString("[Cmdlet:debugging] -- InvokeFunction ({0}, {1})".format(command, args.Select( each => (each ?? "<NULL>").ToString()).JoinWithComma(), powershell.InvocationStateInfo.Reason));
+                NativeMethods.OutputDebugString("[Cmdlet:debugging] -- InvokeFunction ({0}, {1})".format(command, args.Select(each => (each ?? "<NULL>").ToString()).JoinWithComma(), powershell.InvocationStateInfo.Reason));
 #endif
-            
+
                 var input = new PSDataCollection<PSObject>();
                 input.Complete();
 
@@ -141,25 +152,32 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
             return default(T);
         }
 
-        internal static PowerShell WaitForReady(this PowerShell powershell) {
-            try {
-                if (powershell != null) {
-                    switch (powershell.InvocationStateInfo.State) {
+        internal static PowerShell WaitForReady(this PowerShell powershell)
+        {
+            try
+            {
+                if (powershell != null)
+                {
+                    switch (powershell.InvocationStateInfo.State)
+                    {
                         case PSInvocationState.Stopping:
-                            while (powershell.InvocationStateInfo.State == PSInvocationState.Stopping) {
+                            while (powershell.InvocationStateInfo.State == PSInvocationState.Stopping)
+                            {
                                 Thread.Sleep(10);
                             }
                             break;
 
                         case PSInvocationState.Running:
                             powershell.Stop();
-                            while (powershell.InvocationStateInfo.State == PSInvocationState.Stopping) {
+                            while (powershell.InvocationStateInfo.State == PSInvocationState.Stopping)
+                            {
                                 Thread.Sleep(10);
                             }
                             break;
 
                         case PSInvocationState.Failed:
                             break;
+
                         case PSInvocationState.Completed:
                             break;
 
@@ -168,12 +186,14 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
 
                         case PSInvocationState.NotStarted:
                             break;
+
                         case PSInvocationState.Disconnected:
                             break;
                     }
                 }
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 e.Dump();
             }
             return powershell;

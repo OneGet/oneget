@@ -34,7 +34,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <param name="useShortNames">true to parse the short part of the combined filename; false to parse the long part</param>
         public InstallPath(string name, bool useShortNames)
         {
-            if(name == null)
+            if (name == null)
             {
                 throw new ArgumentNullException("name");
             }
@@ -45,12 +45,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         private void ParseName(string name, bool useShortNames)
         {
             string[] parse = name.Split(new char[] { ':' }, 3);
-            if(parse.Length == 3)
+            if (parse.Length == 3)
             {
                 // Syntax was targetshort:sourceshort|targetlong:sourcelong.
                 // Chnage it to targetshort|targetlong:sourceshort|sourcelong.
                 parse = name.Split(new char[] { ':', '|' }, 4);
-                if(parse.Length == 4)
+                if (parse.Length == 4)
                     parse = new string[] { parse[0] + '|' + parse[2], parse[1] + '|' + parse[3] };
                 else
                     parse = new string[] { parse[0] + '|' + parse[1], parse[1] + '|' + parse[2] };
@@ -58,9 +58,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
             string targetName = parse[0];
             string sourceName = (parse.Length == 2 ? parse[1] : parse[0]);
             parse = targetName.Split(new char[] { '|' }, 2);
-            if(parse.Length == 2) targetName = (useShortNames ? parse[0] : parse[1]);
+            if (parse.Length == 2) targetName = (useShortNames ? parse[0] : parse[1]);
             parse = sourceName.Split(new char[] { '|' }, 2);
-            if(parse.Length == 2) sourceName = (useShortNames ? parse[0] : parse[1]);
+            if (parse.Length == 2) sourceName = (useShortNames ? parse[0] : parse[1]);
 
             this.SourceName = sourceName;
             this.TargetName = targetName;
@@ -76,12 +76,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                 return parentPath;
             }
         }
+
         internal void SetParentPath(InstallPath value)
         {
             parentPath = value;
             ResetSourcePath();
             ResetTargetPath();
         }
+
         private InstallPath parentPath;
 
         /// <summary>
@@ -91,13 +93,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get
             {
-                if(childPaths == null)
+                if (childPaths == null)
                 {
                     childPaths = new InstallPathCollection(this);
                 }
                 return childPaths;
             }
         }
+
         private InstallPathCollection childPaths;
 
         /// <summary>
@@ -112,7 +115,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
             }
             set
             {
-                if(value == null)
+                if (value == null)
                 {
                     throw new ArgumentNullException("value");
                 }
@@ -120,6 +123,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                 ResetSourcePath();
             }
         }
+
         private string sourceName;
 
         /// <summary>
@@ -134,7 +138,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
             }
             set
             {
-                if(value == null)
+                if (value == null)
                 {
                     throw new ArgumentNullException("value");
                 }
@@ -142,6 +146,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                 ResetTargetPath();
             }
         }
+
         private string targetName;
 
         /// <summary>
@@ -151,9 +156,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get
             {
-                if(sourcePath == null)
+                if (sourcePath == null)
                 {
-                    if(parentPath != null)
+                    if (parentPath != null)
                     {
                         sourcePath = (sourceName.Equals(".") ? parentPath.SourcePath
                                       : Path.Combine(parentPath.SourcePath, sourceName));
@@ -171,6 +176,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                 sourcePath = value;
             }
         }
+
         private string sourcePath;
 
         /// <summary>
@@ -180,9 +186,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get
             {
-                if(targetPath == null)
+                if (targetPath == null)
                 {
-                    if(parentPath != null)
+                    if (parentPath != null)
                     {
                         targetPath = (targetName.Equals(".") ? parentPath.TargetPath
                                       : Path.Combine(parentPath.TargetPath, targetName));
@@ -200,16 +206,17 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                 targetPath = value;
             }
         }
+
         private string targetPath;
 
         private void ResetSourcePath()
         {
-            if(sourcePath != null)
+            if (sourcePath != null)
             {
                 sourcePath = null;
-                if(childPaths != null)
+                if (childPaths != null)
                 {
-                    foreach(InstallPath ip in childPaths)
+                    foreach (InstallPath ip in childPaths)
                     {
                         ip.ResetSourcePath();
                     }
@@ -219,12 +226,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         private void ResetTargetPath()
         {
-            if(targetPath != null)
+            if (targetPath != null)
             {
                 targetPath = null;
-                if(childPaths != null)
+                if (childPaths != null)
                 {
-                    foreach(InstallPath ip in childPaths)
+                    foreach (InstallPath ip in childPaths)
                     {
                         ip.ResetTargetPath();
                     }
@@ -416,7 +423,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable<InstallPath>) this).GetEnumerator();
+            return ((IEnumerable<InstallPath>)this).GetEnumerator();
         }
     }
 
@@ -436,12 +443,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         public static InstallPathMap BuildFilePathMap(Database db, InstallPathMap componentPathMap,
             bool useShortNames)
         {
-            if(db == null)
+            if (db == null)
             {
                 throw new ArgumentNullException("db");
             }
 
-            if(componentPathMap == null)
+            if (componentPathMap == null)
             {
                 componentPathMap = BuildComponentPathMap(db, BuildDirectoryPathMap(db, useShortNames));
             }
@@ -456,12 +463,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                 {
                     using (fileRec)
                     {
-                        string file = (string) fileRec[1];
-                        string comp = (string) fileRec[2];
-                        string fileName = (string) fileRec[3];
+                        string file = (string)fileRec[1];
+                        string comp = (string)fileRec[2];
+                        string fileName = (string)fileRec[3];
 
-                        InstallPath compPath = (InstallPath) componentPathMap[comp];
-                        if(compPath != null)
+                        InstallPath compPath = (InstallPath)componentPathMap[comp];
+                        if (compPath != null)
                         {
                             InstallPath filePath = new InstallPath(fileName, useShortNames);
                             compPath.ChildPaths.Add(filePath);
@@ -483,7 +490,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <returns>An InstallPathMap with the described mapping.</returns>
         public static InstallPathMap BuildComponentPathMap(Database db, InstallPathMap directoryPathMap)
         {
-            if(db == null)
+            if (db == null)
             {
                 throw new ArgumentNullException("db");
             }
@@ -498,8 +505,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                 {
                     using (compRec)
                     {
-                        string comp = (string) compRec[1];
-                        InstallPath dirPath = (InstallPath) directoryPathMap[(string) compRec[2]];
+                        string comp = (string)compRec[1];
+                        InstallPath dirPath = (InstallPath)directoryPathMap[(string)compRec[2]];
 
                         if (dirPath != null)
                         {
@@ -535,13 +542,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         public static InstallPathMap BuildDirectoryPathMap(Database db, bool useShortNames,
             string sourceRootDir, string targetRootDir)
         {
-            if(db == null)
+            if (db == null)
             {
                 throw new ArgumentNullException("db");
             }
 
-            if(sourceRootDir == null) sourceRootDir = "";
-            if(targetRootDir == null) targetRootDir = "";
+            if (sourceRootDir == null) sourceRootDir = "";
+            if (targetRootDir == null) targetRootDir = "";
 
             InstallPathMap dirMap = new InstallPathMap();
             IDictionary dirTreeMap = new Hashtable();
@@ -551,32 +558,32 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                 dirView.Execute();
 
                 foreach (Record dirRec in dirView) using (dirRec)
-                {
-                    string key = (string) dirRec[1];
-                    string parentKey = (string) dirRec[2];
-                    InstallPath dir = new InstallPath((string) dirRec[3], useShortNames);
-
-                    dirMap[key] = dir;
-
-                    InstallPathMap siblingDirs = (InstallPathMap) dirTreeMap[parentKey];
-                    if (siblingDirs == null)
                     {
-                        siblingDirs = new InstallPathMap();
-                        dirTreeMap[parentKey] = siblingDirs;
+                        string key = (string)dirRec[1];
+                        string parentKey = (string)dirRec[2];
+                        InstallPath dir = new InstallPath((string)dirRec[3], useShortNames);
+
+                        dirMap[key] = dir;
+
+                        InstallPathMap siblingDirs = (InstallPathMap)dirTreeMap[parentKey];
+                        if (siblingDirs == null)
+                        {
+                            siblingDirs = new InstallPathMap();
+                            dirTreeMap[parentKey] = siblingDirs;
+                        }
+                        siblingDirs.Add(key, dir);
                     }
-                    siblingDirs.Add(key, dir);
-                }
             }
 
-            foreach (KeyValuePair<string, InstallPath> entry in (InstallPathMap) dirTreeMap[""])
+            foreach (KeyValuePair<string, InstallPath> entry in (InstallPathMap)dirTreeMap[""])
             {
-                string key = (string) entry.Key;
-                InstallPath dir = (InstallPath) entry.Value;
+                string key = (string)entry.Key;
+                InstallPath dir = (InstallPath)entry.Value;
                 LinkSubdirectories(key, dir, dirTreeMap);
             }
 
-            InstallPath targetDirPath = (InstallPath) dirMap["TARGETDIR"];
-            if(targetDirPath != null)
+            InstallPath targetDirPath = (InstallPath)dirMap["TARGETDIR"];
+            if (targetDirPath != null)
             {
                 targetDirPath.SourcePath = sourceRootDir;
                 targetDirPath.TargetPath = targetRootDir;
@@ -587,13 +594,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         private static void LinkSubdirectories(string key, InstallPath dir, IDictionary dirTreeMap)
         {
-            InstallPathMap subDirs = (InstallPathMap) dirTreeMap[key];
-            if(subDirs != null)
+            InstallPathMap subDirs = (InstallPathMap)dirTreeMap[key];
+            if (subDirs != null)
             {
                 foreach (KeyValuePair<string, InstallPath> entry in subDirs)
                 {
-                    string subKey = (string) entry.Key;
-                    InstallPath subDir = (InstallPath) entry.Value;
+                    string subKey = (string)entry.Key;
+                    InstallPath subDir = (InstallPath)entry.Value;
                     dir.ChildPaths.Add(subDir);
                     LinkSubdirectories(subKey, subDir, dirTreeMap);
                 }
@@ -607,7 +614,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// </summary>
         public InstallPathMap()
         {
-            this.items = new Dictionary<string,InstallPath>(StringComparer.OrdinalIgnoreCase);
+            this.items = new Dictionary<string, InstallPath>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -743,7 +750,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         void ICollection<KeyValuePair<string, InstallPath>>.Add(KeyValuePair<string, InstallPath> item)
         {
-            ((ICollection<KeyValuePair<string, InstallPath>>) this.items).Add(item);
+            ((ICollection<KeyValuePair<string, InstallPath>>)this.items).Add(item);
         }
 
         /// <summary>
@@ -756,12 +763,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         bool ICollection<KeyValuePair<string, InstallPath>>.Contains(KeyValuePair<string, InstallPath> item)
         {
-            return ((ICollection<KeyValuePair<string, InstallPath>>) this.items).Contains(item);
+            return ((ICollection<KeyValuePair<string, InstallPath>>)this.items).Contains(item);
         }
 
         void ICollection<KeyValuePair<string, InstallPath>>.CopyTo(KeyValuePair<string, InstallPath>[] array, int arrayIndex)
         {
-            ((ICollection<KeyValuePair<string, InstallPath>>) this.items).CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, InstallPath>>)this.items).CopyTo(array, arrayIndex);
         }
 
         /// <summary>
@@ -785,7 +792,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         bool ICollection<KeyValuePair<string, InstallPath>>.Remove(KeyValuePair<string, InstallPath> item)
         {
-            return ((ICollection<KeyValuePair<string, InstallPath>>) this.items).Remove(item);
+            return ((ICollection<KeyValuePair<string, InstallPath>>)this.items).Remove(item);
         }
 
         /// <summary>

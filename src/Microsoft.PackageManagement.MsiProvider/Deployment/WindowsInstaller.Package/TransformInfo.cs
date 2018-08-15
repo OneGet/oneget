@@ -61,7 +61,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                     this.targetLanguage = Int32.Parse(templ[1], CultureInfo.InvariantCulture.NumberFormat);
                 }
 
-                this.validateFlags = (TransformValidations) transformSummaryInfo.CharacterCount;
+                this.validateFlags = (TransformValidations)transformSummaryInfo.CharacterCount;
             }
             catch (Exception ex)
             {
@@ -76,6 +76,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get { return this.name; }
         }
+
         private string name;
 
         /// <summary>
@@ -85,6 +86,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get { return this.targetProductCode; }
         }
+
         private string targetProductCode;
 
         /// <summary>
@@ -94,6 +96,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get { return this.targetProductVersion; }
         }
+
         private string targetProductVersion;
 
         /// <summary>
@@ -103,6 +106,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get { return this.upgradeProductCode; }
         }
+
         private string upgradeProductCode;
 
         /// <summary>
@@ -112,6 +116,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get { return this.upgradeProductVersion; }
         }
+
         private string upgradeProductVersion;
 
         /// <summary>
@@ -121,6 +126,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get { return this.upgradeCode; }
         }
+
         private string upgradeCode;
 
         /// <summary>
@@ -130,6 +136,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get { return this.targetPlatform; }
         }
+
         private string targetPlatform;
 
         /// <summary>
@@ -139,6 +146,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get { return this.targetLanguage; }
         }
+
         private int targetLanguage;
 
         /// <summary>
@@ -148,6 +156,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get { return this.validateFlags; }
         }
+
         private TransformValidations validateFlags;
 
         /// <summary>

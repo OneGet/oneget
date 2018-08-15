@@ -174,14 +174,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             for (int i = 0; i < MAX_REQUEST_FIELDS; i++)
             {
-                Marshal.WriteInt32(buf, (i * requestFieldSize), (int) VarEnum.VT_NULL);
+                Marshal.WriteInt32(buf, (i * requestFieldSize), (int)VarEnum.VT_NULL);
                 Marshal.WriteIntPtr(buf, (i * requestFieldSize) + requestFieldDataOffset, IntPtr.Zero);
             }
         }
 
         private static void WriteInt(IntPtr buf, int field, int value)
         {
-            Marshal.WriteInt32(buf, (field * requestFieldSize), (int) VarEnum.VT_I4);
+            Marshal.WriteInt32(buf, (field * requestFieldSize), (int)VarEnum.VT_I4);
             Marshal.WriteInt32(buf, (field * requestFieldSize) + requestFieldDataOffset, value);
         }
 
@@ -189,20 +189,20 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             if (value == null)
             {
-                Marshal.WriteInt32(buf, (field * requestFieldSize), (int) VarEnum.VT_NULL);
+                Marshal.WriteInt32(buf, (field * requestFieldSize), (int)VarEnum.VT_NULL);
                 Marshal.WriteIntPtr(buf, (field * requestFieldSize) + requestFieldDataOffset, IntPtr.Zero);
             }
             else
             {
                 IntPtr stringPtr = Marshal.StringToHGlobalUni(value);
-                Marshal.WriteInt32(buf, (field * requestFieldSize), (int) VarEnum.VT_LPWSTR);
+                Marshal.WriteInt32(buf, (field * requestFieldSize), (int)VarEnum.VT_LPWSTR);
                 Marshal.WriteIntPtr(buf, (field * requestFieldSize) + requestFieldDataOffset, stringPtr);
             }
         }
 
         private static int ReadInt(IntPtr buf, int field)
         {
-            VarEnum vt = (VarEnum) Marshal.ReadInt32(buf, (field * requestFieldSize));
+            VarEnum vt = (VarEnum)Marshal.ReadInt32(buf, (field * requestFieldSize));
             if (vt == VarEnum.VT_EMPTY)
             {
                 return 0;
@@ -216,7 +216,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         private static void ReadString(IntPtr buf, int field, StringBuilder szBuf, ref uint cchBuf)
         {
-            VarEnum vt = (VarEnum) Marshal.ReadInt32(buf, (field * requestFieldSize));
+            VarEnum vt = (VarEnum)Marshal.ReadInt32(buf, (field * requestFieldSize));
             if (vt == VarEnum.VT_NULL)
             {
                 szBuf.Remove(0, szBuf.Length);
@@ -234,7 +234,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 szBuf.Append(str);
             }
-            cchBuf = (uint) szBuf.Length;
+            cchBuf = (uint)szBuf.Length;
         }
 
         private static void FreeString(IntPtr buf, int field)
@@ -248,7 +248,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         private static void ReadStream(IntPtr buf, int field, byte[] sBuf, int count)
         {
-            VarEnum vt = (VarEnum) Marshal.ReadInt32(buf, (field * requestFieldSize));
+            VarEnum vt = (VarEnum)Marshal.ReadInt32(buf, (field * requestFieldSize));
             if (vt != VarEnum.VT_STREAM)
             {
                 throw new InstallerException("Invalid data received from remote MSI function invocation.");
@@ -268,7 +268,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 WriteInt(requestBuf, 2, in3);
                 IntPtr resp;
                 remotingDelegate(id, requestBuf, out resp);
-                return unchecked ((uint) ReadInt(resp, 0));
+                return unchecked((uint)ReadInt(resp, 0));
             }
         }
 
@@ -283,7 +283,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 IntPtr resp;
                 remotingDelegate(id, requestBuf, out resp);
                 FreeString(requestBuf, 2);
-                return unchecked ((uint) ReadInt(resp, 0));
+                return unchecked((uint)ReadInt(resp, 0));
             }
         }
 
@@ -298,7 +298,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 IntPtr resp;
                 remotingDelegate(id, requestBuf, out resp);
                 FreeString(requestBuf, 2);
-                return unchecked ((uint) ReadInt(resp, 0));
+                return unchecked((uint)ReadInt(resp, 0));
             }
         }
 
@@ -314,7 +314,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 remotingDelegate(id, requestBuf, out resp);
                 FreeString(requestBuf, 1);
                 FreeString(requestBuf, 2);
-                return unchecked ((uint) ReadInt(resp, 0));
+                return unchecked((uint)ReadInt(resp, 0));
             }
         }
 
@@ -327,7 +327,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 WriteInt(requestBuf, 1, in2);
                 IntPtr resp;
                 remotingDelegate(id, requestBuf, out resp);
-                uint ret = unchecked ((uint) ReadInt(resp, 0));
+                uint ret = unchecked((uint)ReadInt(resp, 0));
                 out1 = ReadInt(resp, 1);
                 return ret;
             }
@@ -345,7 +345,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 IntPtr resp;
                 remotingDelegate(id, requestBuf, out resp);
                 FreeString(requestBuf, 1);
-                uint ret = unchecked ((uint) ReadInt(resp, 0));
+                uint ret = unchecked((uint)ReadInt(resp, 0));
                 out1 = ReadInt(resp, 1);
                 return ret;
             }
@@ -362,7 +362,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 IntPtr resp;
                 remotingDelegate(id, requestBuf, out resp);
                 FreeString(requestBuf, 1);
-                uint ret = unchecked ((uint) ReadInt(resp, 0));
+                uint ret = unchecked((uint)ReadInt(resp, 0));
                 out1 = ReadInt(resp, 1);
                 out2 = ReadInt(resp, 2);
                 return ret;
@@ -378,7 +378,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 WriteInt(requestBuf, 1, in2);
                 IntPtr resp;
                 remotingDelegate(id, requestBuf, out resp);
-                uint ret = unchecked ((uint) ReadInt(resp, 0));
+                uint ret = unchecked((uint)ReadInt(resp, 0));
                 if (ret == 0) ReadString(resp, 1, out1, ref cchOut1);
                 return ret;
             }
@@ -394,7 +394,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 IntPtr resp;
                 remotingDelegate(id, requestBuf, out resp);
                 FreeString(requestBuf, 1);
-                uint ret = unchecked ((uint) ReadInt(resp, 0));
+                uint ret = unchecked((uint)ReadInt(resp, 0));
                 if (ret == 0) ReadString(resp, 1, out1, ref cchOut1);
                 return ret;
             }
@@ -412,7 +412,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 IntPtr resp;
                 remotingDelegate(id, requestBuf, out resp);
                 FreeString(requestBuf, 1);
-                uint ret = unchecked ((uint) ReadInt(resp, 0));
+                uint ret = unchecked((uint)ReadInt(resp, 0));
                 if (ret == 0) ReadString(resp, 1, out1, ref cchOut1);
                 out2 = ReadInt(resp, 2);
                 out3 = ReadInt(resp, 3);
@@ -427,21 +427,21 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return NativeMethods.MsiProcessMessage(hInstall, eMessageType, hRecord);
             }
             else lock (remotingDelegate)
-            {
-                // I don't understand why, but this particular function doesn't work
-                // when using the static requestBuf -- some data doesn't make it through.
-                // But it works when a fresh buffer is allocated here every call.
-                IntPtr buf = Marshal.AllocHGlobal(
-                    requestFieldSize * MAX_REQUEST_FIELDS);
-                ClearData(buf);
-                WriteInt(buf, 0, RemotableNativeMethods.GetRemoteHandle(hInstall));
-                WriteInt(buf, 1, unchecked ((int) eMessageType));
-                WriteInt(buf, 2, RemotableNativeMethods.GetRemoteHandle(hRecord));
-                IntPtr resp;
-                remotingDelegate(RemoteMsiFunctionId.MsiProcessMessage, buf, out resp);
-                Marshal.FreeHGlobal(buf);
-                return ReadInt(resp, 0);
-            }
+                {
+                    // I don't understand why, but this particular function doesn't work
+                    // when using the static requestBuf -- some data doesn't make it through.
+                    // But it works when a fresh buffer is allocated here every call.
+                    IntPtr buf = Marshal.AllocHGlobal(
+                        requestFieldSize * MAX_REQUEST_FIELDS);
+                    ClearData(buf);
+                    WriteInt(buf, 0, RemotableNativeMethods.GetRemoteHandle(hInstall));
+                    WriteInt(buf, 1, unchecked((int)eMessageType));
+                    WriteInt(buf, 2, RemotableNativeMethods.GetRemoteHandle(hRecord));
+                    IntPtr resp;
+                    remotingDelegate(RemoteMsiFunctionId.MsiProcessMessage, buf, out resp);
+                    Marshal.FreeHGlobal(buf);
+                    return ReadInt(resp, 0);
+                }
         }
 
         internal static uint MsiCloseHandle(int hAny)
@@ -495,7 +495,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             else
             {
                 int hRecord = unchecked((int)RemotableNativeMethods.MsiFunc_III(
-                    RemoteMsiFunctionId.MsiCreateRecord, (int) cParams, 0, 0));
+                    RemoteMsiFunctionId.MsiCreateRecord, (int)cParams, 0, 0));
                 return RemotableNativeMethods.MakeRemoteHandle(hRecord);
             }
         }
@@ -520,10 +520,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return NativeMethods.MsiRecordGetInteger(hRecord, iField);
             else
             {
-                return unchecked ((int) RemotableNativeMethods.MsiFunc_III(
+                return unchecked((int)RemotableNativeMethods.MsiFunc_III(
                     RemoteMsiFunctionId.MsiRecordGetInteger,
                     RemotableNativeMethods.GetRemoteHandle(hRecord),
-                    (int) iField,
+                    (int)iField,
                     0));
             }
         }
@@ -539,7 +539,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return RemotableNativeMethods.MsiFunc_II_S(
                     RemoteMsiFunctionId.MsiRecordGetString,
                     RemotableNativeMethods.GetRemoteHandle(hRecord),
-                    (int) iField,
+                    (int)iField,
                     szValueBuf,
                     ref cchValueBuf);
             }
@@ -554,7 +554,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return RemotableNativeMethods.MsiFunc_III(
                     RemoteMsiFunctionId.MsiRecordSetInteger,
                     RemotableNativeMethods.GetRemoteHandle(hRecord),
-                    (int) iField,
+                    (int)iField,
                     iValue);
             }
         }
@@ -568,7 +568,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return RemotableNativeMethods.MsiFunc_IIS(
                     RemoteMsiFunctionId.MsiRecordSetString,
                     RemotableNativeMethods.GetRemoteHandle(hRecord),
-                    (int) iField,
+                    (int)iField,
                     szValue);
             }
         }
@@ -658,7 +658,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return NativeMethods.MsiViewGetError(hView, szColumnNameBuffer, ref cchBuf);
             else
             {
-                return unchecked ((int) RemotableNativeMethods.MsiFunc_II_S(
+                return unchecked((int)RemotableNativeMethods.MsiFunc_II_S(
                     RemoteMsiFunctionId.MsiViewGetError,
                     RemotableNativeMethods.GetRemoteHandle(hView),
                     0,
@@ -676,7 +676,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 uint err = RemotableNativeMethods.MsiFunc_II_I(
                     RemoteMsiFunctionId.MsiViewGetColumnInfo,
                     RemotableNativeMethods.GetRemoteHandle(hView),
-                    (int) eColumnInfo,
+                    (int)eColumnInfo,
                     out hRecord);
                 hRecord = RemotableNativeMethods.MakeRemoteHandle(hRecord);
                 return err;
@@ -722,7 +722,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return 0 != RemotableNativeMethods.MsiFunc_III(
                     RemoteMsiFunctionId.MsiRecordIsNull,
                     RemotableNativeMethods.GetRemoteHandle(hRecord),
-                    (int) iField,
+                    (int)iField,
                     0);
             }
         }
@@ -782,7 +782,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return RemotableNativeMethods.MsiFunc_ISII_SII(
                     RemoteMsiFunctionId.MsiEvaluateCondition,
                     RemotableNativeMethods.GetRemoteHandle(hInstall),
-                    szComponent, (int) dwIndex, iState, lpDriveBuf, ref cchDriveBuf, out iCost, out iTempCost);
+                    szComponent, (int)dwIndex, iState, lpDriveBuf, ref cchDriveBuf, out iCost, out iTempCost);
             }
         }
 
@@ -864,7 +864,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     0,
                     0,
                     out iTemp);
-                dwInstalledState = (uint) iTemp;
+                dwInstalledState = (uint)iTemp;
                 return ret;
             }
         }
@@ -895,7 +895,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
             else
             {
-                int hRecord = unchecked((int) RemotableNativeMethods.MsiFunc_III(
+                int hRecord = unchecked((int)RemotableNativeMethods.MsiFunc_III(
                     RemoteMsiFunctionId.MsiGetLastErrorRecord, 0, 0, 0));
                 return RemotableNativeMethods.MakeRemoteHandle(hRecord);
             }
@@ -910,7 +910,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return 0 != RemotableNativeMethods.MsiFunc_III(
                     RemoteMsiFunctionId.MsiGetMode,
                     RemotableNativeMethods.GetRemoteHandle(hInstall),
-                    (int) iRunMode,
+                    (int)iRunMode,
                     0);
             }
         }
@@ -972,8 +972,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return RemotableNativeMethods.MsiFunc_III(
                     RemoteMsiFunctionId.MsiRecordDataSize,
                     RemotableNativeMethods.GetRemoteHandle(hRecord),
-                    (int) iField, 0);
-                }
+                    (int)iField, 0);
+            }
         }
 
         internal static uint MsiRecordReadStream(int hRecord, uint iField, byte[] szDataBuf, ref uint cbDataBuf)
@@ -983,27 +983,27 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return NativeMethods.MsiRecordReadStream(hRecord, iField, szDataBuf, ref cbDataBuf);
             }
             else lock (RemotableNativeMethods.remotingDelegate)
-            {
-                ClearData(requestBuf);
-                unchecked
                 {
-                    WriteInt(requestBuf, 0, RemotableNativeMethods.GetRemoteHandle(hRecord));
-                    WriteInt(requestBuf, 1, (int) iField);
-                    WriteInt(requestBuf, 2, (int) cbDataBuf);
-                    IntPtr resp;
-                    remotingDelegate(RemoteMsiFunctionId.MsiRecordReadStream, requestBuf, out resp);
-                    uint ret = (uint) ReadInt(resp, 0);
-                    if (ret == 0)
+                    ClearData(requestBuf);
+                    unchecked
                     {
-                        cbDataBuf = (uint) ReadInt(resp, 2);
-                        if (cbDataBuf > 0)
+                        WriteInt(requestBuf, 0, RemotableNativeMethods.GetRemoteHandle(hRecord));
+                        WriteInt(requestBuf, 1, (int)iField);
+                        WriteInt(requestBuf, 2, (int)cbDataBuf);
+                        IntPtr resp;
+                        remotingDelegate(RemoteMsiFunctionId.MsiRecordReadStream, requestBuf, out resp);
+                        uint ret = (uint)ReadInt(resp, 0);
+                        if (ret == 0)
                         {
-                            RemotableNativeMethods.ReadStream(resp, 1, szDataBuf, (int) cbDataBuf);
+                            cbDataBuf = (uint)ReadInt(resp, 2);
+                            if (cbDataBuf > 0)
+                            {
+                                RemotableNativeMethods.ReadStream(resp, 1, szDataBuf, (int)cbDataBuf);
+                            }
                         }
+                        return ret;
                     }
-                    return ret;
                 }
-            }
         }
 
         internal static uint MsiRecordSetStream(int hRecord, uint iField, string szFilePath)
@@ -1015,7 +1015,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return RemotableNativeMethods.MsiFunc_IIS(
                     RemoteMsiFunctionId.MsiRecordSetStream,
                     RemotableNativeMethods.GetRemoteHandle(hRecord),
-                    (int) iField,
+                    (int)iField,
                     szFilePath);
             }
         }
@@ -1060,7 +1060,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     RemoteMsiFunctionId.MsiSetFeatureAttributes,
                     RemotableNativeMethods.GetRemoteHandle(hInstall),
                     szFeature,
-                    (int) dwAttributes);
+                    (int)dwAttributes);
             }
         }
 
@@ -1100,7 +1100,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return RemotableNativeMethods.MsiFunc_III(
                     RemoteMsiFunctionId.MsiSetMode,
                     RemotableNativeMethods.GetRemoteHandle(hInstall),
-                    (int) iRunMode,
+                    (int)iRunMode,
                     fState ? 1 : 0);
             }
         }
@@ -1126,50 +1126,50 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, uiProperty, out uiDataType, out iValue, ref ftValue, szValueBuf, ref cchValueBuf);
             }
             else lock (RemotableNativeMethods.remotingDelegate)
-            {
-                ClearData(requestBuf);
-                WriteInt(requestBuf, 0, RemotableNativeMethods.GetRemoteHandle(hSummaryInfo));
-                WriteInt(requestBuf, 1, (int) uiProperty);
-                IntPtr resp;
-                remotingDelegate(RemoteMsiFunctionId.MsiSummaryInfoGetProperty, requestBuf, out resp);
-                unchecked
                 {
-                    uint ret = (uint) ReadInt(resp, 0);
-                    if (ret == 0)
+                    ClearData(requestBuf);
+                    WriteInt(requestBuf, 0, RemotableNativeMethods.GetRemoteHandle(hSummaryInfo));
+                    WriteInt(requestBuf, 1, (int)uiProperty);
+                    IntPtr resp;
+                    remotingDelegate(RemoteMsiFunctionId.MsiSummaryInfoGetProperty, requestBuf, out resp);
+                    unchecked
                     {
-                        uiDataType = (uint) ReadInt(resp, 1);
-                        switch ((VarEnum) uiDataType)
+                        uint ret = (uint)ReadInt(resp, 0);
+                        if (ret == 0)
                         {
-                            case VarEnum.VT_I2:
-                            case VarEnum.VT_I4:
-                                iValue = ReadInt(resp, 2);
-                                break;
+                            uiDataType = (uint)ReadInt(resp, 1);
+                            switch ((VarEnum)uiDataType)
+                            {
+                                case VarEnum.VT_I2:
+                                case VarEnum.VT_I4:
+                                    iValue = ReadInt(resp, 2);
+                                    break;
 
-                            case VarEnum.VT_FILETIME:
-                                uint ftHigh = (uint) ReadInt(resp, 2);
-                                uint ftLow = (uint) ReadInt(resp, 3);
-                                ftValue = ((long) ftHigh) << 32 | ((long) ftLow);
-                                iValue = 0;
-                                break;
+                                case VarEnum.VT_FILETIME:
+                                    uint ftHigh = (uint)ReadInt(resp, 2);
+                                    uint ftLow = (uint)ReadInt(resp, 3);
+                                    ftValue = ((long)ftHigh) << 32 | ((long)ftLow);
+                                    iValue = 0;
+                                    break;
 
-                            case VarEnum.VT_LPSTR:
-                                ReadString(resp, 2, szValueBuf, ref cchValueBuf);
-                                iValue = 0;
-                                break;
+                                case VarEnum.VT_LPSTR:
+                                    ReadString(resp, 2, szValueBuf, ref cchValueBuf);
+                                    iValue = 0;
+                                    break;
 
-                            default:
-                                iValue = 0;
-                                break;
+                                default:
+                                    iValue = 0;
+                                    break;
+                            }
                         }
+                        else
+                        {
+                            uiDataType = 0;
+                            iValue = 0;
+                        }
+                        return ret;
                     }
-                    else
-                    {
-                        uiDataType = 0;
-                        iValue = 0;
-                    }
-                    return ret;
                 }
-            }
         }
 
         internal static uint MsiVerifyDiskSpace(int hInstall)

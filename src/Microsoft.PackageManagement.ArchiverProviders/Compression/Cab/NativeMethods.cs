@@ -13,8 +13,11 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using System.Security;
+
 #if !CORECLR
+
     using System.Security.Permissions;
+
 #endif
 
     /// <summary>
@@ -40,19 +43,29 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             internal const int CPU_80386 = 1;
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate IntPtr PFNALLOC(int cb);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate void PFNFREE(IntPtr pv);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNOPEN(string path, int oflag, int pmode, out int err, IntPtr pv);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNREAD(int fileHandle, IntPtr memory, int cb, out int err, IntPtr pv);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNWRITE(int fileHandle, IntPtr memory, int cb, out int err, IntPtr pv);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNCLOSE(int fileHandle, out int err, IntPtr pv);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNSEEK(int fileHandle, int dist, int seekType, out int err, IntPtr pv);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNDELETE(string path, out int err, IntPtr pv);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNGETNEXTCABINET(IntPtr pccab, uint cbPrevCab, IntPtr pv);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNFILEPLACED(IntPtr pccab, string path, long fileSize, int continuation, IntPtr pv);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNGETOPENINFO(string path, out short date, out short time, out short pattribs, out int err, IntPtr pv);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNSTATUS(STATUS typeStatus, uint cb1, uint cb2, IntPtr pv);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNGETTEMPFILE(IntPtr tempNamePtr, int tempNameSize, IntPtr pv);
 
             /// <summary>
@@ -125,6 +138,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             internal static extern int FlushFolder(Handle hfci, PFNGETNEXTCABINET pfnfcignc, PFNSTATUS pfnfcis);
 
 #if !CORECLR
+
             [SuppressUnmanagedCodeSecurity]
 #endif
             [DllImport("cabinet.dll", EntryPoint = "FCIDestroy", CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)]
@@ -181,6 +195,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 /// </summary>
                 /// <returns>True if the release succeeded.</returns>
 #if !CORECLR
+
                 [SecurityPermission(SecurityAction.Assert, UnmanagedCode = true)]
 #endif
                 protected override bool ReleaseHandle()
@@ -205,12 +220,17 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             internal const int CPU_80386 = 1;
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate IntPtr PFNALLOC(int cb);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate void PFNFREE(IntPtr pv);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNOPEN(string path, int oflag, int pmode);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNREAD(int hf, IntPtr pv, int cb);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNWRITE(int hf, IntPtr pv, int cb);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNCLOSE(int hf);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNSEEK(int hf, int dist, int seektype);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate int PFNNOTIFY(NOTIFICATIONTYPE fdint, NOTIFICATION fdin);
@@ -254,6 +274,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             internal static extern int Copy(Handle hfdi, string pszCabinet, string pszCabPath, int flags, PFNNOTIFY pfnfdin, IntPtr pfnfdid, IntPtr pvUser);
 
 #if !CORECLR
+
             [SuppressUnmanagedCodeSecurity]
 #endif
             [DllImport("cabinet.dll", EntryPoint = "FDIDestroy", CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)]

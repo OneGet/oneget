@@ -1,25 +1,25 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
 namespace Microsoft.PackageManagement.Internal.Utility.Plugin
 {
+    using Extensions;
     using System;
-    using System.Linq;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
-    using Extensions;
 
     internal static class DynamicTypeExtensions
     {
@@ -32,11 +32,11 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
         {
             get
             {
-                var methods = typeof(DynamicInterfaceExtensions).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                MethodInfo[] methods = typeof(DynamicInterfaceExtensions).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
                 if (_asMethod == null)
                 {
-                    _asMethod = methods.FirstOrDefault(method => String.Equals(method.Name, "As", StringComparison.OrdinalIgnoreCase)
-                        && method.GetParameterTypes().Count() == 1 && method.GetParameterTypes().First() == typeof(Object));
+                    _asMethod = methods.FirstOrDefault(method => string.Equals(method.Name, "As", StringComparison.OrdinalIgnoreCase)
+                        && method.GetParameterTypes().Count() == 1 && method.GetParameterTypes().First() == typeof(object));
                 }
 
                 return _asMethod;
@@ -46,7 +46,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
         internal static void OverrideInitializeLifetimeService(this TypeBuilder dynamicType)
         {
             // add override of InitLifetimeService so this object doesn't fall prey to timeouts
-            var il = dynamicType.DefineMethod("InitializeLifetimeService", MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual, CallingConventions.HasThis, typeof(object), _emptyTypes).GetILGenerator();
+            ILGenerator il = dynamicType.DefineMethod("InitializeLifetimeService", MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual, CallingConventions.HasThis, typeof(object), _emptyTypes).GetILGenerator();
 
             il.LoadNull();
             il.Return();
@@ -56,9 +56,9 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
         {
             // special case -- the IsMethodImplemented method can give the interface owner information as to
             // which methods are actually implemented.
-            var implementedMethodsField = dynamicType.DefineField("__implementedMethods", typeof(HashSet<string>), FieldAttributes.Private);
+            FieldBuilder implementedMethodsField = dynamicType.DefineField("__implementedMethods", typeof(HashSet<string>), FieldAttributes.Private);
 
-            var il = dynamicType.CreateMethod("IsMethodImplemented", typeof(bool), typeof(string));
+            ILGenerator il = dynamicType.CreateMethod("IsMethodImplemented", typeof(bool), typeof(string));
 
             il.LoadThis();
             il.LoadField(implementedMethodsField);
@@ -69,28 +69,28 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
 
         internal static void GenerateMethodForDirectCall(this TypeBuilder dynamicType, MethodInfo method, FieldBuilder backingField, MethodInfo instanceMethod, MethodInfo onUnhandledException)
         {
-            var il = dynamicType.CreateMethod(method);
+            ILGenerator il = dynamicType.CreateMethod(method);
             // the target object has a method that matches.
             // let's use that.
 
-            var hasReturn = method.ReturnType != typeof(void);
-            var hasOue = onUnhandledException != null;
+            bool hasReturn = method.ReturnType != typeof(void);
+            bool hasOue = onUnhandledException != null;
 
-            var exit = il.DefineLabel();
-            var setDefaultReturn = il.DefineLabel();
+            Label exit = il.DefineLabel();
+            Label setDefaultReturn = il.DefineLabel();
 
-            var ret = hasReturn ? il.DeclareLocal(method.ReturnType) : null;
-            var exc = hasOue ? il.DeclareLocal(typeof(Exception)) : null;
+            LocalBuilder ret = hasReturn ? il.DeclareLocal(method.ReturnType) : null;
+            LocalBuilder exc = hasOue ? il.DeclareLocal(typeof(Exception)) : null;
 
             il.BeginExceptionBlock();
 
             il.LoadThis();
             il.LoadField(backingField);
 
-            var imTypes = instanceMethod.GetParameterTypes();
-            var dmTypes = method.GetParameterTypes();
+            Type[] imTypes = instanceMethod.GetParameterTypes();
+            Type[] dmTypes = method.GetParameterTypes();
 
-            for (var i = 0; i < dmTypes.Length; i++)
+            for (int i = 0; i < dmTypes.Length; i++)
             {
                 il.LoadArgument(i + 1);
 
@@ -186,23 +186,23 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
 
         internal static ILGenerator CreateMethod(this TypeBuilder dynamicType, string methodName, Type returnType, params Type[] parameterTypes)
         {
-            var methodBuilder = dynamicType.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig, CallingConventions.HasThis, returnType, parameterTypes);
+            MethodBuilder methodBuilder = dynamicType.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig, CallingConventions.HasThis, returnType, parameterTypes);
 
             return methodBuilder.GetILGenerator();
         }
 
         internal static void GenerateMethodForDelegateCall(this TypeBuilder dynamicType, MethodInfo method, FieldBuilder field, MethodInfo onUnhandledException)
         {
-            var il = dynamicType.CreateMethod(method);
+            ILGenerator il = dynamicType.CreateMethod(method);
 
             // the target object has a property or field that matches the signature we're looking for.
             // let's use that.
 
-            var delegateType = WrappedDelegate.GetFuncOrActionType(method.GetParameterTypes(), method.ReturnType);
+            Type delegateType = WrappedDelegate.GetFuncOrActionType(method.GetParameterTypes(), method.ReturnType);
 
             il.LoadThis();
             il.LoadField(field);
-            for (var i = 0; i < method.GetParameterTypes().Length; i++)
+            for (int i = 0; i < method.GetParameterTypes().Length; i++)
             {
                 il.LoadArgument(i + 1);
             }
@@ -212,7 +212,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
 
         internal static void GenerateStubMethod(this TypeBuilder dynamicType, MethodInfo method)
         {
-            var il = dynamicType.CreateMethod(method);
+            ILGenerator il = dynamicType.CreateMethod(method);
             do
             {
                 if (method.ReturnType != typeof(void))
@@ -250,7 +250,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
 
                     if (method.ReturnType.GetTypeInfo().IsValueType)
                     {
-                        var result = il.DeclareLocal(method.ReturnType);
+                        LocalBuilder result = il.DeclareLocal(method.ReturnType);
                         il.LoadLocalAddress(result);
                         il.InitObject(method.ReturnType);
                         il.LoadLocation(0);
@@ -300,7 +300,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
 
                 if (returnType.GetTypeInfo().IsValueType)
                 {
-                    var result = il.DeclareLocal(returnType);
+                    LocalBuilder result = il.DeclareLocal(returnType);
                     il.LoadLocalAddress(result);
                     il.InitObject(returnType);
                     il.LoadLocation(result.LocalIndex);

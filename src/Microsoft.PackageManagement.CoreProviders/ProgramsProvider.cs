@@ -12,22 +12,20 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.Providers.Internal {
+namespace Microsoft.PackageManagement.Providers.Internal
+{
+    using PackageManagement.Internal.Implementation;
+    using PackageManagement.Internal.Packaging;
+    using PackageManagement.Internal.Utility.Extensions;
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
     using System.Management.Automation;
     using System.Security.AccessControl;
-    using PackageManagement.Internal;
-    using PackageManagement.Internal.Implementation;
-    using PackageManagement.Internal.Packaging;
-    using PackageManagement.Internal.Utility.Platform;
-    using PackageManagement.Internal.Utility.Extensions;
     using Win32;
-    using File = System.IO.File;
 
-    public class ProgramsProvider {
+    public class ProgramsProvider
+    {
         /// <summary>
         ///     The name of this Package Provider
         /// </summary>
@@ -39,7 +37,8 @@ namespace Microsoft.PackageManagement.Providers.Internal {
         ///     Returns the name of the Provider.
         /// </summary>
         /// <returns>The name of this proivder (uses the constant declared at the top of the class)</returns>
-        public string GetPackageProviderName() {
+        public string GetPackageProviderName()
+        {
             return ProviderName;
         }
 
@@ -50,8 +49,10 @@ namespace Microsoft.PackageManagement.Providers.Internal {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void InitializeProvider(Request request) {
-            if (request == null) {
+        public void InitializeProvider(Request request)
+        {
+            if (request == null)
+            {
                 throw new ArgumentNullException("request");
             }
             // Nice-to-have put a debug message in that tells what's going on.
@@ -65,15 +66,18 @@ namespace Microsoft.PackageManagement.Providers.Internal {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetFeatures(Request request) {
-            if (request == null) {
+        public void GetFeatures(Request request)
+        {
+            if (request == null)
+            {
                 throw new ArgumentNullException("request");
             }
 
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
 
-            foreach (var feature in _features) {
+            foreach (var feature in _features)
+            {
                 request.Yield(feature);
             }
         }
@@ -86,8 +90,10 @@ namespace Microsoft.PackageManagement.Providers.Internal {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetDynamicOptions(string category, Request request) {
-            if (request == null) {
+        public void GetDynamicOptions(string category, Request request)
+        {
+            if (request == null)
+            {
                 throw new ArgumentNullException("request");
             }
 
@@ -96,7 +102,8 @@ namespace Microsoft.PackageManagement.Providers.Internal {
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetDynamicOptions' '{1}'", ProviderName, category);
 
-            switch (category.ToLowerInvariant()) {
+            switch (category.ToLowerInvariant())
+            {
                 case "install":
                     // options required for install/uninstall/getinstalledpackages
                     request.YieldDynamicOption("IncludeWindowsInstaller", "Switch", false);
@@ -117,7 +124,6 @@ namespace Microsoft.PackageManagement.Providers.Internal {
             }
         }
 
-
         /// <summary>
         /// Returns the packages that are installed
         /// </summary>
@@ -129,8 +135,10 @@ namespace Microsoft.PackageManagement.Providers.Internal {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request) {
-            if (request == null) {
+        public void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request)
+        {
+            if (request == null)
+            {
                 throw new ArgumentNullException("request");
             }
             // Nice-to-have put a debug message in that tells what's going on.
@@ -138,63 +146,77 @@ namespace Microsoft.PackageManagement.Providers.Internal {
 
             // dump out results.
 
-            if (Environment.Is64BitOperatingSystem) {
-                using (var hklm64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey)) {
-                    if (!YieldPackages("hklm64", hklm64, name, requiredVersion, minimumVersion, maximumVersion, request)) {
+            if (Environment.Is64BitOperatingSystem)
+            {
+                using (var hklm64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey))
+                {
+                    if (!YieldPackages("hklm64", hklm64, name, requiredVersion, minimumVersion, maximumVersion, request))
+                    {
                         return;
                     }
                 }
 
-                using (var hkcu64 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false)) {
-                    if (!YieldPackages("hkcu64", hkcu64, name, requiredVersion, minimumVersion, maximumVersion, request)) {
+                using (var hkcu64 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false))
+                {
+                    if (!YieldPackages("hkcu64", hkcu64, name, requiredVersion, minimumVersion, maximumVersion, request))
+                    {
                         return;
                     }
                 }
             }
 
-            using (var hklm32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false)) {
-                if (!YieldPackages("hklm32", hklm32, name, requiredVersion, minimumVersion, maximumVersion, request)) {
+            using (var hklm32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false))
+            {
+                if (!YieldPackages("hklm32", hklm32, name, requiredVersion, minimumVersion, maximumVersion, request))
+                {
                     return;
                 }
             }
 
-            using (var hkcu32 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false)) {
-                if (!YieldPackages("hkcu32", hkcu32, name, requiredVersion, minimumVersion, maximumVersion, request)) {
+            using (var hkcu32 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false))
+            {
+                if (!YieldPackages("hkcu32", hkcu32, name, requiredVersion, minimumVersion, maximumVersion, request))
+                {
                 }
             }
         }
 
-
-        private bool YieldPackages(string hive, RegistryKey regkey, string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request) {
-            if (regkey != null) {
+        private bool YieldPackages(string hive, RegistryKey regkey, string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request)
+        {
+            if (regkey != null)
+            {
                 var includeWindowsInstaller = request.GetOptionValue("IncludeWindowsInstaller").IsTrue();
                 var includeSystemComponent = request.GetOptionValue("IncludeSystemComponent").IsTrue();
 
-                var wildcardPattern = new WildcardPattern(name??"", WildcardOptions.CultureInvariant | WildcardOptions.IgnoreCase);
+                var wildcardPattern = new WildcardPattern(name ?? "", WildcardOptions.CultureInvariant | WildcardOptions.IgnoreCase);
 
-
-                foreach (var key in regkey.GetSubKeyNames()) {
+                foreach (var key in regkey.GetSubKeyNames())
+                {
                     var subkey = regkey.OpenSubKey(key);
-                    if (subkey != null) {
+                    if (subkey != null)
+                    {
                         var properties = subkey.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (subkey.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
 
-                        if (!includeWindowsInstaller && properties.ContainsKey("WindowsInstaller") && properties["WindowsInstaller"] == "1") {
+                        if (!includeWindowsInstaller && properties.ContainsKey("WindowsInstaller") && properties["WindowsInstaller"] == "1")
+                        {
                             continue;
                         }
 
-                        if (!includeSystemComponent && properties.ContainsKey("SystemComponent") && properties["SystemComponent"] == "1") {
+                        if (!includeSystemComponent && properties.ContainsKey("SystemComponent") && properties["SystemComponent"] == "1")
+                        {
                             continue;
                         }
 
                         var productName = "";
 
-                        if (!properties.TryGetValue("DisplayName", out productName)) {
+                        if (!properties.TryGetValue("DisplayName", out productName))
+                        {
                             // no product name?
                             continue;
                         }
 
-                        if (!string.IsNullOrWhiteSpace(productName) && (string.IsNullOrWhiteSpace(name) || wildcardPattern.IsMatch(productName))) {
-
+                        if (!string.IsNullOrWhiteSpace(productName) && (string.IsNullOrWhiteSpace(name) || wildcardPattern.IsMatch(productName)))
+                        {
                             var productVersion = properties.Get("DisplayVersion") ?? "";
                             var publisher = properties.Get("Publisher") ?? "";
                             var uninstallString = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
@@ -202,21 +224,29 @@ namespace Microsoft.PackageManagement.Providers.Internal {
 
                             var fp = hive + @"\" + subkey;
 
-                            if (!string.IsNullOrEmpty(requiredVersion)) {
-                                if (SoftwareIdentityVersionComparer.CompareVersions("unknown", requiredVersion, productVersion) != 0) {
+                            if (!string.IsNullOrEmpty(requiredVersion))
+                            {
+                                if (SoftwareIdentityVersionComparer.CompareVersions("unknown", requiredVersion, productVersion) != 0)
+                                {
                                     continue;
                                 }
-                            } else {
-                                if (!string.IsNullOrEmpty(minimumVersion) && SoftwareIdentityVersionComparer.CompareVersions("unknown", productVersion, minimumVersion) < 0) {
+                            }
+                            else
+                            {
+                                if (!string.IsNullOrEmpty(minimumVersion) && SoftwareIdentityVersionComparer.CompareVersions("unknown", productVersion, minimumVersion) < 0)
+                                {
                                     continue;
                                 }
-                                if (!string.IsNullOrEmpty(maximumVersion) && SoftwareIdentityVersionComparer.CompareVersions("unknown", productVersion, maximumVersion) > 0) {
+                                if (!string.IsNullOrEmpty(maximumVersion) && SoftwareIdentityVersionComparer.CompareVersions("unknown", productVersion, maximumVersion) > 0)
+                                {
                                     continue;
                                 }
                             }
 
-                            if (request.YieldSoftwareIdentity(fp, productName, productVersion, "unknown", comments, "", name, "", "") != null) {
-                                if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => request.AddMetadata(fp, k.MakeSafeFileName(), properties[k]) == null)) {
+                            if (request.YieldSoftwareIdentity(fp, productName, productVersion, "unknown", comments, "", name, "", "") != null)
+                            {
+                                if (properties.Keys.Where(each => !string.IsNullOrWhiteSpace(each)).Any(k => request.AddMetadata(fp, k.MakeSafeFileName(), properties[k]) == null))
+                                {
                                     return false;
                                 }
                             }

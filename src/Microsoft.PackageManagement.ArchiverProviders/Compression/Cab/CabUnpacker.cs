@@ -15,9 +15,13 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
     using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
+
 #if !CORECLR
+
     using System.Security.Permissions;
+
 #endif
+
     using System.Text;
 
     internal class CabUnpacker : CabWorker
@@ -27,6 +31,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         // These delegates need to be saved as member variables
         // so that they don't get GC'd.
         private NativeMethods.FDI.PFNALLOC fdiAllocMemHandler;
+
         private NativeMethods.FDI.PFNFREE fdiFreeMemHandler;
         private NativeMethods.FDI.PFNOPEN fdiOpenStreamHandler;
         private NativeMethods.FDI.PFNREAD fdiReadStreamHandler;
@@ -137,7 +142,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                             this.CabListNotify,
                             IntPtr.Zero,
                             IntPtr.Zero);
-                        if (result == 0) {
+                        if (result == 0)
+                        {
                             // stop compiler from complaining
                             this.CheckError(true);
                         }
@@ -191,7 +197,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                         if (files[i].ArchiveNumber >= this.totalArchives)
                         {
                             int totalArchives = files[i].ArchiveNumber + 1;
-                            this.totalArchives = (short) totalArchives;
+                            this.totalArchives = (short)totalArchives;
                         }
                     }
                 }
@@ -211,7 +217,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                         this.Erf.Clear();
                         this.CabNumbers[this.NextCabinetName] = cabNumber;
 
-                        var result =NativeMethods.FDI.Copy(
+                        var result = NativeMethods.FDI.Copy(
                             this.fdiHandle,
                             this.NextCabinetName,
                             String.Empty,
@@ -219,7 +225,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                             this.CabExtractNotify,
                             IntPtr.Zero,
                             IntPtr.Zero);
-                        if (result == 0) {
+                        if (result == 0)
+                        {
                             // stop compiler from complaining
                             this.CheckError(true);
                         }
@@ -267,7 +274,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                     if (this.totalArchives <= this.currentArchiveNumber)
                     {
                         int totalArchives = this.currentArchiveNumber + 1;
-                        this.totalArchives = (short) totalArchives;
+                        this.totalArchives = (short)totalArchives;
                     }
                     this.currentArchiveTotalBytes = stream.Length;
                     this.currentArchiveBytesProcessed = 0;
@@ -366,7 +373,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         private static string GetFileName(NativeMethods.FDI.NOTIFICATION notification)
         {
-            bool utf8Name = (notification.attribs & (ushort) FileAttributes.Normal) != 0;  // _A_NAME_IS_UTF
+            bool utf8Name = (notification.attribs & (ushort)FileAttributes.Normal) != 0;  // _A_NAME_IS_UTF
 
             // Non-utf8 names should be completely ASCII. But for compatibility with
             // legacy tools, interpret them using the current (Default) ANSI codepage.
@@ -402,7 +409,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
                 if (this.Erf.Error)
                 {
-                    if (((NativeMethods.FDI.ERROR) this.Erf.Oper) == NativeMethods.FDI.ERROR.UNKNOWN_CABINET_VERSION)
+                    if (((NativeMethods.FDI.ERROR)this.Erf.Oper) == NativeMethods.FDI.ERROR.UNKNOWN_CABINET_VERSION)
                     {
                         isCabinet = false;
                     }
@@ -416,8 +423,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 }
 
                 id = fdici.setID;
-                cabFolderCount = (int) fdici.cFolders;
-                fileCount = (int) fdici.cFiles;
+                cabFolderCount = (int)fdici.cFolders;
+                fileCount = (int)fdici.cFiles;
                 return isCabinet;
             }
             finally
@@ -451,9 +458,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                         {
                             if (this.fileList != null)
                             {
-                                FileAttributes attributes = (FileAttributes) notification.attribs &
+                                FileAttributes attributes = (FileAttributes)notification.attribs &
                                     (FileAttributes.Archive | FileAttributes.Hidden | FileAttributes.ReadOnly | FileAttributes.System);
-                                if (attributes == (FileAttributes) 0)
+                                if (attributes == (FileAttributes)0)
                                 {
                                     attributes = FileAttributes.Normal;
                                 }
@@ -504,7 +511,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 case NativeMethods.FDI.NOTIFICATIONTYPE.NEXT_CABINET:
                     {
                         string nextCab = Marshal.PtrToStringAnsi(notification.psz1);
-                        this.CabNumbers[nextCab] = (short) notification.iCabinet;
+                        this.CabNumbers[nextCab] = (short)notification.iCabinet;
                         this.NextCabinetName = "?" + this.NextCabinetName;
                         return 0;  // Continue
                     }
@@ -576,9 +583,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
             string name = CabUnpacker.GetFileName(notification);
 
-            FileAttributes attributes = (FileAttributes) notification.attribs &
+            FileAttributes attributes = (FileAttributes)notification.attribs &
                 (FileAttributes.Archive | FileAttributes.Hidden | FileAttributes.ReadOnly | FileAttributes.System);
-            if (attributes == (FileAttributes) 0)
+            if (attributes == (FileAttributes)0)
             {
                 attributes = FileAttributes.Normal;
             }

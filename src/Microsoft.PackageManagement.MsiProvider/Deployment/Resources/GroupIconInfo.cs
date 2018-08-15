@@ -117,6 +117,5 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
                 }
             }
         }
-
     }
 }

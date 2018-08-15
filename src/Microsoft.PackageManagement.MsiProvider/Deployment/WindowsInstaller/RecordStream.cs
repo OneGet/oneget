@@ -70,13 +70,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             if (count > 0)
             {
                 byte[] readBuffer = (offset == 0 ? buffer : new byte[count]);
-                uint ucount = (uint) count;
-                uint ret = RemotableNativeMethods.MsiRecordReadStream((int) this.record.Handle, (uint) this.field, buffer, ref ucount);
+                uint ucount = (uint)count;
+                uint ret = RemotableNativeMethods.MsiRecordReadStream((int)this.record.Handle, (uint)this.field, buffer, ref ucount);
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
                 }
-                count = (int) ucount;
+                count = (int)ucount;
                 if (offset > 0)
                 {
                     Array.Copy(readBuffer, 0, buffer, offset, count);

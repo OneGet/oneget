@@ -22,6 +22,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
     {
         private static Dictionary<ZipCompressionMethod, Func<Stream, Stream>>
             compressionStreamCreators;
+
         private static Dictionary<ZipCompressionMethod, Func<Stream, Stream>>
             decompressionStreamCreators;
 
@@ -37,28 +38,28 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
                 ZipEngine.RegisterCompressionStreamCreator(
                     ZipCompressionMethod.Store,
                     CompressionMode.Compress,
-                    delegate(Stream stream)
+                    delegate (Stream stream)
                     {
                         return stream;
                     });
                 ZipEngine.RegisterCompressionStreamCreator(
                     ZipCompressionMethod.Deflate,
                     CompressionMode.Compress,
-                    delegate(Stream stream)
+                    delegate (Stream stream)
                     {
                         return new DeflateStream(stream, CompressionMode.Compress, true);
                     });
                 ZipEngine.RegisterCompressionStreamCreator(
                     ZipCompressionMethod.Store,
                     CompressionMode.Decompress,
-                    delegate(Stream stream)
+                    delegate (Stream stream)
                     {
                         return stream;
                     });
                 ZipEngine.RegisterCompressionStreamCreator(
                     ZipCompressionMethod.Deflate,
                     CompressionMode.Decompress,
-                    delegate(Stream stream)
+                    delegate (Stream stream)
                     {
                         return new DeflateStream(stream, CompressionMode.Decompress, true);
                     });
@@ -119,6 +120,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
 
         // Progress data
         private string currentFileName;
+
         private int currentFileNumber;
         private int totalFiles;
         private long currentFileBytesProcessed;
@@ -187,6 +189,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
                 case ZipFileHeader.SPANSIG:
                 case ZipFileHeader.SPANSIG2:
                     return true;
+
                 default:
                     return false;
             }

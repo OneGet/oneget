@@ -174,9 +174,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                 }
 
                 foreach (Record resultRec in queryView) using (resultRec)
-                {
-                    yield return this.GetResult(resultRec);
-                }
+                    {
+                        yield return this.GetResult(resultRec);
+                    }
             }
         }
 
@@ -208,7 +208,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                     }
                 }
 
-                QRecord result = (QRecord) this.recordTypes[i]
+                QRecord result = (QRecord)this.recordTypes[i]
                     .GetConstructor(Type.EmptyTypes).Invoke(null);
                 result.Database = this.db;
                 result.TableInfo = this.tables[i];
@@ -234,17 +234,17 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                     }
                 }
 
-                return (T) resultsProjection;
+                return (T)resultsProjection;
             }
             else
             {
-                return (T) (object) results[0];
+                return (T)(object)results[0];
             }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable<T>) this).GetEnumerator();
+            return ((IEnumerable<T>)this).GetEnumerator();
         }
 
         public IQueryable<TElement> CreateQuery<TElement>(Expression expression)
@@ -265,31 +265,31 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             q.joinColumns.AddRange(this.joinColumns);
             q.projectionDelegates.AddRange(this.projectionDelegates);
 
-            MethodCallExpression methodCallExpression = (MethodCallExpression) expression;
+            MethodCallExpression methodCallExpression = (MethodCallExpression)expression;
             string methodName = methodCallExpression.Method.Name;
             if (methodName == "Select")
             {
                 LambdaExpression argumentExpression = (LambdaExpression)
-                    ((UnaryExpression) methodCallExpression.Arguments[1]).Operand;
+                    ((UnaryExpression)methodCallExpression.Arguments[1]).Operand;
                 q.BuildProjection(null, argumentExpression);
             }
             else if (methodName == "Where")
             {
                 LambdaExpression argumentExpression = (LambdaExpression)
-                    ((UnaryExpression) methodCallExpression.Arguments[1]).Operand;
+                    ((UnaryExpression)methodCallExpression.Arguments[1]).Operand;
                 q.BuildQuery(null, argumentExpression);
             }
             else if (methodName == "ThenBy")
             {
                 LambdaExpression argumentExpression = (LambdaExpression)
-                    ((UnaryExpression) methodCallExpression.Arguments[1]).Operand;
+                    ((UnaryExpression)methodCallExpression.Arguments[1]).Operand;
                 q.BuildSequence(null, argumentExpression);
             }
             else if (methodName == "Join")
             {
                 ConstantExpression constantExpression = (ConstantExpression)
                     methodCallExpression.Arguments[1];
-                IQueryable inner = (IQueryable) constantExpression.Value;
+                IQueryable inner = (IQueryable)constantExpression.Value;
                 q.PerformJoin(
                     null,
                     null,
@@ -314,8 +314,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
         private static LambdaExpression GetJoinLambda(Expression expression)
         {
-            UnaryExpression unaryExpression = (UnaryExpression) expression;
-            return (LambdaExpression) unaryExpression.Operand;
+            UnaryExpression unaryExpression = (UnaryExpression)expression;
+            return (LambdaExpression)unaryExpression.Operand;
         }
 
         public TResult Execute<TResult>(Expression expression)
@@ -412,7 +412,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
                     default:
                         throw new NotSupportedException(
-                                  "Expression type not supported: " + binaryExpression.NodeType );
+                                  "Expression type not supported: " + binaryExpression.NodeType);
                 }
             }
             else if ((unaryExpression = expression as UnaryExpression) != null)
@@ -440,12 +440,16 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             {
                 case ExpressionType.LessThan:
                     return ExpressionType.GreaterThan;
+
                 case ExpressionType.LessThanOrEqual:
                     return ExpressionType.GreaterThanOrEqual;
+
                 case ExpressionType.GreaterThan:
                     return ExpressionType.LessThan;
+
                 case ExpressionType.GreaterThanOrEqual:
                     return ExpressionType.LessThanOrEqual;
+
                 default:
                     return e;
             }
@@ -578,7 +582,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             if (((memberExpression = binaryExpression.Left as MemberExpression) != null) ||
                 ((binaryExpression.Left.NodeType == ExpressionType.Convert ||
                   binaryExpression.Left.NodeType == ExpressionType.ConvertChecked) &&
-                 (memberExpression = ((UnaryExpression) binaryExpression.Left).Operand
+                 (memberExpression = ((UnaryExpression)binaryExpression.Left).Operand
                   as MemberExpression) != null))
             {
                 string column = this.GetConditionColumn(memberExpression);
@@ -591,7 +595,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             else if (((memberExpression = binaryExpression.Right as MemberExpression) != null) ||
                      ((binaryExpression.Right.NodeType == ExpressionType.Convert ||
                        binaryExpression.Right.NodeType == ExpressionType.ConvertChecked) &&
-                      (memberExpression = ((UnaryExpression) binaryExpression.Right).Operand
+                      (memberExpression = ((UnaryExpression)binaryExpression.Right).Operand
                        as MemberExpression) != null))
             {
                 string column = this.GetConditionColumn(memberExpression);
@@ -636,7 +640,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         {
             LambdaExpression argumentExpression =
                 Expression.Lambda(methodCallExpression.Arguments[0]);
-            string columnName = (string) argumentExpression.Compile().DynamicInvoke();
+            string columnName = (string)argumentExpression.Compile().DynamicInvoke();
             string selectorName = GetConditionSelectorName(methodCallExpression.Object);
             string tableName = this.GetConditionTable(selectorName, columnName);
             return this.FormatColumn(tableName, columnName);
@@ -703,7 +707,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             foreach (var attr in memberInfo.GetCustomAttributes(
                 typeof(DatabaseColumnAttribute), false))
             {
-                return ((DatabaseColumnAttribute) attr).Column;
+                return ((DatabaseColumnAttribute)attr).Column;
             }
 
             return memberInfo.Name;
@@ -949,7 +953,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                     "; join is only supported on another QTable.");
             }
 
-            TableInfo joinTableInfo = (TableInfo) tableInfoProp.GetValue(joinTable, null);
+            TableInfo joinTableInfo = (TableInfo)tableInfoProp.GetValue(joinTable, null);
             if (joinTableInfo == null)
             {
                 throw new InvalidOperationException("Missing join table info.");

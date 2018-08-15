@@ -12,47 +12,54 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell
+{
+    using Internal;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Internal;
-    using Microsoft.PackageManagement.Internal.Utility.Extensions;
 
-    public class DynamicOption : Yieldable {
-        public DynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired, IEnumerable<object> permittedValues) {
+    public class DynamicOption : Yieldable
+    {
+        public DynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired, IEnumerable<object> permittedValues)
+        {
             Name = name;
             ExpectedType = expectedType;
             IsRequired = isRequired;
             PermittedValues = permittedValues;
         }
 
-        public DynamicOption(string name, OptionType expectedType, bool isRequired, IEnumerable<object> permittedValues) {
+        public DynamicOption(string name, OptionType expectedType, bool isRequired, IEnumerable<object> permittedValues)
+        {
             Name = name;
             ExpectedType = expectedType;
             IsRequired = isRequired;
             PermittedValues = permittedValues;
         }
 
-
-        public DynamicOption(OptionCategory category,string name,  OptionType expectedType, bool isRequired) : this(category, name , expectedType, isRequired, null) {
+        public DynamicOption(OptionCategory category, string name, OptionType expectedType, bool isRequired) : this(category, name, expectedType, isRequired, null)
+        {
         }
 
         public DynamicOption(string name, OptionType expectedType, bool isRequired)
-            : this(name, expectedType, isRequired, null) {
+            : this(name, expectedType, isRequired, null)
+        {
         }
 
-
-        public DynamicOption() {
+        public DynamicOption()
+        {
         }
 
-        public string Name {get; set;}
-        public OptionType ExpectedType {get; set;}
-        public bool IsRequired {get; set;}
-        public IEnumerable<object> PermittedValues {get; set;}
+        public string Name { get; set; }
+        public OptionType ExpectedType { get; set; }
+        public bool IsRequired { get; set; }
+        public IEnumerable<object> PermittedValues { get; set; }
 
-        public override bool YieldResult(PsRequest r) {
-            if (r == null) {
+        public override bool YieldResult(PsRequest r)
+        {
+            if (r == null)
+            {
                 throw new ArgumentNullException("r");
             }
             return r.YieldDynamicOption(Name, ExpectedType.ToString(), IsRequired) && PermittedValues.WhereNotNull().Select(each => each.ToString()).ToArray().All(v => r.YieldKeyValuePair(Name, v));

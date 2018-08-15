@@ -11,14 +11,14 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-namespace Microsoft.PowerShell.PackageManagement.Utility {
-    using System;
-    using System.Diagnostics.CodeAnalysis;
+namespace Microsoft.PowerShell.PackageManagement.Utility
+{
     using Microsoft.PackageManagement.Implementation;
     using Microsoft.PackageManagement.Internal.Api;
-    using Microsoft.PackageManagement.Internal.Implementation;
     using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Internal.Utility.Plugin;
+    using System;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     ///     This can be used when we want to override some of the functions that are passed
@@ -28,8 +28,10 @@ namespace Microsoft.PowerShell.PackageManagement.Utility {
     ///     they will get called instead of the implementation in the current class. ('this')
     /// </summary>
 
-    internal static class HostApiExtensions {
-        internal static IHostApi ProviderSpecific(this IHostApi parent, PackageProvider provider) {
+    internal static class HostApiExtensions
+    {
+        internal static IHostApi ProviderSpecific(this IHostApi parent, PackageProvider provider)
+        {
             var thisProviderIsCanceled = false;
             return new object[] {
                 new {
@@ -48,8 +50,8 @@ namespace Microsoft.PowerShell.PackageManagement.Utility {
             }.As<IHostApi>();
         }
 
-        internal static IHostApi SuppressErrorsAndWarnings(this IHostApi parent, bool isProcessing) {
-
+        internal static IHostApi SuppressErrorsAndWarnings(this IHostApi parent, bool isProcessing)
+        {
             return new object[] {
                 new {
                     Error = new Func<string, string, string, string, bool>((id, cat, targetobjectvalue, messageText) => {
@@ -75,14 +77,14 @@ namespace Microsoft.PowerShell.PackageManagement.Utility {
 #endif
                         return true;
                     }),
-
                 },
                 parent,
             }.As<IHostApi>();
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Required.")]
-        internal static IHostApi SuprressBootstrapping(this IHostApi parent, bool isProcessing) {
+        internal static IHostApi SuprressBootstrapping(this IHostApi parent, bool isProcessing)
+        {
             return new object[] {
                 new {
                     IsInvocation = new Func<bool>(() => false),

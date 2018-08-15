@@ -1,31 +1,32 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement.Internal.Api {
+namespace Microsoft.PackageManagement.Internal.Api
+{
     using System.Collections.Generic;
-    using System.Security;
     using System.Net;
+    using System.Security;
 
     /// <summary>
     /// Functions implemented by the HOST to provide contexual information and control to for the current request.
     /// </summary>
-    public interface IHostApi {
-
+    public interface IHostApi
+    {
         /// <summary>
         ///  The HOST should return true if the current request in progress should be cancelled.
         /// </summary>
-        bool IsCanceled {get;}
+        bool IsCanceled { get; }
 
         /// <summary>
         /// the HOST should return a localized string for the given messageText, or null if not localizable.
@@ -34,8 +35,8 @@ namespace Microsoft.PackageManagement.Internal.Api {
         ///     The message ID or text string to resolve.
         /// </param>
         /// <param name="defaultText">
-        ///     a default message text that would be used if there is no match in local resources. 
-        ///     This provides the HOST the opportunity to reformat the actual message even if they don't match it. 
+        ///     a default message text that would be used if there is no match in local resources.
+        ///     This provides the HOST the opportunity to reformat the actual message even if they don't match it.
         ///     (PSGet uses this)
         /// </param>
         /// <returns></returns>
@@ -78,7 +79,7 @@ namespace Microsoft.PackageManagement.Internal.Api {
         bool Message(string messageText);
 
         /// <summary>
-        /// Sends a message to the verbose channel. 
+        /// Sends a message to the verbose channel.
         /// </summary>
         /// <param name="messageText">
         ///     The fully formatted verbose message to display to the user
@@ -164,7 +165,7 @@ namespace Microsoft.PackageManagement.Internal.Api {
         ///     Used by a provider to request what metadata keys were passed from the user
         /// </summary>
         /// <returns>an collection of the keys for the specified dynamic options</returns>
-        IEnumerable<string> OptionKeys {get;}
+        IEnumerable<string> OptionKeys { get; }
 
         /// <summary>
         ///     Used by a provider to request the values for a given dynamic option
@@ -181,17 +182,17 @@ namespace Microsoft.PackageManagement.Internal.Api {
         /// <summary>
         /// A collection of sources specified by the user. If this is null or empty, the provider should assume 'all the registered sources'
         /// </summary>
-        IEnumerable<string> Sources {get;}
+        IEnumerable<string> Sources { get; }
 
         /// <summary>
-        /// A credential username specified by the user 
+        /// A credential username specified by the user
         /// </summary>
-        string CredentialUsername {get;}
+        string CredentialUsername { get; }
 
         /// <summary>
-        /// A credential password specified by the user 
+        /// A credential password specified by the user
         /// </summary>
-        SecureString CredentialPassword {get;}
+        SecureString CredentialPassword { get; }
 
         /// <summary>
         /// The CORE may ask the HOST if a given provider should be bootstrapped during an operation.
@@ -242,11 +243,11 @@ namespace Microsoft.PackageManagement.Internal.Api {
         /// The HOST should return 'True' if the current operation is executed in an interactive environment
         /// and the user should be able to respond to queries.
         /// </summary>
-        bool IsInteractive {get;}
+        bool IsInteractive { get; }
 
         /// <summary>
         /// The HOST should give each individual request a unique value (used to track if a particular operation has been tried before)
         /// </summary>
-        int CallCount {get;}
+        int CallCount { get; }
     }
 }

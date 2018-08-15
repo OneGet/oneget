@@ -60,8 +60,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             {
                 if (this.dirty)
                 {
-                    this.rawVersionInfo.Data = (byte[]) this.rawFileVersionInfo;
-                    base.Data = (byte[]) this.rawVersionInfo;
+                    this.rawVersionInfo.Data = (byte[])this.rawFileVersionInfo;
+                    base.Data = (byte[])this.rawVersionInfo;
                     this.dirty = false;
                 }
 
@@ -84,8 +84,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             }
             else
             {
-                this.rawVersionInfo = (VersionInfo) refreshData;
-                this.rawFileVersionInfo = (FixedFileVersionInfo) this.rawVersionInfo.Data;
+                this.rawVersionInfo = (VersionInfo)refreshData;
+                this.rawFileVersionInfo = (FixedFileVersionInfo)this.rawVersionInfo.Data;
             }
         }
 
@@ -243,7 +243,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             }
 
             VersionInfo newStrings = new VersionInfo(
-                ((ushort) locale).ToString("x4", CultureInfo.InvariantCulture) + ((ushort) 1200).ToString("x4", CultureInfo.InvariantCulture));
+                ((ushort)locale).ToString("x4", CultureInfo.InvariantCulture) + ((ushort)1200).ToString("x4", CultureInfo.InvariantCulture));
             svi.Add(newStrings);
             this.dirty = true;
 
@@ -263,8 +263,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
                 Array.Copy(oldValue, tVerInfo.Data, oldValue.Length);
                 using (BinaryWriter bw = new BinaryWriter(new MemoryStream(tVerInfo.Data, oldValue.Length, 4, true)))
                 {
-                    bw.Write((ushort) locale);
-                    bw.Write((ushort) 1200);
+                    bw.Write((ushort)locale);
+                    bw.Write((ushort)1200);
                 }
             }
 
@@ -291,7 +291,6 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
                         break;
                     }
                 }
-
             }
 
             VersionInfo vvi = this.rawVersionInfo["VarFileInfo"];
@@ -312,8 +311,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
                                 ushort cp = br.ReadUInt16();
                                 if (tLocale != locale)
                                 {
-                                    bw.Write((ushort) tLocale);
-                                    bw.Write((ushort) cp);
+                                    bw.Write((ushort)tLocale);
+                                    bw.Write((ushort)cp);
                                     j++;
                                 }
                             }
@@ -392,7 +391,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
         public void CopyTo(VersionStringTable[] array, int arrayIndex)
         {
-            if (array == null) {
+            if (array == null)
+            {
                 throw new ArgumentNullException("array");
             }
             VersionInfo svi = this.rawVersionInfo["StringFileInfo"];

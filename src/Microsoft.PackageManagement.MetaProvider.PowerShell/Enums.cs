@@ -12,15 +12,18 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
-    public enum OptionCategory {
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell
+{
+    public enum OptionCategory
+    {
         Package = 0,
         Provider = 1,
         Source = 2,
         Install = 3
     }
 
-    public enum OptionType {
+    public enum OptionType
+    {
         String = 0,
         StringArray = 1,
         Int = 2,

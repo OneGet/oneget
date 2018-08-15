@@ -122,7 +122,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </summary>
         /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        [SecurityPermission(SecurityAction.Demand, SerializationFormatter=true)]
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             if (info == null)
@@ -216,45 +216,45 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             msg = Combine(GetSystemMessage(errorCode), msg);
             switch (errorCode)
             {
-                case (uint) NativeMethods.Error.FILE_NOT_FOUND:
-                case (uint) NativeMethods.Error.PATH_NOT_FOUND: return new FileNotFoundException(msg);
+                case (uint)NativeMethods.Error.FILE_NOT_FOUND:
+                case (uint)NativeMethods.Error.PATH_NOT_FOUND: return new FileNotFoundException(msg);
 
-                case (uint) NativeMethods.Error.INVALID_PARAMETER:
-                case (uint) NativeMethods.Error.DIRECTORY:
-                case (uint) NativeMethods.Error.UNKNOWN_PROPERTY:
-                case (uint) NativeMethods.Error.UNKNOWN_PRODUCT:
-                case (uint) NativeMethods.Error.UNKNOWN_FEATURE:
-                case (uint) NativeMethods.Error.UNKNOWN_COMPONENT: return new ArgumentException(msg);
+                case (uint)NativeMethods.Error.INVALID_PARAMETER:
+                case (uint)NativeMethods.Error.DIRECTORY:
+                case (uint)NativeMethods.Error.UNKNOWN_PROPERTY:
+                case (uint)NativeMethods.Error.UNKNOWN_PRODUCT:
+                case (uint)NativeMethods.Error.UNKNOWN_FEATURE:
+                case (uint)NativeMethods.Error.UNKNOWN_COMPONENT: return new ArgumentException(msg);
 
-                case (uint) NativeMethods.Error.BAD_QUERY_SYNTAX: return new BadQuerySyntaxException(msg);
+                case (uint)NativeMethods.Error.BAD_QUERY_SYNTAX: return new BadQuerySyntaxException(msg);
 
-                case (uint) NativeMethods.Error.INVALID_HANDLE_STATE:
-                case (uint) NativeMethods.Error.INVALID_HANDLE:
+                case (uint)NativeMethods.Error.INVALID_HANDLE_STATE:
+                case (uint)NativeMethods.Error.INVALID_HANDLE:
                     InvalidHandleException ihex = new InvalidHandleException(msg);
-                    ihex.errorCode = (int) errorCode;
+                    ihex.errorCode = (int)errorCode;
                     return ihex;
 
-                case (uint) NativeMethods.Error.INSTALL_USEREXIT: return new InstallCanceledException(msg);
+                case (uint)NativeMethods.Error.INSTALL_USEREXIT: return new InstallCanceledException(msg);
 
-                case (uint) NativeMethods.Error.CALL_NOT_IMPLEMENTED: return new NotImplementedException(msg);
+                case (uint)NativeMethods.Error.CALL_NOT_IMPLEMENTED: return new NotImplementedException(msg);
 
-                default: return new InstallerException((int) errorCode, msg);
+                default: return new InstallerException((int)errorCode, msg);
             }
         }
 
         internal static string GetSystemMessage(uint errorCode)
         {
-            const uint FORMAT_MESSAGE_IGNORE_INSERTS  = 0x00000200;
-            const uint FORMAT_MESSAGE_FROM_SYSTEM     = 0x00001000;
+            const uint FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200;
+            const uint FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000;
 
             StringBuilder buf = new StringBuilder(1024);
             uint formatCount = NativeMethods.FormatMessage(
                 FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                 IntPtr.Zero,
-                (uint) errorCode,
+                (uint)errorCode,
                 0,
                 buf,
-                (uint) buf.Capacity,
+                (uint)buf.Capacity,
                 IntPtr.Zero);
 
             if (formatCount != 0)
@@ -273,7 +273,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             int recordHandle = RemotableNativeMethods.MsiGetLastErrorRecord(0);
             if (recordHandle != 0)
             {
-                using (Record errorRec = new Record((IntPtr) recordHandle, true, null))
+                using (Record errorRec = new Record((IntPtr)recordHandle, true, null))
                 {
                     this.errorData = new object[errorRec.FieldCount];
                     for (int i = 0; i < this.errorData.Length; i++)
@@ -311,7 +311,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// innerException parameter is not a null reference (Nothing in Visual Basic), the current exception
         /// is raised in a catch block that handles the inner exception.</param>
         public InstallCanceledException(string msg, Exception innerException)
-            : base((int) NativeMethods.Error.INSTALL_USEREXIT, msg, innerException)
+            : base((int)NativeMethods.Error.INSTALL_USEREXIT, msg, innerException)
         {
         }
 
@@ -358,7 +358,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// innerException parameter is not a null reference (Nothing in Visual Basic), the current exception
         /// is raised in a catch block that handles the inner exception.</param>
         public BadQuerySyntaxException(string msg, Exception innerException)
-            : base((int) NativeMethods.Error.BAD_QUERY_SYNTAX, msg, innerException)
+            : base((int)NativeMethods.Error.BAD_QUERY_SYNTAX, msg, innerException)
         {
         }
 
@@ -405,7 +405,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// innerException parameter is not a null reference (Nothing in Visual Basic), the current exception
         /// is raised in a catch block that handles the inner exception.</param>
         public InvalidHandleException(string msg, Exception innerException)
-            : base((int) NativeMethods.Error.INVALID_HANDLE, msg, innerException)
+            : base((int)NativeMethods.Error.INVALID_HANDLE, msg, innerException)
         {
         }
 
@@ -493,10 +493,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     view.Execute();
 
                     foreach (Record rec in view) using (rec)
-                    {
-                        conflictTableList.Add(rec.GetString(1));
-                        conflictCountList.Add((int) rec.GetInteger(2));
-                    }
+                        {
+                            conflictTableList.Add(rec.GetString(1));
+                            conflictCountList.Add((int)rec.GetInteger(2));
+                        }
                 }
 
                 this.conflictTables = conflictTableList;
@@ -516,8 +516,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("info");
             }
 
-            this.conflictTables = (string[]) info.GetValue("mergeConflictTables", typeof(string[]));
-            this.conflictCounts = (int[]) info.GetValue("mergeConflictCounts", typeof(int[]));
+            this.conflictTables = (string[])info.GetValue("mergeConflictTables", typeof(string[]));
+            this.conflictCounts = (int[])info.GetValue("mergeConflictCounts", typeof(int[]));
         }
 
         /// <summary>
@@ -573,7 +573,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </summary>
         /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        [SecurityPermission(SecurityAction.Demand, SerializationFormatter=true)]
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             if (info == null)

@@ -285,7 +285,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
                 new BasicUnpackStreamContext(stream);
             this.Unpack(
                 streamContext,
-                delegate(string match)
+                delegate (string match)
                 {
                     return String.Compare(
                         match, path, StringComparison.OrdinalIgnoreCase) == 0;

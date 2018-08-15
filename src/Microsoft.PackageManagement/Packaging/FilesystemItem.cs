@@ -1,27 +1,30 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement.Internal.Packaging {
+namespace Microsoft.PackageManagement.Internal.Packaging
+{
     using System.Xml.Linq;
     using Utility.Extensions;
 
     /// <summary>
     ///     Represents an individual file or directory.
     /// </summary>
-    public class FilesystemItem : Meta {
+    public class FilesystemItem : Meta
+    {
         internal FilesystemItem(XElement element)
-            : base(element) {
+            : base(element)
+        {
         }
 
         /// <summary>
@@ -34,12 +37,13 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         ///     referenced by the SWID tag is actually installed on a specific
         ///     computing device
         /// </summary>
-        public bool? IsKey {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Key).IsTruePreserveNull();
-            }
-            internal set {
-                if (value != null) {
+        public bool? IsKey
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Key).IsTruePreserveNull();
+            internal set
+            {
+                if (value != null)
+                {
                     AddAttribute(Iso19770_2.Attributes.Key, value.ToString());
                 }
             }
@@ -51,26 +55,20 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         ///     to be located.  does not include the filename itself.  This can
         ///     be relative path from the 'root' attribute.
         /// </summary>
-        public string Location {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Location);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.Location, value);
-            }
+        public string Location
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Location);
+            internal set => AddAttribute(Iso19770_2.Attributes.Location, value);
         }
 
         /// <summary>
         ///     From the swidtag schema:
         ///     The filename without any path characters
         /// </summary>
-        public string Name {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Name);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.Name, value);
-            }
+        public string Name
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Name);
+            internal set => AddAttribute(Iso19770_2.Attributes.Name, value);
         }
 
         /// <summary>
@@ -80,13 +78,10 @@ namespace Microsoft.PackageManagement.Internal.Packaging {
         ///     the assumption is the 'root' is the same folder as
         ///     the location of the SWIDTAG.
         /// </summary>
-        public string Root {
-            get {
-                return GetAttribute(Iso19770_2.Attributes.Root);
-            }
-            internal set {
-                AddAttribute(Iso19770_2.Attributes.Root, value);
-            }
+        public string Root
+        {
+            get => GetAttribute(Iso19770_2.Attributes.Root);
+            internal set => AddAttribute(Iso19770_2.Attributes.Root, value);
         }
     }
 }

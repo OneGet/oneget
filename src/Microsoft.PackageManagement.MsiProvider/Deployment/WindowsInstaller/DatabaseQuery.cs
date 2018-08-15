@@ -44,13 +44,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             string sql = (args == null || args.Length == 0 ? sqlFormat :
                 String.Format(CultureInfo.InvariantCulture, sqlFormat, args));
             int viewHandle;
-            uint ret = RemotableNativeMethods.MsiDatabaseOpenView((int) this.Handle, sql, out viewHandle);
+            uint ret = RemotableNativeMethods.MsiDatabaseOpenView((int)this.Handle, sql, out viewHandle);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
             }
 
-            return new View((IntPtr) viewHandle, sql, this);
+            return new View((IntPtr)viewHandle, sql, this);
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             this.Execute(
                 args == null || args.Length == 0 ?
                     sqlFormat : String.Format(CultureInfo.InvariantCulture, sqlFormat, args),
-                (Record) null);
+                (Record)null);
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             return this.ExecuteQuery(
                 args == null || args.Length == 0 ?
                     sqlFormat : String.Format(CultureInfo.InvariantCulture, sqlFormat, args),
-                (Record) null);
+                (Record)null);
         }
 
         /// <summary>
@@ -176,13 +176,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 int fieldCount = 0;
 
                 foreach (Record rec in view) using (rec)
-                {
-                    if (fieldCount == 0) fieldCount = rec.FieldCount;
-                    for (int i = 1; i <= fieldCount; i++)
                     {
-                        results.Add(rec[i]);
+                        if (fieldCount == 0) fieldCount = rec.FieldCount;
+                        for (int i = 1; i <= fieldCount; i++)
+                        {
+                            results.Add(rec[i]);
+                        }
                     }
-                }
 
                 return results;
             }
@@ -219,7 +219,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             return this.ExecuteIntegerQuery(
                 args == null || args.Length == 0 ?
                     sqlFormat : String.Format(CultureInfo.InvariantCulture, sqlFormat, args),
-                (Record) null);
+                (Record)null);
         }
 
         /// <summary>
@@ -255,13 +255,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 int fieldCount = 0;
 
                 foreach (Record rec in view) using (rec)
-                {
-                    if (fieldCount == 0) fieldCount = rec.FieldCount;
-                    for (int i = 1; i <= fieldCount; i++)
                     {
-                        results.Add(rec.GetInteger(i));
+                        if (fieldCount == 0) fieldCount = rec.FieldCount;
+                        for (int i = 1; i <= fieldCount; i++)
+                        {
+                            results.Add(rec.GetInteger(i));
+                        }
                     }
-                }
 
                 return results;
             }
@@ -297,7 +297,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             return this.ExecuteStringQuery(
                 args == null || args.Length == 0 ?
                     sqlFormat : String.Format(CultureInfo.InvariantCulture, sqlFormat, args),
-                (Record) null);
+                (Record)null);
         }
 
         /// <summary>
@@ -332,13 +332,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 int fieldCount = 0;
 
                 foreach (Record rec in view) using (rec)
-                {
-                    if (fieldCount == 0) fieldCount = rec.FieldCount;
-                    for (int i = 1; i <= fieldCount; i++)
                     {
-                        results.Add(rec.GetString(i));
+                        if (fieldCount == 0) fieldCount = rec.FieldCount;
+                        for (int i = 1; i <= fieldCount; i++)
+                        {
+                            results.Add(rec.GetString(i));
+                        }
                     }
-                }
 
                 return results;
             }
@@ -374,7 +374,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             return this.ExecuteScalar(
                 args == null || args.Length == 0 ?
                     sqlFormat : String.Format(CultureInfo.InvariantCulture, sqlFormat, args),
-                (Record) null);
+                (Record)null);
         }
 
         /// <summary>
@@ -410,7 +410,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 rec = view.Fetch();
                 if (rec == null)
                 {
-                    throw InstallerException.ExceptionFromReturnCode((uint) NativeMethods.Error.NO_MORE_ITEMS);
+                    throw InstallerException.ExceptionFromReturnCode((uint)NativeMethods.Error.NO_MORE_ITEMS);
                 }
                 return rec[1];
             }

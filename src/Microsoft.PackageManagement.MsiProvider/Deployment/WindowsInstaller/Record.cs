@@ -36,7 +36,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// IsFormatStringInvalid is set from several View methods that invalidate the FormatString
         /// and used to determine behavior during Record.ToString().
         /// </summary>
-        internal protected bool IsFormatStringInvalid
+        protected internal bool IsFormatStringInvalid
         {
             set { this.isFormatStringInvalid = value; }
 
@@ -57,7 +57,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msicreaterecord.asp">MsiCreateRecord</a>
         /// </p></remarks>
         public Record(int fieldCount)
-            : this((IntPtr) RemotableNativeMethods.MsiCreateRecord((uint) fieldCount, 0), true, (View) null)
+            : this((IntPtr)RemotableNativeMethods.MsiCreateRecord((uint)fieldCount, 0), true, (View)null)
         {
         }
 
@@ -76,7 +76,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public Record(params object[] fields)
             : this(fields.Length)
         {
-            if (fields== null) {
+            if (fields == null)
+            {
                 throw new ArgumentNullException("fields");
             }
 
@@ -103,7 +104,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                return (int) RemotableNativeMethods.MsiRecordGetFieldCount((int) this.Handle);
+                return (int)RemotableNativeMethods.MsiRecordGetFieldCount((int)this.Handle);
             }
         }
 
@@ -203,9 +204,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 else
                 {
                     int? value = this.GetNullableInteger(field);
-                    return value.HasValue ? (object) value.Value : null;
+                    return value.HasValue ? (object)value.Value : null;
                 }
-
             }
 
             set
@@ -228,11 +228,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     Type valueType = value.GetType();
                     if (valueType == typeof(Int32) || valueType == typeof(Int16))
                     {
-                        this.SetInteger(field, (int) value);
+                        this.SetInteger(field, (int)value);
                     }
                     else if (valueType.IsSubclassOf(typeof(Stream)))
                     {
-                        this.SetStream(field, (Stream) value);
+                        this.SetStream(field, (Stream)value);
                     }
                     else
                     {
@@ -255,7 +255,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <param name="ownsHandle">true to close the handle when this object is disposed or finalized</param>
         public static Record FromHandle(IntPtr handle, bool ownsHandle)
         {
-            return new Record(handle, ownsHandle, (View) null);
+            return new Record(handle, ownsHandle, (View)null);
         }
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void Clear()
         {
-            uint ret = RemotableNativeMethods.MsiRecordClearData((int) this.Handle);
+            uint ret = RemotableNativeMethods.MsiRecordClearData((int)this.Handle);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -289,7 +289,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public bool IsNull(int field)
         {
             this.CheckRange(field);
-            return RemotableNativeMethods.MsiRecordIsNull((int) this.Handle, (uint) field);
+            return RemotableNativeMethods.MsiRecordIsNull((int)this.Handle, (uint)field);
         }
 
         /// <summary>
@@ -329,7 +329,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public int GetDataSize(int field)
         {
             this.CheckRange(field);
-            return (int) RemotableNativeMethods.MsiRecordDataSize((int) this.Handle, (uint) field);
+            return (int)RemotableNativeMethods.MsiRecordDataSize((int)this.Handle, (uint)field);
         }
 
         /// <summary>
@@ -373,7 +373,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             this.CheckRange(field);
 
-            int value = RemotableNativeMethods.MsiRecordGetInteger((int) this.Handle, (uint) field);
+            int value = RemotableNativeMethods.MsiRecordGetInteger((int)this.Handle, (uint)field);
             if (value == Int32.MinValue)  // MSI_NULL_INTEGER
             {
                 return 0;
@@ -413,7 +413,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             this.CheckRange(field);
 
-            int value = RemotableNativeMethods.MsiRecordGetInteger((int) this.Handle, (uint) field);
+            int value = RemotableNativeMethods.MsiRecordGetInteger((int)this.Handle, (uint)field);
             if (value == Int32.MinValue)  // MSI_NULL_INTEGER
             {
                 return null;
@@ -452,7 +452,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             this.CheckRange(field);
 
-            uint ret = RemotableNativeMethods.MsiRecordSetInteger((int) this.Handle, (uint) field, value);
+            uint ret = RemotableNativeMethods.MsiRecordSetInteger((int)this.Handle, (uint)field, value);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -491,9 +491,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             this.CheckRange(field);
 
             uint ret = RemotableNativeMethods.MsiRecordSetInteger(
-                (int) this.Handle,
-                (uint) field,
-                value.HasValue ? (int) value : Int32.MinValue);
+                (int)this.Handle,
+                (uint)field,
+                value.HasValue ? (int)value : Int32.MinValue);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -532,11 +532,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             StringBuilder buf = new StringBuilder(String.Empty);
             uint bufSize = 0;
-            uint ret = RemotableNativeMethods.MsiRecordGetString((int) this.Handle, (uint) field, buf, ref bufSize);
-            if (ret == (uint) NativeMethods.Error.MORE_DATA)
+            uint ret = RemotableNativeMethods.MsiRecordGetString((int)this.Handle, (uint)field, buf, ref bufSize);
+            if (ret == (uint)NativeMethods.Error.MORE_DATA)
             {
-                buf.Capacity = (int) ++bufSize;
-                ret = RemotableNativeMethods.MsiRecordGetString((int) this.Handle, (uint) field, buf, ref bufSize);
+                buf.Capacity = (int)++bufSize;
+                ret = RemotableNativeMethods.MsiRecordGetString((int)this.Handle, (uint)field, buf, ref bufSize);
             }
             if (ret != 0)
             {
@@ -578,7 +578,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 value = String.Empty;
             }
 
-            uint ret = RemotableNativeMethods.MsiRecordSetString((int) this.Handle, (uint) field, value);
+            uint ret = RemotableNativeMethods.MsiRecordSetString((int)this.Handle, (uint)field, value);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -766,7 +766,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("filePath");
             }
 
-            uint ret = RemotableNativeMethods.MsiRecordSetStream((int) this.Handle, (uint) field, filePath);
+            uint ret = RemotableNativeMethods.MsiRecordSetStream((int)this.Handle, (uint)field, filePath);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -815,7 +815,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             if (stream == null)
             {
-                uint ret = RemotableNativeMethods.MsiRecordSetStream((int) this.Handle, (uint) field, null);
+                uint ret = RemotableNativeMethods.MsiRecordSetStream((int)this.Handle, (uint)field, null);
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
@@ -837,7 +837,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     writeStream.Close();
                     writeStream = null;
 
-                    uint ret = RemotableNativeMethods.MsiRecordSetStream((int) this.Handle, (uint) field, tempPath);
+                    uint ret = RemotableNativeMethods.MsiRecordSetStream((int)this.Handle, (uint)field, tempPath);
                     if (ret != 0)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret);
@@ -895,7 +895,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <seealso cref="Session.FormatRecord(Record)"/>
         public override string ToString()
         {
-            return this.ToString((IFormatProvider) null);
+            return this.ToString((IFormatProvider)null);
         }
 
         /// <summary>
@@ -921,15 +921,15 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
 
             InstallerHandle session = provider as InstallerHandle;
-            int sessionHandle = session != null ? (int) session.Handle : 0;
+            int sessionHandle = session != null ? (int)session.Handle : 0;
             StringBuilder buf = new StringBuilder(String.Empty);
             uint bufSize = 1;
-            uint ret = RemotableNativeMethods.MsiFormatRecord(sessionHandle, (int) this.Handle, buf, ref bufSize);
-            if (ret == (uint) NativeMethods.Error.MORE_DATA)
+            uint ret = RemotableNativeMethods.MsiFormatRecord(sessionHandle, (int)this.Handle, buf, ref bufSize);
+            if (ret == (uint)NativeMethods.Error.MORE_DATA)
             {
                 bufSize++;
-                buf = new StringBuilder((int) bufSize);
-                ret = RemotableNativeMethods.MsiFormatRecord(sessionHandle, (int) this.Handle, buf, ref bufSize);
+                buf = new StringBuilder((int)bufSize);
+                ret = RemotableNativeMethods.MsiFormatRecord(sessionHandle, (int)this.Handle, buf, ref bufSize);
             }
             if (ret != 0)
             {
@@ -984,7 +984,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
             else
             {
-                string savedFormatString = (string) this[0];
+                string savedFormatString = (string)this[0];
                 try
                 {
                     this.FormatString = format;
@@ -1002,7 +1002,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             IStorage storage;
             NativeMethods.STGM openMode = NativeMethods.STGM.READ | NativeMethods.STGM.SHARE_DENY_WRITE;
-            int hr = NativeMethods.StgOpenStorage(databaseFile, IntPtr.Zero, (uint) openMode, IntPtr.Zero, 0, out storage);
+            int hr = NativeMethods.StgOpenStorage(databaseFile, IntPtr.Zero, (uint)openMode, IntPtr.Zero, 0, out storage);
             if (hr != 0)
             {
                 Marshal.ThrowExceptionForHR(hr);
@@ -1011,13 +1011,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             try
             {
                 openMode = NativeMethods.STGM.READ | NativeMethods.STGM.SHARE_EXCLUSIVE;
-                IStorage subStorage = storage.OpenStorage(storageName, IntPtr.Zero, (uint) openMode, IntPtr.Zero, 0);
+                IStorage subStorage = storage.OpenStorage(storageName, IntPtr.Zero, (uint)openMode, IntPtr.Zero, 0);
 
                 try
                 {
                     IStorage newStorage;
                     openMode = NativeMethods.STGM.CREATE | NativeMethods.STGM.READWRITE | NativeMethods.STGM.SHARE_EXCLUSIVE;
-                    hr = NativeMethods.StgCreateDocfile(extractFile, (uint) openMode, 0, out newStorage);
+                    hr = NativeMethods.StgCreateDocfile(extractFile, (uint)openMode, 0, out newStorage);
                     if (hr != 0)
                     {
                         Marshal.ThrowExceptionForHR(hr);

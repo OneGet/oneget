@@ -12,23 +12,25 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets
+{
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Async;
+    using Microsoft.PackageManagement.Internal.Utility.Collections;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
-    using Microsoft.PackageManagement.Internal.Packaging;
-    using Microsoft.PackageManagement.Internal.Utility.Async;
-    using Microsoft.PackageManagement.Internal.Utility.Collections;
-    using Microsoft.PackageManagement.Internal.Utility.Extensions;
-    using Utility;
     using System.Security;
 
     [Cmdlet(VerbsLifecycle.Register, Constants.Nouns.PackageSourceNoun, SupportsShouldProcess = true, HelpUri = "https://go.microsoft.com/fwlink/?LinkID=517139")]
-    public sealed class RegisterPackageSource : CmdletWithProvider {
+    public sealed class RegisterPackageSource : CmdletWithProvider
+    {
         public RegisterPackageSource()
-            : base(new[] {OptionCategory.Provider, OptionCategory.Source}) {
+            : base(new[] { OptionCategory.Provider, OptionCategory.Source })
+        {
         }
 
         [Parameter]
@@ -72,17 +74,22 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-        protected override IEnumerable<string> ParameterSets {
-            get {
-                return new[] {""};
+        protected override IEnumerable<string> ParameterSets
+        {
+            get
+            {
+                return new[] { "" };
             }
         }
 
-        protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
-            if (!IsInvocation) {
+        protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments)
+        {
+            if (!IsInvocation)
+            {
                 var providerNames = PackageManagementService.AllProviderNames;
                 var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
-                if (whatsOnCmdline != null) {
+                if (whatsOnCmdline != null)
+                {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
                 }
 
@@ -95,7 +102,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     new ValidateSetAttribute(providerNames.ToArray())
                 }));
             }
-            else {
+            else
+            {
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string), new Collection<Attribute> {
                     new ParameterAttribute {
                         ValueFromPipelineByPropertyName = true,
@@ -106,21 +114,22 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
-
         [Parameter(Position = 0)]
-        public string Name {get; set;}
+        public string Name { get; set; }
 
         [Parameter(Position = 1)]
-        public string Location {get; set;}
+        public string Location { get; set; }
 
         [Parameter]
-        public PSCredential Credential {get; set;}
+        public PSCredential Credential { get; set; }
 
         [Parameter]
-        public SwitchParameter Trusted {get; set;}
+        public SwitchParameter Trusted { get; set; }
 
-        public override bool ProcessRecordAsync() {
-            if (Stopping) {
+        public override bool ProcessRecordAsync()
+        {
+            if (Stopping)
+            {
                 return false;
             }
 
@@ -132,38 +141,45 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 return false;
             }
 
-                switch (packageProvider.Count()) {
-                    case 0:
-                        Error(Constants.Errors.UnknownProvider, ProviderName);
-                        return false;
+            switch (packageProvider.Count())
+            {
+                case 0:
+                    Error(Constants.Errors.UnknownProvider, ProviderName);
+                    return false;
 
-                    case 1:
-                        break;
+                case 1:
+                    break;
 
-                    default:
-                        Error(Constants.Errors.MatchesMultipleProviders, packageProvider.Select(p => p.ProviderName).JoinWithComma());
-                        return false;
-                }
-
+                default:
+                    Error(Constants.Errors.MatchesMultipleProviders, packageProvider.Select(p => p.ProviderName).JoinWithComma());
+                    return false;
+            }
 
             var provider = packageProvider.First();
 
-            using (var sources = provider.ResolvePackageSources(this).CancelWhen(CancellationEvent.Token)) {
+            using (var sources = provider.ResolvePackageSources(this).CancelWhen(CancellationEvent.Token))
+            {
                 // first, check if there is a source by this name already.
                 var existingSources = sources.Where(each => each.IsRegistered && each.Name.Equals(Name, StringComparison.OrdinalIgnoreCase)).ToArray();
 
-                if (existingSources.Any()) {
+                if (existingSources.Any())
+                {
                     // if there is, and the user has said -Force, then let's remove it.
-                    foreach (var existingSource in existingSources) {
-                        if (Force) {
-
-                            if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, existingSource.Name, existingSource.Location, existingSource.ProviderName), Constants.Messages.ActionReplacePackageSource).Result) {
+                    foreach (var existingSource in existingSources)
+                    {
+                        if (Force)
+                        {
+                            if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, existingSource.Name, existingSource.Location, existingSource.ProviderName), Constants.Messages.ActionReplacePackageSource).Result)
+                            {
                                 var removedSources = provider.RemovePackageSource(existingSource.Name, this).CancelWhen(CancellationEvent.Token);
-                                foreach (var removedSource in removedSources) {
+                                foreach (var removedSource in removedSources)
+                                {
                                     Verbose(Constants.Messages.OverwritingPackageSource, removedSource.Name);
                                 }
                             }
-                        } else {
+                        }
+                        else
+                        {
                             Error(Constants.Errors.PackageSourceExists, existingSource.Name);
                             return false;
                         }
@@ -174,7 +190,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             string providerNameForProcessMessage = ProviderName.JoinWithComma();
             if (ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageSource, Name, Location, providerNameForProcessMessage), FormatMessageString(Constants.Messages.ActionRegisterPackageSource)).Result)
             {
-                //Need to resolve the path created via psdrive. 
+                //Need to resolve the path created via psdrive.
                 //e.g., New-PSDrive -Name x -PSProvider FileSystem -Root \\foobar\myfolder. Here we are resolving x:\
                 try
                 {
@@ -189,12 +205,16 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                             Location = resolvedPaths[0];
                         }
                     }
-                } catch (Exception) {
-                    //allow to continue handling the cases other than file system                  
+                }
+                catch (Exception)
+                {
+                    //allow to continue handling the cases other than file system
                 }
 
-                using (var added = provider.AddPackageSource(Name, Location, Trusted, this).CancelWhen(CancellationEvent.Token)) {
-                    foreach (var addedSource in added) {
+                using (var added = provider.AddPackageSource(Name, Location, Trusted, this).CancelWhen(CancellationEvent.Token))
+                {
+                    foreach (var addedSource in added)
+                    {
                         WriteObject(addedSource);
                     }
                 }

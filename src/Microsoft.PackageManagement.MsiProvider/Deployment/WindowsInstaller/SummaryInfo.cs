@@ -39,7 +39,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msigetsummaryinformation.asp">MsiGetSummaryInformation</a>
         /// </p></remarks>
         public SummaryInfo(string packagePath, bool enableWrite)
-            : base((IntPtr) SummaryInfo.OpenSummaryInfo(packagePath, enableWrite), true)
+            : base((IntPtr)SummaryInfo.OpenSummaryInfo(packagePath, enableWrite), true)
         {
         }
 
@@ -264,7 +264,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public DateTime LastPrintTime
         {
-            get { return (DateTime) this[11, typeof(DateTime)]; }
+            get { return (DateTime)this[11, typeof(DateTime)]; }
             set { this[11, typeof(DateTime)] = value; }
         }
 
@@ -279,7 +279,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public DateTime CreateTime
         {
-            get { return (DateTime) this[12, typeof(DateTime)]; }
+            get { return (DateTime)this[12, typeof(DateTime)]; }
             set { this[12, typeof(DateTime)] = value; }
         }
 
@@ -297,7 +297,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public DateTime LastSaveTime
         {
-            get { return (DateTime) this[13, typeof(DateTime)]; }
+            get { return (DateTime)this[13, typeof(DateTime)]; }
             set { this[13, typeof(DateTime)] = value; }
         }
 
@@ -317,7 +317,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public short CodePage
         {
-            get { return (short) this[1, typeof(short)]; }
+            get { return (short)this[1, typeof(short)]; }
             set { this[1, typeof(short)] = value; }
         }
 
@@ -342,7 +342,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int PageCount
         {
-            get { return (int) this[14, typeof(int)]; }
+            get { return (int)this[14, typeof(int)]; }
             set { this[14, typeof(int)] = value; }
         }
 
@@ -395,7 +395,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int WordCount
         {
-            get { return (int) this[15, typeof(int)]; }
+            get { return (int)this[15, typeof(int)]; }
             set { this[15, typeof(int)] = value; }
         }
 
@@ -412,7 +412,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int CharacterCount
         {
-            get { return (int) this[16, typeof(int)]; }
+            get { return (int)this[16, typeof(int)]; }
             set { this[16, typeof(int)] = value; }
         }
 
@@ -437,7 +437,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public int Security
         {
-            get { return (int) this[19, typeof(int)]; }
+            get { return (int)this[19, typeof(int)]; }
             set { this[19, typeof(int)] = value; }
         }
 
@@ -453,127 +453,127 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 long timeValue = 0;
 
                 uint ret = RemotableNativeMethods.MsiSummaryInfoGetProperty(
-                    (int) this.Handle,
+                    (int)this.Handle,
                     property,
                     out dataType,
                     out intValue,
                     ref timeValue,
                     stringValue,
                     ref bufSize);
-                if (ret != 0 && dataType != (uint) VarEnum.VT_LPSTR)
+                if (ret != 0 && dataType != (uint)VarEnum.VT_LPSTR)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
                 }
 
-                switch ((VarEnum) dataType)
+                switch ((VarEnum)dataType)
                 {
                     case VarEnum.VT_EMPTY:
-                    {
-                        if (type == typeof(DateTime))
                         {
-                            return DateTime.MinValue;
+                            if (type == typeof(DateTime))
+                            {
+                                return DateTime.MinValue;
+                            }
+                            else if (type == typeof(string))
+                            {
+                                return String.Empty;
+                            }
+                            else if (type == typeof(short))
+                            {
+                                return (short)0;
+                            }
+                            else
+                            {
+                                return (int)0;
+                            }
                         }
-                        else if (type == typeof(string))
-                        {
-                            return String.Empty;
-                        }
-                        else if (type == typeof(short))
-                        {
-                            return (short) 0;
-                        }
-                        else
-                        {
-                            return (int) 0;
-                        }
-                    }
 
                     case VarEnum.VT_LPSTR:
-                    {
-                        if (ret == (uint) NativeMethods.Error.MORE_DATA)
                         {
-                            stringValue.Capacity = (int) ++bufSize;
-                            ret = RemotableNativeMethods.MsiSummaryInfoGetProperty(
-                                (int) this.Handle,
-                                property,
-                                out dataType,
-                                out intValue,
-                                ref timeValue,
-                                stringValue,
-                                ref bufSize);
+                            if (ret == (uint)NativeMethods.Error.MORE_DATA)
+                            {
+                                stringValue.Capacity = (int)++bufSize;
+                                ret = RemotableNativeMethods.MsiSummaryInfoGetProperty(
+                                    (int)this.Handle,
+                                    property,
+                                    out dataType,
+                                    out intValue,
+                                    ref timeValue,
+                                    stringValue,
+                                    ref bufSize);
+                            }
+                            if (ret != 0)
+                            {
+                                throw InstallerException.ExceptionFromReturnCode(ret);
+                            }
+                            return stringValue.ToString();
                         }
-                        if (ret != 0)
-                        {
-                            throw InstallerException.ExceptionFromReturnCode(ret);
-                        }
-                        return stringValue.ToString();
-                    }
 
                     case VarEnum.VT_I2:
                     case VarEnum.VT_I4:
-                    {
-                        if (type == typeof(string))
                         {
-                            return intValue.ToString(CultureInfo.InvariantCulture);
+                            if (type == typeof(string))
+                            {
+                                return intValue.ToString(CultureInfo.InvariantCulture);
+                            }
+                            else if (type == typeof(short))
+                            {
+                                return (short)intValue;
+                            }
+                            else
+                            {
+                                return intValue;
+                            }
                         }
-                        else if (type == typeof(short))
-                        {
-                            return (short) intValue;
-                        }
-                        else
-                        {
-                            return intValue;
-                        }
-                    }
 
                     case VarEnum.VT_FILETIME:
-                    {
-                        if (type == typeof(string))
                         {
-                            return DateTime.FromFileTime(timeValue).ToString(CultureInfo.InvariantCulture);
+                            if (type == typeof(string))
+                            {
+                                return DateTime.FromFileTime(timeValue).ToString(CultureInfo.InvariantCulture);
+                            }
+                            else
+                            {
+                                return DateTime.FromFileTime(timeValue);
+                            }
                         }
-                        else
-                        {
-                            return DateTime.FromFileTime(timeValue);
-                        }
-                    }
 
                     default:
-                    {
-                        throw new InstallerException();
-                    }
+                        {
+                            throw new InstallerException();
+                        }
                 }
             }
 
             set
             {
-                uint dataType = (uint) VarEnum.VT_NULL;
+                uint dataType = (uint)VarEnum.VT_NULL;
                 string stringValue = "";
                 int intValue = 0;
                 long timeValue = 0;
 
                 if (type == typeof(short))
                 {
-                    dataType = (uint) VarEnum.VT_I2;
-                    intValue = (int)(short) value;  // Double cast because value is a *boxed* short.
+                    dataType = (uint)VarEnum.VT_I2;
+                    intValue = (int)(short)value;  // Double cast because value is a *boxed* short.
                 }
                 else if (type == typeof(int))
                 {
-                    dataType = (uint) VarEnum.VT_I4;
-                    intValue = (int) value;
+                    dataType = (uint)VarEnum.VT_I4;
+                    intValue = (int)value;
                 }
                 else if (type == typeof(string))
                 {
-                    dataType = (uint) VarEnum.VT_LPSTR;
-                    stringValue = (string) value;
+                    dataType = (uint)VarEnum.VT_LPSTR;
+                    stringValue = (string)value;
                 }
                 else // (type == typeof(DateTime))
                 {
-                    dataType = (uint) VarEnum.VT_FILETIME;
-                    timeValue = ((DateTime) value).ToFileTime();
+                    dataType = (uint)VarEnum.VT_FILETIME;
+                    timeValue = ((DateTime)value).ToFileTime();
                 }
 
                 uint ret = NativeMethods.MsiSummaryInfoSetProperty(
-                    (int) this.Handle,
+                    (int)this.Handle,
                     property,
                     dataType,
                     intValue,
@@ -589,7 +589,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private string this[uint property]
         {
-            get { return (string) this[property, typeof(string)]; }
+            get { return (string)this[property, typeof(string)]; }
             set { this[property, typeof(string)] = value; }
         }
 
@@ -606,7 +606,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public void Persist()
         {
-            uint ret = NativeMethods.MsiSummaryInfoPersist((int) this.Handle);
+            uint ret = NativeMethods.MsiSummaryInfoPersist((int)this.Handle);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -620,12 +620,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             uint ret = RemotableNativeMethods.MsiGetSummaryInformation(
                 0,
                 packagePath,
-                (uint) maxProperties,
+                (uint)maxProperties,
                 out summaryInfoHandle);
             if (ret != 0)
             {
-                if (ret == (uint) NativeMethods.Error.FILE_NOT_FOUND ||
-                    ret == (uint) NativeMethods.Error.ACCESS_DENIED)
+                if (ret == (uint)NativeMethods.Error.FILE_NOT_FOUND ||
+                    ret == (uint)NativeMethods.Error.ACCESS_DENIED)
                 {
                     throw new FileNotFoundException(null, packagePath);
                 }

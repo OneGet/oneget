@@ -15,9 +15,13 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
     using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
+
 #if !CORECLR
+
     using System.Security.Permissions;
+
 #endif
+
     using System.Text;
 
     internal class CabPacker : CabWorker
@@ -29,6 +33,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         // These delegates need to be saved as member variables
         // so that they don't get GC'd.
         private NativeMethods.FCI.PFNALLOC fciAllocMemHandler;
+
         private NativeMethods.FCI.PFNFREE fciFreeMemHandler;
         private NativeMethods.FCI.PFNOPEN fciOpenStreamHandler;
         private NativeMethods.FCI.PFNREAD fciReadStreamHandler;

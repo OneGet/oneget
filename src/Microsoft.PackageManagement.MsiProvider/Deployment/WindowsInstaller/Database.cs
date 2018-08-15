@@ -95,7 +95,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Database(string filePath, string outputPath)
-            : this((IntPtr) Database.Open(filePath, outputPath), true, outputPath, DatabaseOpenMode.CreateDirect)
+            : this((IntPtr)Database.Open(filePath, outputPath), true, outputPath, DatabaseOpenMode.CreateDirect)
         {
         }
 
@@ -125,7 +125,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiopendatabase.asp">MsiOpenDatabase</a>
         /// </p></remarks>
         public Database(string filePath, DatabaseOpenMode mode)
-            : this((IntPtr) Database.Open(filePath, mode), true, filePath, mode)
+            : this((IntPtr)Database.Open(filePath, mode), true, filePath, mode)
         {
         }
 
@@ -183,7 +183,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     return true;
                 }
 
-                int state = NativeMethods.MsiGetDatabaseState((int) this.Handle);
+                int state = NativeMethods.MsiGetDatabaseState((int)this.Handle);
                 return state != 1;
             }
         }
@@ -282,12 +282,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         {
                             int summaryInfoHandle;
                             int maxProperties = this.IsReadOnly ? 0 : SummaryInfo.MAX_PROPERTIES;
-                            uint ret = RemotableNativeMethods.MsiGetSummaryInformation((int) this.Handle, null, (uint) maxProperties, out summaryInfoHandle);
+                            uint ret = RemotableNativeMethods.MsiGetSummaryInformation((int)this.Handle, null, (uint)maxProperties, out summaryInfoHandle);
                             if (ret != 0)
                             {
                                 throw InstallerException.ExceptionFromReturnCode(ret);
                             }
-                            this.summaryInfo = new SummaryInfo((IntPtr) summaryInfoHandle, true);
+                            this.summaryInfo = new SummaryInfo((IntPtr)summaryInfoHandle, true);
                         }
                     }
                 }
@@ -312,7 +312,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 handle,
                 ownsHandle,
                 null,
-                NativeMethods.MsiGetDatabaseState((int) handle) == 1 ? DatabaseOpenMode.Direct : DatabaseOpenMode.ReadOnly);
+                NativeMethods.MsiGetDatabaseState((int)handle) == 1 ? DatabaseOpenMode.Direct : DatabaseOpenMode.ReadOnly);
         }
 
         /// <summary>
@@ -386,14 +386,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("otherDatabase");
             }
 
-            uint ret = NativeMethods.MsiDatabaseMerge((int) this.Handle, (int) otherDatabase.Handle, errorTable);
+            uint ret = NativeMethods.MsiDatabaseMerge((int)this.Handle, (int)otherDatabase.Handle, errorTable);
             if (ret != 0)
             {
-                if (ret == (uint) NativeMethods.Error.FUNCTION_FAILED)
+                if (ret == (uint)NativeMethods.Error.FUNCTION_FAILED)
                 {
                     throw new MergeException(this, errorTable);
                 }
-                else if (ret == (uint) NativeMethods.Error.DATATYPE_MISMATCH)
+                else if (ret == (uint)NativeMethods.Error.DATATYPE_MISMATCH)
                 {
                     throw new MergeException("Schema difference between the two databases.");
                 }
@@ -459,7 +459,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 throw new ArgumentNullException("table");
             }
-            uint ret = RemotableNativeMethods.MsiDatabaseIsTablePersistent((int) this.Handle, table);
+            uint ret = RemotableNativeMethods.MsiDatabaseIsTablePersistent((int)this.Handle, table);
             if (ret == 3)  // MSICONDITION_ERROR
             {
                 throw new InstallerException();
@@ -541,8 +541,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 {
                     // Avoid creating unnecessary Record objects by not calling View.Fetch().
                     int recordHandle;
-                    uint ret = RemotableNativeMethods.MsiViewFetch((int) view.Handle, out recordHandle);
-                    if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS)
+                    uint ret = RemotableNativeMethods.MsiViewFetch((int)view.Handle, out recordHandle);
+                    if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
                     {
                         break;
                     }
@@ -586,7 +586,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 this.summaryInfo.Close();
                 this.summaryInfo = null;
             }
-            uint ret = NativeMethods.MsiDatabaseCommit((int) this.Handle);
+            uint ret = NativeMethods.MsiDatabaseCommit((int)this.Handle);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -613,10 +613,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
 
             FileInfo file = new FileInfo(exportFilePath);
-            uint ret = NativeMethods.MsiDatabaseExport((int) this.Handle, table, file.DirectoryName, file.Name);
+            uint ret = NativeMethods.MsiDatabaseExport((int)this.Handle, table, file.DirectoryName, file.Name);
             if (ret != 0)
             {
-                if (ret == (uint) NativeMethods.Error.BAD_PATHNAME)
+                if (ret == (uint)NativeMethods.Error.BAD_PATHNAME)
                 {
                     throw new FileNotFoundException(null, exportFilePath);
                 }
@@ -647,10 +647,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
 
             FileInfo file = new FileInfo(importFilePath);
-            uint ret = NativeMethods.MsiDatabaseImport((int) this.Handle, file.DirectoryName, file.Name);
+            uint ret = NativeMethods.MsiDatabaseImport((int)this.Handle, file.DirectoryName, file.Name);
             if (ret != 0)
             {
-                if (ret == (uint) NativeMethods.Error.BAD_PATHNAME)
+                if (ret == (uint)NativeMethods.Error.BAD_PATHNAME)
                 {
                     throw new FileNotFoundException(null, importFilePath);
                 }
@@ -693,11 +693,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 view.Execute();
 
                 foreach (Record rec in view) using (rec)
-                {
-                    string table = (string) rec[1];
+                    {
+                        string table = (string)rec[1];
 
-                    this.Export(table, Path.Combine(directoryPath, table + ".idt"));
-                }
+                        this.Export(table, Path.Combine(directoryPath, table + ".idt"));
+                    }
             }
 
             if (!Directory.Exists(Path.Combine(directoryPath, "_Streams")))
@@ -710,22 +710,22 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 view.Execute();
 
                 foreach (Record rec in view) using (rec)
-                {
-                    string stream = (string) rec[1];
-                    if (stream.EndsWith("SummaryInformation", StringComparison.Ordinal)) continue;
-
-                    int i = stream.IndexOf('.');
-                    if (i >= 0)
                     {
-                        if (File.Exists(Path.Combine(
-                            directoryPath,
-                            Path.Combine(stream.Substring(0, i), stream.Substring(i + 1) + ".ibd"))))
+                        string stream = (string)rec[1];
+                        if (stream.EndsWith("SummaryInformation", StringComparison.Ordinal)) continue;
+
+                        int i = stream.IndexOf('.');
+                        if (i >= 0)
                         {
-                            continue;
+                            if (File.Exists(Path.Combine(
+                                directoryPath,
+                                Path.Combine(stream.Substring(0, i), stream.Substring(i + 1) + ".ibd"))))
+                            {
+                                continue;
+                            }
                         }
+                        rec.GetStream(2, Path.Combine(directoryPath, Path.Combine("_Streams", stream)));
                     }
-                    rec.GetStream(2, Path.Combine(directoryPath, Path.Combine("_Streams", stream)));
-                }
             }
         }
 
@@ -808,8 +808,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public Record CreateRecord(int fieldCount)
         {
-            int hRecord = RemotableNativeMethods.MsiCreateRecord((uint) fieldCount, (int) this.Handle);
-            return new Record((IntPtr) hRecord, true, (View) null);
+            int hRecord = RemotableNativeMethods.MsiCreateRecord((uint)fieldCount, (int)this.Handle);
+            return new Record((IntPtr)hRecord, true, (View)null);
         }
 
         /// <summary>
@@ -823,7 +823,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
             else
             {
-                return "#" + ((int) this.Handle).ToString(CultureInfo.InvariantCulture);
+                return "#" + ((int)this.Handle).ToString(CultureInfo.InvariantCulture);
             }
         }
 
@@ -913,12 +913,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             if (Path.GetExtension(filePath).Equals(".msp", StringComparison.Ordinal))
             {
                 const int DATABASEOPENMODE_PATCH = 32;
-                int patchMode = (int) mode | DATABASEOPENMODE_PATCH;
-                mode = (DatabaseOpenMode) patchMode;
+                int patchMode = (int)mode | DATABASEOPENMODE_PATCH;
+                mode = (DatabaseOpenMode)patchMode;
             }
 
             int hDb;
-            uint ret = NativeMethods.MsiOpenDatabase(filePath, (IntPtr) mode, out hDb);
+            uint ret = NativeMethods.MsiOpenDatabase(filePath, (IntPtr)mode, out hDb);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(

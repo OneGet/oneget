@@ -12,36 +12,42 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
+namespace Microsoft.PowerShell.PackageManagement.Cmdlets
+{
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Packaging;
     using System.Diagnostics.CodeAnalysis;
     using System.Management.Automation;
     using System.Security;
-    using Microsoft.PackageManagement.Internal.Packaging;
-    using Microsoft.PackageManagement.Packaging;
 
-    public abstract class CmdletWithSource : CmdletWithProvider {
+    public abstract class CmdletWithSource : CmdletWithProvider
+    {
         protected CmdletWithSource(OptionCategory[] categories)
-            : base(categories) {
+            : base(categories)
+        {
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(ParameterSetName = Constants.ParameterSets.SourceByInputObjectSet, Mandatory = true, ValueFromPipeline = true)]
-        public PackageSource[] InputObject {get; set;}
+        public PackageSource[] InputObject { get; set; }
 
         [Parameter]
-        public PSCredential Credential {get; set;}
+        public PSCredential Credential { get; set; }
 
-        public override string CredentialUsername {
-            get {
+        public override string CredentialUsername
+        {
+            get
+            {
                 return Credential != null ? Credential.UserName : null;
             }
         }
 
-        public override SecureString CredentialPassword {
-            get {
+        public override SecureString CredentialPassword
+        {
+            get
+            {
                 return Credential != null ? Credential.Password : null;
             }
         }
-
     }
 }

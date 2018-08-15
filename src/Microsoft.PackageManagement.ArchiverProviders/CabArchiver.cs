@@ -12,13 +12,15 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.Archivers.Internal {
-    using System;
-    using System.Collections.Generic;
+namespace Microsoft.PackageManagement.Archivers.Internal
+{
     using PackageManagement.Internal;
     using PackageManagement.Internal.Implementation;
+    using System;
+    using System.Collections.Generic;
 
-    public class CabArchiver {
+    public class CabArchiver
+    {
         private static readonly Dictionary<string, string[]> _features = new Dictionary<string, string[]> {
             {Constants.Features.SupportedExtensions, new[] {"cab", "msu"}},
             {Constants.Features.MagicSignatures, new[] {Constants.Signatures.Cab}}
@@ -31,14 +33,17 @@ namespace Microsoft.PackageManagement.Archivers.Internal {
         ///     An object passed in from the CORE that contains functions that can be used to interact with
         ///     the CORE and HOST
         /// </param>
-        public void GetFeatures(Request request) {	
-            if( request == null ) {
-              throw new ArgumentNullException("request");
+        public void GetFeatures(Request request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
             }
 
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ArchiverName);
-            foreach (var feature in _features) {
+            foreach (var feature in _features)
+            {
                 request.Yield(feature);
             }
         }
@@ -47,7 +52,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal {
         ///     Returns the name of the Provider.
         /// </summary>
         /// <returns></returns>
-        public string ArchiverName {
+        public string ArchiverName
+        {
             get { return "cabfile"; }
         }
 
@@ -55,19 +61,22 @@ namespace Microsoft.PackageManagement.Archivers.Internal {
         /// Returns the version of the Provider.
         /// </summary>
         /// <returns>The version of this provider </returns>
-        public string ProviderVersion {
-            get {
+        public string ProviderVersion
+        {
+            get
+            {
                 return "1.0.0.0";
             }
         }
 
-        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Request request) {
+        public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Request request)
+        {
             return null;
         }
 
-        public bool IsSupportedFile(string localFilename) {
+        public bool IsSupportedFile(string localFilename)
+        {
             return false;
         }
     }
 }
-

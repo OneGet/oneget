@@ -116,7 +116,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public override bool Equals(object obj)
         {
             return (obj != null && this.GetType() == obj.GetType() &&
-                this.Handle == ((InstallerHandle) obj).Handle);
+                this.Handle == ((InstallerHandle)obj).Handle);
         }
 
         /// <summary>

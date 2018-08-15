@@ -9,7 +9,6 @@
 
 namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
 {
-    using System;
     using System.Collections.Generic;
 
     /// <summary>

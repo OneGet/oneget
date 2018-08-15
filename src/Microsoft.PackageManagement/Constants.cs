@@ -12,21 +12,24 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.Internal {
+namespace Microsoft.PackageManagement.Internal
+{
     using System;
 
-    internal static class Constants {
-        internal static readonly string[] SupportedAssemblyTypes = {".dll", ".exe", ".psm1"};
+    internal static class Constants
+    {
+        internal static readonly string[] SupportedAssemblyTypes = { ".dll", ".exe", ".psm1" };
         internal const int PackageManagementVersion = 3;
         internal const int TimeoutUnspecified = 0;
         internal const int TimeoutHostNotAvailable = -1;
 
-        internal const int HostNotAvailableTimeout = 5*60; // time when host not around
+        internal const int HostNotAvailableTimeout = 5 * 60; // time when host not around
         internal const int HostNotAvailableResponsiveness = 5; // five seconds
 
         internal const int TimeoutAfterCancel = 60;
         internal const int ResponsivenessAfterCancel = 1;
         internal static TimeSpan DefaultCallTimeout = TimeSpan.FromMinutes(60);
+
         // TODO: Setting responsiveness to 15 minutes until we know that
         // we're handling it all right.
         internal static TimeSpan DefaultResponsiveness = TimeSpan.FromSeconds(15 * 60);
@@ -42,7 +45,8 @@ namespace Microsoft.PackageManagement.Internal {
         internal const string MSGPrefix = "MSG:";
         internal static string[] Empty = new string[0];
 
-        internal static class Features {
+        internal static class Features
+        {
             internal const string AutomationOnly = "automation-only";
             internal const string MagicSignatures = "magic-signatures";
             internal const string SupportedExtensions = "file-extensions";
@@ -53,7 +57,8 @@ namespace Microsoft.PackageManagement.Internal {
             internal const string SupportsWildcardSearch = "supports-wildcard-search";
         }
 
-        internal static class Messages {
+        internal static class Messages
+        {
             internal const string CreatefolderFailed = "MSG:CreatefolderFailed";
             internal const string DependencyResolutionError = "MSG:UnableToResolveDependency_dependencyPackage";
             internal const string DependentPackageFailedInstall = "MSG:DependentPackageFailedInstall_dependency";
@@ -68,7 +73,7 @@ namespace Microsoft.PackageManagement.Internal {
             internal const string MissingHashAttribute = "MSG:MissingHashAttribute";
             internal const string MissingHashContent = "MSG:MissingHashContent";
             internal const string UnsupportedHashAlgorithm = "MSG:UnsupportedHashAlgorithm";
-            internal const string InvalidHashFormat = "MSG:InvalidHashFormat";            
+            internal const string InvalidHashFormat = "MSG:InvalidHashFormat";
             internal const string InvalidFilename = "MSG:InvalidFilename";
             internal const string MissingRequiredParameter = "MSG:MissingRequiredParameter";
             internal const string NetworkNotAvailable = "MSG:NetworkNotAvailable";
@@ -107,14 +112,15 @@ namespace Microsoft.PackageManagement.Internal {
             internal const string NoMatchFoundForCriteria = "MSG:NoMatchFoundForCriteria";
             internal const string InvalidParameter = "MSG:InvalidParameter";
             internal const string InstallRequiresCurrentUserScopeParameterForNonAdminUser = "MSG:InstallRequiresCurrentUserScopeParameterForNonAdminUser";
-            
         }
 
-        internal static class Status {
+        internal static class Status
+        {
             internal const string TimedOut = "TimedOut";
         }
 
-        internal static class PackageStatus {
+        internal static class PackageStatus
+        {
             internal const string Available = "Available";
             internal const string Dependency = "Dependency";
             internal const string Installed = "Installed";
@@ -122,23 +128,26 @@ namespace Microsoft.PackageManagement.Internal {
             internal const string Downloaded = "Downloaded";
         }
 
-        internal static class Parameters {
+        internal static class Parameters
+        {
             internal const string IsUpdate = "IsUpdatePackageSource";
             internal const string Name = "Name";
             internal const string Location = "Location";
         }
 
-        internal static class Signatures {
+        internal static class Signatures
+        {
             internal const string Cab = "4D534346";
             internal const string OleCompoundDocument = "D0CF11E0A1B11AE1";
             internal const string Zip = "504b0304";
-            internal static string[] ZipVariants = new[] {Zip, /* should have EXEs? */};
+            internal static string[] ZipVariants = new[] { Zip, /* should have EXEs? */};
         }
 
-        internal static class SwidTag {
+        internal static class SwidTag
+        {
             internal const string SoftwareIdentity = "SoftwareIdentity";
         }
 
-        #endregion
+        #endregion declare common-constants-implementation
     }
 }

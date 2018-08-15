@@ -191,6 +191,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         }
 
 #if !CORECLR
+
         /// <summary>
         /// Closes the underlying stream.
         /// </summary>
@@ -199,6 +200,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
             this.source.Close();
             base.Close();
         }
+
 #endif
 
         /// <summary>
@@ -220,10 +222,10 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         private void UpdateCrc(byte[] buffer, int offset, int count)
         {
             this.crc = ~this.crc;
-            for( ; count > 0; count--, offset++)
+            for (; count > 0; count--, offset++)
             {
                 this.crc = (this.crc >> 8) ^
-                    CrcStream.crcTable[(this.crc  & 0xFF) ^ buffer[offset]];
+                    CrcStream.crcTable[(this.crc & 0xFF) ^ buffer[offset]];
             }
             this.crc = ~this.crc;
         }
@@ -237,11 +239,11 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         {
             const uint poly = 0x04C11DB7u;
             uint[] crcTable = new uint[256];
-            for(uint n = 0; n < 256; n++)
+            for (uint n = 0; n < 256; n++)
             {
                 uint c = CrcStream.Reflect(n, 8);
                 c = c << 24;
-                for(uint k = 0; k < 8; k++)
+                for (uint k = 0; k < 8; k++)
                 {
                     c = (c << 1) ^ ((c & 0x80000000u) != 0 ? poly : 0);
                 }

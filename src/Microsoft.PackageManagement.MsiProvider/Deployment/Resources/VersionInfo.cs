@@ -82,12 +82,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         public void Read(BinaryReader reader)
         {
             long basePosition = reader.BaseStream.Position;
-            int verInfoSize = (int) reader.ReadUInt16();
-            int valueSize = (int) reader.ReadUInt16();
+            int verInfoSize = (int)reader.ReadUInt16();
+            int valueSize = (int)reader.ReadUInt16();
             bool dataIsString = (reader.ReadUInt16() != 0);
             StringBuilder keyStringBuilder = new StringBuilder();
             char c;
-            while ((c = (char) reader.ReadUInt16()) != 0)
+            while ((c = (char)reader.ReadUInt16()) != 0)
             {
                 keyStringBuilder.Append(c);
             }
@@ -117,10 +117,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         public void Write(BinaryWriter writer)
         {
             long basePosition = writer.BaseStream.Position;
-            writer.Write((ushort) this.Length);
+            writer.Write((ushort)this.Length);
             byte[] valueBytes = this.data;
-            writer.Write((ushort) ((valueBytes != null ? valueBytes.Length : 0) / (this.IsString ? 2 : 1)));
-            writer.Write((ushort) (this.IsString ? 1 : 0));
+            writer.Write((ushort)((valueBytes != null ? valueBytes.Length : 0) / (this.IsString ? 2 : 1)));
+            writer.Write((ushort)(this.IsString ? 1 : 0));
             byte[] keyBytes = new byte[Encoding.Unicode.GetByteCount(this.Key) + 2];
             Encoding.Unicode.GetBytes(this.Key, 0, this.Key.Length, keyBytes, 0);
             writer.Write(keyBytes);
@@ -141,14 +141,15 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         private static void Pad(BinaryReader reader, long basePosition)
         {
             long position = reader.BaseStream.Position;
-            int diff = (int) (position - basePosition) % 4;
+            int diff = (int)(position - basePosition) % 4;
             if (diff > 0) while (diff++ < 4 && reader.BaseStream.Position < reader.BaseStream.Length) reader.ReadByte();
         }
+
         private static void Pad(BinaryWriter writer, long basePosition)
         {
             long position = writer.BaseStream.Position;
-            int diff = (int) (position - basePosition) % 4;
-            if (diff > 0) while (diff++ < 4) writer.Write((byte) 0);
+            int diff = (int)(position - basePosition) % 4;
+            if (diff > 0) while (diff++ < 4) writer.Write((byte)0);
         }
 
         private int Length
@@ -178,7 +179,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             return viValue;
         }
 
-        public static explicit operator byte[](VersionInfo viValue)
+        public static explicit operator byte[] (VersionInfo viValue)
         {
             byte[] bytesValue = new byte[viValue.Length];
             using (BinaryWriter writer = new BinaryWriter(new MemoryStream(bytesValue, true)))

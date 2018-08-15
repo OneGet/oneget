@@ -12,14 +12,17 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PowerShell.PackageManagement.Utility {
+namespace Microsoft.PowerShell.PackageManagement.Utility
+{
     using System.Management.Automation;
 
-    internal class ErrorMessage {
+    internal class ErrorMessage
+    {
         public readonly ErrorCategory Category;
         public readonly string Resource;
 
-        public ErrorMessage(string resource, ErrorCategory category) {
+        public ErrorMessage(string resource, ErrorCategory category)
+        {
             Resource = resource;
             Category = category;
         }

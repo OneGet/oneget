@@ -12,23 +12,28 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PowerShell.PackageManagement {
+namespace Microsoft.PowerShell.PackageManagement
+{
     using System.Management.Automation;
     using Utility;
 
-    internal static class Constants {
-        internal const int DefaultTimeout = 60*60; // 60 minutes
+    internal static class Constants
+    {
+        internal const int DefaultTimeout = 60 * 60; // 60 minutes
+
         // todo: setting responsiveness to 15 minutes until we're sure
         // that it works right
-        internal const int DefaultResponsiveness = 15 * 60 ; // 30 seconds
+        internal const int DefaultResponsiveness = 15 * 60; // 30 seconds
+
         // internal const int DefaultResponsiveness = 30; // 30 seconds
 
         // cmdlet naming/etc
 
-        internal class ParameterSets {
-
-            // To avoid the FxCop complains: CA1812: Avoid uninstantiated internal 
-            private ParameterSets() {
+        internal class ParameterSets
+        {
+            // To avoid the FxCop complains: CA1812: Avoid uninstantiated internal
+            private ParameterSets()
+            {
             }
 
             internal const string PackageBySearchSet = "PackageBySearch";
@@ -61,9 +66,11 @@ namespace Microsoft.PowerShell.PackageManagement {
         // resolving the message (nor asking up the chain) since it's not a message id, but rather an
         // already resolved string.
 
-        internal static class Errors {
+        internal static class Errors
+        {
             // ReSharper disable InconsistentNaming
             public static ErrorMessage DestinationOrLiteralPathNotSpecified = new ErrorMessage(Messages.DestinationOrLiteralPathRequired, ErrorCategory.InvalidArgument);
+
             public static ErrorMessage DestinationPathInvalid = new ErrorMessage(Messages.DestinationPathInvalid, ErrorCategory.InvalidArgument);
             public static ErrorMessage DisambiguateForInstall = new ErrorMessage(Messages.DisambiguateForInstall, ErrorCategory.InvalidArgument);
             public static ErrorMessage DisambiguateForUninstall = new ErrorMessage(Messages.DisambiguateForUninstall, ErrorCategory.InvalidArgument);
@@ -101,8 +108,8 @@ namespace Microsoft.PowerShell.PackageManagement {
             public static ErrorMessage AllVersionsCannotBeUsedWithOtherVersionParameters = new ErrorMessage(Messages.AllVersionsCannotBeUsedWithOtherVersionParameters, ErrorCategory.InvalidArgument);
             public static ErrorMessage InvalidVersion = new ErrorMessage(Messages.InvalidVersion, ErrorCategory.InvalidArgument);
             public static ErrorMessage MultipleNamesWithVersionNotAllowed = new ErrorMessage(Messages.MultipleNamesWithVersionNotAllowed, ErrorCategory.InvalidArgument);
-            public static ErrorMessage WildCardCharsAreNotSupported = new ErrorMessage(Messages.WildCardCharsAreNotSupported, ErrorCategory.InvalidArgument);            
-            public static ErrorMessage WhitespacesAreNotSupported = new ErrorMessage(Messages.WhitespacesAreNotSupported, ErrorCategory.InvalidArgument);            
+            public static ErrorMessage WildCardCharsAreNotSupported = new ErrorMessage(Messages.WildCardCharsAreNotSupported, ErrorCategory.InvalidArgument);
+            public static ErrorMessage WhitespacesAreNotSupported = new ErrorMessage(Messages.WhitespacesAreNotSupported, ErrorCategory.InvalidArgument);
             public static ErrorMessage MinimumVersionMustBeLessThanMaximumVersion = new ErrorMessage(Messages.MinimumVersionMustBeLessThanMaximumVersion, ErrorCategory.InvalidArgument);
             public static ErrorMessage FullProviderFilePathVersionNotAllowed = new ErrorMessage(Messages.FullProviderFilePathVersionNotAllowed, ErrorCategory.InvalidArgument);
             public static ErrorMessage RegisterPackageSourceRequired = new ErrorMessage(Messages.RegisterPackageSourceRequired, ErrorCategory.InvalidArgument);
@@ -110,11 +117,12 @@ namespace Microsoft.PowerShell.PackageManagement {
             public static ErrorMessage MethodNotImplemented = new ErrorMessage(Messages.MethodNotImplemented, ErrorCategory.NotImplemented);
             public static ErrorMessage InstallRequiresCurrentUserScopeParameterForNonAdminUser = new ErrorMessage(Messages.InstallRequiresCurrentUserScopeParameterForNonAdminUser, ErrorCategory.NotImplemented);
             public static ErrorMessage TooManyPackages = new ErrorMessage(Messages.TooManyPackages, ErrorCategory.InvalidArgument);
-            
+
             // ReSharper restore InconsistentNaming
         }
 
-        internal static class Messages {
+        internal static class Messages
+        {
 #if DEBUG
             internal const string NotImplemented = "MSG:NotImplemented";
 #endif
@@ -123,11 +131,11 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string FileNotFound = "MSG:FileNotFound";
             internal const string UnhandledException = "MSG:UnhandledException";
             internal const string RegisterPackageSourceRequired = "MSG:RegisterPackageSourceRequired";
-            internal const string NoMatchFoundForProvider = "MSG:NoMatchFoundForProvider";            
+            internal const string NoMatchFoundForProvider = "MSG:NoMatchFoundForProvider";
             internal const string FullProviderFilePathVersionNotAllowed = "MSG:FullProviderFilePathVersionNotAllowed";
             internal const string MultipleNamesWithVersionNotAllowed = "MSG:MultipleNamesWithVersionNotAllowed";
             internal const string WildCardCharsAreNotSupported = "MSG:WildCardCharsAreNotSupported";
-            internal const string WhitespacesAreNotSupported = "MSG:WhitespacesAreNotSupported";           
+            internal const string WhitespacesAreNotSupported = "MSG:WhitespacesAreNotSupported";
             internal const string MinimumVersionMustBeLessThanMaximumVersion = "MSG:MinimumVersionMustBeLessThanMaximumVersion";
             internal const string FolderNotFound = "MSG:FolderNotFound";
             internal const string MoreThanOneFolderMatched = "MSG:MoreThanOneFolderMatched";
@@ -206,13 +214,15 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string TooManyPackages = "MSG:TooManyPackages";
         }
 
-        internal static class Nouns {
+        internal static class Nouns
+        {
             internal const string PackageNoun = "Package";
             internal const string PackageSourceNoun = "PackageSource";
             internal const string PackageProviderNoun = "PackageProvider";
         }
 
-        internal static class Methods {
+        internal static class Methods
+        {
             internal const string StopProcessingAsyncMethod = "StopProcessingAsync";
             internal const string ProcessRecordAsyncMethod = "ProcessRecordAsync";
             internal const string GenerateDynamicParametersMethod = "GenerateDynamicParameters";
@@ -220,10 +230,10 @@ namespace Microsoft.PowerShell.PackageManagement {
             internal const string EndProcessingAsyncMethod = "EndProcessingAsync";
         }
 
-        internal static class Parameters {
+        internal static class Parameters
+        {
             internal const string ConfirmParameter = "Confirm";
             internal const string WhatIfParameter = "WhatIf";
         }
-
     }
 }

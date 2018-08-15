@@ -51,6 +51,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
                 this.fileVersion = value;
             }
         }
+
         private Version fileVersion;
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
@@ -71,6 +72,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
                 this.productVersion = value;
             }
         }
+
         private Version productVersion;
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
@@ -79,6 +81,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             get { return this.fileFlagsMask; }
             set { this.fileFlagsMask = value; }
         }
+
         private VersionBuildTypes fileFlagsMask;
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
@@ -87,6 +90,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             get { return this.fileFlags; }
             set { this.fileFlags = value; }
         }
+
         private VersionBuildTypes fileFlags;
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
@@ -95,6 +99,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             get { return this.fileOS; }
             set { this.fileOS = value; }
         }
+
         private VersionFileOS fileOS;
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
@@ -103,6 +108,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             get { return this.fileType; }
             set { this.fileType = value; }
         }
+
         private VersionFileType fileType;
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
@@ -111,6 +117,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             get { return this.fileSubtype; }
             set { this.fileSubtype = value; }
         }
+
         private VersionFileSubtype fileSubtype;
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
@@ -119,6 +126,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             get { return this.timestamp; }
             set { this.timestamp = value; }
         }
+
         private DateTime timestamp;
 
         public void Read(BinaryReader reader)
@@ -127,11 +135,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             this.structVersion = reader.ReadUInt32();
             this.fileVersion = UInt64ToVersion(reader.ReadUInt64());
             this.productVersion = UInt64ToVersion(reader.ReadUInt64());
-            this.fileFlagsMask = (VersionBuildTypes) reader.ReadInt32();
-            this.fileFlags = (VersionBuildTypes) reader.ReadInt32();
-            this.fileOS = (VersionFileOS) reader.ReadInt32();
-            this.fileType = (VersionFileType) reader.ReadInt32();
-            this.fileSubtype = (VersionFileSubtype) reader.ReadInt32();
+            this.fileFlagsMask = (VersionBuildTypes)reader.ReadInt32();
+            this.fileFlags = (VersionBuildTypes)reader.ReadInt32();
+            this.fileOS = (VersionFileOS)reader.ReadInt32();
+            this.fileType = (VersionFileType)reader.ReadInt32();
+            this.fileSubtype = (VersionFileSubtype)reader.ReadInt32();
             this.timestamp = UInt64ToDateTime(reader.ReadUInt64());
         }
 
@@ -141,11 +149,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             writer.Write(this.structVersion);
             writer.Write(VersionToUInt64(this.fileVersion));
             writer.Write(VersionToUInt64(this.productVersion));
-            writer.Write((int) this.fileFlagsMask);
-            writer.Write((int) this.fileFlags);
-            writer.Write((int) this.fileOS);
-            writer.Write((int) this.fileType);
-            writer.Write((int) this.fileSubtype);
+            writer.Write((int)this.fileFlagsMask);
+            writer.Write((int)this.fileFlags);
+            writer.Write((int)this.fileOS);
+            writer.Write((int)this.fileType);
+            writer.Write((int)this.fileSubtype);
             writer.Write(DateTimeToUInt64(this.timestamp));
         }
 
@@ -159,7 +167,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             return ffviValue;
         }
 
-        public static explicit operator byte[](FixedFileVersionInfo ffviValue)
+        public static explicit operator byte[] (FixedFileVersionInfo ffviValue)
         {
             const int FFVI_LENGTH = 52;
 
@@ -173,21 +181,23 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 
         private static Version UInt64ToVersion(ulong version)
         {
-            return new Version((int) ((version >> 16) & 0xFFFF), (int) (version & 0xFFFF), (int) (version >> 48), (int) ((version >> 32) & 0xFFFF));
+            return new Version((int)((version >> 16) & 0xFFFF), (int)(version & 0xFFFF), (int)(version >> 48), (int)((version >> 32) & 0xFFFF));
         }
+
         private static ulong VersionToUInt64(Version version)
         {
-            return (((ulong) (ushort) version.Major) << 16) | ((ulong) (ushort) version.Minor)
-                | (((ulong) (ushort) version.Build) << 48) | (((ulong) (ushort) version.Revision) << 32);
+            return (((ulong)(ushort)version.Major) << 16) | ((ulong)(ushort)version.Minor)
+                | (((ulong)(ushort)version.Build) << 48) | (((ulong)(ushort)version.Revision) << 32);
         }
 
         private static DateTime UInt64ToDateTime(ulong dateTime)
         {
-            return (dateTime == 0 ? DateTime.MinValue : DateTime.FromFileTime((long) dateTime));
+            return (dateTime == 0 ? DateTime.MinValue : DateTime.FromFileTime((long)dateTime));
         }
+
         private static ulong DateTimeToUInt64(DateTime dateTime)
         {
-            return (dateTime == DateTime.MinValue ? 0 : (ulong) dateTime.ToFileTime());
+            return (dateTime == DateTime.MinValue ? 0 : (ulong)dateTime.ToFileTime());
         }
     }
 }

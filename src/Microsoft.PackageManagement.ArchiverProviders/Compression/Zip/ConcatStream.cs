@@ -76,7 +76,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
                 this.nextStreamHandler(this);
             }
 
-            count = (int) Math.Min(count, this.length - this.position);
+            count = (int)Math.Min(count, this.length - this.position);
 
             int bytesRemaining = count;
             while (bytesRemaining > 0)
@@ -86,7 +86,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
                     throw new InvalidOperationException();
                 }
 
-                int partialCount = (int) Math.Min(bytesRemaining,
+                int partialCount = (int)Math.Min(bytesRemaining,
                     this.source.Length - this.source.Position);
 
                 if (partialCount == 0)
@@ -119,7 +119,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
                     throw new InvalidOperationException();
                 }
 
-                int partialCount = (int) Math.Min(bytesRemaining,
+                int partialCount = (int)Math.Min(bytesRemaining,
                     Math.Max(0, this.length - this.source.Position));
 
                 if (partialCount == 0)
@@ -154,6 +154,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         }
 
 #if !CORECLR
+
         /// <summary>
         /// Closes underying stream
         /// </summary>
@@ -164,6 +165,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
                 this.source.Close();
             }
         }
+
 #endif
 
         /// <summary>

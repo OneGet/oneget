@@ -154,26 +154,26 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                 }
 
                 foreach (Record rec in view) using (rec)
-                {
-                    string[] values = new string[columnCount];
-                    for (int i = 0; i < values.Length; i++)
                     {
-                        values[i] = isBinary[i] ? "[Binary Data]" : rec.GetString(i + 1);
-                    }
+                        string[] values = new string[columnCount];
+                        for (int i = 0; i < values.Length; i++)
+                        {
+                            values[i] = isBinary[i] ? "[Binary Data]" : rec.GetString(i + 1);
+                        }
 
-                    TRecord trec = new TRecord();
-                    trec.Database = this.Database;
-                    trec.TableInfo = this.TableInfo;
-                    trec.Values = values;
-                    trec.Exists = true;
-                    yield return trec;
-                }
+                        TRecord trec = new TRecord();
+                        trec.Database = this.Database;
+                        trec.TableInfo = this.TableInfo;
+                        trec.Values = values;
+                        trec.Exists = true;
+                        yield return trec;
+                    }
             }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable<TRecord>) this).GetEnumerator();
+            return ((IEnumerable<TRecord>)this).GetEnumerator();
         }
 
         IQueryable<TElement> IQueryProvider.CreateQuery<TElement>(Expression expression)
@@ -185,24 +185,24 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
             Query<TElement> q = new Query<TElement>(this.Database, expression);
 
-            MethodCallExpression methodCallExpression = (MethodCallExpression) expression;
+            MethodCallExpression methodCallExpression = (MethodCallExpression)expression;
             string methodName = methodCallExpression.Method.Name;
             if (methodName == "Where")
             {
                 LambdaExpression argumentExpression = (LambdaExpression)
-                    ((UnaryExpression) methodCallExpression.Arguments[1]).Operand;
+                    ((UnaryExpression)methodCallExpression.Arguments[1]).Operand;
                 q.BuildQuery(this.TableInfo, argumentExpression);
             }
             else if (methodName == "OrderBy")
             {
                 LambdaExpression argumentExpression = (LambdaExpression)
-                    ((UnaryExpression) methodCallExpression.Arguments[1]).Operand;
+                    ((UnaryExpression)methodCallExpression.Arguments[1]).Operand;
                 q.BuildSequence(this.TableInfo, argumentExpression);
             }
             else if (methodName == "Select")
             {
                 LambdaExpression argumentExpression = (LambdaExpression)
-                    ((UnaryExpression) methodCallExpression.Arguments[1]).Operand;
+                    ((UnaryExpression)methodCallExpression.Arguments[1]).Operand;
                 q.BuildNullQuery(this.TableInfo, typeof(TRecord), argumentExpression);
                 q.BuildProjection(null, argumentExpression);
             }
@@ -210,7 +210,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             {
                 ConstantExpression constantExpression = (ConstantExpression)
                     methodCallExpression.Arguments[1];
-                IQueryable inner = (IQueryable) constantExpression.Value;
+                IQueryable inner = (IQueryable)constantExpression.Value;
                 q.PerformJoin(
                     this.TableInfo,
                     typeof(TRecord),
@@ -230,13 +230,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
         private static LambdaExpression GetJoinLambda(Expression expression)
         {
-            UnaryExpression unaryExpression = (UnaryExpression) expression;
-            return (LambdaExpression) unaryExpression.Operand;
+            UnaryExpression unaryExpression = (UnaryExpression)expression;
+            return (LambdaExpression)unaryExpression.Operand;
         }
 
         IQueryable IQueryProvider.CreateQuery(Expression expression)
         {
-            return ((IQueryProvider) this).CreateQuery<TRecord>(expression);
+            return ((IQueryProvider)this).CreateQuery<TRecord>(expression);
         }
 
         TResult IQueryProvider.Execute<TResult>(Expression expression)

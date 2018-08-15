@@ -251,13 +251,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 int hrec;
                 uint ret = RemotableNativeMethods.MsiDatabaseGetPrimaryKeys(
-                    (int) db.Handle, table, out hrec);
+                    (int)db.Handle, table, out hrec);
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
                 }
 
-                using (Record rec = new Record((IntPtr) hrec, true, null))
+                using (Record rec = new Record((IntPtr)hrec, true, null))
                 {
                     string[] keys = new string[rec.FieldCount];
                     for (int i = 0; i < keys.Length; i++)

@@ -201,7 +201,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
                     RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
             return this.InternalGetFiles(
-                delegate(string match)
+                delegate (string match)
                 {
                     return regex.IsMatch(match);
                 });
@@ -401,7 +401,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
                 streamContext.EnableOffsetOpen = true;
                 compressionEngine.Unpack(
                     streamContext,
-                    delegate(string match)
+                    delegate (string match)
                     {
                         return fileNames.ContainsKey(match);
                     });
@@ -668,7 +668,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         internal ArchiveFileInfo GetFile(string path)
         {
             IList<ArchiveFileInfo> files = this.InternalGetFiles(
-                delegate(string match)
+                delegate (string match)
                 {
                     return String.Compare(
                         match, path, StringComparison.OrdinalIgnoreCase) == 0;

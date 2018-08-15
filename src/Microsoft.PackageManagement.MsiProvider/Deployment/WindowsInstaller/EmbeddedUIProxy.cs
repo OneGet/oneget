@@ -25,7 +25,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private static bool DebugBreakEnabled(string method)
         {
-            return CustomActionProxy.DebugBreakEnabled(new string[] { method, EmbeddedUIProxy.uiClass + "." + method } );
+            return CustomActionProxy.DebugBreakEnabled(new string[] { method, EmbeddedUIProxy.uiClass + "." + method });
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             try
             {
-                session = new Session((IntPtr) sessionHandle, false);
+                session = new Session((IntPtr)sessionHandle, false);
 
                 if (string.IsNullOrWhiteSpace(uiClass))
                 {
@@ -77,13 +77,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             if (EmbeddedUIProxy.uiInstance == null)
             {
-                return (int) ActionResult.Failure;
+                return (int)ActionResult.Failure;
             }
 
             try
             {
                 string resourcePath = Path.GetDirectoryName(EmbeddedUIProxy.uiInstance.GetType().Assembly.Location);
-                InstallUIOptions uiOptions = (InstallUIOptions) internalUILevel;
+                InstallUIOptions uiOptions = (InstallUIOptions)internalUILevel;
                 if (EmbeddedUIProxy.DebugBreakEnabled("Initialize"))
                 {
                     System.Diagnostics.Debugger.Launch();
@@ -93,26 +93,26 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 {
                     // The embedded UI initialized and the installation should continue
                     // with internal UI reset according to options.
-                    return ((int) uiOptions) << 16;
+                    return ((int)uiOptions) << 16;
                 }
                 else
                 {
                     // The embedded UI did not initialize but the installation should still continue
                     // with internal UI reset according to options.
-                    return (int) uiOptions;
+                    return (int)uiOptions;
                 }
             }
             catch (InstallCanceledException)
             {
                 // The installation was canceled by the user.
-                return (int) ActionResult.UserExit;
+                return (int)ActionResult.UserExit;
             }
             catch (Exception ex)
             {
                 // An unhandled exception causes the installation to fail immediately.
                 session.Log("Exception thrown by embedded UI initialization:");
                 session.Log(ex.ToString());
-                return (int) ActionResult.Failure;
+                return (int)ActionResult.Failure;
             }
         }
 
@@ -135,7 +135,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     int icon = messageType & 0x000000F0;
                     int defButton = messageType & 0x00000F00;
 
-                    Record msgRec = (recordHandle != 0 ? Record.FromHandle((IntPtr) recordHandle, false) : null);
+                    Record msgRec = (recordHandle != 0 ? Record.FromHandle((IntPtr)recordHandle, false) : null);
                     using (msgRec)
                     {
                         if (EmbeddedUIProxy.DebugBreakEnabled("ProcessMessage"))
@@ -143,12 +143,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                             System.Diagnostics.Debugger.Launch();
                         }
 
-                        return (int) EmbeddedUIProxy.uiInstance.ProcessMessage(
-                            (InstallMessage) msgType,
+                        return (int)EmbeddedUIProxy.uiInstance.ProcessMessage(
+                            (InstallMessage)msgType,
                             msgRec,
-                            (MessageButtons) buttons,
-                            (MessageIcon) icon,
-                            (MessageDefaultButton) defButton);
+                            (MessageButtons)buttons,
+                            (MessageIcon)icon,
+                            (MessageDefaultButton)defButton);
                     }
                 }
                 catch (Exception)
@@ -221,7 +221,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     System.Diagnostics.Debugger.Launch();
                 }
 
-                return (IEmbeddedUI) uiAssembly.CreateInstance(EmbeddedUIProxy.uiClass);
+                return (IEmbeddedUI)uiAssembly.CreateInstance(EmbeddedUIProxy.uiClass);
             }
             catch (Exception ex)
             {

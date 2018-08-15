@@ -153,7 +153,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             }
         }
 
-        #if !CODE_ANALYSIS
+#if !CODE_ANALYSIS
+
         #region Queryable tables
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
@@ -220,7 +221,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         public QTable<RemoveFile_> RemoveFiles
         { get { return new QTable<RemoveFile_>(this); } }
 
-        #endregion // Queryable tables
-        #endif // !CODE_ANALYSIS
+        #endregion Queryable tables
+
+#endif // !CODE_ANALYSIS
     }
 }

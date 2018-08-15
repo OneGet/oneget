@@ -12,8 +12,10 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.Internal {
-    public enum ErrorCategory {
+namespace Microsoft.PackageManagement.Internal
+{
+    public enum ErrorCategory
+    {
         NotSpecified,
         OpenError,
         CloseError,

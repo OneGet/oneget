@@ -269,7 +269,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
             CrcStream crcStream = new CrcStream(fileStream);
 
             ConcatStream concatStream = new ConcatStream(
-                delegate(ConcatStream s)
+                delegate (ConcatStream s)
                 {
                     this.currentArchiveBytesProcessed = s.Source.Position;
                     streamContext.CloseArchiveReadStream(
@@ -339,4 +339,3 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         }
     }
 }
-

@@ -119,12 +119,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             else if (typeof(T) == typeof(string))
             {
                 // Funny casting because the compiler doesn't know T is string here.
-                return (T) (object) value;
+                return (T)(object)value;
             }
             else if (typeof(T) == typeof(CustomActionData))
             {
                 // Deserialize nested CustomActionData.
-                return (T) (object) new CustomActionData(value);
+                return (T)(object)new CustomActionData(value);
             }
             else if (value.Length == 0)
             {
@@ -301,7 +301,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>An enumerator that can be used to iterate through the collection.</returns>
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return ((System.Collections.IEnumerable) this.data).GetEnumerator();
+            return ((System.Collections.IEnumerable)this.data).GetEnumerator();
         }
 
         /// <summary>
@@ -391,7 +391,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             using (XmlReader xr = XmlReader.Create(sr))
             {
                 XmlSerializer ser = new XmlSerializer(typeof(T));
-                return (T) ser.Deserialize(xr);
+                return (T)ser.Deserialize(xr);
             }
         }
 

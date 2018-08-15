@@ -75,26 +75,26 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             StringBuilder targetSidBuf = new StringBuilder(40);
             for (uint i = 0; ; i++)
             {
-                uint targetSidBufSize = (uint) targetSidBuf.Capacity;
+                uint targetSidBufSize = (uint)targetSidBuf.Capacity;
                 uint ret = NativeMethods.MsiEnumPatchesEx(
                     targetProductCode,
                     userSid,
                     context,
-                    (uint) states,
+                    (uint)states,
                     i,
                     buf,
                     targetProductBuf,
                     out targetContext,
                     targetSidBuf,
                     ref targetSidBufSize);
-                if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                if (ret == (uint)NativeMethods.Error.MORE_DATA)
                 {
-                    targetSidBuf.Capacity = (int) ++targetSidBufSize;
+                    targetSidBuf.Capacity = (int)++targetSidBufSize;
                     ret = NativeMethods.MsiEnumPatchesEx(
                         targetProductCode,
                         userSid,
                         context,
-                        (uint) states,
+                        (uint)states,
                         i,
                         buf,
                         targetProductBuf,
@@ -103,7 +103,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         ref targetSidBufSize);
                 }
 
-                if (ret == (uint) NativeMethods.Error.NO_MORE_ITEMS)
+                if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
                 {
                     break;
                 }
@@ -249,7 +249,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 string stateString = this["State"];
-                return (PatchStates) Int32.Parse(stateString, CultureInfo.InvariantCulture.NumberFormat);
+                return (PatchStates)Int32.Parse(stateString, CultureInfo.InvariantCulture.NumberFormat);
             }
         }
 
@@ -387,9 +387,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         propertyName,
                         buf,
                         ref bufSize);
-                    if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                    if (ret == (uint)NativeMethods.Error.MORE_DATA)
                     {
-                        buf.Capacity = (int) ++bufSize;
+                        buf.Capacity = (int)++bufSize;
                         ret = NativeMethods.MsiGetPatchInfoEx(
                             this.PatchCode,
                             this.ProductCode,
@@ -407,9 +407,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         propertyName,
                         buf,
                         ref bufSize);
-                    if (ret == (uint) NativeMethods.Error.MORE_DATA)
+                    if (ret == (uint)NativeMethods.Error.MORE_DATA)
                     {
-                        buf.Capacity = (int) ++bufSize;
+                        buf.Capacity = (int)++bufSize;
                         ret = NativeMethods.MsiGetPatchInfo(
                             this.PatchCode,
                             propertyName,

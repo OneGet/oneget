@@ -203,6 +203,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         }
 
 #if !CORECLR
+
         /// <summary>
         /// Closes the underlying stream.
         /// </summary>
@@ -210,10 +211,11 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         {
             this.source.Close();
         }
+
 #endif
 
         /// <summary>
-        /// Disposes the underlying stream 
+        /// Disposes the underlying stream
         /// </summary>
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
@@ -223,6 +225,5 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
                 this.source.Dispose();
             }
         }
-
     }
 }

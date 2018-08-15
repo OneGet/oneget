@@ -1,26 +1,29 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
+namespace Microsoft.PackageManagement.Internal.Utility.Extensions
+{
+    using Platform;
     using System;
     using System.Globalization;
-    using Platform;
 
-    internal static class ExceptionExtensions {
-        public static void Dump(this Exception e) {
+    internal static class ExceptionExtensions
+    {
+        public static void Dump(this Exception e)
+        {
 #if !CORECLR
-            var text = string.Format(CultureInfo.CurrentCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace);
+            string text = string.Format(CultureInfo.CurrentCulture, "{0}/{1}\r\n{2}", e.GetType().Name, e.Message, e.StackTrace);
             // for now, this is the only way we'll see exceptions in the wild.
             NativeMethods.OutputDebugString(text);
 #endif
@@ -30,10 +33,12 @@ namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
         {
             System.Diagnostics.Debug.Assert(request != null, "request cannot be null");
 
-            if (request != null) {
+            if (request != null)
+            {
                 request.Debug(string.Format(CultureInfo.CurrentCulture, "{0}\r\n{1}", e.Message, e.StackTrace));
 
-                if(e.InnerException != null) {
+                if (e.InnerException != null)
+                {
                     request.Debug(string.Format(CultureInfo.CurrentCulture, "{0}\r\n{1}", e.InnerException.Message, e.InnerException.StackTrace));
                 }
             }

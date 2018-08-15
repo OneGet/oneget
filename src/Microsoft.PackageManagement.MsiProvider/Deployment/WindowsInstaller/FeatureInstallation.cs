@@ -7,7 +7,6 @@
 // </summary>
 //---------------------------------------------------------------------
 
-
 namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 {
     using System;
@@ -57,7 +56,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 int installState = NativeMethods.MsiQueryFeatureState(
                     this.ProductCode, this.FeatureName);
-                return (InstallState) installState;
+                return (InstallState)installState;
             }
         }
 
@@ -137,7 +136,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         (useDate & 0x001F));
                 }
 
-                return new UsageData((int) useCount, lastUsedDate);
+                return new UsageData((int)useCount, lastUsedDate);
             }
         }
 

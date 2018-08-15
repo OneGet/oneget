@@ -12,14 +12,16 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PackageManagement.MetaProvider.PowerShell {
-    public class Link {
-        public string HRef {get; set;}
-        public string Relationship {get; set;}
-        public string MediaType {get; set;}
-        public string Ownership {get; set;}
-        public string Use {get; set;}
-        public string AppliesToMedia {get; set;}
-        public string Artifact {get; set;}
+namespace Microsoft.PackageManagement.MetaProvider.PowerShell
+{
+    public class Link
+    {
+        public string HRef { get; set; }
+        public string Relationship { get; set; }
+        public string MediaType { get; set; }
+        public string Ownership { get; set; }
+        public string Use { get; set; }
+        public string AppliesToMedia { get; set; }
+        public string Artifact { get; set; }
     }
 }

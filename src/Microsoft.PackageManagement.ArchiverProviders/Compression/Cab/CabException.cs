@@ -10,7 +10,6 @@
 namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 {
     using System;
-    using System.Reflection;
     using System.Globalization;
     using System.Resources;
 
@@ -57,7 +56,6 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         internal CabException(int error, int errorCode, string message)
             : this(error, errorCode, message, null) { }
 
-
         /// <summary>
         /// Gets the FCI or FDI cabinet engine error number.
         /// </summary>
@@ -101,7 +99,6 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 return errorResources;
             }
         }
-
 
         internal static string GetErrorMessage(int error, int errorCode, bool extracting)
         {

@@ -12,60 +12,75 @@
 //  limitations under the License.
 //
 
-namespace Microsoft.PowerShell.PackageManagement.Utility {
+namespace Microsoft.PowerShell.PackageManagement.Utility
+{
+    using Microsoft.PackageManagement.Internal.Packaging;
+    using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Management.Automation;
     using System.Security;
-    using Cmdlets;
-    using Microsoft.PackageManagement.Internal.Packaging;
-    using Microsoft.PackageManagement.Internal.Utility.Extensions;
 
-    internal class CustomRuntimeDefinedParameter : RuntimeDefinedParameter {
+    internal class CustomRuntimeDefinedParameter : RuntimeDefinedParameter
+    {
         internal HashSet<DynamicOption> Options = new HashSet<DynamicOption>();
 
-        public CustomRuntimeDefinedParameter(DynamicOption option, bool isInvocation, IEnumerable<string> parameterSets )
-            : base(option.Name, ActualParameterType(option.Type), new Collection<Attribute>()) {
-            if (isInvocation) {
+        public CustomRuntimeDefinedParameter(DynamicOption option, bool isInvocation, IEnumerable<string> parameterSets)
+            : base(option.Name, ActualParameterType(option.Type), new Collection<Attribute>())
+        {
+            if (isInvocation)
+            {
                 Attributes.Add(new ParameterAttribute());
-            } else {
+            }
+            else
+            {
                 IncludeInParameterSet(option, isInvocation, parameterSets);
             }
 
             Options.Add(option);
             var values = option.PossibleValues.ToArray();
-            if (!values.IsNullOrEmpty()) {
+            if (!values.IsNullOrEmpty())
+            {
                 Attributes.Add(new ValidateSetAttribute(values));
             }
         }
 
-        public void IncludeInParameterSet(DynamicOption option, bool isInvocation, IEnumerable<string> parameterSets) {
-            foreach (var ps in parameterSets) {
+        public void IncludeInParameterSet(DynamicOption option, bool isInvocation, IEnumerable<string> parameterSets)
+        {
+            foreach (var ps in parameterSets)
+            {
                 var parameterSetName = !string.IsNullOrWhiteSpace(ps) ? option.ProviderName + ":" + ps : option.ProviderName;
-                if (Attributes.Select(each => each as ParameterAttribute).WhereNotNull().Any(each => each.ParameterSetName == parameterSetName)) {
+                if (Attributes.Select(each => each as ParameterAttribute).WhereNotNull().Any(each => each.ParameterSetName == parameterSetName))
+                {
                     continue;
                 }
                 Attributes.Add(
-                    new ParameterAttribute() {
+                    new ParameterAttribute()
+                    {
                         ParameterSetName = parameterSetName,
                         Mandatory = option.IsRequired
                     });
             }
         }
 
-        internal bool IsRequiredForProvider(string name) {
+        internal bool IsRequiredForProvider(string name)
+        {
             return Options.Any(each => each.ProviderName.EqualsIgnoreCase(name) && each.IsRequired);
         }
 
-        internal IEnumerable<string> GetValues(AsyncCmdlet cmdlet) {
-            if (IsSet && Value != null) {
-                switch (Options.FirstOrDefault().Type) {
+        internal IEnumerable<string> GetValues(AsyncCmdlet cmdlet)
+        {
+            if (IsSet && Value != null)
+            {
+                switch (Options.FirstOrDefault().Type)
+                {
                     case OptionType.Switch:
                         return new[] {
                             ((SwitchParameter)Value).IsPresent.ToString()
                         };
+
                     case OptionType.StringArray:
                         return (string[])Value;
 
@@ -98,27 +113,36 @@ namespace Microsoft.PowerShell.PackageManagement.Utility {
             return new string[0];
         }
 
-        private static Type ActualParameterType(OptionType optionType) {
-            switch (optionType) {
+        private static Type ActualParameterType(OptionType optionType)
+        {
+            switch (optionType)
+            {
                 case OptionType.Switch:
-                    return typeof (SwitchParameter);
+                    return typeof(SwitchParameter);
+
                 case OptionType.Uri:
-                    return typeof (Uri);
+                    return typeof(Uri);
+
                 case OptionType.StringArray:
-                    return typeof (string[]);
+                    return typeof(string[]);
+
                 case OptionType.Int:
-                    return typeof (int);
+                    return typeof(int);
+
                 case OptionType.Path:
-                    return typeof (string);
+                    return typeof(string);
+
                 case OptionType.File:
-                    return typeof (string);
+                    return typeof(string);
+
                 case OptionType.Folder:
-                    return typeof (string);
+                    return typeof(string);
+
                 case OptionType.SecureString:
-                    return typeof (SecureString);
+                    return typeof(SecureString);
 
                 default:
-                    return typeof (string);
+                    return typeof(string);
             }
         }
     }

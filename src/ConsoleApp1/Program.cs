@@ -1,21 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.PackageManagement;
-using Microsoft.PackageManagement.Implementation;
-using Microsoft.PackageManagement.Internal.Implementation;
+﻿using Microsoft.PackageManagement.Implementation;
 using Microsoft.PackageManagement.Internal.Api;
 using Microsoft.PackageManagement.MetaProvider.PowerShell;
-using Microsoft.PowerShell.PackageManagement.Cmdlets;
-using Microsoft.PackageManagement.Providers.Internal;
+using System;
+using System.Collections.Generic;
 
 namespace ConsoleApp1
 {
-    class Program
+    internal class Program
     {
-
         public interface IPackageManagementService
         {
             int Version { get; }
@@ -62,12 +54,10 @@ namespace ConsoleApp1
             }
         }
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-           
+        }
 
-        } 
         //ProgramsProvider provider = new ProgramsProvider();
     }    //IPackageManagementService packageManagement = new IPackageManagementService();
-  }
-
+}

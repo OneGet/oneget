@@ -1,24 +1,26 @@
-﻿// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+﻿//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement.Internal.Api {
+namespace Microsoft.PackageManagement.Internal.Api
+{
     using System;
 
     /// <summary>
     /// These functions are implemented by the CORE and passed to the PROVIDER so data can be returned from a given call.
     /// </summary>
-    public interface IResponseApi {
+    public interface IResponseApi
+    {
         /// <summary>
         ///     Used by a provider to return fields for a SoftwareIdentity.
         /// </summary>
@@ -59,7 +61,7 @@ namespace Microsoft.PackageManagement.Internal.Api {
 
         /// <summary>
         /// Adds an arbitrary key/value pair of metadata to a SoftwareIdentity
-        /// 
+        ///
         /// This adds the metadata to the first Meta element in the swidtag.
         /// </summary>
         /// <param name="name"></param>
@@ -87,7 +89,7 @@ namespace Microsoft.PackageManagement.Internal.Api {
         string AddMetadata(string elementPath, Uri @namespace, string name, string value);
 
         /// <summary>
-        /// Adds a new Meta Element to the Swidtag. 
+        /// Adds a new Meta Element to the Swidtag.
         /// </summary>
         /// <param name="elementPath"></param>
         /// <returns>a string to the newly created Meta element. If null, this function did not succeed.</returns>
@@ -126,7 +128,6 @@ namespace Microsoft.PackageManagement.Internal.Api {
         /// <param name="appliesTo"></param>
         /// <returns>a string to a Link element path. If null, this function did not succeed.</returns>
         string AddDependency(string providerName, string packageName, string version, string source, string appliesTo);
-
 
         /// <summary>
         /// Adds a Payload element to the Swidtag
@@ -205,7 +206,7 @@ namespace Microsoft.PackageManagement.Internal.Api {
         bool YieldDynamicOption(string name, string expectedType, bool isRequired);
 
         /// <summary>
-        /// Yields a key/value pair 
+        /// Yields a key/value pair
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
@@ -213,10 +214,10 @@ namespace Microsoft.PackageManagement.Internal.Api {
         bool YieldKeyValuePair(string key, string value);
 
         /// <summary>
-        /// Yields a value 
+        /// Yields a value
         /// </summary>
         /// <param name="value"></param>
         /// <returns>A boolean indicating the IsCanceled state. (if the result is false, the provider should exit quickly)</returns>
         bool YieldValue(string value);
-   }
+    }
 }
