@@ -1,135 +1,104 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <DirectedGraph DataVirtualized="True" Layout="Sugiyama" ZoomLevel="-1" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
   <Nodes>
-    <Node Id="(@7 @9 @21 Member=(Name=FindPackageByCanonicalId OverloadingParameters=[@33,@29]))" Category="CodeSchema_Method" Bounds="-174.878822973312,951.9699847231,176.553333333333,25.96" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="FindPackageByCanonicalId" />
-    <Node Id="(@7 @9 @21 Member=(Name=GetAvailableProviders OverloadingParameters=[@29,(@31 @32 Type=(Name=String ArrayRank=1 ParentType=String))]))" Category="CodeSchema_Method" Bounds="81.2378436933544,840.049984723099,151.28,25.96" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="GetAvailableProviders" />
-    <Node Id="(@7 @9 @21 Member=(Name=ImportPackageProvider OverloadingParameters=[@29,@33,(@31 @32 Type=Version),(@31 @32 Type=Version),(@31 @32 Type=Version),(@31 @32 Type=Boolean),(@31 @32 Type=Boolean)]))" Category="CodeSchema_Method" Bounds="-174.878822973312,896.009984723099,159.32,25.96" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="ImportPackageProvider" />
-    <Node Id="(@7 @9 @21 Member=(Name=RequirePackageProvider OverloadingParameters=[@33,@33,@33,@29]))" Category="CodeSchema_Method" Bounds="14.4411770266878,896.009984723099,163.783333333333,25.96" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="RequirePackageProvider" />
-    <Node Id="(@7 @9 @21 Member=(Name=SelectProviders OverloadingParameters=[@33,@29]))" Category="CodeSchema_Method" Bounds="-65.3921563066456,840.049984723099,116.63,25.96" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="SelectProviders" />
-    <Node Id="(@7 @9 @21 Member=(Name=SelectProvidersWithFeature OverloadingParameters=[@33,@33]))" Category="CodeSchema_Method" Bounds="31.674510360021,951.9699847231,181.153333333333,25.96" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="SelectProvidersWithFeature" />
-    <Node Id="(@7 @9 @21 Member=(Name=SelectProvidersWithFeature OverloadingParameters=[@33]))" Category="CodeSchema_Method" Bounds="-174.878822973312,1007.9299847231,181.153333333333,25.96" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="SelectProvidersWithFeature" />
-    <Node Id="(@7 @9 @21 Member=AllProviderNames)" Category="CodeSchema_Property" Bounds="6.13023848073593,1063.8899847231,152.885728120715,25" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsVirtual="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="AllProviderNames" />
-    <Node Id="(@7 @9 @21 Member=ProviderNames)" Category="CodeSchema_Property" Bounds="163.683571814069,1007.9299847231,139.332394787382,25" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsVirtual="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="ProviderNames" />
-    <Node Id="(@7 @9 @21 Member=Version)" Category="CodeSchema_Property" Bounds="36.274510360021,1007.9299847231,97.4090614540482,25" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsVirtual="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Version" />
-    <Node Id="(@7 @9 Type=Constants)" Category="CodeSchema_Class" Bounds="353.015966601451,628.129984723099,113.466666666667,25" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsFinal="True" CodeSchemaProperty_IsInternal="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Constants" />
-    <Node Id="(@7 @9 Type=ErrorCategory)" Category="CodeSchema_Enum" Bounds="496.482633268118,628.129984723099,130.576666666667,25" CodeSchemaProperty_IsFinal="True" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="ErrorCategory" />
-    <Node Id="@10" Category="CodeSchema_Namespace" Bounds="-214.878822973312,588.129984723099,861.938122908096,540.76" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Microsoft.PackageManagement.Internal" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="4" Group="Expanded" Label="Microsoft.PackageManagement.Internal" />
-    <Node Id="@12" Category="CodeSchema_Namespace" Bounds="39.2985718140692,120.249984723099,353.583333333333,437.88" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Microsoft.PackageManagement.Internal.Implementation" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Label="Microsoft.PackageManagement.Internal.Implementation" />
-    <Node Id="@14" Category="CodeSchema_Namespace" Bounds="489.227485113418,-175.7100152769,401.05,205.96" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Microsoft.PackageManagement.MetaProvider.PowerShell.Internal" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Label="Microsoft.PackageManagement.MetaProvider.PowerShell.Internal" />
-    <Node Id="@16" Category="CodeSchema_Namespace" Bounds="46.4940517800842,-175.710015276901,372.733333333333,205.96" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Microsoft.PackageManagement.Providers.Internal.Bootstrap" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Label="Microsoft.PackageManagement.Providers.Internal.Bootstrap" />
-    <Node Id="@18" Category="CodeSchema_Namespace" Bounds="-353.509381553248,-175.710015276901,330.003333333333,205.96" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Microsoft.PowerShell.PackageManagement.Cmdlets" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Label="Microsoft.PowerShell.PackageManagement.Cmdlets" />
-    <Node Id="@19" Category="CodeSchema_Class" Bounds="88.0340517800842,-135.710015276901,289.653333333333,145.96" CodeSchemaProperty_IsPublic="True" CommonLabel="BootstrapProvider" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Class" Label="BootstrapProvider" />
-    <Node Id="@2" Category="CodeSchema_Assembly" AssemblyTimestamp="08/15/2018 19:23:06" Bounds="469.227485113418,-215.7100152769,441.05,265.96" CodeSchemaProperty_StrongName="Microsoft.PackageManagement.MetaProvider.PowerShell, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" CommonLabel="Microsoft.PackageManagement.MetaProvider.PowerShell" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" FilePath="$(ebeb46b5-3683-4d9f-939b-b1b2bbeea369.OutputPath)" Group="Expanded" Label="Microsoft.PackageManagement.MetaProvider.PowerShell.dll" />
-    <Node Id="@20" Category="CodeSchema_Class" Bounds="-333.334381553248,-135.710015276901,289.653333333333,145.96" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CommonLabel="CmdletBase" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Class" Label="CmdletBase" />
-    <Node Id="@22" Category="CodeSchema_Interface" Bounds="-194.878822973312,800.049984723099,517.894789574763,308.84" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CommonLabel="IPackageManagementService" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="12" Group="Expanded" Icon="CodeSchema_Interface" Label="IPackageManagementService" />
-    <Node Id="@24" Category="CodeSchema_Class" Bounds="-101.443693549443,628.129984723099,331.024530727024,141.92" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsFinal="True" CodeSchemaProperty_IsInternal="True" CodeSchemaProperty_IsStatic="True" CommonLabel="PackageManager" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="4" Group="Expanded" Icon="CodeSchema_Class" Label="PackageManager" />
-    <Node Id="@25" Category="CodeSchema_Class" Bounds="544.925818446751,-135.7100152769,289.653333333333,145.96" CodeSchemaProperty_IsPublic="True" CommonLabel="PowerShellMetaProvider" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Class" Label="PowerShellMetaProvider" />
-    <Node Id="@27" Category="CodeSchema_Class" Bounds="71.2635718140692,160.249984723099,289.653333333333,201.92" CodeSchemaProperty_IsInternal="True" CommonLabel="ProviderServicesImpl" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Class" Label="ProviderServicesImpl" />
-    <Node Id="@28" Category="CodeSchema_Class" Bounds="71.2635718140692,392.169984723099,289.653333333333,145.96" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CommonLabel="RequestObject" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Class" Label="RequestObject" />
-    <Node Id="@30" Category="CodeSchema_Method" Bounds="-174.878822973312,840.049984723099,79.4866666666667,25.96" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="Initialize" />
-    <Node Id="@34" Category="CodeSchema_Method" Bounds="91.2635718140692,316.209984723099,67.0633333333333,25.96" CodeSchemaProperty_IsFinal="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" CommonLabel="Install" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="Install" />
-    <Node Id="@35" Category="CodeSchema_Method" Bounds="51.8408371775813,668.129984723099,157.74,25.96" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsPrivate="True" CodeSchemaProperty_IsSpecialName="True" CodeSchemaProperty_IsStatic="True" DelayedCrossGroupLinksState="Fetched" Label="static PackageManager" />
-    <Node Id="@36" Category="CodeSchema_Field" Bounds="-73.0658294890854,724.089984723099,85.5533333333333,25.96" CodeSchemaProperty_IsInternal="True" CodeSchemaProperty_IsStatic="True" DelayedCrossGroupLinksState="Fetched" Label="_instance" />
-    <Node Id="@37" Category="CodeSchema_Field" Bounds="42.552503844248,724.089984723099,98.3166666666667,25.96" CodeSchemaProperty_IsPrivate="True" CodeSchemaProperty_IsStatic="True" DelayedCrossGroupLinksState="Fetched" Label="_lockObject" />
-    <Node Id="@39" Category="CodeSchema_Method" Bounds="128.034051780084,-55.7100152769006,209.653333333333,25.96" CodeSchemaProperty_IsPrivate="True" CodeSchemaProperty_IsPropertyGet="True" CommonLabel="get_PackageManagementService" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="get_PackageManagementService" />
-    <Node Id="@4" Category="CodeSchema_Assembly" AssemblyTimestamp="08/15/2018 19:23:06" Bounds="26.4940517800842,-215.710015276901,412.733333333333,265.96" CodeSchemaProperty_StrongName="Microsoft.PackageManagement.CoreProviders, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" CommonLabel="Microsoft.PackageManagement.CoreProviders" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" FilePath="$(c06032d8-c31a-492a-86f3-5cc4ed19bd8e.OutputPath)" Group="Expanded" Label="Microsoft.PackageManagement.CoreProviders.dll" />
-    <Node Id="@40" Category="CodeSchema_Method" Bounds="-293.334381553248,-55.7100152769007,209.653333333333,25.96" CodeSchemaProperty_IsInternal="True" CodeSchemaProperty_IsPropertyGet="True" CodeSchemaProperty_IsProtected="True" CodeSchemaProperty_IsProtectedOrInternal="True" CommonLabel="get_PackageManagementService" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="get_PackageManagementService" />
-    <Node Id="@41" Category="CodeSchema_Method" Bounds="584.925818446751,-55.7100152769004,209.653333333333,25.96" CodeSchemaProperty_IsPrivate="True" CodeSchemaProperty_IsPropertyGet="True" CodeSchemaProperty_IsStatic="True" CommonLabel="get_PackageManagementService" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="get_PackageManagementService" />
-    <Node Id="@42" Category="CodeSchema_Method" Bounds="111.263571814069,240.249984723099,209.653333333333,25.96" CodeSchemaProperty_IsPrivate="True" CodeSchemaProperty_IsPropertyGet="True" CommonLabel="get_PackageManagementService" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="get_PackageManagementService" />
-    <Node Id="@43" Category="CodeSchema_Method" Bounds="111.263571814069,472.169984723099,209.653333333333,25.96" CodeSchemaProperty_IsFinal="True" CodeSchemaProperty_IsPropertyGet="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" CommonLabel="get_PackageManagementService" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="get_PackageManagementService" />
-    <Node Id="@44" Category="CodeSchema_Property" Bounds="-81.4436935494428,668.609984723099,102.309061454048,25" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Instance" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Icon="CodeSchema_Property" Label="Instance" />
-    <Node Id="@46" Category="CodeSchema_Property" Bounds="108.034051780084,-95.7100152769007,249.653333333333,85.96" CodeSchemaProperty_IsPrivate="True" CommonLabel="PackageManagementService" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Property" Label="PackageManagementService" />
-    <Node Id="@47" Category="CodeSchema_Property" Bounds="-313.334381553248,-95.7100152769007,249.653333333333,85.96" CodeSchemaProperty_IsProtectedOrInternal="True" CommonLabel="PackageManagementService" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Property" Label="PackageManagementService" />
-    <Node Id="@48" Category="CodeSchema_Property" Bounds="564.925818446751,-95.7100152769004,249.653333333333,85.96" CodeSchemaProperty_IsPrivate="True" CodeSchemaProperty_IsStatic="True" CommonLabel="PackageManagementService" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Property" Label="PackageManagementService" />
-    <Node Id="@49" Category="CodeSchema_Property" Bounds="91.2635718140692,200.249984723099,249.653333333333,85.96" CodeSchemaProperty_IsPrivate="True" CommonLabel="PackageManagementService" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Property" Label="PackageManagementService" />
-    <Node Id="@50" Category="CodeSchema_Property" Bounds="91.2635718140692,432.169984723099,249.653333333333,85.96" CodeSchemaProperty_IsFinal="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" CommonLabel="PackageManagementService" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Property" Label="PackageManagementService" />
-    <Node Id="@51" Category="CodeSchema_Property" Bounds="-174.878822973312,1063.8899847231,151.009061454048,25" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsVirtual="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="PackageProviders" />
-    <Node Id="@6" Category="CodeSchema_Assembly" AssemblyTimestamp="08/15/2018 19:23:05" Bounds="-373.509381553248,-215.710015276901,370.003333333333,265.96" CodeSchemaProperty_StrongName="Microsoft.PowerShell.PackageManagement, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" CommonLabel="Microsoft.PowerShell.PackageManagement" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" FilePath="$(f2133ac2-39dd-4321-a3b1-8bdbcdff743e.OutputPath)" Group="Expanded" Label="Microsoft.PowerShell.PackageManagement.dll" />
-    <Node Id="@8" Category="CodeSchema_Assembly" AssemblyTimestamp="08/15/2018 19:20:59" Bounds="-234.878822973312,80.2499847230993,901.938122908096,1068.64" CodeSchemaProperty_StrongName="Microsoft.PackageManagement, Version=3.0.0.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35" CommonLabel="Microsoft.PackageManagement" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" FilePath="$(7044b856-6d51-498f-90f9-01f219909f79.OutputPath)" Group="Expanded" Label="Microsoft.PackageManagement.dll" />
+    <Node Id="@11" Category="CodeSchema_Namespace" Bounds="409.631057448693,342.954903005058,353.583333333333,437.8812" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Microsoft.PackageManagement.Internal.Implementation" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Label="Microsoft.PackageManagement.Internal.Implementation" />
+    <Node Id="@13" Category="CodeSchema_Namespace" Bounds="-83.4046211840674,46.9949030050582,401.05,205.9606" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Microsoft.PackageManagement.MetaProvider.PowerShell.Internal" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Label="Microsoft.PackageManagement.MetaProvider.PowerShell.Internal" />
+    <Node Id="@15" Category="CodeSchema_Namespace" Bounds="787.648912149266,-8.9651969949423,1136.52166666667,261.92" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Microsoft.PackageManagement.Providers.Internal.Bootstrap" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Label="Microsoft.PackageManagement.Providers.Internal.Bootstrap" />
+    <Node Id="@17" Category="CodeSchema_Namespace" Bounds="387.645478815933,46.9949030050579,330.003333333333,205.9606" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Microsoft.PowerShell.PackageManagement.Cmdlets" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Label="Microsoft.PowerShell.PackageManagement.Cmdlets" />
+    <Node Id="@19" Category="CodeSchema_Class" Bounds="807.648912149266,31.0348030050577,1096.52166666667,201.92" CodeSchemaProperty_IsPublic="True" CommonLabel="BootstrapProvider" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Class" Label="BootstrapProvider" />
+    <Node Id="@2" Category="CodeSchema_Assembly" AssemblyTimestamp="08/15/2018 19:23:06" Bounds="-103.404621184067,6.99480300505823,441.05,265.9608" CodeSchemaProperty_StrongName="Microsoft.PackageManagement.MetaProvider.PowerShell, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" CommonLabel="Microsoft.PackageManagement.MetaProvider.PowerShell" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" FilePath="$(ebeb46b5-3683-4d9f-939b-b1b2bbeea369.OutputPath)" Group="Expanded" Label="Microsoft.PackageManagement.MetaProvider.PowerShell.dll" />
+    <Node Id="@20" Category="CodeSchema_Class" Bounds="407.820478815933,86.995003005058,289.653333333333,145.9604" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CommonLabel="CmdletBase" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Class" Label="CmdletBase" />
+    <Node Id="@21" Category="CodeSchema_Class" Bounds="510.587760736453,850.835090984828,151.67,25" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsFinal="True" CodeSchemaProperty_IsInternal="True" CodeSchemaProperty_IsStatic="True" CommonLabel="PackageManager" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Icon="CodeSchema_Class" Label="PackageManager" />
+    <Node Id="@22" Category="CodeSchema_Class" Bounds="-27.7062878507341,86.9950030050583,289.653333333333,145.9604" CodeSchemaProperty_IsPublic="True" CommonLabel="PowerShellMetaProvider" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Class" Label="PowerShellMetaProvider" />
+    <Node Id="@24" Category="CodeSchema_Class" Bounds="441.596057448693,382.955003005058,289.653333333333,201.9205" CodeSchemaProperty_IsInternal="True" CommonLabel="ProviderServicesImpl" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Class" Label="ProviderServicesImpl" />
+    <Node Id="@25" Category="CodeSchema_Class" Bounds="441.596057448693,614.875603005058,289.653333333333,145.9604" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CommonLabel="RequestObject" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Class" Label="RequestObject" />
+    <Node Id="@27" Category="CodeSchema_Method" Bounds="827.648912149266,71.0348030050578,123.58,25.96" CodeSchemaProperty_IsPublic="True" CommonLabel="InitializeProvider" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="InitializeProvider" />
+    <Node Id="@31" Category="CodeSchema_Method" Bounds="1370.24557881593,71.0348030050577,128.386666666667,25.96" CodeSchemaProperty_IsPrivate="True" CommonLabel="InstallPackageFile" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="InstallPackageFile" />
+    <Node Id="@32" Category="CodeSchema_Method" Bounds="461.596074538537,538.915084881312,67.0633333333334,25.96" CodeSchemaProperty_IsFinal="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" CommonLabel="Install" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="Install" />
+    <Node Id="@33" Category="CodeSchema_Method" Bounds="1529.1222454826,71.0348030050577,162.633333333333,25.96" CodeSchemaProperty_IsPrivate="True" CommonLabel="InstallPackageReference" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="InstallPackageReference" />
+    <Node Id="@34" Category="CodeSchema_Method" Bounds="1159.40391214927,71.0348030050577,180.07,25.96" CodeSchemaProperty_IsPrivate="True" CommonLabel="InstallProviderFromInstaller" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="InstallProviderFromInstaller" />
+    <Node Id="@35" Category="CodeSchema_Method" Bounds="1722.7072454826,71.0348030050577,161.463333333333,25.96" CodeSchemaProperty_IsPrivate="True" CommonLabel="InstallAssemblyProvider" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="InstallAssemblyProvider" />
+    <Node Id="@36" Category="CodeSchema_Method" Bounds="981.713912149266,71.0348030050578,147.45,25.96" CodeSchemaProperty_IsPublic="True" CommonLabel="GetInstalledPackages" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="GetInstalledPackages" />
+    <Node Id="@38" Category="CodeSchema_Method" Bounds="1329.6122454826,166.994803005058,209.653333333333,25.96" CodeSchemaProperty_IsPrivate="True" CodeSchemaProperty_IsPropertyGet="True" CommonLabel="get_PackageManagementService" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="get_PackageManagementService" />
+    <Node Id="@39" Category="CodeSchema_Method" Bounds="447.820478815933,166.995986712367,209.653333333333,25.96" CodeSchemaProperty_IsInternal="True" CodeSchemaProperty_IsPropertyGet="True" CodeSchemaProperty_IsProtected="True" CodeSchemaProperty_IsProtectedOrInternal="True" CommonLabel="get_PackageManagementService" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="get_PackageManagementService" />
+    <Node Id="@4" Category="CodeSchema_Assembly" AssemblyTimestamp="08/15/2018 19:23:06" Bounds="767.648912149266,-48.9651969949423,1176.52166666667,321.92" CodeSchemaProperty_StrongName="Microsoft.PackageManagement.CoreProviders, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" CommonLabel="Microsoft.PackageManagement.CoreProviders" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" FilePath="$(c06032d8-c31a-492a-86f3-5cc4ed19bd8e.OutputPath)" Group="Expanded" Label="Microsoft.PackageManagement.CoreProviders.dll" />
+    <Node Id="@40" Category="CodeSchema_Method" Bounds="12.293712149266,166.995986712367,209.653333333333,25.96" CodeSchemaProperty_IsPrivate="True" CodeSchemaProperty_IsPropertyGet="True" CodeSchemaProperty_IsStatic="True" CommonLabel="get_PackageManagementService" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="get_PackageManagementService" />
+    <Node Id="@41" Category="CodeSchema_Method" Bounds="481.596057448693,462.955078167445,209.653333333333,25.96" CodeSchemaProperty_IsPrivate="True" CodeSchemaProperty_IsPropertyGet="True" CommonLabel="get_PackageManagementService" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="get_PackageManagementService" />
+    <Node Id="@42" Category="CodeSchema_Method" Bounds="481.596057448693,694.875106853969,209.653333333333,25.96" CodeSchemaProperty_IsFinal="True" CodeSchemaProperty_IsPropertyGet="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" CommonLabel="get_PackageManagementService" DelayedCrossGroupLinksState="Fetched" Icon="CodeSchema_Method" Label="get_PackageManagementService" />
+    <Node Id="@44" Category="CodeSchema_Property" Bounds="1309.6122454826,126.994803005058,249.653333333333,85.9600000000001" CodeSchemaProperty_IsPrivate="True" CommonLabel="PackageManagementService" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Property" Label="PackageManagementService" />
+    <Node Id="@45" Category="CodeSchema_Property" Bounds="427.820478815933,126.995103005058,249.653333333333,85.9602" CodeSchemaProperty_IsProtectedOrInternal="True" CommonLabel="PackageManagementService" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Property" Label="PackageManagementService" />
+    <Node Id="@46" Category="CodeSchema_Property" Bounds="-7.70628785073409,126.995103005058,249.653333333333,85.9602" CodeSchemaProperty_IsPrivate="True" CodeSchemaProperty_IsStatic="True" CommonLabel="PackageManagementService" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Property" Label="PackageManagementService" />
+    <Node Id="@47" Category="CodeSchema_Property" Bounds="461.596057448693,422.955103005058,249.653333333333,85.9602" CodeSchemaProperty_IsPrivate="True" CommonLabel="PackageManagementService" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Property" Label="PackageManagementService" />
+    <Node Id="@48" Category="CodeSchema_Property" Bounds="461.596057448693,654.875703005058,249.653333333333,85.9602" CodeSchemaProperty_IsFinal="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" CommonLabel="PackageManagementService" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Icon="CodeSchema_Property" Label="PackageManagementService" />
+    <Node Id="@6" Category="CodeSchema_Assembly" AssemblyTimestamp="08/15/2018 19:23:05" Bounds="367.645478815933,6.99480300505795,370.003333333333,265.9608" CodeSchemaProperty_StrongName="Microsoft.PowerShell.PackageManagement, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" CommonLabel="Microsoft.PowerShell.PackageManagement" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" FilePath="$(f2133ac2-39dd-4321-a3b1-8bdbcdff743e.OutputPath)" Group="Expanded" Label="Microsoft.PowerShell.PackageManagement.dll" />
+    <Node Id="@8" Category="CodeSchema_Assembly" AssemblyTimestamp="08/15/2018 19:20:59" Bounds="389.631057448693,302.954803005058,393.583333333334,612.8817" CodeSchemaProperty_StrongName="Microsoft.PackageManagement, Version=3.0.0.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35" CommonLabel="Microsoft.PackageManagement" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" FilePath="$(7044b856-6d51-498f-90f9-01f219909f79.OutputPath)" Group="Expanded" Label="Microsoft.PackageManagement.dll" />
+    <Node Id="@9" Category="CodeSchema_Namespace" Bounds="452.99942740312,810.836203005058,266.846666666667,85.0002000000002" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsStatic="True" CommonLabel="Microsoft.PackageManagement.Internal" DelayedChildNodesState="Incomplete" DelayedCrossGroupLinksState="Fetched" Group="Expanded" Label="Microsoft.PackageManagement.Internal" />
   </Nodes>
   <Links>
-    <Link Source="@10" Target="(@7 @9 Type=Constants)" Category="Contains" FetchingParent="@10" />
-    <Link Source="@10" Target="(@7 @9 Type=ErrorCategory)" Category="Contains" FetchingParent="@10" />
-    <Link Source="@10" Target="@22" Category="Contains" FetchingParent="@10" />
-    <Link Source="@10" Target="@24" Category="Contains" FetchingParent="@10" />
-    <Link Source="@12" Target="@27" Category="Contains" FetchingParent="@12" />
-    <Link Source="@12" Target="@28" Category="Contains" FetchingParent="@12" />
-    <Link Source="@14" Target="@25" Category="Contains" FetchingParent="@14" />
-    <Link Source="@16" Target="@19" Category="Contains" FetchingParent="@16" />
-    <Link Source="@18" Target="@20" Category="Contains" FetchingParent="@18" />
-    <Link Source="@19" Target="@46" Category="Contains" FetchingParent="@19" />
-    <Link Source="@2" Target="@14" Category="Contains" FetchingParent="@2" />
+    <Link Source="@11" Target="@24" Category="Contains" FetchingParent="@11" />
+    <Link Source="@11" Target="@25" Category="Contains" FetchingParent="@11" />
+    <Link Source="@13" Target="@22" Category="Contains" FetchingParent="@13" />
+    <Link Source="@15" Target="@19" Category="Contains" FetchingParent="@15" />
+    <Link Source="@17" Target="@20" Category="Contains" FetchingParent="@17" />
+    <Link Source="@19" Target="@27" Category="Contains" FetchingParent="@19" />
+    <Link Source="@19" Target="@31" Category="Contains" FetchingParent="@19" />
+    <Link Source="@19" Target="@33" Category="Contains" FetchingParent="@19" />
+    <Link Source="@19" Target="@34" Category="Contains" FetchingParent="@19" />
+    <Link Source="@19" Target="@35" Category="Contains" FetchingParent="@19" />
+    <Link Source="@19" Target="@36" Category="Contains" FetchingParent="@19" />
+    <Link Source="@19" Target="@44" Category="Contains" FetchingParent="@19" />
+    <Link Source="@2" Target="@13" Category="Contains" FetchingParent="@2" />
     <Link Source="@2" Target="@8" Category="CodeMap_ProjectReference" />
-    <Link Source="@20" Target="@47" Category="Contains" FetchingParent="@20" />
-    <Link Source="@22" Target="(@7 @9 @21 Member=(Name=FindPackageByCanonicalId OverloadingParameters=[@33,@29]))" Category="Contains" FetchingParent="@22" />
-    <Link Source="@22" Target="(@7 @9 @21 Member=(Name=GetAvailableProviders OverloadingParameters=[@29,(@31 @32 Type=(Name=String ArrayRank=1 ParentType=String))]))" Category="Contains" FetchingParent="@22" />
-    <Link Source="@22" Target="(@7 @9 @21 Member=(Name=ImportPackageProvider OverloadingParameters=[@29,@33,(@31 @32 Type=Version),(@31 @32 Type=Version),(@31 @32 Type=Version),(@31 @32 Type=Boolean),(@31 @32 Type=Boolean)]))" Category="Contains" FetchingParent="@22" />
-    <Link Source="@22" Target="(@7 @9 @21 Member=(Name=RequirePackageProvider OverloadingParameters=[@33,@33,@33,@29]))" Category="Contains" FetchingParent="@22" />
-    <Link Source="@22" Target="(@7 @9 @21 Member=(Name=SelectProviders OverloadingParameters=[@33,@29]))" Category="Contains" FetchingParent="@22" />
-    <Link Source="@22" Target="(@7 @9 @21 Member=(Name=SelectProvidersWithFeature OverloadingParameters=[@33,@33]))" Category="Contains" FetchingParent="@22" />
-    <Link Source="@22" Target="(@7 @9 @21 Member=(Name=SelectProvidersWithFeature OverloadingParameters=[@33]))" Category="Contains" FetchingParent="@22" />
-    <Link Source="@22" Target="(@7 @9 @21 Member=AllProviderNames)" Category="Contains" FetchingParent="@22" />
-    <Link Source="@22" Target="(@7 @9 @21 Member=ProviderNames)" Category="Contains" FetchingParent="@22" />
-    <Link Source="@22" Target="(@7 @9 @21 Member=Version)" Category="Contains" FetchingParent="@22" />
-    <Link Source="@22" Target="@30" Category="Contains" FetchingParent="@22" />
-    <Link Source="@22" Target="@51" Category="Contains" FetchingParent="@22" />
-    <Link Source="@24" Target="@35" Category="Contains" FetchingParent="@24" />
-    <Link Source="@24" Target="@36" Category="Contains" FetchingParent="@24" />
-    <Link Source="@24" Target="@37" Category="Contains" FetchingParent="@24" />
-    <Link Source="@24" Target="@44" Category="Contains" FetchingParent="@24" />
+    <Link Source="@20" Target="@45" Category="Contains" FetchingParent="@20" />
+    <Link Source="@22" Target="@46" Category="Contains" FetchingParent="@22" />
+    <Link Source="@24" Target="@32" Category="Contains" FetchingParent="@24" />
+    <Link Source="@24" Target="@47" Category="Contains" FetchingParent="@24" />
     <Link Source="@25" Target="@48" Category="Contains" FetchingParent="@25" />
-    <Link Source="@27" Target="@34" Category="Contains" FetchingParent="@27" />
-    <Link Source="@27" Target="@49" Category="Contains" FetchingParent="@27" />
-    <Link Source="@28" Target="@50" Category="Contains" FetchingParent="@28" />
-    <Link Source="@34" Target="@44" Category="CodeSchema_Calls" Bounds="-21.1513075635738,342.169987182617,140.226508711416,318.204230610327" IsTargetVirtualized="True" Weight="1" />
-    <Link Source="@34" Target="@51" Category="CodeSchema_Calls" IsTargetVirtualized="True" Weight="1" />
-    <Link Source="@35" Target="@37" Category="CodeSchema_FieldWrite" Bounds="105.902862548828,694.089965820313,15.7618713378906,22.6162719726563" Weight="1" />
-    <Link Source="@36" Target="@22" Category="References" Bounds="22.2316170794795,-107.115262763508,10.1318466309116,55.859309629776" Weight="1" />
-    <Link Source="@39" Target="@44" Category="CodeSchema_Calls" Bounds="-22.6698047993428,-29.7500148010254,250.811682148958,689.901616053423" IsTargetVirtualized="True" Weight="1" />
-    <Link Source="@4" Target="@16" Category="Contains" FetchingParent="@4" />
+    <Link Source="@27" Target="@38" Category="CodeSchema_Calls" Bounds="951.098028958857,94.8711225335222,400.758016182363,70.5628168509685" Weight="1" />
+    <Link Source="@27" Target="@44" Bounds="951.228881835938,93.7606201171875,349.493286132813,55.1237335205078" />
+    <Link Source="@31" Target="@38" Category="CodeSchema_Calls" Weight="1" />
+    <Link Source="@31" Target="@44" Bounds="1434.43896484375,96.9948043823242,0,21" />
+    <Link Source="@32" Target="@21" Category="CodeSchema_Calls" Bounds="572.903996162014,557.879566650391,81.2941329068768,277.323407397776" IsTargetVirtualized="True" Weight="1" />
+    <Link Source="@33" Target="@38" Category="CodeSchema_Calls" Weight="2" />
+    <Link Source="@33" Target="@44" Bounds="1530.52587890625,96.9948043823242,53.3369140625,26.0502395629883" />
+    <Link Source="@34" Target="@31" Category="CodeSchema_Calls" Bounds="1339.47390380859,84.0143928528824,21.7717277018228,1.4210854715202E-14" Weight="1" />
+    <Link Source="@34" Target="@33" Category="CodeSchema_Calls" Bounds="1339.20385742188,95.2383728027344,187.232421875,11.8903427124023" Weight="1" />
+    <Link Source="@34" Target="@38" Category="CodeSchema_Calls" Weight="1" />
+    <Link Source="@34" Target="@44" Bounds="1277.3740234375,96.9948043823242,56.4029541015625,26.2075576782227" />
+    <Link Source="@35" Target="@38" Category="CodeSchema_Calls" Weight="1" />
+    <Link Source="@35" Target="@44" Bounds="1568.03088378906,96.9948043823242,179.688842773438,41.8592300415039" />
+    <Link Source="@36" Target="@38" Category="CodeSchema_Calls" Weight="2" />
+    <Link Source="@36" Target="@44" Bounds="1112.66809082031,96.9948043823242,188.167114257813,42.6776809692383" />
+    <Link Source="@38" Target="@21" Category="CodeSchema_Calls" Bounds="672.690316093933,185.958768376051,396.059554237474,650.195726778974" IsTargetVirtualized="True" Weight="1" />
+    <Link Source="@39" Target="@21" Category="CodeSchema_Calls" Bounds="655.385070949559,185.959537963867,4.84835594071888,648.880262776352" IsTargetVirtualized="True" Weight="2" />
+    <Link Source="@4" Target="@15" Category="Contains" FetchingParent="@4" />
     <Link Source="@4" Target="@8" Category="CodeMap_ProjectReference" />
-    <Link Source="@40" Target="@22" Category="CodeSchema_ReturnTypeLink" Weight="1" />
-    <Link Source="@40" Target="@30" Category="CodeSchema_Calls" Weight="1" />
-    <Link Source="@40" Target="@44" Category="CodeSchema_Calls" Bounds="-185.670524276507,-29.7520246043049,150.727232799688,689.569659693566" IsTargetVirtualized="True" Weight="2" />
-    <Link Source="@41" Target="@44" Category="CodeSchema_Calls" Bounds="-11.5075585218014,-29.7500148010254,688.348173223833,691.979319274823" IsTargetVirtualized="True" Weight="1" />
-    <Link Source="@42" Target="@44" Category="CodeSchema_Calls" Bounds="-18.6004727151442,266.209988098145,227.216640409727,394.600585659266" IsTargetVirtualized="True" Weight="1" />
-    <Link Source="@43" Target="@22" Category="CodeSchema_ReturnTypeLink" Weight="1" />
-    <Link Source="@43" Target="@44" Category="CodeSchema_Calls" Bounds="-7.52924574044743,498.129978637695,207.299802336806,164.877707357561" IsTargetVirtualized="True" Weight="1" />
-    <Link Source="@44" Target="@22" Category="CodeSchema_ReturnTypeLink" Bounds="-25.9744545725528,693.609984723099,33.8042719539333,97.9332494699498" IsSourceVirtualized="True" Weight="1" />
-    <Link Source="@44" Target="@36" Category="CodeSchema_FieldRead" Bounds="-30.2891617156041,693.610044249654,1.90194958804568E-06,21.4799920835411" IsSourceVirtualized="True" Weight="3">
-      <Category Ref="CodeSchema_FieldWrite" />
-    </Link>
-    <Link Source="@44" Target="@37" Category="CodeSchema_FieldRead" Bounds="-3.03761814190736,693.610044249654,58.2699732855052,26.7278304627519" IsSourceVirtualized="True" Weight="1" />
-    <Link Source="@46" Target="@39" Category="Contains" FetchingParent="@46" />
-    <Link Source="@47" Target="@40" Category="Contains" FetchingParent="@47" />
-    <Link Source="@48" Target="@41" Category="Contains" FetchingParent="@48" />
-    <Link Source="@49" Target="@42" Category="Contains" FetchingParent="@49" />
-    <Link Source="@50" Target="@43" Category="Contains" FetchingParent="@50" />
-    <Link Source="@6" Target="@18" Category="Contains" FetchingParent="@6" />
+    <Link Source="@40" Target="@21" Category="CodeSchema_Calls" Bounds="228.13083811768,185.959537963867,419.325961688082,650.316108372483" IsTargetVirtualized="True" Weight="1" />
+    <Link Source="@41" Target="@21" Category="CodeSchema_Calls" Bounds="660.394043889494,481.919559936523,2.5034583472916E-05,352.919989583706" IsTargetVirtualized="True" Weight="1" />
+    <Link Source="@42" Target="@21" Category="CodeSchema_Calls" Bounds="660.394045262912,713.839588623047,2.13862443843027E-05,120.999960897183" IsTargetVirtualized="True" Weight="1" />
+    <Link Source="@44" Target="@38" Category="Contains" FetchingParent="@44" />
+    <Link Source="@45" Target="@39" Category="Contains" FetchingParent="@45" />
+    <Link Source="@46" Target="@40" Category="Contains" FetchingParent="@46" />
+    <Link Source="@47" Target="@41" Category="Contains" FetchingParent="@47" />
+    <Link Source="@48" Target="@42" Category="Contains" FetchingParent="@48" />
+    <Link Source="@6" Target="@17" Category="Contains" FetchingParent="@6" />
     <Link Source="@6" Target="@8" Category="CodeMap_ProjectReference" />
-    <Link Source="@8" Target="@10" Category="Contains" FetchingParent="@8" />
-    <Link Source="@8" Target="@12" Category="Contains" FetchingParent="@8" />
+    <Link Source="@8" Target="@11" Category="Contains" FetchingParent="@8" />
+    <Link Source="@8" Target="@9" Category="Contains" FetchingParent="@8" />
+    <Link Source="@9" Target="@21" Category="Contains" FetchingParent="@9" />
   </Links>
   <Categories>
     <Category Id="CodeMap_ProjectReference" Label="Project Reference" CanBeDataDriven="True" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Referenced By" OutgoingActionLabel="References" />
     <Category Id="CodeSchema_Assembly" Label="Assembly" BasedOn="File" CanBeDataDriven="True" DefaultAction="Microsoft.Contains" Icon="CodeSchema_Assembly" NavigationActionLabel="Assemblies" />
     <Category Id="CodeSchema_Calls" Label="Calls" CanBeDataDriven="True" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Called By" OutgoingActionLabel="Calls" />
     <Category Id="CodeSchema_Class" Label="Class" BasedOn="CodeSchema_Type" CanBeDataDriven="True" DefaultAction="Node:Both:CodeSchema_Member" Icon="CodeSchema_Class" NavigationActionLabel="Classes" />
-    <Category Id="CodeSchema_Enum" Label="Enum" BasedOn="CodeSchema_Type" CanBeDataDriven="True" DefaultAction="Node:Both:CodeSchema_Member" Icon="CodeSchema_Enum" NavigationActionLabel="Enums" />
-    <Category Id="CodeSchema_Field" Label="Field" BasedOn="CodeSchema_Member" CanBeDataDriven="True" DefaultAction="Microsoft.Contains" Icon="CodeSchema_Field" NavigationActionLabel="Fields" />
-    <Category Id="CodeSchema_FieldRead" Label="Field Read" BasedOn="CodeSchema_FieldReference" CanBeDataDriven="True" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Read By" OutgoingActionLabel="Reads Fields" />
-    <Category Id="CodeSchema_FieldReference" Label="Field Reference" CanBeDataDriven="True" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Referenced By" OutgoingActionLabel="References Fields" />
-    <Category Id="CodeSchema_FieldWrite" Label="Field Write" BasedOn="CodeSchema_FieldReference" CanBeDataDriven="True" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Written By" OutgoingActionLabel="Writes Fields" />
-    <Category Id="CodeSchema_Interface" Label="Interface" BasedOn="CodeSchema_Type" CanBeDataDriven="True" DefaultAction="Node:Both:CodeSchema_Member" Icon="CodeSchema_Interface" NavigationActionLabel="Interfaces" />
     <Category Id="CodeSchema_Member" Label="Member" CanBeDataDriven="True" DefaultAction="Microsoft.Contains" Icon="CodeSchema_Field" NavigationActionLabel="Members" />
     <Category Id="CodeSchema_Method" Label="Method" BasedOn="CodeSchema_Member" CanBeDataDriven="True" DefaultAction="Link:Forward:CodeSchema_Calls" Icon="CodeSchema_Method" NavigationActionLabel="Methods" />
     <Category Id="CodeSchema_Namespace" Label="Namespace" CanBeDataDriven="True" DefaultAction="Node:Both:CodeSchema_Type" Icon="CodeSchema_Namespace" NavigationActionLabel="Namespaces" />
     <Category Id="CodeSchema_Property" Label="Property" BasedOn="CodeSchema_Member" CanBeDataDriven="True" DefaultAction="Microsoft.Contains" Icon="CodeSchema_Property" NavigationActionLabel="Properties" />
-    <Category Id="CodeSchema_ReturnTypeLink" Label="Return" CanBeDataDriven="True" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Return types" OutgoingActionLabel="Return types" />
     <Category Id="CodeSchema_Type" Label="Type" CanBeDataDriven="True" DefaultAction="Node:Both:CodeSchema_Member" Icon="CodeSchema_Class" NavigationActionLabel="Types" />
     <Category Id="Contains" Label="Contains" Description="Whether the source of the link contains the target object" CanBeDataDriven="False" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Contained By" IsContainment="True" OutgoingActionLabel="Contains" />
     <Category Id="File" Label="File" CanBeDataDriven="True" DefaultAction="Microsoft.Contains" Icon="File" NavigationActionLabel="Files" />
-    <Category Id="References" Label="References" CanBeDataDriven="True" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Referenced By" OutgoingActionLabel="References" />
   </Categories>
   <Properties>
     <Property Id="AssemblyTimestamp" DataType="System.DateTime" />
@@ -137,7 +106,6 @@
     <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
     <Property Id="CanLinkedNodesBeDataDriven" Label="CanLinkedNodesBeDataDriven" Description="CanLinkedNodesBeDataDriven" DataType="System.Boolean" />
     <Property Id="CodeSchemaProperty_IsAbstract" Label="Is Abstract" Description="Flag to indicate member is 'Abstract' does not provide a full implementation" DataType="System.Boolean" />
-    <Property Id="CodeSchemaProperty_IsConstructor" Label="Is Constructor" Description="Flag to indicate the method is a constructor" DataType="System.Boolean" />
     <Property Id="CodeSchemaProperty_IsFinal" Label="Is Final" Description="Flag to indicate the member is 'Final' and cannot be derived from" DataType="System.Boolean" />
     <Property Id="CodeSchemaProperty_IsInternal" Label="Is Internal" Description="Flag to indicate the method is 'Internal'" DataType="System.Boolean" />
     <Property Id="CodeSchemaProperty_IsPrivate" Label="Is Private" Description="Flag to indicate the scope is Private" DataType="System.Boolean" />
@@ -145,7 +113,6 @@
     <Property Id="CodeSchemaProperty_IsProtected" Label="Is Protected" Description="Flag to indicate the scope is Protected" DataType="System.Boolean" />
     <Property Id="CodeSchemaProperty_IsProtectedOrInternal" Label="Is Private" Description="Flag to indicate the scope is Protected" DataType="System.Boolean" />
     <Property Id="CodeSchemaProperty_IsPublic" Label="Is Public" Description="Flag to indicate the scope is Public" DataType="System.Boolean" />
-    <Property Id="CodeSchemaProperty_IsSpecialName" Label="Is Special Name" Description="Flag to indicate the method is treated in a special way by some compilers" DataType="System.Boolean" />
     <Property Id="CodeSchemaProperty_IsStatic" Label="Is Static" Description="Flag to indicate the member is a static member" DataType="System.Boolean" />
     <Property Id="CodeSchemaProperty_IsVirtual" Label="Is Virtual" Description="Flag to indicate the method can be overridden" DataType="System.Boolean" />
     <Property Id="CodeSchemaProperty_StrongName" Label="StrongName" Description="StrongName" DataType="System.String" />
@@ -155,7 +122,6 @@
     <Property Id="DelayedChildNodesState" Label="Delayed Child Nodes State" Description="Unspecified if the delayed child nodes state is not specified. NotFetched if the group contains child nodes that are not fetched into the graph yet. Fetched if the group has all its delayed child nodes already fetched." DataType="Microsoft.VisualStudio.GraphModel.DelayedDataState" />
     <Property Id="DelayedCrossGroupLinksState" Label="Delayed Cross-Group Links State" Description="Unspecified if the delayed cross-group links state is not specified. NotFetched if delayed cross-group links on this node are not fetched into the graph yet. Fetched if all delayed cross-group links have already fetched." DataType="Microsoft.VisualStudio.GraphModel.DelayedDataState" />
     <Property Id="Expression" DataType="System.String" />
-    <Property Id="FetchedChildrenCount" DataType="System.Int32" />
     <Property Id="FetchingParent" DataType="Microsoft.VisualStudio.GraphModel.GraphNodeId" />
     <Property Id="FilePath" Label="File Path" Description="File Path" DataType="System.String" />
     <Property Id="Group" Label="Group" Description="Display the node as a group" DataType="Microsoft.VisualStudio.GraphModel.GraphGroupStyle" />
@@ -164,7 +130,6 @@
     <Property Id="IncomingActionLabel" Label="IncomingActionLabel" Description="IncomingActionLabel" DataType="System.String" />
     <Property Id="IsContainment" DataType="System.Boolean" />
     <Property Id="IsEnabled" DataType="System.Boolean" />
-    <Property Id="IsSourceVirtualized" Label="Link Source Virtualized" Description="If true, the link source end contains data for virtualized nodes/links (i.e. not actually created in the graph)." DataType="System.Boolean" />
     <Property Id="IsTargetVirtualized" Label="Link Target Virtualized" Description="If true, the link target end contains data for virtualized nodes/links (i.e. not actually created in the graph)." DataType="System.Boolean" />
     <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
     <Property Id="Layout" DataType="System.String" />
@@ -196,49 +161,46 @@
     <Alias n="6" Id="(@5)" />
     <Alias n="7" Uri="Assembly=$(7044b856-6d51-498f-90f9-01f219909f79.OutputPathUri)" />
     <Alias n="8" Id="(@7)" />
-    <Alias n="9" Id="Namespace=Microsoft.PackageManagement.Internal" />
-    <Alias n="10" Id="(@7 @9)" />
-    <Alias n="11" Id="Namespace=Microsoft.PackageManagement.Internal.Implementation" />
-    <Alias n="12" Id="(@7 @11)" />
-    <Alias n="13" Id="Namespace=Microsoft.PackageManagement.MetaProvider.PowerShell.Internal" />
-    <Alias n="14" Id="(@1 @13)" />
-    <Alias n="15" Id="Namespace=Microsoft.PackageManagement.Providers.Internal.Bootstrap" />
-    <Alias n="16" Id="(@3 @15)" />
-    <Alias n="17" Id="Namespace=Microsoft.PowerShell.PackageManagement.Cmdlets" />
-    <Alias n="18" Id="(@5 @17)" />
-    <Alias n="19" Id="(@3 @15 Type=BootstrapProvider)" />
-    <Alias n="20" Id="(@5 @17 Type=CmdletBase)" />
-    <Alias n="21" Id="Type=IPackageManagementService" />
-    <Alias n="22" Id="(@7 @9 @21)" />
-    <Alias n="23" Id="Type=PackageManager" />
-    <Alias n="24" Id="(@7 @9 @23)" />
-    <Alias n="25" Id="(@1 @13 Type=PowerShellMetaProvider)" />
-    <Alias n="26" Id="Type=ProviderServicesImpl" />
-    <Alias n="27" Id="(@7 @11 @26)" />
-    <Alias n="28" Id="(@7 @11 Type=RequestObject)" />
-    <Alias n="29" Id="(@7 Namespace=Microsoft.PackageManagement.Internal.Api Type=IHostApi)" />
-    <Alias n="30" Id="(@7 @9 @21 Member=(Name=Initialize OverloadingParameters=[@29]))" />
-    <Alias n="31" Uri="Assembly=$(FxReferenceAssembliesUri)/.NETFramework/v4.5.1/mscorlib.dll" />
-    <Alias n="32" Id="Namespace=System" />
-    <Alias n="33" Id="(@31 @32 Type=String)" />
-    <Alias n="34" Id="(@7 @11 @26 Member=(Name=Install OverloadingParameters=[@33,@33,(@7 Namespace=Microsoft.PackageManagement.Internal.Api Type=IRequest)]))" />
-    <Alias n="35" Id="(@7 @9 @23 Member=.cctor)" />
-    <Alias n="36" Id="(@7 @9 @23 Member=_instance)" />
-    <Alias n="37" Id="(@7 @9 @23 Member=_lockObject)" />
-    <Alias n="38" Id="Member=get_PackageManagementService" />
-    <Alias n="39" Id="(@3 @15 Type=BootstrapProvider @38)" />
-    <Alias n="40" Id="(@5 @17 Type=CmdletBase @38)" />
-    <Alias n="41" Id="(@1 @13 Type=PowerShellMetaProvider @38)" />
-    <Alias n="42" Id="(@7 @11 @26 @38)" />
-    <Alias n="43" Id="(@7 @11 Type=RequestObject @38)" />
-    <Alias n="44" Id="(@7 @9 @23 Member=Instance)" />
-    <Alias n="45" Id="Member=PackageManagementService" />
-    <Alias n="46" Id="(@3 @15 Type=BootstrapProvider @45)" />
-    <Alias n="47" Id="(@5 @17 Type=CmdletBase @45)" />
-    <Alias n="48" Id="(@1 @13 Type=PowerShellMetaProvider @45)" />
-    <Alias n="49" Id="(@7 @11 @26 @45)" />
-    <Alias n="50" Id="(@7 @11 Type=RequestObject @45)" />
-    <Alias n="51" Id="(@7 @9 @21 Member=PackageProviders)" />
+    <Alias n="9" Id="(@7 Namespace=Microsoft.PackageManagement.Internal)" />
+    <Alias n="10" Id="Namespace=Microsoft.PackageManagement.Internal.Implementation" />
+    <Alias n="11" Id="(@7 @10)" />
+    <Alias n="12" Id="Namespace=Microsoft.PackageManagement.MetaProvider.PowerShell.Internal" />
+    <Alias n="13" Id="(@1 @12)" />
+    <Alias n="14" Id="Namespace=Microsoft.PackageManagement.Providers.Internal.Bootstrap" />
+    <Alias n="15" Id="(@3 @14)" />
+    <Alias n="16" Id="Namespace=Microsoft.PowerShell.PackageManagement.Cmdlets" />
+    <Alias n="17" Id="(@5 @16)" />
+    <Alias n="18" Id="Type=BootstrapProvider" />
+    <Alias n="19" Id="(@3 @14 @18)" />
+    <Alias n="20" Id="(@5 @16 Type=CmdletBase)" />
+    <Alias n="21" Id="(@7 Namespace=Microsoft.PackageManagement.Internal Type=PackageManager)" />
+    <Alias n="22" Id="(@1 @12 Type=PowerShellMetaProvider)" />
+    <Alias n="23" Id="Type=ProviderServicesImpl" />
+    <Alias n="24" Id="(@7 @10 @23)" />
+    <Alias n="25" Id="(@7 @10 Type=RequestObject)" />
+    <Alias n="26" Id="(@3 @14 Type=BootstrapRequest)" />
+    <Alias n="27" Id="(@3 @14 @18 Member=(Name=InitializeProvider OverloadingParameters=[@26]))" />
+    <Alias n="28" Id="(@3 @14 Type=Package)" />
+    <Alias n="29" Uri="Assembly=$(FxReferenceAssembliesUri)/.NETFramework/v4.5.1/mscorlib.dll" />
+    <Alias n="30" Id="(@29 Namespace=System Type=String)" />
+    <Alias n="31" Id="(@3 @14 @18 Member=(Name=InstallPackageFile OverloadingParameters=[@28,@30,@26]))" />
+    <Alias n="32" Id="(@7 @10 @23 Member=(Name=Install OverloadingParameters=[@30,@30,(@7 Namespace=Microsoft.PackageManagement.Internal.Api Type=IRequest)]))" />
+    <Alias n="33" Id="(@3 @14 @18 Member=(Name=InstallPackageReference OverloadingParameters=[@28,@30,@26,(@7 Namespace=Microsoft.PackageManagement.Packaging Type=(Name=SoftwareIdentity ArrayRank=1 ParentType=SoftwareIdentity))]))" />
+    <Alias n="34" Id="(@3 @14 @18 Member=(Name=InstallProviderFromInstaller OverloadingParameters=[@28,(@7 Namespace=Microsoft.PackageManagement.Internal.Packaging Type=Link),@30,@26]))" />
+    <Alias n="35" Id="(@3 @14 @18 Member=(Name=InstallAssemblyProvider OverloadingParameters=[@28,(@7 Namespace=Microsoft.PackageManagement.Internal.Packaging Type=Link),@30,@26,(@29 Namespace=System Type=Boolean)]))" />
+    <Alias n="36" Id="(@3 @14 @18 Member=(Name=GetInstalledPackages OverloadingParameters=[@30,@30,@30,@30,@26]))" />
+    <Alias n="37" Id="Member=get_PackageManagementService" />
+    <Alias n="38" Id="(@3 @14 @18 @37)" />
+    <Alias n="39" Id="(@5 @16 Type=CmdletBase @37)" />
+    <Alias n="40" Id="(@1 @12 Type=PowerShellMetaProvider @37)" />
+    <Alias n="41" Id="(@7 @10 @23 @37)" />
+    <Alias n="42" Id="(@7 @10 Type=RequestObject @37)" />
+    <Alias n="43" Id="Member=PackageManagementService" />
+    <Alias n="44" Id="(@3 @14 @18 @43)" />
+    <Alias n="45" Id="(@5 @16 Type=CmdletBase @43)" />
+    <Alias n="46" Id="(@1 @12 Type=PowerShellMetaProvider @43)" />
+    <Alias n="47" Id="(@7 @10 @23 @43)" />
+    <Alias n="48" Id="(@7 @10 Type=RequestObject @43)" />
   </IdentifierAliases>
   <Styles>
     <Style TargetType="Node" GroupLabel="Results" ValueLabel="True">

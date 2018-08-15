@@ -5,9 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.PackageManagement;
 using Microsoft.PackageManagement.Implementation;
-using Microsoft.PackageManagement.Internal;
+using Microsoft.PackageManagement.Internal.Implementation;
 using Microsoft.PackageManagement.Internal.Api;
 using Microsoft.PackageManagement.MetaProvider.PowerShell;
+using Microsoft.PowerShell.PackageManagement.Cmdlets;
 using Microsoft.PackageManagement.Providers.Internal;
 
 namespace ConsoleApp1
@@ -43,14 +44,29 @@ namespace ConsoleApp1
             bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IHostApi requestObject);
         }
 
+        private static readonly object _lockObject = new object();
+        internal static IPackageManagementService _instance;
 
+        public static IPackageManagementService Instance
+        {
+            get
+            {
+                lock (_lockObject)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new PackageManagementService();
+                    }
+                }
+                return _instance;
+            }
+        }
 
         static void Main(string[] args)
         {
-            
+           
 
-
-        }
+        } 
         //ProgramsProvider provider = new ProgramsProvider();
     }    //IPackageManagementService packageManagement = new IPackageManagementService();
   }
