@@ -63,18 +63,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public virtual string[] Source
         {
-            get
-            {
-                return _sources;
-            }
+            get => _sources;
             set
             {
                 _sources = value;
 
                 if (_sources != null && _sources.Length != 0)
                 {
-                    ProviderInfo providerInfo;
-
                     _sources = _sources.SelectMany(source =>
                     {
                         if (source.Equals("."))
@@ -87,10 +82,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                         {
                             if (FilesystemExtensions.LooksLikeAFilename(source))
                             {
-                                var resolvedPaths = GetResolvedProviderPathFromPSPath(source, out providerInfo);
+                                var resolvedPaths = GetResolvedProviderPathFromPSPath(source, out ProviderInfo providerInfo);
 
                                 // Ensure the path is a single path from the file system provider
-                                if ((providerInfo != null) && (resolvedPaths.Count == 1) && String.Equals(providerInfo.Name, "FileSystem", StringComparison.OrdinalIgnoreCase))
+                                if ((providerInfo != null) && (resolvedPaths.Count == 1) && string.Equals(providerInfo.Name, "FileSystem", StringComparison.OrdinalIgnoreCase))
                                 {
                                     return resolvedPaths[0].SingleItemAsEnumerable();
                                 }
@@ -164,35 +159,23 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             {
                 if (Proxy != null)
                 {
-                    return new PackageManagement.Utility.InternalWebProxy(Proxy, ProxyCredential == null ? null : ProxyCredential.GetNetworkCredential());
+                    return new PackageManagement.Utility.InternalWebProxy(Proxy, ProxyCredential?.GetNetworkCredential());
                 }
 
                 return null;
             }
         }
 
-        public override string CredentialUsername
-        {
-            get
-            {
-                return Credential != null ? Credential.UserName : null;
-            }
-        }
+        public override string CredentialUsername => Credential?.UserName;
 
-        public override SecureString CredentialPassword
-        {
-            get
-            {
-                return Credential != null ? Credential.Password : null;
-            }
-        }
+        public override SecureString CredentialPassword => Credential?.Password;
 
         public override bool ProcessRecordAsync()
         {
             // record the names in the collection.
             if (!CollectionExtensions.IsNullOrEmpty(Name))
             {
-                foreach (var name in Name)
+                foreach (string name in Name)
                 {
                     DictionaryExtensions.GetOrAdd(_resultsPerName, name, () => null);
                 }
@@ -211,8 +194,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
             if (FilesystemExtensions.LooksLikeAFilename(path))
             {
-                ProviderInfo providerInfo;
-                var paths = GetResolvedProviderPathFromPSPath(path, out providerInfo).ReEnumerable();
+                MutableEnumerable<T> paths = GetResolvedProviderPathFromPSPath(path, out ProviderInfo providerInfo).ReEnumerable();
                 return
                     paths.SelectMany(
                         each => FilesystemExtensions.FileExists(each) ? CollectionExtensions.SingleItemAsEnumerable(each) : FilesystemExtensions.DirectoryExists(each) ? Directory.GetFiles(each) : Microsoft.PackageManagement.Internal.Constants.Empty)
@@ -221,13 +203,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             return Microsoft.PackageManagement.Internal.Constants.Empty.ReEnumerable();
         }
 
-        protected bool SpecifiedMinimumOrMaximum
-        {
-            get
-            {
-                return !string.IsNullOrWhiteSpace(MaximumVersion) || !string.IsNullOrWhiteSpace(MinimumVersion);
-            }
-        }
+        protected bool SpecifiedMinimumOrMaximum => !string.IsNullOrWhiteSpace(MaximumVersion) || !string.IsNullOrWhiteSpace(MinimumVersion);
 
         private List<Uri> _uris = new List<Uri>();
         private Dictionary<string, Tuple<List<string>, byte[]>> _files = new Dictionary<string, Tuple<List<string>, byte[]>>(StringComparer.OrdinalIgnoreCase);
@@ -236,8 +212,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         private bool IsUri(string name)
         {
-            Uri packageUri;
-            if (Uri.TryCreate(name, UriKind.Absolute, out packageUri))
+            if (Uri.TryCreate(name, UriKind.Absolute, out Uri packageUri))
             {
                 // if it's an uri, then we search via uri or file!
                 if (!packageUri.IsFile)
@@ -251,10 +226,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         private bool IsFile(string name)
         {
-            var files = FindFiles(name);
+            MutableEnumerable<string> files = FindFiles(name);
             if (files.Any())
             {
-                foreach (var f in files)
+                foreach (string f in files)
                 {
                     if (_files.ContainsKey(f))
                     {
@@ -287,14 +262,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             return true;
         }
 
-        protected override string BootstrapNuGet
-        {
-            get
-            {
+        protected override string BootstrapNuGet =>
                 //find, install, save- inherits from this class. They all need bootstrap NuGet if does not exists.
-                return "true";
-            }
-        }
+                "true";
 
         /// <summary>
         ///  Validate if the package is a provider package.
@@ -310,11 +280,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             }
 
             //get the tags info from the package's swid
-            var tags = package.Metadata["tags"].ToArray();
+            string[] tags = package.Metadata["tags"].ToArray();
 
             //Check if the provider has provider tags
-            var found = false;
-            foreach (var filter in ProviderFilters)
+            bool found = false;
+            foreach (string filter in ProviderFilters)
             {
                 found = false;
                 if (tags.Any(tag => tag.ContainsIgnoreCase(filter)))
@@ -340,7 +310,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             {
                 Verbose(Resources.Messages.SelectedProviders, pv.ProviderName);
                 // for a given provider, if we get an error, we want just that provider to stop.
-                var host = GetProviderSpecificOption(pv);
+                IHostApi host = GetProviderSpecificOption(pv);
 
                 var a = _uris.Select(uri => new
                 {
@@ -449,12 +419,12 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
             try
             {
-                var providers = SelectedProviders.ToArray();
+                PackageProvider[] providers = SelectedProviders.ToArray();
 
                 // filter the items into three types of searches
                 _names = CollectionExtensions.IsNullOrEmpty(Name) ? CollectionExtensions.SingleItemAsEnumerable(string.Empty) : Name.Where(each => !IsUri(each) && !IsFile(each)).ToArray();
 
-                foreach (var n in _names)
+                foreach (string n in _names)
                 {
                     Debug("Calling SearchForPackages. Name='{0}'", n);
                 }
@@ -471,7 +441,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         protected virtual void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package)
         {
-            foreach (var key in searchKey)
+            foreach (string key in searchKey)
             {
                 _resultsPerName.GetOrSetIfDefault(key, () => new List<SoftwareIdentity>()).Add(package);
             }
@@ -479,13 +449,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         protected bool CheckUnmatchedPackages()
         {
-            var unmatched = _resultsPerName.Keys.Where(each => _resultsPerName[each] == null).ReEnumerable();
-            var result = true;
+            MutableEnumerable<string> unmatched = _resultsPerName.Keys.Where(each => _resultsPerName[each] == null).ReEnumerable();
+            bool result = true;
 
             if (unmatched.Any())
             {
                 // whine about things not matched.
-                foreach (var name in unmatched)
+                foreach (string name in unmatched)
                 {
                     Debug(string.Format(CultureInfo.CurrentCulture, "unmatched package name='{0}'", name));
 
@@ -521,7 +491,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             // are they found accross multiple sources?
             // are they all from the same source?
 
-            foreach (var list in _resultsPerName.Values.Where(each => each != null && each.Any()))
+            foreach (List<SoftwareIdentity> list in _resultsPerName.Values.Where(each => each != null && each.Any()))
             {
                 if (list.Count == 1)
                 {
@@ -533,8 +503,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     //process the overmatched case
                     SoftwareIdentity selectedPackage = null;
 
-                    var providers = list.Select(each => each.ProviderName).Distinct().ToArray();
-                    var sources = list.Select(each => each.Source).Distinct().ToArray();
+                    string[] providers = list.Select(each => each.ProviderName).Distinct().ToArray();
+                    string[] sources = list.Select(each => each.Source).Distinct().ToArray();
 
                     //case: a user specifies -Source and multiple packages are found. In this case to determine which one should be installed,
                     //      We treat the user's package source array is in a priority order, i.e. the first package source has the highest priority.
@@ -544,10 +514,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     if (Sources.Any() && (providers.Length != 1 || sources.Length != 1))
                     {
                         // let's use the first source as our priority.As long as we find a package, we exit the 'for' loop righ away
-                        foreach (var source in Sources)
+                        foreach (string source in Sources)
                         {
                             //select all packages matched source
-                            var pkgs = list.Where(package => source.EqualsIgnoreCase(package.Source) || (UserSpecifiedSourcesList.Keys.ContainsIgnoreCase(package.Source) && source.EqualsIgnoreCase(UserSpecifiedSourcesList[package.Source]))).ToArray();
+                            SoftwareIdentity[] pkgs = list.Where(package => source.EqualsIgnoreCase(package.Source) || (UserSpecifiedSourcesList.Keys.ContainsIgnoreCase(package.Source) && source.EqualsIgnoreCase(UserSpecifiedSourcesList[package.Source]))).ToArray();
                             if (pkgs.Length == 0)
                             {
                                 continue;
@@ -568,7 +538,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                             {
                                 //case: multiple providers matched the same source.
                                 //need to process provider's priority order
-                                var pkg = ProviderName.Select(p => pkgs.FirstOrDefault(each => each.ProviderName.EqualsIgnoreCase(p))).FirstOrDefault();
+                                SoftwareIdentity pkg = ProviderName.Select(p => pkgs.FirstOrDefault(each => each.ProviderName.EqualsIgnoreCase(p))).FirstOrDefault();
                                 if (pkg != null)
                                 {
                                     selectedPackage = pkg;
@@ -584,10 +554,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     }
                     else if (ProviderName != null && ProviderName.Any() && (providers.Length != 1 || sources.Length != 1))
                     {
-                        foreach (var providerName in ProviderName)
+                        foreach (string providerName in ProviderName)
                         {
                             //select all packages matched with the provider name
-                            var packages = list.Where(each => providerName.EqualsIgnoreCase(each.ProviderName)).ToArray();
+                            SoftwareIdentity[] packages = list.Where(each => providerName.EqualsIgnoreCase(each.ProviderName)).ToArray();
                             if (packages.Length == 0)
                             {
                                 continue;
@@ -614,7 +584,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     else
                     {
                         //error out for the overmatched case
-                        var suggestion = "";
+                        string suggestion = "";
                         if (providers.Length == 1)
                         {
                             // it's matching this package multiple times in the same provider.
@@ -640,7 +610,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
                         string searchKey = null;
 
-                        foreach (var pkg in list)
+                        foreach (SoftwareIdentity pkg in list)
                         {
                             Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, pkg.ProviderName, pkg.Name, pkg.Version, GetPackageSourceNameOrLocation(pkg));
                             searchKey = pkg.SearchKey;
@@ -658,7 +628,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             string packageSourceName = package.Source;
 
             // Get the package provider object
-            var packageProvider = SelectProviders(package.ProviderName).ReEnumerable();
+            MutableEnumerable<PackageProvider> packageProvider = SelectProviders(package.ProviderName).ReEnumerable();
 
             if (!packageProvider.Any())
             {
@@ -668,11 +638,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             // For any issues with reverse lookup (SourceLocation -> SourceName), return Source Location Url
             try
             {
-                var packageSource = packageProvider.Select(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered && (source.Location.EqualsIgnoreCase(package.Source)))).ReEnumerable();
+                MutableEnumerable<T> packageSource = packageProvider.Select(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered && (source.Location.EqualsIgnoreCase(package.Source)))).ReEnumerable();
 
                 if (packageSource.Any())
                 {
-                    var pkgSource = packageSource.FirstOrDefault();
+                    T pkgSource = packageSource.FirstOrDefault();
                     if (pkgSource != null)
                     {
                         var source = pkgSource.FirstOrDefault();
@@ -699,9 +669,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             }
             // first, check to see if we have all the required dynamic parameters
             // for each package/provider
-            foreach (var package in packagesToInstall)
+            foreach (SoftwareIdentity package in packagesToInstall)
             {
-                var pkg = package;
+                SoftwareIdentity pkg = package;
                 foreach (var parameter in DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>()
                     .Where(param => param.IsSet == false && param.Options.Any(option => option.ProviderName == pkg.ProviderName && option.Category == OptionCategory.Install && option.IsRequired)))
                 {
@@ -717,22 +687,22 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             {
                 return false;
             }
-            var progressId = 0;
-            var triedInstallCount = 0;
+            int progressId = 0;
+            int triedInstallCount = 0;
 
             if (packagesToInstall.Length > 1)
             {
                 progressId = StartProgress(0, Constants.Messages.InstallingPackagesCount, packagesToInstall.Length);
             }
-            var n = 0;
+            int n = 0;
 
-            foreach (var pkg in packagesToInstall)
+            foreach (SoftwareIdentity pkg in packagesToInstall)
             {
                 if (packagesToInstall.Length > 1)
                 {
                     Progress(progressId, (n * 100 / packagesToInstall.Length) + 1, Constants.Messages.InstallingPackageMultiple, pkg.Name, ++n, packagesToInstall.Length);
                 }
-                var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
+                PackageProvider provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
                 if (provider == null)
                 {
                     Error(Constants.Errors.UnknownProvider, pkg.ProviderName);
@@ -740,7 +710,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 }
 
                 // quickly check to see if this package is already installed.
-                var installedPkgs = provider.GetInstalledPackages(pkg.Name, pkg.Version, null, null, this.ProviderSpecific(provider)).CancelWhen(CancellationEvent.Token).ToArray();
+                SoftwareIdentity[] installedPkgs = provider.GetInstalledPackages(pkg.Name, pkg.Version, null, null, this.ProviderSpecific(provider)).CancelWhen(CancellationEvent.Token).ToArray();
                 if (IsCanceled)
                 {
                     // if we're stopping, just get out asap.
@@ -768,7 +738,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 {
                     if (ShouldProcessPackageInstall(pkg.Name, pkg.Version, pkg.Source))
                     {
-                        foreach (var installedPkg in provider.InstallPackage(pkg, this).CancelWhen(CancellationEvent.Token))
+                        foreach (SoftwareIdentity installedPkg in provider.InstallPackage(pkg, this).CancelWhen(CancellationEvent.Token))
                         {
                             if (IsCanceled)
                             {

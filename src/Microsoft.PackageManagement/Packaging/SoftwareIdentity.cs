@@ -43,7 +43,7 @@ namespace Microsoft.PackageManagement.Packaging
         public string FastPackageReference { get; set; }
         internal PackageProvider Provider { get; set; }
 
-        public string ProviderName => Provider != null ? Provider.ProviderName : null;
+        public string ProviderName => Provider?.ProviderName;
 
         public string Source { get; internal set; }
         public string Status { get; internal set; }

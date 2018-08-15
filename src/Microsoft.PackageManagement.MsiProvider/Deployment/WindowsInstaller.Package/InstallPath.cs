@@ -38,7 +38,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
             {
                 throw new ArgumentNullException("name");
             }
-            this.parentPath = null;
+            parentPath = null;
             ParseName(name, useShortNames);
         }
 
@@ -51,31 +51,36 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                 // Chnage it to targetshort|targetlong:sourceshort|sourcelong.
                 parse = name.Split(new char[] { ':', '|' }, 4);
                 if (parse.Length == 4)
+                {
                     parse = new string[] { parse[0] + '|' + parse[2], parse[1] + '|' + parse[3] };
+                }
                 else
+                {
                     parse = new string[] { parse[0] + '|' + parse[1], parse[1] + '|' + parse[2] };
+                }
             }
             string targetName = parse[0];
             string sourceName = (parse.Length == 2 ? parse[1] : parse[0]);
             parse = targetName.Split(new char[] { '|' }, 2);
-            if (parse.Length == 2) targetName = (useShortNames ? parse[0] : parse[1]);
-            parse = sourceName.Split(new char[] { '|' }, 2);
-            if (parse.Length == 2) sourceName = (useShortNames ? parse[0] : parse[1]);
+            if (parse.Length == 2)
+            {
+                targetName = (useShortNames ? parse[0] : parse[1]);
+            }
 
-            this.SourceName = sourceName;
-            this.TargetName = targetName;
+            parse = sourceName.Split(new char[] { '|' }, 2);
+            if (parse.Length == 2)
+            {
+                sourceName = (useShortNames ? parse[0] : parse[1]);
+            }
+
+            SourceName = sourceName;
+            TargetName = targetName;
         }
 
         /// <summary>
         /// Gets the path of the parent directory.
         /// </summary>
-        public InstallPath ParentPath
-        {
-            get
-            {
-                return parentPath;
-            }
-        }
+        public InstallPath ParentPath => parentPath;
 
         internal void SetParentPath(InstallPath value)
         {
@@ -109,17 +114,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string SourceName
         {
-            get
-            {
-                return sourceName;
-            }
+            get => sourceName;
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-                sourceName = value;
+                sourceName = value ?? throw new ArgumentNullException("value");
                 ResetSourcePath();
             }
         }
@@ -132,17 +130,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string TargetName
         {
-            get
-            {
-                return targetName;
-            }
+            get => targetName;
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-                targetName = value;
+                targetName = value ?? throw new ArgumentNullException("value");
                 ResetTargetPath();
             }
         }
@@ -243,7 +234,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// Gets the full source path.
         /// </summary>
         /// <returns><see cref="SourcePath"/></returns>
-        public override String ToString()
+        public override string ToString()
         {
             return SourcePath;
         }
@@ -254,13 +245,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
     /// </summary>
     internal class InstallPathCollection : IList<InstallPath>
     {
-        private InstallPath parentPath;
+        private readonly InstallPath parentPath;
         private List<InstallPath> items;
 
         internal InstallPathCollection(InstallPath parentPath)
         {
             this.parentPath = parentPath;
-            this.items = new List<InstallPath>();
+            items = new List<InstallPath>();
         }
 
         /// <summary>
@@ -268,14 +259,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// </summary>
         public InstallPath this[int index]
         {
-            get
-            {
-                return this.items[index];
-            }
+            get => items[index];
             set
             {
-                this.OnSet(this.items[index], value);
-                this.items[index] = value;
+                OnSet(items[index], value);
+                items[index] = value;
             }
         }
 
@@ -285,8 +273,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <param name="item">The InstallPath to add.</param>
         public void Add(InstallPath item)
         {
-            this.OnInsert(item);
-            this.items.Add(item);
+            OnInsert(item);
+            items.Add(item);
         }
 
         /// <summary>
@@ -295,11 +283,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <param name="item">The InstallPath to remove.</param>
         public bool Remove(InstallPath item)
         {
-            int index = this.items.IndexOf(item);
+            int index = items.IndexOf(item);
             if (index >= 0)
             {
-                this.OnRemove(item);
-                this.items.RemoveAt(index);
+                OnRemove(item);
+                items.RemoveAt(index);
                 return true;
             }
             else
@@ -315,7 +303,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <returns>The index of the item, or -1 if not found.</returns>
         public int IndexOf(InstallPath item)
         {
-            return this.items.IndexOf(item);
+            return items.IndexOf(item);
         }
 
         /// <summary>
@@ -325,8 +313,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <param name="item">The InstallPath to insert.</param>
         public void Insert(int index, InstallPath item)
         {
-            this.OnInsert(item);
-            this.items.Insert(index, item);
+            OnInsert(item);
+            items.Insert(index, item);
         }
 
         /// <summary>
@@ -336,7 +324,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <returns>true if the item is found; false otherwise</returns>
         public bool Contains(InstallPath item)
         {
-            return this.items.Contains(item);
+            return items.Contains(item);
         }
 
         /// <summary>
@@ -346,7 +334,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <param name="index">The starting index in the destination array.</param>
         public void CopyTo(InstallPath[] array, int index)
         {
-            this.items.CopyTo(array, index);
+            items.CopyTo(array, index);
         }
 
         private void OnInsert(InstallPath item)
@@ -356,7 +344,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                 item.ParentPath.ChildPaths.Remove(item);
             }
 
-            item.SetParentPath(this.parentPath);
+            item.SetParentPath(parentPath);
         }
 
         private void OnRemove(InstallPath item)
@@ -366,8 +354,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         private void OnSet(InstallPath oldItem, InstallPath newItem)
         {
-            this.OnRemove(oldItem);
-            this.OnInsert(newItem);
+            OnRemove(oldItem);
+            OnInsert(newItem);
         }
 
         /// <summary>
@@ -376,8 +364,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <param name="index">The index of the item to remove.</param>
         public void RemoveAt(int index)
         {
-            this.OnRemove(this[index]);
-            this.items.RemoveAt(index);
+            OnRemove(this[index]);
+            items.RemoveAt(index);
         }
 
         /// <summary>
@@ -387,30 +375,18 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             foreach (InstallPath item in this)
             {
-                this.OnRemove(item);
+                OnRemove(item);
             }
 
-            this.items.Clear();
+            items.Clear();
         }
 
         /// <summary>
         /// Gets the number of items in the collection.
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return this.items.Count;
-            }
-        }
+        public int Count => items.Count;
 
-        bool ICollection<InstallPath>.IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        bool ICollection<InstallPath>.IsReadOnly => false;
 
         /// <summary>
         /// Gets an enumerator over all items in the collection.
@@ -418,7 +394,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <returns>An enumerator for the collection.</returns>
         public IEnumerator<InstallPath> GetEnumerator()
         {
-            return this.items.GetEnumerator();
+            return items.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -467,7 +443,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                         string comp = (string)fileRec[2];
                         string fileName = (string)fileRec[3];
 
-                        InstallPath compPath = (InstallPath)componentPathMap[comp];
+                        InstallPath compPath = componentPathMap[comp];
                         if (compPath != null)
                         {
                             InstallPath filePath = new InstallPath(fileName, useShortNames);
@@ -506,7 +482,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                     using (compRec)
                     {
                         string comp = (string)compRec[1];
-                        InstallPath dirPath = (InstallPath)directoryPathMap[(string)compRec[2]];
+                        InstallPath dirPath = directoryPathMap[(string)compRec[2]];
 
                         if (dirPath != null)
                         {
@@ -547,8 +523,15 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                 throw new ArgumentNullException("db");
             }
 
-            if (sourceRootDir == null) sourceRootDir = "";
-            if (targetRootDir == null) targetRootDir = "";
+            if (sourceRootDir == null)
+            {
+                sourceRootDir = "";
+            }
+
+            if (targetRootDir == null)
+            {
+                targetRootDir = "";
+            }
 
             InstallPathMap dirMap = new InstallPathMap();
             IDictionary dirTreeMap = new Hashtable();
@@ -557,7 +540,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
             {
                 dirView.Execute();
 
-                foreach (Record dirRec in dirView) using (dirRec)
+                foreach (Record dirRec in dirView)
+                {
+                    using (dirRec)
                     {
                         string key = (string)dirRec[1];
                         string parentKey = (string)dirRec[2];
@@ -573,16 +558,17 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
                         }
                         siblingDirs.Add(key, dir);
                     }
+                }
             }
 
             foreach (KeyValuePair<string, InstallPath> entry in (InstallPathMap)dirTreeMap[""])
             {
-                string key = (string)entry.Key;
-                InstallPath dir = (InstallPath)entry.Value;
+                string key = entry.Key;
+                InstallPath dir = entry.Value;
                 LinkSubdirectories(key, dir, dirTreeMap);
             }
 
-            InstallPath targetDirPath = (InstallPath)dirMap["TARGETDIR"];
+            InstallPath targetDirPath = dirMap["TARGETDIR"];
             if (targetDirPath != null)
             {
                 targetDirPath.SourcePath = sourceRootDir;
@@ -599,8 +585,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
             {
                 foreach (KeyValuePair<string, InstallPath> entry in subDirs)
                 {
-                    string subKey = (string)entry.Key;
-                    InstallPath subDir = (InstallPath)entry.Value;
+                    string subKey = entry.Key;
+                    InstallPath subDir = entry.Value;
                     dir.ChildPaths.Add(subDir);
                     LinkSubdirectories(subKey, subDir, dirTreeMap);
                 }
@@ -614,31 +600,19 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// </summary>
         public InstallPathMap()
         {
-            this.items = new Dictionary<string, InstallPath>(StringComparer.OrdinalIgnoreCase);
+            items = new Dictionary<string, InstallPath>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
         /// Gets a mapping from keys to source paths.
         /// </summary>
-        public IDictionary<string, string> SourcePaths
-        {
-            get
-            {
-                return new SourcePathMap(this);
-            }
-        }
+        public IDictionary<string, string> SourcePaths => new SourcePathMap(this);
 
         /// <summary>
         /// Gets a mapping from keys to target paths.
         /// </summary>
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public IDictionary<string, string> TargetPaths
-        {
-            get
-            {
-                return new TargetPathMap(this);
-            }
-        }
+        public IDictionary<string, string> TargetPaths => new TargetPathMap(this);
 
         /// <summary>
         /// Gets or sets an install path for a direcotry, component, or file key.
@@ -652,38 +626,22 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get
             {
-                InstallPath value = null;
-                this.items.TryGetValue(key, out value);
+                items.TryGetValue(key, out InstallPath value);
                 return value;
             }
-            set
-            {
-                this.items[key] = value;
-            }
+            set => items[key] = value;
         }
 
         /// <summary>
         /// Gets the collection of keys in the InstallPathMap. Depending on the type of InstallPathMap,
         /// they are all directory, component, or file key strings.
         /// </summary>
-        public ICollection<string> Keys
-        {
-            get
-            {
-                return this.items.Keys;
-            }
-        }
+        public ICollection<string> Keys => items.Keys;
 
         /// <summary>
         /// Gets the collection of InstallPath values in the InstallPathMap.
         /// </summary>
-        public ICollection<InstallPath> Values
-        {
-            get
-            {
-                return this.items.Values;
-            }
-        }
+        public ICollection<InstallPath> Values => items.Values;
 
         /// <summary>
         /// Sets an install path for a direcotry, component, or file key.
@@ -696,7 +654,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// </remarks>
         public void Add(string key, InstallPath installPath)
         {
-            this.items.Add(key, installPath);
+            items.Add(key, installPath);
         }
 
         /// <summary>
@@ -710,7 +668,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// </remarks>
         public bool Remove(string key)
         {
-            return this.items.Remove(key);
+            return items.Remove(key);
         }
 
         /// <summary>
@@ -721,7 +679,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <returns>true if the key is found; false otherwise</returns>
         public bool ContainsKey(string key)
         {
-            return this.items.ContainsKey(key);
+            return items.ContainsKey(key);
         }
 
         /*
@@ -745,12 +703,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <returns>True if the value was found, else false.</returns>
         public bool TryGetValue(string key, out InstallPath value)
         {
-            return this.items.TryGetValue(key, out value);
+            return items.TryGetValue(key, out value);
         }
 
         void ICollection<KeyValuePair<string, InstallPath>>.Add(KeyValuePair<string, InstallPath> item)
         {
-            ((ICollection<KeyValuePair<string, InstallPath>>)this.items).Add(item);
+            ((ICollection<KeyValuePair<string, InstallPath>>)items).Add(item);
         }
 
         /// <summary>
@@ -758,41 +716,29 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// </summary>
         public void Clear()
         {
-            this.items.Clear();
+            items.Clear();
         }
 
         bool ICollection<KeyValuePair<string, InstallPath>>.Contains(KeyValuePair<string, InstallPath> item)
         {
-            return ((ICollection<KeyValuePair<string, InstallPath>>)this.items).Contains(item);
+            return ((ICollection<KeyValuePair<string, InstallPath>>)items).Contains(item);
         }
 
         void ICollection<KeyValuePair<string, InstallPath>>.CopyTo(KeyValuePair<string, InstallPath>[] array, int arrayIndex)
         {
-            ((ICollection<KeyValuePair<string, InstallPath>>)this.items).CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, InstallPath>>)items).CopyTo(array, arrayIndex);
         }
 
         /// <summary>
         /// Gets the number of entries in the dictionary.
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return this.items.Count;
-            }
-        }
+        public int Count => items.Count;
 
-        bool ICollection<KeyValuePair<string, InstallPath>>.IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        bool ICollection<KeyValuePair<string, InstallPath>>.IsReadOnly => false;
 
         bool ICollection<KeyValuePair<string, InstallPath>>.Remove(KeyValuePair<string, InstallPath> item)
         {
-            return ((ICollection<KeyValuePair<string, InstallPath>>)this.items).Remove(item);
+            return ((ICollection<KeyValuePair<string, InstallPath>>)items).Remove(item);
         }
 
         /// <summary>
@@ -801,12 +747,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <returns>An enumerator for the dictionary.</returns>
         public IEnumerator<KeyValuePair<string, InstallPath>> GetEnumerator()
         {
-            return this.items.GetEnumerator();
+            return items.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.items.GetEnumerator();
+            return items.GetEnumerator();
         }
     }
 
@@ -830,16 +776,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         public bool ContainsKey(string key)
         {
-            return this.map.ContainsKey(key);
+            return map.ContainsKey(key);
         }
 
-        public ICollection<string> Keys
-        {
-            get
-            {
-                return this.map.Keys;
-            }
-        }
+        public ICollection<string> Keys => map.Keys;
 
         public bool Remove(string key)
         {
@@ -848,8 +788,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         public bool TryGetValue(string key, out string value)
         {
-            InstallPath installPath;
-            if (this.map.TryGetValue(key, out installPath))
+            if (map.TryGetValue(key, out InstallPath installPath))
             {
                 value = installPath.SourcePath;
                 return true;
@@ -865,8 +804,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get
             {
-                List<string> values = new List<string>(this.Count);
-                foreach (KeyValuePair<string, InstallPath> entry in this.map)
+                List<string> values = new List<string>(Count);
+                foreach (KeyValuePair<string, InstallPath> entry in map)
                 {
                     values.Add(entry.Value.SourcePath);
                 }
@@ -878,14 +817,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get
             {
-                string value = null;
-                this.TryGetValue(key, out value);
+                TryGetValue(key, out string value);
                 return value;
             }
-            set
-            {
-                throw new InvalidOperationException(RO_MSG);
-            }
+            set => throw new InvalidOperationException(RO_MSG);
         }
 
         public void Add(KeyValuePair<string, string> item)
@@ -913,21 +848,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
             }
         }
 
-        public int Count
-        {
-            get
-            {
-                return this.map.Count;
-            }
-        }
+        public int Count => map.Count;
 
-        public bool IsReadOnly
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool IsReadOnly => true;
 
         public bool Remove(KeyValuePair<string, string> item)
         {
@@ -936,7 +859,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
         {
-            foreach (KeyValuePair<string, InstallPath> entry in this.map)
+            foreach (KeyValuePair<string, InstallPath> entry in map)
             {
                 yield return new KeyValuePair<string, string>(
                     entry.Key, entry.Value.SourcePath);
@@ -945,7 +868,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
     }
 
@@ -970,16 +893,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         public bool ContainsKey(string key)
         {
-            return this.map.ContainsKey(key);
+            return map.ContainsKey(key);
         }
 
-        public ICollection<string> Keys
-        {
-            get
-            {
-                return this.map.Keys;
-            }
-        }
+        public ICollection<string> Keys => map.Keys;
 
         public bool Remove(string key)
         {
@@ -988,8 +905,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         public bool TryGetValue(string key, out string value)
         {
-            InstallPath installPath;
-            if (this.map.TryGetValue(key, out installPath))
+            if (map.TryGetValue(key, out InstallPath installPath))
             {
                 value = installPath.TargetPath;
                 return true;
@@ -1005,8 +921,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get
             {
-                List<string> values = new List<string>(this.Count);
-                foreach (KeyValuePair<string, InstallPath> entry in this.map)
+                List<string> values = new List<string>(Count);
+                foreach (KeyValuePair<string, InstallPath> entry in map)
                 {
                     values.Add(entry.Value.TargetPath);
                 }
@@ -1018,14 +934,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         {
             get
             {
-                string value = null;
-                this.TryGetValue(key, out value);
+                TryGetValue(key, out string value);
                 return value;
             }
-            set
-            {
-                throw new InvalidOperationException(RO_MSG);
-            }
+            set => throw new InvalidOperationException(RO_MSG);
         }
 
         public void Add(KeyValuePair<string, string> item)
@@ -1053,21 +965,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
             }
         }
 
-        public int Count
-        {
-            get
-            {
-                return this.map.Count;
-            }
-        }
+        public int Count => map.Count;
 
-        public bool IsReadOnly
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool IsReadOnly => true;
 
         public bool Remove(KeyValuePair<string, string> item)
         {
@@ -1076,7 +976,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
         {
-            foreach (KeyValuePair<string, InstallPath> entry in this.map)
+            foreach (KeyValuePair<string, InstallPath> entry in map)
             {
                 yield return new KeyValuePair<string, string>(
                     entry.Key, entry.Value.TargetPath);
@@ -1085,7 +985,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
     public class OffsetStream : Stream
     {
         private Stream source;
-        private long sourceOffset;
+        private readonly long sourceOffset;
 
         /// <summary>
         /// Creates a new OffsetStream instance from a source stream
@@ -33,78 +33,46 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <param name="offset">Positive or negative number of bytes to offset.</param>
         public OffsetStream(Stream source, long offset)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
+            this.source = source ?? throw new ArgumentNullException("source");
+            sourceOffset = offset;
 
-            this.source = source;
-            this.sourceOffset = offset;
-
-            this.source.Seek(this.sourceOffset, SeekOrigin.Current);
+            this.source.Seek(sourceOffset, SeekOrigin.Current);
         }
 
         /// <summary>
         /// Gets the underlying stream that this OffsetStream calls into.
         /// </summary>
-        public Stream Source
-        {
-            get { return this.source; }
-        }
+        public Stream Source => source;
 
         /// <summary>
         /// Gets the number of bytes to offset all calls before
         /// redirecting to the underlying stream.
         /// </summary>
-        public long Offset
-        {
-            get { return this.sourceOffset; }
-        }
+        public long Offset => sourceOffset;
 
         /// <summary>
         /// Gets a value indicating whether the source stream supports reading.
         /// </summary>
         /// <value>true if the stream supports reading; otherwise, false.</value>
-        public override bool CanRead
-        {
-            get
-            {
-                return this.source.CanRead;
-            }
-        }
+        public override bool CanRead => source.CanRead;
 
         /// <summary>
         /// Gets a value indicating whether the source stream supports writing.
         /// </summary>
         /// <value>true if the stream supports writing; otherwise, false.</value>
-        public override bool CanWrite
-        {
-            get
-            {
-                return this.source.CanWrite;
-            }
-        }
+        public override bool CanWrite => source.CanWrite;
 
         /// <summary>
         /// Gets a value indicating whether the source stream supports seeking.
         /// </summary>
         /// <value>true if the stream supports seeking; otherwise, false.</value>
-        public override bool CanSeek
-        {
-            get
-            {
-                return this.source.CanSeek;
-            }
-        }
+        public override bool CanSeek => source.CanSeek;
 
         /// <summary>
         /// Gets the effective length of the stream, which is equal to
         /// the length of the source stream minus the offset.
         /// </summary>
-        public override long Length
-        {
-            get { return this.source.Length - this.sourceOffset; }
-        }
+        public override long Length => source.Length - sourceOffset;
 
         /// <summary>
         /// Gets or sets the effective position of the stream, which
@@ -112,8 +80,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </summary>
         public override long Position
         {
-            get { return this.source.Position - this.sourceOffset; }
-            set { this.source.Position = value + this.sourceOffset; }
+            get => source.Position - sourceOffset;
+            set => source.Position = value + sourceOffset;
         }
 
         /// <summary>
@@ -131,7 +99,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// or zero (0) if the end of the stream has been reached.</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return this.source.Read(buffer, offset, count);
+            return source.Read(buffer, offset, count);
         }
 
         /// <summary>
@@ -146,7 +114,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// current stream.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            this.source.Write(buffer, offset, count);
+            source.Write(buffer, offset, count);
         }
 
         /// <summary>
@@ -157,7 +125,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// end of the stream.</returns>
         public override int ReadByte()
         {
-            return this.source.ReadByte();
+            return source.ReadByte();
         }
 
         /// <summary>
@@ -167,7 +135,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <param name="value">The byte to write to the stream.</param>
         public override void WriteByte(byte value)
         {
-            this.source.WriteByte(value);
+            source.WriteByte(value);
         }
 
         /// <summary>
@@ -175,7 +143,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </summary>
         public override void Flush()
         {
-            this.source.Flush();
+            source.Flush();
         }
 
         /// <summary>
@@ -188,7 +156,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <returns>The new position within the current stream.</returns>
         public override long Seek(long offset, SeekOrigin origin)
         {
-            return this.source.Seek(offset + (origin == SeekOrigin.Begin ? this.sourceOffset : 0), origin) - this.sourceOffset;
+            return source.Seek(offset + (origin == SeekOrigin.Begin ? sourceOffset : 0), origin) - sourceOffset;
         }
 
         /// <summary>
@@ -199,7 +167,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// current stream in bytes.</param>
         public override void SetLength(long value)
         {
-            this.source.SetLength(value + this.sourceOffset);
+            source.SetLength(value + sourceOffset);
         }
 
 #if !CORECLR
@@ -209,7 +177,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </summary>
         public override void Close()
         {
-            this.source.Close();
+            source.Close();
         }
 
 #endif
@@ -222,7 +190,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         {
             if (disposing)
             {
-                this.source.Dispose();
+                source.Dispose();
             }
         }
     }

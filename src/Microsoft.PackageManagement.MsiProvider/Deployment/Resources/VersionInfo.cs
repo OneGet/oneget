@@ -25,65 +25,40 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         public VersionInfo(string key)
             : base()
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException("key");
-            }
-
-            this.key = key;
-            this.children = new List<VersionInfo>();
+            this.key = key ?? throw new ArgumentNullException("key");
+            children = new List<VersionInfo>();
         }
 
         public string Key
         {
-            get
-            {
-                return this.key;
-            }
+            get => key;
 
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
-                this.key = value;
-            }
+            set => key = value ?? throw new ArgumentNullException("value");
         }
 
         public bool IsString
         {
-            get
-            {
-                return this.isString;
-            }
+            get => isString;
 
-            set
-            {
-                this.isString = value;
-            }
+            set => isString = value;
         }
 
         public byte[] Data
         {
-            get
-            {
-                return this.data;
-            }
+            get => data;
 
             set
             {
-                this.data = value;
-                this.isString = false;
+                data = value;
+                isString = false;
             }
         }
 
         public void Read(BinaryReader reader)
         {
             long basePosition = reader.BaseStream.Position;
-            int verInfoSize = (int)reader.ReadUInt16();
-            int valueSize = (int)reader.ReadUInt16();
+            int verInfoSize = reader.ReadUInt16();
+            int valueSize = reader.ReadUInt16();
             bool dataIsString = (reader.ReadUInt16() != 0);
             StringBuilder keyStringBuilder = new StringBuilder();
             char c;
@@ -91,17 +66,21 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             {
                 keyStringBuilder.Append(c);
             }
-            this.Key = keyStringBuilder.ToString();
+            Key = keyStringBuilder.ToString();
             Pad(reader, basePosition);
             if (valueSize == 0)
             {
-                this.data = null;
+                data = null;
             }
             else
             {
-                if (dataIsString) valueSize *= 2; // Count is # of chars instead of bytes
-                this.data = reader.ReadBytes(valueSize);
-                this.isString = dataIsString;
+                if (dataIsString)
+                {
+                    valueSize *= 2; // Count is # of chars instead of bytes
+                }
+
+                data = reader.ReadBytes(valueSize);
+                isString = dataIsString;
                 Pad(reader, basePosition);
             }
 
@@ -110,19 +89,19 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
                 Pad(reader, basePosition);
                 VersionInfo childVerInfo = new VersionInfo("");
                 childVerInfo.Read(reader);
-                this.children.Add(childVerInfo);
+                children.Add(childVerInfo);
             }
         }
 
         public void Write(BinaryWriter writer)
         {
             long basePosition = writer.BaseStream.Position;
-            writer.Write((ushort)this.Length);
-            byte[] valueBytes = this.data;
-            writer.Write((ushort)((valueBytes != null ? valueBytes.Length : 0) / (this.IsString ? 2 : 1)));
-            writer.Write((ushort)(this.IsString ? 1 : 0));
-            byte[] keyBytes = new byte[Encoding.Unicode.GetByteCount(this.Key) + 2];
-            Encoding.Unicode.GetBytes(this.Key, 0, this.Key.Length, keyBytes, 0);
+            writer.Write((ushort)Length);
+            byte[] valueBytes = data;
+            writer.Write((ushort)((valueBytes != null ? valueBytes.Length : 0) / (IsString ? 2 : 1)));
+            writer.Write((ushort)(IsString ? 1 : 0));
+            byte[] keyBytes = new byte[Encoding.Unicode.GetByteCount(Key) + 2];
+            Encoding.Unicode.GetBytes(Key, 0, Key.Length, keyBytes, 0);
             writer.Write(keyBytes);
             Pad(writer, basePosition);
             if (valueBytes != null)
@@ -131,7 +110,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
                 Pad(writer, basePosition);
             }
 
-            foreach (VersionInfo childVersionInfo in this.children)
+            foreach (VersionInfo childVersionInfo in children)
             {
                 Pad(writer, basePosition);
                 childVersionInfo.Write(writer);
@@ -142,27 +121,51 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         {
             long position = reader.BaseStream.Position;
             int diff = (int)(position - basePosition) % 4;
-            if (diff > 0) while (diff++ < 4 && reader.BaseStream.Position < reader.BaseStream.Length) reader.ReadByte();
+            if (diff > 0)
+            {
+                while (diff++ < 4 && reader.BaseStream.Position < reader.BaseStream.Length)
+                {
+                    reader.ReadByte();
+                }
+            }
         }
 
         private static void Pad(BinaryWriter writer, long basePosition)
         {
             long position = writer.BaseStream.Position;
             int diff = (int)(position - basePosition) % 4;
-            if (diff > 0) while (diff++ < 4) writer.Write((byte)0);
+            if (diff > 0)
+            {
+                while (diff++ < 4)
+                {
+                    writer.Write((byte)0);
+                }
+            }
         }
 
         private int Length
         {
             get
             {
-                int len = 6 + Encoding.Unicode.GetByteCount(this.Key) + 2;
-                if (len % 4 > 0) len += (4 - len % 4);
-                len += (this.data != null ? this.data.Length : 0);
-                if (len % 4 > 0) len += (4 - len % 4);
-                foreach (VersionInfo childVersionInfo in this.children)
+                int len = 6 + Encoding.Unicode.GetByteCount(Key) + 2;
+                if (len % 4 > 0)
                 {
-                    if (len % 4 > 0) len += (4 - len % 4);
+                    len += (4 - len % 4);
+                }
+
+                len += (data != null ? data.Length : 0);
+                if (len % 4 > 0)
+                {
+                    len += (4 - len % 4);
+                }
+
+                foreach (VersionInfo childVersionInfo in children)
+                {
+                    if (len % 4 > 0)
+                    {
+                        len += (4 - len % 4);
+                    }
+
                     len += childVersionInfo.Length;
                 }
                 return len;
@@ -193,28 +196,32 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         {
             get
             {
-                int index = this.IndexOf(itemKey);
-                if (index < 0) return null;
-                return this.children[index];
+                int index = IndexOf(itemKey);
+                if (index < 0)
+                {
+                    return null;
+                }
+
+                return children[index];
             }
         }
 
         public void Add(VersionInfo item)
         {
-            this.children.Add(item);
+            children.Add(item);
         }
 
         public bool Remove(VersionInfo item)
         {
-            return this.children.Remove(item);
+            return children.Remove(item);
         }
 
         public bool Remove(string itemKey)
         {
-            int index = this.IndexOf(itemKey);
+            int index = IndexOf(itemKey);
             if (index >= 0)
             {
-                this.children.RemoveAt(index);
+                children.RemoveAt(index);
                 return true;
             }
             else
@@ -225,52 +232,43 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 
         private int IndexOf(string itemKey)
         {
-            for (int i = 0; i < this.children.Count; i++)
+            for (int i = 0; i < children.Count; i++)
             {
-                if (this.children[i].Key == itemKey) return i;
+                if (children[i].Key == itemKey)
+                {
+                    return i;
+                }
             }
             return -1;
         }
 
         public bool Contains(VersionInfo item)
         {
-            return this.children.Contains(item);
+            return children.Contains(item);
         }
 
         public void CopyTo(VersionInfo[] array, int index)
         {
-            this.children.CopyTo(array, index);
+            children.CopyTo(array, index);
         }
 
         public void Clear()
         {
-            this.children.Clear();
+            children.Clear();
         }
 
-        public int Count
-        {
-            get
-            {
-                return this.children.Count;
-            }
-        }
+        public int Count => children.Count;
 
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsReadOnly => false;
 
         public IEnumerator<VersionInfo> GetEnumerator()
         {
-            return this.children.GetEnumerator();
+            return children.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
     }
 }

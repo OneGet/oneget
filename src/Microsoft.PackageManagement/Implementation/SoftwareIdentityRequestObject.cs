@@ -128,7 +128,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             Activity();
 
             SoftwareIdentity swid = _currentItem;
-            return swid != null ? swid.AddMetadataValue(swid.FastPackageReference, name, value) : null;
+            return swid?.AddMetadataValue(swid.FastPackageReference, name, value);
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             Activity();
 
             SoftwareIdentity swid = _currentItem;
-            return swid != null ? swid.AddMetadataValue(elementPath, name, value) : null;
+            return swid?.AddMetadataValue(elementPath, name, value);
         }
 
         public override string AddMetadata(string elementPath, Uri @namespace, string name, string value)
@@ -215,19 +215,19 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             Activity();
 
             SoftwareIdentity swid = _currentItem;
-            return swid != null ? swid.AddMeta(elementPath) : null;
+            return swid?.AddMeta(elementPath);
         }
 
         public override string AddPayload()
         {
             SoftwareIdentity swid = _currentItem;
-            return swid != null ? swid.AddPayload().ElementUniqueId : null;
+            return swid?.AddPayload().ElementUniqueId;
         }
 
         public override string AddEvidence(DateTime date, string deviceId)
         {
             SoftwareIdentity swid = _currentItem;
-            return swid != null ? swid.AddEvidence(date, deviceId).ElementUniqueId : null;
+            return swid?.AddEvidence(date, deviceId).ElementUniqueId;
         }
 
         public override string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey)
@@ -235,7 +235,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             Activity();
 
             SoftwareIdentity swid = _currentItem;
-            return swid != null ? swid.AddDirectory(elementPath, directoryName, location, root, isKey) : null;
+            return swid?.AddDirectory(elementPath, directoryName, location, root, isKey);
         }
 
         public override string AddFile(string elementPath, string fileName, string location, string root, bool isKey, long size, string version)
@@ -243,7 +243,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             Activity();
 
             SoftwareIdentity swid = _currentItem;
-            return swid != null ? swid.AddFile(elementPath, fileName, location, root, isKey, size, version) : null;
+            return swid?.AddFile(elementPath, fileName, location, root, isKey, size, version);
         }
 
         public override string AddProcess(string elementPath, string processName, int pid)
@@ -251,7 +251,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             Activity();
 
             SoftwareIdentity swid = _currentItem;
-            return swid != null ? swid.AddProcess(elementPath, processName, pid) : null;
+            return swid?.AddProcess(elementPath, processName, pid);
         }
 
         public override string AddResource(string elementPath, string type)
@@ -259,7 +259,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             Activity();
 
             SoftwareIdentity swid = _currentItem;
-            return swid != null ? swid.AddResource(elementPath, type) : null;
+            return swid?.AddResource(elementPath, type);
         }
 
         public override string AddEntity(string name, string regid, string role, string thumbprint)
@@ -267,7 +267,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             Activity();
 
             SoftwareIdentity swid = _currentItem;
-            return swid != null ? swid.AddEntity(name, regid, role, thumbprint) : null;
+            return swid?.AddEntity(name, regid, role, thumbprint);
         }
 
         public override string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact)
@@ -275,14 +275,14 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             Activity();
 
             SoftwareIdentity swid = _currentItem;
-            return swid != null ? swid.AddLink(referenceUri, relationship, mediaType, ownership, use, appliesToMedia, artifact) : null;
+            return swid?.AddLink(referenceUri, relationship, mediaType, ownership, use, appliesToMedia, artifact);
         }
 
         public override string AddDependency(string providerName, string packageName, string version, string source, string appliesTo)
         {
             Activity();
             SoftwareIdentity swid = _currentItem;
-            return swid != null ? swid.AddDependency(providerName, packageName, version, source, appliesTo) : null;
+            return swid?.AddDependency(providerName, packageName, version, source, appliesTo);
         }
 
         protected override void Complete()

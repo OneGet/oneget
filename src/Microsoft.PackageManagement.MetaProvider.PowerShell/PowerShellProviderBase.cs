@@ -25,7 +25,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
     public class PowerShellProviderBase : IDisposable
     {
-        private object _lock = new Object();
+        private readonly object _lock = new object();
         protected PSModuleInfo _module;
         private PowerShell _powershell;
         private ManualResetEvent _reentrancyLock = new ManualResetEvent(true);
@@ -34,37 +34,26 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
         public PowerShellProviderBase(PowerShell ps, PSModuleInfo module)
         {
-            if (module == null)
-            {
-                throw new ArgumentNullException("module");
-            }
-
             _powershell = ps;
-            _module = module;
+            _module = module ?? throw new ArgumentNullException("module");
 
             // combine all the cmdinfos we care about
             // but normalize the keys as we go (remove any '-' '_' chars)
-            foreach (var k in _module.ExportedAliases.Keys)
+            foreach (string k in _module.ExportedAliases.Keys)
             {
                 _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedAliases[k]);
             }
-            foreach (var k in _module.ExportedCmdlets.Keys)
+            foreach (string k in _module.ExportedCmdlets.Keys)
             {
                 _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedCmdlets[k]);
             }
-            foreach (var k in _module.ExportedFunctions.Keys)
+            foreach (string k in _module.ExportedFunctions.Keys)
             {
                 _allCommands.AddOrSet(k.Replace("-", "").Replace("_", ""), _module.ExportedFunctions[k]);
             }
         }
 
-        public string ModulePath
-        {
-            get
-            {
-                return _module.Path;
-            }
-        }
+        public string ModulePath => _module.Path;
 
         public void Dispose()
         {
@@ -104,7 +93,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                 // try simple plurals to single
                 if (methodName.EndsWith("s", StringComparison.OrdinalIgnoreCase))
                 {
-                    var meth = methodName.Substring(0, methodName.Length - 1);
+                    string meth = methodName.Substring(0, methodName.Length - 1);
                     if (_allCommands.ContainsKey(meth))
                     {
                         return _allCommands[meth];
@@ -114,7 +103,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                 // try words like Dependencies to Dependency
                 if (methodName.EndsWith("cies", StringComparison.OrdinalIgnoreCase))
                 {
-                    var meth = methodName.Substring(0, methodName.Length - 4) + "cy";
+                    string meth = methodName.Substring(0, methodName.Length - 4) + "cy";
                     if (_allCommands.ContainsKey(meth))
                     {
                         return _allCommands[meth];
@@ -124,7 +113,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                 // try IsFoo to Test-IsFoo
                 if (methodName.IndexOf("Is", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    var meth = "test" + methodName;
+                    string meth = "test" + methodName;
                     if (_allCommands.ContainsKey(meth))
                     {
                         return _allCommands[meth];
@@ -134,7 +123,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                 if (methodName.IndexOf("add", StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     // try it with 'register' instead
-                    var result = GetMethod("register" + methodName.Substring(3));
+                    CommandInfo result = GetMethod("register" + methodName.Substring(3));
                     if (result != null)
                     {
                         return result;
@@ -144,7 +133,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                 if (methodName.IndexOf("remove", StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     // try it with 'register' instead
-                    var result = GetMethod("unregister" + methodName.Substring(6));
+                    CommandInfo result = GetMethod("unregister" + methodName.Substring(6));
                     if (result != null)
                     {
                         return result;
@@ -161,13 +150,13 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
         internal object CallPowerShellWithoutRequest(string method, params object[] args)
         {
-            var cmdInfo = GetMethod(method);
+            CommandInfo cmdInfo = GetMethod(method);
             if (cmdInfo == null)
             {
                 return null;
             }
 
-            var result = _powershell.InvokeFunction<object>(cmdInfo.Name, null, null, args);
+            object result = _powershell.InvokeFunction<object>(cmdInfo.Name, null, null, args);
             if (result == null)
             {
                 // failure!
@@ -181,9 +170,9 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
         internal void ReportErrors(PsRequest request, IEnumerable<ErrorRecord> errors)
         {
-            foreach (var error in errors)
+            foreach (ErrorRecord error in errors)
             {
-                request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject == null ? null : error.TargetObject.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
+                request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject?.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
                 if (!string.IsNullOrWhiteSpace(error.Exception.StackTrace))
                 {
                     // give a debug hint if we have a script stack trace. How nice of us.
@@ -194,7 +183,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
         }
 
         private IAsyncResult _stopResult;
-        private object _stopLock = new object();
+        private readonly object _stopLock = new object();
 
         internal void CancelRequest()
         {
@@ -240,9 +229,9 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                     object finalValue = null;
                     ConcurrentBag<ErrorRecord> errors = new ConcurrentBag<ErrorRecord>();
 
-                    request.Debug("INVOKING PowerShell Fn {0} with args {1} that has length {2}", request.CommandInfo.Name, String.Join(", ", args), args.Length);
+                    request.Debug("INVOKING PowerShell Fn {0} with args {1} that has length {2}", request.CommandInfo.Name, string.Join(", ", args), args.Length);
 
-                    var result = _powershell.InvokeFunction<object>(request.CommandInfo.Name,
+                    object result = _powershell.InvokeFunction<object>(request.CommandInfo.Name,
                         (sender, e) => output_DataAdded(sender, e, request, ref finalValue),
                         (sender, e) => error_DataAdded(sender, e, request, errors),
                         args);
@@ -264,8 +253,8 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                 }
                 catch (CmdletInvocationException cie)
                 {
-                    var error = cie.ErrorRecord;
-                    request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject == null ? null : error.TargetObject.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
+                    ErrorRecord error = cie.ErrorRecord;
+                    request.Error(error.FullyQualifiedErrorId, error.CategoryInfo.Category.ToString(), error.TargetObject?.ToString(), error.ErrorDetails == null ? error.Exception.Message : error.ErrorDetails.Message);
                 }
                 finally
                 {
@@ -297,7 +286,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                 return;
             }
 
-            var error = errorStream[e.Index];
+            ErrorRecord error = errorStream[e.Index];
 
             if (error != null)
             {
@@ -318,8 +307,8 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
             PSObject psObject = outputstream[e.Index];
             if (psObject != null)
             {
-                var value = psObject.ImmediateBaseObject;
-                var y = value as Yieldable;
+                object value = psObject.ImmediateBaseObject;
+                Yieldable y = value as Yieldable;
                 if (y != null)
                 {
                     // yield it to stream the result gradually

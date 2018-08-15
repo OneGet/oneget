@@ -18,16 +18,16 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         public FixedFileVersionInfo()
         {
             // Set reasonable defaults
-            this.signature = 0xFEEF04BD;
-            this.structVersion = 0x00010000; // v1.0
-            this.FileVersion = new Version(0, 0, 0, 0);
-            this.ProductVersion = new Version(0, 0, 0, 0);
-            this.FileFlagsMask = VersionBuildTypes.Debug | VersionBuildTypes.Prerelease;
-            this.FileFlags = VersionBuildTypes.None;
-            this.FileOS = VersionFileOS.NT_WINDOWS32;
-            this.FileType = VersionFileType.Application;
-            this.FileSubtype = VersionFileSubtype.Unknown;
-            this.Timestamp = DateTime.MinValue;
+            signature = 0xFEEF04BD;
+            structVersion = 0x00010000; // v1.0
+            FileVersion = new Version(0, 0, 0, 0);
+            ProductVersion = new Version(0, 0, 0, 0);
+            FileFlagsMask = VersionBuildTypes.Debug | VersionBuildTypes.Prerelease;
+            FileFlags = VersionBuildTypes.None;
+            FileOS = VersionFileOS.NT_WINDOWS32;
+            FileType = VersionFileType.Application;
+            FileSubtype = VersionFileSubtype.Unknown;
+            Timestamp = DateTime.MinValue;
         }
 
         private uint signature;
@@ -36,20 +36,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Version FileVersion
         {
-            get
-            {
-                return this.fileVersion;
-            }
+            get => fileVersion;
 
-            set
-            {
-                if (value == null)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                this.fileVersion = value;
-            }
+            set => fileVersion = value ?? throw new InvalidOperationException();
         }
 
         private Version fileVersion;
@@ -57,20 +46,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Version ProductVersion
         {
-            get
-            {
-                return this.productVersion;
-            }
+            get => productVersion;
 
-            set
-            {
-                if (value == null)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                this.productVersion = value;
-            }
+            set => productVersion = value ?? throw new InvalidOperationException();
         }
 
         private Version productVersion;
@@ -78,8 +56,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionBuildTypes FileFlagsMask
         {
-            get { return this.fileFlagsMask; }
-            set { this.fileFlagsMask = value; }
+            get => fileFlagsMask;
+            set => fileFlagsMask = value;
         }
 
         private VersionBuildTypes fileFlagsMask;
@@ -87,8 +65,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionBuildTypes FileFlags
         {
-            get { return this.fileFlags; }
-            set { this.fileFlags = value; }
+            get => fileFlags;
+            set => fileFlags = value;
         }
 
         private VersionBuildTypes fileFlags;
@@ -96,8 +74,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionFileOS FileOS
         {
-            get { return this.fileOS; }
-            set { this.fileOS = value; }
+            get => fileOS;
+            set => fileOS = value;
         }
 
         private VersionFileOS fileOS;
@@ -105,8 +83,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionFileType FileType
         {
-            get { return this.fileType; }
-            set { this.fileType = value; }
+            get => fileType;
+            set => fileType = value;
         }
 
         private VersionFileType fileType;
@@ -114,8 +92,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public VersionFileSubtype FileSubtype
         {
-            get { return this.fileSubtype; }
-            set { this.fileSubtype = value; }
+            get => fileSubtype;
+            set => fileSubtype = value;
         }
 
         private VersionFileSubtype fileSubtype;
@@ -123,38 +101,38 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public DateTime Timestamp
         {
-            get { return this.timestamp; }
-            set { this.timestamp = value; }
+            get => timestamp;
+            set => timestamp = value;
         }
 
         private DateTime timestamp;
 
         public void Read(BinaryReader reader)
         {
-            this.signature = reader.ReadUInt32();
-            this.structVersion = reader.ReadUInt32();
-            this.fileVersion = UInt64ToVersion(reader.ReadUInt64());
-            this.productVersion = UInt64ToVersion(reader.ReadUInt64());
-            this.fileFlagsMask = (VersionBuildTypes)reader.ReadInt32();
-            this.fileFlags = (VersionBuildTypes)reader.ReadInt32();
-            this.fileOS = (VersionFileOS)reader.ReadInt32();
-            this.fileType = (VersionFileType)reader.ReadInt32();
-            this.fileSubtype = (VersionFileSubtype)reader.ReadInt32();
-            this.timestamp = UInt64ToDateTime(reader.ReadUInt64());
+            signature = reader.ReadUInt32();
+            structVersion = reader.ReadUInt32();
+            fileVersion = UInt64ToVersion(reader.ReadUInt64());
+            productVersion = UInt64ToVersion(reader.ReadUInt64());
+            fileFlagsMask = (VersionBuildTypes)reader.ReadInt32();
+            fileFlags = (VersionBuildTypes)reader.ReadInt32();
+            fileOS = (VersionFileOS)reader.ReadInt32();
+            fileType = (VersionFileType)reader.ReadInt32();
+            fileSubtype = (VersionFileSubtype)reader.ReadInt32();
+            timestamp = UInt64ToDateTime(reader.ReadUInt64());
         }
 
         public void Write(BinaryWriter writer)
         {
-            writer.Write(this.signature);
-            writer.Write(this.structVersion);
-            writer.Write(VersionToUInt64(this.fileVersion));
-            writer.Write(VersionToUInt64(this.productVersion));
-            writer.Write((int)this.fileFlagsMask);
-            writer.Write((int)this.fileFlags);
-            writer.Write((int)this.fileOS);
-            writer.Write((int)this.fileType);
-            writer.Write((int)this.fileSubtype);
-            writer.Write(DateTimeToUInt64(this.timestamp));
+            writer.Write(signature);
+            writer.Write(structVersion);
+            writer.Write(VersionToUInt64(fileVersion));
+            writer.Write(VersionToUInt64(productVersion));
+            writer.Write((int)fileFlagsMask);
+            writer.Write((int)fileFlags);
+            writer.Write((int)fileOS);
+            writer.Write((int)fileType);
+            writer.Write((int)fileSubtype);
+            writer.Write(DateTimeToUInt64(timestamp));
         }
 
         public static explicit operator FixedFileVersionInfo(byte[] bytesValue)
@@ -186,7 +164,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 
         private static ulong VersionToUInt64(Version version)
         {
-            return (((ulong)(ushort)version.Major) << 16) | ((ulong)(ushort)version.Minor)
+            return (((ulong)(ushort)version.Major) << 16) | (ushort)version.Minor
                 | (((ulong)(ushort)version.Build) << 48) | (((ulong)(ushort)version.Revision) << 32);
         }
 

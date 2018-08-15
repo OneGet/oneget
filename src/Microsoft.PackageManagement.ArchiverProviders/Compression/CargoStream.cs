@@ -19,7 +19,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
     public class CargoStream : Stream
     {
         private Stream source;
-        private List<IDisposable> cargo;
+        private readonly List<IDisposable> cargo;
 
         /// <summary>
         /// Creates a new a cargo stream.
@@ -29,99 +29,52 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// The order of the list is the order in which the items are disposed.</param>
         public CargoStream(Stream source, params IDisposable[] cargo)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
-
-            this.source = source;
+            this.source = source ?? throw new ArgumentNullException("source");
             this.cargo = new List<IDisposable>(cargo);
         }
 
         /// <summary>
         /// Gets the source stream of the cargo stream.
         /// </summary>
-        public Stream Source
-        {
-            get
-            {
-                return this.source;
-            }
-        }
+        public Stream Source => source;
 
         /// <summary>
         /// Gets the list of additional items that are disposed when the stream is closed.
         /// The order of the list is the order in which the items are disposed. The contents can be modified any time.
         /// </summary>
-        public IList<IDisposable> Cargo
-        {
-            get
-            {
-                return this.cargo;
-            }
-        }
+        public IList<IDisposable> Cargo => cargo;
 
         /// <summary>
         /// Gets a value indicating whether the source stream supports reading.
         /// </summary>
         /// <value>true if the stream supports reading; otherwise, false.</value>
-        public override bool CanRead
-        {
-            get
-            {
-                return this.source.CanRead;
-            }
-        }
+        public override bool CanRead => source.CanRead;
 
         /// <summary>
         /// Gets a value indicating whether the source stream supports writing.
         /// </summary>
         /// <value>true if the stream supports writing; otherwise, false.</value>
-        public override bool CanWrite
-        {
-            get
-            {
-                return this.source.CanWrite;
-            }
-        }
+        public override bool CanWrite => source.CanWrite;
 
         /// <summary>
         /// Gets a value indicating whether the source stream supports seeking.
         /// </summary>
         /// <value>true if the stream supports seeking; otherwise, false.</value>
-        public override bool CanSeek
-        {
-            get
-            {
-                return this.source.CanSeek;
-            }
-        }
+        public override bool CanSeek => source.CanSeek;
 
         /// <summary>
         /// Gets the length of the source stream.
         /// </summary>
-        public override long Length
-        {
-            get
-            {
-                return this.source.Length;
-            }
-        }
+        public override long Length => source.Length;
 
         /// <summary>
         /// Gets or sets the position of the source stream.
         /// </summary>
         public override long Position
         {
-            get
-            {
-                return this.source.Position;
-            }
+            get => source.Position;
 
-            set
-            {
-                this.source.Position = value;
-            }
+            set => source.Position = value;
         }
 
         /// <summary>
@@ -129,7 +82,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </summary>
         public override void Flush()
         {
-            this.source.Flush();
+            source.Flush();
         }
 
         /// <summary>
@@ -138,7 +91,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <param name="value">The desired length of the stream in bytes.</param>
         public override void SetLength(long value)
         {
-            this.source.SetLength(value);
+            source.SetLength(value);
         }
 
 #if !CORECLR
@@ -148,9 +101,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </summary>
         public override void Close()
         {
-            this.source.Close();
+            source.Close();
 
-            foreach (IDisposable cargoObject in this.cargo)
+            foreach (IDisposable cargoObject in cargo)
             {
                 cargoObject.Dispose();
             }
@@ -166,9 +119,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         {
             if (disposing)
             {
-                this.source.Dispose();
+                source.Dispose();
 
-                foreach (IDisposable cargoObject in this.cargo)
+                foreach (IDisposable cargoObject in cargo)
                 {
                     cargoObject.Dispose();
                 }
@@ -189,7 +142,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// or zero (0) if the end of the stream has been reached.</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return this.source.Read(buffer, offset, count);
+            return source.Read(buffer, offset, count);
         }
 
         /// <summary>
@@ -202,7 +155,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <param name="count">The number of bytes to be written to the stream.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            this.source.Write(buffer, offset, count);
+            source.Write(buffer, offset, count);
         }
 
         /// <summary>
@@ -214,7 +167,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <returns>The new position within the stream.</returns>
         public override long Seek(long offset, SeekOrigin origin)
         {
-            return this.source.Seek(offset, origin);
+            return source.Seek(offset, origin);
         }
     }
 }

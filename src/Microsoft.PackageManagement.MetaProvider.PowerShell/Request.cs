@@ -35,19 +35,13 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
         internal CommandInfo CommandInfo;
         private PowerShellProviderBase _provider;
 
-        internal bool IsMethodImplemented
-        {
-            get
-            {
-                return CommandInfo != null;
-            }
-        }
+        internal bool IsMethodImplemented => CommandInfo != null;
 
         public IEnumerable<string> PackageSources
         {
             get
             {
-                var ps = Sources;
+                IEnumerable<string> ps = Sources;
                 if (ps == null)
                 {
                     return new string[] {
@@ -89,14 +83,14 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                 {
                     _options = new Hashtable();
                     //quick and dirty, grab all four sets and merge them.
-                    var keys = OptionKeys ?? new string[0];
-                    foreach (var k in keys)
+                    IEnumerable<string> keys = OptionKeys ?? new string[0];
+                    foreach (string k in keys)
                     {
                         if (_options.ContainsKey(k))
                         {
                             continue;
                         }
-                        var values = GetOptionValues(k).ToArray();
+                        string[] values = GetOptionValues(k).ToArray();
                         if (values.Length == 1)
                         {
                             if (values[0].IsTrue())
@@ -127,16 +121,16 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed", Justification = "This is required for the PowerShell Providers.")]
         public object CloneRequest(Hashtable options = null, ArrayList sources = null, PSCredential credential = null)
         {
-            var srcs = (sources ?? new ArrayList()).ToArray().Select(each => each.ToString()).ToArray();
+            string[] srcs = (sources ?? new ArrayList()).ToArray().Select(each => each.ToString()).ToArray();
 
             options = options ?? new Hashtable();
 
-            var lst = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-            foreach (var k in options.Keys)
+            Dictionary<string, string[]> lst = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            foreach (object k in options.Keys)
             {
                 if (k != null)
                 {
-                    var obj = options[k];
+                    object obj = options[k];
 
                     string[] val = null;
 
@@ -147,7 +141,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                     else
                     {
                         // otherwise, try to cast it to a collection of string-like-things
-                        var collection = obj as IEnumerable;
+                        IEnumerable collection = obj as IEnumerable;
                         if (collection != null)
                         {
                             val = collection.Cast<object>().Select(each => each.ToString()).ToArray();
@@ -175,8 +169,8 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                     return new string[0];
                 }),
                 GetSources = new Func<IEnumerable<string>>(() => { return srcs; }),
-                GetCredentialUsername = new Func<string>(() => { return credential != null ? credential.UserName : null; }),
-                GetCredentialPassword = new Func<SecureString>(() => { return credential != null ? credential.Password : null; }),
+                GetCredentialUsername = new Func<string>(() => { return credential?.UserName; }),
+                GetCredentialPassword = new Func<SecureString>(() => { return credential?.Password; }),
                 ShouldContinueWithUntrustedPackageSource = new Func<string, string, bool>((pkgName, pkgSource) =>
                 {
                     // chained providers provide locations, and don't rely on 'trusted' flags from the upstream provider.
@@ -194,14 +188,14 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
             return null;
         }
 
-        internal static PsRequest New(Object requestObject, PowerShellProviderBase provider, string methodName)
+        internal static PsRequest New(object requestObject, PowerShellProviderBase provider, string methodName)
         {
             if (requestObject is IAsyncAction)
             {
                 ((IAsyncAction)(requestObject)).OnCancel += provider.CancelRequest;
                 ((IAsyncAction)(requestObject)).OnAbort += provider.CancelRequest;
             }
-            var req = requestObject.As<PsRequest>();
+            PsRequest req = requestObject.As<PsRequest>();
 
             req.CommandInfo = provider.GetMethod(methodName);
             if (req.CommandInfo == null)
@@ -220,7 +214,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
                 foreach (string key in req.Options.Keys)
                 {
-                    req.Debug(String.Format(CultureInfo.CurrentCulture, "{0}: {1}", key, req.Options[key]));
+                    req.Debug(string.Format(CultureInfo.CurrentCulture, "{0}: {1}", key, req.Options[key]));
                 }
             }
 
@@ -237,13 +231,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
             return PackageManagementService.SelectProviders(providerName, Extend());
         }
 
-        public object Services
-        {
-            get
-            {
-                return ProviderServices;
-            }
-        }
+        public object Services => ProviderServices;
 
         public IEnumerable<object> FindPackageByCanonicalId(string packageId, object requestObject)
         {
@@ -252,7 +240,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
         public bool RequirePackageProvider(string packageProviderName, string minimumVersion)
         {
-            var pp = (_provider as PowerShellPackageProvider);
+            PowerShellPackageProvider pp = (_provider as PowerShellPackageProvider);
             return PackageManagementService.RequirePackageProvider(pp == null ? Constants.ProviderNameUnknown : pp.GetPackageProviderName(), packageProviderName, minimumVersion, Extend());
         }
     }

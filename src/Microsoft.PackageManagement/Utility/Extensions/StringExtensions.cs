@@ -188,7 +188,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Extensions
 
         public static bool ContainsAnyOfIgnoreCase(this IEnumerable<string> collection, params object[] values)
         {
-            return collection.ContainsAnyOfIgnoreCase(values.Select(value => value == null ? null : value.ToString()));
+            return collection.ContainsAnyOfIgnoreCase(values.Select(value => value?.ToString()));
         }
 
         public static bool ContainsAnyOfIgnoreCase(this IEnumerable<string> collection, IEnumerable<string> values)

@@ -48,7 +48,7 @@ namespace Microsoft.PackageManagement.Internal.Packaging
                 result = element.Attribute(attribute);
             }
 
-            return result == null ? null : result.Value;
+            return result?.Value;
         }
 
         /// <summary>

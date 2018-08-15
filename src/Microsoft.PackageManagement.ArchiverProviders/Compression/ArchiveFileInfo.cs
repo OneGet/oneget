@@ -24,12 +24,12 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
     public abstract class ArchiveFileInfo : FileSystemInfo
     {
         private ArchiveInfo archiveInfo;
-        private string name;
-        private string path;
+        private readonly string name;
+        private readonly string path;
 
-        private bool initialized;
+        private readonly bool initialized;
         private bool exists;
-        private int archiveNumber;
+        private readonly int archiveNumber;
         private FileAttributes attributes;
         private DateTime lastWriteTime;
         private long length;
@@ -51,13 +51,13 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
                 throw new ArgumentNullException("filePath");
             }
 
-            this.Archive = archiveInfo;
+            Archive = archiveInfo;
 
-            this.name = System.IO.Path.GetFileName(filePath);
-            this.path = System.IO.Path.GetDirectoryName(filePath);
+            name = System.IO.Path.GetFileName(filePath);
+            path = System.IO.Path.GetDirectoryName(filePath);
 
-            this.attributes = FileAttributes.Normal;
-            this.lastWriteTime = DateTime.MinValue;
+            attributes = FileAttributes.Normal;
+            lastWriteTime = DateTime.MinValue;
         }
 
         /// <summary>
@@ -80,38 +80,26 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             long length)
             : this(null, filePath)
         {
-            this.exists = true;
+            exists = true;
             this.archiveNumber = archiveNumber;
             this.attributes = attributes;
             this.lastWriteTime = lastWriteTime;
             this.length = length;
-            this.initialized = true;
+            initialized = true;
         }
 
         /// <summary>
         /// Gets the name of the file.
         /// </summary>
         /// <value>The name of the file, not including any path.</value>
-        public override string Name
-        {
-            get
-            {
-                return this.name;
-            }
-        }
+        public override string Name => name;
 
         /// <summary>
         /// Gets the internal path of the file in the archive.
         /// </summary>
         /// <value>The internal path of the file in the archive, not including
         /// the file name.</value>
-        public string Path
-        {
-            get
-            {
-                return this.path;
-            }
-        }
+        public string Path => path;
 
         /// <summary>
         /// Gets the full path to the file.
@@ -126,11 +114,11 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         {
             get
             {
-                string fullName = System.IO.Path.Combine(this.Path, this.Name);
+                string fullName = System.IO.Path.Combine(Path, Name);
 
-                if (this.Archive != null)
+                if (Archive != null)
                 {
-                    fullName = System.IO.Path.Combine(this.ArchiveName, fullName);
+                    fullName = System.IO.Path.Combine(ArchiveName, fullName);
                 }
 
                 return fullName;
@@ -147,11 +135,16 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
                 {
                     char ch = FullName[i];
                     if (ch == '.')
+                    {
                         return FullName.Substring(i, len - i);
+                    }
+
                     if (ch == System.IO.Path.DirectorySeparatorChar || ch == System.IO.Path.AltDirectorySeparatorChar || ch == System.IO.Path.VolumeSeparatorChar)
+                    {
                         break;
+                    }
                 }
-                return String.Empty;
+                return string.Empty;
             }
         }
 
@@ -165,18 +158,15 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </value>
         public ArchiveInfo Archive
         {
-            get
-            {
-                return (ArchiveInfo)this.archiveInfo;
-            }
+            get => archiveInfo;
 
             internal set
             {
-                this.archiveInfo = value;
+                archiveInfo = value;
 
                 // protected instance members inherited from FileSystemInfo:
-                this.OriginalPath = (value != null ? value.FullName : null);
-                this.FullPath = this.OriginalPath;
+                OriginalPath = value?.FullName;
+                FullPath = OriginalPath;
             }
         }
 
@@ -184,13 +174,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// Gets the full path of the archive that contains this file.
         /// </summary>
         /// <value>The full path of the archive that contains this file.</value>
-        public string ArchiveName
-        {
-            get
-            {
-                return this.Archive != null ? this.Archive.FullName : null;
-            }
-        }
+        public string ArchiveName => Archive?.FullName;
 
         /// <summary>
         /// Gets the number of the archive where this file starts.
@@ -198,13 +182,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <value>The number of the archive where this file starts.</value>
         /// <remarks>A single archive or the first archive in a chain is
         /// numbered 0.</remarks>
-        public int ArchiveNumber
-        {
-            get
-            {
-                return this.archiveNumber;
-            }
-        }
+        public int ArchiveNumber => archiveNumber;
 
         /// <summary>
         /// Checks if the file exists within the archive.
@@ -214,12 +192,12 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         {
             get
             {
-                if (!this.initialized)
+                if (!initialized)
                 {
-                    this.Refresh();
+                    Refresh();
                 }
 
-                return this.exists;
+                return exists;
             }
         }
 
@@ -231,12 +209,12 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         {
             get
             {
-                if (!this.initialized)
+                if (!initialized)
                 {
-                    this.Refresh();
+                    Refresh();
                 }
 
-                return this.length;
+                return length;
             }
         }
 
@@ -248,12 +226,12 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         {
             get
             {
-                if (!this.initialized)
+                if (!initialized)
                 {
-                    this.Refresh();
+                    Refresh();
                 }
 
-                return this.attributes;
+                return attributes;
             }
         }
 
@@ -266,12 +244,12 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         {
             get
             {
-                if (!this.initialized)
+                if (!initialized)
                 {
-                    this.Refresh();
+                    Refresh();
                 }
 
-                return this.lastWriteTime;
+                return lastWriteTime;
             }
         }
 
@@ -281,7 +259,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <returns>The same as <see cref="FullName"/></returns>
         public override string ToString()
         {
-            return this.FullName;
+            return FullName;
         }
 
         /// <summary>
@@ -302,17 +280,17 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         {
             base.Refresh();
 
-            if (this.Archive != null)
+            if (Archive != null)
             {
-                string filePath = System.IO.Path.Combine(this.Path, this.Name);
-                ArchiveFileInfo updatedFile = this.Archive.GetFile(filePath);
+                string filePath = System.IO.Path.Combine(Path, Name);
+                ArchiveFileInfo updatedFile = Archive.GetFile(filePath);
                 if (updatedFile == null)
                 {
                     throw new FileNotFoundException(
                             "File not found in archive.", filePath);
                 }
 
-                this.Refresh(updatedFile);
+                Refresh(updatedFile);
             }
         }
 
@@ -324,7 +302,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "dest")]
         public void CopyTo(string destFileName)
         {
-            this.CopyTo(destFileName, false);
+            CopyTo(destFileName, false);
         }
 
         /// <summary>
@@ -349,13 +327,13 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
                 throw new IOException();
             }
 
-            if (this.Archive == null)
+            if (Archive == null)
             {
                 throw new InvalidOperationException();
             }
 
-            this.Archive.UnpackFile(
-                System.IO.Path.Combine(this.Path, this.Name), destFileName);
+            Archive.UnpackFile(
+                System.IO.Path.Combine(Path, Name), destFileName);
         }
 
         /// <summary>
@@ -368,7 +346,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </returns>
         public Stream OpenRead()
         {
-            return this.Archive.OpenRead(System.IO.Path.Combine(this.Path, this.Name));
+            return Archive.OpenRead(System.IO.Path.Combine(Path, Name));
         }
 
         /// <summary>
@@ -386,7 +364,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </remarks>
         public StreamReader OpenText()
         {
-            return this.Archive.OpenText(System.IO.Path.Combine(this.Path, this.Name));
+            return Archive.OpenText(System.IO.Path.Combine(Path, Name));
         }
 
         /// <summary>
@@ -401,10 +379,10 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </remarks>
         protected virtual void Refresh(ArchiveFileInfo newFileInfo)
         {
-            this.exists = newFileInfo.exists;
-            this.length = newFileInfo.length;
-            this.attributes = newFileInfo.attributes;
-            this.lastWriteTime = newFileInfo.lastWriteTime;
+            exists = newFileInfo.exists;
+            length = newFileInfo.length;
+            attributes = newFileInfo.attributes;
+            lastWriteTime = newFileInfo.lastWriteTime;
         }
     }
 }

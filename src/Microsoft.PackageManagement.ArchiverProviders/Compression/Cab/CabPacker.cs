@@ -32,21 +32,21 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         // These delegates need to be saved as member variables
         // so that they don't get GC'd.
-        private NativeMethods.FCI.PFNALLOC fciAllocMemHandler;
+        private readonly NativeMethods.FCI.PFNALLOC fciAllocMemHandler;
 
-        private NativeMethods.FCI.PFNFREE fciFreeMemHandler;
-        private NativeMethods.FCI.PFNOPEN fciOpenStreamHandler;
-        private NativeMethods.FCI.PFNREAD fciReadStreamHandler;
-        private NativeMethods.FCI.PFNWRITE fciWriteStreamHandler;
-        private NativeMethods.FCI.PFNCLOSE fciCloseStreamHandler;
-        private NativeMethods.FCI.PFNSEEK fciSeekStreamHandler;
-        private NativeMethods.FCI.PFNFILEPLACED fciFilePlacedHandler;
-        private NativeMethods.FCI.PFNDELETE fciDeleteFileHandler;
-        private NativeMethods.FCI.PFNGETTEMPFILE fciGetTempFileHandler;
+        private readonly NativeMethods.FCI.PFNFREE fciFreeMemHandler;
+        private readonly NativeMethods.FCI.PFNOPEN fciOpenStreamHandler;
+        private readonly NativeMethods.FCI.PFNREAD fciReadStreamHandler;
+        private readonly NativeMethods.FCI.PFNWRITE fciWriteStreamHandler;
+        private readonly NativeMethods.FCI.PFNCLOSE fciCloseStreamHandler;
+        private readonly NativeMethods.FCI.PFNSEEK fciSeekStreamHandler;
+        private readonly NativeMethods.FCI.PFNFILEPLACED fciFilePlacedHandler;
+        private readonly NativeMethods.FCI.PFNDELETE fciDeleteFileHandler;
+        private readonly NativeMethods.FCI.PFNGETTEMPFILE fciGetTempFileHandler;
 
-        private NativeMethods.FCI.PFNGETNEXTCABINET fciGetNextCabinet;
-        private NativeMethods.FCI.PFNSTATUS fciCreateStatus;
-        private NativeMethods.FCI.PFNGETOPENINFO fciGetOpenInfo;
+        private readonly NativeMethods.FCI.PFNGETNEXTCABINET fciGetNextCabinet;
+        private readonly NativeMethods.FCI.PFNSTATUS fciCreateStatus;
+        private readonly NativeMethods.FCI.PFNGETOPENINFO fciGetOpenInfo;
 
         private IPackStreamContext context;
 
@@ -64,47 +64,35 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         public CabPacker(CabEngine cabEngine)
             : base(cabEngine)
         {
-            this.fciAllocMemHandler = this.CabAllocMem;
-            this.fciFreeMemHandler = this.CabFreeMem;
-            this.fciOpenStreamHandler = this.CabOpenStreamEx;
-            this.fciReadStreamHandler = this.CabReadStreamEx;
-            this.fciWriteStreamHandler = this.CabWriteStreamEx;
-            this.fciCloseStreamHandler = this.CabCloseStreamEx;
-            this.fciSeekStreamHandler = this.CabSeekStreamEx;
-            this.fciFilePlacedHandler = this.CabFilePlaced;
-            this.fciDeleteFileHandler = this.CabDeleteFile;
-            this.fciGetTempFileHandler = this.CabGetTempFile;
-            this.fciGetNextCabinet = this.CabGetNextCabinet;
-            this.fciCreateStatus = this.CabCreateStatus;
-            this.fciGetOpenInfo = this.CabGetOpenInfo;
-            this.tempStreams = new List<Stream>();
-            this.compressionLevel = CompressionLevel.Normal;
+            fciAllocMemHandler = CabAllocMem;
+            fciFreeMemHandler = CabFreeMem;
+            fciOpenStreamHandler = CabOpenStreamEx;
+            fciReadStreamHandler = CabReadStreamEx;
+            fciWriteStreamHandler = CabWriteStreamEx;
+            fciCloseStreamHandler = CabCloseStreamEx;
+            fciSeekStreamHandler = CabSeekStreamEx;
+            fciFilePlacedHandler = CabFilePlaced;
+            fciDeleteFileHandler = CabDeleteFile;
+            fciGetTempFileHandler = CabGetTempFile;
+            fciGetNextCabinet = CabGetNextCabinet;
+            fciCreateStatus = CabCreateStatus;
+            fciGetOpenInfo = CabGetOpenInfo;
+            tempStreams = new List<Stream>();
+            compressionLevel = CompressionLevel.Normal;
         }
 
         public bool UseTempFiles
         {
-            get
-            {
-                return !this.dontUseTempFiles;
-            }
+            get => !dontUseTempFiles;
 
-            set
-            {
-                this.dontUseTempFiles = !value;
-            }
+            set => dontUseTempFiles = !value;
         }
 
         public CompressionLevel CompressionLevel
         {
-            get
-            {
-                return this.compressionLevel;
-            }
+            get => compressionLevel;
 
-            set
-            {
-                this.compressionLevel = value;
-            }
+            set => compressionLevel = value;
         }
 
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
@@ -117,7 +105,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                     NativeMethods.FCI.MIN_DISK, (int)maxArchiveSize);
             }
 
-            object maxFolderSizeOption = this.context.GetOption(
+            object maxFolderSizeOption = context.GetOption(
                 "maxFolderSize", null);
             if (maxFolderSizeOption != null)
             {
@@ -129,36 +117,36 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 }
             }
 
-            this.maxCabBytes = ccab.cb;
-            ccab.szCab = this.context.GetArchiveName(0);
+            maxCabBytes = ccab.cb;
+            ccab.szCab = context.GetArchiveName(0);
             if (ccab.szCab == null)
             {
                 throw new FileNotFoundException(
                     "Cabinet name not provided by stream context.");
             }
             ccab.setID = (short)new Random().Next(
-                Int16.MinValue, Int16.MaxValue + 1);
-            this.CabNumbers[ccab.szCab] = 0;
-            this.currentArchiveName = ccab.szCab;
-            this.totalArchives = 1;
-            this.CabStream = null;
+                short.MinValue, short.MaxValue + 1);
+            CabNumbers[ccab.szCab] = 0;
+            currentArchiveName = ccab.szCab;
+            totalArchives = 1;
+            CabStream = null;
 
-            this.Erf.Clear();
-            this.fciHandle = NativeMethods.FCI.Create(
-                this.ErfHandle.AddrOfPinnedObject(),
-                this.fciFilePlacedHandler,
-                this.fciAllocMemHandler,
-                this.fciFreeMemHandler,
-                this.fciOpenStreamHandler,
-                this.fciReadStreamHandler,
-                this.fciWriteStreamHandler,
-                this.fciCloseStreamHandler,
-                this.fciSeekStreamHandler,
-                this.fciDeleteFileHandler,
-                this.fciGetTempFileHandler,
+            Erf.Clear();
+            fciHandle = NativeMethods.FCI.Create(
+                ErfHandle.AddrOfPinnedObject(),
+                fciFilePlacedHandler,
+                fciAllocMemHandler,
+                fciFreeMemHandler,
+                fciOpenStreamHandler,
+                fciReadStreamHandler,
+                fciWriteStreamHandler,
+                fciCloseStreamHandler,
+                fciSeekStreamHandler,
+                fciDeleteFileHandler,
+                fciGetTempFileHandler,
                 ccab,
                 IntPtr.Zero);
-            this.CheckError(false);
+            CheckError(false);
         }
 
         [SuppressMessage("Microsoft.Security", "CA2106:SecureAsserts")]
@@ -185,45 +173,41 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             {
                 try
                 {
-                    this.context = streamContext;
+                    context = streamContext;
 
-                    this.ResetProgressData();
+                    ResetProgressData();
 
-                    this.CreateFci(maxArchiveSize);
+                    CreateFci(maxArchiveSize);
 
                     foreach (string file in files)
                     {
-                        FileAttributes attributes;
-                        DateTime lastWriteTime;
-                        Stream fileStream = this.context.OpenFileReadStream(
+                        Stream fileStream = context.OpenFileReadStream(
                             file,
-                            out attributes,
-                            out lastWriteTime);
+                            out FileAttributes attributes,
+                            out DateTime lastWriteTime);
                         if (fileStream != null)
                         {
-                            this.totalFileBytes += fileStream.Length;
-                            this.totalFiles++;
-                            this.context.CloseFileReadStream(file, fileStream);
+                            totalFileBytes += fileStream.Length;
+                            totalFiles++;
+                            context.CloseFileReadStream(file, fileStream);
                         }
                     }
 
                     long uncompressedBytesInFolder = 0;
-                    this.currentFileNumber = -1;
+                    currentFileNumber = -1;
 
                     foreach (string file in files)
                     {
-                        FileAttributes attributes;
-                        DateTime lastWriteTime;
-                        Stream fileStream = this.context.OpenFileReadStream(
-                            file, out attributes, out lastWriteTime);
+                        Stream fileStream = context.OpenFileReadStream(
+                            file, out FileAttributes attributes, out DateTime lastWriteTime);
                         if (fileStream == null)
                         {
                             continue;
                         }
 
-                        if (fileStream.Length >= (long)NativeMethods.FCI.MAX_FOLDER)
+                        if (fileStream.Length >= NativeMethods.FCI.MAX_FOLDER)
                         {
-                            throw new NotSupportedException(String.Format(
+                            throw new NotSupportedException(string.Format(
                                 CultureInfo.InvariantCulture,
                                 "File {0} exceeds maximum file size " +
                                 "for cabinet format.",
@@ -235,7 +219,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                             // Automatically create a new folder if this file
                             // won't fit in the current folder.
                             bool nextFolder = uncompressedBytesInFolder
-                                + fileStream.Length >= (long)NativeMethods.FCI.MAX_FOLDER;
+                                + fileStream.Length >= NativeMethods.FCI.MAX_FOLDER;
 
                             // Otherwise ask the client if it wants to
                             // move to the next folder.
@@ -243,69 +227,69 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                             {
                                 object nextFolderOption = streamContext.GetOption(
                                     "nextFolder",
-                                    new object[] { file, this.currentFolderNumber });
+                                    new object[] { file, currentFolderNumber });
                                 nextFolder = Convert.ToBoolean(
                                     nextFolderOption, CultureInfo.InvariantCulture);
                             }
 
                             if (nextFolder)
                             {
-                                this.FlushFolder();
+                                FlushFolder();
                                 uncompressedBytesInFolder = 0;
                             }
                         }
 
-                        if (this.currentFolderTotalBytes > 0)
+                        if (currentFolderTotalBytes > 0)
                         {
-                            this.currentFolderTotalBytes = 0;
-                            this.currentFolderNumber++;
+                            currentFolderTotalBytes = 0;
+                            currentFolderNumber++;
                             uncompressedBytesInFolder = 0;
                         }
 
-                        this.currentFileName = file;
-                        this.currentFileNumber++;
+                        currentFileName = file;
+                        currentFileNumber++;
 
-                        this.currentFileTotalBytes = fileStream.Length;
-                        this.currentFileBytesProcessed = 0;
-                        this.OnProgress(ArchiveProgressType.StartFile);
+                        currentFileTotalBytes = fileStream.Length;
+                        currentFileBytesProcessed = 0;
+                        OnProgress(ArchiveProgressType.StartFile);
 
                         uncompressedBytesInFolder += fileStream.Length;
 
-                        this.AddFile(
+                        AddFile(
                             file,
                             fileStream,
                             attributes,
                             lastWriteTime,
                             false,
-                            this.CompressionLevel);
+                            CompressionLevel);
                     }
 
-                    this.FlushFolder();
-                    this.FlushCabinet();
+                    FlushFolder();
+                    FlushCabinet();
                 }
                 finally
                 {
-                    if (this.CabStream != null)
+                    if (CabStream != null)
                     {
-                        this.context.CloseArchiveWriteStream(
-                            this.currentArchiveNumber,
-                            this.currentArchiveName,
-                            this.CabStream);
-                        this.CabStream = null;
+                        context.CloseArchiveWriteStream(
+                            currentArchiveNumber,
+                            currentArchiveName,
+                            CabStream);
+                        CabStream = null;
                     }
 
-                    if (this.FileStream != null)
+                    if (FileStream != null)
                     {
-                        this.context.CloseFileReadStream(
-                            this.currentFileName, this.FileStream);
-                        this.FileStream = null;
+                        context.CloseFileReadStream(
+                            currentFileName, FileStream);
+                        FileStream = null;
                     }
-                    this.context = null;
+                    context = null;
 
-                    if (this.fciHandle != null)
+                    if (fciHandle != null)
                     {
-                        this.fciHandle.Dispose();
-                        this.fciHandle = null;
+                        fciHandle.Dispose();
+                        fciHandle = null;
                     }
                 }
             }
@@ -313,29 +297,25 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         internal override int CabOpenStreamEx(string path, int openFlags, int shareMode, out int err, IntPtr pv)
         {
-            if (this.CabNumbers.ContainsKey(path))
+            if (CabNumbers.ContainsKey(path))
             {
-                Stream stream = this.CabStream;
+                Stream stream = CabStream;
                 if (stream == null)
                 {
-                    short cabNumber = this.CabNumbers[path];
+                    short cabNumber = CabNumbers[path];
 
-                    this.currentFolderTotalBytes = 0;
+                    currentFolderTotalBytes = 0;
 
-                    stream = this.context.OpenArchiveWriteStream(cabNumber, path, true, this.CabEngine);
-                    if (stream == null)
-                    {
-                        throw new FileNotFoundException(
-                            String.Format(CultureInfo.InvariantCulture, "Cabinet {0} not provided.", cabNumber));
-                    }
-                    this.currentArchiveName = path;
+                    stream = context.OpenArchiveWriteStream(cabNumber, path, true, CabEngine);
+                    currentArchiveName = path;
 
-                    this.currentArchiveTotalBytes = Math.Min(
-                        this.totalFolderBytesProcessedInCurrentCab, this.maxCabBytes);
-                    this.currentArchiveBytesProcessed = 0;
+                    currentArchiveTotalBytes = Math.Min(
+                        totalFolderBytesProcessedInCurrentCab, maxCabBytes);
+                    currentArchiveBytesProcessed = 0;
 
-                    this.OnProgress(ArchiveProgressType.StartArchive);
-                    this.CabStream = stream;
+                    OnProgress(ArchiveProgressType.StartArchive);
+                    CabStream = stream ?? throw new FileNotFoundException(
+                            string.Format(CultureInfo.InvariantCulture, "Cabinet {0} not provided.", cabNumber));
                 }
                 path = CabWorker.CabStreamName;
             }
@@ -343,8 +323,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             {
                 // Opening memory stream for a temp file.
                 Stream stream = new MemoryStream();
-                this.tempStreams.Add(stream);
-                int streamHandle = this.StreamHandles.AllocHandle(stream);
+                tempStreams.Add(stream);
+                int streamHandle = StreamHandles.AllocHandle(stream);
                 err = 0;
                 return streamHandle;
             }
@@ -353,9 +333,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 // Opening a file on disk for a temp file.
                 path = Path.Combine(Path.GetTempPath(), path);
                 Stream stream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite);
-                this.tempStreams.Add(stream);
+                tempStreams.Add(stream);
                 stream = new DuplicateStream(stream);
-                int streamHandle = this.StreamHandles.AllocHandle(stream);
+                int streamHandle = StreamHandles.AllocHandle(stream);
                 err = 0;
                 return streamHandle;
             }
@@ -367,14 +347,14 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             int count = base.CabWriteStreamEx(streamHandle, memory, cb, out err, pv);
             if (count > 0 && err == 0)
             {
-                Stream stream = this.StreamHandles[streamHandle];
+                Stream stream = StreamHandles[streamHandle];
                 if (DuplicateStream.OriginalStream(stream) ==
-                    DuplicateStream.OriginalStream(this.CabStream))
+                    DuplicateStream.OriginalStream(CabStream))
                 {
-                    this.currentArchiveBytesProcessed += cb;
-                    if (this.currentArchiveBytesProcessed > this.currentArchiveTotalBytes)
+                    currentArchiveBytesProcessed += cb;
+                    if (currentArchiveBytesProcessed > currentArchiveTotalBytes)
                     {
-                        this.currentArchiveBytesProcessed = this.currentArchiveTotalBytes;
+                        currentArchiveBytesProcessed = currentArchiveTotalBytes;
                     }
                 }
             }
@@ -383,43 +363,43 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         internal override int CabCloseStreamEx(int streamHandle, out int err, IntPtr pv)
         {
-            Stream stream = DuplicateStream.OriginalStream(this.StreamHandles[streamHandle]);
+            Stream stream = DuplicateStream.OriginalStream(StreamHandles[streamHandle]);
 
-            if (stream == DuplicateStream.OriginalStream(this.FileStream))
+            if (stream == DuplicateStream.OriginalStream(FileStream))
             {
-                this.context.CloseFileReadStream(this.currentFileName, stream);
-                this.FileStream = null;
-                long remainder = this.currentFileTotalBytes - this.currentFileBytesProcessed;
-                this.currentFileBytesProcessed += remainder;
-                this.fileBytesProcessed += remainder;
-                this.OnProgress(ArchiveProgressType.FinishFile);
+                context.CloseFileReadStream(currentFileName, stream);
+                FileStream = null;
+                long remainder = currentFileTotalBytes - currentFileBytesProcessed;
+                currentFileBytesProcessed += remainder;
+                fileBytesProcessed += remainder;
+                OnProgress(ArchiveProgressType.FinishFile);
 
-                this.currentFileTotalBytes = 0;
-                this.currentFileBytesProcessed = 0;
-                this.currentFileName = null;
+                currentFileTotalBytes = 0;
+                currentFileBytesProcessed = 0;
+                currentFileName = null;
             }
-            else if (stream == DuplicateStream.OriginalStream(this.CabStream))
+            else if (stream == DuplicateStream.OriginalStream(CabStream))
             {
                 if (stream.CanWrite)
                 {
                     stream.Flush();
                 }
 
-                this.currentArchiveBytesProcessed = this.currentArchiveTotalBytes;
-                this.OnProgress(ArchiveProgressType.FinishArchive);
-                this.currentArchiveNumber++;
-                this.totalArchives++;
+                currentArchiveBytesProcessed = currentArchiveTotalBytes;
+                OnProgress(ArchiveProgressType.FinishArchive);
+                currentArchiveNumber++;
+                totalArchives++;
 
-                this.context.CloseArchiveWriteStream(
-                    this.currentArchiveNumber,
-                    this.currentArchiveName,
+                context.CloseArchiveWriteStream(
+                    currentArchiveNumber,
+                    currentArchiveName,
                     stream);
 
-                this.currentArchiveName = this.NextCabinetName;
-                this.currentArchiveBytesProcessed = this.currentArchiveTotalBytes = 0;
-                this.totalFolderBytesProcessedInCurrentCab = 0;
+                currentArchiveName = NextCabinetName;
+                currentArchiveBytesProcessed = currentArchiveTotalBytes = 0;
+                totalFolderBytesProcessedInCurrentCab = 0;
 
-                this.CabStream = null;
+                CabStream = null;
             }
             else  // Must be a temp stream
             {
@@ -428,7 +408,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 #else
                 stream.Close();
 #endif
-                this.tempStreams.Remove(stream);
+                tempStreams.Remove(stream);
             }
             return base.CabCloseStreamEx(streamHandle, out err, pv);
         }
@@ -446,10 +426,10 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             {
                 if (disposing)
                 {
-                    if (this.fciHandle != null)
+                    if (fciHandle != null)
                     {
-                        this.fciHandle.Dispose();
-                        this.fciHandle = null;
+                        fciHandle.Dispose();
+                        fciHandle = null;
                     }
                 }
             }
@@ -493,11 +473,11 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             bool execute,
             CompressionLevel compLevel)
         {
-            this.FileStream = stream;
-            this.fileAttributes = attributes &
+            FileStream = stream;
+            fileAttributes = attributes &
                 (FileAttributes.Archive | FileAttributes.Hidden | FileAttributes.ReadOnly | FileAttributes.System);
-            this.fileLastWriteTime = lastWriteTime;
-            this.currentFileName = name;
+            fileLastWriteTime = lastWriteTime;
+            currentFileName = name;
 
             NativeMethods.FCI.TCOMP tcomp = CabPacker.GetCompressionType(compLevel);
 
@@ -508,7 +488,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 if (Encoding.UTF8.GetByteCount(name) > name.Length)
                 {
                     nameEncoding = Encoding.UTF8;
-                    this.fileAttributes |= FileAttributes.Normal;  // _A_NAME_IS_UTF
+                    fileAttributes |= FileAttributes.Normal;  // _A_NAME_IS_UTF
                 }
 
                 byte[] nameBytes = nameEncoding.GetBytes(name);
@@ -516,22 +496,22 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 Marshal.Copy(nameBytes, 0, namePtr, nameBytes.Length);
                 Marshal.WriteByte(namePtr, nameBytes.Length, 0);
 
-                this.Erf.Clear();
-                var result = NativeMethods.FCI.AddFile(
-                    this.fciHandle,
-                    String.Empty,
+                Erf.Clear();
+                int result = NativeMethods.FCI.AddFile(
+                    fciHandle,
+                    string.Empty,
                     namePtr,
                     execute,
-                    this.fciGetNextCabinet,
-                    this.fciCreateStatus,
-                    this.fciGetOpenInfo,
+                    fciGetNextCabinet,
+                    fciCreateStatus,
+                    fciGetOpenInfo,
                     tcomp);
                 if (result == 0)
                 {
                     // Stop compiler from complaining
-                    this.CheckError(false);
-                    this.FileStream = null;
-                    this.currentFileName = null;
+                    CheckError(false);
+                    FileStream = null;
+                    currentFileName = null;
                     return;
                 }
             }
@@ -543,35 +523,35 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 }
             }
 
-            this.CheckError(false);
-            this.FileStream = null;
-            this.currentFileName = null;
+            CheckError(false);
+            FileStream = null;
+            currentFileName = null;
         }
 
         private void FlushFolder()
         {
-            this.Erf.Clear();
-            var result = NativeMethods.FCI.FlushFolder(this.fciHandle, this.fciGetNextCabinet, this.fciCreateStatus);
+            Erf.Clear();
+            int result = NativeMethods.FCI.FlushFolder(fciHandle, fciGetNextCabinet, fciCreateStatus);
             if (result == 0)
             {
                 // Stop compiler from complaining
-                this.CheckError(false);
+                CheckError(false);
                 return;
             }
-            this.CheckError(false);
+            CheckError(false);
         }
 
         private void FlushCabinet()
         {
-            this.Erf.Clear();
-            var result = NativeMethods.FCI.FlushCabinet(this.fciHandle, false, this.fciGetNextCabinet, this.fciCreateStatus);
+            Erf.Clear();
+            int result = NativeMethods.FCI.FlushCabinet(fciHandle, false, fciGetNextCabinet, fciCreateStatus);
             if (result == 0)
             {
                 // Stop compiler from complaining
-                this.CheckError(false);
+                CheckError(false);
                 return;
             }
-            this.CheckError(false);
+            CheckError(false);
         }
 
         private int CabGetOpenInfo(
@@ -582,12 +562,12 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             out int err,
             IntPtr pv)
         {
-            CompressionEngine.DateTimeToDosDateAndTime(this.fileLastWriteTime, out date, out time);
-            attribs = (short)this.fileAttributes;
+            CompressionEngine.DateTimeToDosDateAndTime(fileLastWriteTime, out date, out time);
+            attribs = (short)fileAttributes;
 
-            Stream stream = this.FileStream;
-            this.FileStream = new DuplicateStream(stream);
-            int streamHandle = this.StreamHandles.AllocHandle(stream);
+            Stream stream = FileStream;
+            FileStream = new DuplicateStream(stream);
+            int streamHandle = StreamHandles.AllocHandle(stream);
             err = 0;
             return streamHandle;
         }
@@ -607,10 +587,10 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             NativeMethods.FCI.CCAB nextCcab = new NativeMethods.FCI.CCAB();
             Marshal.PtrToStructure(pccab, nextCcab);
 
-            nextCcab.szDisk = String.Empty;
-            nextCcab.szCab = this.context.GetArchiveName(nextCcab.iCab);
-            this.CabNumbers[nextCcab.szCab] = (short)nextCcab.iCab;
-            this.NextCabinetName = nextCcab.szCab;
+            nextCcab.szDisk = string.Empty;
+            nextCcab.szCab = context.GetArchiveName(nextCcab.iCab);
+            CabNumbers[nextCcab.szCab] = (short)nextCcab.iCab;
+            NextCabinetName = nextCcab.szCab;
 
             Marshal.StructureToPtr(nextCcab, pccab, false);
             return 1;
@@ -621,28 +601,28 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             switch (typeStatus)
             {
                 case NativeMethods.FCI.STATUS.FILE:
-                    if (cb2 > 0 && this.currentFileBytesProcessed < this.currentFileTotalBytes)
+                    if (cb2 > 0 && currentFileBytesProcessed < currentFileTotalBytes)
                     {
-                        if (this.currentFileBytesProcessed + cb2 > this.currentFileTotalBytes)
+                        if (currentFileBytesProcessed + cb2 > currentFileTotalBytes)
                         {
-                            cb2 = (uint)this.currentFileTotalBytes - (uint)this.currentFileBytesProcessed;
+                            cb2 = (uint)currentFileTotalBytes - (uint)currentFileBytesProcessed;
                         }
-                        this.currentFileBytesProcessed += cb2;
-                        this.fileBytesProcessed += cb2;
+                        currentFileBytesProcessed += cb2;
+                        fileBytesProcessed += cb2;
 
-                        this.OnProgress(ArchiveProgressType.PartialFile);
+                        OnProgress(ArchiveProgressType.PartialFile);
                     }
                     break;
 
                 case NativeMethods.FCI.STATUS.FOLDER:
                     if (cb1 == 0)
                     {
-                        this.currentFolderTotalBytes = cb2 - this.totalFolderBytesProcessedInCurrentCab;
-                        this.totalFolderBytesProcessedInCurrentCab = cb2;
+                        currentFolderTotalBytes = cb2 - totalFolderBytesProcessedInCurrentCab;
+                        totalFolderBytesProcessedInCurrentCab = cb2;
                     }
-                    else if (this.currentFolderTotalBytes == 0)
+                    else if (currentFolderTotalBytes == 0)
                     {
-                        this.OnProgress(ArchiveProgressType.PartialArchive);
+                        OnProgress(ArchiveProgressType.PartialArchive);
                     }
                     break;
 
@@ -655,7 +635,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         private int CabGetTempFile(IntPtr tempNamePtr, int tempNameSize, IntPtr pv)
         {
             string tempFileName;
-            if (this.UseTempFiles)
+            if (UseTempFiles)
             {
                 tempFileName = Path.GetFileName(Path.GetTempFileName());
             }

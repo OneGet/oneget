@@ -55,7 +55,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             {
                 if (Proxy != null)
                 {
-                    return new PackageManagement.Utility.InternalWebProxy(Proxy, ProxyCredential == null ? null : ProxyCredential.GetNetworkCredential());
+                    return new PackageManagement.Utility.InternalWebProxy(Proxy, ProxyCredential?.GetNetworkCredential());
                 }
 
                 return null;
@@ -65,35 +65,17 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         [Parameter]
         public PSCredential Credential { get; set; }
 
-        public override string CredentialUsername
-        {
-            get
-            {
-                return Credential != null ? Credential.UserName : null;
-            }
-        }
+        public override string CredentialUsername => Credential?.UserName;
 
-        public override SecureString CredentialPassword
-        {
-            get
-            {
-                return Credential != null ? Credential.Password : null;
-            }
-        }
+        public override SecureString CredentialPassword => Credential?.Password;
 
-        protected override IEnumerable<string> ParameterSets
-        {
-            get
-            {
-                return new[] { Constants.ParameterSets.SourceByInputObjectSet, Constants.ParameterSets.SourceBySearchSet };
-            }
-        }
+        protected override IEnumerable<string> ParameterSets => new[] { Constants.ParameterSets.SourceByInputObjectSet, Constants.ParameterSets.SourceBySearchSet };
 
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments)
         {
             if (!IsInvocation)
             {
-                var providerNames = PackageManagementService.AllProviderNames;
+                IEnumerable<string> providerNames = PackageManagementService.AllProviderNames;
                 var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
                 if (whatsOnCmdline != null)
                 {
@@ -159,11 +141,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         ///     to implement a given API, if we put in delegates to handle some of the functions
         ///     they will get called instead of the implementation in the current class. ('this')
         /// </summary>
-        private IHostApi UpdatePackageSourceRequest
-        {
-            get
-            {
-                return new object[] {
+        private IHostApi UpdatePackageSourceRequest => new object[] {
                     new {
                         // override the GetOptionKeys and the GetOptionValues on the fly.
                         GetOptionKeys = new Func<IEnumerable<string>>(() => OptionKeys.ConcatSingleItem("IsUpdatePackageSource")),
@@ -177,14 +155,12 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     },
                     this,
                 }.As<IHostApi>();
-            }
-        }
 
         private void UpdatePackageSource(PackageSource source)
         {
             if (WhatIf)
             {
-                var p = new PSObject(source);
+                PSObject p = new PSObject(source);
 
                 if (!string.IsNullOrWhiteSpace(NewName))
                 {
@@ -211,7 +187,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             {
                 // this is a replacement of an existing package source, we're *not* changing the name. (easy)
 
-                foreach (var src in source.Provider.AddPackageSource(string.IsNullOrWhiteSpace(NewName) ? source.Name : NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted, UpdatePackageSourceRequest))
+                foreach (PackageSource src in source.Provider.AddPackageSource(string.IsNullOrWhiteSpace(NewName) ? source.Name : NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted, UpdatePackageSourceRequest))
                 {
                     WriteObject(src);
                 }
@@ -224,7 +200,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
                 bool removed = false;
 
-                foreach (var src in source.Provider.AddPackageSource(NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted.IsPresent ? Trusted.ToBool() : source.IsTrusted, this))
+                foreach (PackageSource src in source.Provider.AddPackageSource(NewName, string.IsNullOrWhiteSpace(NewLocation) ? source.Location : NewLocation, Trusted.IsPresent ? Trusted.ToBool() : source.IsTrusted, this))
                 {
                     WriteObject(src);
                     if (!removed)
@@ -254,7 +230,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             }
 
             // otherwise, we're just changing a source by name
-            var prov = SelectedProviders.ToArray();
+            Microsoft.PackageManagement.Implementation.PackageProvider[] prov = SelectedProviders.ToArray();
 
             if (Stopping)
             {

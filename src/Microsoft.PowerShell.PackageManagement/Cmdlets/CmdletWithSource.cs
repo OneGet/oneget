@@ -34,20 +34,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         [Parameter]
         public PSCredential Credential { get; set; }
 
-        public override string CredentialUsername
-        {
-            get
-            {
-                return Credential != null ? Credential.UserName : null;
-            }
-        }
+        public override string CredentialUsername => Credential?.UserName;
 
-        public override SecureString CredentialPassword
-        {
-            get
-            {
-                return Credential != null ? Credential.Password : null;
-            }
-        }
+        public override SecureString CredentialPassword => Credential?.Password;
     }
 }

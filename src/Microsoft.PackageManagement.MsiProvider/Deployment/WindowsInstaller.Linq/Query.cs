@@ -28,7 +28,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
     internal sealed class Query<T> : IOrderedQueryable<T>, IQueryProvider
     {
         private QDatabase db;
-        private Expression queryableExpression;
+        private readonly Expression queryableExpression;
         private List<TableInfo> tables;
         private List<Type> recordTypes;
         private List<string> selectors;
@@ -41,89 +41,84 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
         internal Query(QDatabase db, Expression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException("expression");
-            }
-
             this.db = db;
-            this.queryableExpression = expression;
-            this.tables = new List<TableInfo>();
-            this.recordTypes = new List<Type>();
-            this.selectors = new List<string>();
-            this.whereParameters = new List<object>();
-            this.orderbyColumns = new List<TableColumn>();
-            this.selectColumns = new List<TableColumn>();
-            this.joinColumns = new List<TableColumn>();
-            this.projectionDelegates = new List<Delegate>();
+            queryableExpression = expression ?? throw new ArgumentNullException("expression");
+            tables = new List<TableInfo>();
+            recordTypes = new List<Type>();
+            selectors = new List<string>();
+            whereParameters = new List<object>();
+            orderbyColumns = new List<TableColumn>();
+            selectColumns = new List<TableColumn>();
+            joinColumns = new List<TableColumn>();
+            projectionDelegates = new List<Delegate>();
         }
 
         public IEnumerator<T> GetEnumerator()
         {
-            if (this.selectColumns.Count == 0)
+            if (selectColumns.Count == 0)
             {
-                AddAllColumns(this.tables[0], this.selectColumns);
+                AddAllColumns(tables[0], selectColumns);
             }
 
-            string query = this.CompileQuery();
-            return this.InvokeQuery(query);
+            string query = CompileQuery();
+            return InvokeQuery(query);
         }
 
         private string CompileQuery()
         {
-            bool explicitTables = this.tables.Count > 1;
+            bool explicitTables = tables.Count > 1;
 
             StringBuilder queryBuilder = new StringBuilder("SELECT");
 
-            for (int i = 0; i < this.selectColumns.Count; i++)
+            for (int i = 0; i < selectColumns.Count; i++)
             {
                 queryBuilder.AppendFormat(
                     CultureInfo.InvariantCulture,
                     (explicitTables ? "{0} `{1}`.`{2}`" : "{0} `{2}`"),
-                    (i > 0 ? "," : String.Empty),
-                    this.selectColumns[i].Table.Name,
-                    this.selectColumns[i].Column.Name);
+                    (i > 0 ? "," : string.Empty),
+                    selectColumns[i].Table.Name,
+                    selectColumns[i].Column.Name);
             }
 
-            for (int i = 0; i < this.tables.Count; i++)
+            for (int i = 0; i < tables.Count; i++)
             {
                 queryBuilder.AppendFormat(
                     CultureInfo.InvariantCulture,
                     "{0} `{1}`",
                     (i == 0 ? " FROM" : ","),
-                    this.tables[i].Name);
+                    tables[i].Name);
             }
 
             bool startedWhere = false;
-            for (int i = 0; i < this.joinColumns.Count - 1; i += 2)
+            for (int i = 0; i < joinColumns.Count - 1; i += 2)
             {
                 queryBuilder.AppendFormat(
                     CultureInfo.InvariantCulture,
                     "{0} `{1}`.`{2}` = `{3}`.`{4}` ",
                     (i == 0 ? " WHERE" : "AND"),
-                    this.joinColumns[i].Table,
-                    this.joinColumns[i].Column,
-                    this.joinColumns[i + 1].Table,
-                    this.joinColumns[i + 1].Column);
+                    joinColumns[i].Table,
+                    joinColumns[i].Column,
+                    joinColumns[i + 1].Table,
+                    joinColumns[i + 1].Column);
                 startedWhere = true;
             }
 
-            if (this.where != null)
+            if (where != null)
             {
                 queryBuilder.Append(startedWhere ? "AND " : " WHERE");
-                queryBuilder.Append(this.where);
+                queryBuilder.Append(where);
             }
 
-            for (int i = 0; i < this.orderbyColumns.Count; i++)
+            for (int i = 0; i < orderbyColumns.Count; i++)
             {
-                VerifyOrderByColumn(this.orderbyColumns[i]);
+                VerifyOrderByColumn(orderbyColumns[i]);
 
                 queryBuilder.AppendFormat(
                     CultureInfo.InvariantCulture,
                     (explicitTables ? "{0} `{1}`.`{2}`" : "{0} `{2}`"),
                     (i == 0 ? " ORDER BY" : ","),
-                    this.orderbyColumns[i].Table.Name,
-                    this.orderbyColumns[i].Column.Name);
+                    orderbyColumns[i].Table.Name,
+                    orderbyColumns[i].Column.Name);
             }
 
             return queryBuilder.ToString();
@@ -142,26 +137,26 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
         private IEnumerator<T> InvokeQuery(string query)
         {
-            TextWriter log = this.db.Log;
+            TextWriter log = db.Log;
             if (log != null)
             {
                 log.WriteLine();
                 log.WriteLine(query);
             }
 
-            using (View queryView = this.db.OpenView(query))
+            using (View queryView = db.OpenView(query))
             {
-                if (this.whereParameters != null && this.whereParameters.Count > 0)
+                if (whereParameters != null && whereParameters.Count > 0)
                 {
-                    using (Record paramsRec = this.db.CreateRecord(this.whereParameters.Count))
+                    using (Record paramsRec = db.CreateRecord(whereParameters.Count))
                     {
-                        for (int i = 0; i < this.whereParameters.Count; i++)
+                        for (int i = 0; i < whereParameters.Count; i++)
                         {
-                            paramsRec[i + 1] = this.whereParameters[i];
+                            paramsRec[i + 1] = whereParameters[i];
 
                             if (log != null)
                             {
-                                log.WriteLine("    ? = " + this.whereParameters[i]);
+                                log.WriteLine("    ? = " + whereParameters[i]);
                             }
                         }
 
@@ -173,26 +168,29 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                     queryView.Execute();
                 }
 
-                foreach (Record resultRec in queryView) using (resultRec)
+                foreach (Record resultRec in queryView)
+                {
+                    using (resultRec)
                     {
-                        yield return this.GetResult(resultRec);
+                        yield return GetResult(resultRec);
                     }
+                }
             }
         }
 
         private T GetResult(Record resultRec)
         {
-            object[] results = new object[this.tables.Count];
+            object[] results = new object[tables.Count];
 
-            for (int i = 0; i < this.tables.Count; i++)
+            for (int i = 0; i < tables.Count; i++)
             {
-                string[] values = new string[this.tables[i].Columns.Count];
-                for (int j = 0; j < this.selectColumns.Count; j++)
+                string[] values = new string[tables[i].Columns.Count];
+                for (int j = 0; j < selectColumns.Count; j++)
                 {
-                    TableColumn col = this.selectColumns[j];
-                    if (col.Table.Name == this.tables[i].Name)
+                    TableColumn col = selectColumns[j];
+                    if (col.Table.Name == tables[i].Name)
                     {
-                        int index = this.tables[i].Columns.IndexOf(
+                        int index = tables[i].Columns.IndexOf(
                             col.Column.Name);
                         if (index >= 0)
                         {
@@ -208,28 +206,28 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                     }
                 }
 
-                QRecord result = (QRecord)this.recordTypes[i]
+                QRecord result = (QRecord)recordTypes[i]
                     .GetConstructor(Type.EmptyTypes).Invoke(null);
-                result.Database = this.db;
-                result.TableInfo = this.tables[i];
+                result.Database = db;
+                result.TableInfo = tables[i];
                 result.Values = values;
                 result.Exists = true;
                 results[i] = result;
             }
 
-            if (this.projectionDelegates.Count > 0)
+            if (projectionDelegates.Count > 0)
             {
                 object resultsProjection = results[0];
                 for (int i = 1; i <= results.Length; i++)
                 {
                     if (i < results.Length)
                     {
-                        resultsProjection = this.projectionDelegates[i - 1]
+                        resultsProjection = projectionDelegates[i - 1]
                             .DynamicInvoke(new object[] { resultsProjection, results[i] });
                     }
                     else
                     {
-                        resultsProjection = this.projectionDelegates[i - 1]
+                        resultsProjection = projectionDelegates[i - 1]
                             .DynamicInvoke(resultsProjection);
                     }
                 }
@@ -238,13 +236,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             }
             else
             {
-                return (T)(object)results[0];
+                return (T)results[0];
             }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable<T>)this).GetEnumerator();
+            return (this).GetEnumerator();
         }
 
         public IQueryable<TElement> CreateQuery<TElement>(Expression expression)
@@ -254,16 +252,16 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                 throw new ArgumentNullException("expression");
             }
 
-            Query<TElement> q = new Query<TElement>(this.db, expression);
-            q.tables.AddRange(this.tables);
-            q.recordTypes.AddRange(this.recordTypes);
-            q.selectors.AddRange(this.selectors);
-            q.where = this.where;
-            q.whereParameters.AddRange(this.whereParameters);
-            q.orderbyColumns.AddRange(this.orderbyColumns);
-            q.selectColumns.AddRange(this.selectColumns);
-            q.joinColumns.AddRange(this.joinColumns);
-            q.projectionDelegates.AddRange(this.projectionDelegates);
+            Query<TElement> q = new Query<TElement>(db, expression);
+            q.tables.AddRange(tables);
+            q.recordTypes.AddRange(recordTypes);
+            q.selectors.AddRange(selectors);
+            q.where = where;
+            q.whereParameters.AddRange(whereParameters);
+            q.orderbyColumns.AddRange(orderbyColumns);
+            q.selectColumns.AddRange(selectColumns);
+            q.joinColumns.AddRange(joinColumns);
+            q.projectionDelegates.AddRange(projectionDelegates);
 
             MethodCallExpression methodCallExpression = (MethodCallExpression)expression;
             string methodName = methodCallExpression.Method.Name;
@@ -309,7 +307,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
         public IQueryable CreateQuery(Expression expression)
         {
-            return this.CreateQuery<T>(expression);
+            return CreateQuery<T>(expression);
         }
 
         private static LambdaExpression GetJoinLambda(Expression expression)
@@ -330,51 +328,33 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                 "Direct method calls not supported -- use AsEnumerable() instead.");
         }
 
-        public IQueryProvider Provider
-        {
-            get
-            {
-                return this;
-            }
-        }
+        public IQueryProvider Provider => this;
 
-        public Type ElementType
-        {
-            get
-            {
-                return typeof(T);
-            }
-        }
+        public Type ElementType => typeof(T);
 
-        public Expression Expression
-        {
-            get
-            {
-                return this.queryableExpression;
-            }
-        }
+        public Expression Expression => queryableExpression;
 
         internal void BuildQuery(TableInfo tableInfo, LambdaExpression expression)
         {
             if (tableInfo != null)
             {
-                this.tables.Add(tableInfo);
-                this.recordTypes.Add(typeof(T));
-                this.selectors.Add(expression.Parameters[0].Name);
+                tables.Add(tableInfo);
+                recordTypes.Add(typeof(T));
+                selectors.Add(expression.Parameters[0].Name);
             }
 
             StringBuilder queryBuilder = new StringBuilder();
 
-            this.ParseQuery(expression.Body, queryBuilder);
+            ParseQuery(expression.Body, queryBuilder);
 
-            this.where = queryBuilder.ToString();
+            where = queryBuilder.ToString();
         }
 
         internal void BuildNullQuery(TableInfo tableInfo, Type recordType, LambdaExpression expression)
         {
-            this.tables.Add(tableInfo);
-            this.recordTypes.Add(recordType);
-            this.selectors.Add(expression.Parameters[0].Name);
+            tables.Add(tableInfo);
+            recordTypes.Add(recordType);
+            selectors.Add(expression.Parameters[0].Name);
         }
 
         private void ParseQuery(Expression expression, StringBuilder queryBuilder)
@@ -390,15 +370,15 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                 switch (binaryExpression.NodeType)
                 {
                     case ExpressionType.AndAlso:
-                        this.ParseQuery(binaryExpression.Left, queryBuilder);
+                        ParseQuery(binaryExpression.Left, queryBuilder);
                         queryBuilder.Append(" AND ");
-                        this.ParseQuery(binaryExpression.Right, queryBuilder);
+                        ParseQuery(binaryExpression.Right, queryBuilder);
                         break;
 
                     case ExpressionType.OrElse:
-                        this.ParseQuery(binaryExpression.Left, queryBuilder);
+                        ParseQuery(binaryExpression.Left, queryBuilder);
                         queryBuilder.Append(" OR ");
-                        this.ParseQuery(binaryExpression.Right, queryBuilder);
+                        ParseQuery(binaryExpression.Right, queryBuilder);
                         break;
 
                     case ExpressionType.Equal:
@@ -407,7 +387,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                     case ExpressionType.LessThan:
                     case ExpressionType.GreaterThanOrEqual:
                     case ExpressionType.LessThanOrEqual:
-                        this.ParseQueryCondition(binaryExpression, queryBuilder);
+                        ParseQueryCondition(binaryExpression, queryBuilder);
                         break;
 
                     default:
@@ -471,8 +451,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         private void ParseQueryCondition(
             BinaryExpression binaryExpression, StringBuilder queryBuilder)
         {
-            bool swap;
-            string column = this.GetConditionColumn(binaryExpression, out swap);
+            string column = GetConditionColumn(binaryExpression, out bool swap);
             queryBuilder.Append(column);
 
             ExpressionType expressionType = binaryExpression.NodeType;
@@ -513,7 +492,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                     else
                     {
                         queryBuilder.Append(" = ?");
-                        this.whereParameters.Add(value);
+                        whereParameters.Add(value);
                     }
                     return;
 
@@ -530,7 +509,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                     else
                     {
                         queryBuilder.Append(" <> ?");
-                        this.whereParameters.Add(value);
+                        whereParameters.Add(value);
                     }
                     return;
             }
@@ -585,7 +564,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                  (memberExpression = ((UnaryExpression)binaryExpression.Left).Operand
                   as MemberExpression) != null))
             {
-                string column = this.GetConditionColumn(memberExpression);
+                string column = GetConditionColumn(memberExpression);
                 if (column != null)
                 {
                     swap = false;
@@ -598,7 +577,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                       (memberExpression = ((UnaryExpression)binaryExpression.Right).Operand
                        as MemberExpression) != null))
             {
-                string column = this.GetConditionColumn(memberExpression);
+                string column = GetConditionColumn(memberExpression);
                 if (column != null)
                 {
                     swap = true;
@@ -607,7 +586,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             }
             else if ((methodCallExpression = binaryExpression.Left as MethodCallExpression) != null)
             {
-                string column = this.GetConditionColumn(methodCallExpression);
+                string column = GetConditionColumn(methodCallExpression);
                 if (column != null)
                 {
                     swap = false;
@@ -616,7 +595,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             }
             else if ((methodCallExpression = binaryExpression.Right as MethodCallExpression) != null)
             {
-                string column = this.GetConditionColumn(methodCallExpression);
+                string column = GetConditionColumn(methodCallExpression);
                 if (column != null)
                 {
                     swap = true;
@@ -632,8 +611,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         {
             string columnName = GetColumnName(memberExpression.Member);
             string selectorName = GetConditionSelectorName(memberExpression.Expression);
-            string tableName = this.GetConditionTable(selectorName, columnName);
-            return this.FormatColumn(tableName, columnName);
+            string tableName = GetConditionTable(selectorName, columnName);
+            return FormatColumn(tableName, columnName);
         }
 
         private string GetConditionColumn(MethodCallExpression methodCallExpression)
@@ -642,8 +621,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                 Expression.Lambda(methodCallExpression.Arguments[0]);
             string columnName = (string)argumentExpression.Compile().DynamicInvoke();
             string selectorName = GetConditionSelectorName(methodCallExpression.Object);
-            string tableName = this.GetConditionTable(selectorName, columnName);
-            return this.FormatColumn(tableName, columnName);
+            string tableName = GetConditionTable(selectorName, columnName);
+            return FormatColumn(tableName, columnName);
         }
 
         private static string GetConditionSelectorName(Expression expression)
@@ -669,18 +648,18 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         {
             string tableName = null;
 
-            for (int i = 0; i < this.tables.Count; i++)
+            for (int i = 0; i < tables.Count; i++)
             {
-                if (this.selectors[i] == selectorName)
+                if (selectors[i] == selectorName)
                 {
-                    tableName = this.tables[i].Name;
+                    tableName = tables[i].Name;
                     break;
                 }
             }
 
             if (tableName == null)
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture,
                     "Conditional expression contains column {0}.{1} " +
                     "from a table that is not in the query.",
                     selectorName,
@@ -692,19 +671,19 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
         private string FormatColumn(string tableName, string columnName)
         {
-            if (tableName != null && this.tables.Count > 1)
+            if (tableName != null && tables.Count > 1)
             {
-                return String.Format(CultureInfo.InvariantCulture, "`{0}`.`{1}`", tableName, columnName);
+                return string.Format(CultureInfo.InvariantCulture, "`{0}`.`{1}`", tableName, columnName);
             }
             else
             {
-                return String.Format(CultureInfo.InvariantCulture, "`{0}`", columnName);
+                return string.Format(CultureInfo.InvariantCulture, "`{0}`", columnName);
             }
         }
 
         private static string GetColumnName(MemberInfo memberInfo)
         {
-            foreach (var attr in memberInfo.GetCustomAttributes(
+            foreach (object attr in memberInfo.GetCustomAttributes(
                 typeof(DatabaseColumnAttribute), false))
             {
                 return ((DatabaseColumnAttribute)attr).Column;
@@ -717,25 +696,25 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         {
             if (tableInfo != null)
             {
-                this.tables.Add(tableInfo);
-                this.recordTypes.Add(typeof(T));
-                this.selectors.Add(expression.Parameters[0].Name);
+                tables.Add(tableInfo);
+                recordTypes.Add(typeof(T));
+                selectors.Add(expression.Parameters[0].Name);
             }
 
-            this.FindColumns(expression, this.selectColumns);
-            this.projectionDelegates.Add(expression.Compile());
+            FindColumns(expression, selectColumns);
+            projectionDelegates.Add(expression.Compile());
         }
 
         internal void BuildSequence(TableInfo tableInfo, LambdaExpression expression)
         {
             if (tableInfo != null)
             {
-                this.tables.Add(tableInfo);
-                this.recordTypes.Add(typeof(T));
-                this.selectors.Add(expression.Parameters[0].Name);
+                tables.Add(tableInfo);
+                recordTypes.Add(typeof(T));
+                selectors.Add(expression.Parameters[0].Name);
             }
 
-            this.FindColumns(expression.Body, this.orderbyColumns);
+            FindColumns(expression.Body, orderbyColumns);
         }
 
         private static void AddAllColumns(TableInfo tableInfo, IList<TableColumn> columnList)
@@ -753,84 +732,84 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             {
                 ParameterExpression e = expression as ParameterExpression;
                 string selector = e.Name;
-                for (int i = 0; i < this.tables.Count; i++)
+                for (int i = 0; i < tables.Count; i++)
                 {
-                    if (this.selectors[i] == selector)
+                    if (selectors[i] == selector)
                     {
-                        AddAllColumns(this.tables[i], columnList);
+                        AddAllColumns(tables[i], columnList);
                         break;
                     }
                 }
             }
             else if (expression.NodeType == ExpressionType.MemberAccess)
             {
-                this.FindColumns(expression as MemberExpression, columnList);
+                FindColumns(expression as MemberExpression, columnList);
             }
             else if (expression is MethodCallExpression)
             {
-                this.FindColumns(expression as MethodCallExpression, columnList);
+                FindColumns(expression as MethodCallExpression, columnList);
             }
             else if (expression is BinaryExpression)
             {
                 BinaryExpression e = expression as BinaryExpression;
-                this.FindColumns(e.Left, columnList);
-                this.FindColumns(e.Right, columnList);
+                FindColumns(e.Left, columnList);
+                FindColumns(e.Right, columnList);
             }
             else if (expression is UnaryExpression)
             {
                 UnaryExpression e = expression as UnaryExpression;
-                this.FindColumns(e.Operand, columnList);
+                FindColumns(e.Operand, columnList);
             }
             else if (expression is ConditionalExpression)
             {
                 ConditionalExpression e = expression as ConditionalExpression;
-                this.FindColumns(e.Test, columnList);
-                this.FindColumns(e.IfTrue, columnList);
-                this.FindColumns(e.IfFalse, columnList);
+                FindColumns(e.Test, columnList);
+                FindColumns(e.IfTrue, columnList);
+                FindColumns(e.IfFalse, columnList);
             }
             else if (expression is InvocationExpression)
             {
                 InvocationExpression e = expression as InvocationExpression;
-                this.FindColumns(e.Expression, columnList);
-                this.FindColumns(e.Arguments, columnList);
+                FindColumns(e.Expression, columnList);
+                FindColumns(e.Arguments, columnList);
             }
             else if (expression is LambdaExpression)
             {
                 LambdaExpression e = expression as LambdaExpression;
-                this.FindColumns(e.Body, columnList);
+                FindColumns(e.Body, columnList);
             }
             else if (expression is ListInitExpression)
             {
                 ListInitExpression e = expression as ListInitExpression;
-                this.FindColumns(e.NewExpression, columnList);
+                FindColumns(e.NewExpression, columnList);
                 foreach (ElementInit ei in e.Initializers)
                 {
-                    this.FindColumns(ei.Arguments, columnList);
+                    FindColumns(ei.Arguments, columnList);
                 }
             }
             else if (expression is MemberInitExpression)
             {
                 MemberInitExpression e = expression as MemberInitExpression;
-                this.FindColumns(e.NewExpression, columnList);
+                FindColumns(e.NewExpression, columnList);
                 foreach (MemberAssignment b in e.Bindings)
                 {
-                    this.FindColumns(b.Expression, columnList);
+                    FindColumns(b.Expression, columnList);
                 }
             }
             else if (expression is NewExpression)
             {
                 NewExpression e = expression as NewExpression;
-                this.FindColumns(e.Arguments, columnList);
+                FindColumns(e.Arguments, columnList);
             }
             else if (expression is NewArrayExpression)
             {
                 NewArrayExpression e = expression as NewArrayExpression;
-                this.FindColumns(e.Expressions, columnList);
+                FindColumns(e.Expressions, columnList);
             }
             else if (expression is TypeBinaryExpression)
             {
                 TypeBinaryExpression e = expression as TypeBinaryExpression;
-                this.FindColumns(e.Expression, columnList);
+                FindColumns(e.Expression, columnList);
             }
         }
 
@@ -838,7 +817,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         {
             foreach (Expression expression in expressions)
             {
-                this.FindColumns(expression, columnList);
+                FindColumns(expression, columnList);
             }
         }
 
@@ -860,24 +839,24 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
             if (selector != null)
             {
-                for (int i = 0; i < this.tables.Count; i++)
+                for (int i = 0; i < tables.Count; i++)
                 {
-                    if (this.selectors[i] == selector)
+                    if (selectors[i] == selector)
                     {
                         string columnName = GetColumnName(memberExpression.Member);
-                        ColumnInfo column = this.tables[i].Columns[columnName];
-                        columnList.Add(new TableColumn(this.tables[i], column));
+                        ColumnInfo column = tables[i].Columns[columnName];
+                        columnList.Add(new TableColumn(tables[i], column));
                         break;
                     }
                 }
             }
 
             selector = memberExpression.Member.Name;
-            for (int i = 0; i < this.tables.Count; i++)
+            for (int i = 0; i < tables.Count; i++)
             {
-                if (this.selectors[i] == selector)
+                if (selectors[i] == selector)
                 {
-                    AddAllColumns(this.tables[i], columnList);
+                    AddAllColumns(tables[i], columnList);
                     break;
                 }
             }
@@ -903,16 +882,16 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
                 if (selector != null)
                 {
-                    for (int i = 0; i < this.tables.Count; i++)
+                    for (int i = 0; i < tables.Count; i++)
                     {
-                        if (this.selectors[i] == selector)
+                        if (selectors[i] == selector)
                         {
                             LambdaExpression argumentExpression =
                                 Expression.Lambda(methodCallExpression.Arguments[0]);
                             string columnName = (string)
                                 argumentExpression.Compile().DynamicInvoke();
-                            ColumnInfo column = this.tables[i].Columns[columnName];
-                            columnList.Add(new TableColumn(this.tables[i], column));
+                            ColumnInfo column = tables[i].Columns[columnName];
+                            columnList.Add(new TableColumn(tables[i], column));
                             break;
                         }
                     }
@@ -921,7 +900,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
             if (methodCallExpression.Object != null && methodCallExpression.Object.NodeType != ExpressionType.Parameter)
             {
-                this.FindColumns(methodCallExpression.Object, columnList);
+                FindColumns(methodCallExpression.Object, columnList);
             }
         }
 
@@ -940,9 +919,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
             if (tableInfo != null)
             {
-                this.tables.Add(tableInfo);
-                this.recordTypes.Add(recordType);
-                this.selectors.Add(outerKeySelector.Parameters[0].Name);
+                tables.Add(tableInfo);
+                recordTypes.Add(recordType);
+                selectors.Add(outerKeySelector.Parameters[0].Name);
             }
 
             PropertyInfo tableInfoProp = joinTable.GetType().GetProperty("TableInfo");
@@ -959,30 +938,30 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                 throw new InvalidOperationException("Missing join table info.");
             }
 
-            this.tables.Add(joinTableInfo);
-            this.recordTypes.Add(joinTable.ElementType);
-            this.selectors.Add(innerKeySelector.Parameters[0].Name);
-            this.projectionDelegates.Add(resultSelector.Compile());
+            tables.Add(joinTableInfo);
+            recordTypes.Add(joinTable.ElementType);
+            selectors.Add(innerKeySelector.Parameters[0].Name);
+            projectionDelegates.Add(resultSelector.Compile());
 
-            int joinColumnCount = this.joinColumns.Count;
-            this.FindColumns(outerKeySelector.Body, this.joinColumns);
-            if (this.joinColumns.Count > joinColumnCount + 1)
+            int joinColumnCount = joinColumns.Count;
+            FindColumns(outerKeySelector.Body, joinColumns);
+            if (joinColumns.Count > joinColumnCount + 1)
             {
                 throw new NotSupportedException("Join operations involving " +
                   "multiple columns are not supported.");
             }
-            else if (this.joinColumns.Count != joinColumnCount + 1)
+            else if (joinColumns.Count != joinColumnCount + 1)
             {
                 throw new InvalidOperationException("Bad outer key selector for join.");
             }
 
-            this.FindColumns(innerKeySelector.Body, this.joinColumns);
-            if (this.joinColumns.Count > joinColumnCount + 2)
+            FindColumns(innerKeySelector.Body, joinColumns);
+            if (joinColumns.Count > joinColumnCount + 2)
             {
                 throw new NotSupportedException("Join operations involving " +
                   "multiple columns not are supported.");
             }
-            if (this.joinColumns.Count != joinColumnCount + 2)
+            if (joinColumns.Count != joinColumnCount + 2)
             {
                 throw new InvalidOperationException("Bad inner key selector for join.");
             }
@@ -993,8 +972,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
     {
         public TableColumn(TableInfo table, ColumnInfo column)
         {
-            this.Table = table;
-            this.Column = column;
+            Table = table;
+            Column = column;
         }
 
         public TableInfo Table { get; set; }

@@ -131,7 +131,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
                 // shortcut for string coercion
                 if (tInterface == typeof(string))
                 {
-                    return instances[0] == null ? null : instances[0].ToString();
+                    return instances[0]?.ToString();
                 }
 
                 IEnumerable<object> objects = instances[0] as IEnumerable<object>;
