@@ -130,9 +130,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             uint platform = 0;
             switch (processor)
             {
-                case ProcessorArchitecture.X86: platform = (uint)1; break;
-                case ProcessorArchitecture.IA64: platform = (uint)2; break;
-                case ProcessorArchitecture.Amd64: platform = (uint)4; break;
+                case ProcessorArchitecture.X86: platform = 1; break;
+                case ProcessorArchitecture.IA64: platform = 2; break;
+                case ProcessorArchitecture.Amd64: platform = 4; break;
             }
 
             uint ret = NativeMethods.MsiAdvertiseProductEx(
@@ -224,8 +224,6 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("scriptFile");
             }
             StringBuilder productCodeBuf = new StringBuilder(40);
-            ushort lang;
-            uint ver;
             StringBuilder productNameBuf = new StringBuilder(100);
             StringBuilder packageNameBuf = new StringBuilder(40);
             uint productCodeBufSize = (uint)productCodeBuf.Capacity;
@@ -234,8 +232,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             uint ret = NativeMethods.MsiGetProductInfoFromScript(
                 scriptFile,
                 productCodeBuf,
-                out lang,
-                out ver,
+                out ushort lang,
+                out uint ver,
                 productNameBuf,
                 ref productNameBufSize,
                 packageNameBuf,
@@ -265,12 +263,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             uint verPart3 = ver & 0x0000FFFF;
             Version version = new Version((int)verPart1, (int)verPart2, (int)verPart3);
 
-            IDictionary<string, string> props = new Dictionary<string, string>();
-            props["ProductCode"] = productCodeBuf.ToString();
-            props["Language"] = lang.ToString(CultureInfo.InvariantCulture);
-            props["Version"] = version.ToString();
-            props["ProductName"] = productNameBuf.ToString();
-            props["PackageName"] = packageNameBuf.ToString();
+            IDictionary<string, string> props = new Dictionary<string, string>
+            {
+                ["ProductCode"] = productCodeBuf.ToString(),
+                ["Language"] = lang.ToString(CultureInfo.InvariantCulture),
+                ["Version"] = version.ToString(),
+                ["ProductName"] = productNameBuf.ToString(),
+                ["PackageName"] = packageNameBuf.ToString()
+            };
             return new ProductInstallation(props);
         }
     }
