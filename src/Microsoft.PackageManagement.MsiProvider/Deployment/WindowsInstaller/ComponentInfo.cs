@@ -19,7 +19,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     /// </summary>
     internal sealed class ComponentInfoCollection : ICollection<ComponentInfo>
     {
-        private Session session;
+        private readonly Session session;
 
         internal ComponentInfoCollection(Session session)
         {
@@ -137,8 +137,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     /// </summary>
     internal class ComponentInfo
     {
-        private Session session;
-        private string name;
+        private readonly Session session;
+        private readonly string name;
 
         internal ComponentInfo(Session session, string name)
         {
@@ -171,8 +171,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                int installedState, actionState;
-                uint ret = RemotableNativeMethods.MsiGetComponentState((int)this.session.Handle, this.name, out installedState, out actionState);
+                uint ret = RemotableNativeMethods.MsiGetComponentState((int)this.session.Handle, this.name, out int installedState, out int actionState);
                 if (ret != 0)
                 {
                     if (ret == (uint)NativeMethods.Error.UNKNOWN_COMPONENT)
@@ -204,8 +203,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                int installedState, actionState;
-                uint ret = RemotableNativeMethods.MsiGetComponentState((int)this.session.Handle, this.name, out installedState, out actionState);
+                uint ret = RemotableNativeMethods.MsiGetComponentState((int)this.session.Handle, this.name, out int installedState, out int actionState);
                 if (ret != 0)
                 {
                     if (ret == (uint)NativeMethods.Error.UNKNOWN_COMPONENT)
@@ -253,7 +251,6 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             StringBuilder driveBuf = new StringBuilder(20);
             for (uint i = 0; true; i++)
             {
-                int cost, tempCost;
                 uint driveBufSize = (uint)driveBuf.Capacity;
                 uint ret = RemotableNativeMethods.MsiEnumComponentCosts(
                     (int)this.session.Handle,
@@ -262,8 +259,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     (int)installState,
                     driveBuf,
                     ref driveBufSize,
-                    out cost,
-                    out tempCost);
+                    out int cost,
+                    out int tempCost);
                 if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS) break;
                 if (ret == (uint)NativeMethods.Error.MORE_DATA)
                 {

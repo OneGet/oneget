@@ -447,14 +447,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("patches");
             }
 
-            IntPtr phFileRecords;
-            uint cFiles;
-
             uint ret = NativeMethods.MsiGetPatchFileList(
                 productCode,
                 patchList.ToString(),
-                out cFiles,
-                out phFileRecords);
+                out uint cFiles,
+                out IntPtr phFileRecords);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);

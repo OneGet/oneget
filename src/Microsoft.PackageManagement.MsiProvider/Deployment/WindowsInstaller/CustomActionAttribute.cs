@@ -25,7 +25,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <summary>
         /// Name of the custom action entrypoint, or null if the same as the method name.
         /// </summary>
-        private string name;
+        private readonly string name;
 
         /// <summary>
         /// Marks a method as a custom action entry point.

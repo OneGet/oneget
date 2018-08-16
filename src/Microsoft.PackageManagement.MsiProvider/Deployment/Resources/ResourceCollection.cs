@@ -34,7 +34,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
     /// </remarks>
     internal class ResourceCollection : ICollection<Resource>
     {
-        private List<Resource> resources;
+        private readonly List<Resource> resources;
 
         /// <summary>
         /// Creates a new, empty ResourceCollection.

@@ -98,8 +98,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
                         try
                         {
-                            ProviderInfo provider = null;
-                            Collection<string> resolvedPaths = GetResolvedProviderPathFromPSPath(path, out provider);
+                            Collection<string> resolvedPaths = GetResolvedProviderPathFromPSPath(path, out ProviderInfo provider);
 
                             // Ensure the path is a single path from the file system provider
                             if ((resolvedPaths.Count > 1) ||

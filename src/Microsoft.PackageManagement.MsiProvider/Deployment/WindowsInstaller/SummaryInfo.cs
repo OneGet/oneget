@@ -446,17 +446,15 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                uint dataType;
                 StringBuilder stringValue = new StringBuilder("");
                 uint bufSize = 0;
-                int intValue;
                 long timeValue = 0;
 
                 uint ret = RemotableNativeMethods.MsiSummaryInfoGetProperty(
                     (int)this.Handle,
                     property,
-                    out dataType,
-                    out intValue,
+                    out uint dataType,
+                    out int intValue,
                     ref timeValue,
                     stringValue,
                     ref bufSize);
@@ -615,13 +613,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         private static int OpenSummaryInfo(string packagePath, bool enableWrite)
         {
-            int summaryInfoHandle;
             int maxProperties = !enableWrite ? 0 : SummaryInfo.MAX_PROPERTIES;
             uint ret = RemotableNativeMethods.MsiGetSummaryInformation(
                 0,
                 packagePath,
                 (uint)maxProperties,
-                out summaryInfoHandle);
+                out int summaryInfoHandle);
             if (ret != 0)
             {
                 if (ret == (uint)NativeMethods.Error.FILE_NOT_FOUND ||

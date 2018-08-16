@@ -18,8 +18,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
     /// </summary>
     public class ZipFileInfo : ArchiveFileInfo
     {
-        private long compressedLength;
-        private ZipCompressionMethod compressionMethod;
+        private readonly long compressedLength;
+        private readonly ZipCompressionMethod compressionMethod;
 
         /// <summary>
         /// Creates a new ZipFileInfo object representing a file within a zip in a specified path.

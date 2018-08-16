@@ -195,8 +195,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public static Session OpenPackage(string packagePath, bool ignoreMachineState)
         {
-            int sessionHandle;
-            uint ret = NativeMethods.MsiOpenPackageEx(packagePath, ignoreMachineState ? (uint)1 : 0, out sessionHandle);
+            uint ret = NativeMethods.MsiOpenPackageEx(packagePath, ignoreMachineState ? (uint)1 : 0, out int sessionHandle);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -266,8 +265,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public static Session OpenProduct(string productCode)
         {
-            int sessionHandle;
-            uint ret = NativeMethods.MsiOpenProduct(productCode, out sessionHandle);
+            uint ret = NativeMethods.MsiOpenProduct(productCode, out int sessionHandle);
             if (ret != 0)
             {
                 if (ret == (uint)NativeMethods.Error.UNKNOWN_PRODUCT)

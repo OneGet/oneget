@@ -114,10 +114,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                uint useCount;
-                ushort useDate;
                 uint ret = NativeMethods.MsiGetFeatureUsage(
-                    this.ProductCode, this.FeatureName, out useCount, out useDate);
+                    this.ProductCode, this.FeatureName, out uint useCount, out ushort useDate);
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
@@ -147,8 +145,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Performance", "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes")]
         public struct UsageData
         {
-            private int useCount;
-            private DateTime lastUsedDate;
+            private readonly int useCount;
+            private readonly DateTime lastUsedDate;
 
             [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
             internal UsageData(int useCount, DateTime lastUsedDate)

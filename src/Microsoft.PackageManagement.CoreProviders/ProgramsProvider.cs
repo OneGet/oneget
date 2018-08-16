@@ -208,9 +208,8 @@ namespace Microsoft.PackageManagement.Providers.Internal
                             continue;
                         }
 
-                        var productName = "";
 
-                        if (!properties.TryGetValue("DisplayName", out productName))
+                        if (!properties.TryGetValue("DisplayName", out string productName))
                         {
                             // no product name?
                             continue;

@@ -139,9 +139,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         {
             get
             {
-                int value;
                 if (!this.IsInteger ||
-                    !Int32.TryParse(this.resourceType.Substring(1), out value))
+                    !Int32.TryParse(this.resourceType.Substring(1), out int value))
                 {
                     value = -1;
                 }

@@ -19,9 +19,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     /// </summary>
     internal class TableInfo
     {
-        private string name;
-        private ColumnCollection columns;
-        private ReadOnlyCollection<string> primaryKeys;
+        private readonly string name;
+        private readonly ColumnCollection columns;
+        private readonly ReadOnlyCollection<string> primaryKeys;
 
         /// <summary>
         /// Creates a table definition.
@@ -249,9 +249,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
             else
             {
-                int hrec;
                 uint ret = RemotableNativeMethods.MsiDatabaseGetPrimaryKeys(
-                    (int)db.Handle, table, out hrec);
+                    (int)db.Handle, table, out int hrec);
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);

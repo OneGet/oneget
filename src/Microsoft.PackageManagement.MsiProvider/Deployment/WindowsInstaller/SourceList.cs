@@ -20,7 +20,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     internal class SourceList : ICollection<string>
     {
-        private Installation installation;
+        private readonly Installation installation;
         private SourceMediaList mediaList;
 
         internal SourceList(Installation installation)

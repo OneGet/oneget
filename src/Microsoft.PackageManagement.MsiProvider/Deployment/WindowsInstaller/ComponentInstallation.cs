@@ -58,10 +58,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             uint pcchSid = 32;
             StringBuilder szSid = new StringBuilder((int)pcchSid);
             StringBuilder buf = new StringBuilder(40);
-            UserContexts installedContext;
             for (uint i = 0; true; i++)
             {
-                uint ret = NativeMethods.MsiEnumComponentsEx(szUserSid, dwContext, i, buf, out installedContext, szSid, ref pcchSid);
+                uint ret = NativeMethods.MsiEnumComponentsEx(szUserSid, dwContext, i, buf, out UserContexts installedContext, szSid, ref pcchSid);
                 if (ret == (uint)NativeMethods.Error.MORE_DATA)
                 {
                     szSid.EnsureCapacity((int)++pcchSid);
@@ -180,10 +179,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 for (uint i = 0; true; i++)
                 {
                     uint chSid = 0;
-                    UserContexts installedContext;
                     uint ret = this.Context == UserContexts.None ?
                             NativeMethods.MsiEnumClients(this.ComponentCode, i, buf) :
-                            NativeMethods.MsiEnumClientsEx(this.ComponentCode, this.UserSid, this.Context, i, buf, out installedContext, null, ref chSid);
+                            NativeMethods.MsiEnumClientsEx(this.ComponentCode, this.UserSid, this.Context, i, buf, out UserContexts installedContext, null, ref chSid);
                     if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS) break;
                     else if (ret == (uint)NativeMethods.Error.UNKNOWN_COMPONENT) break;
                     if (ret != 0)
@@ -356,8 +354,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Performance", "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes")]
         public struct Qualifier
         {
-            private string qualifierCode;
-            private string data;
+            private readonly string qualifierCode;
+            private readonly string data;
 
             internal Qualifier(string qualifierCode, string data)
             {

@@ -30,7 +30,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
         private readonly Lazy<Dictionary<int, List<string, string, string, string>>> _findByNameBatches = new Lazy<Dictionary<int, List<string, string, string, string>>>(() => new Dictionary<int, List<string, string, string, string>>());
         private readonly Lazy<Dictionary<int, List<string>>> _findByFileBatches = new Lazy<Dictionary<int, List<string>>>(() => new Dictionary<int, List<string>>());
         private readonly Lazy<Dictionary<int, List<Uri>>> _findByUriBatches = new Lazy<Dictionary<int, List<Uri>>>(() => new Dictionary<int, List<Uri>>());
-        private string _version;
+        private readonly string _version;
 
         public PowerShellPackageProvider(PowerShell ps, PSModuleInfo module, string version) : base(ps, module)
         {
@@ -178,8 +178,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
         public void GetDynamicOptions(string category, IRequest requestObject)
         {
-            OptionCategory cat;
-            if (Enum.TryParse(category ?? "", true, out cat))
+            if (Enum.TryParse(category ?? "", true, out OptionCategory cat))
             {
                 // if this version of the plugin doesn't support that category
                 // there's no point in trying to get options from that type.

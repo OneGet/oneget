@@ -43,8 +43,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             string sql = (args == null || args.Length == 0 ? sqlFormat :
                 String.Format(CultureInfo.InvariantCulture, sqlFormat, args));
-            int viewHandle;
-            uint ret = RemotableNativeMethods.MsiDatabaseOpenView((int)this.Handle, sql, out viewHandle);
+            uint ret = RemotableNativeMethods.MsiDatabaseOpenView((int)this.Handle, sql, out int viewHandle);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);

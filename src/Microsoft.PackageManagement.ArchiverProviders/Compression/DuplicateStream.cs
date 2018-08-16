@@ -21,7 +21,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
     /// </remarks>
     public class DuplicateStream : Stream
     {
-        private Stream source;
+        private readonly Stream source;
         private long position;
 
         /// <summary>

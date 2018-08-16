@@ -496,7 +496,6 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             StringBuilder driveBuf = new StringBuilder(20);
             for (uint i = 0; true; i++)
             {
-                int cost, tempCost;
                 uint driveBufSize = (uint)driveBuf.Capacity;
                 uint ret = RemotableNativeMethods.MsiEnumComponentCosts(
                     (int)this.Handle,
@@ -505,8 +504,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     (int)InstallState.Default,
                     driveBuf,
                     ref driveBufSize,
-                    out cost,
-                    out tempCost);
+                    out int cost,
+                    out int tempCost);
                 if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS) break;
                 if (ret == (uint)NativeMethods.Error.MORE_DATA)
                 {

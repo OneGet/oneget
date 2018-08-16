@@ -15,10 +15,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     /// </summary>
     internal abstract class InstallationPart
     {
-        private string id;
-        private string productCode;
-        private string userSid;
-        private UserContexts context;
+        private readonly string id;
+        private readonly string productCode;
+        private readonly string userSid;
+        private readonly UserContexts context;
 
         internal InstallationPart(string id, string productCode)
         : this(id, productCode, null, UserContexts.None)

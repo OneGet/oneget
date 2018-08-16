@@ -19,7 +19,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     public class BasicUnpackStreamContext : IUnpackStreamContext
     {
-        private Stream archiveStream;
+        private readonly Stream archiveStream;
         private Stream fileStream;
 
         /// <summary>

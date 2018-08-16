@@ -25,8 +25,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     internal class View : InstallerHandle, IEnumerable<Record>
     {
-        private Database database;
-        private string sql;
+        private readonly Database database;
+        private readonly string sql;
         private IList<TableInfo> tables;
         private ColumnCollection columns;
 
@@ -203,8 +203,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public Record Fetch()
         {
-            int recordHandle;
-            uint ret = RemotableNativeMethods.MsiViewFetch((int)this.Handle, out recordHandle);
+            uint ret = RemotableNativeMethods.MsiViewFetch((int)this.Handle, out int recordHandle);
             if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
             {
                 return null;
@@ -214,8 +213,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw InstallerException.ExceptionFromReturnCode(ret);
             }
 
-            Record r = new Record((IntPtr)recordHandle, true, this);
-            r.IsFormatStringInvalid = true;
+            Record r = new Record((IntPtr)recordHandle, true, this)
+            {
+                IsFormatStringInvalid = true
+            };
             return r;
         }
 

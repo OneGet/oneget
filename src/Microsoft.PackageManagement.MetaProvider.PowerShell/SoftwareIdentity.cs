@@ -122,7 +122,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell
             // check whether we have destination
             if (!string.IsNullOrWhiteSpace(_destinationPath))
             {
-                var payload = r.AddPayload();
+                string payload = r.AddPayload();
 
                 // could not add the payload, return false
                 if (string.IsNullOrWhiteSpace(payload))
@@ -143,11 +143,11 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell
         private ArrayList _links;
         private ArrayList _entities;
         private ArrayList _dependencies;
-        private string _destinationPath;
-        private string _tagId;
-        private string _xmlLang;
-        private string _xmlSwidTag;
-        private bool _commitImmediately;
+        private readonly string _destinationPath;
+        private readonly string _tagId;
+        private readonly string _xmlLang;
+        private readonly string _xmlSwidTag;
+        private readonly bool _commitImmediately;
 
         protected virtual bool YieldTagId(PsRequest r)
         {

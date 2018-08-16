@@ -79,7 +79,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
 #if DEBUG
-        private static object __lock = new object();
+        private static readonly object __lock = new object();
         private void Log(string category, string text) {
 #if !CORECLR
             lock (__lock) {
@@ -218,8 +218,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
         public string ResolveExistingFilePath(string filePath) {
-            ProviderInfo providerInfo = null;
-            var files = GetResolvedProviderPathFromPSPath(filePath, out providerInfo).ToArray();
+            var files = GetResolvedProviderPathFromPSPath(filePath, out ProviderInfo providerInfo).ToArray();
             switch (files.Length) {
                 case 0:
                     // none found
@@ -343,8 +342,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         // we only *show* the very first error we get.
                         // any more, we just toss them in the collection and
                         // maybe we'll worry about them later.
-                        ErrorCategory errorCategory;
-                        if (!Enum.TryParse(category, true, out errorCategory)) {
+                        if (!Enum.TryParse(category, true, out ErrorCategory errorCategory))
+                        {
                             errorCategory = ErrorCategory.NotSpecified;
                         }
                         _errors.Add(errorMessage);
@@ -388,8 +387,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 var errorMessage = FormatMessageString(messageText, args);
 
                 if (!_errors.Contains(errorMessage)) {
-                    ErrorCategory errorCategory;
-                    if (!Enum.TryParse(category, true, out errorCategory)) {
+                    if (!Enum.TryParse(category, true, out ErrorCategory errorCategory))
+                    {
                         errorCategory = ErrorCategory.NotSpecified;
                     }
                     try {

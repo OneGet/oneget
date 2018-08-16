@@ -39,7 +39,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         private const char DataSeparator = ';';
         private const char KeyValueSeparator = '=';
 
-        private IDictionary<string, string> data;
+        private readonly IDictionary<string, string> data;
 
         /// <summary>
         /// Creates a new empty custom action data object.
@@ -363,8 +363,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>Serialized value data as a string.</returns>
         private static string Serialize<T>(T value)
         {
-            XmlWriterSettings xws = new XmlWriterSettings();
-            xws.OmitXmlDeclaration = true;
+            XmlWriterSettings xws = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true
+            };
 
             StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
             using (XmlWriter xw = XmlWriter.Create(sw, xws))

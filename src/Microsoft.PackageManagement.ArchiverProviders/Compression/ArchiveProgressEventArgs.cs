@@ -16,22 +16,22 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
     /// </summary>
     public class ArchiveProgressEventArgs : EventArgs
     {
-        private ArchiveProgressType progressType;
+        private readonly ArchiveProgressType progressType;
 
-        private string currentFileName;
-        private int currentFileNumber;
-        private int totalFiles;
-        private long currentFileBytesProcessed;
-        private long currentFileTotalBytes;
+        private readonly string currentFileName;
+        private readonly int currentFileNumber;
+        private readonly int totalFiles;
+        private readonly long currentFileBytesProcessed;
+        private readonly long currentFileTotalBytes;
 
-        private string currentArchiveName;
-        private short currentArchiveNumber;
-        private short totalArchives;
-        private long currentArchiveBytesProcessed;
-        private long currentArchiveTotalBytes;
+        private readonly string currentArchiveName;
+        private readonly short currentArchiveNumber;
+        private readonly short totalArchives;
+        private readonly long currentArchiveBytesProcessed;
+        private readonly long currentArchiveTotalBytes;
 
-        private long fileBytesProcessed;
-        private long totalFileBytes;
+        private readonly long fileBytesProcessed;
+        private readonly long totalFileBytes;
 
         /// <summary>
         /// Creates a new ArchiveProgressEventArgs object from specified event parameters.

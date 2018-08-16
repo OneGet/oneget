@@ -56,7 +56,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             IntPtr remotingDelegatePtr)
         {
             Session session = null;
-            string assemblyName, className, methodName;
+            string methodName;
             MethodInfo method;
 
             try
@@ -76,8 +76,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 if (!CustomActionProxy.FindEntryPoint(
                     session,
                     entryPoint,
-                    out assemblyName,
-                    out className,
+                    out string assemblyName,
+                    out string className,
                     out methodName))
                 {
                     return (int)ActionResult.Failure;

@@ -22,7 +22,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     /// </p></remarks>
     public abstract class InstallerHandle : MarshalByRefObject, IDisposable
     {
-        private NativeMethods.MsiHandle handle;
+        private readonly NativeMethods.MsiHandle handle;
 
         /// <summary>
         /// Constructs a handle object from a native integer handle.

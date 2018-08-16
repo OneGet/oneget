@@ -21,7 +21,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Crc")]
     public class CrcStream : Stream
     {
-        private Stream source;
+        private readonly Stream source;
         private uint crc;
 
         /// <summary>

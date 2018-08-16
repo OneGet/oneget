@@ -266,8 +266,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 WriteInt(requestBuf, 0, in1);
                 WriteInt(requestBuf, 1, in2);
                 WriteInt(requestBuf, 2, in3);
-                IntPtr resp;
-                remotingDelegate(id, requestBuf, out resp);
+                remotingDelegate(id, requestBuf, out IntPtr resp);
                 return unchecked((uint)ReadInt(resp, 0));
             }
         }
@@ -280,8 +279,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 WriteInt(requestBuf, 0, in1);
                 WriteInt(requestBuf, 1, in2);
                 WriteString(requestBuf, 2, in3);
-                IntPtr resp;
-                remotingDelegate(id, requestBuf, out resp);
+                remotingDelegate(id, requestBuf, out IntPtr resp);
                 FreeString(requestBuf, 2);
                 return unchecked((uint)ReadInt(resp, 0));
             }
@@ -295,8 +293,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 WriteInt(requestBuf, 0, in1);
                 WriteString(requestBuf, 1, in2);
                 WriteInt(requestBuf, 2, in3);
-                IntPtr resp;
-                remotingDelegate(id, requestBuf, out resp);
+                remotingDelegate(id, requestBuf, out IntPtr resp);
                 FreeString(requestBuf, 2);
                 return unchecked((uint)ReadInt(resp, 0));
             }
@@ -310,8 +307,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 WriteInt(requestBuf, 0, in1);
                 WriteString(requestBuf, 1, in2);
                 WriteString(requestBuf, 2, in3);
-                IntPtr resp;
-                remotingDelegate(id, requestBuf, out resp);
+                remotingDelegate(id, requestBuf, out IntPtr resp);
                 FreeString(requestBuf, 1);
                 FreeString(requestBuf, 2);
                 return unchecked((uint)ReadInt(resp, 0));
@@ -325,8 +321,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 ClearData(requestBuf);
                 WriteInt(requestBuf, 0, in1);
                 WriteInt(requestBuf, 1, in2);
-                IntPtr resp;
-                remotingDelegate(id, requestBuf, out resp);
+                remotingDelegate(id, requestBuf, out IntPtr resp);
                 uint ret = unchecked((uint)ReadInt(resp, 0));
                 out1 = ReadInt(resp, 1);
                 return ret;
@@ -342,8 +337,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 WriteString(requestBuf, 1, in2);
                 WriteInt(requestBuf, 2, in3);
                 WriteInt(requestBuf, 3, in4);
-                IntPtr resp;
-                remotingDelegate(id, requestBuf, out resp);
+                remotingDelegate(id, requestBuf, out IntPtr resp);
                 FreeString(requestBuf, 1);
                 uint ret = unchecked((uint)ReadInt(resp, 0));
                 out1 = ReadInt(resp, 1);
@@ -359,8 +353,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 ClearData(requestBuf);
                 WriteInt(requestBuf, 0, in1);
                 WriteString(requestBuf, 1, in2);
-                IntPtr resp;
-                remotingDelegate(id, requestBuf, out resp);
+                remotingDelegate(id, requestBuf, out IntPtr resp);
                 FreeString(requestBuf, 1);
                 uint ret = unchecked((uint)ReadInt(resp, 0));
                 out1 = ReadInt(resp, 1);
@@ -376,8 +369,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 ClearData(requestBuf);
                 WriteInt(requestBuf, 0, in1);
                 WriteInt(requestBuf, 1, in2);
-                IntPtr resp;
-                remotingDelegate(id, requestBuf, out resp);
+                remotingDelegate(id, requestBuf, out IntPtr resp);
                 uint ret = unchecked((uint)ReadInt(resp, 0));
                 if (ret == 0) ReadString(resp, 1, out1, ref cchOut1);
                 return ret;
@@ -391,8 +383,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 ClearData(requestBuf);
                 WriteInt(requestBuf, 0, in1);
                 WriteString(requestBuf, 1, in2);
-                IntPtr resp;
-                remotingDelegate(id, requestBuf, out resp);
+                remotingDelegate(id, requestBuf, out IntPtr resp);
                 FreeString(requestBuf, 1);
                 uint ret = unchecked((uint)ReadInt(resp, 0));
                 if (ret == 0) ReadString(resp, 1, out1, ref cchOut1);
@@ -409,8 +400,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 WriteString(requestBuf, 1, in2);
                 WriteInt(requestBuf, 2, in3);
                 WriteInt(requestBuf, 3, in4);
-                IntPtr resp;
-                remotingDelegate(id, requestBuf, out resp);
+                remotingDelegate(id, requestBuf, out IntPtr resp);
                 FreeString(requestBuf, 1);
                 uint ret = unchecked((uint)ReadInt(resp, 0));
                 if (ret == 0) ReadString(resp, 1, out1, ref cchOut1);
@@ -437,8 +427,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     WriteInt(buf, 0, RemotableNativeMethods.GetRemoteHandle(hInstall));
                     WriteInt(buf, 1, unchecked((int)eMessageType));
                     WriteInt(buf, 2, RemotableNativeMethods.GetRemoteHandle(hRecord));
-                    IntPtr resp;
-                    remotingDelegate(RemoteMsiFunctionId.MsiProcessMessage, buf, out resp);
+                    remotingDelegate(RemoteMsiFunctionId.MsiProcessMessage, buf, out IntPtr resp);
                     Marshal.FreeHGlobal(buf);
                     return ReadInt(resp, 0);
                 }
@@ -856,14 +845,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return NativeMethods.MsiGetFeatureValidStates(hInstall, szFeature, out dwInstalledState);
             else
             {
-                int iTemp;
                 uint ret = RemotableNativeMethods.MsiFunc_ISII_I(
                     RemoteMsiFunctionId.MsiGetFeatureValidStates,
                     RemotableNativeMethods.GetRemoteHandle(hInstall),
                     szFeature,
                     0,
                     0,
-                    out iTemp);
+                    out int iTemp);
                 dwInstalledState = (uint)iTemp;
                 return ret;
             }
@@ -990,8 +978,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         WriteInt(requestBuf, 0, RemotableNativeMethods.GetRemoteHandle(hRecord));
                         WriteInt(requestBuf, 1, (int)iField);
                         WriteInt(requestBuf, 2, (int)cbDataBuf);
-                        IntPtr resp;
-                        remotingDelegate(RemoteMsiFunctionId.MsiRecordReadStream, requestBuf, out resp);
+                        remotingDelegate(RemoteMsiFunctionId.MsiRecordReadStream, requestBuf, out IntPtr resp);
                         uint ret = (uint)ReadInt(resp, 0);
                         if (ret == 0)
                         {
@@ -1130,8 +1117,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     ClearData(requestBuf);
                     WriteInt(requestBuf, 0, RemotableNativeMethods.GetRemoteHandle(hSummaryInfo));
                     WriteInt(requestBuf, 1, (int)uiProperty);
-                    IntPtr resp;
-                    remotingDelegate(RemoteMsiFunctionId.MsiSummaryInfoGetProperty, requestBuf, out resp);
+                    remotingDelegate(RemoteMsiFunctionId.MsiSummaryInfoGetProperty, requestBuf, out IntPtr resp);
                     unchecked
                     {
                         uint ret = (uint)ReadInt(resp, 0);

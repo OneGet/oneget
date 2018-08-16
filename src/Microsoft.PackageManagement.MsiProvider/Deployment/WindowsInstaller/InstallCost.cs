@@ -17,9 +17,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     [SuppressMessage("Microsoft.Performance", "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes")]
     public struct InstallCost
     {
-        private string driveName;
-        private long cost;
-        private long tempCost;
+        private readonly string driveName;
+        private readonly long cost;
+        private readonly long tempCost;
 
         /// <summary>
         /// Creates a new InstallCost object.

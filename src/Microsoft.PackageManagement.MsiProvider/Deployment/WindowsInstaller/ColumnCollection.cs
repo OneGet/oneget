@@ -22,7 +22,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     /// </summary>
     internal sealed class ColumnCollection : ICollection<ColumnInfo>
     {
-        private IList<ColumnInfo> columns;
+        private readonly IList<ColumnInfo> columns;
         private string formatString;
 
         /// <summary>
@@ -309,10 +309,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>list of column names or types</returns>
         private static IList<string> GetViewColumns(View view, bool types)
         {
-            int recordHandle;
             int typesFlag = types ? 1 : 0;
             uint ret = RemotableNativeMethods.MsiViewGetColumnInfo(
-                (int)view.Handle, (uint)typesFlag, out recordHandle);
+                (int)view.Handle, (uint)typesFlag, out int recordHandle);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);

@@ -14,8 +14,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
     internal class RecordStream : Stream
     {
-        private Record record;
-        private int field;
+        private readonly Record record;
+        private readonly int field;
         private long position;
 
         internal RecordStream(Record record, int field)

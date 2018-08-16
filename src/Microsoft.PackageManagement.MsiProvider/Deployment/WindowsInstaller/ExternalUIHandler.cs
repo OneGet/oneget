@@ -41,7 +41,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
     internal class ExternalUIProxy
     {
-        private ExternalUIHandler handler;
+        private readonly ExternalUIHandler handler;
 
         internal ExternalUIProxy(ExternalUIHandler handler)
         {
@@ -79,7 +79,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
     internal class ExternalUIRecordProxy
     {
-        private ExternalUIRecordHandler handler;
+        private readonly ExternalUIRecordHandler handler;
 
         internal ExternalUIRecordProxy(ExternalUIRecordHandler handler)
         {
@@ -209,8 +209,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 nativeHandler = new ExternalUIRecordProxy(uiHandler).ProxyHandler;
                 Installer.externalUIHandlers.Add(nativeHandler);
             }
-            NativeExternalUIRecordHandler oldNativeHandler;
-            uint ret = NativeMethods.MsiSetExternalUIRecord(nativeHandler, (uint)messageFilter, IntPtr.Zero, out oldNativeHandler);
+            uint ret = NativeMethods.MsiSetExternalUIRecord(nativeHandler, (uint)messageFilter, IntPtr.Zero, out NativeExternalUIRecordHandler oldNativeHandler);
             if (ret != 0)
             {
                 Installer.externalUIHandlers.Remove(nativeHandler);

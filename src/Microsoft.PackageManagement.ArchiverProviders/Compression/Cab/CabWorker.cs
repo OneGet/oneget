@@ -19,16 +19,16 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
     {
         internal const string CabStreamName = "%%CAB%%";
 
-        private CabEngine cabEngine;
+        private readonly CabEngine cabEngine;
 
-        private HandleManager<Stream> streamHandles;
+        private readonly HandleManager<Stream> streamHandles;
         private Stream cabStream;
         private Stream fileStream;
 
-        private NativeMethods.ERF erf;
+        private readonly NativeMethods.ERF erf;
         private GCHandle erfHandle;
 
-        private IDictionary<string, short> cabNumbers;
+        private readonly IDictionary<string, short> cabNumbers;
         private string nextCabinetName;
 
         private bool suppressProgressEvents;
@@ -222,7 +222,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         internal int CabOpenStream(string path, int openFlags, int shareMode)
         {
-            int err; return this.CabOpenStreamEx(path, openFlags, shareMode, out err, IntPtr.Zero);
+            return this.CabOpenStreamEx(path, openFlags, shareMode, out int err, IntPtr.Zero);
         }
 
         internal virtual int CabOpenStreamEx(string path, int openFlags, int shareMode, out int err, IntPtr pv)
@@ -237,7 +237,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         internal int CabReadStream(int streamHandle, IntPtr memory, int cb)
         {
-            int err; return this.CabReadStreamEx(streamHandle, memory, cb, out err, IntPtr.Zero);
+            return this.CabReadStreamEx(streamHandle, memory, cb, out int err, IntPtr.Zero);
         }
 
         internal virtual int CabReadStreamEx(int streamHandle, IntPtr memory, int cb, out int err, IntPtr pv)
@@ -256,7 +256,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         internal int CabWriteStream(int streamHandle, IntPtr memory, int cb)
         {
-            int err; return this.CabWriteStreamEx(streamHandle, memory, cb, out err, IntPtr.Zero);
+            return this.CabWriteStreamEx(streamHandle, memory, cb, out int err, IntPtr.Zero);
         }
 
         internal virtual int CabWriteStreamEx(int streamHandle, IntPtr memory, int cb, out int err, IntPtr pv)
@@ -275,7 +275,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         internal int CabCloseStream(int streamHandle)
         {
-            int err; return this.CabCloseStreamEx(streamHandle, out err, IntPtr.Zero);
+            return this.CabCloseStreamEx(streamHandle, out int err, IntPtr.Zero);
         }
 
         internal virtual int CabCloseStreamEx(int streamHandle, out int err, IntPtr pv)
@@ -287,7 +287,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         internal int CabSeekStream(int streamHandle, int offset, int seekOrigin)
         {
-            int err; return this.CabSeekStreamEx(streamHandle, offset, seekOrigin, out err, IntPtr.Zero);
+            return this.CabSeekStreamEx(streamHandle, offset, seekOrigin, out int err, IntPtr.Zero);
         }
 
         internal virtual int CabSeekStreamEx(int streamHandle, int offset, int seekOrigin, out int err, IntPtr pv)

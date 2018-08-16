@@ -17,7 +17,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     /// </summary>
     internal class TableCollection : ICollection<TableInfo>
     {
-        private Database db;
+        private readonly Database db;
 
         internal TableCollection(Database db)
         {

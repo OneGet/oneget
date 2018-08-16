@@ -19,8 +19,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
     public class CabException : ArchiveException
     {
         private static ResourceManager errorResources;
-        private int error;
-        private int errorCode;
+        private readonly int error;
+        private readonly int errorCode;
 
         /// <summary>
         /// Creates a new CabException with a specified error message and a reference to the

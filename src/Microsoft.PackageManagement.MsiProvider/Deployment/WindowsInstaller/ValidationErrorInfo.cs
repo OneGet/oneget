@@ -19,8 +19,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     [SuppressMessage("Microsoft.Performance", "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes")]
     public struct ValidationErrorInfo
     {
-        private ValidationError error;
-        private string column;
+        private readonly ValidationError error;
+        private readonly string column;
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal ValidationErrorInfo(ValidationError error, string column)

@@ -30,14 +30,14 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         // These delegates need to be saved as member variables
         // so that they don't get GC'd.
-        private NativeMethods.FDI.PFNALLOC fdiAllocMemHandler;
+        private readonly NativeMethods.FDI.PFNALLOC fdiAllocMemHandler;
 
-        private NativeMethods.FDI.PFNFREE fdiFreeMemHandler;
-        private NativeMethods.FDI.PFNOPEN fdiOpenStreamHandler;
-        private NativeMethods.FDI.PFNREAD fdiReadStreamHandler;
-        private NativeMethods.FDI.PFNWRITE fdiWriteStreamHandler;
-        private NativeMethods.FDI.PFNCLOSE fdiCloseStreamHandler;
-        private NativeMethods.FDI.PFNSEEK fdiSeekStreamHandler;
+        private readonly NativeMethods.FDI.PFNFREE fdiFreeMemHandler;
+        private readonly NativeMethods.FDI.PFNOPEN fdiOpenStreamHandler;
+        private readonly NativeMethods.FDI.PFNREAD fdiReadStreamHandler;
+        private readonly NativeMethods.FDI.PFNWRITE fdiWriteStreamHandler;
+        private readonly NativeMethods.FDI.PFNCLOSE fdiCloseStreamHandler;
+        private readonly NativeMethods.FDI.PFNSEEK fdiSeekStreamHandler;
 
         private IUnpackStreamContext context;
 
@@ -55,29 +55,29 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         public CabUnpacker(CabEngine cabEngine)
             : base(cabEngine)
         {
-            this.fdiAllocMemHandler = this.CabAllocMem;
-            this.fdiFreeMemHandler = this.CabFreeMem;
-            this.fdiOpenStreamHandler = this.CabOpenStream;
-            this.fdiReadStreamHandler = this.CabReadStream;
-            this.fdiWriteStreamHandler = this.CabWriteStream;
-            this.fdiCloseStreamHandler = this.CabCloseStream;
-            this.fdiSeekStreamHandler = this.CabSeekStream;
+            fdiAllocMemHandler = CabAllocMem;
+            fdiFreeMemHandler = CabFreeMem;
+            fdiOpenStreamHandler = CabOpenStream;
+            fdiReadStreamHandler = CabReadStream;
+            fdiWriteStreamHandler = CabWriteStream;
+            fdiCloseStreamHandler = CabCloseStream;
+            fdiSeekStreamHandler = CabSeekStream;
 
-            this.fdiHandle = NativeMethods.FDI.Create(
-                this.fdiAllocMemHandler,
-                this.fdiFreeMemHandler,
-                this.fdiOpenStreamHandler,
-                this.fdiReadStreamHandler,
-                this.fdiWriteStreamHandler,
-                this.fdiCloseStreamHandler,
-                this.fdiSeekStreamHandler,
+            fdiHandle = NativeMethods.FDI.Create(
+                fdiAllocMemHandler,
+                fdiFreeMemHandler,
+                fdiOpenStreamHandler,
+                fdiReadStreamHandler,
+                fdiWriteStreamHandler,
+                fdiCloseStreamHandler,
+                fdiSeekStreamHandler,
                 NativeMethods.FDI.CPU_80386,
-                this.ErfHandle.AddrOfPinnedObject());
-            if (this.Erf.Error)
+                ErfHandle.AddrOfPinnedObject());
+            if (Erf.Error)
             {
-                int error = this.Erf.Oper;
-                int errorCode = this.Erf.Type;
-                this.ErfHandle.Free();
+                int error = Erf.Oper;
+                int errorCode = Erf.Type;
+                ErfHandle.Free();
                 throw new CabException(
                     error,
                     errorCode,
@@ -98,9 +98,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
             lock (this)
             {
-                short id;
-                int folderCount, fileCount;
-                return this.IsCabinet(stream, out id, out folderCount, out fileCount);
+                return IsCabinet(stream, out short id, out int folderCount, out int fileCount);
             }
         }
 
@@ -119,55 +117,55 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
             lock (this)
             {
-                this.context = streamContext;
-                this.filter = fileFilter;
-                this.NextCabinetName = String.Empty;
-                this.fileList = new List<ArchiveFileInfo>();
-                bool tmpSuppress = this.SuppressProgressEvents;
-                this.SuppressProgressEvents = true;
+                context = streamContext;
+                filter = fileFilter;
+                NextCabinetName = string.Empty;
+                fileList = new List<ArchiveFileInfo>();
+                bool tmpSuppress = SuppressProgressEvents;
+                SuppressProgressEvents = true;
                 try
                 {
                     for (short cabNumber = 0;
-                         this.NextCabinetName != null;
+                         NextCabinetName != null;
                          cabNumber++)
                     {
-                        this.Erf.Clear();
-                        this.CabNumbers[this.NextCabinetName] = cabNumber;
+                        Erf.Clear();
+                        CabNumbers[NextCabinetName] = cabNumber;
 
-                        var result = NativeMethods.FDI.Copy(
-                            this.fdiHandle,
-                            this.NextCabinetName,
-                            String.Empty,
+                        int result = NativeMethods.FDI.Copy(
+                            fdiHandle,
+                            NextCabinetName,
+                            string.Empty,
                             0,
-                            this.CabListNotify,
+                            CabListNotify,
                             IntPtr.Zero,
                             IntPtr.Zero);
                         if (result == 0)
                         {
                             // stop compiler from complaining
-                            this.CheckError(true);
+                            CheckError(true);
                         }
-                        this.CheckError(true);
+                        CheckError(true);
                     }
 
-                    List<ArchiveFileInfo> tmpFileList = this.fileList;
-                    this.fileList = null;
+                    List<ArchiveFileInfo> tmpFileList = fileList;
+                    fileList = null;
                     return tmpFileList.AsReadOnly();
                 }
                 finally
                 {
-                    this.SuppressProgressEvents = tmpSuppress;
+                    SuppressProgressEvents = tmpSuppress;
 
-                    if (this.CabStream != null)
+                    if (CabStream != null)
                     {
-                        this.context.CloseArchiveReadStream(
-                            this.currentArchiveNumber,
-                            this.currentArchiveName,
-                            this.CabStream);
-                        this.CabStream = null;
+                        context.CloseArchiveReadStream(
+                            currentArchiveNumber,
+                            currentArchiveName,
+                            CabStream);
+                        CabStream = null;
                     }
 
-                    this.context = null;
+                    context = null;
                 }
             }
         }
@@ -183,17 +181,17 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             lock (this)
             {
                 IList<ArchiveFileInfo> files =
-                    this.GetFileInfo(streamContext, fileFilter);
+                    GetFileInfo(streamContext, fileFilter);
 
-                this.ResetProgressData();
+                ResetProgressData();
 
                 if (files != null)
                 {
-                    this.totalFiles = files.Count;
+                    totalFiles = files.Count;
 
                     for (int i = 0; i < files.Count; i++)
                     {
-                        this.totalFileBytes += files[i].Length;
+                        totalFileBytes += files[i].Length;
                         if (files[i].ArchiveNumber >= this.totalArchives)
                         {
                             int totalArchives = files[i].ArchiveNumber + 1;
@@ -202,88 +200,88 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                     }
                 }
 
-                this.context = streamContext;
-                this.fileList = null;
-                this.NextCabinetName = String.Empty;
-                this.folderId = -1;
-                this.currentFileNumber = -1;
+                context = streamContext;
+                fileList = null;
+                NextCabinetName = string.Empty;
+                folderId = -1;
+                currentFileNumber = -1;
 
                 try
                 {
                     for (short cabNumber = 0;
-                         this.NextCabinetName != null;
+                         NextCabinetName != null;
                          cabNumber++)
                     {
-                        this.Erf.Clear();
-                        this.CabNumbers[this.NextCabinetName] = cabNumber;
+                        Erf.Clear();
+                        CabNumbers[NextCabinetName] = cabNumber;
 
-                        var result = NativeMethods.FDI.Copy(
-                            this.fdiHandle,
-                            this.NextCabinetName,
-                            String.Empty,
+                        int result = NativeMethods.FDI.Copy(
+                            fdiHandle,
+                            NextCabinetName,
+                            string.Empty,
                             0,
-                            this.CabExtractNotify,
+                            CabExtractNotify,
                             IntPtr.Zero,
                             IntPtr.Zero);
                         if (result == 0)
                         {
                             // stop compiler from complaining
-                            this.CheckError(true);
+                            CheckError(true);
                         }
-                        this.CheckError(true);
+                        CheckError(true);
                     }
                 }
                 finally
                 {
-                    if (this.CabStream != null)
+                    if (CabStream != null)
                     {
-                        this.context.CloseArchiveReadStream(
-                            this.currentArchiveNumber,
-                            this.currentArchiveName,
-                            this.CabStream);
-                        this.CabStream = null;
+                        context.CloseArchiveReadStream(
+                            currentArchiveNumber,
+                            currentArchiveName,
+                            CabStream);
+                        CabStream = null;
                     }
 
-                    if (this.FileStream != null)
+                    if (FileStream != null)
                     {
-                        this.context.CloseFileWriteStream(this.currentFileName, this.FileStream, FileAttributes.Normal, DateTime.Now);
-                        this.FileStream = null;
+                        context.CloseFileWriteStream(currentFileName, FileStream, FileAttributes.Normal, DateTime.Now);
+                        FileStream = null;
                     }
 
-                    this.context = null;
+                    context = null;
                 }
             }
         }
 
         internal override int CabOpenStreamEx(string path, int openFlags, int shareMode, out int err, IntPtr pv)
         {
-            if (this.CabNumbers.ContainsKey(path))
+            if (CabNumbers.ContainsKey(path))
             {
-                Stream stream = this.CabStream;
+                Stream stream = CabStream;
                 if (stream == null)
                 {
-                    short cabNumber = this.CabNumbers[path];
+                    short cabNumber = CabNumbers[path];
 
-                    stream = this.context.OpenArchiveReadStream(cabNumber, path, this.CabEngine);
+                    stream = context.OpenArchiveReadStream(cabNumber, path, CabEngine);
                     if (stream == null)
                     {
-                        throw new FileNotFoundException(String.Format(CultureInfo.InvariantCulture, "Cabinet {0} not provided.", cabNumber));
+                        throw new FileNotFoundException(string.Format(CultureInfo.InvariantCulture, "Cabinet {0} not provided.", cabNumber));
                     }
-                    this.currentArchiveName = path;
-                    this.currentArchiveNumber = cabNumber;
-                    if (this.totalArchives <= this.currentArchiveNumber)
+                    currentArchiveName = path;
+                    currentArchiveNumber = cabNumber;
+                    if (this.totalArchives <= currentArchiveNumber)
                     {
-                        int totalArchives = this.currentArchiveNumber + 1;
+                        int totalArchives = currentArchiveNumber + 1;
                         this.totalArchives = (short)totalArchives;
                     }
-                    this.currentArchiveTotalBytes = stream.Length;
-                    this.currentArchiveBytesProcessed = 0;
+                    currentArchiveTotalBytes = stream.Length;
+                    currentArchiveBytesProcessed = 0;
 
-                    if (this.folderId != -3)  // -3 is a special folderId that requires re-opening the same cab
+                    if (folderId != -3)  // -3 is a special folderId that requires re-opening the same cab
                     {
-                        this.OnProgress(ArchiveProgressType.StartArchive);
+                        OnProgress(ArchiveProgressType.StartArchive);
                     }
-                    this.CabStream = stream;
+                    CabStream = stream;
                 }
                 path = CabWorker.CabStreamName;
             }
@@ -293,18 +291,18 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         internal override int CabReadStreamEx(int streamHandle, IntPtr memory, int cb, out int err, IntPtr pv)
         {
             int count = base.CabReadStreamEx(streamHandle, memory, cb, out err, pv);
-            if (err == 0 && this.CabStream != null)
+            if (err == 0 && CabStream != null)
             {
-                if (this.fileList == null)
+                if (fileList == null)
                 {
-                    Stream stream = this.StreamHandles[streamHandle];
+                    Stream stream = StreamHandles[streamHandle];
                     if (DuplicateStream.OriginalStream(stream) ==
-                        DuplicateStream.OriginalStream(this.CabStream))
+                        DuplicateStream.OriginalStream(CabStream))
                     {
-                        this.currentArchiveBytesProcessed += cb;
-                        if (this.currentArchiveBytesProcessed > this.currentArchiveTotalBytes)
+                        currentArchiveBytesProcessed += cb;
+                        if (currentArchiveBytesProcessed > currentArchiveTotalBytes)
                         {
-                            this.currentArchiveBytesProcessed = this.currentArchiveTotalBytes;
+                            currentArchiveBytesProcessed = currentArchiveTotalBytes;
                         }
                     }
                 }
@@ -317,30 +315,30 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             int count = base.CabWriteStreamEx(streamHandle, memory, cb, out err, pv);
             if (count > 0 && err == 0)
             {
-                this.currentFileBytesProcessed += cb;
-                this.fileBytesProcessed += cb;
-                this.OnProgress(ArchiveProgressType.PartialFile);
+                currentFileBytesProcessed += cb;
+                fileBytesProcessed += cb;
+                OnProgress(ArchiveProgressType.PartialFile);
             }
             return count;
         }
 
         internal override int CabCloseStreamEx(int streamHandle, out int err, IntPtr pv)
         {
-            Stream stream = DuplicateStream.OriginalStream(this.StreamHandles[streamHandle]);
+            Stream stream = DuplicateStream.OriginalStream(StreamHandles[streamHandle]);
 
-            if (stream == DuplicateStream.OriginalStream(this.CabStream))
+            if (stream == DuplicateStream.OriginalStream(CabStream))
             {
-                if (this.folderId != -3)  // -3 is a special folderId that requires re-opening the same cab
+                if (folderId != -3)  // -3 is a special folderId that requires re-opening the same cab
                 {
-                    this.OnProgress(ArchiveProgressType.FinishArchive);
+                    OnProgress(ArchiveProgressType.FinishArchive);
                 }
 
-                this.context.CloseArchiveReadStream(this.currentArchiveNumber, this.currentArchiveName, stream);
+                context.CloseArchiveReadStream(currentArchiveNumber, currentArchiveName, stream);
 
-                this.currentArchiveName = this.NextCabinetName;
-                this.currentArchiveBytesProcessed = this.currentArchiveTotalBytes = 0;
+                currentArchiveName = NextCabinetName;
+                currentArchiveBytesProcessed = currentArchiveTotalBytes = 0;
 
-                this.CabStream = null;
+                CabStream = null;
             }
             return base.CabCloseStreamEx(streamHandle, out err, pv);
         }
@@ -358,10 +356,10 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             {
                 if (disposing)
                 {
-                    if (this.fdiHandle != null)
+                    if (fdiHandle != null)
                     {
-                        this.fdiHandle.Dispose();
-                        this.fdiHandle = null;
+                        fdiHandle.Dispose();
+                        fdiHandle = null;
                     }
                 }
             }
@@ -400,36 +398,35 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         private bool IsCabinet(Stream cabStream, out short id, out int cabFolderCount, out int fileCount)
         {
-            int streamHandle = this.StreamHandles.AllocHandle(cabStream);
+            int streamHandle = StreamHandles.AllocHandle(cabStream);
             try
             {
-                this.Erf.Clear();
-                NativeMethods.FDI.CABINFO fdici;
-                bool isCabinet = 0 != NativeMethods.FDI.IsCabinet(this.fdiHandle, streamHandle, out fdici);
+                Erf.Clear();
+                bool isCabinet = 0 != NativeMethods.FDI.IsCabinet(fdiHandle, streamHandle, out NativeMethods.FDI.CABINFO fdici);
 
-                if (this.Erf.Error)
+                if (Erf.Error)
                 {
-                    if (((NativeMethods.FDI.ERROR)this.Erf.Oper) == NativeMethods.FDI.ERROR.UNKNOWN_CABINET_VERSION)
+                    if (((NativeMethods.FDI.ERROR)Erf.Oper) == NativeMethods.FDI.ERROR.UNKNOWN_CABINET_VERSION)
                     {
                         isCabinet = false;
                     }
                     else
                     {
                         throw new CabException(
-                            this.Erf.Oper,
-                            this.Erf.Type,
-                            CabException.GetErrorMessage(this.Erf.Oper, this.Erf.Type, true));
+                            Erf.Oper,
+                            Erf.Type,
+                            CabException.GetErrorMessage(Erf.Oper, Erf.Type, true));
                     }
                 }
 
                 id = fdici.setID;
-                cabFolderCount = (int)fdici.cFolders;
-                fileCount = (int)fdici.cFiles;
+                cabFolderCount = fdici.cFolders;
+                fileCount = fdici.cFiles;
                 return isCabinet;
             }
             finally
             {
-                this.StreamHandles.FreeHandle(streamHandle);
+                StreamHandles.FreeHandle(streamHandle);
             }
         }
 
@@ -440,7 +437,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 case NativeMethods.FDI.NOTIFICATIONTYPE.CABINET_INFO:
                     {
                         string nextCab = Marshal.PtrToStringAnsi(notification.psz1);
-                        this.NextCabinetName = (nextCab.Length != 0 ? nextCab : null);
+                        NextCabinetName = (nextCab.Length != 0 ? nextCab : null);
                         return 0;  // Continue
                     }
                 case NativeMethods.FDI.NOTIFICATIONTYPE.PARTIAL_FILE:
@@ -454,18 +451,17 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
                         string name = CabUnpacker.GetFileName(notification);
 
-                        if (this.filter == null || this.filter(name))
+                        if (filter == null || filter(name))
                         {
-                            if (this.fileList != null)
+                            if (fileList != null)
                             {
                                 FileAttributes attributes = (FileAttributes)notification.attribs &
                                     (FileAttributes.Archive | FileAttributes.Hidden | FileAttributes.ReadOnly | FileAttributes.System);
-                                if (attributes == (FileAttributes)0)
+                                if (attributes == 0)
                                 {
                                     attributes = FileAttributes.Normal;
                                 }
-                                DateTime lastWriteTime;
-                                CompressionEngine.DosDateAndTimeToDateTime(notification.date, notification.time, out lastWriteTime);
+                                CompressionEngine.DosDateAndTimeToDateTime(notification.date, notification.time, out DateTime lastWriteTime);
                                 long length = notification.cb;
 
                                 CabFileInfo fileInfo = new CabFileInfo(
@@ -475,14 +471,14 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                                     attributes,
                                     lastWriteTime,
                                     length);
-                                this.fileList.Add(fileInfo);
-                                this.currentFileNumber = this.fileList.Count - 1;
-                                this.fileBytesProcessed += notification.cb;
+                                fileList.Add(fileInfo);
+                                currentFileNumber = fileList.Count - 1;
+                                fileBytesProcessed += notification.cb;
                             }
                         }
 
-                        this.totalFiles++;
-                        this.totalFileBytes += notification.cb;
+                        totalFiles++;
+                        totalFileBytes += notification.cb;
                         return 0;  // Continue
                     }
             }
@@ -495,33 +491,33 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             {
                 case NativeMethods.FDI.NOTIFICATIONTYPE.CABINET_INFO:
                     {
-                        if (this.NextCabinetName != null && this.NextCabinetName.StartsWith("?", StringComparison.Ordinal))
+                        if (NextCabinetName != null && NextCabinetName.StartsWith("?", StringComparison.Ordinal))
                         {
                             // We are just continuing the copy of a file that spanned cabinets.
                             // The next cabinet name needs to be preserved.
-                            this.NextCabinetName = this.NextCabinetName.Substring(1);
+                            NextCabinetName = NextCabinetName.Substring(1);
                         }
                         else
                         {
                             string nextCab = Marshal.PtrToStringAnsi(notification.psz1);
-                            this.NextCabinetName = (nextCab.Length != 0 ? nextCab : null);
+                            NextCabinetName = (nextCab.Length != 0 ? nextCab : null);
                         }
                         return 0;  // Continue
                     }
                 case NativeMethods.FDI.NOTIFICATIONTYPE.NEXT_CABINET:
                     {
                         string nextCab = Marshal.PtrToStringAnsi(notification.psz1);
-                        this.CabNumbers[nextCab] = (short)notification.iCabinet;
-                        this.NextCabinetName = "?" + this.NextCabinetName;
+                        CabNumbers[nextCab] = notification.iCabinet;
+                        NextCabinetName = "?" + NextCabinetName;
                         return 0;  // Continue
                     }
                 case NativeMethods.FDI.NOTIFICATIONTYPE.COPY_FILE:
                     {
-                        return this.CabExtractCopyFile(notification);
+                        return CabExtractCopyFile(notification);
                     }
                 case NativeMethods.FDI.NOTIFICATIONTYPE.CLOSE_FILE_INFO:
                     {
-                        return this.CabExtractCloseFile(notification);
+                        return CabExtractCloseFile(notification);
                     }
             }
             return 0;
@@ -529,46 +525,45 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         private int CabExtractCopyFile(NativeMethods.FDI.NOTIFICATION notification)
         {
-            if (notification.iFolder != this.folderId)
+            if (notification.iFolder != folderId)
             {
                 if (notification.iFolder != -3)  // -3 is a special folderId used when continuing a folder from a previous cab
                 {
-                    if (this.folderId != -1) // -1 means we just started the extraction sequence
+                    if (folderId != -1) // -1 means we just started the extraction sequence
                     {
-                        this.currentFolderNumber++;
+                        currentFolderNumber++;
                     }
                 }
-                this.folderId = notification.iFolder;
+                folderId = notification.iFolder;
             }
 
             //bool execute = (notification.attribs & (ushort) FileAttributes.Device) != 0;  // _A_EXEC
 
             string name = CabUnpacker.GetFileName(notification);
 
-            if (this.filter == null || this.filter(name))
+            if (filter == null || filter(name))
             {
-                this.currentFileNumber++;
-                this.currentFileName = name;
+                currentFileNumber++;
+                currentFileName = name;
 
-                this.currentFileBytesProcessed = 0;
-                this.currentFileTotalBytes = notification.cb;
-                this.OnProgress(ArchiveProgressType.StartFile);
+                currentFileBytesProcessed = 0;
+                currentFileTotalBytes = notification.cb;
+                OnProgress(ArchiveProgressType.StartFile);
 
-                DateTime lastWriteTime;
-                CompressionEngine.DosDateAndTimeToDateTime(notification.date, notification.time, out lastWriteTime);
+                CompressionEngine.DosDateAndTimeToDateTime(notification.date, notification.time, out DateTime lastWriteTime);
 
-                Stream stream = this.context.OpenFileWriteStream(name, notification.cb, lastWriteTime);
+                Stream stream = context.OpenFileWriteStream(name, notification.cb, lastWriteTime);
                 if (stream != null)
                 {
-                    this.FileStream = stream;
-                    int streamHandle = this.StreamHandles.AllocHandle(stream);
+                    FileStream = stream;
+                    int streamHandle = StreamHandles.AllocHandle(stream);
                     return streamHandle;
                 }
                 else
                 {
-                    this.fileBytesProcessed += notification.cb;
-                    this.OnProgress(ArchiveProgressType.FinishFile);
-                    this.currentFileName = null;
+                    fileBytesProcessed += notification.cb;
+                    OnProgress(ArchiveProgressType.FinishFile);
+                    currentFileName = null;
                 }
             }
             return 0;  // Continue
@@ -576,8 +571,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         private int CabExtractCloseFile(NativeMethods.FDI.NOTIFICATION notification)
         {
-            Stream stream = this.StreamHandles[notification.hf];
-            this.StreamHandles.FreeHandle(notification.hf);
+            Stream stream = StreamHandles[notification.hf];
+            StreamHandles.FreeHandle(notification.hf);
 
             //bool execute = (notification.attribs & (ushort) FileAttributes.Device) != 0;  // _A_EXEC
 
@@ -585,22 +580,21 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
             FileAttributes attributes = (FileAttributes)notification.attribs &
                 (FileAttributes.Archive | FileAttributes.Hidden | FileAttributes.ReadOnly | FileAttributes.System);
-            if (attributes == (FileAttributes)0)
+            if (attributes == 0)
             {
                 attributes = FileAttributes.Normal;
             }
-            DateTime lastWriteTime;
-            CompressionEngine.DosDateAndTimeToDateTime(notification.date, notification.time, out lastWriteTime);
+            CompressionEngine.DosDateAndTimeToDateTime(notification.date, notification.time, out DateTime lastWriteTime);
 
             stream.Flush();
-            this.context.CloseFileWriteStream(name, stream, attributes, lastWriteTime);
-            this.FileStream = null;
+            context.CloseFileWriteStream(name, stream, attributes, lastWriteTime);
+            FileStream = null;
 
-            long remainder = this.currentFileTotalBytes - this.currentFileBytesProcessed;
-            this.currentFileBytesProcessed += remainder;
-            this.fileBytesProcessed += remainder;
-            this.OnProgress(ArchiveProgressType.FinishFile);
-            this.currentFileName = null;
+            long remainder = currentFileTotalBytes - currentFileBytesProcessed;
+            currentFileBytesProcessed += remainder;
+            fileBytesProcessed += remainder;
+            OnProgress(ArchiveProgressType.FinishFile);
+            currentFileName = null;
 
             return 1;  // Continue
         }

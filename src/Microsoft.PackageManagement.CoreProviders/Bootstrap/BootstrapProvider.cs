@@ -45,7 +45,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
 
         private const WildcardOptions WildcardOptions = System.Management.Automation.WildcardOptions.CultureInvariant | System.Management.Automation.WildcardOptions.IgnoreCase;
 
-        private static IEqualityComparer<Package> PackageEqualityComparer = new PackageManagement.Internal.Utility.Extensions.EqualityComparer<Package>(
+        private static readonly IEqualityComparer<Package> PackageEqualityComparer = new PackageManagement.Internal.Utility.Extensions.EqualityComparer<Package>(
             (x, y) => x.Name.EqualsIgnoreCase(y.Name) && x.Version.EqualsIgnoreCase(y.Version), (x) => (x.Name + x.Version).GetHashCode());
 
         private PackageManagementService PackageManagementService
@@ -296,8 +296,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                     return null;
                 }
 
-                Version ver;
-                if (!Version.TryParse(Path.GetFileName(versionFolder), out ver))
+                if (!Version.TryParse(Path.GetFileName(versionFolder), out Version ver))
                 {
                     //this will cover whether the providerFileAssembly is at top level as well as a bad version folder
                     //skip if the provider is at the top level as they are imported already via LoadProviders() during the initialization.

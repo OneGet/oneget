@@ -23,7 +23,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         /// Each handle is just an index into this list. When a handle is freed,
         /// the list item at that index is set to null.
         /// </summary>
-        private List<T> handles;
+        private readonly List<T> handles;
 
         /// <summary>
         /// Creates a new HandleManager instance.

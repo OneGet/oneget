@@ -260,9 +260,8 @@ namespace Microsoft.PackageManagement.Msu.Internal
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InstallPackage' '{1}'", ProviderName, fastPackageReference);
 
-            string output;
             string args = "\"" + fastPackageReference + "\"" + " /quiet /norestart /log:" + "\"" + errorLogPath + "\"";
-            int exitCode = request.ProviderServices.StartProcess(WusaExecutableLocation, args, true, out output, request);
+            int exitCode = request.ProviderServices.StartProcess(WusaExecutableLocation, args, true, out string output, request);
             if (exitCode == 0)
             {
                 request.Verbose("Provider '{0}', Package '{1}': Installation succeeded", ProviderName, fastPackageReference);

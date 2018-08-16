@@ -22,7 +22,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     internal sealed class VersionStringTable : IDictionary<string, string>
     {
-        private VersionResource parent;
+        private readonly VersionResource parent;
         private VersionInfo rawStringVersionInfo;
 
         internal VersionStringTable(VersionResource parent, VersionInfo rawStringVersionInfo)
@@ -77,8 +77,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
                     VersionInfo verValue = rawStringVersionInfo[key];
                     if (verValue == null)
                     {
-                        verValue = new VersionInfo(key);
-                        verValue.IsString = true;
+                        verValue = new VersionInfo(key)
+                        {
+                            IsString = true
+                        };
                         rawStringVersionInfo.Add(verValue);
                     }
                     verValue.Data = new byte[Encoding.Unicode.GetByteCount(value) + 2];

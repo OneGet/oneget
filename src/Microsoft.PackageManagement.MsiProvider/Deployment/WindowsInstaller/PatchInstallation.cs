@@ -71,7 +71,6 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             StringBuilder buf = new StringBuilder(40);
             StringBuilder targetProductBuf = new StringBuilder(40);
-            UserContexts targetContext;
             StringBuilder targetSidBuf = new StringBuilder(40);
             for (uint i = 0; ; i++)
             {
@@ -84,7 +83,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     i,
                     buf,
                     targetProductBuf,
-                    out targetContext,
+                    out UserContexts targetContext,
                     targetSidBuf,
                     ref targetSidBufSize);
                 if (ret == (uint)NativeMethods.Error.MORE_DATA)
@@ -125,7 +124,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
         }
 
-        private string productCode;
+        private readonly string productCode;
 
         /// <summary>
         /// Creates a new object for accessing information about a patch installation on the current system.

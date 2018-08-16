@@ -2,39 +2,41 @@
 {
     using System;
     using System.ComponentModel;
-    using System.Globalization;
     using System.Text.RegularExpressions;
 
     /// <summary>
-    /// A hybrid implementation of SemVer that supports semantic versioning as described at http://semver.org while not strictly enforcing it to 
+    /// A hybrid implementation of SemVer that supports semantic versioning as described at http://semver.org while not strictly enforcing it to
     /// allow older 4-digit versioning schemes to continue working.
-    /// 
-    /// Example: EntityFramework 6.1.3-beta1 
+    ///
+    /// Example: EntityFramework 6.1.3-beta1
     /// Version: 6.1.3
-    /// SpecialVersion: -beta1 
-    /// OriginalString: 6.1.3-beta1 
-    /// 
-    /// </summary>    
+    /// SpecialVersion: -beta1
+    /// OriginalString: 6.1.3-beta1
+    ///
+    /// </summary>
     [TypeConverter(typeof(SemanticVersionTypeConverter))]
     public sealed class SemanticVersion : IComparable, IComparable<SemanticVersion>, IEquatable<SemanticVersion>
     {
-        private const RegexOptions _flags =  RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
+        private const RegexOptions _flags = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
         internal const string AllowFourPartsVersion = @"(?<Version>\d+(\s*\.\s*\d+){0,3})";
         internal const string ThreePartsVersion = @"(?<Version>\d+(\.\d+){2})";
+
         // the pre release regex is of the form -<pre-release version> where <pre-release> version is set of identifier delimited by ".". Each identifer can be any characters in [A-z0-9a-z-]
         internal const string ReleasePattern = @"(?<Release>-[A-Z0-9a-z\-]+(\.[A-Z0-9a-z\-]+)*)?";
+
         // The build regex is of the same form except with a + instead of -
         internal const string BuildPattern = @"(?<Build>\+[A-Z0-9a-z\-]+(\.[A-Z0-9a-z\-]+)*)?";
-        internal static string SemanticVersionPattern = String.Concat("^", AllowFourPartsVersion, ReleasePattern, BuildPattern, "$");
+
+        internal static string SemanticVersionPattern = string.Concat("^", AllowFourPartsVersion, ReleasePattern, BuildPattern, "$");
 
         private static readonly Regex _semanticVersionRegex = new Regex(SemanticVersionPattern, _flags);
         private static readonly Regex _strictSemanticVersionRegex = new Regex(@"^(?<Version>\d+(\.\d+){2})(?<Release>-[A-Z0-9a-z\-]+(\.[A-Z0-9a-z\-]+)*)?(?<Build>\+[A-Z0-9a-z\-]+(\.[A-Z0-9a-z\-]+)*)?$", _flags);
         private readonly string _originalString;
 
-        public SemanticVersion(string version)  
+        public SemanticVersion(string version)
             : this(Parse(version))
         {
-            // The constructor normalizes the version string so that it we do not need to normalize it every time we need to operate on it. 
+            // The constructor normalizes the version string so that it we do not need to normalize it every time we need to operate on it.
             // The original string represents the original form in which the version is represented to be used when printing.
             _originalString = version;
         }
@@ -50,7 +52,7 @@
         }
 
         public SemanticVersion(Version version)
-            : this(version, String.Empty)
+            : this(version, string.Empty)
         {
         }
 
@@ -66,13 +68,14 @@
                 throw new ArgumentNullException("version");
             }
             Version = NormalizeVersionValue(version);
-            SpecialVersion = specialVersion ?? String.Empty;
-            _originalString = String.IsNullOrWhiteSpace(originalString) ? (version + (!String.IsNullOrWhiteSpace(specialVersion) ? '-' + specialVersion : null)) : originalString;
+            SpecialVersion = specialVersion ?? string.Empty;
+            _originalString = string.IsNullOrWhiteSpace(originalString) ? (version + (!string.IsNullOrWhiteSpace(specialVersion) ? '-' + specialVersion : null)) : originalString;
         }
 
         public SemanticVersion(SemanticVersion semVer)
         {
-            if (semVer == null) {
+            if (semVer == null)
+            {
                 throw new ArgumentNullException("semVer");
             }
             _originalString = semVer.ToString();
@@ -104,7 +107,7 @@
         /// <returns></returns>
         public string[] GetOriginalVersionComponents()
         {
-            if (!String.IsNullOrWhiteSpace(_originalString))
+            if (!string.IsNullOrWhiteSpace(_originalString))
             {
                 string original;
 
@@ -137,9 +140,9 @@
             }
             else
             {
-                // if 'a' has less than 4 elements, we pad the '0' at the end 
+                // if 'a' has less than 4 elements, we pad the '0' at the end
                 // to make it 4.
-                var b = new string[4] { "0", "0", "0", "0" };
+                string[] b = new string[4] { "0", "0", "0", "0" };
                 Array.Copy(a, 0, b, 0, a.Length);
                 return b;
             }
@@ -150,13 +153,12 @@
         /// </summary>
         public static SemanticVersion Parse(string version)
         {
-            if (String.IsNullOrWhiteSpace(version))
+            if (string.IsNullOrWhiteSpace(version))
             {
                 throw new ArgumentNullException("version");
             }
 
-            SemanticVersion semVer;
-            if (!TryParse(version, out semVer))
+            if (!TryParse(version, out SemanticVersion semVer))
             {
                 return null;
             }
@@ -183,14 +185,13 @@
         private static bool TryParseInternal(string version, Regex regex, out SemanticVersion semVer)
         {
             semVer = null;
-            if (String.IsNullOrWhiteSpace(version))
+            if (string.IsNullOrWhiteSpace(version))
             {
                 return false;
             }
 
-            var match = regex.Match(version.Trim());
-            Version versionValue;
-            if (!match.Success || !Version.TryParse(match.Groups["Version"].Value, out versionValue))
+            Match match = regex.Match(version.Trim());
+            if (!match.Success || !Version.TryParse(match.Groups["Version"].Value, out Version versionValue))
             {
                 return false;
             }
@@ -216,7 +217,7 @@
             SemanticVersion other = obj as SemanticVersion;
             if (other == null)
             {
-                throw new ArgumentNullException("obj");                    
+                throw new ArgumentNullException("obj");
             }
             return CompareTo(other);
         }
@@ -235,8 +236,8 @@
                 return result;
             }
 
-            bool empty = String.IsNullOrWhiteSpace(SpecialVersion);
-            bool otherEmpty = String.IsNullOrWhiteSpace(other.SpecialVersion);
+            bool empty = string.IsNullOrWhiteSpace(SpecialVersion);
+            bool otherEmpty = string.IsNullOrWhiteSpace(other.SpecialVersion);
             if (empty && otherEmpty)
             {
                 return 0;
@@ -254,11 +255,7 @@
 
         public static bool operator ==(SemanticVersion version1, SemanticVersion version2)
         {
-            if (ReferenceEquals(version1, null))
-            {
-                return ReferenceEquals(version2, null);
-            }
-            return version1.Equals(version2);
+            return ReferenceEquals(version1, null) ? ReferenceEquals(version2, null) : version1.Equals(version2);
         }
 
         public static bool operator !=(SemanticVersion version1, SemanticVersion version2)

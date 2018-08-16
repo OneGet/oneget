@@ -25,9 +25,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     /// </p></remarks>
     internal class Transaction : InstallerHandle
     {
-        private string name;
+        private readonly string name;
         private IntPtr ownerChangeEvent;
-        private IList<EventHandler<EventArgs>> ownerChangeListeners;
+        private readonly IList<EventHandler<EventArgs>> ownerChangeListeners;
 
         /// <summary>
         /// [MSI 4.5] Begins transaction processing of a multi-package installation.
@@ -134,8 +134,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public void Join(TransactionAttributes attributes)
         {
-            IntPtr hChangeOfOwnerEvent;
-            uint ret = NativeMethods.MsiJoinTransaction((int)this.Handle, (int)attributes, out hChangeOfOwnerEvent);
+            uint ret = NativeMethods.MsiJoinTransaction((int)this.Handle, (int)attributes, out IntPtr hChangeOfOwnerEvent);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -185,9 +184,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private static IntPtr[] Begin(string transactionName, TransactionAttributes attributes)
         {
-            int hTransaction;
-            IntPtr hChangeOfOwnerEvent;
-            uint ret = NativeMethods.MsiBeginTransaction(transactionName, (int)attributes, out hTransaction, out hChangeOfOwnerEvent);
+            uint ret = NativeMethods.MsiBeginTransaction(transactionName, (int)attributes, out int hTransaction, out IntPtr hChangeOfOwnerEvent);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);

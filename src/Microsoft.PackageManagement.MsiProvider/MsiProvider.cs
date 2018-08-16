@@ -341,8 +341,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
             string errorLogPath = errorLogFolder + "\\msi.log";
             try
             {
-                Guid guid;
-                if (!Guid.TryParse(fastPackageReference, out guid))
+                if (!Guid.TryParse(fastPackageReference, out Guid guid))
                 {
                     request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.InvalidArgument, fastPackageReference, Constants.Messages.UnableToResolvePackage, fastPackageReference);
                     return;

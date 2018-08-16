@@ -15,9 +15,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     /// </summary>
     public abstract class Installation
     {
-        private string installationCode;
-        private string userSid;
-        private UserContexts context;
+        private readonly string installationCode;
+        private readonly string userSid;
+        private readonly UserContexts context;
         private SourceList sourceList;
 
         internal Installation(string installationCode, string userSid, UserContexts context)

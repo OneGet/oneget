@@ -88,7 +88,6 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             string productCode, string userSid, UserContexts context)
         {
             StringBuilder buf = new StringBuilder(40);
-            UserContexts targetContext;
             StringBuilder targetSidBuf = new StringBuilder(40);
             for (uint i = 0; ; i++)
             {
@@ -99,7 +98,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     context,
                     i,
                     buf,
-                    out targetContext,
+                    out UserContexts targetContext,
                     targetSidBuf,
                     ref targetSidBufSize);
                 if (ret == (uint)NativeMethods.Error.MORE_DATA)
@@ -133,7 +132,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
         }
 
-        private IDictionary<string, string> properties;
+        private readonly IDictionary<string, string> properties;
 
         /// <summary>
         /// Creates a new object for accessing information about a product installation on the current system.
@@ -248,8 +247,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                bool isElevated;
-                uint ret = NativeMethods.MsiIsProductElevated(this.ProductCode, out isElevated);
+                uint ret = NativeMethods.MsiIsProductElevated(this.ProductCode, out bool isElevated);
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
@@ -619,8 +617,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 if (this.properties != null)
                 {
-                    string value = null;
-                    this.properties.TryGetValue(propertyName, out value);
+                    this.properties.TryGetValue(propertyName, out string value);
                     return value;
                 }
                 else
@@ -702,13 +699,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
             else
             {
-                int installState;
                 uint ret = NativeMethods.MsiQueryFeatureStateEx(
                     this.ProductCode,
                     this.UserSid,
                     this.Context,
                     feature,
-                    out installState);
+                    out int installState);
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
@@ -737,13 +733,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
             else
             {
-                int installState;
                 uint ret = NativeMethods.MsiQueryComponentState(
                     this.ProductCode,
                     this.UserSid,
                     this.Context,
                     component,
-                    out installState);
+                    out int installState);
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);

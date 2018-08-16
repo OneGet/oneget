@@ -61,7 +61,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             : base(msg, innerException)
         {
             this.errorCode = errorCode;
-            this.SaveErrorRecord();
+            SaveErrorRecord();
         }
 
         internal InstallerException(int errorCode, string msg)
@@ -81,31 +81,25 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("info");
             }
 
-            this.errorCode = info.GetInt32("msiErrorCode");
+            errorCode = info.GetInt32("msiErrorCode");
         }
 
         /// <summary>
         /// Gets the system error code that resulted in this exception, or 0 if not applicable.
         /// </summary>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public int ErrorCode
-        {
-            get
-            {
-                return this.errorCode;
-            }
-        }
+        public int ErrorCode => errorCode;
 
         /// <summary>
         /// Gets a message that describes the exception.  This message may contain detailed
         /// formatted error data if it was available.
         /// </summary>
-        public override String Message
+        public override string Message
         {
             get
             {
                 string msg = base.Message;
-                using (Record errorRec = this.GetErrorRecord())
+                using (Record errorRec = GetErrorRecord())
                 {
                     if (errorRec != null)
                     {
@@ -130,7 +124,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("info");
             }
 
-            info.AddValue("msiErrorCode", this.errorCode);
+            info.AddValue("msiErrorCode", errorCode);
             base.GetObjectData(info, context);
         }
 
@@ -203,7 +197,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         public Record GetErrorRecord()
         {
-            return this.errorData != null ? new Record(this.errorData) : null;
+            return errorData != null ? new Record(errorData) : null;
         }
 
         internal static Exception ExceptionFromReturnCode(uint errorCode)
@@ -230,8 +224,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
                 case (uint)NativeMethods.Error.INVALID_HANDLE_STATE:
                 case (uint)NativeMethods.Error.INVALID_HANDLE:
-                    InvalidHandleException ihex = new InvalidHandleException(msg);
-                    ihex.errorCode = (int)errorCode;
+                    InvalidHandleException ihex = new InvalidHandleException(msg)
+                    {
+                        errorCode = (int)errorCode
+                    };
                     return ihex;
 
                 case (uint)NativeMethods.Error.INSTALL_USEREXIT: return new InstallCanceledException(msg);
@@ -251,7 +247,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             uint formatCount = NativeMethods.FormatMessage(
                 FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                 IntPtr.Zero,
-                (uint)errorCode,
+                errorCode,
                 0,
                 buf,
                 (uint)buf.Capacity,
@@ -275,23 +271,31 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 using (Record errorRec = new Record((IntPtr)recordHandle, true, null))
                 {
-                    this.errorData = new object[errorRec.FieldCount];
-                    for (int i = 0; i < this.errorData.Length; i++)
+                    errorData = new object[errorRec.FieldCount];
+                    for (int i = 0; i < errorData.Length; i++)
                     {
-                        this.errorData[i] = errorRec[i + 1];
+                        errorData[i] = errorRec[i + 1];
                     }
                 }
             }
             else
             {
-                this.errorData = null;
+                errorData = null;
             }
         }
 
         private static string Combine(string msg1, string msg2)
         {
-            if (msg1 == null) return msg2;
-            if (msg2 == null) return msg1;
+            if (msg1 == null)
+            {
+                return msg2;
+            }
+
+            if (msg2 == null)
+            {
+                return msg1;
+            }
+
             return msg1 + " " + msg2;
         }
     }
@@ -445,7 +449,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     internal class MergeException : InstallerException
     {
         private IList<string> conflictTables;
-        private IList<int> conflictCounts;
+        private readonly IList<int> conflictCounts;
 
         /// <summary>
         /// Creates a new MergeException with a specified error message and a reference to the
@@ -492,15 +496,18 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 {
                     view.Execute();
 
-                    foreach (Record rec in view) using (rec)
+                    foreach (Record rec in view)
+                    {
+                        using (rec)
                         {
                             conflictTableList.Add(rec.GetString(1));
-                            conflictCountList.Add((int)rec.GetInteger(2));
+                            conflictCountList.Add(rec.GetInteger(2));
                         }
+                    }
                 }
 
-                this.conflictTables = conflictTableList;
-                this.conflictCounts = conflictCountList;
+                conflictTables = conflictTableList;
+                conflictCounts = conflictCountList;
             }
         }
 
@@ -516,8 +523,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("info");
             }
 
-            this.conflictTables = (string[])info.GetValue("mergeConflictTables", typeof(string[]));
-            this.conflictCounts = (int[])info.GetValue("mergeConflictCounts", typeof(int[]));
+            conflictTables = (string[])info.GetValue("mergeConflictTables", typeof(string[]));
+            conflictCounts = (int[])info.GetValue("mergeConflictCounts", typeof(int[]));
         }
 
         /// <summary>
@@ -525,42 +532,30 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <see cref="ConflictTables"/>.
         /// </summary>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public IList<int> ConflictCounts
-        {
-            get
-            {
-                return new List<int>(this.conflictCounts);
-            }
-        }
+        public IList<int> ConflictCounts => new List<int>(conflictCounts);
 
         /// <summary>
         /// Gets the list of tables containing merge conflicts.
         /// </summary>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public IList<string> ConflictTables
-        {
-            get
-            {
-                return new List<string>(this.conflictTables);
-            }
-        }
+        public IList<string> ConflictTables => new List<string>(conflictTables);
 
         /// <summary>
         /// Gets a message that describes the merge conflicts.
         /// </summary>
-        public override String Message
+        public override string Message
         {
             get
             {
                 StringBuilder msg = new StringBuilder(base.Message);
-                if (this.conflictTables != null)
+                if (conflictTables != null)
                 {
-                    for (int i = 0; i < this.conflictTables.Count; i++)
+                    for (int i = 0; i < conflictTables.Count; i++)
                     {
                         msg.Append(i == 0 ? "  Conflicts: " : ", ");
-                        msg.Append(this.conflictTables[i]);
+                        msg.Append(conflictTables[i]);
                         msg.Append('(');
-                        msg.Append(this.conflictCounts[i]);
+                        msg.Append(conflictCounts[i]);
                         msg.Append(')');
                     }
                 }
@@ -581,8 +576,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("info");
             }
 
-            info.AddValue("mergeConflictTables", this.conflictTables);
-            info.AddValue("mergeConflictCounts", this.conflictCounts);
+            info.AddValue("mergeConflictTables", conflictTables);
+            info.AddValue("mergeConflictCounts", conflictCounts);
             base.GetObjectData(info, context);
         }
     }

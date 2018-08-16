@@ -18,8 +18,7 @@ namespace Microsoft.PackageManagement.Provider.Utility
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             var stringValue = value as string;
-            SemanticVersion semVer;
-            if (stringValue != null && SemanticVersion.TryParse(stringValue, out semVer))
+            if (stringValue != null && SemanticVersion.TryParse(stringValue, out SemanticVersion semVer))
             {
                 return semVer;
             }

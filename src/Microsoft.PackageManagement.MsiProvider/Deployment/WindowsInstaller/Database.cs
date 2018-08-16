@@ -280,9 +280,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     {
                         if (this.summaryInfo == null || this.summaryInfo.IsClosed)
                         {
-                            int summaryInfoHandle;
                             int maxProperties = this.IsReadOnly ? 0 : SummaryInfo.MAX_PROPERTIES;
-                            uint ret = RemotableNativeMethods.MsiGetSummaryInformation((int)this.Handle, null, (uint)maxProperties, out summaryInfoHandle);
+                            uint ret = RemotableNativeMethods.MsiGetSummaryInformation((int)this.Handle, null, (uint)maxProperties, out int summaryInfoHandle);
                             if (ret != 0)
                             {
                                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -540,8 +539,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 for (count = 0; ; count++)
                 {
                     // Avoid creating unnecessary Record objects by not calling View.Fetch().
-                    int recordHandle;
-                    uint ret = RemotableNativeMethods.MsiViewFetch((int)view.Handle, out recordHandle);
+                    uint ret = RemotableNativeMethods.MsiViewFetch((int)view.Handle, out int recordHandle);
                     if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
                     {
                         break;
@@ -894,8 +892,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("outputPath");
             }
 
-            int hDb;
-            uint ret = NativeMethods.MsiOpenDatabase(filePath, outputPath, out hDb);
+            uint ret = NativeMethods.MsiOpenDatabase(filePath, outputPath, out int hDb);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -917,8 +914,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 mode = (DatabaseOpenMode)patchMode;
             }
 
-            int hDb;
-            uint ret = NativeMethods.MsiOpenDatabase(filePath, (IntPtr)mode, out hDb);
+            uint ret = NativeMethods.MsiOpenDatabase(filePath, (IntPtr)mode, out int hDb);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(

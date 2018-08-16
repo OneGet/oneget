@@ -355,8 +355,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             }
             else
             {
-                long fileTime;
-                SafeNativeMethods.DosDateTimeToFileTime(dosDate, dosTime, out fileTime);
+                SafeNativeMethods.DosDateTimeToFileTime(dosDate, dosTime, out long fileTime);
                 dateTime = DateTime.FromFileTimeUtc(fileTime);
                 dateTime = new DateTime(dateTime.Ticks, DateTimeKind.Local);
             }

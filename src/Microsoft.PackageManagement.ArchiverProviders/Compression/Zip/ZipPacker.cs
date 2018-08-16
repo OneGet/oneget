@@ -64,12 +64,10 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
                     // Count the total number of files and bytes to be compressed.
                     foreach (string file in files)
                     {
-                        FileAttributes attributes;
-                        DateTime lastWriteTime;
                         Stream fileStream = streamContext.OpenFileReadStream(
                             file,
-                            out attributes,
-                            out lastWriteTime);
+                            out FileAttributes attributes,
+                            out DateTime lastWriteTime);
                         if (fileStream != null)
                         {
                             this.totalFileBytes += fileStream.Length;
@@ -150,13 +148,15 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
                         (archiveStream != null ? archiveStream.Position : 0);
                     this.currentArchiveBytesProcessed = this.currentArchiveTotalBytes;
 
-                    ZipEndOfCentralDirectory eocd = new ZipEndOfCentralDirectory();
-                    eocd.dirStartDiskNumber = centralDirStartArchiveNumber;
-                    eocd.entriesOnDisk = fileHeaders.Count;
-                    eocd.totalEntries = fileHeaders.Count;
-                    eocd.dirSize = centralDirSize;
-                    eocd.dirOffset = centralDirStartPosition;
-                    eocd.comment = this.comment;
+                    ZipEndOfCentralDirectory eocd = new ZipEndOfCentralDirectory
+                    {
+                        dirStartDiskNumber = centralDirStartArchiveNumber,
+                        entriesOnDisk = fileHeaders.Count,
+                        totalEntries = fileHeaders.Count,
+                        dirSize = centralDirSize,
+                        dirOffset = centralDirStartPosition,
+                        comment = this.comment
+                    };
 
                     Zip64EndOfCentralDirectoryLocator eocdl =
                         new Zip64EndOfCentralDirectoryLocator();
@@ -291,17 +291,13 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
                     compressionMethod = ZipCompressionMethod.Store;
                 }
 
-                Func<Stream, Stream> compressionStreamCreator;
                 if (!ZipEngine.compressionStreamCreators.TryGetValue(
-                    compressionMethod, out compressionStreamCreator))
+                    compressionMethod, out Func<Stream, Stream> compressionStreamCreator))
                 {
                     return null;
                 }
-
-                FileAttributes attributes;
-                DateTime lastWriteTime;
                 fileStream = streamContext.OpenFileReadStream(
-                    file, out attributes, out lastWriteTime);
+                    file, out FileAttributes attributes, out DateTime lastWriteTime);
                 if (fileStream == null)
                 {
                     return null;
@@ -336,14 +332,13 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
                 fileHeader.Write(archiveStream, false);
                 headerArchiveNumber = this.currentArchiveNumber;
 
-                uint crc;
                 long bytesWritten = this.PackFileBytes(
                     streamContext,
                     fileStream,
                     maxArchiveSize,
                     compressionStreamCreator,
                     ref archiveStream,
-                    out crc);
+                    out uint crc);
 
                 fileHeader.Update(
                     bytesWritten,
@@ -431,9 +426,10 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
 
                     writeStartPosition = sourceStream.Position;
                     s.Source = sourceStream;
-                });
-
-            concatStream.Source = archiveStream;
+                })
+            {
+                Source = archiveStream
+            };
 
             if (maxArchiveSize > 0)
             {

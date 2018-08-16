@@ -47,10 +47,9 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 // if testfeed exists, use that
                 if (!string.IsNullOrWhiteSpace(testfeed))
                 {
-                    Uri result = null;
 
                     // test whether the uri is valid
-                    if (Uri.TryCreate(testfeed, UriKind.Absolute, out result))
+                    if (Uri.TryCreate(testfeed, UriKind.Absolute, out Uri result))
                     {
                         return new Uri[] {
                             result

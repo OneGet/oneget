@@ -20,7 +20,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     internal class SourceMediaList : ICollection<MediaDisk>
     {
-        private Installation installation;
+        private readonly Installation installation;
 
         internal SourceMediaList(Installation installation)
         {
@@ -180,7 +180,6 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public IEnumerator<MediaDisk> GetEnumerator()
         {
-            uint diskId;
             StringBuilder volumeBuf = new StringBuilder(40);
             uint volumeBufSize = (uint)volumeBuf.Capacity;
             StringBuilder promptBuf = new StringBuilder(80);
@@ -193,7 +192,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     this.installation.Context,
                     (uint)this.installation.InstallationType,
                     i,
-                    out diskId,
+                    out uint diskId,
                     volumeBuf,
                     ref volumeBufSize,
                     promptBuf,

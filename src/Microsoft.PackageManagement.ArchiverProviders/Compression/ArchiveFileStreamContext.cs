@@ -24,9 +24,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
     public class ArchiveFileStreamContext
         : IPackStreamContext, IUnpackStreamContext
     {
-        private IList<string> archiveFiles;
-        private string directory;
-        private IDictionary<string, string> files;
+        private readonly IList<string> archiveFiles;
+        private readonly string directory;
+        private readonly IDictionary<string, string> files;
         private bool extractOnlyNewerFiles;
         private bool enableOffsetOpen;
 
