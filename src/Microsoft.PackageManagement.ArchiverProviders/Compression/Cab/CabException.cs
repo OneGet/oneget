@@ -10,6 +10,7 @@
 namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 {
     using System;
+    using System.Reflection;
     using System.Globalization;
     using System.Resources;
 
