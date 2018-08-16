@@ -7,3 +7,6 @@
 
 3. Import-Module import-module .\Microsoft.PowerShell.PackageManagement.dll
 4. Insert breaks into the C# code as necessary
+
+### PowerShell debug Commands (Picture)
+
