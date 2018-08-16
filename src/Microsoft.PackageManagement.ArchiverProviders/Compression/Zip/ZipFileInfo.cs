@@ -64,11 +64,23 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         /// <summary>
         /// Gets the compressed size of the file in bytes.
         /// </summary>
-        public long CompressedLength => compressedLength;
+        public long CompressedLength
+        {
+            get
+            {
+                return this.compressedLength;
+            }
+        }
 
         /// <summary>
         /// Gets the method used to compress this file.
         /// </summary>
-        public ZipCompressionMethod CompressionMethod => compressionMethod;
+        public ZipCompressionMethod CompressionMethod
+        {
+            get
+            {
+                return this.compressionMethod;
+            }
+        }
     }
 }

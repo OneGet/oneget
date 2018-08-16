@@ -109,7 +109,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
             if (powershell != null)
             {
                 powershell.Clear().AddCommand(command);
-                foreach (object arg in args)
+                foreach (var arg in args)
                 {
                     powershell.AddArgument(arg);
                 }
@@ -117,10 +117,10 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                 NativeMethods.OutputDebugString("[Cmdlet:debugging] -- InvokeFunction ({0}, {1})".format(command, args.Select(each => (each ?? "<NULL>").ToString()).JoinWithComma(), powershell.InvocationStateInfo.Reason));
 #endif
 
-                PSDataCollection<PSObject> input = new PSDataCollection<PSObject>();
+                var input = new PSDataCollection<PSObject>();
                 input.Complete();
 
-                PSDataCollection<PSObject> output = new PSDataCollection<PSObject>();
+                var output = new PSDataCollection<PSObject>();
 
                 if (outputAction != null)
                 {

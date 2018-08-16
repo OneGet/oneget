@@ -67,89 +67,89 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         None = 0,
 
         /// <summary>Log out of memory or fatal exit information.</summary>
-        FatalExit = (1 << (InstallMessage.FatalExit >> 24)),
+        FatalExit = (1 << ((int)InstallMessage.FatalExit >> 24)),
 
         /// <summary>Log error messages.</summary>
-        Error = (1 << (InstallMessage.Error >> 24)),
+        Error = (1 << ((int)InstallMessage.Error >> 24)),
 
         /// <summary>Log warning messages.</summary>
-        Warning = (1 << (InstallMessage.Warning >> 24)),
+        Warning = (1 << ((int)InstallMessage.Warning >> 24)),
 
         /// <summary>Log user requests.</summary>
-        User = (1 << (InstallMessage.User >> 24)),
+        User = (1 << ((int)InstallMessage.User >> 24)),
 
         /// <summary>Log status messages that are not displayed.</summary>
-        Info = (1 << (InstallMessage.Info >> 24)),
+        Info = (1 << ((int)InstallMessage.Info >> 24)),
 
         /// <summary>Log request to determine a valid source location.</summary>
-        ResolveSource = (1 << (InstallMessage.ResolveSource >> 24)),
+        ResolveSource = (1 << ((int)InstallMessage.ResolveSource >> 24)),
 
         /// <summary>Log insufficient disk space error.</summary>
-        OutOfDiskSpace = (1 << (InstallMessage.OutOfDiskSpace >> 24)),
+        OutOfDiskSpace = (1 << ((int)InstallMessage.OutOfDiskSpace >> 24)),
 
         /// <summary>Log the start of installation actions.</summary>
-        ActionStart = (1 << (InstallMessage.ActionStart >> 24)),
+        ActionStart = (1 << ((int)InstallMessage.ActionStart >> 24)),
 
         /// <summary>Log the data record for installation actions.</summary>
-        ActionData = (1 << (InstallMessage.ActionData >> 24)),
+        ActionData = (1 << ((int)InstallMessage.ActionData >> 24)),
 
         /// <summary>Log parameters for user-interface initialization.</summary>
-        CommonData = (1 << (InstallMessage.CommonData >> 24)),
+        CommonData = (1 << ((int)InstallMessage.CommonData >> 24)),
 
         /// <summary>Log the property values at termination.</summary>
-        PropertyDump = (1 << (InstallMessage.Progress >> 24)), // log only
+        PropertyDump = (1 << ((int)InstallMessage.Progress >> 24)), // log only
 
         /// <summary>
         /// Sends large amounts of information to log file not generally useful to users.
         /// May be used for support.
         /// </summary>
-        Verbose = (1 << (InstallMessage.Initialize >> 24)), // log only
+        Verbose = (1 << ((int)InstallMessage.Initialize >> 24)), // log only
 
         /// <summary>
         /// Log extra debugging information.
         /// </summary>
-        ExtraDebug = (1 << (InstallMessage.Terminate >> 24)), // log only
+        ExtraDebug = (1 << ((int)InstallMessage.Terminate >> 24)), // log only
 
         /// <summary>
         /// Log only on error.
         /// </summary>
-        LogOnlyOnError = (1 << (InstallMessage.ShowDialog >> 24)), // log only
+        LogOnlyOnError = (1 << ((int)InstallMessage.ShowDialog >> 24)), // log only
 
         /// <summary>
         /// Log progress bar information. This message includes information on units so far and total number
         /// of units. See <see cref="Session.Message"/> for an explanation of the message format. This message
         /// is only sent to an external user interface and is not logged.
         /// </summary>
-        Progress = (1 << (InstallMessage.Progress >> 24)), // external handler only
+        Progress = (1 << ((int)InstallMessage.Progress >> 24)), // external handler only
 
         /// <summary>
         /// If this is not a quiet installation, then the basic UI has been initialized. If this is a full
         /// UI installation, the Full UI is not yet initialized. This message is only sent to an external
         /// user interface and is not logged.
         /// </summary>
-        Initialize = (1 << (InstallMessage.Initialize >> 24)), // external handler only
+        Initialize = (1 << ((int)InstallMessage.Initialize >> 24)), // external handler only
 
         /// <summary>
         /// If a full UI is being used, the full UI has ended. If this is not a quiet installation, the basic
         /// UI has not yet ended. This message is only sent to an external user interface and is not logged.
         /// </summary>
-        Terminate = (1 << (InstallMessage.Terminate >> 24)), // external handler only
+        Terminate = (1 << ((int)InstallMessage.Terminate >> 24)), // external handler only
 
         /// <summary>
         /// Sent prior to display of the Full UI dialog. This message is only sent to an external user
         /// interface and is not logged.
         /// </summary>
-        ShowDialog = (1 << (InstallMessage.ShowDialog >> 24)), // external handler only
+        ShowDialog = (1 << ((int)InstallMessage.ShowDialog >> 24)), // external handler only
 
         /// <summary>
         /// List of files in use that need to be replaced.
         /// </summary>
-        FilesInUse = (1 << (InstallMessage.FilesInUse >> 24)), // external handler only
+        FilesInUse = (1 << ((int)InstallMessage.FilesInUse >> 24)), // external handler only
 
         /// <summary>
         /// [MSI 4.0] List of apps that the user can request Restart Manager to shut down and restart.
         /// </summary>
-        RMFilesInUse = (1 << (InstallMessage.RMFilesInUse >> 24)), // external handler only
+        RMFilesInUse = (1 << ((int)InstallMessage.RMFilesInUse >> 24)), // external handler only
     }
 
     /// <summary>

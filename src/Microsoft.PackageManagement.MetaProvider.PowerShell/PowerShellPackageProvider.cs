@@ -39,7 +39,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
         private bool IsFirstParameterType<T>(string function)
         {
-            CommandInfo method = GetMethod(function);
+            var method = GetMethod(function);
             if (method == null)
             {
                 return false;
@@ -210,7 +210,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
         public string GetProviderVersion()
         {
-            string result = (string)CallPowerShellWithoutRequest("GetProviderVersion");
+            var result = (string)CallPowerShellWithoutRequest("GetProviderVersion");
 
             if (string.IsNullOrWhiteSpace(result))
             {
@@ -288,21 +288,21 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
             if (_findByNameBatches.IsValueCreated)
             {
-                List<string, string, string, string> nameBatch = _findByNameBatches.Value.TryPullValue(id);
+                var nameBatch = _findByNameBatches.Value.TryPullValue(id);
                 if (nameBatch != null)
                 {
                     if (IsFirstParameterType<string[]>("FindPackage"))
                     {
                         // it takes a batch at a time.
 
-                        string[] names = nameBatch.Select(each => each.Item1).ToArray();
-                        Tuple<string, string, string, string> p1 = nameBatch[0];
+                        var names = nameBatch.Select(each => each.Item1).ToArray();
+                        var p1 = nameBatch[0];
 
                         Call("FindPackage", requestObject, names, p1.Item2, p1.Item3, p1.Item4);
                     }
                     else
                     {
-                        foreach (Tuple<string, string, string, string> each in nameBatch)
+                        foreach (var each in nameBatch)
                         {
                             Call("FindPackage", requestObject, each.Item1, each.Item2, each.Item3, each.Item4);
                         }
@@ -312,7 +312,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
             if (_findByFileBatches.IsValueCreated)
             {
-                List<string> fileBatch = _findByFileBatches.Value.TryPullValue(id);
+                var fileBatch = _findByFileBatches.Value.TryPullValue(id);
                 if (fileBatch != null)
                 {
                     if (IsFirstParameterType<string[]>("FindPackageByFile"))
@@ -324,7 +324,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                     }
                     else
                     {
-                        foreach (string each in fileBatch)
+                        foreach (var each in fileBatch)
                         {
                             Call("FindPackageByFile", requestObject, each);
                         }
@@ -334,7 +334,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
             if (_findByUriBatches.IsValueCreated)
             {
-                List<Uri> uriBatch = _findByUriBatches.Value.TryPullValue(id);
+                var uriBatch = _findByUriBatches.Value.TryPullValue(id);
                 if (uriBatch != null)
                 {
                     if (IsFirstParameterType<string[]>("FindPackageByUri"))
@@ -344,7 +344,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                     }
                     else
                     {
-                        foreach (Uri each in uriBatch)
+                        foreach (var each in uriBatch)
                         {
                             Call("FindPackageByUri", requestObject, each);
                         }

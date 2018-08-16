@@ -40,13 +40,19 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the Database on which this View was opened.
         /// </summary>
-        public Database Database => database;
+        public Database Database
+        {
+            get { return this.database; }
+        }
 
         /// <summary>
         /// Gets the SQL query string used to open this View.
         /// </summary>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public string QueryString => sql;
+        public string QueryString
+        {
+            get { return this.sql; }
+        }
 
         /// <summary>
         /// Gets the set of tables that were included in the SQL query for this View.
@@ -55,9 +61,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                if (tables == null)
+                if (this.tables == null)
                 {
-                    if (sql == null)
+                    if (this.sql == null)
                     {
                         return null;
                     }
@@ -65,7 +71,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     // Parse the table names out of the SQL query string by looking
                     // for tokens that can come before or after the list of tables.
 
-                    string parseSql = sql.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+                    string parseSql = this.sql.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
                     string upperSql = parseSql.ToUpper(CultureInfo.InvariantCulture);
 
                     string[] prefixes = new string[] { " FROM ", " INTO ", " TABLE " };
@@ -112,11 +118,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     for (int i = 0; i < tableNames.Length; i++)
                     {
                         string tableName = tableNames[i].Trim(' ', '`');
-                        tableList.Add(new TableInfo(database, tableName));
+                        tableList.Add(new TableInfo(this.database, tableName));
                     }
-                    tables = tableList;
+                    this.tables = tableList;
                 }
-                return new List<TableInfo>(tables);
+                return new List<TableInfo>(this.tables);
             }
         }
 
@@ -134,11 +140,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                if (columns == null)
+                if (this.columns == null)
                 {
-                    columns = new ColumnCollection(this);
+                    this.columns = new ColumnCollection(this);
                 }
-                return columns;
+                return this.columns;
             }
         }
 
@@ -159,11 +165,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public void Execute(Record executeParams)
         {
             uint ret = RemotableNativeMethods.MsiViewExecute(
-                (int)Handle,
+                (int)this.Handle,
                 (executeParams != null ? (int)executeParams.Handle : 0));
             if (ret == (uint)NativeMethods.Error.BAD_QUERY_SYNTAX)
             {
-                throw new BadQuerySyntaxException(sql);
+                throw new BadQuerySyntaxException(this.sql);
             }
             else if (ret != 0)
             {
@@ -180,7 +186,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewexecute.asp">MsiViewExecute</a>
         /// </p></remarks>
-        public void Execute() { Execute(null); }
+        public void Execute() { this.Execute(null); }
 
         /// <summary>
         /// Fetches the next sequential record from the view, or null if there are no more records.
@@ -197,7 +203,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public Record Fetch()
         {
-            uint ret = RemotableNativeMethods.MsiViewFetch((int)Handle, out int recordHandle);
+            uint ret = RemotableNativeMethods.MsiViewFetch((int)this.Handle, out int recordHandle);
             if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
             {
                 return null;
@@ -265,7 +271,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("record");
             }
 
-            uint ret = RemotableNativeMethods.MsiViewModify((int)Handle, (int)mode, (int)record.Handle);
+            uint ret = RemotableNativeMethods.MsiViewModify((int)this.Handle, (int)mode, (int)record.Handle);
             if (mode == ViewModifyMode.Insert || mode == ViewModifyMode.InsertTemporary)
             {
                 record.IsFormatStringInvalid = true;
@@ -292,7 +298,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public void Refresh(Record record) { Modify(ViewModifyMode.Refresh, record); }
+        public void Refresh(Record record) { this.Modify(ViewModifyMode.Refresh, record); }
 
         /// <summary>
         /// Inserts a Record into the view.
@@ -310,7 +316,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public void Insert(Record record) { Modify(ViewModifyMode.Insert, record); }
+        public void Insert(Record record) { this.Modify(ViewModifyMode.Insert, record); }
 
         /// <summary>
         /// Updates the View with new data from the Record.
@@ -328,7 +334,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public void Update(Record record) { Modify(ViewModifyMode.Update, record); }
+        public void Update(Record record) { this.Modify(ViewModifyMode.Update, record); }
 
         /// <summary>
         /// Updates or inserts a Record into the View.
@@ -346,7 +352,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public void Assign(Record record) { Modify(ViewModifyMode.Assign, record); }
+        public void Assign(Record record) { this.Modify(ViewModifyMode.Assign, record); }
 
         /// <summary>
         /// Updates or deletes and inserts a Record into the View.
@@ -365,7 +371,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public void Replace(Record record) { Modify(ViewModifyMode.Replace, record); }
+        public void Replace(Record record) { this.Modify(ViewModifyMode.Replace, record); }
 
         /// <summary>
         /// Deletes a Record from the View.
@@ -383,7 +389,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public void Delete(Record record) { Modify(ViewModifyMode.Delete, record); }
+        public void Delete(Record record) { this.Modify(ViewModifyMode.Delete, record); }
 
         /// <summary>
         /// Inserts a Record into the View.  The inserted data is not persistent.
@@ -401,7 +407,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewmodify.asp">MsiViewModify</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public void InsertTemporary(Record record) { Modify(ViewModifyMode.InsertTemporary, record); }
+        public void InsertTemporary(Record record) { this.Modify(ViewModifyMode.InsertTemporary, record); }
 
         /// <summary>
         /// Refreshes the information in the supplied record without changing the position
@@ -430,7 +436,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("record");
             }
 
-            uint ret = RemotableNativeMethods.MsiViewModify((int)Handle, (int)ViewModifyMode.Seek, (int)record.Handle);
+            uint ret = RemotableNativeMethods.MsiViewModify((int)this.Handle, (int)ViewModifyMode.Seek, (int)record.Handle);
             record.IsFormatStringInvalid = true;
             if (ret == (uint)NativeMethods.Error.FUNCTION_FAILED)
             {
@@ -470,7 +476,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("record");
             }
 
-            uint ret = RemotableNativeMethods.MsiViewModify((int)Handle, (int)ViewModifyMode.Merge, (int)record.Handle);
+            uint ret = RemotableNativeMethods.MsiViewModify((int)this.Handle, (int)ViewModifyMode.Merge, (int)record.Handle);
             if (ret == (uint)NativeMethods.Error.FUNCTION_FAILED)
             {
                 return false;
@@ -502,7 +508,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewgeterror.asp">MsiViewGetError</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public ICollection<ValidationErrorInfo> Validate(Record record) { return InternalValidate(ViewModifyMode.Validate, record); }
+        public ICollection<ValidationErrorInfo> Validate(Record record) { return this.InternalValidate(ViewModifyMode.Validate, record); }
 
         /// <summary>
         /// Validates a new record, returning information about any errors.
@@ -525,7 +531,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         [SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public ICollection<ValidationErrorInfo> ValidateNew(Record record) { return InternalValidate(ViewModifyMode.ValidateNew, record); }
+        public ICollection<ValidationErrorInfo> ValidateNew(Record record) { return this.InternalValidate(ViewModifyMode.ValidateNew, record); }
 
         /// <summary>
         /// Validates fields of a fetched or new record, returning information about any errors.
@@ -547,7 +553,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewgeterror.asp">MsiViewGetError</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public ICollection<ValidationErrorInfo> ValidateFields(Record record) { return InternalValidate(ViewModifyMode.ValidateField, record); }
+        public ICollection<ValidationErrorInfo> ValidateFields(Record record) { return this.InternalValidate(ViewModifyMode.ValidateField, record); }
 
         /// <summary>
         /// Validates a record that will be deleted later, returning information about any errors.
@@ -569,7 +575,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msiviewgeterror.asp">MsiViewGetError</a>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public ICollection<ValidationErrorInfo> ValidateDelete(Record record) { return InternalValidate(ViewModifyMode.ValidateDelete, record); }
+        public ICollection<ValidationErrorInfo> ValidateDelete(Record record) { return this.InternalValidate(ViewModifyMode.ValidateDelete, record); }
 
         /// <summary>
         /// Enumerates over the Records retrieved by the View.
@@ -590,7 +596,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public IEnumerator<Record> GetEnumerator()
         {
             Record rec;
-            while ((rec = Fetch()) != null)
+            while ((rec = this.Fetch()) != null)
             {
                 yield return rec;
             }
@@ -598,13 +604,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return this.GetEnumerator();
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private ICollection<ValidationErrorInfo> InternalValidate(ViewModifyMode mode, Record record)
         {
-            uint ret = RemotableNativeMethods.MsiViewModify((int)Handle, (int)mode, (int)record.Handle);
+            uint ret = RemotableNativeMethods.MsiViewModify((int)this.Handle, (int)mode, (int)record.Handle);
             if (ret == (uint)NativeMethods.Error.INVALID_DATA)
             {
                 ICollection<ValidationErrorInfo> errorInfo = new List<ValidationErrorInfo>();
@@ -612,11 +618,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 {
                     uint bufSize = 40;
                     StringBuilder column = new StringBuilder("", (int)bufSize);
-                    int error = RemotableNativeMethods.MsiViewGetError((int)Handle, column, ref bufSize);
+                    int error = RemotableNativeMethods.MsiViewGetError((int)this.Handle, column, ref bufSize);
                     if (error == -2 /*MSIDBERROR_MOREDATA*/)
                     {
                         column.Capacity = (int)++bufSize;
-                        error = RemotableNativeMethods.MsiViewGetError((int)Handle, column, ref bufSize);
+                        error = RemotableNativeMethods.MsiViewGetError((int)this.Handle, column, ref bufSize);
                     }
 
                     if (error == -3 /*MSIDBERROR_INVALIDARG*/)

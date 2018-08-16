@@ -50,10 +50,10 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             }
 
             // first get all the packages that are marked as the latest version.
-            IEnumerable<Package> packages = Packages.Select(packageGroup => new Package(_request, packageGroup.Where(link => link.Attributes[Iso19770_2.Discovery.Latest].IsTrue())));
+            var packages = Packages.Select(packageGroup => new Package(_request, packageGroup.Where(link => link.Attributes[Iso19770_2.Discovery.Latest].IsTrue())));
 
             // then follow any supplemental links to more declared latest packages.
-            IEnumerable<Package> morePackages = More.SelectMany(nextGroup => new Feed(_request, nextGroup).Query());
+            var morePackages = More.SelectMany(nextGroup => new Feed(_request, nextGroup).Query());
 
             // We do not follow to other feeds to find more, because declared latest packages should be in this feed (or a supplemental).
             return packages.Concat(morePackages);
@@ -72,24 +72,24 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             }
 
             // first get all the packages that are in this feed with a matched name
-            IEnumerable<Package> packages = PackagesFilteredByName(name).Select(packageGroup => new Package(_request, packageGroup)).Where(package => package.IsValid && package.Name.EqualsIgnoreCase(name));
+            var packages = PackagesFilteredByName(name).Select(packageGroup => new Package(_request, packageGroup)).Where(package => package.IsValid && package.Name.EqualsIgnoreCase(name));
 
             // then follow any supplemental links to more declared latest packages.
-            IEnumerable<Package> morePackages = More.SelectMany(nextGroup => new Feed(_request, nextGroup).Query(name));
+            var morePackages = More.SelectMany(nextGroup => new Feed(_request, nextGroup).Query(name));
 
             // let's search child feeds that declare that the name of the package in the feed matches the given name
-            IEnumerable<Package> packagesByName = Feeds.Where(feedGroup => feedGroup.Any(link => name.EqualsIgnoreCase(link.Attributes[Iso19770_2.Discovery.Name]))).SelectMany(feed => new Feed(_request, feed).Query(name));
+            var packagesByName = Feeds.Where(feedGroup => feedGroup.Any(link => name.EqualsIgnoreCase(link.Attributes[Iso19770_2.Discovery.Name]))).SelectMany(feed => new Feed(_request, feed).Query(name));
 
             // and search child feeds that the name would be in their range.
-            IEnumerable<Package> packagesByNameRange = Feeds.Where(feedGroup => feedGroup.Any(link =>
+            var packagesByNameRange = Feeds.Where(feedGroup => feedGroup.Any(link =>
             {
-                string minName = link.Attributes[Iso19770_2.Discovery.MinimumName];
-                string maxName = link.Attributes[Iso19770_2.Discovery.MaximumName];
+                var minName = link.Attributes[Iso19770_2.Discovery.MinimumName];
+                var maxName = link.Attributes[Iso19770_2.Discovery.MaximumName];
                 if (string.IsNullOrEmpty(minName) || string.IsNullOrEmpty(maxName))
                 {
                     return false;
                 }
-                return (string.Compare(minName, name, StringComparison.OrdinalIgnoreCase) <= 0 && string.Compare(name, maxName, StringComparison.OrdinalIgnoreCase) <= 0);
+                return (String.Compare(minName, name, StringComparison.OrdinalIgnoreCase) <= 0 && String.Compare(name, maxName, StringComparison.OrdinalIgnoreCase) <= 0);
             })).SelectMany(feed => new Feed(_request, feed).Query(name));
 
             return packages.Concat(morePackages).Concat(packagesByName).Concat(packagesByNameRange);
@@ -114,19 +114,19 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             }
 
             // first get all the packages that are in this feed with a matched name and version
-            IEnumerable<Package> packages = PackagesFilteredByName(name).Select(packageGroup => new Package(_request, packageGroup))
+            var packages = PackagesFilteredByName(name).Select(packageGroup => new Package(_request, packageGroup))
                 .Where(package => package.IsValid && package.Name.EqualsIgnoreCase(name) && SoftwareIdentityVersionComparer.CompareVersions(package.VersionScheme, package.Version, version) == 0);
 
             // then follow any supplemental links to more declared latest packages.
-            IEnumerable<Package> morePackages = More.SelectMany(nextGroup => new Feed(_request, nextGroup).Query(name, version));
+            var morePackages = More.SelectMany(nextGroup => new Feed(_request, nextGroup).Query(name, version));
 
             // let's search child feeds that declare that the name of the package in the feed matches the given name
             // and the version is either in the specified range of the link, or there is no specified version.
-            IEnumerable<Package> packagesByName = Feeds.Where(feedGroup => feedGroup.Any(link =>
+            var packagesByName = Feeds.Where(feedGroup => feedGroup.Any(link =>
             {
                 if (name.EqualsIgnoreCase(link.Attributes[Iso19770_2.Discovery.Name]))
                 {
-                    string minVer = link.Attributes[Iso19770_2.Discovery.MinimumVersion];
+                    var minVer = link.Attributes[Iso19770_2.Discovery.MinimumVersion];
                     if (!string.IsNullOrEmpty(minVer))
                     {
                         // since we don't know the version scheme at this point, so we just have to guess.
@@ -136,7 +136,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                             return false;
                         }
                     }
-                    string maxVer = link.Attributes[Iso19770_2.Discovery.MaximumVersion];
+                    var maxVer = link.Attributes[Iso19770_2.Discovery.MaximumVersion];
                     if (!string.IsNullOrEmpty(maxVer))
                     {
                         // since we don't know the version scheme at this point, so we just have to guess.
@@ -153,15 +153,15 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
 
             // and search child feeds that the name would be in their range.
             // (version matches have to wait till we Query() that feed, since name ranges and version ranges shouldn't be on the same link.)
-            IEnumerable<Package> packagesByNameRange = Feeds.Where(feedGroup => feedGroup.Any(link =>
+            var packagesByNameRange = Feeds.Where(feedGroup => feedGroup.Any(link =>
             {
-                string minName = link.Attributes[Iso19770_2.Discovery.MinimumName];
-                string maxName = link.Attributes[Iso19770_2.Discovery.MaximumName];
+                var minName = link.Attributes[Iso19770_2.Discovery.MinimumName];
+                var maxName = link.Attributes[Iso19770_2.Discovery.MaximumName];
                 if (string.IsNullOrEmpty(minName) || string.IsNullOrEmpty(maxName))
                 {
                     return false;
                 }
-                return (string.Compare(minName, name, StringComparison.OrdinalIgnoreCase) <= 0 && string.Compare(name, maxName, StringComparison.OrdinalIgnoreCase) <= 0);
+                return (String.Compare(minName, name, StringComparison.OrdinalIgnoreCase) <= 0 && String.Compare(name, maxName, StringComparison.OrdinalIgnoreCase) <= 0);
             })).SelectMany(feed => new Feed(_request, feed).Query(name, version));
 
             return packages.Concat(morePackages).Concat(packagesByName).Concat(packagesByNameRange);
@@ -187,7 +187,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             }
 
             // first get all the packages that are in this feed with a matched name and version
-            IEnumerable<Package> packages = PackagesFilteredByName(name).Select(packageGroup => new Package(_request, packageGroup)).Where(package =>
+            var packages = PackagesFilteredByName(name).Select(packageGroup => new Package(_request, packageGroup)).Where(package =>
             {
                 if (package.IsValid && package.Name.EqualsIgnoreCase(name))
                 {
@@ -217,16 +217,16 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             });
 
             // then follow any supplemental links to more declared latest packages.
-            IEnumerable<Package> morePackages = More.SelectMany(nextGroup => new Feed(_request, nextGroup).Query(name, minimumVersion, maximumVersion));
+            var morePackages = More.SelectMany(nextGroup => new Feed(_request, nextGroup).Query(name, minimumVersion, maximumVersion));
 
             // let's search child feeds that declare that the name of the package in the feed matches the given name
             // and the version is either in the specified range of the link, or there is no specified version.
-            IEnumerable<Package> packagesByName = Feeds.Where(feedGroup => feedGroup.Any(link =>
+            var packagesByName = Feeds.Where(feedGroup => feedGroup.Any(link =>
             {
                 if (name.EqualsIgnoreCase(link.Attributes[Iso19770_2.Discovery.Name]))
                 {
                     // first, ensure that the requested minimum version is lower than the maximum version found in the feed.
-                    string maxVer = link.Attributes[Iso19770_2.Discovery.MaximumVersion];
+                    var maxVer = link.Attributes[Iso19770_2.Discovery.MaximumVersion];
                     if (!string.IsNullOrEmpty(maxVer))
                     {
                         // since we don't know the version scheme at this point, so we just have to guess.
@@ -238,7 +238,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                     }
 
                     // and then ensure that the requested maximum version is greater than the minimum version found in the feed.
-                    string minVer = link.Attributes[Iso19770_2.Discovery.MinimumVersion];
+                    var minVer = link.Attributes[Iso19770_2.Discovery.MinimumVersion];
                     if (!string.IsNullOrEmpty(minVer))
                     {
                         // since we don't know the version scheme at this point, so we just have to guess.
@@ -256,15 +256,15 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
 
             // and search child feeds that the name would be in their range.
             // (version matches have to wait till we Query() that feed, since name ranges and version ranges shouldn't be on the same link.)
-            IEnumerable<Package> packagesByNameRange = Feeds.Where(feedGroup => feedGroup.Any(link =>
+            var packagesByNameRange = Feeds.Where(feedGroup => feedGroup.Any(link =>
             {
-                string minName = link.Attributes[Iso19770_2.Discovery.MinimumName];
-                string maxName = link.Attributes[Iso19770_2.Discovery.MaximumName];
+                var minName = link.Attributes[Iso19770_2.Discovery.MinimumName];
+                var maxName = link.Attributes[Iso19770_2.Discovery.MaximumName];
                 if (string.IsNullOrEmpty(minName) || string.IsNullOrEmpty(maxName))
                 {
                     return false;
                 }
-                return (string.Compare(minName, name, StringComparison.OrdinalIgnoreCase) <= 0 && string.Compare(name, maxName, StringComparison.OrdinalIgnoreCase) <= 0);
+                return (String.Compare(minName, name, StringComparison.OrdinalIgnoreCase) <= 0 && String.Compare(name, maxName, StringComparison.OrdinalIgnoreCase) <= 0);
             })).SelectMany(feed => new Feed(_request, feed).Query(name, minimumVersion, maximumVersion));
 
             return packages.Concat(morePackages).Concat(packagesByName).Concat(packagesByNameRange);

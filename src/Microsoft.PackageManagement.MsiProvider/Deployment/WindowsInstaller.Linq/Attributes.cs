@@ -29,7 +29,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         /// <param name="table">name of the table associated with the record type</param>
         public DatabaseTableAttribute(string table)
         {
-            Table = table;
+            this.Table = table;
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         /// <param name="column">name of the column associated with the property</param>
         public DatabaseColumnAttribute(string column)
         {
-            Column = column;
+            this.Column = column;
         }
 
         /// <summary>

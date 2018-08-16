@@ -33,7 +33,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
         }
 
-        protected override IEnumerable<string> ParameterSets => new[] { "", };
+        protected override IEnumerable<string> ParameterSets
+        {
+            get
+            {
+                return new[] { "", };
+            }
+        }
 
         [Parameter]
         public SwitchParameter IncludeDependencies { get; set; }
@@ -70,8 +76,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
                 if (IncludeDependencies)
                 {
-                    HashSet<string> missingDependencies = new HashSet<string>();
-                    foreach (string dep in package.Dependencies)
+                    var missingDependencies = new HashSet<string>();
+                    foreach (var dep in package.Dependencies)
                     {
                         // note: future work may be needed if the package sources currently selected by the user don't
                         // contain the dependencies.
@@ -79,8 +85,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                         // this dep is not processed yet
                         if (!processedDependencies.Contains(dep))
                         {
-                            IEnumerable<SoftwareIdentity> dependencies = PackageManagementService.FindPackageByCanonicalId(dep, this);
-                            SoftwareIdentity depPkg = dependencies.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).FirstOrDefault();
+                            var dependencies = PackageManagementService.FindPackageByCanonicalId(dep, this);
+                            var depPkg = dependencies.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).FirstOrDefault();
 
                             processedDependencies.Add(dep);
 

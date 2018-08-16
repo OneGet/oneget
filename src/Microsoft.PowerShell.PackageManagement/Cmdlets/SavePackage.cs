@@ -38,7 +38,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
         }
 
-        protected override IEnumerable<string> ParameterSets => new[] { Constants.ParameterSets.PackageByInputObjectSet, "" };
+        protected override IEnumerable<string> ParameterSets
+        {
+            get
+            {
+                return new[] { Constants.ParameterSets.PackageByInputObjectSet, "" };
+            }
+        }
 
         [Parameter(Position = 0, Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Name { get; set; }
@@ -56,16 +62,22 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         // Use the base Source property so relative path will be resolved
         public override string[] Source
         {
-            get => base.Source;
-            set => base.Source = value;
+            get
+            {
+                return base.Source;
+            }
+            set
+            {
+                base.Source = value;
+            }
         }
 
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments)
         {
             if (!IsInvocation)
             {
-                IEnumerable<string> providerNames = PackageManagementService.AllProviderNames;
-                string[] whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
+                var providerNames = PackageManagementService.AllProviderNames;
+                var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
                 if (whatsOnCmdline != null)
                 {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
@@ -194,7 +206,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 return false;
             }
 
-            MutableEnumerable<SoftwareIdentity> swids = CheckMatchedDuplicates().ReEnumerable();
+            var swids = CheckMatchedDuplicates().ReEnumerable();
             if (swids == null || !swids.Any())
             {
                 // there are duplicate packages
@@ -208,14 +220,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         private bool DownloadPackage(params SoftwareIdentity[] packagesToSave)
         {
-            foreach (SoftwareIdentity package in packagesToSave)
+            foreach (var package in packagesToSave)
             {
                 if (IsCanceled)
                 {
                     return false;
                 }
 
-                Microsoft.PackageManagement.Implementation.PackageProvider provider = package.Provider;
+                var provider = package.Provider;
 
                 if (!provider.IsMethodImplemented("DownloadPackage"))
                 {
@@ -224,7 +236,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 }
 
                 // if we do save-package jquery -path C:\test then savepath would be C:\test
-                string savePath = SaveFileName(package.PackageFilename);
+                var savePath = SaveFileName(package.PackageFilename);
 
                 bool mainPackageDownloaded = false;
 
@@ -234,8 +246,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     // message would be something like What if: Performing the operation "Save Package" on target "'jQuery' to location 'C:\test\test'".
                     if (ShouldProcess(FormatMessageString(Resources.Messages.SavePackageWhatIfDescription, package.Name, savePath), FormatMessageString(Resources.Messages.SavePackage)).Result)
                     {
-                        Microsoft.PackageManagement.Internal.Api.IHostApi host = this.ProviderSpecific(provider);
-                        foreach (SoftwareIdentity downloadedPkg in provider.DownloadPackage(package, savePath, host).CancelWhen(CancellationEvent.Token))
+                        var host = this.ProviderSpecific(provider);
+                        foreach (var downloadedPkg in provider.DownloadPackage(package, savePath, host).CancelWhen(CancellationEvent.Token))
                         //foreach (var downloadedPkg in provider.DownloadPackage(package, savePath, ErrorAndWarningContinue ? host.SuppressErrorsAndWarnings(IsProcessing) : host).CancelWhen(CancellationEvent.Token))
                         {
                             if (IsCanceled)
@@ -245,7 +257,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                             }
 
                             // check whether main package is downloaded;
-                            if (downloadedPkg.Name.EqualsIgnoreCase(package.Name) && downloadedPkg.Version >= (FourPartVersion)package.Version)
+                            if (downloadedPkg.Name.EqualsIgnoreCase(package.Name) && (FourPartVersion)downloadedPkg.Version >= (FourPartVersion)package.Version)
                             {
                                 mainPackageDownloaded = true;
                             }

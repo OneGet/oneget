@@ -48,14 +48,26 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
         private static readonly IEqualityComparer<Package> PackageEqualityComparer = new PackageManagement.Internal.Utility.Extensions.EqualityComparer<Package>(
             (x, y) => x.Name.EqualsIgnoreCase(y.Name) && x.Version.EqualsIgnoreCase(y.Version), (x) => (x.Name + x.Version).GetHashCode());
 
-        private PackageManagementService PackageManagementService => PackageManager.Instance as PackageManagementService;
+        private PackageManagementService PackageManagementService
+        {
+            get
+            {
+                return PackageManager.Instance as PackageManagementService;
+            }
+        }
 
         /// <summary>
         ///     Returns the name of the Provider.
         /// </summary>
         /// <required />
         /// <returns>the name of the package provider</returns>
-        public string PackageProviderName => "Bootstrap";
+        public string PackageProviderName
+        {
+            get
+            {
+                return "Bootstrap";
+            }
+        }
 
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Plugin requirement.")]
         public void InitializeProvider(BootstrapRequest request)
@@ -96,7 +108,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             }
 
             request.Debug("Calling 'Bootstrap::GetFeatures'");
-            foreach (KeyValuePair<string, string[]> feature in _features)
+            foreach (var feature in _features)
             {
                 request.Yield(feature);
             }
@@ -141,14 +153,14 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             {
                 if (request.LocalSource.Any())
                 {
-                    foreach (string source in request.LocalSource)
+                    foreach (var source in request.LocalSource)
                     {
                         request.YieldPackageSource(source, source, false, true, true);
                     }
                     return;
                 }
 
-                foreach (Uri source in request._urls)
+                foreach (var source in request._urls)
                 {
                     request.YieldPackageSource(source.AbsoluteUri, source.AbsoluteUri, false, true, true);
                 }
@@ -186,12 +198,12 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             if (string.IsNullOrWhiteSpace(name) || WildcardPattern.ContainsWildcardCharacters(name))
             {
                 // no, return all providers that match the range.
-                WildcardPattern wildcardPattern = new WildcardPattern(name, WildcardOptions);
+                var wildcardPattern = new WildcardPattern(name, WildcardOptions);
 
                 if (request.GetOptionValue("AllVersions").IsTrue())
                 {
                     // Feed.Query() can return an empty provider, so here we need to exclude it by checking p.Name !=null or empty.
-                    foreach (Package p in request.Providers.Distinct(PackageEqualityComparer).Where(p => !string.IsNullOrWhiteSpace(p.Name) && (string.IsNullOrWhiteSpace(name) || wildcardPattern.IsMatch(p.Name))))
+                    foreach (var p in request.Providers.Distinct(PackageEqualityComparer).Where(p => !string.IsNullOrWhiteSpace(p.Name) && (string.IsNullOrWhiteSpace(name) || wildcardPattern.IsMatch(p.Name))))
                     {
                         FindPackage(p.Name, null, "0.0", null, 0, request);
                     }
@@ -277,7 +289,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             var providers = PackageManagementService.AllProvidersFromProviderAssembliesLocation(request).Select(providerFileAssembly =>
             {
                 //get the provider's name\version
-                string versionFolder = Path.GetDirectoryName(providerFileAssembly);
+                var versionFolder = Path.GetDirectoryName(providerFileAssembly);
 
                 if (string.IsNullOrWhiteSpace(versionFolder))
                 {
@@ -292,10 +304,10 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                     return null;
                 }
 
-                string providerNameFolder = Path.GetDirectoryName(versionFolder);
+                var providerNameFolder = Path.GetDirectoryName(versionFolder);
                 if (!string.IsNullOrWhiteSpace(providerNameFolder))
                 {
-                    string providerName = Path.GetFileName(providerNameFolder);
+                    var providerName = Path.GetFileName(providerNameFolder);
                     if (!string.IsNullOrWhiteSpace(providerName))
                     {
                         return new
@@ -318,10 +330,10 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 each.ProviderPath
             })).Distinct();
 
-            IEnumerable<Package> pp = request.LocalSource.Any() ? providers.Select(each => request.GetProviderFromFile(each.ProviderPath, false, true)).WhereNotNull() :
+            var pp = request.LocalSource.Any() ? providers.Select(each => request.GetProviderFromFile(each.ProviderPath, false, true)).WhereNotNull() :
                                                                     providers.Select(each => request.GetProvider(each.Name, each.Version)).WhereNotNull();
 
-            foreach (Package p in pp)
+            foreach (var p in pp)
             {
                 request.YieldFromSwidtag(p, requiredVersion, minimumVersion, maximumVersion, name);
             }
@@ -347,7 +359,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
 
                 case Iso19770_2.MediaType.PackageReference:
                     // let the core figure out how to install this package
-                    SoftwareIdentity[] packages = PackageManagementService.FindPackageByCanonicalId(link.HRef.AbsoluteUri, request).ToArray();
+                    var packages = PackageManagementService.FindPackageByCanonicalId(link.HRef.AbsoluteUri, request).ToArray();
                     switch (packages.Length)
                     {
                         case 0:
@@ -371,7 +383,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
         private bool InstallPackageFile(Package provider, string fastPath, BootstrapRequest request)
         {
             // we can download and verify this package and get the core to install it.
-            string file = request.DownloadAndValidateFile(provider._swidtag);
+            var file = request.DownloadAndValidateFile(provider._swidtag);
             if (file != null)
             {
                 // we have a valid file.
@@ -409,11 +421,11 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 }.As<IHostApi>();
             }
 
-            PackageManagement.Internal.Utility.Async.IAsyncEnumerable<SoftwareIdentity> installing = packages[0].Provider.InstallPackage(packages[0], installRequest);
+            var installing = packages[0].Provider.InstallPackage(packages[0], installRequest);
 
             SoftwareIdentity lastPackage = null;
 
-            foreach (SoftwareIdentity i in installing)
+            foreach (var i in installing)
             {
                 lastPackage = i;
                 // should we echo each package back as it comes back?
@@ -483,7 +495,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
 
             //the provider is installing to like this folder: \WindowsPowerShell\Modules\PackageManagement\ProviderAssemblies\nuget\2.8.5.127
             //... providername\version\.dll
-            string versionFolder = Path.Combine(request.DestinationPath(request), provider.Name, provider.Version);
+            var versionFolder = Path.Combine(request.DestinationPath(request), provider.Name, provider.Version);
 
             // if version folder exists, remove it
             if (Directory.Exists(versionFolder))
@@ -497,7 +509,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 Directory.CreateDirectory(versionFolder);
             }
 
-            string targetFile = Path.Combine(versionFolder, targetFilename);
+            var targetFile = Path.Combine(versionFolder, targetFilename);
 
             if (file != null)
             {
@@ -556,13 +568,13 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
         private void RemoveDirectory(string directoryFolder)
         {
             // remove all files
-            foreach (string fileToBeRemoved in Directory.EnumerateFiles(directoryFolder))
+            foreach (var fileToBeRemoved in Directory.EnumerateFiles(directoryFolder))
             {
                 fileToBeRemoved.TryHardToDelete();
             }
 
             // remove all subdirectories
-            foreach (string folderToBeRemoved in Directory.EnumerateDirectories(directoryFolder))
+            foreach (var folderToBeRemoved in Directory.EnumerateDirectories(directoryFolder))
             {
                 RemoveDirectory(folderToBeRemoved);
             }
@@ -584,15 +596,15 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             }
 
             // copy the files over
-            foreach (string file in Directory.EnumerateFiles(sourceFolder))
+            foreach (var file in Directory.EnumerateFiles(sourceFolder))
             {
                 File.Copy(file, Path.Combine(destinationFolder, Path.GetFileName(file)), true);
             }
 
             // copy the directories over
-            foreach (string directory in Directory.EnumerateDirectories(sourceFolder))
+            foreach (var directory in Directory.EnumerateDirectories(sourceFolder))
             {
-                string destinationDirName = Path.Combine(destinationFolder, Path.GetFileName(directory));
+                var destinationDirName = Path.Combine(destinationFolder, Path.GetFileName(directory));
 
                 if (!Directory.Exists(destinationDirName))
                 {
@@ -605,9 +617,9 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
 
         private void InstallPackageFromFile(string fastPath, BootstrapRequest request)
         {
-            string filePath = new Uri(fastPath).LocalPath;
+            var filePath = new Uri(fastPath).LocalPath;
 
-            Package pkg = request.GetProviderFromFile(filePath, true, false);
+            var pkg = request.GetProviderFromFile(filePath, true, false);
 
             if (pkg != null)
             {
@@ -632,10 +644,10 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             }
             // ensure that mandatory parameters are present.
             request.Debug("Calling 'Bootstrap::InstallPackage'");
-            bool triedAndFailed = false;
+            var triedAndFailed = false;
 
             //source can be from install - packageprovider or can be from the pipeline
-            if (request.LocalSource.Any() || fastPath.IsFile())
+            if ((request.LocalSource.Any() || fastPath.IsFile()))
             {
                 InstallPackageFromFile(fastPath, request);
                 return;
@@ -643,18 +655,18 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
 
             // verify the package integrity (ie, check if it's digitally signed before installing)
 
-            Package provider = request.GetProvider(new Uri(fastPath));
+            var provider = request.GetProvider(new Uri(fastPath));
             if (provider == null || !provider.IsValid)
             {
-                bool result = errorContinue ? request.Warning(Constants.Messages.UnableToResolvePackage, fastPath) : request.Error(ErrorCategory.InvalidData, fastPath, Constants.Messages.UnableToResolvePackage, fastPath);
+                var result = errorContinue ? request.Warning(Constants.Messages.UnableToResolvePackage, fastPath) : request.Error(ErrorCategory.InvalidData, fastPath, Constants.Messages.UnableToResolvePackage, fastPath);
                 return;
             }
 
             // first install the dependencies if any
-            IEnumerable<IGrouping<string, Link>> dependencyLinks = provider._swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Requires).GroupBy(link => link.Artifact);
-            foreach (IGrouping<string, Link> depLinks in dependencyLinks)
+            var dependencyLinks = provider._swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Requires).GroupBy(link => link.Artifact);
+            foreach (var depLinks in dependencyLinks)
             {
-                foreach (Link item in depLinks)
+                foreach (var item in depLinks)
                 {
                     Package packages = null;
                     if (string.IsNullOrWhiteSpace(item.Attributes[Iso19770_2.Discovery.Name]))
@@ -688,13 +700,13 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             }
 
             // group the links along 'artifact' lines
-            IEnumerable<IGrouping<string, Link>> artifacts = provider._swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.InstallationMedia).GroupBy(link => link.Artifact);
+            var artifacts = provider._swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.InstallationMedia).GroupBy(link => link.Artifact);
 
             // try one artifact set at a time.
-            foreach (IGrouping<string, Link> artifact in artifacts)
+            foreach (var artifact in artifacts)
             {
                 // first time we succeed, we're good to go.
-                foreach (Link link in artifact)
+                foreach (var link in artifact)
                 {
                     switch (link.Attributes[Iso19770_2.Discovery.Type])
                     {
@@ -720,12 +732,12 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             if (triedAndFailed)
             {
                 // we tried installing something and it didn't go well.
-                bool result = errorContinue ? request.Warning(Constants.Messages.FailedProviderBootstrap, fastPath) : request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.FailedProviderBootstrap, fastPath);
+                var result = errorContinue ? request.Warning(Constants.Messages.FailedProviderBootstrap, fastPath) : request.Error(ErrorCategory.InvalidOperation, fastPath, Constants.Messages.FailedProviderBootstrap, fastPath);
             }
             else
             {
                 // we didn't even find a link to bootstrap.
-                bool result = errorContinue ? request.Warning(Resources.Messages.MissingInstallationmedia, fastPath) : request.Error(ErrorCategory.InvalidOperation, fastPath, Resources.Messages.MissingInstallationmedia, fastPath);
+                var result = errorContinue ? request.Warning(Resources.Messages.MissingInstallationmedia, fastPath) : request.Error(ErrorCategory.InvalidOperation, fastPath, Resources.Messages.MissingInstallationmedia, fastPath);
             }
         }
     }

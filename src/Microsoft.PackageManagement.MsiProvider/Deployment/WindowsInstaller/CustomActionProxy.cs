@@ -117,7 +117,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 object[] args = new object[] { session };
                 if (DebugBreakEnabled(new string[] { entryPoint, methodName }))
                 {
-                    string message = string.Format(CultureInfo.InvariantCulture,
+                    string message = String.Format(CultureInfo.InvariantCulture,
                         "To debug your custom action, attach to process ID {0} (0x{0:x}) and click OK; otherwise, click Cancel to fail the custom action.",
                         System.Diagnostics.Process.GetCurrentProcess().Id
                         );

@@ -15,14 +15,14 @@
 namespace Microsoft.PackageManagement.Internal.Implementation
 {
     using Api;
-    using Providers;
     using System.Collections.Generic;
+    using Providers;
 
-    internal class Archiver : ProviderBase<IArchiver>
+    internal class Archiver: ProviderBase<IArchiver>
     {
         private string _name;
 
-        internal Archiver(IArchiver provider)
+        internal Archiver(IArchiver provider) 
             : base(provider)
         {
         }

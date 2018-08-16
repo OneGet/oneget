@@ -27,14 +27,26 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the number of tables in the database.
         /// </summary>
-        public int Count => GetTables().Count;
+        public int Count
+        {
+            get
+            {
+                return this.GetTables().Count;
+            }
+        }
 
         /// <summary>
         /// Gets a boolean value indicating whether the collection is read-only.
         /// A TableCollection is read-only when the database is read-only.
         /// </summary>
         /// <value>read-only status of the collection</value>
-        public bool IsReadOnly => db.IsReadOnly;
+        public bool IsReadOnly
+        {
+            get
+            {
+                return this.db.IsReadOnly;
+            }
+        }
 
         /// <summary>
         /// Gets information about a given table.
@@ -50,12 +62,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     throw new ArgumentNullException("table");
                 }
 
-                if (!Contains(table))
+                if (!this.Contains(table))
                 {
                     return null;
                 }
 
-                return new TableInfo(db, table);
+                return new TableInfo(this.db, table);
             }
         }
 
@@ -71,12 +83,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("item");
             }
 
-            if (Contains(item.Name))
+            if (this.Contains(item.Name))
             {
                 throw new InvalidOperationException();
             }
 
-            db.Execute(item.SqlCreateString);
+            this.db.Execute(item.SqlCreateString);
         }
 
         /// <summary>
@@ -84,9 +96,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </summary>
         public void Clear()
         {
-            foreach (string table in GetTables())
+            foreach (string table in this.GetTables())
             {
-                Remove(table);
+                this.Remove(table);
             }
         }
 
@@ -101,7 +113,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 throw new ArgumentNullException("item");
             }
-            uint ret = RemotableNativeMethods.MsiDatabaseIsTablePersistent((int)db.Handle, item);
+            uint ret = RemotableNativeMethods.MsiDatabaseIsTablePersistent((int)this.db.Handle, item);
             if (ret == 3)  // MSICONDITION_ERROR
             {
                 throw new InstallerException();
@@ -111,7 +123,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         bool ICollection<TableInfo>.Contains(TableInfo item)
         {
-            return Contains(item.Name);
+            return this.Contains(item.Name);
         }
 
         /// <summary>
@@ -126,9 +138,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("array");
             }
 
-            foreach (string table in GetTables())
+            foreach (string table in this.GetTables())
             {
-                array[arrayIndex++] = new TableInfo(db, table);
+                array[arrayIndex++] = new TableInfo(this.db, table);
             }
         }
 
@@ -144,11 +156,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("item");
             }
 
-            if (!Contains(item))
+            if (!this.Contains(item))
             {
                 return false;
             }
-            db.Execute("DROP TABLE `{0}`", item);
+            this.db.Execute("DROP TABLE `{0}`", item);
             return true;
         }
 
@@ -159,7 +171,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("item");
             }
 
-            return Remove(item.Name);
+            return this.Remove(item.Name);
         }
 
         /// <summary>
@@ -167,20 +179,20 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </summary>
         public IEnumerator<TableInfo> GetEnumerator()
         {
-            foreach (string table in GetTables())
+            foreach (string table in this.GetTables())
             {
-                yield return new TableInfo(db, table);
+                yield return new TableInfo(this.db, table);
             }
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return this.GetEnumerator();
         }
 
         private IList<string> GetTables()
         {
-            return db.ExecuteStringQuery("SELECT `Name` FROM `_Tables`");
+            return this.db.ExecuteStringQuery("SELECT `Name` FROM `_Tables`");
         }
     }
 }

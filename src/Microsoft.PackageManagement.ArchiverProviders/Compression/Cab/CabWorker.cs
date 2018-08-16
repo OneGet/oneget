@@ -56,102 +56,156 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         protected CabWorker(CabEngine cabEngine)
         {
             this.cabEngine = cabEngine;
-            streamHandles = new HandleManager<Stream>();
-            erf = new NativeMethods.ERF();
-            erfHandle = GCHandle.Alloc(erf, GCHandleType.Pinned);
-            cabNumbers = new Dictionary<string, short>(1);
+            this.streamHandles = new HandleManager<Stream>();
+            this.erf = new NativeMethods.ERF();
+            this.erfHandle = GCHandle.Alloc(this.erf, GCHandleType.Pinned);
+            this.cabNumbers = new Dictionary<string, short>(1);
 
             // 32K seems to be the size of the largest chunks processed by cabinet.dll.
             // But just in case, this buffer will auto-enlarge.
-            buf = new byte[32768];
+            this.buf = new byte[32768];
         }
 
         ~CabWorker()
         {
-            Dispose(false);
+            this.Dispose(false);
         }
 
-        public CabEngine CabEngine => cabEngine;
+        public CabEngine CabEngine
+        {
+            get
+            {
+                return this.cabEngine;
+            }
+        }
 
-        internal NativeMethods.ERF Erf => erf;
+        internal NativeMethods.ERF Erf
+        {
+            get
+            {
+                return this.erf;
+            }
+        }
 
-        internal GCHandle ErfHandle => erfHandle;
+        internal GCHandle ErfHandle
+        {
+            get
+            {
+                return this.erfHandle;
+            }
+        }
 
-        internal HandleManager<Stream> StreamHandles => streamHandles;
+        internal HandleManager<Stream> StreamHandles
+        {
+            get
+            {
+                return this.streamHandles;
+            }
+        }
 
         internal bool SuppressProgressEvents
         {
-            get => suppressProgressEvents;
+            get
+            {
+                return this.suppressProgressEvents;
+            }
 
-            set => suppressProgressEvents = value;
+            set
+            {
+                this.suppressProgressEvents = value;
+            }
         }
 
-        internal IDictionary<string, short> CabNumbers => cabNumbers;
+        internal IDictionary<string, short> CabNumbers
+        {
+            get
+            {
+                return this.cabNumbers;
+            }
+        }
 
         internal string NextCabinetName
         {
-            get => nextCabinetName;
+            get
+            {
+                return this.nextCabinetName;
+            }
 
-            set => nextCabinetName = value;
+            set
+            {
+                this.nextCabinetName = value;
+            }
         }
 
         internal Stream CabStream
         {
-            get => cabStream;
+            get
+            {
+                return this.cabStream;
+            }
 
-            set => cabStream = value;
+            set
+            {
+                this.cabStream = value;
+            }
         }
 
         internal Stream FileStream
         {
-            get => fileStream;
+            get
+            {
+                return this.fileStream;
+            }
 
-            set => fileStream = value;
+            set
+            {
+                this.fileStream = value;
+            }
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
         protected void ResetProgressData()
         {
-            currentFileName = null;
-            currentFileNumber = 0;
-            totalFiles = 0;
-            currentFileBytesProcessed = 0;
-            currentFileTotalBytes = 0;
-            currentFolderNumber = 0;
-            currentFolderTotalBytes = 0;
-            currentArchiveName = null;
-            currentArchiveNumber = 0;
-            totalArchives = 0;
-            currentArchiveBytesProcessed = 0;
-            currentArchiveTotalBytes = 0;
-            fileBytesProcessed = 0;
-            totalFileBytes = 0;
+            this.currentFileName = null;
+            this.currentFileNumber = 0;
+            this.totalFiles = 0;
+            this.currentFileBytesProcessed = 0;
+            this.currentFileTotalBytes = 0;
+            this.currentFolderNumber = 0;
+            this.currentFolderTotalBytes = 0;
+            this.currentArchiveName = null;
+            this.currentArchiveNumber = 0;
+            this.totalArchives = 0;
+            this.currentArchiveBytesProcessed = 0;
+            this.currentArchiveTotalBytes = 0;
+            this.fileBytesProcessed = 0;
+            this.totalFileBytes = 0;
         }
 
         protected void OnProgress(ArchiveProgressType progressType)
         {
-            if (!suppressProgressEvents)
+            if (!this.suppressProgressEvents)
             {
                 ArchiveProgressEventArgs e = new ArchiveProgressEventArgs(
                     progressType,
-                    currentFileName,
-                    currentFileNumber >= 0 ? currentFileNumber : 0,
-                    totalFiles,
-                    currentFileBytesProcessed,
-                    currentFileTotalBytes,
-                    currentArchiveName,
-                    currentArchiveNumber,
-                    totalArchives,
-                    currentArchiveBytesProcessed,
-                    currentArchiveTotalBytes,
-                    fileBytesProcessed,
-                    totalFileBytes);
-                CabEngine.ReportProgress(e);
+                    this.currentFileName,
+                    this.currentFileNumber >= 0 ? this.currentFileNumber : 0,
+                    this.totalFiles,
+                    this.currentFileBytesProcessed,
+                    this.currentFileTotalBytes,
+                    this.currentArchiveName,
+                    this.currentArchiveNumber,
+                    this.totalArchives,
+                    this.currentArchiveBytesProcessed,
+                    this.currentArchiveTotalBytes,
+                    this.fileBytesProcessed,
+                    this.totalFileBytes);
+                this.CabEngine.ReportProgress(e);
             }
         }
 
@@ -168,77 +222,77 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
         internal int CabOpenStream(string path, int openFlags, int shareMode)
         {
-            return CabOpenStreamEx(path, openFlags, shareMode, out int err, IntPtr.Zero);
+            return this.CabOpenStreamEx(path, openFlags, shareMode, out int err, IntPtr.Zero);
         }
 
         internal virtual int CabOpenStreamEx(string path, int openFlags, int shareMode, out int err, IntPtr pv)
         {
             path = path.Trim();
-            Stream stream = cabStream;
-            cabStream = new DuplicateStream(stream);
-            int streamHandle = streamHandles.AllocHandle(stream);
+            Stream stream = this.cabStream;
+            this.cabStream = new DuplicateStream(stream);
+            int streamHandle = this.streamHandles.AllocHandle(stream);
             err = 0;
             return streamHandle;
         }
 
         internal int CabReadStream(int streamHandle, IntPtr memory, int cb)
         {
-            return CabReadStreamEx(streamHandle, memory, cb, out int err, IntPtr.Zero);
+            return this.CabReadStreamEx(streamHandle, memory, cb, out int err, IntPtr.Zero);
         }
 
         internal virtual int CabReadStreamEx(int streamHandle, IntPtr memory, int cb, out int err, IntPtr pv)
         {
-            Stream stream = streamHandles[streamHandle];
-            int count = cb;
-            if (count > buf.Length)
+            Stream stream = this.streamHandles[streamHandle];
+            int count = (int)cb;
+            if (count > this.buf.Length)
             {
-                buf = new byte[count];
+                this.buf = new byte[count];
             }
-            count = stream.Read(buf, 0, count);
-            Marshal.Copy(buf, 0, memory, count);
+            count = stream.Read(this.buf, 0, count);
+            Marshal.Copy(this.buf, 0, memory, count);
             err = 0;
             return count;
         }
 
         internal int CabWriteStream(int streamHandle, IntPtr memory, int cb)
         {
-            return CabWriteStreamEx(streamHandle, memory, cb, out int err, IntPtr.Zero);
+            return this.CabWriteStreamEx(streamHandle, memory, cb, out int err, IntPtr.Zero);
         }
 
         internal virtual int CabWriteStreamEx(int streamHandle, IntPtr memory, int cb, out int err, IntPtr pv)
         {
-            Stream stream = streamHandles[streamHandle];
-            int count = cb;
-            if (count > buf.Length)
+            Stream stream = this.streamHandles[streamHandle];
+            int count = (int)cb;
+            if (count > this.buf.Length)
             {
-                buf = new byte[count];
+                this.buf = new byte[count];
             }
-            Marshal.Copy(memory, buf, 0, count);
-            stream.Write(buf, 0, count);
+            Marshal.Copy(memory, this.buf, 0, count);
+            stream.Write(this.buf, 0, count);
             err = 0;
             return cb;
         }
 
         internal int CabCloseStream(int streamHandle)
         {
-            return CabCloseStreamEx(streamHandle, out int err, IntPtr.Zero);
+            return this.CabCloseStreamEx(streamHandle, out int err, IntPtr.Zero);
         }
 
         internal virtual int CabCloseStreamEx(int streamHandle, out int err, IntPtr pv)
         {
-            streamHandles.FreeHandle(streamHandle);
+            this.streamHandles.FreeHandle(streamHandle);
             err = 0;
             return 0;
         }
 
         internal int CabSeekStream(int streamHandle, int offset, int seekOrigin)
         {
-            return CabSeekStreamEx(streamHandle, offset, seekOrigin, out int err, IntPtr.Zero);
+            return this.CabSeekStreamEx(streamHandle, offset, seekOrigin, out int err, IntPtr.Zero);
         }
 
         internal virtual int CabSeekStreamEx(int streamHandle, int offset, int seekOrigin, out int err, IntPtr pv)
         {
-            Stream stream = streamHandles[streamHandle];
+            Stream stream = this.streamHandles[streamHandle];
             offset = (int)stream.Seek(offset, (SeekOrigin)seekOrigin);
             err = 0;
             return offset;
@@ -255,41 +309,41 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         {
             if (disposing)
             {
-                if (cabStream != null)
+                if (this.cabStream != null)
                 {
 #if CORECLR
                     this.cabStream.Dispose();
 #else
-                    cabStream.Close();
+                    this.cabStream.Close();
 #endif
-                    cabStream = null;
+                    this.cabStream = null;
                 }
 
-                if (fileStream != null)
+                if (this.fileStream != null)
                 {
 #if CORECLR
                     this.fileStream.Dispose();
 #else
-                    fileStream.Close();
+                    this.fileStream.Close();
 #endif
-                    fileStream = null;
+                    this.fileStream = null;
                 }
             }
 
-            if (erfHandle.IsAllocated)
+            if (this.erfHandle.IsAllocated)
             {
-                erfHandle.Free();
+                this.erfHandle.Free();
             }
         }
 
         protected void CheckError(bool extracting)
         {
-            if (Erf.Error)
+            if (this.Erf.Error)
             {
                 throw new CabException(
-                    Erf.Oper,
-                    Erf.Type,
-                    CabException.GetErrorMessage(Erf.Oper, Erf.Type, extracting));
+                    this.Erf.Oper,
+                    this.Erf.Type,
+                    CabException.GetErrorMessage(this.Erf.Oper, this.Erf.Type, extracting));
             }
         }
     }

@@ -82,7 +82,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                         {
                             if (FilesystemExtensions.LooksLikeAFilename(source))
                             {
-                                System.Collections.ObjectModel.Collection<string> resolvedPaths = GetResolvedProviderPathFromPSPath(source, out ProviderInfo providerInfo);
+                                var resolvedPaths = GetResolvedProviderPathFromPSPath(source, out ProviderInfo providerInfo);
 
                                 // Ensure the path is a single path from the file system provider
                                 if ((providerInfo != null) && (resolvedPaths.Count == 1) && string.Equals(providerInfo.Name, "FileSystem", StringComparison.OrdinalIgnoreCase))
@@ -194,7 +194,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
             if (FilesystemExtensions.LooksLikeAFilename(path))
             {
-                MutableEnumerable<string> paths = GetResolvedProviderPathFromPSPath(path, out ProviderInfo providerInfo).ReEnumerable();
+                var paths = GetResolvedProviderPathFromPSPath(path, out ProviderInfo providerInfo).ReEnumerable();
                 return
                     paths.SelectMany(
                         each => FilesystemExtensions.FileExists(each) ? CollectionExtensions.SingleItemAsEnumerable(each) : FilesystemExtensions.DirectoryExists(each) ? Directory.GetFiles(each) : Microsoft.PackageManagement.Internal.Constants.Empty)
@@ -355,7 +355,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     {
                         // look only at requests that have data waiting.
 
-                        foreach (SoftwareIdentity package in result.packages.GetConsumingEnumerable())
+                        foreach (var package in result.packages.GetConsumingEnumerable())
                         {
                             // process the results for that set.
                             // check if the package is a provider package. If so we need to filter on the packages for the providers.
@@ -384,16 +384,16 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                         {
                             if (perQuery.All(each => each.packages.IsCompleted && !each.packages.IsConsumed))
                             {
-                                foreach (SoftwareIdentity pkg in from p in perQuery.SelectMany(each => each.packages.GetConsumingEnumerable())
-                                                                 group p by new
-                                                                 {
-                                                                     p.Name,
-                                                                     p.Source
-                                                                 }
+                                foreach (var pkg in from p in perQuery.SelectMany(each => each.packages.GetConsumingEnumerable())
+                                                    group p by new
+                                                    {
+                                                        p.Name,
+                                                        p.Source
+                                                    }
                                                         // for a given name
                                                         into grouping
-                                                                 // get the latest version only
-                                                                 select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First())
+                                                    // get the latest version only
+                                                    select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).First())
                                 {
                                     if (EnsurePackageIsProvider(pkg))
                                     {
@@ -628,7 +628,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             string packageSourceName = package.Source;
 
             // Get the package provider object
-            MutableEnumerable<PackageProvider> packageProvider = SelectProviders(package.ProviderName).ReEnumerable();
+            var packageProvider = SelectProviders(package.ProviderName).ReEnumerable();
 
             if (!packageProvider.Any())
             {
@@ -638,14 +638,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             // For any issues with reverse lookup (SourceLocation -> SourceName), return Source Location Url
             try
             {
-                MutableEnumerable<IEnumerable<PackageSource>> packageSource = packageProvider.Select(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered && (source.Location.EqualsIgnoreCase(package.Source)))).ReEnumerable();
+                var packageSource = packageProvider.Select(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered && (source.Location.EqualsIgnoreCase(package.Source)))).ReEnumerable();
 
                 if (packageSource.Any())
                 {
-                    IEnumerable<PackageSource> pkgSource = packageSource.FirstOrDefault();
+                    var pkgSource = packageSource.FirstOrDefault();
                     if (pkgSource != null)
                     {
-                        PackageSource source = pkgSource.FirstOrDefault();
+                        var source = pkgSource.FirstOrDefault();
                         if (source != null)
                         {
                             packageSourceName = source.Name;
@@ -672,7 +672,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             foreach (SoftwareIdentity package in packagesToInstall)
             {
                 SoftwareIdentity pkg = package;
-                foreach (CustomRuntimeDefinedParameter parameter in DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>()
+                foreach (var parameter in DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>()
                     .Where(param => param.IsSet == false && param.Options.Any(option => option.ProviderName == pkg.ProviderName && option.Category == OptionCategory.Install && option.IsRequired)))
                 {
                     // this is not good. there is a required parameter for the package
@@ -800,7 +800,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 {
                     return false;
                 }
-                ShouldContinueResult shouldContinueResult = ShouldContinue(FormatMessageString(Constants.Messages.QueryInstallUntrustedPackage, package, packageSource), FormatMessageString(Constants.Messages.CaptionSourceNotTrusted), true).Result;
+                var shouldContinueResult = ShouldContinue(FormatMessageString(Constants.Messages.QueryInstallUntrustedPackage, package, packageSource), FormatMessageString(Constants.Messages.CaptionSourceNotTrusted), true).Result;
                 _yesToAll = shouldContinueResult.yesToAll;
                 _noToAll = shouldContinueResult.noToAll;
                 if (shouldContinueResult.result)

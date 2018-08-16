@@ -9,6 +9,7 @@
 
 namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
 
@@ -43,7 +44,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         public GroupIconResource(string name, int locale, byte[] data)
             : base(ResourceType.GroupIcon, name, locale, data)
         {
-            RefreshIconGroupInfo(data);
+            this.RefreshIconGroupInfo(data);
         }
 
         /// <summary>
@@ -53,27 +54,27 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         {
             get
             {
-                if (dirty)
+                if (this.dirty)
                 {
-                    base.Data = rawGroupIconInfo.GetResourceData();
-                    dirty = false;
+                    base.Data = this.rawGroupIconInfo.GetResourceData();
+                    this.dirty = false;
                 }
 
                 return base.Data;
             }
             set
             {
-                RefreshIconGroupInfo(value);
+                this.RefreshIconGroupInfo(value);
 
                 base.Data = value;
-                dirty = false;
+                this.dirty = false;
             }
         }
 
         /// <summary>
         /// Enumerates the the icons in the icon group.
         /// </summary>
-        public IEnumerable<Resource> Icons => icons;
+        public IEnumerable<Resource> Icons { get { return this.icons; } }
 
         /// <summary>
         /// Reads the icon group from a .ico file.
@@ -81,41 +82,41 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// <param name="path">Path to an icon file (.ico).</param>
         public void ReadFromFile(string path)
         {
-            rawGroupIconInfo = new GroupIconInfo();
-            icons = new List<Resource>();
+            this.rawGroupIconInfo = new GroupIconInfo();
+            this.icons = new List<Resource>();
             using (FileStream fs = File.Open(path, FileMode.Open, FileAccess.Read))
             {
-                rawGroupIconInfo.ReadFromFile(fs);
+                this.rawGroupIconInfo.ReadFromFile(fs);
 
                 // After reading the group icon info header from the file, read all the icons.
-                for (int i = 0; i < rawGroupIconInfo.DirectoryInfo.Length; ++i)
+                for (int i = 0; i < this.rawGroupIconInfo.DirectoryInfo.Length; ++i)
                 {
-                    ushort index = rawGroupIconInfo.DirectoryInfo[i].imageIndex;
-                    uint offset = rawGroupIconInfo.DirectoryInfo[i].imageOffset;
-                    uint size = rawGroupIconInfo.DirectoryInfo[i].imageSize;
+                    ushort index = this.rawGroupIconInfo.DirectoryInfo[i].imageIndex;
+                    uint offset = this.rawGroupIconInfo.DirectoryInfo[i].imageOffset;
+                    uint size = this.rawGroupIconInfo.DirectoryInfo[i].imageSize;
                     byte[] data = new byte[size];
 
                     fs.Seek(offset, SeekOrigin.Begin);
                     fs.Read(data, 0, data.Length);
 
-                    Resource resource = new Resource(ResourceType.Icon, string.Concat("#", index), Locale, data);
-                    icons.Add(resource);
+                    Resource resource = new Resource(ResourceType.Icon, String.Concat("#", index), this.Locale, data);
+                    this.icons.Add(resource);
                 }
             }
 
-            dirty = true;
+            this.dirty = true;
         }
 
         private void RefreshIconGroupInfo(byte[] refreshData)
         {
-            rawGroupIconInfo = new GroupIconInfo();
-            icons = new List<Resource>();
+            this.rawGroupIconInfo = new GroupIconInfo();
+            this.icons = new List<Resource>();
             if (refreshData != null)
             {
-                rawGroupIconInfo.ReadFromResource(refreshData);
+                this.rawGroupIconInfo.ReadFromResource(refreshData);
             }
 
-            dirty = true;
+            this.dirty = true;
         }
     }
 }

@@ -23,8 +23,14 @@ namespace Microsoft.PowerShell.PackageManagement.Utility
         /// </summary>
         public ICredentials Credentials
         {
-            get => _credentials;
-            set => _credentials = value;
+            get
+            {
+                return _credentials;
+            }
+            set
+            {
+                _credentials = value;
+            }
         }
 
         public Uri GetProxy(Uri destination)

@@ -54,8 +54,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             : base(handles[0], ownsHandle)
         {
             this.name = name;
-            ownerChangeEvent = handles[1];
-            ownerChangeListeners = new List<EventHandler<EventArgs>>();
+            this.ownerChangeEvent = handles[1];
+            this.ownerChangeListeners = new List<EventHandler<EventArgs>>();
         }
 
         /// <summary>
@@ -72,7 +72,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the name of the transaction.
         /// </summary>
-        public string Name => name;
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+        }
 
         /// <summary>
         /// Notifies listeners when the process that owns the transaction changed.
@@ -81,23 +87,23 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             add
             {
-                ownerChangeListeners.Add(value);
+                this.ownerChangeListeners.Add(value);
 
-                if (ownerChangeEvent != IntPtr.Zero && ownerChangeListeners.Count == 1)
+                if (this.ownerChangeEvent != IntPtr.Zero && this.ownerChangeListeners.Count == 1)
                 {
-                    new Thread(WaitForOwnerChange).Start();
+                    new Thread(this.WaitForOwnerChange).Start();
                 }
             }
             remove
             {
-                ownerChangeListeners.Remove(value);
+                this.ownerChangeListeners.Remove(value);
             }
         }
 
         private void OnOwnerChanged()
         {
             EventArgs e = new EventArgs();
-            foreach (EventHandler<EventArgs> handler in ownerChangeListeners)
+            foreach (EventHandler<EventArgs> handler in this.ownerChangeListeners)
             {
                 handler(this, e);
             }
@@ -105,10 +111,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         private void WaitForOwnerChange()
         {
-            int ret = NativeMethods.WaitForSingleObject(ownerChangeEvent, -1);
+            int ret = NativeMethods.WaitForSingleObject(this.ownerChangeEvent, -1);
             if (ret == 0)
             {
-                OnOwnerChanged();
+                this.OnOwnerChanged();
             }
             else
             {
@@ -128,16 +134,16 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public void Join(TransactionAttributes attributes)
         {
-            uint ret = NativeMethods.MsiJoinTransaction((int)Handle, (int)attributes, out IntPtr hChangeOfOwnerEvent);
+            uint ret = NativeMethods.MsiJoinTransaction((int)this.Handle, (int)attributes, out IntPtr hChangeOfOwnerEvent);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
             }
 
-            ownerChangeEvent = hChangeOfOwnerEvent;
-            if (ownerChangeEvent != IntPtr.Zero && ownerChangeListeners.Count >= 1)
+            this.ownerChangeEvent = hChangeOfOwnerEvent;
+            if (this.ownerChangeEvent != IntPtr.Zero && this.ownerChangeListeners.Count >= 1)
             {
-                new Thread(WaitForOwnerChange).Start();
+                new Thread(this.WaitForOwnerChange).Start();
             }
         }
 
@@ -157,7 +163,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public void Commit()
         {
-            End(true);
+            this.End(true);
         }
 
         /// <summary>
@@ -172,7 +178,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public void Rollback()
         {
-            End(false);
+            this.End(false);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]

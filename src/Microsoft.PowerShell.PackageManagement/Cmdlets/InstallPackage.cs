@@ -36,7 +36,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
         }
 
-        protected override IEnumerable<string> ParameterSets => new[] { Constants.ParameterSets.PackageBySearchSet, Constants.ParameterSets.PackageByInputObjectSet };
+        protected override IEnumerable<string> ParameterSets
+        {
+            get
+            {
+                return new[] { Constants.ParameterSets.PackageBySearchSet, Constants.ParameterSets.PackageByInputObjectSet };
+            }
+        }
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0, ParameterSetName = Constants.ParameterSets.PackageByInputObjectSet),]
@@ -58,8 +64,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         // Use the base Source property so relative path will be resolved
         public override string[] Source
         {
-            get => base.Source;
-            set => base.Source = value;
+            get
+            {
+                return base.Source;
+            }
+            set
+            {
+                base.Source = value;
+            }
         }
 
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments)
@@ -72,8 +84,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 #if DEEP_DEBUG
                 Console.WriteLine("»»» Does not appear to be Invocation (locked:{0})", IsReentrantLocked);
 #endif
-                IEnumerable<string> providerNames = PackageManagementService.AllProviderNames;
-                string[] whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
+                var providerNames = PackageManagementService.AllProviderNames;
+                var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
                 if (whatsOnCmdline != null)
                 {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
@@ -147,7 +159,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 return false;
             }
 
-            MutableEnumerable<SoftwareIdentity> swids = CheckMatchedDuplicates().ReEnumerable();
+            var swids = CheckMatchedDuplicates().ReEnumerable();
             if (swids == null || !swids.Any())
             {
                 // there are duplicate packages
@@ -165,11 +177,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             {
                 // grab the dependencies and return them *first*
                 bool hasDependencyLoop = false;
-                IEnumerable<SoftwareIdentity> dependencies = GetDependenciesToInstall(package, ref hasDependencyLoop);
+                var dependencies = GetDependenciesToInstall(package, ref hasDependencyLoop);
 
                 if (!hasDependencyLoop)
                 {
-                    foreach (SoftwareIdentity dependency in dependencies)
+                    foreach (var dependency in dependencies)
                     {
                         base.ProcessPackage(provider, searchKey.Select(each => each + dependency.Name).ToArray(), dependency);
                     }
@@ -235,10 +247,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             temporarilyMarked.Add(packageItem);
 
             // Visit the dependency
-            foreach (string dependency in packageItem.Dependencies)
+            foreach (var dependency in packageItem.Dependencies)
             {
-                IEnumerable<SoftwareIdentity> dependencies = PackageManagementService.FindPackageByCanonicalId(dependency, this);
-                SoftwareIdentity depPkg = dependencies.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).FirstOrDefault();
+                var dependencies = PackageManagementService.FindPackageByCanonicalId(dependency, this);
+                var depPkg = dependencies.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).FirstOrDefault();
 
                 if (!DepthFirstVisit(depPkg, temporarilyMarked, permanentlyMarked, dependencyToBeInstalled))
                 {

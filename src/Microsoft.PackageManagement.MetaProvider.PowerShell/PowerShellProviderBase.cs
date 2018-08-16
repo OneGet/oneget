@@ -279,6 +279,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
         private void error_DataAdded(object sender, DataAddedEventArgs e, PsRequest request, ConcurrentBag<ErrorRecord> errors)
         {
+
             if (!(sender is PSDataCollection<ErrorRecord> errorStream))
             {
                 return;
@@ -295,6 +296,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
         private void output_DataAdded(object sender, DataAddedEventArgs e, PsRequest request, ref object finalValue)
         {
+
             if (!(sender is PSDataCollection<PSObject> outputstream))
             {
                 return;

@@ -211,7 +211,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("errorRecord");
             }
             int errorNumber;
-            if (errorRecord.FieldCount < 1 || (errorNumber = errorRecord.GetInteger(1)) == 0)
+            if (errorRecord.FieldCount < 1 || (errorNumber = (int)errorRecord.GetInteger(1)) == 0)
             {
                 throw new ArgumentOutOfRangeException("errorRecord");
             }

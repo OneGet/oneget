@@ -47,6 +47,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 // if testfeed exists, use that
                 if (!string.IsNullOrWhiteSpace(testfeed))
                 {
+
                     // test whether the uri is valid
                     if (Uri.TryCreate(testfeed, UriKind.Absolute, out Uri result))
                     {
@@ -97,7 +98,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                         // right now, we only have one feed (can have many urls tho')
                         // so we just return a single feed in the collection
                         // but later, we can expand it to support multiple feeds.
-                        Feed feed = new Feed(this, _urls);
+                        var feed = new Feed(this, _urls);
                         if (feed.IsValid)
                         {
                             _feeds = feed.SingleItemAsEnumerable().ReEnumerable();
@@ -138,9 +139,9 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
 
         internal string DestinationPath(Request request)
         {
-            PackageManagementService pms = PackageManagementService as PackageManagementService;
+            var pms = PackageManagementService as PackageManagementService;
 
-            string scope = GetValue("Scope");
+            var scope = GetValue("Scope");
             if (!string.IsNullOrWhiteSpace(scope))
             {
                 if (scope.EqualsIgnoreCase("CurrentUser"))
@@ -160,12 +161,12 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 }
             }
 
-            string v = GetValue("DestinationPath");
-            if (string.IsNullOrWhiteSpace(v))
+            var v = GetValue("DestinationPath");
+            if (String.IsNullOrWhiteSpace(v))
             {
                 // use a well-known path.
                 v = AdminPrivilege.IsElevated ? pms.SystemAssemblyLocation : pms.UserAssemblyLocation;
-                if (string.IsNullOrWhiteSpace(v))
+                if (String.IsNullOrWhiteSpace(v))
                 {
                     return null;
                 }
@@ -173,7 +174,13 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             return Path.GetFullPath(v);
         }
 
-        internal IEnumerable<Package> Providers => Feeds.SelectMany(feed => feed.Query());
+        internal IEnumerable<Package> Providers
+        {
+            get
+            {
+                return Feeds.SelectMany(feed => feed.Query());
+            }
+        }
 
         private string GetValue(string name)
         {
@@ -211,13 +218,13 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
 
         internal string DownloadAndValidateFile(Swidtag swidtag)
         {
-            string file = DownLoadFileFromLinks(swidtag.Links.Where(each => each.Relationship == Iso19770_2.Relationship.InstallationMedia));
+            var file = DownLoadFileFromLinks(swidtag.Links.Where(each => each.Relationship == Iso19770_2.Relationship.InstallationMedia));
             if (string.IsNullOrWhiteSpace(file))
             {
                 return null;
             }
 
-            Payload payload = swidtag.Payload;
+            var payload = swidtag.Payload;
             if (payload == null)
             {
                 //We let the providers that are already posted in the public continue to be installed.
@@ -226,7 +233,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             else
             {
                 //validate the file hash
-                bool valid = ValidateFileHash(file, payload);
+                var valid = ValidateFileHash(file, payload);
                 if (!valid)
                 {
                     //if the hash does not match, delete the file in the temp folder
@@ -262,7 +269,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                     }
 
                     // the zipped folder
-                    string zippedDirectory = Directory.EnumerateDirectories(extractedFolder).FirstOrDefault();
+                    var zippedDirectory = Directory.EnumerateDirectories(extractedFolder).FirstOrDefault();
 
                     if (!string.IsNullOrWhiteSpace(zippedDirectory) && Directory.Exists(zippedDirectory))
                     {
@@ -336,13 +343,13 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
         {
             string file = null;
 
-            foreach (Link link in links)
+            foreach (var link in links)
             {
                 file = RetryDownload(
                     // the download function takes in a uri link and download it
                     (uri) =>
                     {
-                        string tmpFile = FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory();
+                        var tmpFile = FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory();
                         return ProviderServices.DownloadFile(uri, tmpFile, -1, true, this);
                     },
                     link.HRef);
@@ -393,7 +400,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                     Error(ErrorCategory.InvalidData, "Payload", Constants.Messages.MissingFileTag);
                     return false;
                 }
-                PackageManagement.Internal.Packaging.File fileTag = payload.Files.FirstOrDefault();
+                var fileTag = payload.Files.FirstOrDefault();
 
                 if ((fileTag.Attributes == null) || (fileTag.Attributes.Keys == null))
                 {
@@ -401,7 +408,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                     return false;
                 }
 
-                XName hashtag = fileTag.Attributes.Keys.FirstOrDefault(each => each.LocalName.Equals("hash"));
+                var hashtag = fileTag.Attributes.Keys.FirstOrDefault(each => each.LocalName.Equals("hash"));
                 if (hashtag == null)
                 {
                     Error(ErrorCategory.InvalidData, "Payload", Constants.Messages.MissingHashAttribute);
@@ -415,7 +422,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 if (hashtag.Equals(Iso19770_2.Hash.Hash512))
                 {
 #if !CORECLR
-                    hashAlgorithm = OSInformation.IsFipsEnabled ? new SHA512CryptoServiceProvider() : SHA512.Create();
+                    hashAlgorithm = OSInformation.IsFipsEnabled ? (HashAlgorithm)new SHA512CryptoServiceProvider() : SHA512.Create();
 #else
                     hashAlgorithm = SHA512.Create();
 #endif
@@ -424,7 +431,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 else if (hashtag.Equals(Iso19770_2.Hash.Hash256))
                 {
 #if !CORECLR
-                    hashAlgorithm = OSInformation.IsFipsEnabled ? new SHA256CryptoServiceProvider() : SHA256.Create();
+                    hashAlgorithm = OSInformation.IsFipsEnabled ? (HashAlgorithm)new SHA256CryptoServiceProvider() : SHA256.Create();
 #else
                     hashAlgorithm = SHA256.Create();
 #endif
@@ -508,7 +515,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 return !IsCanceled;
             }
 
-            if (!string.IsNullOrWhiteSpace(requiredVersion))
+            if (!String.IsNullOrWhiteSpace(requiredVersion))
             {
                 if (provider.Version != requiredVersion)
                 {
@@ -517,12 +524,12 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(minimumVersion) && SoftwareIdentityVersionComparer.CompareVersions(provider.VersionScheme, provider.Version, minimumVersion) < 0)
+                if (!String.IsNullOrWhiteSpace(minimumVersion) && SoftwareIdentityVersionComparer.CompareVersions(provider.VersionScheme, provider.Version, minimumVersion) < 0)
                 {
                     return !IsCanceled;
                 }
 
-                if (!string.IsNullOrWhiteSpace(maximumVersion) && SoftwareIdentityVersionComparer.CompareVersions(provider.VersionScheme, provider.Version, maximumVersion) > 0)
+                if (!String.IsNullOrWhiteSpace(maximumVersion) && SoftwareIdentityVersionComparer.CompareVersions(provider.VersionScheme, provider.Version, maximumVersion) > 0)
                 {
                     return !IsCanceled;
                 }
@@ -537,12 +544,12 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 return !IsCanceled;
             }
 
-            Swidtag provider = pkg._swidtag;
-            string fastPackageReference = LocalSource.Any() ? pkg.Location.LocalPath : pkg.Location.AbsoluteUri;
-            string source = pkg.Source ?? fastPackageReference;
+            var provider = pkg._swidtag;
+            var fastPackageReference = LocalSource.Any() ? pkg.Location.LocalPath : pkg.Location.AbsoluteUri;
+            var source = pkg.Source ?? fastPackageReference;
 
-            string summary = pkg.Name;
-            string targetFileName = pkg.Name;
+            var summary = pkg.Name;
+            var targetFileName = pkg.Name;
 
             if (!LocalSource.Any())
             {
@@ -556,12 +563,12 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 if (provider.Meta.Any(
                     m =>
                     {
-                        string element = AddMeta(fastPackageReference);
-                        AttributeIndexer attributes = m.Attributes;
+                        var element = AddMeta(fastPackageReference);
+                        var attributes = m.Attributes;
                         return attributes.Keys.Any(key =>
                         {
-                            string nspace = key.Namespace.ToString();
-                            if (string.IsNullOrWhiteSpace(nspace))
+                            var nspace = key.Namespace.ToString();
+                            if (String.IsNullOrWhiteSpace(nspace))
                             {
                                 return AddMetadata(element, key.LocalName, attributes[key]) == null;
                             }
@@ -584,7 +591,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 }
 
                 //installing a package from bootstrap site needs to prompt a user. Only auto-bootstrap is not prompted.
-                PackageManagementService pm = PackageManagementService as PackageManagementService;
+                var pm = PackageManagementService as PackageManagementService;
                 string isTrustedSource = pm.InternalPackageManagementInstallOnly ? "false" : "true";
                 if (AddMetadata(fastPackageReference, "FromTrustedSource", isTrustedSource) == null)
                 {
@@ -596,7 +603,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
 
         private static bool AnyNullOrEmpty(params string[] args)
         {
-            return args.Any(string.IsNullOrWhiteSpace);
+            return args.Any(String.IsNullOrWhiteSpace);
         }
 
         /// <summary>
@@ -670,10 +677,10 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 return null;
             }
 
-            Uri source = new Uri(filePath);
-            foreach (XElement manifest in manifests)
+            var source = new Uri(filePath);
+            foreach (var manifest in manifests)
             {
-                Swidtag swidTagObject = new Swidtag(manifest);
+                var swidTagObject = new Swidtag(manifest);
 
                 if (Swidtag.IsSwidtag(manifest) && swidTagObject.IsApplicable(new Hashtable()))
                 {
@@ -698,7 +705,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
         internal void FindProviderFromFile(string name, string requiredVersion, string minimumVersion, string maximumVersion)
         {
             // find the providers from the given Source location
-            MutableEnumerable<Package> pkgs = FindProviderByNameFromFile(name).Where(each => FilterOnName(each, name) && FilterOnVersion(each, requiredVersion, minimumVersion, maximumVersion)).ReEnumerable();
+            var pkgs = FindProviderByNameFromFile(name).Where(each => FilterOnName(each, name) && FilterOnVersion(each, requiredVersion, minimumVersion, maximumVersion)).ReEnumerable();
 
             Debug("Total {0}  providers found".format(pkgs.Count()));
 
@@ -708,7 +715,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 pkgs = pkgs.GroupBy(p => p.Name).Select(each => each.OrderByDescending(pp => pp.Version).FirstOrDefault()).ReEnumerable();
             }
 
-            foreach (Package package in pkgs)
+            foreach (var package in pkgs)
             {
                 YieldFromSwidtag(package, name);
             }
@@ -716,12 +723,12 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
 
         private IEnumerable<Package> FindProviderByNameFromFile(string name)
         {
-            foreach (string each in LocalSource)
+            foreach (var each in LocalSource)
             {
                 // each can be file full path or folder directory
-                IEnumerable<string> assemblies = System.IO.File.Exists(each) ? new[] { each } : System.IO.Directory.EnumerateFiles(each, "*.dll", SearchOption.AllDirectories);
+                var assemblies = System.IO.File.Exists(each) ? new[] { each } : System.IO.Directory.EnumerateFiles(each, "*.dll", SearchOption.AllDirectories);
 
-                foreach (string item in assemblies)
+                foreach (var item in assemblies)
                 {
                     yield return GetProviderFromFile(item, true, false);
                 }
@@ -744,7 +751,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
             {
                 // Applying the wildcard pattern matching
                 const WildcardOptions wildcardOptions = WildcardOptions.CultureInvariant | WildcardOptions.IgnoreCase;
-                WildcardPattern wildcardPattern = new WildcardPattern(name, wildcardOptions);
+                var wildcardPattern = new WildcardPattern(name, wildcardOptions);
 
                 return wildcardPattern.IsMatch(pkg.Name);
             }
@@ -787,7 +794,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 return filePath;
             }
             // get a temp location
-            string file = Path.Combine(Path.GetTempPath(), Path.GetFileName(filePath));
+            var file = Path.Combine(Path.GetTempPath(), Path.GetFileName(filePath));
 
             if (System.IO.File.Exists(file))
             {
@@ -812,7 +819,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                 return filePath;
             }
 
-            string targetFile = GetTempFileFullPath(filePath);
+            var targetFile = GetTempFileFullPath(filePath);
 
             if (filePath.EqualsIgnoreCase(targetFile))
             {

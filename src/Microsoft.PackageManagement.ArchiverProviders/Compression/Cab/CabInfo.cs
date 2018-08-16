@@ -54,11 +54,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         {
             IList<ArchiveFileInfo> files = base.GetFiles();
             List<CabFileInfo> cabFiles = new List<CabFileInfo>(files.Count);
-            foreach (CabFileInfo cabFile in files)
-            {
-                cabFiles.Add(cabFile);
-            }
-
+            foreach (CabFileInfo cabFile in files) cabFiles.Add(cabFile);
             return cabFiles.AsReadOnly();
         }
 
@@ -73,11 +69,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         {
             IList<ArchiveFileInfo> files = base.GetFiles(searchPattern);
             List<CabFileInfo> cabFiles = new List<CabFileInfo>(files.Count);
-            foreach (CabFileInfo cabFile in files)
-            {
-                cabFiles.Add(cabFile);
-            }
-
+            foreach (CabFileInfo cabFile in files) cabFiles.Add(cabFile);
             return cabFiles.AsReadOnly();
         }
     }

@@ -60,12 +60,12 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         {
             get
             {
-                if (packer == null)
+                if (this.packer == null)
                 {
-                    packer = new CabPacker(this);
+                    this.packer = new CabPacker(this);
                 }
 
-                return packer;
+                return this.packer;
             }
         }
 
@@ -73,12 +73,12 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         {
             get
             {
-                if (unpacker == null)
+                if (this.unpacker == null)
                 {
-                    unpacker = new CabUnpacker(this);
+                    this.unpacker = new CabUnpacker(this);
                 }
 
-                return unpacker;
+                return this.unpacker;
             }
         }
 
@@ -105,9 +105,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             IEnumerable<string> files,
             long maxArchiveSize)
         {
-            Packer.CompressionLevel = CompressionLevel;
-            Packer.UseTempFiles = UseTempFiles;
-            Packer.Pack(streamContext, files, maxArchiveSize);
+            this.Packer.CompressionLevel = this.CompressionLevel;
+            this.Packer.UseTempFiles = this.UseTempFiles;
+            this.Packer.Pack(streamContext, files, maxArchiveSize);
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         /// (with no offset); false otherwise.</returns>
         public override bool IsArchive(Stream stream)
         {
-            return Unpacker.IsArchive(stream);
+            return this.Unpacker.IsArchive(stream);
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             IUnpackStreamContext streamContext,
             Predicate<string> fileFilter)
         {
-            return Unpacker.GetFileInfo(streamContext, fileFilter);
+            return this.Unpacker.GetFileInfo(streamContext, fileFilter);
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             IUnpackStreamContext streamContext,
             Predicate<string> fileFilter)
         {
-            Unpacker.Unpack(streamContext, fileFilter);
+            this.Unpacker.Unpack(streamContext, fileFilter);
         }
 
         internal void ReportProgress(ArchiveProgressEventArgs e)

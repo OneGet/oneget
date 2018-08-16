@@ -28,17 +28,35 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the target product code of the shortcut, or null if not available.
         /// </summary>
-        public string ProductCode => productCode;
+        public string ProductCode
+        {
+            get
+            {
+                return this.productCode;
+            }
+        }
 
         /// <summary>
         /// Gets the name of the target feature of the shortcut, or null if not available.
         /// </summary>
-        public string Feature => feature;
+        public string Feature
+        {
+            get
+            {
+                return this.feature;
+            }
+        }
 
         /// <summary>
         /// Gets the target component code of the shortcut, or null if not available.
         /// </summary>
-        public string ComponentCode => componentCode;
+        public string ComponentCode
+        {
+            get
+            {
+                return this.componentCode;
+            }
+        }
 
         /// <summary>
         /// Tests whether two shortcut targets have the same product code, feature, and/or component code.
@@ -74,9 +92,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return false;
             }
             ShortcutTarget st = (ShortcutTarget)obj;
-            return productCode == st.productCode
-                && feature == st.feature
-                && componentCode == st.componentCode;
+            return this.productCode == st.productCode
+                && this.feature == st.feature
+                && this.componentCode == st.componentCode;
         }
 
         /// <summary>
@@ -85,9 +103,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>An integer suitable for hashing the shortcut target.</returns>
         public override int GetHashCode()
         {
-            return (productCode != null ? productCode.GetHashCode() : 0)
-                ^ (feature != null ? feature.GetHashCode() : 0)
-                ^ (componentCode != null ? componentCode.GetHashCode() : 0);
+            return (this.productCode != null ? this.productCode.GetHashCode() : 0)
+                ^ (this.feature != null ? this.feature.GetHashCode() : 0)
+                ^ (this.componentCode != null ? this.componentCode.GetHashCode() : 0);
         }
     }
 }

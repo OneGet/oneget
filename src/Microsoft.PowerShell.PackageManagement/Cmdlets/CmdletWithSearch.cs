@@ -26,7 +26,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
         }
 
-        protected override IEnumerable<string> ParameterSets => new[] { "" };
+        protected override IEnumerable<string> ParameterSets
+        {
+            get
+            {
+                return new[] { "" };
+            }
+        }
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(Position = 0)]

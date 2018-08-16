@@ -61,14 +61,26 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         /// </summary>
         /// <value>A cabinet engine error number, or 0 if the exception was
         /// not related to a cabinet engine error number.</value>
-        public int Error => error;
+        public int Error
+        {
+            get
+            {
+                return this.error;
+            }
+        }
 
         /// <summary>
         /// Gets the Win32 error code.
         /// </summary>
         /// <value>A Win32 error code, or 0 if the exception was
         /// not related to a Win32 error.</value>
-        public int ErrorCode => errorCode;
+        public int ErrorCode
+        {
+            get
+            {
+                return this.errorCode;
+            }
+        }
 
         internal static ResourceManager ErrorResources
         {
@@ -109,7 +121,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             {
                 const string GENERIC_ERROR_RESOURCE = "1";
                 string msg2 = CabException.ErrorResources.GetString(GENERIC_ERROR_RESOURCE, CultureInfo.CurrentUICulture);
-                msg = string.Format(CultureInfo.InvariantCulture, "{0} " + msg2, msg, errorCode);
+                msg = String.Format(CultureInfo.InvariantCulture, "{0} " + msg2, msg, errorCode);
             }
             return msg;
         }

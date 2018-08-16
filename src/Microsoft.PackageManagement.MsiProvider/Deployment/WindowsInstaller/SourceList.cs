@@ -36,11 +36,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                if (mediaList == null)
+                if (this.mediaList == null)
                 {
-                    mediaList = new SourceMediaList(installation);
+                    this.mediaList = new SourceMediaList(this.installation);
                 }
-                return mediaList;
+                return this.mediaList;
             }
         }
 
@@ -52,7 +52,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 int count = 0;
-                IEnumerator<string> e = GetEnumerator();
+                IEnumerator<string> e = this.GetEnumerator();
                 while (e.MoveNext())
                 {
                     count++;
@@ -66,7 +66,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// A SourceList is never read-only.
         /// </summary>
         /// <value>read-only status of the list</value>
-        public bool IsReadOnly => false;
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
 
         /// <summary>
         /// Adds a network or URL source to the source list of the installed product.
@@ -87,9 +90,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <seealso cref="Insert"/>
         public void Add(string item)
         {
-            if (!Contains(item))
+            if (!this.Contains(item))
             {
-                Insert(item, 0);
+                this.Insert(item, 0);
             }
         }
 
@@ -137,10 +140,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             NativeMethods.SourceType type = item.Contains("://") ? NativeMethods.SourceType.Url : NativeMethods.SourceType.Network;
 
             uint ret = NativeMethods.MsiSourceListAddSourceEx(
-                installation.InstallationCode,
-                installation.UserSid,
-                installation.Context,
-                (uint)type | (uint)installation.InstallationType,
+                this.installation.InstallationCode,
+                this.installation.UserSid,
+                this.installation.Context,
+                (uint)type | (uint)this.installation.InstallationType,
                 item,
                 (uint)index);
             if (ret != 0)
@@ -158,9 +161,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public void Clear()
         {
-            ClearSourceType(NativeMethods.SourceType.Url);
-            ClearSourceType(NativeMethods.SourceType.Network);
-            MediaList.Clear();
+            this.ClearSourceType(NativeMethods.SourceType.Url);
+            this.ClearSourceType(NativeMethods.SourceType.Network);
+            this.MediaList.Clear();
         }
 
         /// <summary>
@@ -173,7 +176,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void ClearNetworkSources()
         {
-            ClearSourceType(NativeMethods.SourceType.Network);
+            this.ClearSourceType(NativeMethods.SourceType.Network);
         }
 
         /// <summary>
@@ -186,7 +189,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void ClearUrlSources()
         {
-            ClearSourceType(NativeMethods.SourceType.Url);
+            this.ClearSourceType(NativeMethods.SourceType.Url);
         }
 
         /// <summary>
@@ -245,10 +248,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             NativeMethods.SourceType type = item.Contains("://") ? NativeMethods.SourceType.Url : NativeMethods.SourceType.Network;
 
             uint ret = NativeMethods.MsiSourceListClearSource(
-                installation.InstallationCode,
-                installation.UserSid,
-                installation.Context,
-                (uint)type | (uint)installation.InstallationType,
+                this.installation.InstallationCode,
+                this.installation.UserSid,
+                this.installation.Context,
+                (uint)type | (uint)this.installation.InstallationType,
                 item);
             if (ret != 0)
             {
@@ -271,7 +274,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             uint sourceBufSize = (uint)sourceBuf.Capacity;
             for (uint i = 0; true; i++)
             {
-                uint ret = EnumSources(sourceBuf, i, NativeMethods.SourceType.Network);
+                uint ret = this.EnumSources(sourceBuf, i, NativeMethods.SourceType.Network);
                 if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
                 {
                     break;
@@ -288,7 +291,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             for (uint i = 0; true; i++)
             {
-                uint ret = EnumSources(sourceBuf, i, NativeMethods.SourceType.Url);
+                uint ret = this.EnumSources(sourceBuf, i, NativeMethods.SourceType.Url);
                 if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
                 {
                     break;
@@ -306,7 +309,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return this.GetEnumerator();
         }
 
         /// <summary>
@@ -324,10 +327,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public void ForceResolution()
         {
             uint ret = NativeMethods.MsiSourceListForceResolutionEx(
-                installation.InstallationCode,
-                installation.UserSid,
-                installation.Context,
-                (uint)installation.InstallationType);
+                this.installation.InstallationCode,
+                this.installation.UserSid,
+                this.installation.Context,
+                (uint)this.installation.InstallationType);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -340,8 +343,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string MediaPackagePath
         {
-            get => this["MediaPackagePath"];
-            set => this["MediaPackagePath"] = value;
+            get
+            {
+                return this["MediaPackagePath"];
+            }
+            set
+            {
+                this["MediaPackagePath"] = value;
+            }
         }
 
         /// <summary>
@@ -351,8 +360,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string DiskPrompt
         {
-            get => this["DiskPrompt"];
-            set => this["DiskPrompt"] = value;
+            get
+            {
+                return this["DiskPrompt"];
+            }
+            set
+            {
+                this["DiskPrompt"] = value;
+            }
         }
 
         /// <summary>
@@ -361,8 +376,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string LastUsedSource
         {
-            get => this["LastUsedSource"];
-            set => this["LastUsedSource"] = value;
+            get
+            {
+                return this["LastUsedSource"];
+            }
+            set
+            {
+                this["LastUsedSource"] = value;
+            }
         }
 
         /// <summary>
@@ -372,8 +393,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public string PackageName
         {
-            get => this["PackageName"];
-            set => this["PackageName"] = value;
+            get
+            {
+                return this["PackageName"];
+            }
+            set
+            {
+                this["PackageName"] = value;
+            }
         }
 
         /// <summary>
@@ -388,7 +415,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </ul>
         /// </p></remarks>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public string LastUsedType => this["LastUsedType"];
+        public string LastUsedType
+        {
+            get
+            {
+                return this["LastUsedType"];
+            }
+        }
 
         /// <summary>
         /// Gets or sets source list information properties of a product or patch installation.
@@ -407,10 +440,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 StringBuilder buf = new StringBuilder("");
                 uint bufSize = 0;
                 uint ret = NativeMethods.MsiSourceListGetInfo(
-                    installation.InstallationCode,
-                    installation.UserSid,
-                    installation.Context,
-                    (uint)installation.InstallationType,
+                    this.installation.InstallationCode,
+                    this.installation.UserSid,
+                    this.installation.Context,
+                    (uint)this.installation.InstallationType,
                     property,
                     buf,
                     ref bufSize);
@@ -420,10 +453,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     {
                         buf.Capacity = (int)++bufSize;
                         ret = NativeMethods.MsiSourceListGetInfo(
-                            installation.InstallationCode,
-                            installation.UserSid,
-                            installation.Context,
-                            (uint)installation.InstallationType,
+                            this.installation.InstallationCode,
+                            this.installation.UserSid,
+                            this.installation.Context,
+                            (uint)this.installation.InstallationType,
                             property,
                             buf,
                             ref bufSize);
@@ -447,10 +480,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             set
             {
                 uint ret = NativeMethods.MsiSourceListSetInfo(
-                    installation.InstallationCode,
-                    installation.UserSid,
-                    installation.Context,
-                    (uint)installation.InstallationType,
+                    this.installation.InstallationCode,
+                    this.installation.UserSid,
+                    this.installation.Context,
+                    (uint)this.installation.InstallationType,
                     property,
                     value);
                 if (ret != 0)
@@ -471,10 +504,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         private void ClearSourceType(NativeMethods.SourceType type)
         {
             uint ret = NativeMethods.MsiSourceListClearAllEx(
-                installation.InstallationCode,
-                installation.UserSid,
-                installation.Context,
-                (uint)type | (uint)installation.InstallationType);
+                this.installation.InstallationCode,
+                this.installation.UserSid,
+                this.installation.Context,
+                (uint)type | (uint)this.installation.InstallationType);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -483,12 +516,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         private uint EnumSources(StringBuilder sourceBuf, uint i, NativeMethods.SourceType sourceType)
         {
-            int enumType = (installation.InstallationType | (int)sourceType);
+            int enumType = (this.installation.InstallationType | (int)sourceType);
             uint sourceBufSize = (uint)sourceBuf.Capacity;
             uint ret = NativeMethods.MsiSourceListEnumSources(
-                installation.InstallationCode,
-                installation.UserSid,
-                installation.Context,
+                this.installation.InstallationCode,
+                this.installation.UserSid,
+                this.installation.Context,
                 (uint)enumType,
                 i,
                 sourceBuf,
@@ -497,9 +530,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 sourceBuf.Capacity = (int)++sourceBufSize;
                 ret = NativeMethods.MsiSourceListEnumSources(
-                    installation.InstallationCode,
-                    installation.UserSid,
-                    installation.Context,
+                    this.installation.InstallationCode,
+                    this.installation.UserSid,
+                    this.installation.Context,
                     (uint)enumType,
                     i,
                     sourceBuf,

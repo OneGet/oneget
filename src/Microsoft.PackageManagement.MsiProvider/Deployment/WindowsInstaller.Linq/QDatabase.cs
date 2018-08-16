@@ -145,59 +145,81 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         /// </summary>
         /// <param name="table">name of the table</param>
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public QTable<QRecord> this[string table] => new QTable<QRecord>(this, table);
+        public QTable<QRecord> this[string table]
+        {
+            get
+            {
+                return new QTable<QRecord>(this, table);
+            }
+        }
 
 #if !CODE_ANALYSIS
 
         #region Queryable tables
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<Component_> Components => new QTable<Component_>(this);
+        public QTable<Component_> Components
+        { get { return new QTable<Component_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<CreateFolder_> CreateFolders => new QTable<CreateFolder_>(this);
+        public QTable<CreateFolder_> CreateFolders
+        { get { return new QTable<CreateFolder_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<CustomAction_> CustomActions => new QTable<CustomAction_>(this);
+        public QTable<CustomAction_> CustomActions
+        { get { return new QTable<CustomAction_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<Directory_> Directories => new QTable<Directory_>(this);
+        public QTable<Directory_> Directories
+        { get { return new QTable<Directory_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<DuplicateFile_> DuplicateFiles => new QTable<DuplicateFile_>(this);
+        public QTable<DuplicateFile_> DuplicateFiles
+        { get { return new QTable<DuplicateFile_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<Feature_> Features => new QTable<Feature_>(this);
+        public QTable<Feature_> Features
+        { get { return new QTable<Feature_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<FeatureComponent_> FeatureComponents => new QTable<FeatureComponent_>(this);
+        public QTable<FeatureComponent_> FeatureComponents
+        { get { return new QTable<FeatureComponent_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<File_> Files => new QTable<File_>(this);
+        public QTable<File_> Files
+        { get { return new QTable<File_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<FileHash_> FileHashes => new QTable<FileHash_>(this);
+        public QTable<FileHash_> FileHashes
+        { get { return new QTable<FileHash_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<InstallSequence_> InstallExecuteSequences => new QTable<InstallSequence_>(this, "InstallExecuteSequence");
+        public QTable<InstallSequence_> InstallExecuteSequences
+        { get { return new QTable<InstallSequence_>(this, "InstallExecuteSequence"); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<InstallSequence_> InstallUISequences => new QTable<InstallSequence_>(this, "InstallUISequence");
+        public QTable<InstallSequence_> InstallUISequences
+        { get { return new QTable<InstallSequence_>(this, "InstallUISequence"); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<LaunchCondition_> LaunchConditions => new QTable<LaunchCondition_>(this);
+        public QTable<LaunchCondition_> LaunchConditions
+        { get { return new QTable<LaunchCondition_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<Media_> Medias => new QTable<Media_>(this);
+        public QTable<Media_> Medias
+        { get { return new QTable<Media_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<Property_> Properties => new QTable<Property_>(this);
+        public QTable<Property_> Properties
+        { get { return new QTable<Property_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<Registry_> Registries => new QTable<Registry_>(this);
+        public QTable<Registry_> Registries
+        { get { return new QTable<Registry_>(this); } }
 
         /// <summary>Queryable standard table with predefined specialized record type.</summary>
-        public QTable<RemoveFile_> RemoveFiles => new QTable<RemoveFile_>(this);
+        public QTable<RemoveFile_> RemoveFiles
+        { get { return new QTable<RemoveFile_>(this); } }
 
         #endregion Queryable tables
 

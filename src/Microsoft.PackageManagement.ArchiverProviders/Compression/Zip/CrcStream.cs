@@ -38,44 +38,86 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         /// since this instance was created.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Crc")]
-        public uint Crc => crc;
+        public uint Crc
+        {
+            get
+            {
+                return this.crc;
+            }
+        }
 
         /// <summary>
         /// Gets the underlying stream that this stream reads from or writes to.
         /// </summary>
-        public Stream Source => source;
+        public Stream Source
+        {
+            get
+            {
+                return this.source;
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether the source stream supports reading.
         /// </summary>
         /// <value>true if the stream supports reading; otherwise, false.</value>
-        public override bool CanRead => source.CanRead;
+        public override bool CanRead
+        {
+            get
+            {
+                return this.source.CanRead;
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether the source stream supports writing.
         /// </summary>
         /// <value>true if the stream supports writing; otherwise, false.</value>
-        public override bool CanWrite => source.CanWrite;
+        public override bool CanWrite
+        {
+            get
+            {
+                return this.source.CanWrite;
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether the source stream supports seeking.
         /// </summary>
         /// <value>true if the stream supports seeking; otherwise, false.</value>
-        public override bool CanSeek => source.CanSeek;
+        public override bool CanSeek
+        {
+            get
+            {
+                return this.source.CanSeek;
+            }
+        }
 
         /// <summary>
         /// Gets the length of the source stream.
         /// </summary>
-        public override long Length => source.Length;
+        public override long Length
+        {
+            get
+            {
+                return this.source.Length;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the position of the source stream.
         /// </summary>
         public override long Position
         {
-            get => source.Position;
+            get
+            {
+                return this.source.Position;
+            }
 
-            set => source.Position = value;
+            set
+            {
+                this.source.Position = value;
+            }
         }
 
         /// <summary>
@@ -91,7 +133,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         /// </remarks>
         public override long Seek(long offset, SeekOrigin origin)
         {
-            return source.Seek(offset, origin);
+            return this.source.Seek(offset, origin);
         }
 
         /// <summary>
@@ -101,7 +143,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         /// stream in bytes.</param>
         public override void SetLength(long value)
         {
-            source.SetLength(value);
+            this.source.SetLength(value);
         }
 
         /// <summary>
@@ -119,8 +161,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         /// or zero (0) if the end of the stream has been reached.</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            count = source.Read(buffer, offset, count);
-            UpdateCrc(buffer, offset, count);
+            count = this.source.Read(buffer, offset, count);
+            this.UpdateCrc(buffer, offset, count);
             return count;
         }
 
@@ -136,8 +178,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         /// current stream.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            source.Write(buffer, offset, count);
-            UpdateCrc(buffer, offset, count);
+            this.source.Write(buffer, offset, count);
+            this.UpdateCrc(buffer, offset, count);
         }
 
         /// <summary>
@@ -145,7 +187,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         /// </summary>
         public override void Flush()
         {
-            source.Flush();
+            this.source.Flush();
         }
 
 #if !CORECLR
@@ -155,7 +197,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         /// </summary>
         public override void Close()
         {
-            source.Close();
+            this.source.Close();
             base.Close();
         }
 
@@ -169,7 +211,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         {
             if (disposing)
             {
-                source.Dispose();
+                this.source.Dispose();
                 base.Dispose();
             }
         }
@@ -179,13 +221,13 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         /// </summary>
         private void UpdateCrc(byte[] buffer, int offset, int count)
         {
-            crc = ~crc;
+            this.crc = ~this.crc;
             for (; count > 0; count--, offset++)
             {
-                crc = (crc >> 8) ^
-                    CrcStream.crcTable[(crc & 0xFF) ^ buffer[offset]];
+                this.crc = (this.crc >> 8) ^
+                    CrcStream.crcTable[(this.crc & 0xFF) ^ buffer[offset]];
             }
-            crc = ~crc;
+            this.crc = ~this.crc;
         }
 
         private static uint[] crcTable = MakeCrcTable();

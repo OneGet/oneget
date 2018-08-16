@@ -76,7 +76,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             if (!IsInvocation)
             {
                 IEnumerable<string> providerNames = PackageManagementService.AllProviderNames;
-                string[] whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
+                var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
                 if (whatsOnCmdline != null)
                 {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
@@ -248,7 +248,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
             if (prov.Length > 0)
             {
-                PackageSource[] sources = prov.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered &&
+                var sources = prov.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered &&
                                                                                                        (Name == null || source.Name.EqualsIgnoreCase(Name)) || (Location == null || source.Location.EqualsIgnoreCase(Location))).ToArray()).ToArray();
 
                 if (sources.Length == 0)

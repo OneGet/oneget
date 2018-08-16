@@ -44,7 +44,13 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             ShouldSelectAllProviders = true;
         }
 
-        protected override IEnumerable<string> ParameterSets => new[] { Constants.ParameterSets.PackageBySearchSet, Constants.ParameterSets.PackageByInputObjectSet };
+        protected override IEnumerable<string> ParameterSets
+        {
+            get
+            {
+                return new[] { Constants.ParameterSets.PackageBySearchSet, Constants.ParameterSets.PackageByInputObjectSet };
+            }
+        }
 
         [Parameter(Position = 0, Mandatory = true, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
         public override string[] Name { get; set; }
@@ -66,8 +72,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         [Parameter(ParameterSetName = Constants.ParameterSets.PackageByInputObjectSet)]
         public string Scope
         {
-            get => _scope;
-            set => _scope = value;
+            get
+            {
+                return _scope;
+            }
+            set
+            {
+                _scope = value;
+            }
         }
 
         [Parameter(ValueFromPipelineByPropertyName = true, ParameterSetName = Constants.ParameterSets.PackageBySearchSet)]
@@ -81,7 +93,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     {
                         _sourcesFromPipeline = new List<string>();
 
-                        foreach (SoftwareIdentity inputObj in InputObject)
+                        foreach (var inputObj in InputObject)
                         {
                             _sourcesFromPipeline.Add(inputObj.Source);
                         }
@@ -90,7 +102,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 }
                 return base.Source;
             }
-            set => base.Source = value;
+            set
+            {
+                base.Source = value;
+            }
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
@@ -111,19 +126,35 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             }
         }
 
-        protected override DynamicOption[] CachedDynamicOptions =>
+        protected override DynamicOption[] CachedDynamicOptions
+        {
+            get
+            {
                 //suppress the dynamic parameters from parent classes
-                new[] {
+                return new[] {
                     new DynamicOption()
                 };
+            }
+        }
 
-        protected override string BootstrapNuGet =>
+        protected override string BootstrapNuGet
+        {
+            get
+            {
                 // Generally bootstrapping NuGet is required for the install-packageprovider as PowerShellGet uses it.
                 // However, when a user specifies Name as NuGet, e.g., 'install-packageprovider -name NuGet', we do not need to perform a hard
                 // bootstrap on NuGet because this case has been taken care of already. There is no difference from installing other packages.
-                InstallingNugetProvider ? "false" : "true";
+                return InstallingNugetProvider ? "false" : "true";
+            }
+        }
 
-        private bool InstallingNugetProvider => (Name != null) && (Name.Length == 1 && Name.ContainsAnyOfIgnoreCase("NuGet"));
+        private bool InstallingNugetProvider
+        {
+            get
+            {
+                return (Name != null) && (Name.Length == 1 && Name.ContainsAnyOfIgnoreCase("NuGet"));
+            }
+        }
 
         public override bool ProcessRecordAsync()
         {
@@ -188,7 +219,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
             get
             {
-                PackageProvider[] availableProviders = base.SelectedProviders.ToArray();
+                var availableProviders = base.SelectedProviders.ToArray();
                 if (availableProviders.Any(each => RequiredProviders.ContainsAnyOfIgnoreCase(each.ProviderName)))
                 {
                     //For 'install-packageprovider NuGet', the PowerShellGet provider does not need to be involved.
@@ -204,8 +235,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         protected override IHostApi GetProviderSpecificOption(PackageProvider pv)
         {
-            IHostApi host = this.ProviderSpecific(pv);
-            IHostApi host1 = host;
+            var host = this.ProviderSpecific(pv);
+            var host1 = host;
             //add filterontag for finding providers.  Provider keys are: PackageManagement and Providers
             host = host.Extend<IRequest>(
                 new
@@ -229,12 +260,12 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             {
                 // grab the dependencies and return them *first*
 
-                foreach (string dep in package.Dependencies)
+                foreach (var dep in package.Dependencies)
                 {
                     // note: future work may be needed if the package sources currently selected by the user don't
                     // contain the dependencies.
-                    IEnumerable<SoftwareIdentity> dependencies = PackageManagementService.FindPackageByCanonicalId(dep, this);
-                    foreach (SoftwareIdentity depPackage in dependencies)
+                    var dependencies = PackageManagementService.FindPackageByCanonicalId(dep, this);
+                    foreach (var depPackage in dependencies)
                     {
                         ProcessPackage(depPackage.Provider, searchKey.Select(each => each + depPackage.Name).ToArray(), depPackage);
                     }
@@ -257,7 +288,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 return ImportProvider(InputObject);
             }
 
-            IEnumerable<string> unmatched = _resultsPerName.Keys.Where(each => _resultsPerName[each] == null);
+            var unmatched = _resultsPerName.Keys.Where(each => _resultsPerName[each] == null);
 
             if (unmatched.Any())
             {
@@ -272,7 +303,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 return false;
             }
 
-            SoftwareIdentity[] list = ProcessMatchedDuplicates().ToArray();
+            var list = ProcessMatchedDuplicates().ToArray();
 
             // Now install the provider
             if (!base.InstallPackages(list))
@@ -288,7 +319,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             Verbose("Importing the package provider {0}", Name.JoinWithComma());
 
             //after the provider gets installed, we are trying to load it
-            PackageProvider[] providers = list.SelectMany(each => PackageManagementService.ImportPackageProvider(this.SuppressErrorsAndWarnings(IsProcessing), each.Name, each.Version.ToVersion(), null, null, false, true)).ToArray();
+            var providers = list.SelectMany(each => PackageManagementService.ImportPackageProvider(this.SuppressErrorsAndWarnings(IsProcessing), each.Name, each.Version.ToVersion(), null, null, false, true)).ToArray();
             if (providers.Any())
             {
                 Verbose(Resources.Messages.ProviderImported, providers.Select(e => e.ProviderPath).JoinWithComma());
@@ -305,9 +336,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
             List<SoftwareIdentity> filteredSoftwareIdentity = new List<SoftwareIdentity>();
 
-            ICollection<List<SoftwareIdentity>> packagetable = _resultsPerName.Values;
+            var packagetable = _resultsPerName.Values;
 
-            foreach (List<SoftwareIdentity> pkgSet in packagetable)
+            foreach (var pkgSet in packagetable)
             {
                 if (pkgSet.Count == 0)
                 {
@@ -326,8 +357,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 // are they found across multiple sources?
                 // are they all from the same source?
 
-                string[] providers = pkgSet.Select(each => each.ProviderName).Distinct().ToArray();
-                string[] sources = pkgSet.Select(each => each.Source).Distinct().ToArray();
+                var providers = pkgSet.Select(each => each.ProviderName).Distinct().ToArray();
+                var sources = pkgSet.Select(each => each.Source).Distinct().ToArray();
 
                 //Handling a case where one provider with multiple sources found the same package
                 if (providers.Length == 1)
@@ -336,7 +367,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     if (sources.Length == 1)
                     {
                         string searchKey = null;
-                        foreach (SoftwareIdentity pkg in pkgSet)
+                        foreach (var pkg in pkgSet)
                         {
                             Warning(Constants.Messages.MatchesMultiplePackages, pkg.SearchKey, pkg.ProviderName, pkg.Name, pkg.Version, pkg.Source);
                             searchKey = pkg.SearchKey;
@@ -347,7 +378,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     else
                     {
                         //found the multiple sources under one provider matches the same package
-                        foreach (SoftwareIdentity subset in pkgSet)
+                        foreach (var subset in pkgSet)
                         {
                             if (Source == null)
                             {
@@ -368,7 +399,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 {
                     //Handling a case where the multiple providers match one package
                     //In this case, both bootstrap and PowerShellGet found the same package, let's take PowerShellGet as a precedence
-                    foreach (SoftwareIdentity subset in pkgSet)
+                    foreach (var subset in pkgSet)
                     {
                         if (subset.ProviderName.EqualsIgnoreCase(PowerShellGet))
                         {

@@ -35,7 +35,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the name of the feature.
         /// </summary>
-        public string FeatureName => Id;
+        public string FeatureName
+        {
+            get
+            {
+                return this.Id;
+            }
+        }
 
         /// <summary>
         /// Gets the installed state of the feature.
@@ -49,7 +55,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 int installState = NativeMethods.MsiQueryFeatureState(
-                    ProductCode, FeatureName);
+                    this.ProductCode, this.FeatureName);
                 return (InstallState)installState;
             }
         }
@@ -70,18 +76,18 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 StringBuilder parentBuf = new StringBuilder(256);
                 for (uint i = 0; ; i++)
                 {
-                    uint ret = NativeMethods.MsiEnumFeatures(ProductCode, i, featureBuf, parentBuf);
+                    uint ret = NativeMethods.MsiEnumFeatures(this.ProductCode, i, featureBuf, parentBuf);
 
                     if (ret != 0)
                     {
                         break;
                     }
 
-                    if (featureBuf.ToString() == FeatureName)
+                    if (featureBuf.ToString() == this.FeatureName)
                     {
                         if (parentBuf.Length > 0)
                         {
-                            return new FeatureInstallation(parentBuf.ToString(), ProductCode);
+                            return new FeatureInstallation(parentBuf.ToString(), this.ProductCode);
                         }
                         else
                         {
@@ -109,7 +115,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 uint ret = NativeMethods.MsiGetFeatureUsage(
-                    ProductCode, FeatureName, out uint useCount, out ushort useDate);
+                    this.ProductCode, this.FeatureName, out uint useCount, out ushort useDate);
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
@@ -153,13 +159,25 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             /// Gets count of the number of times the feature has been used.
             /// </summary>
             [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-            public int UseCount => useCount;
+            public int UseCount
+            {
+                get
+                {
+                    return this.useCount;
+                }
+            }
 
             /// <summary>
             /// Gets the date the feature was last used.
             /// </summary>
             [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-            public DateTime LastUsedDate => lastUsedDate;
+            public DateTime LastUsedDate
+            {
+                get
+                {
+                    return this.lastUsedDate;
+                }
+            }
         }
     }
 }

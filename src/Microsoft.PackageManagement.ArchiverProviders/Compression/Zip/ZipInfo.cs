@@ -54,11 +54,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         {
             IList<ArchiveFileInfo> files = base.GetFiles();
             List<ZipFileInfo> zipFiles = new List<ZipFileInfo>(files.Count);
-            foreach (ZipFileInfo zipFile in files)
-            {
-                zipFiles.Add(zipFile);
-            }
-
+            foreach (ZipFileInfo zipFile in files) zipFiles.Add(zipFile);
             return zipFiles.AsReadOnly();
         }
 
@@ -73,11 +69,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Zip
         {
             IList<ArchiveFileInfo> files = base.GetFiles(searchPattern);
             List<ZipFileInfo> zipFiles = new List<ZipFileInfo>(files.Count);
-            foreach (ZipFileInfo zipFile in files)
-            {
-                zipFiles.Add(zipFile);
-            }
-
+            foreach (ZipFileInfo zipFile in files) zipFiles.Add(zipFile);
             return zipFiles.AsReadOnly();
         }
     }

@@ -51,7 +51,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal
 
             request.Debug("Calling '{0}::GetFeatures' ", ArchiverName);
 
-            foreach (KeyValuePair<string, string[]> feature in _features)
+            foreach (var feature in _features)
             {
                 request.Yield(feature);
             }
@@ -61,13 +61,22 @@ namespace Microsoft.PackageManagement.Archivers.Internal
         ///     Returns the name of the Provider.
         /// </summary>
         /// <returns></returns>
-        public string ArchiverName => "zipfile";
+        public string ArchiverName
+        {
+            get { return "zipfile"; }
+        }
 
         /// <summary>
         /// Returns the version of the Provider.
         /// </summary>
         /// <returns>The version of this provider </returns>
-        public string ProviderVersion => "1.0.0.0";
+        public string ProviderVersion
+        {
+            get
+            {
+                return "1.0.0.0";
+            }
+        }
 
         /// <summary>
         /// This is just here as to give us some possibility of knowing when an exception happens...
@@ -88,14 +97,14 @@ namespace Microsoft.PackageManagement.Archivers.Internal
 
         private IEnumerable<string> _UnpackArchive(string localFilename, string destinationFolder, Request request)
         {
-            ZipInfo info = new ZipInfo(localFilename);
-            IList<ZipFileInfo> files = info.GetFiles();
-            int percent = 0;
-            int index = 0;
-            List<string> processed = new List<string>();
+            var info = new ZipInfo(localFilename);
+            var files = info.GetFiles();
+            var percent = 0;
+            var index = 0;
+            var processed = new List<string>();
 
             // request.Debug("Unpacking {0} {1}", localFilename, destinationFolder);
-            int pid = request.StartProgress(0, "Unpacking Archive '{0}' ", Path.GetFileName(localFilename));
+            var pid = request.StartProgress(0, "Unpacking Archive '{0}' ", Path.GetFileName(localFilename));
             try
             {
                 info.Unpack(destinationFolder, (sender, args) =>
@@ -104,7 +113,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal
                     {
                         processed.Add(Path.Combine(destinationFolder, args.CurrentFileName));
                         index++;
-                        int complete = (index * 100) / files.Count;
+                        var complete = (index * 100) / files.Count;
                         if (complete != percent)
                         {
                             percent = complete;
@@ -137,8 +146,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal
         {
             try
             {
-                ZipEngine ze = new ZipEngine();
-                using (FileStream zipFile = File.OpenRead(localFilename))
+                var ze = new ZipEngine();
+                using (var zipFile = File.OpenRead(localFilename))
                 {
                     return ze.IsArchive(zipFile);
                 }

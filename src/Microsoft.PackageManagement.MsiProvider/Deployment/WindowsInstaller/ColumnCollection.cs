@@ -51,14 +51,20 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("view");
             }
 
-            columns = ColumnCollection.GetViewColumns(view);
+            this.columns = ColumnCollection.GetViewColumns(view);
         }
 
         /// <summary>
         /// Gets the number of columns in the collection.
         /// </summary>
         /// <value>number of columns in the collection</value>
-        public int Count => columns.Count;
+        public int Count
+        {
+            get
+            {
+                return this.columns.Count;
+            }
+        }
 
         /// <summary>
         /// Gets a boolean value indicating whether the collection is read-only.
@@ -66,7 +72,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// or a read-only <see cref="Database"/>.
         /// </summary>
         /// <value>read-only status of the collection</value>
-        public bool IsReadOnly => true;
+        public bool IsReadOnly
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         /// <summary>
         /// Gets information about a specific column in the collection.
@@ -78,9 +90,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                if (columnIndex >= 0 && columnIndex < columns.Count)
+                if (columnIndex >= 0 && columnIndex < this.columns.Count)
                 {
-                    return columns[columnIndex];
+                    return this.columns[columnIndex];
                 }
                 else
                 {
@@ -104,7 +116,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     throw new ArgumentNullException("columnName");
                 }
 
-                foreach (ColumnInfo colInfo in columns)
+                foreach (ColumnInfo colInfo in this.columns)
                 {
                     if (colInfo.Name == columnName)
                     {
@@ -142,7 +154,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>true if the column exists in the collection, false otherwise</returns>
         public bool Contains(string columnName)
         {
-            return IndexOf(columnName) >= 0;
+            return this.IndexOf(columnName) >= 0;
         }
 
         /// <summary>
@@ -152,7 +164,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>true if the column exists in the collection, false otherwise</returns>
         bool ICollection<ColumnInfo>.Contains(ColumnInfo column)
         {
-            return Contains(column.Name);
+            return this.Contains(column.Name);
         }
 
         /// <summary>
@@ -167,9 +179,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("columnName");
             }
 
-            for (int index = 0; index < columns.Count; index++)
+            for (int index = 0; index < this.columns.Count; index++)
             {
-                if (columns[index].Name == columnName)
+                if (this.columns[index].Name == columnName)
                 {
                     return index;
                 }
@@ -189,7 +201,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("array");
             }
 
-            columns.CopyTo(array, arrayIndex);
+            this.columns.CopyTo(array, arrayIndex);
         }
 
         /// <summary>
@@ -211,7 +223,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>An enumerator of ColumnInfo objects.</returns>
         public IEnumerator<ColumnInfo> GetEnumerator()
         {
-            return columns.GetEnumerator();
+            return this.columns.GetEnumerator();
         }
 
         /// <summary>
@@ -222,11 +234,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                if (formatString == null)
+                if (this.formatString == null)
                 {
-                    formatString = CreateFormatString(columns);
+                    this.formatString = CreateFormatString(this.columns);
                 }
-                return formatString;
+                return this.formatString;
             }
         }
 
@@ -259,7 +271,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>An enumerator of ColumnInfo objects.</returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return this.GetEnumerator();
         }
 
         /// <summary>

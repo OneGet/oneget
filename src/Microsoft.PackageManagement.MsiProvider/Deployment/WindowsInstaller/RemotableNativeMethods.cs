@@ -103,7 +103,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// Checks if the current process is using remoting to access the
         /// MSI session and database APIs.
         /// </summary>
-        internal static bool RemotingEnabled => RemotableNativeMethods.remotingDelegate != null;
+        internal static bool RemotingEnabled
+        {
+            get
+            {
+                return RemotableNativeMethods.remotingDelegate != null;
+            }
+        }
 
         /// <summary>
         /// Sets a delegate that is used to make remote API calls.
@@ -131,7 +137,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         internal static bool IsRemoteHandle(int handle)
         {
-            return (handle & int.MinValue) != 0;
+            return (handle & Int32.MinValue) != 0;
         }
 
         internal static int MakeRemoteHandle(int handle)
@@ -146,7 +152,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new InvalidOperationException("Handle already has the remote bit set.");
             }
 
-            return handle ^ int.MinValue;
+            return handle ^ Int32.MinValue;
         }
 
         internal static int GetRemoteHandle(int handle)
@@ -161,7 +167,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new InvalidOperationException("Handle does not have the remote bit set.");
             }
 
-            return handle ^ int.MinValue;
+            return handle ^ Int32.MinValue;
         }
 
         private static void ClearData(IntPtr buf)
@@ -365,11 +371,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 WriteInt(requestBuf, 1, in2);
                 remotingDelegate(id, requestBuf, out IntPtr resp);
                 uint ret = unchecked((uint)ReadInt(resp, 0));
-                if (ret == 0)
-                {
-                    ReadString(resp, 1, out1, ref cchOut1);
-                }
-
+                if (ret == 0) ReadString(resp, 1, out1, ref cchOut1);
                 return ret;
             }
         }
@@ -384,11 +386,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 remotingDelegate(id, requestBuf, out IntPtr resp);
                 FreeString(requestBuf, 1);
                 uint ret = unchecked((uint)ReadInt(resp, 0));
-                if (ret == 0)
-                {
-                    ReadString(resp, 1, out1, ref cchOut1);
-                }
-
+                if (ret == 0) ReadString(resp, 1, out1, ref cchOut1);
                 return ret;
             }
         }
@@ -405,11 +403,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 remotingDelegate(id, requestBuf, out IntPtr resp);
                 FreeString(requestBuf, 1);
                 uint ret = unchecked((uint)ReadInt(resp, 0));
-                if (ret == 0)
-                {
-                    ReadString(resp, 1, out1, ref cchOut1);
-                }
-
+                if (ret == 0) ReadString(resp, 1, out1, ref cchOut1);
                 out2 = ReadInt(resp, 2);
                 out3 = ReadInt(resp, 3);
                 return ret;
@@ -422,9 +416,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 return NativeMethods.MsiProcessMessage(hInstall, eMessageType, hRecord);
             }
-            else
-            {
-                lock (remotingDelegate)
+            else lock (remotingDelegate)
                 {
                     // I don't understand why, but this particular function doesn't work
                     // when using the static requestBuf -- some data doesn't make it through.
@@ -439,28 +431,21 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     Marshal.FreeHGlobal(buf);
                     return ReadInt(resp, 0);
                 }
-            }
         }
 
         internal static uint MsiCloseHandle(int hAny)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hAny))
-            {
                 return NativeMethods.MsiCloseHandle(hAny);
-            }
             else
-            {
                 return RemotableNativeMethods.MsiFunc_III(
                     RemoteMsiFunctionId.MsiCloseHandle, RemotableNativeMethods.GetRemoteHandle(hAny), 0, 0);
-            }
         }
 
         internal static uint MsiGetProperty(int hInstall, string szName, StringBuilder szValueBuf, ref uint cchValueBuf)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiGetProperty(hInstall, szName, szValueBuf, ref cchValueBuf);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_IS_S(
@@ -475,9 +460,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiSetProperty(int hInstall, string szName, string szValue)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiSetProperty(hInstall, szName, szValue);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_ISS(
@@ -509,9 +492,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiRecordGetFieldCount(int hRecord)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hRecord))
-            {
                 return NativeMethods.MsiRecordGetFieldCount(hRecord);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_III(
@@ -525,9 +506,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static int MsiRecordGetInteger(int hRecord, uint iField)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hRecord))
-            {
                 return NativeMethods.MsiRecordGetInteger(hRecord, iField);
-            }
             else
             {
                 return unchecked((int)RemotableNativeMethods.MsiFunc_III(
@@ -558,9 +537,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiRecordSetInteger(int hRecord, uint iField, int iValue)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hRecord))
-            {
                 return NativeMethods.MsiRecordSetInteger(hRecord, iField, iValue);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_III(
@@ -574,9 +551,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiRecordSetString(int hRecord, uint iField, string szValue)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hRecord))
-            {
                 return NativeMethods.MsiRecordSetString(hRecord, iField, szValue);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_IIS(
@@ -590,9 +565,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static int MsiGetActiveDatabase(int hInstall)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiGetActiveDatabase(hInstall);
-            }
             else
             {
                 int hDatabase = (int)RemotableNativeMethods.MsiFunc_III(
@@ -607,9 +580,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiDatabaseOpenView(int hDatabase, string szQuery, out int hView)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hDatabase))
-            {
                 return NativeMethods.MsiDatabaseOpenView(hDatabase, szQuery, out hView);
-            }
             else
             {
                 uint err = RemotableNativeMethods.MsiFunc_ISII_I(
@@ -627,9 +598,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiViewExecute(int hView, int hRecord)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hView))
-            {
                 return NativeMethods.MsiViewExecute(hView, hRecord);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_III(
@@ -643,9 +612,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiViewFetch(int hView, out int hRecord)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hView))
-            {
                 return NativeMethods.MsiViewFetch(hView, out hRecord);
-            }
             else
             {
                 uint err = RemotableNativeMethods.MsiFunc_II_I(
@@ -662,9 +629,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiViewModify(int hView, int iModifyMode, int hRecord)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hView))
-            {
                 return NativeMethods.MsiViewModify(hView, iModifyMode, hRecord);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_III(
@@ -679,9 +644,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static int MsiViewGetError(int hView, StringBuilder szColumnNameBuffer, ref uint cchBuf)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hView))
-            {
                 return NativeMethods.MsiViewGetError(hView, szColumnNameBuffer, ref cchBuf);
-            }
             else
             {
                 return unchecked((int)RemotableNativeMethods.MsiFunc_II_S(
@@ -696,9 +659,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiViewGetColumnInfo(int hView, uint eColumnInfo, out int hRecord)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hView))
-            {
                 return NativeMethods.MsiViewGetColumnInfo(hView, eColumnInfo, out hRecord);
-            }
             else
             {
                 uint err = RemotableNativeMethods.MsiFunc_II_I(
@@ -714,9 +675,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiFormatRecord(int hInstall, int hRecord, StringBuilder szResultBuf, ref uint cchResultBuf)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hRecord))
-            {
                 return NativeMethods.MsiFormatRecord(hInstall, hRecord, szResultBuf, ref cchResultBuf);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_II_S(
@@ -732,9 +691,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiRecordClearData(int hRecord)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hRecord))
-            {
                 return NativeMethods.MsiRecordClearData(hRecord);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_III(
@@ -748,9 +705,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static bool MsiRecordIsNull(int hRecord, uint iField)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hRecord))
-            {
                 return NativeMethods.MsiRecordIsNull(hRecord, iField);
-            }
             else
             {
                 return 0 != RemotableNativeMethods.MsiFunc_III(
@@ -764,9 +719,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiDatabaseGetPrimaryKeys(int hDatabase, string szTableName, out int hRecord)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hDatabase))
-            {
                 return NativeMethods.MsiDatabaseGetPrimaryKeys(hDatabase, szTableName, out hRecord);
-            }
             else
             {
                 uint err = RemotableNativeMethods.MsiFunc_ISII_I(
@@ -784,9 +737,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiDatabaseIsTablePersistent(int hDatabase, string szTableName)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hDatabase))
-            {
                 return NativeMethods.MsiDatabaseIsTablePersistent(hDatabase, szTableName);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_ISI(
@@ -800,9 +751,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiDoAction(int hInstall, string szAction)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiDoAction(hInstall, szAction);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_ISI(
@@ -816,9 +765,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiEnumComponentCosts(int hInstall, string szComponent, uint dwIndex, int iState, StringBuilder lpDriveBuf, ref uint cchDriveBuf, out int iCost, out int iTempCost)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiEnumComponentCosts(hInstall, szComponent, dwIndex, iState, lpDriveBuf, ref cchDriveBuf, out iCost, out iTempCost);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_ISII_SII(
@@ -831,9 +778,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiEvaluateCondition(int hInstall, string szCondition)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiEvaluateCondition(hInstall, szCondition);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_ISI(
@@ -848,9 +793,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiGetComponentState(int hInstall, string szComponent, out int iInstalled, out int iAction)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiGetComponentState(hInstall, szComponent, out iInstalled, out iAction);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_IS_II(
@@ -866,9 +809,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiGetFeatureCost(int hInstall, string szFeature, int iCostTree, int iState, out int iCost)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiGetFeatureCost(hInstall, szFeature, iCostTree, iState, out iCost);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_ISII_I(
@@ -885,9 +826,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiGetFeatureState(int hInstall, string szFeature, out int iInstalled, out int iAction)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiGetFeatureState(hInstall, szFeature, out iInstalled, out iAction);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_IS_II(
@@ -903,9 +842,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiGetFeatureValidStates(int hInstall, string szFeature, out uint dwInstalledState)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiGetFeatureValidStates(hInstall, szFeature, out dwInstalledState);
-            }
             else
             {
                 uint ret = RemotableNativeMethods.MsiFunc_ISII_I(
@@ -923,9 +860,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static int MsiGetLanguage(int hInstall)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiGetLanguage(hInstall);
-            }
             else
             {
                 return unchecked((int)RemotableNativeMethods.MsiFunc_III(
@@ -957,9 +892,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static bool MsiGetMode(int hInstall, uint iRunMode)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiGetMode(hInstall, iRunMode);
-            }
             else
             {
                 return 0 != RemotableNativeMethods.MsiFunc_III(
@@ -973,9 +906,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiGetSourcePath(int hInstall, string szFolder, StringBuilder szPathBuf, ref uint cchPathBuf)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiGetSourcePath(hInstall, szFolder, szPathBuf, ref cchPathBuf);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_IS_S(
@@ -990,9 +921,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiGetSummaryInformation(int hDatabase, string szDatabasePath, uint uiUpdateCount, out int hSummaryInfo)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hDatabase))
-            {
                 return NativeMethods.MsiGetSummaryInformation(hDatabase, szDatabasePath, uiUpdateCount, out hSummaryInfo);
-            }
             else
             {
                 uint err = RemotableNativeMethods.MsiFunc_ISII_I(
@@ -1010,9 +939,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiGetTargetPath(int hInstall, string szFolder, StringBuilder szPathBuf, ref uint cchPathBuf)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiGetTargetPath(hInstall, szFolder, szPathBuf, ref cchPathBuf);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_IS_S(
@@ -1027,9 +954,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiRecordDataSize(int hRecord, uint iField)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hRecord))
-            {
                 return NativeMethods.MsiRecordDataSize(hRecord, iField);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_III(
@@ -1045,9 +970,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 return NativeMethods.MsiRecordReadStream(hRecord, iField, szDataBuf, ref cbDataBuf);
             }
-            else
-            {
-                lock (RemotableNativeMethods.remotingDelegate)
+            else lock (RemotableNativeMethods.remotingDelegate)
                 {
                     ClearData(requestBuf);
                     unchecked
@@ -1068,15 +991,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         return ret;
                     }
                 }
-            }
         }
 
         internal static uint MsiRecordSetStream(int hRecord, uint iField, string szFilePath)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hRecord))
-            {
                 return NativeMethods.MsiRecordSetStream(hRecord, iField, szFilePath);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_IIS(
@@ -1090,9 +1010,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiSequence(int hInstall, string szTable, int iSequenceMode)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiSequence(hInstall, szTable, iSequenceMode);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_ISI(
@@ -1107,9 +1025,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiSetComponentState(int hInstall, string szComponent, int iState)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiSetComponentState(hInstall, szComponent, iState);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_ISI(
@@ -1124,9 +1040,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiSetFeatureAttributes(int hInstall, string szFeature, uint dwAttributes)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiSetFeatureAttributes(hInstall, szFeature, dwAttributes);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_ISI(
@@ -1141,9 +1055,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiSetFeatureState(int hInstall, string szFeature, int iState)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiSetFeatureState(hInstall, szFeature, iState);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_ISI(
@@ -1155,9 +1067,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiSetInstallLevel(int hInstall, int iInstallLevel)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiSetInstallLevel(hInstall, iInstallLevel);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_III(
@@ -1171,9 +1081,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiSetMode(int hInstall, uint iRunMode, bool fState)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiSetMode(hInstall, iRunMode, fState);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_III(
@@ -1187,9 +1095,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         internal static uint MsiSetTargetPath(int hInstall, string szFolder, string szFolderPath)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiSetTargetPath(hInstall, szFolder, szFolderPath);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_ISS(
@@ -1206,9 +1112,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 return NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, uiProperty, out uiDataType, out iValue, ref ftValue, szValueBuf, ref cchValueBuf);
             }
-            else
-            {
-                lock (RemotableNativeMethods.remotingDelegate)
+            else lock (RemotableNativeMethods.remotingDelegate)
                 {
                     ClearData(requestBuf);
                     WriteInt(requestBuf, 0, RemotableNativeMethods.GetRemoteHandle(hSummaryInfo));
@@ -1230,7 +1134,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                                 case VarEnum.VT_FILETIME:
                                     uint ftHigh = (uint)ReadInt(resp, 2);
                                     uint ftLow = (uint)ReadInt(resp, 3);
-                                    ftValue = ((long)ftHigh) << 32 | ftLow;
+                                    ftValue = ((long)ftHigh) << 32 | ((long)ftLow);
                                     iValue = 0;
                                     break;
 
@@ -1252,15 +1156,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                         return ret;
                     }
                 }
-            }
         }
 
         internal static uint MsiVerifyDiskSpace(int hInstall)
         {
             if (!RemotingEnabled || !RemotableNativeMethods.IsRemoteHandle(hInstall))
-            {
                 return NativeMethods.MsiVerifyDiskSpace(hInstall);
-            }
             else
             {
                 return RemotableNativeMethods.MsiFunc_III(

@@ -47,12 +47,24 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <summary>
         /// Indicates whether a system reboot is required after running an installation or configuration operation.
         /// </summary>
-        public static bool RebootRequired => Installer.rebootRequired;
+        public static bool RebootRequired
+        {
+            get
+            {
+                return Installer.rebootRequired;
+            }
+        }
 
         /// <summary>
         /// Indicates whether a system reboot has been initiated after running an installation or configuration operation.
         /// </summary>
-        public static bool RebootInitiated => Installer.rebootInitiated;
+        public static bool RebootInitiated
+        {
+            get
+            {
+                return Installer.rebootInitiated;
+            }
+        }
 
         /// <summary>
         /// Enables the installer's internal user interface. Then this user interface is used
@@ -227,7 +239,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
 
             return Installer.OpenPackage(
-                string.Format(CultureInfo.InvariantCulture, "#{0}", database.Handle),
+                String.Format(CultureInfo.InvariantCulture, "#{0}", database.Handle),
                 ignoreMachineState);
         }
 
@@ -867,7 +879,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 return 2; // XML blob
             }
-            else if (string.Compare(Path.GetExtension(patchData), ".xml",
+            else if (String.Compare(Path.GetExtension(patchData), ".xml",
                 StringComparison.OrdinalIgnoreCase) == 0)
             {
                 return 1; // XML file path

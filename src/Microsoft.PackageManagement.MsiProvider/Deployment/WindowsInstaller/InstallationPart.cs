@@ -33,20 +33,50 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             this.context = context;
         }
 
-        internal string Id => id;
+        internal string Id
+        {
+            get
+            {
+                return this.id;
+            }
+        }
 
-        internal string ProductCode => productCode;
+        internal string ProductCode
+        {
+            get
+            {
+                return this.productCode;
+            }
+        }
 
-        internal string UserSid => userSid;
+        internal string UserSid
+        {
+            get
+            {
+                return this.userSid;
+            }
+        }
 
-        internal UserContexts Context => context;
+        internal UserContexts Context
+        {
+            get
+            {
+                return this.context;
+            }
+        }
 
         /// <summary>
         /// Gets the product that this item is a part of.
         /// </summary>
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal ProductInstallation Product => productCode != null ?
-                    new ProductInstallation(productCode, userSid, context) : null;
+        internal ProductInstallation Product
+        {
+            get
+            {
+                return this.productCode != null ?
+                    new ProductInstallation(this.productCode, userSid, context) : null;
+            }
+        }
 
         /// <summary>
         /// Gets the current installation state of the item.

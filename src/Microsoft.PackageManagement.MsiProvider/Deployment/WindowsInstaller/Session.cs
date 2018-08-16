@@ -59,24 +59,24 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                if (database == null || database.IsClosed)
+                if (this.database == null || this.database.IsClosed)
                 {
-                    lock (Sync)
+                    lock (this.Sync)
                     {
-                        if (database == null || database.IsClosed)
+                        if (this.database == null || this.database.IsClosed)
                         {
-                            ValidateSessionAccess();
+                            this.ValidateSessionAccess();
 
-                            int hDb = RemotableNativeMethods.MsiGetActiveDatabase((int)Handle);
+                            int hDb = RemotableNativeMethods.MsiGetActiveDatabase((int)this.Handle);
                             if (hDb == 0)
                             {
                                 throw new InstallerException();
                             }
-                            database = new Database((IntPtr)hDb, true, "", DatabaseOpenMode.ReadOnly);
+                            this.database = new Database((IntPtr)hDb, true, "", DatabaseOpenMode.ReadOnly);
                         }
                     }
                 }
-                return database;
+                return this.database;
             }
         }
 
@@ -87,7 +87,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// Win32 MSI API:
         /// <a href="http://msdn.microsoft.com/library/en-us/msi/setup/msigetlanguage.asp">MsiGetLanguage</a>
         /// </p></remarks>
-        public int Language => RemotableNativeMethods.MsiGetLanguage((int)Handle);
+        public int Language
+        {
+            get
+            {
+                return (int)RemotableNativeMethods.MsiGetLanguage((int)this.Handle);
+            }
+        }
 
         /// <summary>
         /// Gets or sets the string value of a named installer property, as maintained by the
@@ -109,19 +115,19 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     throw new ArgumentNullException("property");
                 }
 
-                if (!sessionAccessValidated &&
+                if (!this.sessionAccessValidated &&
                     !Session.NonImmediatePropertyNames.Contains(property))
                 {
-                    ValidateSessionAccess();
+                    this.ValidateSessionAccess();
                 }
 
                 StringBuilder buf = new StringBuilder();
                 uint bufSize = 0;
-                uint ret = RemotableNativeMethods.MsiGetProperty((int)Handle, property, buf, ref bufSize);
+                uint ret = RemotableNativeMethods.MsiGetProperty((int)this.Handle, property, buf, ref bufSize);
                 if (ret == (uint)NativeMethods.Error.MORE_DATA)
                 {
                     buf.Capacity = (int)++bufSize;
-                    ret = RemotableNativeMethods.MsiGetProperty((int)Handle, property, buf, ref bufSize);
+                    ret = RemotableNativeMethods.MsiGetProperty((int)this.Handle, property, buf, ref bufSize);
                 }
 
                 if (ret != 0)
@@ -138,14 +144,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     throw new ArgumentNullException("property");
                 }
 
-                ValidateSessionAccess();
+                this.ValidateSessionAccess();
 
                 if (value == null)
                 {
-                    value = string.Empty;
+                    value = String.Empty;
                 }
 
-                uint ret = RemotableNativeMethods.MsiSetProperty((int)Handle, property, value);
+                uint ret = RemotableNativeMethods.MsiSetProperty((int)this.Handle, property, value);
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
@@ -207,7 +213,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("record");
             }
 
-            int ret = RemotableNativeMethods.MsiProcessMessage((int)Handle, (uint)messageType, (int)record.Handle);
+            int ret = RemotableNativeMethods.MsiProcessMessage((int)this.Handle, (uint)messageType, (int)record.Handle);
             if (ret < 0)
             {
                 throw new InstallerException();
@@ -237,7 +243,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             using (Record rec = new Record(0))
             {
                 rec.FormatString = msg;
-                Message(InstallMessage.Info, rec);
+                this.Message(InstallMessage.Info, rec);
             }
         }
 
@@ -252,7 +258,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public void Log(string format, params object[] args)
         {
-            Log(string.Format(CultureInfo.InvariantCulture, format, args));
+            this.Log(String.Format(CultureInfo.InvariantCulture, format, args));
         }
 
         /// <summary>
@@ -274,7 +280,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("condition");
             }
 
-            uint value = RemotableNativeMethods.MsiEvaluateCondition((int)Handle, condition);
+            uint value = RemotableNativeMethods.MsiEvaluateCondition((int)this.Handle, condition);
             if (value == 0)
             {
                 return false;
@@ -314,8 +320,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
             else
             {
-                ValidateSessionAccess();
-                return EvaluateCondition(condition);
+                this.ValidateSessionAccess();
+                return this.EvaluateCondition(condition);
             }
         }
 
@@ -406,16 +412,16 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("property");
             }
 
-            ValidateSessionAccess();
+            this.ValidateSessionAccess();
 
             StringBuilder buf = new StringBuilder();
             uint bufSize = (uint)buf.Capacity;
-            uint ret = NativeMethods.MsiGetProductProperty((int)Handle, property, buf, ref bufSize);
+            uint ret = NativeMethods.MsiGetProductProperty((int)this.Handle, property, buf, ref bufSize);
 
             if (ret == (uint)NativeMethods.Error.MORE_DATA)
             {
                 buf.Capacity = (int)++bufSize;
-                ret = NativeMethods.MsiGetProductProperty((int)Handle, property, buf, ref bufSize);
+                ret = NativeMethods.MsiGetProductProperty((int)this.Handle, property, buf, ref bufSize);
             }
 
             if (ret != 0)
@@ -432,7 +438,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                ValidateSessionAccess();
+                this.ValidateSessionAccess();
                 return new ComponentInfoCollection(this);
             }
         }
@@ -444,7 +450,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                ValidateSessionAccess();
+                this.ValidateSessionAccess();
                 return new FeatureInfoCollection(this);
             }
         }
@@ -459,9 +465,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public bool VerifyDiskSpace()
         {
-            ValidateSessionAccess();
+            this.ValidateSessionAccess();
 
-            uint ret = RemotableNativeMethods.MsiVerifyDiskSpace((int)Handle);
+            uint ret = RemotableNativeMethods.MsiVerifyDiskSpace((int)this.Handle);
             if (ret == (uint)NativeMethods.Error.DISK_FULL)
             {
                 return false;
@@ -484,7 +490,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         public IList<InstallCost> GetTotalCost()
         {
-            ValidateSessionAccess();
+            this.ValidateSessionAccess();
 
             IList<InstallCost> costs = new List<InstallCost>();
             StringBuilder driveBuf = new StringBuilder(20);
@@ -492,7 +498,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 uint driveBufSize = (uint)driveBuf.Capacity;
                 uint ret = RemotableNativeMethods.MsiEnumComponentCosts(
-                    (int)Handle,
+                    (int)this.Handle,
                     null,
                     i,
                     (int)InstallState.Default,
@@ -500,16 +506,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     ref driveBufSize,
                     out int cost,
                     out int tempCost);
-                if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
-                {
-                    break;
-                }
-
+                if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS) break;
                 if (ret == (uint)NativeMethods.Error.MORE_DATA)
                 {
                     driveBuf.Capacity = (int)++driveBufSize;
                     ret = RemotableNativeMethods.MsiEnumComponentCosts(
-                        (int)Handle,
+                        (int)this.Handle,
                         null,
                         i,
                         (int)InstallState.Default,
@@ -548,7 +550,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public bool GetMode(InstallRunMode mode)
         {
-            return RemotableNativeMethods.MsiGetMode((int)Handle, (uint)mode);
+            return RemotableNativeMethods.MsiGetMode((int)this.Handle, (uint)mode);
         }
 
         /// <summary>
@@ -565,9 +567,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public void SetMode(InstallRunMode mode, bool value)
         {
-            ValidateSessionAccess();
+            this.ValidateSessionAccess();
 
-            uint ret = RemotableNativeMethods.MsiSetMode((int)Handle, (uint)mode, value);
+            uint ret = RemotableNativeMethods.MsiSetMode((int)this.Handle, (uint)mode, value);
             if (ret != 0)
             {
                 if (ret == (uint)NativeMethods.Error.ACCESS_DENIED)
@@ -597,15 +599,15 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("directory");
             }
 
-            ValidateSessionAccess();
+            this.ValidateSessionAccess();
 
             StringBuilder buf = new StringBuilder();
             uint bufSize = 0;
-            uint ret = RemotableNativeMethods.MsiGetSourcePath((int)Handle, directory, buf, ref bufSize);
+            uint ret = RemotableNativeMethods.MsiGetSourcePath((int)this.Handle, directory, buf, ref bufSize);
             if (ret == (uint)NativeMethods.Error.MORE_DATA)
             {
                 buf.Capacity = (int)++bufSize;
-                ret = ret = RemotableNativeMethods.MsiGetSourcePath((int)Handle, directory, buf, ref bufSize);
+                ret = ret = RemotableNativeMethods.MsiGetSourcePath((int)this.Handle, directory, buf, ref bufSize);
             }
 
             if (ret != 0)
@@ -638,15 +640,15 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("directory");
             }
 
-            ValidateSessionAccess();
+            this.ValidateSessionAccess();
 
             StringBuilder buf = new StringBuilder();
             uint bufSize = 0;
-            uint ret = RemotableNativeMethods.MsiGetTargetPath((int)Handle, directory, buf, ref bufSize);
+            uint ret = RemotableNativeMethods.MsiGetTargetPath((int)this.Handle, directory, buf, ref bufSize);
             if (ret == (uint)NativeMethods.Error.MORE_DATA)
             {
                 buf.Capacity = (int)++bufSize;
-                ret = ret = RemotableNativeMethods.MsiGetTargetPath((int)Handle, directory, buf, ref bufSize);
+                ret = ret = RemotableNativeMethods.MsiGetTargetPath((int)this.Handle, directory, buf, ref bufSize);
             }
 
             if (ret != 0)
@@ -698,9 +700,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("value");
             }
 
-            ValidateSessionAccess();
+            this.ValidateSessionAccess();
 
-            uint ret = RemotableNativeMethods.MsiSetTargetPath((int)Handle, directory, value);
+            uint ret = RemotableNativeMethods.MsiSetTargetPath((int)this.Handle, directory, value);
             if (ret != 0)
             {
                 if (ret == (uint)NativeMethods.Error.DIRECTORY)
@@ -737,9 +739,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public void SetInstallLevel(int installLevel)
         {
-            ValidateSessionAccess();
+            this.ValidateSessionAccess();
 
-            uint ret = RemotableNativeMethods.MsiSetInstallLevel((int)Handle, installLevel);
+            uint ret = RemotableNativeMethods.MsiSetInstallLevel((int)this.Handle, installLevel);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -771,7 +773,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public void DoAction(string action)
         {
-            DoAction(action, null);
+            this.DoAction(action, null);
         }
 
         /// <summary>
@@ -809,14 +811,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("action");
             }
 
-            ValidateSessionAccess();
+            this.ValidateSessionAccess();
 
             if (actionData != null)
             {
                 this[action] = actionData.ToString();
             }
 
-            uint ret = RemotableNativeMethods.MsiDoAction((int)Handle, action);
+            uint ret = RemotableNativeMethods.MsiDoAction((int)this.Handle, action);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -850,9 +852,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("sequenceTable");
             }
 
-            ValidateSessionAccess();
+            this.ValidateSessionAccess();
 
-            uint ret = RemotableNativeMethods.MsiSequence((int)Handle, sequenceTable, 0);
+            uint ret = RemotableNativeMethods.MsiSequence((int)this.Handle, sequenceTable, 0);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -867,12 +869,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                if (customActionData == null)
+                if (this.customActionData == null)
                 {
-                    customActionData = new CustomActionData(this[CustomActionData.PropertyName]);
+                    this.customActionData = new CustomActionData(this[CustomActionData.PropertyName]);
                 }
 
-                return customActionData;
+                return this.customActionData;
             }
         }
 
@@ -900,10 +902,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 if (disposing)
                 {
-                    if (database != null)
+                    if (this.database != null)
                     {
-                        database.Dispose();
-                        database = null;
+                        this.database.Dispose();
+                        this.database = null;
                     }
                 }
             }
@@ -916,27 +918,33 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the (short) list of properties that are available from non-immediate custom actions.
         /// </summary>
-        private static IList<string> NonImmediatePropertyNames => new string[] {
+        private static IList<string> NonImmediatePropertyNames
+        {
+            get
+            {
+                return new string[] {
                     CustomActionData.PropertyName,
                     "ProductCode",
                     "UserSID"
                 };
+            }
+        }
 
         /// <summary>
         /// Throws an exception if the custom action is not able to access immediate session details.
         /// </summary>
         private void ValidateSessionAccess()
         {
-            if (!sessionAccessValidated)
+            if (!this.sessionAccessValidated)
             {
-                if (GetMode(InstallRunMode.Scheduled) ||
-                    GetMode(InstallRunMode.Rollback) ||
-                    GetMode(InstallRunMode.Commit))
+                if (this.GetMode(InstallRunMode.Scheduled) ||
+                    this.GetMode(InstallRunMode.Rollback) ||
+                    this.GetMode(InstallRunMode.Commit))
                 {
                     throw new InstallerException("Cannot access session details from a non-immediate custom action");
                 }
 
-                sessionAccessValidated = true;
+                this.sessionAccessValidated = true;
             }
         }
     }

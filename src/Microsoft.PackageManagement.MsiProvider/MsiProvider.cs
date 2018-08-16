@@ -83,7 +83,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
 
-            foreach (KeyValuePair<string, string[]> feature in _features)
+            foreach (var feature in _features)
             {
                 request.Yield(feature);
             }
@@ -164,7 +164,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
             }
             try
             {
-                InstallPackage package = new InstallPackage(file, DatabaseOpenMode.ReadOnly);
+                var package = new InstallPackage(file, DatabaseOpenMode.ReadOnly);
                 YieldPackage(package, file, request);
                 package.Close();
             }
@@ -196,27 +196,27 @@ namespace Microsoft.PackageManagement.Msi.Internal
 
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetInstalledPackages' '{1}','{2}','{3}','{4}'", ProviderName, name, requiredVersion, minimumVersion, maximumVersion);
-            IEnumerable<ProductInstallation> products = ProductInstallation.AllProducts;
+            var products = ProductInstallation.AllProducts;
             WildcardPattern pattern = new WildcardPattern(name, WildcardOptions.IgnoreCase);
-            IEnumerable<ProductInstallation> installed = string.IsNullOrWhiteSpace(name)
+            var installed = string.IsNullOrWhiteSpace(name)
                 ? products.Where(each => each.IsInstalled) : products.Where(each => each.IsInstalled && pattern.IsMatch(each.ProductName));
 
             if (!string.IsNullOrWhiteSpace(requiredVersion))
             {
                 // filter to just the exact version
-                Version rv = new Version(requiredVersion.FixVersion());
+                var rv = new Version(requiredVersion.FixVersion());
                 installed = installed.Where(each => (FourPartVersion)each.ProductVersion == (FourPartVersion)rv);
             }
             else
             {
                 if (!string.IsNullOrWhiteSpace(minimumVersion))
                 {
-                    Version min = new Version(minimumVersion.FixVersion());
+                    var min = new Version(minimumVersion.FixVersion());
                     installed = installed.Where(each => (FourPartVersion)each.ProductVersion >= (FourPartVersion)min);
                 }
                 if (!string.IsNullOrWhiteSpace(maximumVersion))
                 {
-                    Version max = new Version(maximumVersion.FixVersion());
+                    var max = new Version(maximumVersion.FixVersion());
                     installed = installed.Where(each => (FourPartVersion)each.ProductVersion <= (FourPartVersion)max);
                 }
             }
@@ -249,7 +249,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
             }
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::InstallPackage' '{1}'", ProviderName, fastPackageReference);
-            string file = fastPackageReference.CanonicalizePath(false);
+            var file = fastPackageReference.CanonicalizePath(false);
             if (!file.FileExists())
             {
                 request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.OpenError, fastPackageReference, Constants.Messages.UnableToResolvePackage, fastPackageReference);
@@ -260,7 +260,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
             string errorLogPath = errorLogFolder + "\\msi.log";
             try
             {
-                InstallPackage package = new InstallPackage(file, DatabaseOpenMode.ReadOnly);
+                var package = new InstallPackage(file, DatabaseOpenMode.ReadOnly);
 
                 Installer.SetInternalUI(InstallUIOptions.UacOnly | InstallUIOptions.Silent);
 
@@ -277,7 +277,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
                     _progressId = request.StartProgress(0, Resources.Messages.InstallingMSIPackage, file);
                 }
 
-                ExternalUIHandler handler = CreateProgressHandler(request, Resources.Messages.Installing);
+                var handler = CreateProgressHandler(request, Resources.Messages.Installing);
 
                 Installer.SetExternalUI(handler, InstallLogModes.Progress | InstallLogModes.Info);
                 Installer.EnableLog(InstallLogModes.Error, errorLogPath);
@@ -305,9 +305,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
                 }
 
                 if (errorDir.Exists)
-                {
                     errorDir.Delete(true);
-                }
             }
             catch (Exception e)
             {
@@ -348,19 +346,19 @@ namespace Microsoft.PackageManagement.Msi.Internal
                     request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.InvalidArgument, fastPackageReference, Constants.Messages.UnableToResolvePackage, fastPackageReference);
                     return;
                 }
-                ProductInstallation product = ProductInstallation.GetProducts(fastPackageReference, null, UserContexts.All).FirstOrDefault();
+                var product = ProductInstallation.GetProducts(fastPackageReference, null, UserContexts.All).FirstOrDefault();
                 if (product == null)
                 {
                     request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.InvalidArgument, fastPackageReference, Constants.Messages.UnableToResolvePackage, fastPackageReference);
                     return;
                 }
-                string productVersion = product.ProductVersion.ToString();
-                string productName = product.ProductName;
-                string summary = product["Summary"];
+                var productVersion = product.ProductVersion.ToString();
+                var productName = product.ProductName;
+                var summary = product["Summary"];
 
                 Installer.SetInternalUI(InstallUIOptions.UacOnly | InstallUIOptions.Silent);
                 _progressId = request.StartProgress(0, Resources.Messages.UninstallingMSIPackage, productName);
-                ExternalUIHandler handler = CreateProgressHandler(request, Resources.Messages.UnInstalling);
+                var handler = CreateProgressHandler(request, Resources.Messages.UnInstalling);
 
                 Installer.SetExternalUI(handler, InstallLogModes.Progress | InstallLogModes.Info);
                 Installer.EnableLog(InstallLogModes.Error, errorLogPath);
@@ -381,9 +379,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
                 }
 
                 if (errorDir.Exists)
-                {
                     errorDir.Delete(true);
-                }
             }
             catch (Exception e)
             {
@@ -397,12 +393,12 @@ namespace Microsoft.PackageManagement.Msi.Internal
         //Needs Commenting
         private ExternalUIHandler CreateProgressHandler(Request request, string showMessage)
         {
-            int currentTotalTicks = -1;
-            int currentProgress = 0;
-            int progressDirection = 1;
-            int actualPercent = 0;
+            var currentTotalTicks = -1;
+            var currentProgress = 0;
+            var progressDirection = 1;
+            var actualPercent = 0;
 
-            MessageResult handler(InstallMessage type, string message, MessageButtons buttons, MessageIcon icon, MessageDefaultButton button)
+            ExternalUIHandler handler = (type, message, buttons, icon, button) =>
             {
                 if (request.IsCanceled)
                 {
@@ -414,7 +410,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
                     case InstallMessage.Progress:
                         if (message.Length >= 2)
                         {
-                            int[] msg = message.Split(": ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(m => m.ToInt32(0)).ToArray();
+                            var msg = message.Split(": ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(m => m.ToInt32(0)).ToArray();
 
                             switch (msg[1])
                             {
@@ -448,7 +444,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
 
                         if (currentTotalTicks > 0)
                         {
-                            int newPercent = (currentProgress * 100 / currentTotalTicks);
+                            var newPercent = (currentProgress * 100 / currentTotalTicks);
                             if (actualPercent < newPercent)
                             {
                                 actualPercent = newPercent;
@@ -460,7 +456,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
                 }
 
                 return MessageResult.OK;
-            }
+            };
 
             return handler;
         }
@@ -475,7 +471,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
                        */
             if (request.YieldSoftwareIdentity(filename, package.Property["ProductName"], package.Property["ProductVersion"], "multipartnumeric", package.Property["Summary"], filename, filename, filename, Path.GetFileName(filename)) != null)
             {
-                bool trusted = request.ProviderServices.IsSignedAndTrusted(filename, request);
+                var trusted = request.ProviderServices.IsSignedAndTrusted(filename, request);
 
                 if (request.AddMetadata(filename, "FromTrustedSource", trusted.ToString()) == null)
                 {

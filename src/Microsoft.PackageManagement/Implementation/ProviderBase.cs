@@ -15,9 +15,9 @@
 namespace Microsoft.PackageManagement.Internal.Implementation
 {
     using Api;
+    using Providers;
     using PackageManagement.Packaging;
     using Packaging;
-    using Providers;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
@@ -26,8 +26,8 @@ namespace Microsoft.PackageManagement.Internal.Implementation
     using System.Xml.Linq;
     using Utility.Async;
     using Utility.Extensions;
-    using Utility.Platform;
     using Utility.Plugin;
+    using Utility.Platform;
     using Utility.Versions;
     using File = System.IO.File;
 

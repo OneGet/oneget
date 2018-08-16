@@ -1,17 +1,20 @@
-﻿using System.Security;
+﻿
+using System.Security;
 
-namespace Microsoft.PackageManagement.Provider.Utility
+namespace Microsoft.PackageManagement.Provider.Utility 
 {
     using System;
     using System.IO;
     using System.Net;
     using System.Net.Http;
-    using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Runtime.InteropServices;
+    using System.Globalization;
 
     internal static class PathUtility
-    {
+    {      
+
         internal static string EnsureTrailingSlash(string path)
         {
             //The value of DirectorySeparatorChar is a slash ("/") on UNIX, and a backslash ("\") on the Windows and Macintosh.
@@ -30,11 +33,11 @@ namespace Microsoft.PackageManagement.Provider.Utility
             {
                 return path;
             }
-
+           
             return path + trailingCharacter;
         }
 
-        internal static HttpResponseMessage GetHttpResponse(HttpClient httpClient, string query, Func<bool> isCanceled, Action<string, int> logRetry, Action<string> verbose, Action<string> debug)
+        internal static HttpResponseMessage GetHttpResponse(HttpClient httpClient, string query, Func<bool> isCanceled, Action<string, int>logRetry, Action<string>verbose, Action<string>debug)
         {
             // try downloading for 3 times
             int remainingTry = 3;
@@ -50,7 +53,7 @@ namespace Microsoft.PackageManagement.Provider.Utility
             bool cleanUp = true;
             HttpResponseMessage result = null;
 
-            void cleanUpAction()
+            Action cleanUpAction = () =>
             {
                 lock (timerLock)
                 {
@@ -79,7 +82,7 @@ namespace Microsoft.PackageManagement.Provider.Utility
                         cleanUp = true;
                     }
                 }
-            }
+            };
 
             while (remainingTry > 0)
             {
@@ -170,18 +173,12 @@ namespace Microsoft.PackageManagement.Provider.Utility
 
         internal static string UriCombine(string query, string append)
         {
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                return append;
-            }
-
-            if (string.IsNullOrWhiteSpace(append))
-            {
-                return query;
-            }
+            if (String.IsNullOrWhiteSpace(query)) return append;
+            if (String.IsNullOrWhiteSpace(append)) return query;
 
             return query.TrimEnd('/') + "/" + append.TrimStart('/');
         }
+
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "It's used in Nano")]
         internal static string SecureStringToString(SecureString secure)
@@ -225,9 +222,9 @@ namespace Microsoft.PackageManagement.Provider.Utility
 
         internal static HttpClient GetHttpClientHelper(string username, SecureString password, IWebProxy webProxy)
         {
-            HttpClientHandler clientHandler = new HttpClientHandler();
+            var clientHandler = new HttpClientHandler();
 
-            NetworkCredential networkCredential = GetNetworkCredential(username, password);
+            var networkCredential = GetNetworkCredential(username, password);
 
             // if we are given a network credential, use that
             if (networkCredential != null)
@@ -250,12 +247,13 @@ namespace Microsoft.PackageManagement.Provider.Utility
                 clientHandler.Proxy = webProxy;
             }
 
-            HttpClient httpClient = new HttpClient(clientHandler);
+            var httpClient = new HttpClient(clientHandler);
 
             // Mozilla/5.0 is the general token that says the browser is Mozilla compatible, and is common to almost every browser today.
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 NuGet");
 
             return httpClient;
         }
+
     }
 }

@@ -69,7 +69,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             if (!IsInvocation)
             {
                 IEnumerable<string> providerNames = PackageManagementService.AllProviderNames;
-                string[] whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
+                var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
                 if (whatsOnCmdline != null)
                 {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
@@ -178,7 +178,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 {
                     if (FilesystemExtensions.LooksLikeAFilename(Location))
                     {
-                        Collection<string> resolvedPaths = GetResolvedProviderPathFromPSPath(Location, out ProviderInfo providerInfo);
+                        var resolvedPaths = GetResolvedProviderPathFromPSPath(Location, out ProviderInfo providerInfo);
 
                         // Ensure the path is a single path from the file system provider
                         if ((providerInfo != null) && (resolvedPaths.Count == 1) && string.Equals(providerInfo.Name, "FileSystem", StringComparison.OrdinalIgnoreCase))

@@ -101,7 +101,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         protected bool WaitForActivity<T>(IEnumerable<IAsyncEnumerable<T>> enumerables)
         {
-            WaitHandle[] handles = enumerables.Select(each => each.Ready).ConcatSingleItem(CancellationEvent.Token.WaitHandle).ToArray();
+            var handles = enumerables.Select(each => each.Ready).ConcatSingleItem(CancellationEvent.Token.WaitHandle).ToArray();
             if (handles.Length > 1)
             {
                 if (handles.Length <= 64)
@@ -148,11 +148,29 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         protected abstract IEnumerable<string> ParameterSets { get; }
 
-        protected bool IsPackageBySearch => ParameterSetName == Constants.ParameterSets.PackageBySearchSet;
+        protected bool IsPackageBySearch
+        {
+            get
+            {
+                return ParameterSetName == Constants.ParameterSets.PackageBySearchSet;
+            }
+        }
 
-        protected bool IsPackageByObject => ParameterSetName == Constants.ParameterSets.PackageByInputObjectSet;
+        protected bool IsPackageByObject
+        {
+            get
+            {
+                return ParameterSetName == Constants.ParameterSets.PackageByInputObjectSet;
+            }
+        }
 
-        protected bool IsSourceByObject => ParameterSetName == Constants.ParameterSets.SourceByInputObjectSet;
+        protected bool IsSourceByObject
+        {
+            get
+            {
+                return ParameterSetName == Constants.ParameterSets.SourceByInputObjectSet;
+            }
+        }
 
         protected internal IPackageManagementService PackageManagementService
         {
@@ -182,7 +200,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             {
                 if (IsInvocation)
                 {
-                    int t = GetDynamicParameterValue<int>("Timeout");
+                    var t = GetDynamicParameterValue<int>("Timeout");
                     if (t > 0)
                     {
                         return t;
@@ -199,7 +217,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             {
                 if (IsInvocation)
                 {
-                    int t = GetDynamicParameterValue<int>("Responsiveness");
+                    var t = GetDynamicParameterValue<int>("Responsiveness");
                     if (t > 0)
                     {
                         return t;
@@ -209,21 +227,42 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             }
         }
 
-        public GetMessageString MessageResolver => _messageResolver ?? (_messageResolver = GetDynamicParameterValue<GetMessageString>("MessageResolver"));
+        public GetMessageString MessageResolver
+        {
+            get
+            {
+                return _messageResolver ?? (_messageResolver = GetDynamicParameterValue<GetMessageString>("MessageResolver"));
+            }
+        }
 
         #region Implementing IHostApi
 
-        public Hashtable DynamicOptions => _dynamicOptions;
+        public Hashtable DynamicOptions
+        {
+            get
+            {
+                return _dynamicOptions;
+            }
+        }
 
         public virtual IEnumerable<string> Sources
         {
-            get => null;
+            get
+            {
+                return null;
+            }
             set
             {
             }
         }
 
-        public virtual IEnumerable<string> OptionKeys => DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys);
+        public virtual IEnumerable<string> OptionKeys
+        {
+            get
+            {
+                return DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet).Select(each => each.Name).Concat(MyInvocation.BoundParameters.Keys);
+            }
+        }
 
         protected bool GenerateCommonDynamicParameters()
         {
@@ -294,7 +333,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         public virtual IEnumerable<string> GetOptionValues(string key)
         {
             // try to see whether the key is a dynamic parameter first. if we cannot find it then go to bound parameters.
-            IEnumerable<string> dynamicValues = DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Name == key).SelectMany(each => each.GetValues(this));
+            var dynamicValues = DynamicParameterDictionary.Values.OfType<CustomRuntimeDefinedParameter>().Where(each => each.IsSet && each.Name == key).SelectMany(each => each.GetValues(this));
             if (dynamicValues.Any())
             {
                 return dynamicValues;
@@ -302,7 +341,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
             if (MyInvocation.BoundParameters.ContainsKey(key))
             {
-                object value = MyInvocation.BoundParameters[key];
+                var value = MyInvocation.BoundParameters[key];
                 if (value is string || value is int)
                 {
                     return new[] {
@@ -327,11 +366,29 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             return Enumerable.Empty<string>();
         }
 
-        public virtual IWebProxy WebProxy => null;
+        public virtual IWebProxy WebProxy
+        {
+            get
+            {
+                return null;
+            }
+        }
 
-        public virtual string CredentialUsername => null;
+        public virtual string CredentialUsername
+        {
+            get
+            {
+                return null;
+            }
+        }
 
-        public virtual SecureString CredentialPassword => null;
+        public virtual SecureString CredentialPassword
+        {
+            get
+            {
+                return null;
+            }
+        }
 
         public virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource)
         {
@@ -344,7 +401,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", Justification = "It's a PowerShell behavior.")]
         bool IHostApi.ShouldContinue(string query, string caption, ref bool yesToAll, ref bool noToAll)
         {
-            ShouldContinueResult shouldContinueResult = base.ShouldContinue(query, caption, true).Result;
+            var shouldContinueResult = base.ShouldContinue(query, caption, true).Result;
             if (shouldContinueResult != null)
             {
                 yesToAll = shouldContinueResult.yesToAll;
@@ -385,9 +442,21 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             return false;
         }
 
-        public virtual bool IsInteractive => IsInvocation;
+        public virtual bool IsInteractive
+        {
+            get
+            {
+                return IsInvocation;
+            }
+        }
 
-        public virtual int CallCount => _callCount;
+        public virtual int CallCount
+        {
+            get
+            {
+                return _callCount;
+            }
+        }
 
         #endregion Implementing IHostApi
 
@@ -396,14 +465,20 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             if (!IsInitialized)
             {
                 // get the service ( forces initialization )
-                IPackageManagementService x = PackageManagementService;
+                var x = PackageManagementService;
             }
         }
 
         protected virtual string BootstrapNuGet
         {
-            get => _bootstrapNuGet;
-            set => _bootstrapNuGet = value;
+            get
+            {
+                return _bootstrapNuGet;
+            }
+            set
+            {
+                _bootstrapNuGet = value;
+            }
         }
 
         protected virtual IHostApi PackageManagementHost
@@ -446,7 +521,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             // you can manually ask for any provider by name, if it is for automation only.
             if (IsInvocation)
             {
-                PackageProvider[] result = PackageManagementService.SelectProviders(name, PackageManagementHost).ToArray();
+                var result = PackageManagementService.SelectProviders(name, PackageManagementHost).ToArray();
                 if ((result.Length == 0) && ShouldLogError)
                 {
                     Error(Constants.Errors.UnknownProvider, name);
@@ -454,7 +529,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 return result;
             }
 
-            PackageProvider[] r = PackageManagementService.SelectProviders(name, PackageManagementHost.SuppressErrorsAndWarnings(IsProcessing)).ToArray();
+            var r = PackageManagementService.SelectProviders(name, PackageManagementHost.SuppressErrorsAndWarnings(IsProcessing)).ToArray();
             if ((r.Length == 0) && ShouldLogError)
             {
                 Error(Constants.Errors.UnknownProvider, name);
@@ -465,7 +540,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         public override bool ConsumeDynamicParameters()
         {
             // pull data from dynamic parameters and place them into the DynamicOptions collection.
-            foreach (RuntimeDefinedParameter rdp in DynamicParameterDictionary.Keys.Select(d => DynamicParameterDictionary[d]).Where(rdp => rdp.IsSet))
+            foreach (var rdp in DynamicParameterDictionary.Keys.Select(d => DynamicParameterDictionary[d]).Where(rdp => rdp.IsSet))
             {
                 if (rdp.ParameterType == typeof(SwitchParameter))
                 {
@@ -553,7 +628,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 return;
             }
 
-            InitialSessionState iis = InitialSessionState.CreateDefault2();
+            var iis = InitialSessionState.CreateDefault2();
 
             using (Runspace rs = RunspaceFactory.CreateRunspace(iis))
             {

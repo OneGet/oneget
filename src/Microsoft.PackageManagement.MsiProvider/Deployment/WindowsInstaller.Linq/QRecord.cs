@@ -60,7 +60,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         /// <summary>
         /// Gets the number of fields in the record.
         /// </summary>
-        public int FieldCount => Values.Count;
+        public int FieldCount
+        {
+            get
+            {
+                return this.Values.Count;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a record field.
@@ -78,7 +84,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                     throw new ArgumentNullException("field");
                 }
 
-                int index = TableInfo.Columns.IndexOf(field);
+                int index = this.TableInfo.Columns.IndexOf(field);
                 if (index < 0)
                 {
                     throw new ArgumentOutOfRangeException("field");
@@ -94,7 +100,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                     throw new ArgumentNullException("field");
                 }
 
-                Update(new string[] { field }, new string[] { value });
+                this.Update(new string[] { field }, new string[] { value });
             }
         }
 
@@ -109,22 +115,22 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         {
             get
             {
-                if (index < 0 || index >= FieldCount)
+                if (index < 0 || index >= this.FieldCount)
                 {
                     throw new ArgumentOutOfRangeException("index");
                 }
 
-                return Values[index];
+                return this.Values[index];
             }
 
             set
             {
-                if (index < 0 || index >= FieldCount)
+                if (index < 0 || index >= this.FieldCount)
                 {
                     throw new ArgumentOutOfRangeException("index");
                 }
 
-                Update(new int[] { index }, new string[] { value });
+                this.Update(new int[] { index }, new string[] { value });
             }
         }
 
@@ -137,7 +143,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         {
             string value = this[index];
             return value.Length > 0 ?
-                int.Parse(value, CultureInfo.InvariantCulture) : 0;
+                Int32.Parse(value, CultureInfo.InvariantCulture) : 0;
         }
 
         /// <summary>
@@ -148,7 +154,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         {
             string value = this[index];
             return value.Length > 0 ?
-                new int?(int.Parse(value, CultureInfo.InvariantCulture)) : null;
+                new int?(Int32.Parse(value, CultureInfo.InvariantCulture)) : null;
         }
 
         /// <summary>
@@ -156,13 +162,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         /// </summary>
         public override string ToString()
         {
-            StringBuilder buf = new StringBuilder(GetType().Name);
+            StringBuilder buf = new StringBuilder(this.GetType().Name);
             buf.Append(" {");
-            for (int i = 0; i < FieldCount; i++)
+            for (int i = 0; i < this.FieldCount; i++)
             {
                 buf.AppendFormat("{0} {1} = {2}",
-                    (i > 0 ? "," : string.Empty),
-                    TableInfo.Columns[i].Name,
+                    (i > 0 ? "," : String.Empty),
+                    this.TableInfo.Columns[i].Name,
                     this[i]);
             }
             buf.Append(" }");
@@ -187,7 +193,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             }
 
             if (fields.Count == 0 || values.Count == 0 ||
-                fields.Count > FieldCount ||
+                fields.Count > this.FieldCount ||
                 values.Count != fields.Count)
             {
                 throw new ArgumentOutOfRangeException("fields");
@@ -201,7 +207,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                     throw new ArgumentNullException("fields[" + i + "]");
                 }
 
-                indexes[i] = TableInfo.Columns.IndexOf(fields[i]);
+                indexes[i] = this.TableInfo.Columns.IndexOf(fields[i]);
 
                 if (indexes[i] < 0)
                 {
@@ -209,7 +215,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                 }
             }
 
-            Update(indexes, values);
+            this.Update(indexes, values);
         }
 
         /// <summary>
@@ -235,7 +241,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             }
 
             if (indexes.Count == 0 || values.Count == 0 ||
-                indexes.Count > FieldCount ||
+                indexes.Count > this.FieldCount ||
                 values.Count != indexes.Count)
             {
                 throw new ArgumentOutOfRangeException("indexes");
@@ -245,13 +251,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             for (int i = 0; i < indexes.Count; i++)
             {
                 int index = indexes[i];
-                if (index < 0 || index >= FieldCount)
+                if (index < 0 || index >= this.FieldCount)
                 {
                     throw new ArgumentOutOfRangeException("index[" + i + "]");
                 }
 
-                ColumnInfo col = TableInfo.Columns[index];
-                if (TableInfo.PrimaryKeys.Contains(col.Name))
+                ColumnInfo col = this.TableInfo.Columns[index];
+                if (this.TableInfo.PrimaryKeys.Contains(col.Name))
                 {
                     if (values[i] == null)
                     {
@@ -268,23 +274,23 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                     }
                 }
 
-                Values[index] = values[i];
+                this.Values[index] = values[i];
             }
 
-            if (Exists)
+            if (this.Exists)
             {
                 if (!primaryKeyChanged)
                 {
-                    int updateRecSize = indexes.Count + TableInfo.PrimaryKeys.Count;
-                    using (Record updateRec = Database.CreateRecord(updateRecSize))
+                    int updateRecSize = indexes.Count + this.TableInfo.PrimaryKeys.Count;
+                    using (Record updateRec = this.Database.CreateRecord(updateRecSize))
                     {
                         StringBuilder s = new StringBuilder("UPDATE `");
-                        s.Append(TableInfo.Name);
+                        s.Append(this.TableInfo.Name);
                         s.Append("` SET");
 
                         for (int i = 0; i < indexes.Count; i++)
                         {
-                            ColumnInfo col = TableInfo.Columns[indexes[i]];
+                            ColumnInfo col = this.TableInfo.Columns[indexes[i]];
                             if (col.Type == typeof(Stream))
                             {
                                 throw new NotSupportedException(
@@ -293,7 +299,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
                             int index = indexes[i];
                             s.AppendFormat("{0} `{1}` = ?",
-                                (i > 0 ? "," : string.Empty),
+                                (i > 0 ? "," : String.Empty),
                                 col.Name);
 
                             if (values[i] != null)
@@ -302,16 +308,16 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                             }
                         }
 
-                        for (int i = 0; i < TableInfo.PrimaryKeys.Count; i++)
+                        for (int i = 0; i < this.TableInfo.PrimaryKeys.Count; i++)
                         {
-                            string key = TableInfo.PrimaryKeys[i];
+                            string key = this.TableInfo.PrimaryKeys[i];
                             s.AppendFormat(" {0} `{1}` = ?", (i == 0 ? "WHERE" : "AND"), key);
-                            int index = TableInfo.Columns.IndexOf(key);
-                            updateRec[indexes.Count + i + 1] = Values[index];
+                            int index = this.TableInfo.Columns.IndexOf(key);
+                            updateRec[indexes.Count + i + 1] = this.Values[index];
                         }
 
                         string updateSql = s.ToString();
-                        TextWriter log = Database.Log;
+                        TextWriter log = this.Database.Log;
                         if (log != null)
                         {
                             log.WriteLine();
@@ -322,7 +328,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
                             }
                         }
 
-                        Database.Execute(updateSql, updateRec);
+                        this.Database.Execute(updateSql, updateRec);
                     }
                 }
                 else
@@ -348,7 +354,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         /// </remarks>
         public void Insert()
         {
-            Insert(false);
+            this.Insert(false);
         }
 
         /// <summary>
@@ -364,43 +370,43 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         /// </remarks>
         public void Insert(bool temporary)
         {
-            using (Record updateRec = Database.CreateRecord(FieldCount))
+            using (Record updateRec = this.Database.CreateRecord(this.FieldCount))
             {
-                string insertSql = TableInfo.SqlInsertString;
+                string insertSql = this.TableInfo.SqlInsertString;
                 if (temporary)
                 {
                     insertSql += " TEMPORARY";
                 }
 
-                TextWriter log = Database.Log;
+                TextWriter log = this.Database.Log;
                 if (log != null)
                 {
                     log.WriteLine();
                     log.WriteLine(insertSql);
                 }
 
-                for (int index = 0; index < FieldCount; index++)
+                for (int index = 0; index < this.FieldCount; index++)
                 {
-                    ColumnInfo col = TableInfo.Columns[index];
+                    ColumnInfo col = this.TableInfo.Columns[index];
                     if (col.Type == typeof(Stream))
                     {
                         throw new NotSupportedException(
                             "Cannot insert stream columns via QRecord.");
                     }
 
-                    if (Values[index] != null)
+                    if (this.Values[index] != null)
                     {
-                        updateRec[index + 1] = Values[index];
+                        updateRec[index + 1] = this.Values[index];
                     }
 
                     if (log != null)
                     {
-                        log.WriteLine("    ? = " + Values[index]);
+                        log.WriteLine("    ? = " + this.Values[index]);
                     }
                 }
 
-                Database.Execute(insertSql, updateRec);
-                Exists = true;
+                this.Database.Execute(insertSql, updateRec);
+                this.Exists = true;
             }
         }
 
@@ -409,35 +415,35 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         /// </summary>
         public void Delete()
         {
-            using (Record keyRec = Database.CreateRecord(TableInfo.PrimaryKeys.Count))
+            using (Record keyRec = this.Database.CreateRecord(this.TableInfo.PrimaryKeys.Count))
             {
                 StringBuilder s = new StringBuilder("DELETE FROM `");
-                s.Append(TableInfo.Name);
+                s.Append(this.TableInfo.Name);
                 s.Append("`");
-                for (int i = 0; i < TableInfo.PrimaryKeys.Count; i++)
+                for (int i = 0; i < this.TableInfo.PrimaryKeys.Count; i++)
                 {
-                    string key = TableInfo.PrimaryKeys[i];
+                    string key = this.TableInfo.PrimaryKeys[i];
                     s.AppendFormat(" {0} `{1}` = ?", (i == 0 ? "WHERE" : "AND"), key);
-                    int index = TableInfo.Columns.IndexOf(key);
-                    keyRec[i + 1] = Values[index];
+                    int index = this.TableInfo.Columns.IndexOf(key);
+                    keyRec[i + 1] = this.Values[index];
                 }
 
                 string deleteSql = s.ToString();
 
-                TextWriter log = Database.Log;
+                TextWriter log = this.Database.Log;
                 if (log != null)
                 {
                     log.WriteLine();
                     log.WriteLine(deleteSql);
 
-                    for (int i = 0; i < TableInfo.PrimaryKeys.Count; i++)
+                    for (int i = 0; i < this.TableInfo.PrimaryKeys.Count; i++)
                     {
                         log.WriteLine("    ? = " + keyRec.GetString(i + 1));
                     }
                 }
 
-                Database.Execute(deleteSql, keyRec);
-                Exists = false;
+                this.Database.Execute(deleteSql, keyRec);
+                this.Exists = false;
             }
         }
 

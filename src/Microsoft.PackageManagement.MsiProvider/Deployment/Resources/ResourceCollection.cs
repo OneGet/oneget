@@ -41,7 +41,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// </summary>
         public ResourceCollection()
         {
-            resources = new List<Resource>();
+            this.resources = new List<Resource>();
         }
 
         /// <summary>
@@ -56,20 +56,20 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         {
             new FileIOPermission(FileIOPermissionAccess.Read, resFile).Demand();
 
-            Clear();
+            this.Clear();
 
             IntPtr module = NativeMethods.LoadLibraryEx(resFile, IntPtr.Zero, NativeMethods.LOAD_LIBRARY_AS_DATAFILE);
             if (module == IntPtr.Zero)
             {
                 int err = Marshal.GetLastWin32Error();
-                throw new IOException(string.Format(CultureInfo.InvariantCulture, "Failed to load resource file. Error code: {0}", err));
+                throw new IOException(String.Format(CultureInfo.InvariantCulture, "Failed to load resource file. Error code: {0}", err));
             }
             try
             {
-                if (!NativeMethods.EnumResourceTypes(module, new NativeMethods.EnumResTypesProc(EnumResTypes), IntPtr.Zero))
+                if (!NativeMethods.EnumResourceTypes(module, new NativeMethods.EnumResTypesProc(this.EnumResTypes), IntPtr.Zero))
                 {
                     int err = Marshal.GetLastWin32Error();
-                    throw new IOException(string.Format(CultureInfo.InvariantCulture, "Failed to enumerate resources. Error code: {0}", err));
+                    throw new IOException(String.Format(CultureInfo.InvariantCulture, "Failed to enumerate resources. Error code: {0}", err));
                 }
             }
             finally
@@ -91,15 +91,15 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         {
             new FileIOPermission(FileIOPermissionAccess.Read, resFile).Demand();
 
-            Clear();
+            this.Clear();
 
             IntPtr module = NativeMethods.LoadLibraryEx(resFile, IntPtr.Zero, NativeMethods.LOAD_LIBRARY_AS_DATAFILE);
             try
             {
-                if (!NativeMethods.EnumResourceNames(module, (string)type, new NativeMethods.EnumResNamesProc(EnumResNames), IntPtr.Zero))
+                if (!NativeMethods.EnumResourceNames(module, (string)type, new NativeMethods.EnumResNamesProc(this.EnumResNames), IntPtr.Zero))
                 {
                     int err = Marshal.GetLastWin32Error();
-                    throw new IOException(string.Format(CultureInfo.InvariantCulture, "EnumResourceNames error. Error code: {0}", err));
+                    throw new IOException(String.Format(CultureInfo.InvariantCulture, "EnumResourceNames error. Error code: {0}", err));
                 }
             }
             finally
@@ -122,15 +122,15 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         {
             new FileIOPermission(FileIOPermissionAccess.Read, resFile).Demand();
 
-            Clear();
+            this.Clear();
 
             IntPtr module = NativeMethods.LoadLibraryEx(resFile, IntPtr.Zero, NativeMethods.LOAD_LIBRARY_AS_DATAFILE);
             try
             {
-                if (!NativeMethods.EnumResourceLanguages(module, (string)type, name, new NativeMethods.EnumResLangsProc(EnumResLangs), IntPtr.Zero))
+                if (!NativeMethods.EnumResourceLanguages(module, (string)type, name, new NativeMethods.EnumResLangsProc(this.EnumResLangs), IntPtr.Zero))
                 {
                     int err = Marshal.GetLastWin32Error();
-                    throw new IOException(string.Format(CultureInfo.InvariantCulture, "EnumResourceLanguages error. Error code: {0}", err));
+                    throw new IOException(String.Format(CultureInfo.InvariantCulture, "EnumResourceLanguages error. Error code: {0}", err));
                 }
             }
             finally
@@ -144,7 +144,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             if (!NativeMethods.EnumResourceNames(module, type, new NativeMethods.EnumResNamesProc(EnumResNames), IntPtr.Zero))
             {
                 int err = Marshal.GetLastWin32Error();
-                throw new IOException(string.Format(CultureInfo.InvariantCulture, "EnumResourceNames error! Error code: {0}", err));
+                throw new IOException(String.Format(CultureInfo.InvariantCulture, "EnumResourceNames error! Error code: {0}", err));
             }
             return true;
         }
@@ -154,7 +154,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             if (!NativeMethods.EnumResourceLanguages(module, type, name, new NativeMethods.EnumResLangsProc(EnumResLangs), IntPtr.Zero))
             {
                 int err = Marshal.GetLastWin32Error();
-                throw new IOException(string.Format(CultureInfo.InvariantCulture, "EnumResourceLanguages error. Error code: {0}", err));
+                throw new IOException(String.Format(CultureInfo.InvariantCulture, "EnumResourceLanguages error. Error code: {0}", err));
             }
             return true;
         }
@@ -171,9 +171,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
                 res = new Resource(ResourceNameToString(type), ResourceNameToString(name), langId);
             }
 
-            if (!Contains(res))
+            if (!this.Contains(res))
             {
-                Add(res);
+                this.Add(res);
             }
 
             return true;
@@ -236,7 +236,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
                 if (!NativeMethods.EndUpdateResource(updateHandle, false))
                 {
                     int err = Marshal.GetLastWin32Error();
-                    throw new IOException(string.Format(CultureInfo.InvariantCulture, "Failed to save resource. Error {0}", err));
+                    throw new IOException(String.Format(CultureInfo.InvariantCulture, "Failed to save resource. Error {0}", err));
                 }
                 updateHandle = IntPtr.Zero;
             }
@@ -254,8 +254,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// </summary>
         public Resource this[int index]
         {
-            get => resources[index];
-            set => resources[index] = value;
+            get
+            {
+                return (Resource)this.resources[index];
+            }
+            set
+            {
+                this.resources[index] = value;
+            }
         }
 
         /// <summary>
@@ -264,7 +270,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// <param name="item">The Resource to add.</param>
         public void Add(Resource item)
         {
-            resources.Add(item);
+            this.resources.Add(item);
         }
 
         /// <summary>
@@ -273,7 +279,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// <param name="item">The Resource to remove.</param>
         public bool Remove(Resource item)
         {
-            return resources.Remove(item);
+            return this.resources.Remove(item);
         }
 
         /// <summary>
@@ -283,7 +289,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// <returns>The index of the item, or -1 if not found.</returns>
         public int IndexOf(Resource item)
         {
-            return resources.IndexOf(item);
+            return this.resources.IndexOf(item);
         }
 
         /// <summary>
@@ -293,7 +299,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// <param name="item">The Resource to insert.</param>
         public void Insert(int index, Resource item)
         {
-            resources.Insert(index, item);
+            this.resources.Insert(index, item);
         }
 
         /// <summary>
@@ -303,7 +309,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// <returns>true if the item is found; false otherwise</returns>
         public bool Contains(Resource item)
         {
-            return resources.Contains(item);
+            return this.resources.Contains(item);
         }
 
         /// <summary>
@@ -313,7 +319,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// <param name="arrayIndex">The starting index in the destination array.</param>
         public void CopyTo(Resource[] array, int arrayIndex)
         {
-            resources.CopyTo(array, arrayIndex);
+            this.resources.CopyTo(array, arrayIndex);
         }
 
         /// <summary>
@@ -321,13 +327,19 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// </summary>
         public void Clear()
         {
-            resources.Clear();
+            this.resources.Clear();
         }
 
         /// <summary>
         /// Gets the number of resources in the collection.
         /// </summary>
-        public int Count => resources.Count;
+        public int Count
+        {
+            get
+            {
+                return this.resources.Count;
+            }
+        }
 
         /// <summary>
         /// Gets an enumerator over all resources in the collection.
@@ -335,14 +347,20 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// <returns></returns>
         public IEnumerator<Resource> GetEnumerator()
         {
-            return resources.GetEnumerator();
+            return this.resources.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable)resources).GetEnumerator();
+            return ((IEnumerable)this.resources).GetEnumerator();
         }
 
-        bool ICollection<Resource>.IsReadOnly => false;
+        bool ICollection<Resource>.IsReadOnly
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }
