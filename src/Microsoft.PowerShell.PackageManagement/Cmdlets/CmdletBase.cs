@@ -17,6 +17,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
     using Microsoft.PackageManagement.Implementation;
     using Microsoft.PackageManagement.Internal;
     using Microsoft.PackageManagement.Internal.Api;
+    using Microsoft.PackageManagement.Internal.Resources;
     using Microsoft.PackageManagement.Internal.Utility.Async;
     using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Internal.Utility.Platform;

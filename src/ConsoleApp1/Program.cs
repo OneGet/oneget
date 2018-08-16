@@ -36,23 +36,25 @@ namespace ConsoleApp1
             bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IHostApi requestObject);
         }
 
-        private static readonly object _lockObject = new object();
-        internal static IPackageManagementService _instance;
+        /*
+private static readonly object _lockObject = new object();
+internal static IPackageManagementService _instance;
 
-        public static IPackageManagementService Instance
+public static IPackageManagementService Instance
+{
+    get
+    {
+        lock (_lockObject)
         {
-            get
+            if (_instance == null)
             {
-                lock (_lockObject)
-                {
-                    if (_instance == null)
-                    {
-                        _instance = new PackageManagementService();
-                    }
-                }
-                return _instance;
+                _instance = new PackageManagementService();
             }
         }
+        return _instance;
+    }
+}
+*/
 
         private static void Main(string[] args)
         {

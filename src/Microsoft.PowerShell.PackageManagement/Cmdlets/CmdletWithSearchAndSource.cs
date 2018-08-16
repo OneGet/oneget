@@ -628,7 +628,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             string packageSourceName = package.Source;
 
             // Get the package provider object
-            MutableEnumerable<PackageProvider> packageProvider = SelectProviders(package.ProviderName).ReEnumerable();
+            var packageProvider = SelectProviders(package.ProviderName).ReEnumerable();
 
             if (!packageProvider.Any())
             {
@@ -638,11 +638,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             // For any issues with reverse lookup (SourceLocation -> SourceName), return Source Location Url
             try
             {
-                MutableEnumerable<T> packageSource = packageProvider.Select(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered && (source.Location.EqualsIgnoreCase(package.Source)))).ReEnumerable();
+                var packageSource = packageProvider.Select(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered && (source.Location.EqualsIgnoreCase(package.Source)))).ReEnumerable();
 
                 if (packageSource.Any())
                 {
-                    T pkgSource = packageSource.FirstOrDefault();
+                    var pkgSource = packageSource.FirstOrDefault();
                     if (pkgSource != null)
                     {
                         var source = pkgSource.FirstOrDefault();
