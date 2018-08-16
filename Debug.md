@@ -10,3 +10,4 @@
 
 ### PowerShell debug Commands (Picture)
 
+![Screenshot](https://github.com/Smorgan05/oneget/blob/WIP/OneGetDebug.png)
