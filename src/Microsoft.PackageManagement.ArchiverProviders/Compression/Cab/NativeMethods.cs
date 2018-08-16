@@ -33,7 +33,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         internal static class FCI
         {
             internal const int MIN_DISK = 32768;
-            internal const int MAX_DISK = Int32.MaxValue;
+            internal const int MAX_DISK = int.MaxValue;
             internal const int MAX_FOLDER = 0x7FFF8000;
             internal const int MAX_FILENAME = 256;
             internal const int MAX_CABINET_NAME = 256;
@@ -160,9 +160,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 internal int iDisk;
                 internal int fFailOnIncompressible;
                 internal short setID;
-                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_DISK_NAME)] internal string szDisk = String.Empty;
-                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_CABINET_NAME)] internal string szCab = String.Empty;
-                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_CAB_PATH)] internal string szCabPath = String.Empty;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_DISK_NAME)] internal string szDisk = string.Empty;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_CABINET_NAME)] internal string szCab = string.Empty;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_CAB_PATH)] internal string szCabPath = string.Empty;
             }
 
             /// <summary>
@@ -182,13 +182,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 /// <summary>
                 /// Checks if the handle is invalid. An FCI handle is invalid when it is zero.
                 /// </summary>
-                public override bool IsInvalid
-                {
-                    get
-                    {
-                        return this.handle == IntPtr.Zero;
-                    }
-                }
+                public override bool IsInvalid => handle == IntPtr.Zero;
 
                 /// <summary>
                 /// Releases the handle by calling FDIDestroy().
@@ -200,7 +194,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 #endif
                 protected override bool ReleaseHandle()
                 {
-                    return FCI.Destroy(this.handle);
+                    return FCI.Destroy(handle);
                 }
             }
         }
@@ -211,7 +205,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         /// </summary>
         internal static class FDI
         {
-            internal const int MAX_DISK = Int32.MaxValue;
+            internal const int MAX_DISK = int.MaxValue;
             internal const int MAX_FILENAME = 256;
             internal const int MAX_CABINET_NAME = 256;
             internal const int MAX_CAB_PATH = 256;
@@ -326,10 +320,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
 
                 // Unlike all the other file handles in FCI/FDI, this one is
                 // actually pointer-sized. Use a property to pretend it isn't.
-                internal int hf
-                {
-                    get { return (int)this.hf_ptr; }
-                }
+                internal int hf => (int)hf_ptr;
             }
 
             /// <summary>
@@ -349,13 +340,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 /// <summary>
                 /// Checks if the handle is invalid. An FDI handle is invalid when it is zero.
                 /// </summary>
-                public override bool IsInvalid
-                {
-                    get
-                    {
-                        return this.handle == IntPtr.Zero;
-                    }
-                }
+                public override bool IsInvalid => handle == IntPtr.Zero;
 
                 /// <summary>
                 /// Releases the handle by calling FDIDestroy().
@@ -363,7 +348,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 /// <returns>True if the release succeeded.</returns>
                 protected override bool ReleaseHandle()
                 {
-                    return FDI.Destroy(this.handle);
+                    return FDI.Destroy(handle);
                 }
             }
         }
@@ -387,15 +372,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             /// </summary>
             internal int Oper
             {
-                get
-                {
-                    return this.erfOper;
-                }
+                get => erfOper;
 
-                set
-                {
-                    this.erfOper = value;
-                }
+                set => erfOper = value;
             }
 
             /// <summary>
@@ -403,15 +382,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             /// </summary>
             internal int Type
             {
-                get
-                {
-                    return this.erfType;
-                }
+                get => erfType;
 
-                set
-                {
-                    this.erfType = value;
-                }
+                set => erfType = value;
             }
 
             /// <summary>
@@ -419,15 +392,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             /// </summary>
             internal bool Error
             {
-                get
-                {
-                    return this.fError != 0;
-                }
+                get => fError != 0;
 
-                set
-                {
-                    this.fError = value ? 1 : 0;
-                }
+                set => fError = value ? 1 : 0;
             }
 
             /// <summary>
@@ -435,9 +402,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
             /// </summary>
             internal void Clear()
             {
-                this.Oper = 0;
-                this.Type = 0;
-                this.Error = false;
+                Oper = 0;
+                Type = 0;
+                Error = false;
             }
         }
     }

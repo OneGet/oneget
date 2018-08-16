@@ -47,11 +47,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                if (this.IsClosed)
+                if (IsClosed)
                 {
                     throw new InvalidHandleException();
                 }
-                return this.handle;
+                return handle;
             }
         }
 
@@ -59,13 +59,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// Checks if the handle is closed. When closed, method calls on the handle object may throw an <see cref="InvalidHandleException"/>.
         /// </summary>
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        public bool IsClosed
-        {
-            get
-            {
-                return this.handle.IsClosed;
-            }
-        }
+        public bool IsClosed => handle.IsClosed;
 
         /// <summary>
         /// Closes the handle.  After closing a handle, further method calls may throw an <see cref="InvalidHandleException"/>.
@@ -83,7 +77,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <seealso cref="Close"/>
         public void Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -104,7 +98,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public void Close()
         {
-            this.Dispose();
+            Dispose();
         }
 
         /// <summary>
@@ -115,8 +109,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>true if the specified handle object is equal to the current handle object; otherwise false</returns>
         public override bool Equals(object obj)
         {
-            return (obj != null && this.GetType() == obj.GetType() &&
-                this.Handle == ((InstallerHandle)obj).Handle);
+            return (obj != null && GetType() == obj.GetType() &&
+                Handle == ((InstallerHandle)obj).Handle);
         }
 
         /// <summary>
@@ -128,19 +122,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </p></remarks>
         public override int GetHashCode()
         {
-            return this.Handle.GetHashCode();
+            return Handle.GetHashCode();
         }
 
         /// <summary>
         /// Gets an object that can be used internally for safe synchronization.
         /// </summary>
-        internal object Sync
-        {
-            get
-            {
-                return this.handle;
-            }
-        }
+        internal object Sync => handle;
 
         /// <summary>
         /// Closes the handle.  After closing a handle, further method calls may throw an <see cref="InvalidHandleException"/>.
@@ -153,7 +141,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             if (disposing)
             {
-                this.handle.Dispose();
+                handle.Dispose();
             }
         }
     }

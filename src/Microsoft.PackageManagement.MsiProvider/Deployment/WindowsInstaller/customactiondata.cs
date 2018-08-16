@@ -55,11 +55,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <param name="keyValueList">Previous output from <see cref="CustomActionData.ToString" />.</param>
         public CustomActionData(string keyValueList)
         {
-            this.data = new Dictionary<string, string>();
+            data = new Dictionary<string, string>();
 
             if (keyValueList != null)
             {
-                this.Parse(keyValueList);
+                Parse(keyValueList);
             }
         }
 
@@ -73,7 +73,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public void Add(string key, string value)
         {
             CustomActionData.ValidateKey(key);
-            this.data.Add(key, value);
+            data.Add(key, value);
         }
 
         /// <summary>
@@ -89,17 +89,17 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             if (value == null)
             {
-                this.Add(key, null);
+                Add(key, null);
             }
             else if (typeof(T) == typeof(string) ||
                      typeof(T) == typeof(CustomActionData)) // Serialize nested CustomActionData
             {
-                this.Add(key, value.ToString());
+                Add(key, value.ToString());
             }
             else
             {
                 string valueString = CustomActionData.Serialize<T>(value);
-                this.Add(key, valueString);
+                Add(key, valueString);
             }
         }
 
@@ -143,19 +143,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>true if the data contains an item with the key; otherwise, false</returns>
         public bool ContainsKey(string key)
         {
-            return this.data.ContainsKey(key);
+            return data.ContainsKey(key);
         }
 
         /// <summary>
         /// Gets a collection object containing all the keys of the data.
         /// </summary>
-        public ICollection<string> Keys
-        {
-            get
-            {
-                return this.data.Keys;
-            }
-        }
+        public ICollection<string> Keys => data.Keys;
 
         /// <summary>
         /// Removes the item with the specified key from the data.
@@ -165,7 +159,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// false if an item with the specified key was not found</returns>
         public bool Remove(string key)
         {
-            return this.data.Remove(key);
+            return data.Remove(key);
         }
 
         /// <summary>
@@ -177,19 +171,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>true if the data contains an item with the specified key; otherwise, false.</returns>
         public bool TryGetValue(string key, out string value)
         {
-            return this.data.TryGetValue(key, out value);
+            return data.TryGetValue(key, out value);
         }
 
         /// <summary>
         /// Gets a collection containing all the values of the data.
         /// </summary>
-        public ICollection<string> Values
-        {
-            get
-            {
-                return this.data.Values;
-            }
-        }
+        public ICollection<string> Values => data.Values;
 
         /// <summary>
         /// Gets or sets a data value with a specified key.
@@ -199,14 +187,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// numbers, and the period, underscore, and space characters.</exception>
         public string this[string key]
         {
-            get
-            {
-                return this.data[key];
-            }
+            get => data[key];
             set
             {
                 CustomActionData.ValidateKey(key);
-                this.data[key] = value;
+                data[key] = value;
             }
         }
 
@@ -219,7 +204,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public void Add(KeyValuePair<string, string> item)
         {
             CustomActionData.ValidateKey(item.Key);
-            this.data.Add(item);
+            data.Add(item);
         }
 
         /// <summary>
@@ -227,9 +212,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </summary>
         public void Clear()
         {
-            if (this.data.Count > 0)
+            if (data.Count > 0)
             {
-                this.data.Clear();
+                data.Clear();
             }
         }
 
@@ -240,7 +225,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>true if the data contains the item; otherwise, false</returns>
         public bool Contains(KeyValuePair<string, string> item)
         {
-            return this.data.Contains(item);
+            return data.Contains(item);
         }
 
         /// <summary>
@@ -250,30 +235,18 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <param name="arrayIndex">Index in the array at which copying begins.</param>
         public void CopyTo(KeyValuePair<string, string>[] array, int arrayIndex)
         {
-            this.data.CopyTo(array, arrayIndex);
+            data.CopyTo(array, arrayIndex);
         }
 
         /// <summary>
         /// Gets the number of items in the data.
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return this.data.Count;
-            }
-        }
+        public int Count => data.Count;
 
         /// <summary>
         /// Gets a value indicating whether the data is read-only.
         /// </summary>
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Removes an item from the data.
@@ -283,7 +256,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// false if the item was not found</returns>
         public bool Remove(KeyValuePair<string, string> item)
         {
-            return this.data.Remove(item);
+            return data.Remove(item);
         }
 
         /// <summary>
@@ -292,7 +265,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>An enumerator that can be used to iterate through the collection.</returns>
         public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
         {
-            return this.data.GetEnumerator();
+            return data.GetEnumerator();
         }
 
         /// <summary>
@@ -301,7 +274,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>An enumerator that can be used to iterate through the collection.</returns>
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return ((System.Collections.IEnumerable)this.data).GetEnumerator();
+            return ((System.Collections.IEnumerable)data).GetEnumerator();
         }
 
         /// <summary>
@@ -312,7 +285,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             StringBuilder buf = new StringBuilder();
 
-            foreach (KeyValuePair<string, string> item in this.data)
+            foreach (KeyValuePair<string, string> item in data)
             {
                 if (buf.Length > 0)
                 {
@@ -347,7 +320,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             for (int i = 0; i < key.Length; i++)
             {
                 char c = key[i];
-                if (!Char.IsLetterOrDigit(c) && c != '_' && c != '.' &&
+                if (!char.IsLetterOrDigit(c) && c != '_' && c != '.' &&
                     !(i > 0 && i < key.Length - 1 && c == ' '))
                 {
                     throw new ArgumentOutOfRangeException("key");
@@ -372,7 +345,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             using (XmlWriter xw = XmlWriter.Create(sw, xws))
             {
                 XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-                ns.Add(string.Empty, String.Empty); // Prevent output of any namespaces
+                ns.Add(string.Empty, string.Empty); // Prevent output of any namespaces
 
                 XmlSerializer ser = new XmlSerializer(typeof(T));
                 ser.Serialize(xw, value, ns);
@@ -404,7 +377,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>Escaped value string</returns>
         private static string Escape(string value)
         {
-            value = value.Replace(String.Empty + CustomActionData.DataSeparator, String.Empty + CustomActionData.DataSeparator + CustomActionData.DataSeparator);
+            value = value.Replace(string.Empty + CustomActionData.DataSeparator, string.Empty + CustomActionData.DataSeparator + CustomActionData.DataSeparator);
             return value;
         }
 
@@ -415,7 +388,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>Unescaped value string</returns>
         private static string Unescape(string value)
         {
-            value = value.Replace(String.Empty + CustomActionData.DataSeparator + CustomActionData.DataSeparator, String.Empty + CustomActionData.DataSeparator);
+            value = value.Replace(string.Empty + CustomActionData.DataSeparator + CustomActionData.DataSeparator, string.Empty + CustomActionData.DataSeparator);
             return value;
         }
 
@@ -465,9 +438,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 }
 
                 // Add non-duplicate items to the collection.
-                if (key.Length > 0 && !this.data.ContainsKey(key))
+                if (key.Length > 0 && !data.ContainsKey(key))
                 {
-                    this.data.Add(key, value);
+                    data.Add(key, value);
                 }
 
                 // Move past the data separator to the next item.

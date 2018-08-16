@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace Microsoft.PackageManagement.Provider.Utility
 {
@@ -19,6 +16,7 @@ namespace Microsoft.PackageManagement.Provider.Utility
 
         public bool IsMinInclusive { get; set; }
         public SemanticVersion MaxVersion { get; set; }
+
         /// <summary>
         /// True if the version we are looking for includes the max version
         /// </summary>
@@ -35,15 +33,15 @@ namespace Microsoft.PackageManagement.Provider.Utility
         ///      (1.0,)      --> 1.0 lt x
         ///      (1.0, 2.0)   --> 1.0 lt x lt 2.0
         ///      [1.0, 2.0]   --> 1.0 ≤ x ≤ 2.0
-        /// 
+        ///
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
         public static DependencyVersion ParseDependencyVersion(string value)
         {
-            var depVers = new DependencyVersion();
+            DependencyVersion depVers = new DependencyVersion();
 
-            if (String.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(value))
             {
                 return depVers;
             }
@@ -73,9 +71,11 @@ namespace Microsoft.PackageManagement.Provider.Utility
                 case '[':
                     depVers.IsMinInclusive = true;
                     break;
+
                 case '(':
                     depVers.IsMinInclusive = false;
                     break;
+
                 default:
                     // If not, return without setting anything
                     return depVers;
@@ -87,9 +87,11 @@ namespace Microsoft.PackageManagement.Provider.Utility
                 case ']':
                     depVers.IsMaxInclusive = true;
                     break;
+
                 case ')':
                     depVers.IsMaxInclusive = false;
                     break;
+
                 default:
                     // If not, return without setting anything
                     return depVers;
@@ -102,7 +104,7 @@ namespace Microsoft.PackageManagement.Provider.Utility
             string[] parts = value.Split(',');
 
             // Wrong format if we have more than 2 parts or all the parts are empty
-            if (parts.Length > 2 || parts.All(String.IsNullOrEmpty))
+            if (parts.Length > 2 || parts.All(string.IsNullOrEmpty))
             {
                 return depVers;
             }
@@ -114,13 +116,13 @@ namespace Microsoft.PackageManagement.Provider.Utility
             string maxVersionString = (parts.Length == 2) ? parts[1] : parts[0];
 
             // Get min version if we have it
-            if (!String.IsNullOrWhiteSpace(minVersionString))
+            if (!string.IsNullOrWhiteSpace(minVersionString))
             {
                 depVers.MinVersion = new SemanticVersion(minVersionString);
             }
 
             // Get max version if we have it
-            if (!String.IsNullOrWhiteSpace(maxVersionString))
+            if (!string.IsNullOrWhiteSpace(maxVersionString))
             {
                 depVers.MaxVersion = new SemanticVersion(maxVersionString);
             }
@@ -145,15 +147,14 @@ namespace Microsoft.PackageManagement.Provider.Utility
             // MinVersion and MaxVersion is the same and both inclusives then return the value
             if (MinVersion == MaxVersion && IsMinInclusive && IsMaxInclusive)
             {
-                return String.Format(CultureInfo.InvariantCulture, "[{0}]", MinVersion);
+                return string.Format(CultureInfo.InvariantCulture, "[{0}]", MinVersion);
             }
 
             char lhs = IsMinInclusive ? '[' : '(';
             char rhs = IsMaxInclusive ? ']' : ')';
 
-            return String.Format(CultureInfo.InvariantCulture, "{0}{1}, {2}{3}", lhs, MinVersion, MaxVersion, rhs);
+            return string.Format(CultureInfo.InvariantCulture, "{0}{1}, {2}{3}", lhs, MinVersion, MaxVersion, rhs);
         }
-    
     }
 
     public class DependencyVersionComparerBasedOnMinVersion : IComparer<DependencyVersion>

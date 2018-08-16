@@ -50,12 +50,6 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// value defaults to the name of the method.
         /// </summary>
         /// <value>name of the custom action entrypoint, or null if none was specified</value>
-        public string Name
-        {
-            get
-            {
-                return this.name;
-            }
-        }
+        public string Name => name;
     }
 }

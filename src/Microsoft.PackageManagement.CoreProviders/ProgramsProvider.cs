@@ -76,7 +76,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
 
-            foreach (var feature in _features)
+            foreach (KeyValuePair<string, string[]> feature in _features)
             {
                 request.Yield(feature);
             }
@@ -148,7 +148,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
 
             if (Environment.Is64BitOperatingSystem)
             {
-                using (var hklm64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey))
+                using (RegistryKey hklm64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", RegistryKeyPermissionCheck.ReadSubTree, RegistryRights.ReadKey))
                 {
                     if (!YieldPackages("hklm64", hklm64, name, requiredVersion, minimumVersion, maximumVersion, request))
                     {
@@ -156,7 +156,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
                     }
                 }
 
-                using (var hkcu64 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false))
+                using (RegistryKey hkcu64 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false))
                 {
                     if (!YieldPackages("hkcu64", hkcu64, name, requiredVersion, minimumVersion, maximumVersion, request))
                     {
@@ -165,7 +165,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
                 }
             }
 
-            using (var hklm32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false))
+            using (RegistryKey hklm32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false))
             {
                 if (!YieldPackages("hklm32", hklm32, name, requiredVersion, minimumVersion, maximumVersion, request))
                 {
@@ -173,7 +173,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
                 }
             }
 
-            using (var hkcu32 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false))
+            using (RegistryKey hkcu32 = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", false))
             {
                 if (!YieldPackages("hkcu32", hkcu32, name, requiredVersion, minimumVersion, maximumVersion, request))
                 {
@@ -186,17 +186,17 @@ namespace Microsoft.PackageManagement.Providers.Internal
         {
             if (regkey != null)
             {
-                var includeWindowsInstaller = request.GetOptionValue("IncludeWindowsInstaller").IsTrue();
-                var includeSystemComponent = request.GetOptionValue("IncludeSystemComponent").IsTrue();
+                bool includeWindowsInstaller = request.GetOptionValue("IncludeWindowsInstaller").IsTrue();
+                bool includeSystemComponent = request.GetOptionValue("IncludeSystemComponent").IsTrue();
 
-                var wildcardPattern = new WildcardPattern(name ?? "", WildcardOptions.CultureInvariant | WildcardOptions.IgnoreCase);
+                WildcardPattern wildcardPattern = new WildcardPattern(name ?? "", WildcardOptions.CultureInvariant | WildcardOptions.IgnoreCase);
 
-                foreach (var key in regkey.GetSubKeyNames())
+                foreach (string key in regkey.GetSubKeyNames())
                 {
-                    var subkey = regkey.OpenSubKey(key);
+                    RegistryKey subkey = regkey.OpenSubKey(key);
                     if (subkey != null)
                     {
-                        var properties = subkey.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (subkey.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
+                        Dictionary<string, string> properties = subkey.GetValueNames().ToDictionaryNicely(each => each.ToString(), each => (subkey.GetValue(each) ?? string.Empty).ToString(), StringComparer.OrdinalIgnoreCase);
 
                         if (!includeWindowsInstaller && properties.ContainsKey("WindowsInstaller") && properties["WindowsInstaller"] == "1")
                         {
@@ -208,7 +208,6 @@ namespace Microsoft.PackageManagement.Providers.Internal
                             continue;
                         }
 
-
                         if (!properties.TryGetValue("DisplayName", out string productName))
                         {
                             // no product name?
@@ -217,12 +216,12 @@ namespace Microsoft.PackageManagement.Providers.Internal
 
                         if (!string.IsNullOrWhiteSpace(productName) && (string.IsNullOrWhiteSpace(name) || wildcardPattern.IsMatch(productName)))
                         {
-                            var productVersion = properties.Get("DisplayVersion") ?? "";
-                            var publisher = properties.Get("Publisher") ?? "";
-                            var uninstallString = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
-                            var comments = properties.Get("Comments") ?? "";
+                            string productVersion = properties.Get("DisplayVersion") ?? "";
+                            string publisher = properties.Get("Publisher") ?? "";
+                            string uninstallString = properties.Get("QuietUninstallString") ?? properties.Get("UninstallString") ?? "";
+                            string comments = properties.Get("Comments") ?? "";
 
-                            var fp = hive + @"\" + subkey;
+                            string fp = hive + @"\" + subkey;
 
                             if (!string.IsNullOrEmpty(requiredVersion))
                             {

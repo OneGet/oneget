@@ -35,7 +35,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 int count = 0;
-                IEnumerator<MediaDisk> e = this.GetEnumerator();
+                IEnumerator<MediaDisk> e = GetEnumerator();
                 while (e.MoveNext())
                 {
                     count++;
@@ -49,13 +49,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// A SourceMediaList is never read-only.
         /// </summary>
         /// <value>read-only status of the list</value>
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Adds or updates a disk of the media source for the product or patch.
@@ -67,10 +61,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public void Add(MediaDisk item)
         {
             uint ret = NativeMethods.MsiSourceListAddMediaDisk(
-                this.installation.InstallationCode,
-                this.installation.UserSid,
-                this.installation.Context,
-                (uint)this.installation.InstallationType,
+                installation.InstallationCode,
+                installation.UserSid,
+                installation.Context,
+                (uint)installation.InstallationType,
                 (uint)item.DiskId,
                 item.VolumeLabel,
                 item.DiskPrompt);
@@ -91,10 +85,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public void Clear()
         {
             uint ret = NativeMethods.MsiSourceListClearAllEx(
-                this.installation.InstallationCode,
-                this.installation.UserSid,
-                this.installation.Context,
-                (uint)NativeMethods.SourceType.Media | (uint)this.installation.InstallationType);
+                installation.InstallationCode,
+                installation.UserSid,
+                installation.Context,
+                (uint)NativeMethods.SourceType.Media | (uint)installation.InstallationType);
 
             if (ret != 0)
             {
@@ -121,7 +115,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         bool ICollection<MediaDisk>.Contains(MediaDisk mediaDisk)
         {
-            return this.Contains(mediaDisk.DiskId);
+            return Contains(mediaDisk.DiskId);
         }
 
         /// <summary>
@@ -152,10 +146,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         public bool Remove(int diskId)
         {
             uint ret = NativeMethods.MsiSourceListClearMediaDisk(
-                this.installation.InstallationCode,
-                this.installation.UserSid,
-                this.installation.Context,
-                (uint)this.installation.InstallationType,
+                installation.InstallationCode,
+                installation.UserSid,
+                installation.Context,
+                (uint)installation.InstallationType,
                 (uint)diskId);
 
             if (ret != 0)
@@ -168,7 +162,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         bool ICollection<MediaDisk>.Remove(MediaDisk mediaDisk)
         {
-            return this.Remove(mediaDisk.DiskId);
+            return Remove(mediaDisk.DiskId);
         }
 
         /// <summary>
@@ -187,10 +181,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             for (uint i = 0; true; i++)
             {
                 uint ret = NativeMethods.MsiSourceListEnumMediaDisks(
-                    this.installation.InstallationCode,
-                    this.installation.UserSid,
-                    this.installation.Context,
-                    (uint)this.installation.InstallationType,
+                    installation.InstallationCode,
+                    installation.UserSid,
+                    installation.Context,
+                    (uint)installation.InstallationType,
                     i,
                     out uint diskId,
                     volumeBuf,
@@ -204,10 +198,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     promptBuf.Capacity = (int)++promptBufSize;
 
                     ret = NativeMethods.MsiSourceListEnumMediaDisks(
-                        this.installation.InstallationCode,
-                        this.installation.UserSid,
-                        this.installation.Context,
-                        (uint)this.installation.InstallationType,
+                        installation.InstallationCode,
+                        installation.UserSid,
+                        installation.Context,
+                        (uint)installation.InstallationType,
                         i,
                         out diskId,
                         volumeBuf,
@@ -232,7 +226,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
     }
 }

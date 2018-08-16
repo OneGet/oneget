@@ -51,7 +51,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("transformFile");
             }
 
-            uint ret = NativeMethods.MsiDatabaseGenerateTransform((int)this.Handle, (int)referenceDatabase.Handle, transformFile, 0, 0);
+            uint ret = NativeMethods.MsiDatabaseGenerateTransform((int)Handle, (int)referenceDatabase.Handle, transformFile, 0, 0);
             if (ret == (uint)NativeMethods.Error.NO_DATA)
             {
                 return false;
@@ -99,7 +99,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             }
 
             uint ret = NativeMethods.MsiCreateTransformSummaryInfo(
-                (int)this.Handle,
+                (int)Handle,
                 (int)referenceDatabase.Handle,
                 transformFile,
                 (int)errors,
@@ -131,7 +131,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 TransformErrors.UpdateMissingRow |
                 TransformErrors.ChangeCodePage |
                 TransformErrors.ViewTransform;
-            this.ApplyTransform(transformFile, transformErrors);
+            ApplyTransform(transformFile, transformErrors);
         }
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 int errorConditions = transformSummInfo.CharacterCount & 0xFFFF;
                 errorConditionsToSuppress = (TransformErrors)errorConditions;
             }
-            this.ApplyTransform(transformFile, errorConditionsToSuppress);
+            ApplyTransform(transformFile, errorConditionsToSuppress);
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 throw new ArgumentNullException("transformFile");
             }
 
-            uint ret = NativeMethods.MsiDatabaseApplyTransform((int)this.Handle, transformFile, (int)errorConditionsToSuppress);
+            uint ret = NativeMethods.MsiDatabaseApplyTransform((int)Handle, transformFile, (int)errorConditionsToSuppress);
             if (ret != 0)
             {
                 throw InstallerException.ExceptionFromReturnCode(ret);
@@ -205,7 +205,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             using (SummaryInfo transformSummInfo = new SummaryInfo(transformFile, false))
             {
-                return this.IsTransformValid(transformSummInfo);
+                return IsTransformValid(transformSummInfo);
             }
         }
 
@@ -233,20 +233,20 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             int targetProductLanguage = 0;
             if (templ.Length >= 2 && templ[1].Length > 0)
             {
-                targetProductLanguage = Int32.Parse(templ[1], CultureInfo.InvariantCulture.NumberFormat);
+                targetProductLanguage = int.Parse(templ[1], CultureInfo.InvariantCulture.NumberFormat);
             }
 
             int flags = transformSummaryInfo.CharacterCount;
             int validateFlags = flags >> 16;
 
-            string thisProductCode = this.ExecutePropertyQuery("ProductCode");
-            string thisProductVersion = this.ExecutePropertyQuery("ProductVersion");
-            string thisUpgradeCode = this.ExecutePropertyQuery("UpgradeCode");
-            string thisProductLang = this.ExecutePropertyQuery("ProductLanguage");
+            string thisProductCode = ExecutePropertyQuery("ProductCode");
+            string thisProductVersion = ExecutePropertyQuery("ProductVersion");
+            string thisUpgradeCode = ExecutePropertyQuery("UpgradeCode");
+            string thisProductLang = ExecutePropertyQuery("ProductLanguage");
             int thisProductLanguage = 0;
             if (!string.IsNullOrWhiteSpace(thisProductLang))
             {
-                thisProductLanguage = Int32.Parse(thisProductLang, CultureInfo.InvariantCulture.NumberFormat);
+                thisProductLanguage = int.Parse(thisProductLang, CultureInfo.InvariantCulture.NumberFormat);
             }
 
             if ((validateFlags & (int)TransformValidations.Product) != 0 &&
@@ -271,18 +271,39 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             Version targetProductVer = new Version(targetProductVersion);
             if ((validateFlags & (int)TransformValidations.UpdateVersion) != 0)
             {
-                if (thisProductVer.Major != targetProductVer.Major) return false;
-                if (thisProductVer.Minor != targetProductVer.Minor) return false;
-                if (thisProductVer.Build != targetProductVer.Build) return false;
+                if (thisProductVer.Major != targetProductVer.Major)
+                {
+                    return false;
+                }
+
+                if (thisProductVer.Minor != targetProductVer.Minor)
+                {
+                    return false;
+                }
+
+                if (thisProductVer.Build != targetProductVer.Build)
+                {
+                    return false;
+                }
             }
             else if ((validateFlags & (int)TransformValidations.MinorVersion) != 0)
             {
-                if (thisProductVer.Major != targetProductVer.Major) return false;
-                if (thisProductVer.Minor != targetProductVer.Minor) return false;
+                if (thisProductVer.Major != targetProductVer.Major)
+                {
+                    return false;
+                }
+
+                if (thisProductVer.Minor != targetProductVer.Minor)
+                {
+                    return false;
+                }
             }
             else if ((validateFlags & (int)TransformValidations.MajorVersion) != 0)
             {
-                if (thisProductVer.Major != targetProductVer.Major) return false;
+                if (thisProductVer.Major != targetProductVer.Major)
+                {
+                    return false;
+                }
             }
 
             return true;

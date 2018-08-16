@@ -1,5 +1,4 @@
-﻿
-namespace Microsoft.PackageManagement.Provider.Utility
+﻿namespace Microsoft.PackageManagement.Provider.Utility
 {
     using System;
     using System.ComponentModel;

@@ -445,13 +445,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
             }
 
-            public override bool IsInvalid
-            {
-                get
-                {
-                    return this.handle == IntPtr.Zero;
-                }
-            }
+            public override bool IsInvalid => handle == IntPtr.Zero;
 
             public static implicit operator IntPtr(MsiHandle msiHandle)
             {
@@ -461,7 +455,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             [SecurityPermission(SecurityAction.Assert, UnmanagedCode = true)]
             protected override bool ReleaseHandle()
             {
-                return RemotableNativeMethods.MsiCloseHandle((int)this.handle) == 0;
+                return RemotableNativeMethods.MsiCloseHandle((int)handle) == 0;
             }
         }
     }

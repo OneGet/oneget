@@ -1,5 +1,4 @@
-﻿
-namespace Microsoft.PackageManagement.Provider.Utility
+﻿namespace Microsoft.PackageManagement.Provider.Utility
 {
     using System;
     using System.Collections.Generic;
@@ -7,17 +6,14 @@ namespace Microsoft.PackageManagement.Provider.Utility
     using System.IO;
     using System.Linq;
     using System.Threading;
-    
-
 
     /// <summary>
     /// These are platform abstractions and platform specific implementations
     /// </summary>
-    public static class FileUtility 
+    public static class FileUtility
     {
         public static string GetTempFileFullPath(string fileExtension)
         {
-           
             if (string.IsNullOrWhiteSpace(fileExtension))
             {
                 return fileExtension;
@@ -44,7 +40,7 @@ namespace Microsoft.PackageManagement.Provider.Utility
         public static string MakePackageFileName(bool excludeVersion, string packageName, string version, string fileExtension)
         {
             string fileName = (excludeVersion) ? packageName : (packageName + "." + version);
-            return fileName + fileExtension;       
+            return fileName + fileExtension;
         }
 
         public static string MakePackageDirectoryName(bool excludeVersion, string destinationPath, string packageName, string version)
@@ -63,13 +59,13 @@ namespace Microsoft.PackageManagement.Provider.Utility
             {
                 throw new DirectoryNotFoundException(string.Format(CultureInfo.InvariantCulture, "Source directory '{0}' does not exist or could not be found.", source));
             }
-           
-            // Some packages have directories with spaces. However it shows as $20, e.g. Install-Module -name xHyper-VBackup. 
-            // It has something like Content\Deployment\Module%20References\..., with that, the PowerShellGet provider won't be able to handle it. 
+
+            // Some packages have directories with spaces. However it shows as $20, e.g. Install-Module -name xHyper-VBackup.
+            // It has something like Content\Deployment\Module%20References\..., with that, the PowerShellGet provider won't be able to handle it.
             // Add the following code to unescape percent-encoding characters
             string newdest = Uri.UnescapeDataString(dest);
 
-            // If the destination directory doesn't exist, create it. 
+            // If the destination directory doesn't exist, create it.
             if (!Directory.Exists(newdest))
             {
                 Directory.CreateDirectory(newdest);
@@ -86,7 +82,7 @@ namespace Microsoft.PackageManagement.Provider.Utility
                 file.CopyTo(tempPath, true /*overwrite*/);
             }
 
-            // If copying subdirectories, copy them and their contents to new location. 
+            // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirs)
             {
                 DirectoryInfo[] sourceDirs = dir.GetDirectories();
@@ -112,7 +108,7 @@ namespace Microsoft.PackageManagement.Provider.Utility
         public static IEnumerable<string> GetFiles(string fullPath, string filter, bool recursive)
         {
             fullPath = PathUtility.EnsureTrailingSlash(fullPath);
-            if (String.IsNullOrWhiteSpace(filter))
+            if (string.IsNullOrWhiteSpace(filter))
             {
                 filter = "*.*";
             }
@@ -127,11 +123,9 @@ namespace Microsoft.PackageManagement.Provider.Utility
             }
             catch (UnauthorizedAccessException)
             {
-
             }
             catch (DirectoryNotFoundException)
             {
-
             }
 
             return Enumerable.Empty<string>();
@@ -147,15 +141,13 @@ namespace Microsoft.PackageManagement.Provider.Utility
                     return Enumerable.Empty<string>();
                 }
 
-                return Directory.EnumerateDirectories(fullPath);                                
+                return Directory.EnumerateDirectories(fullPath);
             }
             catch (UnauthorizedAccessException)
             {
-
             }
             catch (DirectoryNotFoundException)
             {
-
             }
 
             return Enumerable.Empty<string>();
@@ -165,7 +157,7 @@ namespace Microsoft.PackageManagement.Provider.Utility
         {
             if (File.Exists(fullPath))
             {
-                return File.GetLastWriteTime(fullPath);             
+                return File.GetLastWriteTime(fullPath);
             }
             return Directory.GetLastWriteTime(fullPath);
         }

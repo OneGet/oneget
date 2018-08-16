@@ -1,23 +1,25 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement.Internal.Providers {
-    using System;
+namespace Microsoft.PackageManagement.Internal.Providers
+{
     using PackageManagement.Internal.Api;
     using PackageManagement.Internal.Utility.Plugin;
+    using System;
 
-    public interface IPackageProvider : IProvider {
+    public interface IPackageProvider : IProvider
+    {
         /// <summary>
         ///     Returns the name of the Provider.
         /// </summary>
@@ -27,7 +29,7 @@ namespace Microsoft.PackageManagement.Internal.Providers {
         /// <returns>the name of the package provider</returns>
         /// <remarks>
         ///     PowerShellMetaProvider notes:
-        ///         - may use Get-PackageProviderName as the function name 
+        ///         - may use Get-PackageProviderName as the function name
         /// </remarks>
         [Required]
         string GetPackageProviderName();
@@ -64,16 +66,19 @@ namespace Microsoft.PackageManagement.Internal.Providers {
 #endif
 
 #if !REMOVE_DEPRECATED_FUNCTIONS
+
         void AddPackageSource(string name, string location, bool trusted, IRequest requestObject);
+
 #endif
+
         /// <summary>
         /// Resolves and returns package sources.
-        /// 
+        ///
         /// Expected behavior:
         ///     If request.Sources is null or empty, the provider should return the list of registered sources.
-        ///     Otherwise, the provider should return package sources that match the strings in the request.Sources  
-        ///     collection. If the string doesn't match a registered source (either by name or by location) and the 
-        ///     string can be construed as a package source (ie, passing in a valid URL to a provider that uses URLs 
+        ///     Otherwise, the provider should return package sources that match the strings in the request.Sources
+        ///     collection. If the string doesn't match a registered source (either by name or by location) and the
+        ///     string can be construed as a package source (ie, passing in a valid URL to a provider that uses URLs
         ///     for their package sources), then the provider should return a package source for that URL, but marked
         ///     as 'unregistered' (and 'untrusted')
         /// </summary>
@@ -83,7 +88,7 @@ namespace Microsoft.PackageManagement.Internal.Providers {
         /// <param name="requestObject">The request context passed to the provider.</param>
         /// <remarks>
         ///     PowerShellMetaProvider notes:
-        ///         - may use Resolve-PackageSource as the function name 
+        ///         - may use Resolve-PackageSource as the function name
         ///         - $request object is not passed as a parameter, but inserted as a variable before the New-PackageSource call.
         ///         - Values can be returned using Write-Object for objects returned from the function
         /// </remarks>
@@ -91,7 +96,7 @@ namespace Microsoft.PackageManagement.Internal.Providers {
 
         /// <summary>
         /// Removes a registered package source.
-        /// 
+        ///
         /// Matching of the package source should be done on via the name or location against the specified string.
         /// </summary>
         /// <param name="source"> the name or location of the source to be removed.</param>
@@ -100,18 +105,18 @@ namespace Microsoft.PackageManagement.Internal.Providers {
         ///     PowerShellMetaProvider notes:
         ///         - may use 'Remove-PackageSource' as the function name.
         ///         - request object is not passed as a parameter, but inserted as a variable before the call.
-        /// </remarks> 
+        /// </remarks>
         void RemovePackageSource(string source, IRequest requestObject);
 
         /// <summary>
         ///     Finds packages given a set of criteria.
-        /// 
+        ///
         ///     If request.Sources is null or empty, the provider should use all the registered sources specified.
-        /// 
-        ///     If the provider doesn't support package sources, and the request.Sources isn't null or empty, 
+        ///
+        ///     If the provider doesn't support package sources, and the request.Sources isn't null or empty,
         ///     the provider should return nothing and exit immediately.
-        /// 
-        ///     If request.Sources contains one or more elements, the repository should scope the search to just repositories 
+        ///
+        ///     If request.Sources contains one or more elements, the repository should scope the search to just repositories
         ///     that match sources (either by name or location) in the list of specified strings.
         /// </summary>
         /// <param name="name">matches against the name of a package. If this is null or empty, should return all matching packages.</param>
@@ -132,8 +137,8 @@ namespace Microsoft.PackageManagement.Internal.Providers {
         ///     AddEvidence(...)    -- adds an Evidence (or returns the existing one) to a SoftwareIdentity
         ///     AddDirectory(...)   -- adds a Directory to a Payload, Evidence or Directory
         ///     AddFile(...)        -- adds a File to a Payload, Evidence or Directory
-        ///     AddProcess(...)     -- adds a Process to a Payload or Evidence 
-        ///     AddResource(...)    -- adds a Resource to a Payload or Evidence 
+        ///     AddProcess(...)     -- adds a Process to a Payload or Evidence
+        ///     AddResource(...)    -- adds a Resource to a Payload or Evidence
         /// </returns>
         /// <remarks>
         ///     PowerShellMetaProvider notes:
@@ -144,10 +149,12 @@ namespace Microsoft.PackageManagement.Internal.Providers {
 #if NEW_SIGNATURES
         void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, IRequest requestObject);
         void FindPackage(string[] names, string requiredVersion, string minimumVersion, string maximumVersion, IRequest requestObject);
-#endif 
+#endif
 
 #if !REMOVE_DEPRECATED_FUNCTIONS
-        void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion,int id, IRequest requestObject);
+
+        void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequest requestObject);
+
 #endif
 
         /// <summary>
@@ -168,8 +175,8 @@ namespace Microsoft.PackageManagement.Internal.Providers {
         ///     AddEvidence(...)    -- adds an Evidence (or returns the existing one) to a SoftwareIdentity
         ///     AddDirectory(...)   -- adds a Directory to a Payload, Evidence or Directory
         ///     AddFile(...)        -- adds a File to a Payload, Evidence or Directory
-        ///     AddProcess(...)     -- adds a Process to a Payload or Evidence 
-        ///     AddResource(...)    -- adds a Resource to a Payload or Evidence 
+        ///     AddProcess(...)     -- adds a Process to a Payload or Evidence
+        ///     AddResource(...)    -- adds a Resource to a Payload or Evidence
         /// </returns>
         /// <remarks>
         ///     PowerShellMetaProvider notes:
@@ -180,14 +187,16 @@ namespace Microsoft.PackageManagement.Internal.Providers {
 #if NEW_SIGNATURES
         void FindPackageByFile(string filePath, IRequest requestObject);
         void FindPackageByFile(string[] filePaths, IRequest requestObject);
-#endif 
+#endif
 
 #if !REMOVE_DEPRECATED_FUNCTIONS
+
         void FindPackageByFile(string filePath, int id, IRequest requestObject);
+
 #endif
 
         /// <summary>
-        /// Returns SoftwareIdentities given a URI. 
+        /// Returns SoftwareIdentities given a URI.
         /// </summary>
         /// <param name="uri">the URI to search for packages</param>
         /// <param name="id">the batch id. If the provider supports batch searches, and this is non-zero,
@@ -204,8 +213,8 @@ namespace Microsoft.PackageManagement.Internal.Providers {
         ///     AddEvidence(...)    -- adds an Evidence (or returns the existing one) to a SoftwareIdentity
         ///     AddDirectory(...)   -- adds a Directory to a Payload, Evidence or Directory
         ///     AddFile(...)        -- adds a File to a Payload, Evidence or Directory
-        ///     AddProcess(...)     -- adds a Process to a Payload or Evidence 
-        ///     AddResource(...)    -- adds a Resource to a Payload or Evidence 
+        ///     AddProcess(...)     -- adds a Process to a Payload or Evidence
+        ///     AddResource(...)    -- adds a Resource to a Payload or Evidence
         /// </returns>
         /// <remarks>
         ///     PowerShellMetaProvider notes:
@@ -219,7 +228,9 @@ namespace Microsoft.PackageManagement.Internal.Providers {
 #endif
 
 #if !REMOVE_DEPRECATED_FUNCTIONS
+
         void FindPackageByUri(Uri uri, int id, IRequest requestObject);
+
 #endif
 
         /// <summary>
@@ -241,8 +252,8 @@ namespace Microsoft.PackageManagement.Internal.Providers {
         ///     AddEvidence(...)    -- adds an Evidence (or returns the existing one) to a SoftwareIdentity
         ///     AddDirectory(...)   -- adds a Directory to a Payload, Evidence or Directory
         ///     AddFile(...)        -- adds a File to a Payload, Evidence or Directory
-        ///     AddProcess(...)     -- adds a Process to a Payload or Evidence 
-        ///     AddResource(...)    -- adds a Resource to a Payload or Evidence 
+        ///     AddProcess(...)     -- adds a Process to a Payload or Evidence
+        ///     AddResource(...)    -- adds a Resource to a Payload or Evidence
         /// </returns>
         /// <remarks>
         ///     PowerShellMetaProvider notes:
@@ -291,8 +302,8 @@ namespace Microsoft.PackageManagement.Internal.Providers {
         ///     AddEvidence(...)    -- adds an Evidence (or returns the existing one) to a SoftwareIdentity
         ///     AddDirectory(...)   -- adds a Directory to a Payload, Evidence or Directory
         ///     AddFile(...)        -- adds a File to a Payload, Evidence or Directory
-        ///     AddProcess(...)     -- adds a Process to a Payload or Evidence 
-        ///     AddResource(...)    -- adds a Resource to a Payload or Evidence 
+        ///     AddProcess(...)     -- adds a Process to a Payload or Evidence
+        ///     AddResource(...)    -- adds a Resource to a Payload or Evidence
         /// </returns>
         /// <remarks>
         ///     PowerShellMetaProvider notes:
@@ -316,8 +327,8 @@ namespace Microsoft.PackageManagement.Internal.Providers {
         ///     AddEvidence(...)    -- adds an Evidence (or returns the existing one) to a SoftwareIdentity
         ///     AddDirectory(...)   -- adds a Directory to a Payload, Evidence or Directory
         ///     AddFile(...)        -- adds a File to a Payload, Evidence or Directory
-        ///     AddProcess(...)     -- adds a Process to a Payload or Evidence 
-        ///     AddResource(...)    -- adds a Resource to a Payload or Evidence 
+        ///     AddProcess(...)     -- adds a Process to a Payload or Evidence
+        ///     AddResource(...)    -- adds a Resource to a Payload or Evidence
         /// </returns>
         /// <remarks>
         ///     PowerShellMetaProvider notes:

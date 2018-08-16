@@ -33,20 +33,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
         }
 
-        protected override IEnumerable<string> ParameterSets
-        {
-            get
-            {
-                return new[] { Constants.ParameterSets.SourceByInputObjectSet, Constants.ParameterSets.SourceBySearchSet };
-            }
-        }
+        protected override IEnumerable<string> ParameterSets => new[] { Constants.ParameterSets.SourceByInputObjectSet, Constants.ParameterSets.SourceBySearchSet };
 
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments)
         {
             if (!IsInvocation)
             {
-                var providerNames = PackageManagementService.AllProviderNames;
-                var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
+                IEnumerable<string> providerNames = PackageManagementService.AllProviderNames;
+                string[] whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
                 if (whatsOnCmdline != null)
                 {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
@@ -98,14 +92,14 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
             if (IsSourceByObject)
             {
-                foreach (var source in InputObject)
+                foreach (PackageSource source in InputObject)
                 {
                     if (Stopping)
                     {
                         return false;
                     }
 
-                    var provider = SelectProviders(source.ProviderName).FirstOrDefault();
+                    Microsoft.PackageManagement.Implementation.PackageProvider provider = SelectProviders(source.ProviderName).FirstOrDefault();
                     if (provider == null)
                     {
                         if (string.IsNullOrWhiteSpace(source.ProviderName))
@@ -126,7 +120,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             }
 
             // otherwise, we're just deleting a source by name
-            var prov = SelectedProviders.ToArray();
+            Microsoft.PackageManagement.Implementation.PackageProvider[] prov = SelectedProviders.ToArray();
 
             if (Stopping)
             {
@@ -144,7 +138,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
             if (prov.Length > 0)
             {
-                var sources = prov.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Location))).ToArray()).ToArray();
+                PackageSource[] sources = prov.SelectMany(each => each.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).Where(source => source.IsRegistered && (source.Name.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Source) || source.Location.EqualsIgnoreCase(Location))).ToArray()).ToArray();
 
                 if (sources.Length == 0)
                 {

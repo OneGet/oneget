@@ -79,56 +79,26 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
         }
 
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        protected IEnumerable<IGrouping<string, Link>> Artifacts
-        {
-            get
-            {
-                return IsValid ? _swidtag.Links.GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
-            }
-        }
+        protected IEnumerable<IGrouping<string, Link>> Artifacts => IsValid ? _swidtag.Links.GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
 
-        protected IEnumerable<IGrouping<string, Link>> Feeds
-        {
-            get
-            {
-                return IsValid
+        protected IEnumerable<IGrouping<string, Link>> Feeds => IsValid
                     ? _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Feed).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact) : Enumerable.Empty<IGrouping<string, Link>>();
-            }
-        }
 
-        protected IEnumerable<IGrouping<string, Link>> Packages
-        {
-            get
-            {
-                return IsValid
+        protected IEnumerable<IGrouping<string, Link>> Packages => IsValid
                     ? _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Package).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact)
                     : Enumerable.Empty<IGrouping<string, Link>>();
-            }
-        }
 
-        protected IEnumerable<IGrouping<string, Link>> More
-        {
-            get
-            {
-                return _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Supplemental).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact);
-            }
-        }
+        protected IEnumerable<IGrouping<string, Link>> More => _swidtag.Links.Where(link => link.Relationship == Iso19770_2.Relationship.Supplemental).GroupBy(link => string.IsNullOrEmpty(link.Artifact) ? FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory() : link.Artifact);
 
-        internal virtual bool IsValid
-        {
-            get
-            {
-                return _swidtag != null;
-            }
-        }
+        internal virtual bool IsValid => _swidtag != null;
 
         private Swidtag DownloadSwidtag(IEnumerable<Uri> locations, BootstrapRequest request)
         {
-            foreach (var location in locations.WhereNotNull())
+            foreach (Uri location in locations.WhereNotNull())
             {
                 try
                 {
-                    var filename = FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory();
+                    string filename = FilesystemExtensions.GenerateTemporaryFileOrDirectoryNameInTempDirectory();
                     DownloadSwidtagToFile(filename, location);
 
                     if (_timedOut)
@@ -141,7 +111,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
                     {
                         try
                         {
-                            var document = XDocument.Load(filename);
+                            XDocument document = XDocument.Load(filename);
                             if (Swidtag.IsSwidtag(document.Root))
                             {
                                 Location = location;
@@ -195,7 +165,7 @@ namespace Microsoft.PackageManagement.Providers.Internal.Bootstrap
 
             return Packages.Where(packageGroup =>
             {
-                var n = packageGroup.FirstOrDefault().Attributes[Iso19770_2.Discovery.Name];
+                string n = packageGroup.FirstOrDefault().Attributes[Iso19770_2.Discovery.Name];
                 return (string.IsNullOrEmpty(n) || name.EqualsIgnoreCase(n));
             });
         }

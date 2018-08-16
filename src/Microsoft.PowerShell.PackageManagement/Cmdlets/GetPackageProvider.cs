@@ -24,13 +24,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
     [Cmdlet(VerbsCommon.Get, Constants.Nouns.PackageProviderNoun, HelpUri = "https://go.microsoft.com/fwlink/?LinkID=517136")]
     public sealed class GetPackageProvider : CmdletBase
     {
-        protected override IEnumerable<string> ParameterSets
-        {
-            get
-            {
-                return new[] { "", };
-            }
-        }
+        protected override IEnumerable<string> ParameterSets => new[] { "", };
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(Position = 0)]
@@ -43,11 +37,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
             if (Name.IsNullOrEmpty())
             {
-                var providers = ListAvailable.IsPresent ? PackageManagementService.GetAvailableProviders(this, Name).ReEnumerable() : SelectProviders(Name).ReEnumerable();
+                MutableEnumerable<Microsoft.PackageManagement.Implementation.PackageProvider> providers = ListAvailable.IsPresent ? PackageManagementService.GetAvailableProviders(this, Name).ReEnumerable() : SelectProviders(Name).ReEnumerable();
 
-                var providerOrdered = providers.OrderBy(each => each.ProviderName);
+                IOrderedEnumerable<Microsoft.PackageManagement.Implementation.PackageProvider> providerOrdered = providers.OrderBy(each => each.ProviderName);
                 // Get all available providers
-                foreach (var p in providerOrdered)
+                foreach (Microsoft.PackageManagement.Implementation.PackageProvider p in providerOrdered)
                 {
                     WriteObject(p);
                 }
@@ -65,15 +59,15 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             //Do not log error when a provider is not found in the list returned by SelectProviders(). This allows the searching continues
             //in the list of providers that are not loaded.
             ShouldLogError = false;
-            var notfound = new List<string>();
-            foreach (var name in Name)
+            List<string> notfound = new List<string>();
+            foreach (string name in Name)
             {
-                var providers = ListAvailable.IsPresent ? PackageManagementService.GetAvailableProviders(this, new[] { name }).ReEnumerable() : SelectProviders(name).ReEnumerable();
+                MutableEnumerable<Microsoft.PackageManagement.Implementation.PackageProvider> providers = ListAvailable.IsPresent ? PackageManagementService.GetAvailableProviders(this, new[] { name }).ReEnumerable() : SelectProviders(name).ReEnumerable();
                 if (providers.Any())
                 {
-                    var providerOrdered = providers.OrderByDescending(each => each.ProviderName);
+                    IOrderedEnumerable<Microsoft.PackageManagement.Implementation.PackageProvider> providerOrdered = providers.OrderByDescending(each => each.ProviderName);
 
-                    foreach (var provider in providerOrdered)
+                    foreach (Microsoft.PackageManagement.Implementation.PackageProvider provider in providerOrdered)
                     {
                         WriteObject(provider);
                     }

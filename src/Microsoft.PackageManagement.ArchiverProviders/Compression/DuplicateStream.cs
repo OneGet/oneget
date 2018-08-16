@@ -41,60 +41,30 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <summary>
         /// Gets the original stream that was used to create the duplicate.
         /// </summary>
-        public Stream Source
-        {
-            get
-            {
-                return this.source;
-            }
-        }
+        public Stream Source => source;
 
         /// <summary>
         /// Gets a value indicating whether the source stream supports reading.
         /// </summary>
         /// <value>true if the stream supports reading; otherwise, false.</value>
-        public override bool CanRead
-        {
-            get
-            {
-                return this.source.CanRead;
-            }
-        }
+        public override bool CanRead => source.CanRead;
 
         /// <summary>
         /// Gets a value indicating whether the source stream supports writing.
         /// </summary>
         /// <value>true if the stream supports writing; otherwise, false.</value>
-        public override bool CanWrite
-        {
-            get
-            {
-                return this.source.CanWrite;
-            }
-        }
+        public override bool CanWrite => source.CanWrite;
 
         /// <summary>
         /// Gets a value indicating whether the source stream supports seeking.
         /// </summary>
         /// <value>true if the stream supports seeking; otherwise, false.</value>
-        public override bool CanSeek
-        {
-            get
-            {
-                return this.source.CanSeek;
-            }
-        }
+        public override bool CanSeek => source.CanSeek;
 
         /// <summary>
         /// Gets the length of the source stream.
         /// </summary>
-        public override long Length
-        {
-            get
-            {
-                return this.source.Length;
-            }
-        }
+        public override long Length => source.Length;
 
         /// <summary>
         /// Gets or sets the position of the current stream,
@@ -102,15 +72,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </summary>
         public override long Position
         {
-            get
-            {
-                return this.position;
-            }
+            get => position;
 
-            set
-            {
-                this.position = value;
-            }
+            set => position = value;
         }
 
         /// <summary>
@@ -129,7 +93,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </summary>
         public override void Flush()
         {
-            this.source.Flush();
+            source.Flush();
         }
 
         /// <summary>
@@ -138,7 +102,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <param name="value">The desired length of the stream in bytes.</param>
         public override void SetLength(long value)
         {
-            this.source.SetLength(value);
+            source.SetLength(value);
         }
 
 #if !CORECLR
@@ -148,7 +112,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </summary>
         public override void Close()
         {
-            this.source.Close();
+            source.Close();
         }
 
 #endif
@@ -161,7 +125,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         {
             if (disposing)
             {
-                this.source.Dispose();
+                source.Dispose();
             }
         }
 
@@ -180,11 +144,11 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// or zero (0) if the end of the stream has been reached.</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            long saveSourcePosition = this.source.Position;
-            this.source.Position = this.position;
-            int read = this.source.Read(buffer, offset, count);
-            this.position = this.source.Position;
-            this.source.Position = saveSourcePosition;
+            long saveSourcePosition = source.Position;
+            source.Position = position;
+            int read = source.Read(buffer, offset, count);
+            position = source.Position;
+            source.Position = saveSourcePosition;
             return read;
         }
 
@@ -200,11 +164,11 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// current stream.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            long saveSourcePosition = this.source.Position;
-            this.source.Position = this.position;
-            this.source.Write(buffer, offset, count);
-            this.position = this.source.Position;
-            this.source.Position = saveSourcePosition;
+            long saveSourcePosition = source.Position;
+            source.Position = position;
+            source.Write(buffer, offset, count);
+            position = source.Position;
+            source.Position = saveSourcePosition;
         }
 
         /// <summary>
@@ -220,15 +184,15 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             long originPosition = 0;
             if (origin == SeekOrigin.Current)
             {
-                originPosition = this.position;
+                originPosition = position;
             }
             else if (origin == SeekOrigin.End)
             {
-                originPosition = this.Length;
+                originPosition = Length;
             }
 
-            this.position = originPosition + offset;
-            return this.position;
+            position = originPosition + offset;
+            return position;
         }
     }
 }

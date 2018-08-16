@@ -75,23 +75,17 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
 
             using (View columnsView = db.OpenView("SELECT * FROM `{0}`", name))
             {
-                this.columns = new ColumnCollection(columnsView);
+                columns = new ColumnCollection(columnsView);
             }
 
-            this.primaryKeys = new ReadOnlyCollection<string>(
+            primaryKeys = new ReadOnlyCollection<string>(
                 TableInfo.GetTablePrimaryKeys(db, name));
         }
 
         /// <summary>
         /// Gets the name of the table.
         /// </summary>
-        public string Name
-        {
-            get
-            {
-                return this.name;
-            }
-        }
+        public string Name => name;
 
         /// <summary>
         /// Gets information about the columns in this table.
@@ -101,24 +95,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// to ensure the returned values are up-to-date. For best performance,
         /// hold onto the returned collection if using it more than once.
         /// </p></remarks>
-        public ColumnCollection Columns
-        {
-            get
-            {
-                return this.columns;
-            }
-        }
+        public ColumnCollection Columns => columns;
 
         /// <summary>
         /// Gets the names of the columns that are primary keys of the table.
         /// </summary>
-        public IList<string> PrimaryKeys
-        {
-            get
-            {
-                return this.primaryKeys;
-            }
-        }
+        public IList<string> PrimaryKeys => primaryKeys;
 
         /// <summary>
         /// Gets an SQL CREATE string that can be used to create the table.
@@ -128,10 +110,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 StringBuilder s = new StringBuilder("CREATE TABLE `");
-                s.Append(this.name);
+                s.Append(name);
                 s.Append("` (");
                 int count = 0;
-                foreach (ColumnInfo col in this.Columns)
+                foreach (ColumnInfo col in Columns)
                 {
                     if (count > 0)
                     {
@@ -142,7 +124,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 }
                 s.Append("  PRIMARY KEY ");
                 count = 0;
-                foreach (string key in this.PrimaryKeys)
+                foreach (string key in PrimaryKeys)
                 {
                     if (count > 0)
                     {
@@ -168,10 +150,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get
             {
                 StringBuilder s = new StringBuilder("INSERT INTO `");
-                s.Append(this.name);
+                s.Append(name);
                 s.Append("` (");
                 int count = 0;
-                foreach (ColumnInfo col in this.Columns)
+                foreach (ColumnInfo col in Columns)
                 {
                     if (count > 0)
                     {
@@ -209,13 +191,17 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 StringBuilder s = new StringBuilder("SELECT ");
                 int count = 0;
-                foreach (ColumnInfo col in this.Columns)
+                foreach (ColumnInfo col in Columns)
                 {
-                    if (count > 0) s.Append(", ");
+                    if (count > 0)
+                    {
+                        s.Append(", ");
+                    }
+
                     s.AppendFormat("`{0}`", col.Name);
                     count++;
                 }
-                s.AppendFormat(" FROM `{0}`", this.Name);
+                s.AppendFormat(" FROM `{0}`", Name);
                 return s.ToString();
             }
         }
@@ -226,7 +212,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <returns>The name of the table.</returns>
         public override string ToString()
         {
-            return this.name;
+            return name;
         }
 
         private static IList<string> GetTablePrimaryKeys(Database db, string table)

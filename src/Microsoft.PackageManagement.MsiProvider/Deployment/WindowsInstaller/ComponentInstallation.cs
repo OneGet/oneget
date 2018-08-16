@@ -35,7 +35,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 for (uint i = 0; true; i++)
                 {
                     uint ret = NativeMethods.MsiEnumComponents(i, buf);
-                    if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS) break;
+                    if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
+                    {
+                        break;
+                    }
+
                     if (ret != 0)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret);
@@ -66,7 +70,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     szSid.EnsureCapacity((int)++pcchSid);
                     ret = NativeMethods.MsiEnumComponentsEx(szUserSid, dwContext, i, buf, out installedContext, szSid, ref pcchSid);
                 }
-                if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS) break;
+                if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
+                {
+                    break;
+                }
+
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
@@ -150,13 +158,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the component code (GUID) of the component.
         /// </summary>
-        public string ComponentCode
-        {
-            get
-            {
-                return this.Id;
-            }
-        }
+        public string ComponentCode => Id;
 
         /// <summary>
         /// Gets all client products of a specified component.
@@ -179,11 +181,18 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 for (uint i = 0; true; i++)
                 {
                     uint chSid = 0;
-                    uint ret = this.Context == UserContexts.None ?
-                            NativeMethods.MsiEnumClients(this.ComponentCode, i, buf) :
-                            NativeMethods.MsiEnumClientsEx(this.ComponentCode, this.UserSid, this.Context, i, buf, out UserContexts installedContext, null, ref chSid);
-                    if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS) break;
-                    else if (ret == (uint)NativeMethods.Error.UNKNOWN_COMPONENT) break;
+                    uint ret = Context == UserContexts.None ?
+                            NativeMethods.MsiEnumClients(ComponentCode, i, buf) :
+                            NativeMethods.MsiEnumClientsEx(ComponentCode, UserSid, Context, i, buf, out UserContexts installedContext, null, ref chSid);
+                    if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS)
+                    {
+                        break;
+                    }
+                    else if (ret == (uint)NativeMethods.Error.UNKNOWN_COMPONENT)
+                    {
+                        break;
+                    }
+
                     if (ret != 0)
                     {
                         throw InstallerException.ExceptionFromReturnCode(ret);
@@ -207,14 +216,14 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                if (this.ProductCode != null)
+                if (ProductCode != null)
                 {
                     uint bufSize = 0;
-                    int installState = this.Context == UserContexts.None ?
+                    int installState = Context == UserContexts.None ?
                         NativeMethods.MsiGetComponentPath(
-                            this.ProductCode, this.ComponentCode, null, ref bufSize) :
+                            ProductCode, ComponentCode, null, ref bufSize) :
                         NativeMethods.MsiGetComponentPathEx(
-                            this.ProductCode, this.ComponentCode, this.UserSid, this.Context, null, ref bufSize);
+                            ProductCode, ComponentCode, UserSid, Context, null, ref bufSize);
                     return (InstallState)installState;
                 }
                 else
@@ -252,32 +261,32 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 uint bufSize = (uint)buf.Capacity;
                 InstallState installState;
 
-                if (this.ProductCode != null)
+                if (ProductCode != null)
                 {
-                    installState = (this.Context == UserContexts.None) ?
+                    installState = (Context == UserContexts.None) ?
                         (InstallState)NativeMethods.MsiGetComponentPath(
-                            this.ProductCode, this.ComponentCode, buf, ref bufSize) :
+                            ProductCode, ComponentCode, buf, ref bufSize) :
                         (InstallState)NativeMethods.MsiGetComponentPathEx(
-                            this.ProductCode, this.ComponentCode, this.UserSid, this.Context, buf, ref bufSize);
+                            ProductCode, ComponentCode, UserSid, Context, buf, ref bufSize);
                     if (installState == InstallState.MoreData)
                     {
                         buf.Capacity = (int)++bufSize;
-                        installState = (this.Context == UserContexts.None) ?
+                        installState = (Context == UserContexts.None) ?
                             (InstallState)NativeMethods.MsiGetComponentPath(
-                                this.ProductCode, this.ComponentCode, buf, ref bufSize) :
+                                ProductCode, ComponentCode, buf, ref bufSize) :
                             (InstallState)NativeMethods.MsiGetComponentPathEx(
-                                this.ProductCode, this.ComponentCode, this.UserSid, this.Context, buf, ref bufSize);
+                                ProductCode, ComponentCode, UserSid, Context, buf, ref bufSize);
                     }
                 }
                 else
                 {
                     installState = (InstallState)NativeMethods.MsiLocateComponent(
-                        this.ComponentCode, buf, ref bufSize);
+                        ComponentCode, buf, ref bufSize);
                     if (installState == InstallState.MoreData)
                     {
                         buf.Capacity = (int)++bufSize;
                         installState = (InstallState)NativeMethods.MsiLocateComponent(
-                            this.ComponentCode, buf, ref bufSize);
+                            ComponentCode, buf, ref bufSize);
                     }
                 }
 
@@ -317,13 +326,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                     uint qualBufSize = (uint)qualBuf.Capacity;
                     uint dataBufSize = (uint)dataBuf.Capacity;
                     uint ret = NativeMethods.MsiEnumComponentQualifiers(
-                        this.ComponentCode, i, qualBuf, ref qualBufSize, dataBuf, ref dataBufSize);
+                        ComponentCode, i, qualBuf, ref qualBufSize, dataBuf, ref dataBufSize);
                     if (ret == (uint)NativeMethods.Error.MORE_DATA)
                     {
                         qualBuf.Capacity = (int)++qualBufSize;
                         dataBuf.Capacity = (int)++dataBufSize;
                         ret = NativeMethods.MsiEnumComponentQualifiers(
-                            this.ComponentCode, i, qualBuf, ref qualBufSize, dataBuf, ref dataBufSize);
+                            ComponentCode, i, qualBuf, ref qualBufSize, dataBuf, ref dataBufSize);
                     }
 
                     if (ret == (uint)NativeMethods.Error.NO_MORE_ITEMS ||
@@ -367,25 +376,13 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             /// Gets the qualifier code.
             /// </summary>
             [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-            public string QualifierCode
-            {
-                get
-                {
-                    return this.qualifierCode;
-                }
-            }
+            public string QualifierCode => qualifierCode;
 
             /// <summary>
             /// Gets the qualifier data.
             /// </summary>
             [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-            public string Data
-            {
-                get
-                {
-                    return this.data;
-                }
-            }
+            public string Data => data;
         }
     }
 }

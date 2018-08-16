@@ -42,7 +42,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal
 
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ArchiverName);
-            foreach (var feature in _features)
+            foreach (KeyValuePair<string, string[]> feature in _features)
             {
                 request.Yield(feature);
             }
@@ -52,22 +52,13 @@ namespace Microsoft.PackageManagement.Archivers.Internal
         ///     Returns the name of the Provider.
         /// </summary>
         /// <returns></returns>
-        public string ArchiverName
-        {
-            get { return "cabfile"; }
-        }
+        public string ArchiverName => "cabfile";
 
         /// <summary>
         /// Returns the version of the Provider.
         /// </summary>
         /// <returns>The version of this provider </returns>
-        public string ProviderVersion
-        {
-            get
-            {
-                return "1.0.0.0";
-            }
-        }
+        public string ProviderVersion => "1.0.0.0";
 
         //Needs Commenting
         public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Request request)

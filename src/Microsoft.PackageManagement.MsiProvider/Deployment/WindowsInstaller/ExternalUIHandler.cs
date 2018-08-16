@@ -48,10 +48,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             this.handler = handler;
         }
 
-        public ExternalUIHandler Handler
-        {
-            get { return this.handler; }
-        }
+        public ExternalUIHandler Handler => handler;
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public int ProxyHandler(IntPtr contextPtr, int messageType, [MarshalAs(UnmanagedType.LPWStr)] string message)
@@ -63,7 +60,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 int icon = messageType & 0x000000F0;
                 int defButton = messageType & 0x00000F00;
 
-                return (int)this.handler(
+                return (int)handler(
                         (InstallMessage)msgType,
                         message,
                         (MessageButtons)buttons,
@@ -86,10 +83,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             this.handler = handler;
         }
 
-        public ExternalUIRecordHandler Handler
-        {
-            get { return this.handler; }
-        }
+        public ExternalUIRecordHandler Handler => handler;
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public int ProxyHandler(IntPtr contextPtr, int messageType, int recordHandle)
@@ -104,7 +98,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 Record msgRec = (recordHandle != 0 ? Record.FromHandle((IntPtr)recordHandle, false) : null);
                 using (msgRec)
                 {
-                    return (int)this.handler(
+                    return (int)handler(
                         (InstallMessage)msgType,
                         msgRec,
                         (MessageButtons)buttons,

@@ -27,7 +27,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </summary>
         protected CompressionEngine()
         {
-            this.compressionLevel = CompressionLevel.Normal;
+            compressionLevel = CompressionLevel.Normal;
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </summary>
         ~CompressionEngine()
         {
-            this.Dispose(false);
+            Dispose(false);
         }
 
         /// <summary>
@@ -59,15 +59,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// privileges to create temporary files.</remarks>
         public bool UseTempFiles
         {
-            get
-            {
-                return !this.dontUseTempFiles;
-            }
+            get => !dontUseTempFiles;
 
-            set
-            {
-                this.dontUseTempFiles = !value;
-            }
+            set => dontUseTempFiles = !value;
         }
 
         /// <summary>
@@ -77,15 +71,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// or no compression.</value>
         public CompressionLevel CompressionLevel
         {
-            get
-            {
-                return this.compressionLevel;
-            }
+            get => compressionLevel;
 
-            set
-            {
-                this.compressionLevel = value;
-            }
+            set => compressionLevel = value;
         }
 
         /// <summary>
@@ -93,7 +81,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// </summary>
         public void Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -117,7 +105,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
                 throw new ArgumentNullException("files");
             }
 
-            this.Pack(streamContext, files, 0);
+            Pack(streamContext, files, 0);
         }
 
         /// <summary>
@@ -170,7 +158,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             for (long offset = 0; offset <= length - sectionSize; offset += sectionSize)
             {
                 stream.Seek(offset, SeekOrigin.Begin);
-                if (this.IsArchive(stream))
+                if (IsArchive(stream))
                 {
                     return offset;
                 }
@@ -188,7 +176,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// archive.</exception>
         public IList<ArchiveFileInfo> GetFileInfo(Stream stream)
         {
-            return this.GetFileInfo(new BasicUnpackStreamContext(stream), null);
+            return GetFileInfo(new BasicUnpackStreamContext(stream), null);
         }
 
         /// <summary>
@@ -219,7 +207,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// archive.</exception>
         public IList<string> GetFiles(Stream stream)
         {
-            return this.GetFiles(new BasicUnpackStreamContext(stream), null);
+            return GetFiles(new BasicUnpackStreamContext(stream), null);
         }
 
         /// <summary>
@@ -247,7 +235,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
             }
 
             IList<ArchiveFileInfo> files =
-                this.GetFileInfo(streamContext, fileFilter);
+                GetFileInfo(streamContext, fileFilter);
             IList<string> fileNames = new List<string>(files.Count);
             for (int i = 0; i < files.Count; i++)
             {
@@ -283,11 +271,11 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
 
             BasicUnpackStreamContext streamContext =
                 new BasicUnpackStreamContext(stream);
-            this.Unpack(
+            Unpack(
                 streamContext,
                 delegate (string match)
                 {
-                    return String.Compare(
+                    return string.Compare(
                         match, path, StringComparison.OrdinalIgnoreCase) == 0;
                 });
 
@@ -324,7 +312,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <param name="e">Event details.</param>
         protected void OnProgress(ArchiveProgressEventArgs e)
         {
-            this.Progress?.Invoke(this, e);
+            Progress?.Invoke(this, e);
         }
 
         /// <summary>

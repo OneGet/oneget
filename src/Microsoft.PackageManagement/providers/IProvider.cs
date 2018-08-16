@@ -1,23 +1,25 @@
-// 
-//  Copyright (c) Microsoft Corporation. All rights reserved. 
+//
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //  http://www.apache.org/licenses/LICENSE-2.0
-//  
+//
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
+//
 
-namespace Microsoft.PackageManagement.Internal.Providers {
-    using System;
+namespace Microsoft.PackageManagement.Internal.Providers
+{
     using PackageManagement.Internal.Api;
     using PackageManagement.Internal.Utility.Plugin;
+    using System;
 
-    public interface IProvider {
+    public interface IProvider
+    {
         /// <summary>
         ///     Allows the Provider to do one-time initialization.
         ///     This is called after the Provider is instantiated .
@@ -53,7 +55,6 @@ namespace Microsoft.PackageManagement.Internal.Providers {
         /// <returns>The version of the provider</returns>
         string GetProviderVersion();
 
-
         /// <summary>
         /// By declaring this, the DuckTyper will write isolation code that ensures that functions can't throw exceptions, instead
         /// Exceptions can be directed to the OnUnhandledException function.
@@ -61,5 +62,5 @@ namespace Microsoft.PackageManagement.Internal.Providers {
         /// <param name="methodName"></param>
         /// <param name="exception"></param>
         void OnUnhandledException(string methodName, Exception exception);
-   }
+    }
 }

@@ -8,8 +8,8 @@
     {
         public static XDocument LoadSafe(string filePath)
         {
-            var settings = CreateSafeSettings();
-            using (var reader = XmlReader.Create(filePath, settings))
+            XmlReaderSettings settings = CreateSafeSettings();
+            using (XmlReader reader = XmlReader.Create(filePath, settings))
             {
                 return XDocument.Load(reader);
             }
@@ -17,14 +17,14 @@
 
         public static XDocument LoadSafe(Stream input, bool ignoreWhiteSpace)
         {
-            var settings = CreateSafeSettings(ignoreWhiteSpace);
-            var reader = XmlReader.Create(input, settings);
+            XmlReaderSettings settings = CreateSafeSettings(ignoreWhiteSpace);
+            XmlReader reader = XmlReader.Create(input, settings);
             return XDocument.Load(reader);
         }
 
         private static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
         {
-            var safeSettings = new XmlReaderSettings
+            XmlReaderSettings safeSettings = new XmlReaderSettings
             {
                 DtdProcessing = DtdProcessing.Prohibit,
                 IgnoreWhitespace = ignoreWhiteSpace

@@ -38,21 +38,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
         }
 
-        protected override IEnumerable<string> ParameterSets
-        {
-            get
-            {
-                return new[] { "" };
-            }
-        }
+        protected override IEnumerable<string> ParameterSets => new[] { "" };
 
-        protected IEnumerable<string> UnprocessedNames
-        {
-            get
-            {
-                return _namesProcessed.Keys.Where(each => !_namesProcessed[each]);
-            }
-        }
+        protected IEnumerable<string> UnprocessedNames => _namesProcessed.Keys.Where(each => !_namesProcessed[each]);
 
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Considered. Still No.")]
         protected bool IsPackageInVersionRange(SoftwareIdentity pkg)
@@ -104,7 +92,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             // keep track of what package names the user asked for.
             if (!Name.IsNullOrEmpty())
             {
-                foreach (var name in Name)
+                foreach (string name in Name)
                 {
                     _namesProcessed.GetOrAdd(name, () => false);
                 }
@@ -123,7 +111,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 SelectedProviders.SelectMany(pv =>
                 {
                     // for a given provider, if we get an error, we want just that provider to stop.
-                    var host = this.ProviderSpecific(pv);
+                    Microsoft.PackageManagement.Internal.Api.IHostApi host = this.ProviderSpecific(pv);
 
                     return Name.Select(name => new
                     {
@@ -132,7 +120,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     });
                 })).ToArray();
 
-            var potentialPackagesToProcess = new System.Collections.ObjectModel.Collection<SoftwareIdentity>();
+            System.Collections.ObjectModel.Collection<SoftwareIdentity> potentialPackagesToProcess = new System.Collections.ObjectModel.Collection<SoftwareIdentity>();
             while (WaitForActivity(requests.Select(each => each.packages)))
             {
                 // keep processing while any of the the queries is still going.
@@ -140,7 +128,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 {
                     // look only at requests that have data waiting.
 
-                    foreach (var package in result.packages.GetConsumingEnumerable())
+                    foreach (SoftwareIdentity package in result.packages.GetConsumingEnumerable())
                     {
                         // process the results for that set.
 
@@ -182,16 +170,16 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 // perform the uninstall.
 
                 //grouping packages by package name first
-                var enumerablePotentialPackages = from p in potentialPackagesToProcess
-                                                  group p by p.Name
+                IEnumerable<IOrderedEnumerable<SoftwareIdentity>> enumerablePotentialPackages = from p in potentialPackagesToProcess
+                                                                                                group p by p.Name
                     into grouping
-                                                  select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance);
+                                                                                                select grouping.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance);
 
                 //each group of packages with the same name, return the first if the packages are from the same provider
-                foreach (var potentialPackage in enumerablePotentialPackages.Select(pp => (from p in pp
-                                                                                           group p by p.ProviderName
+                foreach (SoftwareIdentity potentialPackage in enumerablePotentialPackages.Select(pp => (from p in pp
+                                                                                                        group p by p.ProviderName
                     into grouping
-                                                                                           select grouping.OrderByDescending(each => each, SoftwareIdentityVersionComparer.Instance).First())).SelectMany(pkgs => pkgs.ToArray()))
+                                                                                                        select grouping.OrderByDescending(each => each, SoftwareIdentityVersionComparer.Instance).First())).SelectMany(pkgs => pkgs.ToArray()))
                 {
                     ProcessPackage(potentialPackage);
                 }
@@ -206,8 +194,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             if (!IsDuplicate(package))
             {
                 // Display the SoftwareIdentity object in a format: Name, Version, Source and Provider
-                var swidTagAsPsobj = PSObject.AsPSObject(package);
-                var noteProperty = new PSNoteProperty("PropertyOfSoftwareIdentity", "PropertyOfSoftwareIdentity");
+                PSObject swidTagAsPsobj = PSObject.AsPSObject(package);
+                PSNoteProperty noteProperty = new PSNoteProperty("PropertyOfSoftwareIdentity", "PropertyOfSoftwareIdentity");
                 swidTagAsPsobj.Properties.Add(noteProperty, true);
                 swidTagAsPsobj.TypeNames.Insert(0, _newSoftwareIdentityTypeName);
 
@@ -218,7 +206,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         public override bool EndProcessingAsync()
         {
             // give out errors for any package names that we don't find anything for.
-            foreach (var name in UnprocessedNames)
+            foreach (string name in UnprocessedNames)
             {
                 Error(Constants.Errors.NoMatchFound, name);
             }
@@ -226,12 +214,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         }
 
         //use wide Source column for get-package
-        protected override bool UseDefaultSourceFormat
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected override bool UseDefaultSourceFormat => false;
     }
 }

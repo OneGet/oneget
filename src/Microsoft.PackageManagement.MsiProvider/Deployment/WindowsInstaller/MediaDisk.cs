@@ -39,8 +39,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </summary>
         public int DiskId
         {
-            get { return this.diskId; }
-            set { this.diskId = value; }
+            get => diskId;
+            set => diskId = value;
         }
 
         /// <summary>
@@ -48,8 +48,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </summary>
         public string VolumeLabel
         {
-            get { return this.volumeLabel; }
-            set { this.volumeLabel = value; }
+            get => volumeLabel;
+            set => volumeLabel = value;
         }
 
         /// <summary>
@@ -57,8 +57,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// </summary>
         public string DiskPrompt
         {
-            get { return this.diskPrompt; }
-            set { this.diskPrompt = value; }
+            get => diskPrompt;
+            set => diskPrompt = value;
         }
     }
 }

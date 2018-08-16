@@ -34,13 +34,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <summary>
         /// Gets the stream for the extracted file, or null if no file was extracted.
         /// </summary>
-        public Stream FileStream
-        {
-            get
-            {
-                return this.fileStream;
-            }
-        }
+        public Stream FileStream => fileStream;
 
         /// <summary>
         /// Opens the archive stream for reading. Returns a DuplicateStream instance,
@@ -52,7 +46,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <returns>A stream from which archive bytes are read.</returns>
         public Stream OpenArchiveReadStream(int archiveNumber, string archiveName, CompressionEngine compressionEngine)
         {
-            return new DuplicateStream(this.archiveStream);
+            return new DuplicateStream(archiveStream);
         }
 
         /// <summary>
@@ -77,8 +71,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <returns>A stream where extracted file bytes are to be written.</returns>
         public Stream OpenFileWriteStream(string path, long fileSize, DateTime lastWriteTime)
         {
-            this.fileStream = new MemoryStream(new byte[fileSize], 0, (int)fileSize, true, true);
-            return this.fileStream;
+            fileStream = new MemoryStream(new byte[fileSize], 0, (int)fileSize, true, true);
+            return fileStream;
         }
 
         /// <summary>

@@ -52,7 +52,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
 
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
-            foreach (var feature in _features)
+            foreach (KeyValuePair<string, string[]> feature in _features)
             {
                 request.Yield(feature);
             }
@@ -101,7 +101,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
             }
 
             // make sure that the parent folder is created first.
-            var folder = Path.GetDirectoryName(localFilename);
+            string folder = Path.GetDirectoryName(localFilename);
             if (!Directory.Exists(folder))
             {
                 Directory.CreateDirectory(folder);
@@ -133,7 +133,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
                 request.Debug("Timed out downloading '{0}'", remoteLocation.AbsoluteUri);
             }
 #else
-            var webClient = new WebClient();
+            WebClient webClient = new WebClient();
 
             // Mozilla/5.0 is the general token that says the browser is Mozilla compatible, and is common to almost every browser today.
             webClient.Headers.Add("User-Agent", "Mozilla/5.0 PackageManagement");
@@ -152,7 +152,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
                 webClient.Proxy.Credentials = CredentialCache.DefaultNetworkCredentials;
             }
 
-            var done = new ManualResetEvent(false);
+            ManualResetEvent done = new ManualResetEvent(false);
 
             webClient.DownloadFileCompleted += (sender, args) =>
             {
@@ -163,14 +163,14 @@ namespace Microsoft.PackageManagement.Providers.Internal
                 done.Set();
             };
 
-            var lastPercent = 0;
+            int lastPercent = 0;
 
             if (showProgress)
             {
                 webClient.DownloadProgressChanged += (sender, args) =>
                 {
                     // Progress(requestObject, 2, (int)percent, "Downloading {0} of {1} bytes", args.BytesReceived, args.TotalBytesToReceive);
-                    var percent = (int)((args.BytesReceived * 100) / args.TotalBytesToReceive);
+                    int percent = (int)((args.BytesReceived * 100) / args.TotalBytesToReceive);
                     if (percent > lastPercent)
                     {
                         lastPercent = percent;

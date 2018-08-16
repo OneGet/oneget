@@ -35,24 +35,12 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// Gets the user security identifier (SID) under which this product or patch
         /// installation is available.
         /// </summary>
-        public string UserSid
-        {
-            get
-            {
-                return this.userSid;
-            }
-        }
+        public string UserSid => userSid;
 
         /// <summary>
         /// Gets the user context of this product or patch installation.
         /// </summary>
-        public UserContexts Context
-        {
-            get
-            {
-                return this.context;
-            }
-        }
+        public UserContexts Context => context;
 
         /// <summary>
         /// Gets the source list of this product or patch installation.
@@ -61,11 +49,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         {
             get
             {
-                if (this.sourceList == null)
+                if (sourceList == null)
                 {
-                    this.sourceList = new SourceList(this);
+                    sourceList = new SourceList(this);
                 }
-                return this.sourceList;
+                return sourceList;
             }
         }
 
@@ -77,13 +65,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             get;
         }
 
-        internal string InstallationCode
-        {
-            get
-            {
-                return this.installationCode;
-            }
-        }
+        internal string InstallationCode => installationCode;
 
         internal abstract int InstallationType
         {

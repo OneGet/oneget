@@ -85,7 +85,7 @@ namespace Microsoft.PackageManagement.Msu.Internal
 
             // Nice-to-have put a debug message in that tells what's going on.
             request.Debug("Calling '{0}::GetFeatures' ", ProviderName);
-            foreach (var feature in _features)
+            foreach (KeyValuePair<string, string[]> feature in _features)
             {
                 request.Yield(feature);
             }
@@ -159,23 +159,23 @@ namespace Microsoft.PackageManagement.Msu.Internal
 
             if (file.FileExists())
             {
-                var info = new CabInfo(file);
+                CabInfo info = new CabInfo(file);
 
                 request.YieldSoftwareIdentity(file, info.Name, null, null, null, null, null, file, info.Name);
 
-                var files = info.GetFiles();
-                foreach (var i in files)
+                IList<CabFileInfo> files = info.GetFiles();
+                foreach (CabFileInfo i in files)
                 {
                     // read the properties file
                     if (i.FullNameExtension == ".txt")
                     {
                         request.Debug("Reading properties file {0}", i.FullName);
-                        using (var reader = i.OpenText())
+                        using (StreamReader reader = i.OpenText())
                         {
-                            var contents = reader.ReadToEnd();
+                            string contents = reader.ReadToEnd();
                             Dictionary<string, string> keyValuePairs = contents.Split('\n').Select(line => line.Split('=')).Where(v => v.Count() == 2).ToDictionary(pair => pair[0], pair => pair[1]);
 
-                            foreach (var pair in keyValuePairs)
+                            foreach (KeyValuePair<string, string> pair in keyValuePairs)
                             {
                                 request.AddMetadata(pair.Key.Replace(' ', '_'), pair.Value.Replace("\"", "").Replace("\r", ""));
                             }
@@ -210,22 +210,22 @@ namespace Microsoft.PackageManagement.Msu.Internal
                 ps.AddScript(@"$updateSession = new-object -com Microsoft.Update.Session
                 $updateSearcher = $updateSession.CreateUpdateSearcher()
                 $updateSearcher.queryhistory(1, $updateSearcher.GetTotalHistoryCount()) | select Title, SupportUrl, Date, ResultCode, Description");
-                var output = ps.Invoke();
+                System.Collections.ObjectModel.Collection<PSObject> output = ps.Invoke();
 
-                var wildcardPattern = new WildcardPattern(name, WildcardOptions.CultureInvariant | WildcardOptions.IgnoreCase);
+                WildcardPattern wildcardPattern = new WildcardPattern(name, WildcardOptions.CultureInvariant | WildcardOptions.IgnoreCase);
 
-                foreach (var obj in output)
+                foreach (PSObject obj in output)
                 {
                     if (obj != null)
                     {
-                        var title = obj.Properties["Title"] != null ? obj.Properties["Title"].Value as string : null;
+                        string title = obj.Properties["Title"] != null ? obj.Properties["Title"].Value as string : null;
 
                         if (title != null && (string.IsNullOrWhiteSpace(name) || wildcardPattern.IsMatch(title)))
                         {
-                            var supportUrl = obj.Properties["SupportUrl"] != null ? obj.Properties["SupportUrl"].Value as string : null;
-                            var date = obj.Properties["Date"] != null ? obj.Properties["Date"].Value as DateTime? : null;
-                            var resultCode = obj.Properties["ResultCode"] != null ? obj.Properties["ResultCode"].Value as int? : null;
-                            var description = obj.Properties["Description"] != null ? obj.Properties["Description"].Value as string : null;
+                            string supportUrl = obj.Properties["SupportUrl"] != null ? obj.Properties["SupportUrl"].Value as string : null;
+                            DateTime? date = obj.Properties["Date"] != null ? obj.Properties["Date"].Value as DateTime? : null;
+                            int? resultCode = obj.Properties["ResultCode"] != null ? obj.Properties["ResultCode"].Value as int? : null;
+                            string description = obj.Properties["Description"] != null ? obj.Properties["Description"].Value as string : null;
 
                             YieldPackage(name, request, title, supportUrl, date, resultCode, description);
                         }
@@ -272,7 +272,7 @@ namespace Microsoft.PackageManagement.Msu.Internal
             }
             else
             {
-                request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.InvalidOperation, fastPackageReference, Resources.Messages.InstallFailed, fastPackageReference, String.Format(CultureInfo.CurrentCulture, "0x{0:X}", exitCode), errorLogPath);
+                request.Error(Microsoft.PackageManagement.Internal.ErrorCategory.InvalidOperation, fastPackageReference, Resources.Messages.InstallFailed, fastPackageReference, string.Format(CultureInfo.CurrentCulture, "0x{0:X}", exitCode), errorLogPath);
             }
 
             try
@@ -280,7 +280,9 @@ namespace Microsoft.PackageManagement.Msu.Internal
                 if (exitCode == 0 || exitCode == 3010)
                 {
                     if (errorDir.Exists)
+                    {
                         errorDir.Delete(true);
+                    }
                 }
             }
             catch

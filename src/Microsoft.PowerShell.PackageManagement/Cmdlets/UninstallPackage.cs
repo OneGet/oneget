@@ -29,13 +29,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
     {
         private Dictionary<string, List<SoftwareIdentity>> _resultsPerName = new Dictionary<string, List<SoftwareIdentity>>();
 
-        protected override IEnumerable<string> ParameterSets
-        {
-            get
-            {
-                return new[] { Constants.ParameterSets.PackageByInputObjectSet, Constants.ParameterSets.PackageBySearchSet };
-            }
-        }
+        protected override IEnumerable<string> ParameterSets => new[] { Constants.ParameterSets.PackageByInputObjectSet, Constants.ParameterSets.PackageBySearchSet };
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ParameterSetName = Constants.ParameterSets.PackageByInputObjectSet)]
@@ -57,8 +51,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
             if (!IsInvocation)
             {
-                var providerNames = PackageManagementService.AllProviderNames;
-                var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
+                IEnumerable<string> providerNames = PackageManagementService.AllProviderNames;
+                string[] whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
                 if (whatsOnCmdline != null)
                 {
                     providerNames = providerNames.Concat(whatsOnCmdline).Distinct();
@@ -85,14 +79,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             }
         }
 
-        protected override string BootstrapNuGet
-        {
-            get
-            {
+        protected override string BootstrapNuGet =>
                 // need bootstrap NuGet if does not exists.
-                return "true";
-            }
-        }
+                "true";
 
         public override bool ProcessRecordAsync()
         {
@@ -133,7 +122,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         public override bool EndProcessingAsync()
         {
             // Show errors before?
-            foreach (var name in UnprocessedNames)
+            foreach (string name in UnprocessedNames)
             {
                 Error(Constants.Errors.NoMatchFound, name);
             }
@@ -149,7 +138,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 return false;
             }
 
-            foreach (var n in _resultsPerName.Keys)
+            foreach (string n in _resultsPerName.Keys)
             {
                 // check if we have a 1 package per name
                 if (_resultsPerName[n].Count > 1)
@@ -173,9 +162,9 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         private bool UninstallPackages(IEnumerable<SoftwareIdentity> packagesToUnInstall)
         {
-            foreach (var pkg in packagesToUnInstall)
+            foreach (SoftwareIdentity pkg in packagesToUnInstall)
             {
-                var provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
+                Microsoft.PackageManagement.Implementation.PackageProvider provider = SelectProviders(pkg.ProviderName).FirstOrDefault();
                 Debug("Uninstalling package {0} with provider {1}", pkg.Name, provider.ProviderName);
 
                 if (provider == null)
@@ -188,7 +177,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 {
                     if (ShouldProcessPackageUninstall(pkg.Name, pkg.Version))
                     {
-                        foreach (var installedPkg in provider.UninstallPackage(pkg, this).CancelWhen(CancellationEvent.Token))
+                        foreach (SoftwareIdentity installedPkg in provider.UninstallPackage(pkg, this).CancelWhen(CancellationEvent.Token))
                         {
                             if (IsCanceled)
                             {

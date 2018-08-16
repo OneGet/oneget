@@ -24,14 +24,8 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
         public Hashtable Details
         {
-            get
-            {
-                return _details ?? (_details = new Hashtable());
-            }
-            internal set
-            {
-                _details = value;
-            }
+            get => _details ?? (_details = new Hashtable());
+            internal set => _details = value;
         }
 
         public abstract bool YieldResult(PsRequest r);

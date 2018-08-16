@@ -32,7 +32,7 @@ namespace Microsoft.PowerShell.PackageManagement.Utility
     {
         internal static IHostApi ProviderSpecific(this IHostApi parent, PackageProvider provider)
         {
-            var thisProviderIsCanceled = false;
+            bool thisProviderIsCanceled = false;
             return new object[] {
                 new {
                     Error = new Func<string, string, string, string, bool>((id, cat, targetobjectvalue, messageText) => {

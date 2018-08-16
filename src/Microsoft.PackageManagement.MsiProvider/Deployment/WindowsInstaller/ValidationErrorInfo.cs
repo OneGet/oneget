@@ -32,23 +32,11 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
         /// <summary>
         /// Gets the type of validation error encountered.
         /// </summary>
-        public ValidationError Error
-        {
-            get
-            {
-                return this.error;
-            }
-        }
+        public ValidationError Error => error;
 
         /// <summary>
         /// Gets the column containing the error, or null if the error applies to the whole row.
         /// </summary>
-        public string Column
-        {
-            get
-            {
-                return this.column;
-            }
-        }
+        public string Column => column;
     }
 }

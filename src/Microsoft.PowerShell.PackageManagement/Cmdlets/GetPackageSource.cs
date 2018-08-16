@@ -40,21 +40,12 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
         }
 
-        protected override IEnumerable<string> ParameterSets
-        {
-            get
-            {
-                return new[] { "" };
-            }
-        }
+        protected override IEnumerable<string> ParameterSets => new[] { "" };
 
         [Parameter(Position = 0)]
         public string Name
         {
-            get
-            {
-                return _name;
-            }
+            get => _name;
             set
             {
                 _originalName = value;
@@ -90,17 +81,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             }
         }
 
-        public override IEnumerable<string> Sources
-        {
-            get
-            {
-                return _sources;
-            }
-        }
+        public override IEnumerable<string> Sources => _sources;
 
         private bool WriteSources(IEnumerable<PackageSource> sources)
         {
-            foreach (var source in sources)
+            foreach (PackageSource source in sources)
             {
                 _found = true;
                 WriteObject(source);
@@ -110,24 +95,24 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         public override bool ProcessRecordAsync()
         {
-            var noName = string.IsNullOrWhiteSpace(Name);
-            var noLocation = string.IsNullOrWhiteSpace(Location);
-            var noCriteria = noName && noLocation;
+            bool noName = string.IsNullOrWhiteSpace(Name);
+            bool noLocation = string.IsNullOrWhiteSpace(Location);
+            bool noCriteria = noName && noLocation;
 
             // store the information if we've ever had a name or location
             _noName = _noName || noName;
             _noLocation = _noLocation || noLocation;
 
-            foreach (var provider in SelectedProviders)
+            foreach (Microsoft.PackageManagement.Implementation.PackageProvider provider in SelectedProviders)
             {
                 if (Stopping)
                 {
                     return false;
                 }
 
-                using (var src = provider.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).CancelWhen(CancellationEvent.Token))
+                using (IAsyncEnumerable<PackageSource> src = provider.ResolvePackageSources(this.SuppressErrorsAndWarnings(IsProcessing)).CancelWhen(CancellationEvent.Token))
                 {
-                    var sources = src.Distinct();
+                    IEnumerable<PackageSource> sources = src.Distinct();
                     if (!string.IsNullOrWhiteSpace(_originalName) && _originalName.ContainsWildcards())
                     {
                         WriteSources(sources.Where(each => each.Name.IsWildcardMatch(_originalName)));
@@ -142,8 +127,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                     }
                     else
                     {
-                        var all = sources.ToArray();
-                        var registered = all.Where(each => each.IsRegistered);
+                        PackageSource[] all = sources.ToArray();
+                        IEnumerable<PackageSource> registered = all.Where(each => each.IsRegistered);
 
                         if (noName)
                         {

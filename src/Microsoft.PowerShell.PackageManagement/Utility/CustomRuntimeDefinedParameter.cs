@@ -41,7 +41,7 @@ namespace Microsoft.PowerShell.PackageManagement.Utility
             }
 
             Options.Add(option);
-            var values = option.PossibleValues.ToArray();
+            string[] values = option.PossibleValues.ToArray();
             if (!values.IsNullOrEmpty())
             {
                 Attributes.Add(new ValidateSetAttribute(values));
@@ -50,9 +50,9 @@ namespace Microsoft.PowerShell.PackageManagement.Utility
 
         public void IncludeInParameterSet(DynamicOption option, bool isInvocation, IEnumerable<string> parameterSets)
         {
-            foreach (var ps in parameterSets)
+            foreach (string ps in parameterSets)
             {
-                var parameterSetName = !string.IsNullOrWhiteSpace(ps) ? option.ProviderName + ":" + ps : option.ProviderName;
+                string parameterSetName = !string.IsNullOrWhiteSpace(ps) ? option.ProviderName + ":" + ps : option.ProviderName;
                 if (Attributes.Select(each => each as ParameterAttribute).WhereNotNull().Any(each => each.ParameterSetName == parameterSetName))
                 {
                     continue;

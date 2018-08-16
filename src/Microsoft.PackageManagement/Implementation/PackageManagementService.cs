@@ -15,10 +15,10 @@
 namespace Microsoft.PackageManagement.Internal.Implementation
 {
     using Api;
-    using Providers;
     using PackageManagement.Implementation;
     using PackageManagement.Packaging;
     using Packaging;
+    using Providers;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -531,7 +531,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
                 LoadProviderAssembly(request, providerAssemblyName, false);
             });
 
-            var powerShellMetaProvider = GetMetaProviderObject(request);
+            IMetaProvider powerShellMetaProvider = GetMetaProviderObject(request);
             if (powerShellMetaProvider == null)
             {
                 return;
@@ -814,14 +814,14 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             request.Debug(string.Format(CultureInfo.CurrentCulture, "Calling ImportPowerShellProvider. providerName = '{0}', requiredVersion='{1}'",
                 modulePath, requiredVersion));
 
-            var powerShellMetaProvider = GetMetaProviderObject(request);
+            IMetaProvider powerShellMetaProvider = GetMetaProviderObject(request);
             if (powerShellMetaProvider == null)
             {
                 yield break;
             }
 
             //providerName can be a file path or name.
-            var instances = powerShellMetaProvider.LoadAvailableProvider(request.As<IRequest>(), modulePath, requiredVersion, shouldRefreshCache).ReEnumerable();
+            MutableEnumerable<object> instances = powerShellMetaProvider.LoadAvailableProvider(request.As<IRequest>(), modulePath, requiredVersion, shouldRefreshCache).ReEnumerable();
 
             if (!instances.Any())
             {
@@ -831,7 +831,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
                 yield break;
             }
 
-            foreach (var instance in instances)
+            foreach (object instance in instances)
             {
                 //Register the provider
                 PackageProvider provider = instances.As<PackageProvider>();
@@ -862,7 +862,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             //retrieve the powershell metaprovider object
             if (_metaProviders.ContainsKey("PowerShell"))
             {
-                var powerShellMetaProvider = _metaProviders["PowerShell"];
+                IMetaProvider powerShellMetaProvider = _metaProviders["PowerShell"];
                 if (powerShellMetaProvider != null)
                 {
                     return powerShellMetaProvider;
@@ -1753,7 +1753,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
         {
             if (_metaProviders.ContainsKey(metaproviderName))
             {
-                var metaProvider = _metaProviders[metaproviderName];
+                IMetaProvider metaProvider = _metaProviders[metaproviderName];
 
                 request.Debug("Using MetaProvider '{0}' to attempt to load provider from '{1}'".format(metaproviderName, providerNameOrPath));
 
@@ -1767,7 +1767,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
         {
             request.Debug("Trying to register metaprovider");
             bool found = false;
-            var metaProviderName = provider.GetMetaProviderName();
+            string metaProviderName = provider.GetMetaProviderName();
 
             lock (_metaProviders)
             {
@@ -1797,7 +1797,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
         {
             bool found = false;
 
-            var instance = metaProvider.CreateProvider(name);
+            object instance = metaProvider.CreateProvider(name);
             if (instance != null)
             {
                 // check if it's a Package Provider

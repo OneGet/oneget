@@ -30,7 +30,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         /// </summary>
         public HandleManager()
         {
-            this.handles = new List<T>();
+            handles = new List<T>();
         }
 
         /// <summary>
@@ -43,9 +43,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         {
             get
             {
-                if (handle > 0 && handle <= this.handles.Count)
+                if (handle > 0 && handle <= handles.Count)
                 {
-                    return this.handles[handle - 1];
+                    return handles[handle - 1];
                 }
                 else
                 {
@@ -61,8 +61,8 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         /// <returns>New handle that can be later used to retrieve the object.</returns>
         public int AllocHandle(T obj)
         {
-            this.handles.Add(obj);
-            int handle = this.handles.Count;
+            handles.Add(obj);
+            int handle = handles.Count;
             return handle;
         }
 
@@ -73,9 +73,9 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         /// <param name="handle">Handle to be freed.</param>
         public void FreeHandle(int handle)
         {
-            if (handle > 0 && handle <= this.handles.Count)
+            if (handle > 0 && handle <= handles.Count)
             {
-                this.handles[handle - 1] = null;
+                handles[handle - 1] = null;
             }
         }
     }

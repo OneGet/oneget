@@ -24,13 +24,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
     [Cmdlet("Import", Constants.Nouns.PackageProviderNoun, HelpUri = "http://go.microsoft.com/fwlink/?LinkId=626942")]
     public sealed class ImportPackageProvider : CmdletBase
     {
-        protected override IEnumerable<string> ParameterSets
-        {
-            get
-            {
-                return new[] { "" };
-            }
-        }
+        protected override IEnumerable<string> ParameterSets => new[] { "" };
 
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Parameter(ValueFromPipelineByPropertyName = true, Position = 0, Mandatory = true)]
@@ -81,11 +75,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                 return false;
             }
 
-            foreach (var path in Name)
+            foreach (string path in Name)
             {
-                var isRooted = false;
+                bool isRooted = false;
 
-                var resolvedPath = path;
+                string resolvedPath = path;
 
                 if (!string.IsNullOrWhiteSpace(path))
                 {
@@ -102,7 +96,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
                             // Ensure the path is a single path from the file system provider
                             if ((resolvedPaths.Count > 1) ||
-                                (!String.Equals(provider.Name, "FileSystem", StringComparison.OrdinalIgnoreCase)))
+                                (!string.Equals(provider.Name, "FileSystem", StringComparison.OrdinalIgnoreCase)))
                             {
                                 Error(Constants.Errors.FilePathMustBeFileSystemPath, path);
                                 return false;
@@ -118,7 +112,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
                         }
                     }
 
-                    foreach (var p in PackageManagementService.ImportPackageProvider(this, resolvedPath, RequiredVersion.ToVersion(),
+                    foreach (Microsoft.PackageManagement.Implementation.PackageProvider p in PackageManagementService.ImportPackageProvider(this, resolvedPath, RequiredVersion.ToVersion(),
                         MinimumVersion.ToVersion(), MaximumVersion.ToVersion(), isRooted, Force.IsPresent))
                     {
                         WriteObject(p);

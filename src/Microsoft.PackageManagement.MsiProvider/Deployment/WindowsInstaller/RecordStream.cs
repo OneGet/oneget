@@ -25,29 +25,17 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             this.field = field;
         }
 
-        public override bool CanRead { get { return true; } }
-        public override bool CanWrite { get { return false; } }
-        public override bool CanSeek { get { return false; } }
+        public override bool CanRead => true;
+        public override bool CanWrite => false;
+        public override bool CanSeek => false;
 
-        public override long Length
-        {
-            get
-            {
-                return this.record.GetDataSize(this.field);
-            }
-        }
+        public override long Length => record.GetDataSize(field);
 
         public override long Position
         {
-            get
-            {
-                return this.position;
-            }
+            get => position;
 
-            set
-            {
-                throw new NotSupportedException();
-            }
+            set => throw new NotSupportedException();
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -71,7 +59,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
             {
                 byte[] readBuffer = (offset == 0 ? buffer : new byte[count]);
                 uint ucount = (uint)count;
-                uint ret = RemotableNativeMethods.MsiRecordReadStream((int)this.record.Handle, (uint)this.field, buffer, ref ucount);
+                uint ret = RemotableNativeMethods.MsiRecordReadStream((int)record.Handle, (uint)field, buffer, ref ucount);
                 if (ret != 0)
                 {
                     throw InstallerException.ExceptionFromReturnCode(ret);
@@ -81,7 +69,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 {
                     Array.Copy(readBuffer, 0, buffer, offset, count);
                 }
-                this.position += count;
+                position += count;
             }
             return count;
         }

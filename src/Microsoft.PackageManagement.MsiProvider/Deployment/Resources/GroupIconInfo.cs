@@ -39,24 +39,24 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 
         public GroupIconInfo()
         {
-            this.images = new GroupIconDirectoryInfo[0];
+            images = new GroupIconDirectoryInfo[0];
         }
 
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public GroupIconDirectoryInfo[] DirectoryInfo { get { return this.images; } }
+        public GroupIconDirectoryInfo[] DirectoryInfo => images;
 
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public void ReadFromFile(Stream stream)
         {
             BinaryReader reader = new BinaryReader(stream);
-            this.Read(reader, true);
+            Read(reader, true);
         }
 
         public void ReadFromResource(byte[] data)
         {
             using (BinaryReader reader = new BinaryReader(new MemoryStream(data, false)))
             {
-                this.Read(reader, false);
+                Read(reader, false);
             }
         }
 
@@ -67,19 +67,19 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
             using (MemoryStream stream = new MemoryStream())
             {
                 BinaryWriter writer = new BinaryWriter(stream);
-                writer.Write(this.reserved);
-                writer.Write((ushort)this.type);
-                writer.Write((ushort)this.images.Length);
-                for (int i = 0; i < this.images.Length; ++i)
+                writer.Write(reserved);
+                writer.Write((ushort)type);
+                writer.Write((ushort)images.Length);
+                for (int i = 0; i < images.Length; ++i)
                 {
-                    writer.Write(this.images[i].width);
-                    writer.Write(this.images[i].height);
-                    writer.Write(this.images[i].colors);
-                    writer.Write(this.images[i].reserved);
-                    writer.Write(this.images[i].planes);
-                    writer.Write(this.images[i].bitsPerPixel);
-                    writer.Write(this.images[i].imageSize);
-                    writer.Write(this.images[i].imageIndex);
+                    writer.Write(images[i].width);
+                    writer.Write(images[i].height);
+                    writer.Write(images[i].colors);
+                    writer.Write(images[i].reserved);
+                    writer.Write(images[i].planes);
+                    writer.Write(images[i].bitsPerPixel);
+                    writer.Write(images[i].imageSize);
+                    writer.Write(images[i].imageIndex);
                 }
 
                 data = new byte[stream.Length];
@@ -92,28 +92,28 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
 
         private void Read(BinaryReader reader, bool readFromFile)
         {
-            this.reserved = reader.ReadUInt16();
-            this.type = (GroupIconType)reader.ReadUInt16();
+            reserved = reader.ReadUInt16();
+            type = (GroupIconType)reader.ReadUInt16();
 
             int imageCount = reader.ReadUInt16();
-            this.images = new GroupIconDirectoryInfo[imageCount];
+            images = new GroupIconDirectoryInfo[imageCount];
             for (int i = 0; i < imageCount; ++i)
             {
-                this.images[i].width = reader.ReadByte();
-                this.images[i].height = reader.ReadByte();
-                this.images[i].colors = reader.ReadByte();
-                this.images[i].reserved = reader.ReadByte();
-                this.images[i].planes = reader.ReadUInt16();
-                this.images[i].bitsPerPixel = reader.ReadUInt16();
-                this.images[i].imageSize = reader.ReadUInt32();
+                images[i].width = reader.ReadByte();
+                images[i].height = reader.ReadByte();
+                images[i].colors = reader.ReadByte();
+                images[i].reserved = reader.ReadByte();
+                images[i].planes = reader.ReadUInt16();
+                images[i].bitsPerPixel = reader.ReadUInt16();
+                images[i].imageSize = reader.ReadUInt32();
                 if (readFromFile)
                 {
-                    this.images[i].imageOffset = reader.ReadUInt32();
-                    this.images[i].imageIndex = (ushort)(i + 1);
+                    images[i].imageOffset = reader.ReadUInt32();
+                    images[i].imageIndex = (ushort)(i + 1);
                 }
                 else
                 {
-                    this.images[i].imageIndex = reader.ReadUInt16();
+                    images[i].imageIndex = reader.ReadUInt16();
                 }
             }
         }

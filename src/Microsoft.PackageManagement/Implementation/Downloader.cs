@@ -15,14 +15,14 @@
 namespace Microsoft.PackageManagement.Internal.Implementation
 {
     using Api;
-    using System;
     using Providers;
+    using System;
 
     internal class Downloader : ProviderBase<IDownloader>
     {
         private string _name;
 
-        internal Downloader(IDownloader provider): base(provider)
+        internal Downloader(IDownloader provider) : base(provider)
         {
         }
 

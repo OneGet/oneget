@@ -27,13 +27,10 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell
 
         public IEnumerable<string> Roles
         {
-            get
-            {
-                return (string.IsNullOrWhiteSpace(Role) ? "unknown" : Role).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            }
+            get => (string.IsNullOrWhiteSpace(Role) ? "unknown" : Role).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             set
             {
-                var values = value == null ? new string[0] : value.ToArray();
+                string[] values = value == null ? new string[0] : value.ToArray();
                 Role = (values.Length == 0) ? "unknown" : value.JoinWith(" ");
             }
         }

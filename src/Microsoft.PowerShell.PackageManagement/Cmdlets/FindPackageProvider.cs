@@ -46,14 +46,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public override string[] Source
         {
-            get
-            {
-                return base.Source;
-            }
-            set
-            {
-                base.Source = value;
-            }
+            get => base.Source;
+            set => base.Source = value;
         }
 
         [Parameter]
@@ -65,14 +59,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             //Noop
         }
 
-        protected override DynamicOption[] CachedDynamicOptions
-        {
-            //this will suppress the dynamic parameters from parent classes
-            get
-            {
-                return new[] { new DynamicOption() };
-            }
-        }
+        protected override DynamicOption[] CachedDynamicOptions => new[] { new DynamicOption() };
 
         public override bool ProcessRecordAsync()
         {
@@ -127,7 +114,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
             get
             {
-                var availableProviders = base.SelectedProviders.ToArray();
+                PackageProvider[] availableProviders = base.SelectedProviders.ToArray();
                 if (availableProviders.Any(each => RequiredProviders.ContainsAnyOfIgnoreCase(each.ProviderName)))
                 {
                     return availableProviders.Where(each => RequiredProviders.ContainsIgnoreCase(each.ProviderName));
@@ -140,8 +127,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
         protected override IHostApi GetProviderSpecificOption(PackageProvider pv)
         {
-            var host = this.ProviderSpecific(pv);
-            var host1 = host;
+            IHostApi host = this.ProviderSpecific(pv);
+            IHostApi host1 = host;
             //add filterontag for finding providers.  Provider keys are: PackageManagment and Provider
             host = host.Extend<IRequest>(
                 new
@@ -177,11 +164,11 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
                 if (IncludeDependencies)
                 {
-                    var missingDependencies = new HashSet<string>();
-                    foreach (var dep in package.Dependencies)
+                    HashSet<string> missingDependencies = new HashSet<string>();
+                    foreach (string dep in package.Dependencies)
                     {
-                        var dependendcies = PackageManagementService.FindPackageByCanonicalId(dep, this);
-                        var depPkg = dependendcies.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).FirstOrDefault();
+                        IEnumerable<SoftwareIdentity> dependendcies = PackageManagementService.FindPackageByCanonicalId(dep, this);
+                        SoftwareIdentity depPkg = dependendcies.OrderByDescending(pp => pp, SoftwareIdentityVersionComparer.Instance).FirstOrDefault();
 
                         if (depPkg == null)
                         {

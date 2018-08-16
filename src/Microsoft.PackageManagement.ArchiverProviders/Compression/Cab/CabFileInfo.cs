@@ -34,7 +34,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
                 throw new ArgumentNullException("cabinetInfo");
             }
 
-            this.cabFolder = -1;
+            cabFolder = -1;
         }
 
         /// <summary>
@@ -67,25 +67,13 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         /// may be null if the CabinetFileInfo object was returned directly from a
         /// stream.
         /// </value>
-        public CabInfo Cabinet
-        {
-            get
-            {
-                return (CabInfo)this.Archive;
-            }
-        }
+        public CabInfo Cabinet => (CabInfo)Archive;
 
         /// <summary>
         /// Gets the full path of the cabinet that contains this file.
         /// </summary>
         /// <value>The full path of the cabinet that contains this file.</value>
-        public string CabinetName
-        {
-            get
-            {
-                return this.ArchiveName;
-            }
-        }
+        public string CabinetName => ArchiveName;
 
         /// <summary>
         /// Gets the number of the folder containing this file.
@@ -97,11 +85,11 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         {
             get
             {
-                if (this.cabFolder < 0)
+                if (cabFolder < 0)
                 {
-                    this.Refresh();
+                    Refresh();
                 }
-                return this.cabFolder;
+                return cabFolder;
             }
         }
 
@@ -117,7 +105,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression.Cab
         protected override void Refresh(ArchiveFileInfo newFileInfo)
         {
             base.Refresh(newFileInfo);
-            this.cabFolder = ((CabFileInfo)newFileInfo).cabFolder;
+            cabFolder = ((CabFileInfo)newFileInfo).cabFolder;
         }
     }
 }
