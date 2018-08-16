@@ -78,12 +78,15 @@ namespace Microsoft.PackageManagement.Internal.Implementation
 
         internal Dictionary<string, List<PackageProvider>> ProviderCacheTable => _providerCacheTable;
 
-        internal static string CurrentAssemblyLocation =>
+        internal static string CurrentAssemblyLocation => Assembly.GetExecutingAssembly().Location;
+
+        /*
 #if !CORECLR
         Assembly.GetExecutingAssembly().Location;
 #else
         return typeof(PackageManagementService).GetTypeInfo().Assembly.ManifestModule.FullyQualifiedName;
 #endif
+        */
 
         internal string BaseDir => _baseDir ?? (_baseDir = Path.GetDirectoryName(CurrentAssemblyLocation));
 
