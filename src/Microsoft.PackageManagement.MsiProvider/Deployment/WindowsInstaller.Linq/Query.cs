@@ -361,11 +361,10 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         {
             queryBuilder.Append("(");
 
-            BinaryExpression binaryExpression;
             UnaryExpression unaryExpression;
             MethodCallExpression methodCallExpression;
 
-            if ((binaryExpression = expression as BinaryExpression) != null)
+            if (expression is BinaryExpression binaryExpression)
             {
                 switch (binaryExpression.NodeType)
                 {
@@ -555,10 +554,9 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         private string GetConditionColumn(
             BinaryExpression binaryExpression, out bool swap)
         {
-            MemberExpression memberExpression;
             MethodCallExpression methodCallExpression;
 
-            if (((memberExpression = binaryExpression.Left as MemberExpression) != null) ||
+            if ((binaryExpression.Left is MemberExpression memberExpression) ||
                 ((binaryExpression.Left.NodeType == ExpressionType.Convert ||
                   binaryExpression.Left.NodeType == ExpressionType.ConvertChecked) &&
                  (memberExpression = ((UnaryExpression)binaryExpression.Left).Operand
@@ -627,9 +625,8 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
 
         private static string GetConditionSelectorName(Expression expression)
         {
-            ParameterExpression parameterExpression;
             MemberExpression memberExpression;
-            if ((parameterExpression = expression as ParameterExpression) != null)
+            if (expression is ParameterExpression parameterExpression)
             {
                 return parameterExpression.Name;
             }
@@ -825,9 +822,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
         {
             string selector = null;
             MemberExpression objectMemberExpression;
-            ParameterExpression objectParameterExpression;
-            if ((objectParameterExpression = memberExpression.Expression as
-                ParameterExpression) != null)
+            if (memberExpression.Expression is ParameterExpression objectParameterExpression)
             {
                 selector = objectParameterExpression.Name;
             }
@@ -870,8 +865,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.L
             {
                 string selector = null;
                 MemberExpression objectMemberExpression;
-                ParameterExpression objectParameterExpression;
-                if ((objectParameterExpression = methodCallExpression.Object as ParameterExpression) != null)
+                if (methodCallExpression.Object is ParameterExpression objectParameterExpression)
                 {
                     selector = objectParameterExpression.Name;
                 }

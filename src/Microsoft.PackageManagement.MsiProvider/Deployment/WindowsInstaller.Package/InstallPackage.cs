@@ -91,10 +91,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller.P
         /// <param name="args">Items to be formatted</param>
         protected void LogMessage(string format, params object[] args)
         {
-            if (Message != null)
-            {
-                Message(format, args);
-            }
+            Message?.Invoke(format, args);
         }
 
         /// <summary>

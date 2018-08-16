@@ -925,8 +925,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.WindowsInstaller
                 return string.Empty;
             }
 
-            InstallerHandle session = provider as InstallerHandle;
-            int sessionHandle = session != null ? (int)session.Handle : 0;
+            int sessionHandle = provider is InstallerHandle session ? (int)session.Handle : 0;
             StringBuilder buf = new StringBuilder(string.Empty);
             uint bufSize = 1;
             uint ret = RemotableNativeMethods.MsiFormatRecord(sessionHandle, (int)Handle, buf, ref bufSize);

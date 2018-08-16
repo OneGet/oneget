@@ -327,8 +327,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
             // skip modules that we know don't contain any PM modules
             if (!_exclusionList.Contains(module.Name))
             {
-                var privateData = module.PrivateData as Hashtable;
-                if (privateData != null)
+                if (module.PrivateData is Hashtable privateData)
                 {
                     if (requiredVersion != null)
                     {

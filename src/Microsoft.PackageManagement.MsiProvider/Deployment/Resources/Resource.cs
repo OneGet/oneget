@@ -212,8 +212,7 @@ namespace Microsoft.PackageManagement.Msi.Internal.Deployment.Resources
         /// <returns>True if the objects represent the same resource; false otherwise.</returns>
         public override bool Equals(object obj)
         {
-            Resource res = obj as Resource;
-            if (res == null)
+            if (!(obj is Resource res))
             {
                 return false;
             }

@@ -97,10 +97,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Async
             _cancellationTokenSource.Cancel();
 
             // actively tell anyone who is listening that we're trying to cancel this.
-            if (OnCancel != null)
-            {
-                OnCancel();
-            }
+            OnCancel?.Invoke();
             lock (_lock)
             {
                 if (_actionState < ActionState.Canceled)
@@ -129,10 +126,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Async
             DisposeTimer();
 
             // notify any listeners that we're about to kill this.
-            if (OnAbort != null)
-            {
-                OnAbort();
-            }
+            OnAbort?.Invoke();
 
             lock (_lock)
             {
@@ -239,10 +233,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Async
 
             DisposeTimer();
 
-            if (OnComplete != null)
-            {
-                OnComplete();
-            }
+            OnComplete?.Invoke();
             _completed.Set();
         }
 

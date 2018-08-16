@@ -324,10 +324,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// <param name="e">Event details.</param>
         protected void OnProgress(ArchiveProgressEventArgs e)
         {
-            if (this.Progress != null)
-            {
-                this.Progress(this, e);
-            }
+            this.Progress?.Invoke(this, e);
         }
 
         /// <summary>

@@ -44,8 +44,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Extensions
             if (paths.Length == 1)
             {
                 // looking for the actual result value
-                IEnumerable<object> items = hashtable[paths[0]] as IEnumerable<object>;
-                if (items != null)
+                if (hashtable[paths[0]] is IEnumerable<object> items)
                 {
                     return items.Select(each => each.ToString());
                 }
@@ -55,8 +54,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Extensions
                 };
             }
 
-            Hashtable item = hashtable[paths[0]] as Hashtable;
-            return item == null ? Enumerable.Empty<string>() : item.GetStringCollection(paths.Skip(1).ToArray());
+            return !(hashtable[paths[0]] is Hashtable item) ? Enumerable.Empty<string>() : item.GetStringCollection(paths.Skip(1).ToArray());
         }
 
         public static IEnumerable<KeyValuePair<string, string>> Flatten(this Hashtable hashTable)

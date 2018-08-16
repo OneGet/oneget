@@ -41,8 +41,7 @@ namespace Microsoft.PackageManagement.Packaging
 
         public override bool Equals(object obj)
         {
-            PackageSource packageSource = obj as PackageSource;
-            if (packageSource == null)
+            if (!(obj is PackageSource packageSource))
             {
                 return false;
             }

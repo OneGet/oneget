@@ -133,10 +133,9 @@ namespace Microsoft.PackageManagement.Internal.Packaging
                 return false;
             }
 
-            Hashtable environmentDetail = environment[environmentName] as Hashtable;
 
             // no details return false as no information to proceed
-            if (environmentDetail == null)
+            if (!(environment[environmentName] is Hashtable environmentDetail))
             {
                 return false;
             }

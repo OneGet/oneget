@@ -134,8 +134,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Plugin
                     return instances[0]?.ToString();
                 }
 
-                IEnumerable<object> objects = instances[0] as IEnumerable<object>;
-                if (objects != null)
+                if (instances[0] is IEnumerable<object> objects)
                 {
                     // if the tInterface is an IEnumerable<T>
                     // then we'll just dynamic cast the items in the collection to the target type.

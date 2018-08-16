@@ -119,8 +119,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             {
                 //Use the InternalPackageManagementInstallOnly flag to indicate we are installing a provider right now.
                 //This will separate a case from auto-bootstrapping.
-                var packageManagementService = PackageManagementService as PackageManagementService;
-                if (packageManagementService != null)
+                if (PackageManagementService is PackageManagementService packageManagementService)
                 {
                     packageManagementService.InternalPackageManagementInstallOnly = true;
                 }
@@ -165,8 +164,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
 
             if (!AdminPrivilege.IsElevated && Scope.EqualsIgnoreCase("AllUsers"))
             {
-                var pkgMgmtService = PackageManagementService as PackageManagementService;
-                if (pkgMgmtService != null)
+                if (PackageManagementService is PackageManagementService pkgMgmtService)
                 {
                     Error(Constants.Errors.InstallRequiresCurrentUserScopeParameterForNonAdminUser, pkgMgmtService.SystemAssemblyLocation, pkgMgmtService.UserAssemblyLocation);
                 }

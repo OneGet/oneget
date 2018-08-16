@@ -155,17 +155,20 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         var context = TryGetProperty(this, "Context");
                         var processor = TryGetProperty(context, "CurrentCommandProcessor");
                         var parameterBinder = TryGetProperty(processor, "CmdletParameterBinderController");
-                        var args = TryGetProperty(parameterBinder, "UnboundArguments") as IEnumerable;
 
-                        if (args != null) {
+                        if (TryGetProperty(parameterBinder, "UnboundArguments") is IEnumerable args)
+                        {
                             var currentParameterName = string.Empty;
                             int i = 0;
-                            foreach (var arg in args) {
+                            foreach (var arg in args)
+                            {
                                 var isParameterName = TryGetProperty(arg, "ParameterNameSpecified");
-                                if (isParameterName != null && true.Equals(isParameterName)) {
+                                if (isParameterName != null && true.Equals(isParameterName))
+                                {
                                     var parameterName = TryGetProperty(arg, "ParameterName");
 
-                                    if (parameterName != null) {
+                                    if (parameterName != null)
+                                    {
                                         currentParameterName = parameterName.ToString();
 
                                         // add it now, just in case it's value isn't set (or it's a switch)
@@ -178,9 +181,12 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                                 // treat as a value
                                 var parameterValue = TryGetProperty(arg, "ArgumentValue");
 
-                                if (string.IsNullOrWhiteSpace(currentParameterName)) {
+                                if (string.IsNullOrWhiteSpace(currentParameterName))
+                                {
                                     _unboundArguments.AddOrSet("unbound_" + (i++), parameterValue);
-                                } else {
+                                }
+                                else
+                                {
                                     _unboundArguments.AddOrSet(currentParameterName, parameterValue);
                                 }
 
@@ -981,18 +987,25 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
         private void InvokeMessage(TaskCompletionSource<bool> message) {
-            var func = message.Task.AsyncState as Func<bool>;
-            if (func != null) {
-                try {
+            if (message.Task.AsyncState is Func<bool> func)
+            {
+                try
+                {
                     message.SetResult(func());
-                } catch (PipelineStoppedException pipelineStoppedException) {
+                }
+                catch (PipelineStoppedException pipelineStoppedException)
+                {
                     _pipelineStopped = pipelineStoppedException;
                     Cancel();
                     message.SetException(pipelineStoppedException);
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     message.SetException(e);
                 }
-            } else {
+            }
+            else
+            {
                 // this should have been a Func<bool>.
                 // cancel it.
                 message.SetCanceled();

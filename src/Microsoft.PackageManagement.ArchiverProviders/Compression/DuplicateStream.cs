@@ -121,8 +121,7 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
         /// the duplicate's source; otherwise returns the same stream.</returns>
         public static Stream OriginalStream(Stream stream)
         {
-            DuplicateStream dupStream = stream as DuplicateStream;
-            return dupStream != null ? dupStream.Source : stream;
+            return stream is DuplicateStream dupStream ? dupStream.Source : stream;
         }
 
         /// <summary>

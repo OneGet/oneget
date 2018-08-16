@@ -141,8 +141,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
                     else
                     {
                         // otherwise, try to cast it to a collection of string-like-things
-                        IEnumerable collection = obj as IEnumerable;
-                        if (collection != null)
+                        if (obj is IEnumerable collection)
                         {
                             val = collection.Cast<object>().Select(each => each.ToString()).ToArray();
                         }

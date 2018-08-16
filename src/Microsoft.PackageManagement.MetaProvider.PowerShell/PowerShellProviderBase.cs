@@ -279,9 +279,8 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
         private void error_DataAdded(object sender, DataAddedEventArgs e, PsRequest request, ConcurrentBag<ErrorRecord> errors)
         {
-            PSDataCollection<ErrorRecord> errorStream = sender as PSDataCollection<ErrorRecord>;
 
-            if (errorStream == null)
+            if (!(sender is PSDataCollection<ErrorRecord> errorStream))
             {
                 return;
             }
@@ -297,9 +296,8 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 
         private void output_DataAdded(object sender, DataAddedEventArgs e, PsRequest request, ref object finalValue)
         {
-            PSDataCollection<PSObject> outputstream = sender as PSDataCollection<PSObject>;
 
-            if (outputstream == null)
+            if (!(sender is PSDataCollection<PSObject> outputstream))
             {
                 return;
             }
@@ -308,8 +306,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
             if (psObject != null)
             {
                 object value = psObject.ImmediateBaseObject;
-                Yieldable y = value as Yieldable;
-                if (y != null)
+                if (value is Yieldable y)
                 {
                     // yield it to stream the result gradually
                     y.YieldResult(request);

@@ -39,8 +39,7 @@ namespace Microsoft.PackageManagement.Internal.Utility.Extensions
             {
                 return true;
             }
-            Types other = obj as Types;
-            return other != null && (_first == other._first && _second.SequenceEqual(other._second));
+            return obj is Types other && (_first == other._first && _second.SequenceEqual(other._second));
         }
     }
 }
