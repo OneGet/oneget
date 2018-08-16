@@ -821,7 +821,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             }
 
             //providerName can be a file path or name.
-            MutableEnumerable<T> instances = powerShellMetaProvider.LoadAvailableProvider(request.As<IRequest>(), modulePath, requiredVersion, shouldRefreshCache).ReEnumerable();
+            var instances = powerShellMetaProvider.LoadAvailableProvider(request.As<IRequest>(), modulePath, requiredVersion, shouldRefreshCache).ReEnumerable();
 
             if (!instances.Any())
             {
@@ -831,10 +831,10 @@ namespace Microsoft.PackageManagement.Internal.Implementation
                 yield break;
             }
 
-            foreach (T instance in instances)
+            foreach (var instance in instances)
             {
                 //Register the provider
-                PackageProvider provider = instance.As<PackageProvider>();
+                PackageProvider provider = instances.As<PackageProvider>();
                 if (provider != null)
                 {
                     //initialize the actual powershell package provider
@@ -1805,7 +1805,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
                 {
                     try
                     {
-                        PackageProvider packageProvider = RegisterPackageProvider(instance.As<PackageProvider>(), asmVersion, request, false);
+                        PackageProvider packageProvider = RegisterPackageProvider(instance.As<IPackageProvider>(), asmVersion, request, false);
                         if (packageProvider != null)
                         {
                             found = true;

@@ -194,7 +194,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
         {
             if (FilesystemExtensions.LooksLikeAFilename(path))
             {
-                MutableEnumerable<T> paths = GetResolvedProviderPathFromPSPath(path, out ProviderInfo providerInfo).ReEnumerable();
+                var paths = GetResolvedProviderPathFromPSPath(path, out ProviderInfo providerInfo).ReEnumerable();
                 return
                     paths.SelectMany(
                         each => FilesystemExtensions.FileExists(each) ? CollectionExtensions.SingleItemAsEnumerable(each) : FilesystemExtensions.DirectoryExists(each) ? Directory.GetFiles(each) : Microsoft.PackageManagement.Internal.Constants.Empty)

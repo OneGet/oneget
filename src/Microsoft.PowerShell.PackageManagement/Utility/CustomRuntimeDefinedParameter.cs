@@ -16,6 +16,7 @@ namespace Microsoft.PowerShell.PackageManagement.Utility
 {
     using Microsoft.PackageManagement.Internal.Packaging;
     using Microsoft.PackageManagement.Internal.Utility.Extensions;
+    using Microsoft.PowerShell.PackageManagement.Cmdlets;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;

@@ -15,6 +15,7 @@
 namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal
 {
     using Implementation;
+    using Microsoft.PackageManagement.Internal.Providers;
     using Microsoft.PackageManagement.Internal.Utility.Collections;
     using Microsoft.PackageManagement.Internal.Utility.Extensions;
     using Microsoft.PackageManagement.Internal.Utility.Versions;
