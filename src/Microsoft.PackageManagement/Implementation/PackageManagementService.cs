@@ -15,6 +15,7 @@
 namespace Microsoft.PackageManagement.Internal.Implementation
 {
     using Api;
+    using Providers;
     using PackageManagement.Implementation;
     using PackageManagement.Packaging;
     using Packaging;
@@ -1792,7 +1793,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             return found;
         }
 
-        private bool LoadViaMetaProvider(IMetaProvider metaProvider, string name, FourPartVersion asmVersion, IHostApi request)
+        private bool LoadViaMetaProvider(Providers.IMetaProvider metaProvider, string name, FourPartVersion asmVersion, IHostApi request)
         {
             bool found = false;
 
@@ -1800,11 +1801,11 @@ namespace Microsoft.PackageManagement.Internal.Implementation
             if (instance != null)
             {
                 // check if it's a Package Provider
-                if (typeof(IPackageProvider).CanDynamicCastFrom(instance))
+                if (typeof(PackageProvider).CanDynamicCastFrom(instance))
                 {
                     try
                     {
-                        PackageProvider packageProvider = RegisterPackageProvider(instance.As<IPackageProvider>(), asmVersion, request, false);
+                        PackageProvider packageProvider = RegisterPackageProvider(instance.As<PackageProvider>(), asmVersion, request, false);
                         if (packageProvider != null)
                         {
                             found = true;
@@ -1820,7 +1821,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
                 }
 
                 // check if it's a Services Provider
-                if (typeof(IArchiver).CanDynamicCastFrom(instance))
+                if (typeof(Archiver).CanDynamicCastFrom(instance))
                 {
                     try
                     {
@@ -1839,7 +1840,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
                     }
                 }
 
-                if (typeof(IDownloader).CanDynamicCastFrom(instance))
+                if (typeof(Downloader).CanDynamicCastFrom(instance))
                 {
                     try
                     {

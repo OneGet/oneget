@@ -15,7 +15,7 @@
 namespace Microsoft.PackageManagement.Internal.Implementation
 {
     using Api;
-    using Microsoft.PackageManagement.Internal.Utility.Platform;
+    using Providers;
     using PackageManagement.Packaging;
     using Packaging;
     using System;
@@ -27,6 +27,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation
     using Utility.Async;
     using Utility.Extensions;
     using Utility.Plugin;
+    using Utility.Platform;
     using Utility.Versions;
     using File = System.IO.File;
 

@@ -14,7 +14,8 @@
 
 namespace Microsoft.PackageManagement.Internal.Implementation
 {
-    using PackageManagement.Internal.Packaging;
+    using Packaging;
+    using Providers;
     using System;
 
     /// <summary>

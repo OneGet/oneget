@@ -69,11 +69,13 @@ namespace Microsoft.PackageManagement.Archivers.Internal
             }
         }
 
+        //Needs Commenting
         public IEnumerable<string> UnpackArchive(string localFilename, string destinationFolder, Request request)
         {
             return null;
         }
 
+        //Needs Commenting
         public bool IsSupportedFile(string localFilename)
         {
             return false;

@@ -181,6 +181,7 @@ namespace Microsoft.PackageManagement.Providers.Internal
             }
         }
 
+        //Needs Commenting
         private bool YieldPackages(string hive, RegistryKey regkey, string name, string requiredVersion, string minimumVersion, string maximumVersion, Request request)
         {
             if (regkey != null)

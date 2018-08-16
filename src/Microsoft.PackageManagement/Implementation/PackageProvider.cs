@@ -16,6 +16,7 @@ namespace Microsoft.PackageManagement.Implementation
 {
     using Internal;
     using Internal.Api;
+    using Internal.Providers;
     using Internal.Implementation;
     using Internal.Utility.Async;
     using Internal.Utility.Plugin;

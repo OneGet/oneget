@@ -391,6 +391,7 @@ namespace Microsoft.PackageManagement.Msi.Internal
             _progressId = 0;
         }
 
+        //Needs Commenting
         private ExternalUIHandler CreateProgressHandler(Request request, string showMessage)
         {
             var currentTotalTicks = -1;
