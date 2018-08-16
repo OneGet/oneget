@@ -18,12 +18,13 @@ namespace Microsoft.PackageManagement.Providers.Internal
     using System.Collections.Generic;
     using System.IO;
     using System.Net;
+    using System.Threading;
 
 #if CORECLR
     using System.Net.Http;
+    using System.Threading.Tasks;
 #endif
 
-    using System.Threading;
     using PackageManagement.Internal;
     using PackageManagement.Internal.Implementation;
     using PackageManagement.Internal.Utility.Extensions;

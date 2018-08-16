@@ -6,7 +6,11 @@
     using System.Linq;
     using System.Management.Automation;
     using System.Management.Automation.Runspaces;
+
+#if CORECLR
     using System.Runtime.InteropServices;
+#endif
+
 
     /// <summary>
     /// These are platform abstractions and platform specific implementations

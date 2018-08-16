@@ -13,8 +13,6 @@ namespace Microsoft.PackageManagement.Archivers.Internal.Compression
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
 
-#if !CORECLR
-#endif
 
     /// <summary>
     /// Abstract object representing a compressed file within an archive;
