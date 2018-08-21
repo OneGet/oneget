@@ -17,39 +17,18 @@
 # Actual Tests:
 
 # This file contains tests for using find-package and install-package with
-# VSTS NuGet package feed.  
-# Provide a VSTS NuGet package source such as:
-# "https://msazure.pkgs.visualstudio.com/_packaging/MSNugetMirror/nuget/v3/index.json"
-# Provide approprite package name such as:
-# "Microsoft.Kusto.Tools"
-# Provide appropriate credentials (username and password) for VSTS source when prompted.
+# VSTS NuGet package feed.
 # Comment return statement below to run tests, then uncomment again when pushing to repo.
 
-return
+#return
 
-try {
-    $WindowsPowerShell = $PSHOME.Trim('\').EndsWith('\WindowsPowerShell\v1.0', [System.StringComparison]::OrdinalIgnoreCase)    
-    $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
-    $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
-
-    $IsCoreCLR = $true
-    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
-    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
-    $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
-} catch {
-    # If these are already set, then they're read-only and we're done
-    try {
-        $IsCoreCLR = $false
-        $IsLinux = $false
-        $IsOSX = $false
-        $IsWindows = $true
-        $WindowsPowerShell = $true
-    }
-    catch { }
-}
-
-$VSTSsource = "";
-$packageName = "";
+# Provide your own VSTS package source such as the default value below.
+$VSTSsource = "https://msazure.pkgs.visualstudio.com/_packaging/MSNugetMirror/nuget/v3/index.json";
+# Provide appropriate package name such as the default value below.
+$packageName = "Microsoft.Kusto.Tools";
+# Provide appropriate credentials for VSTS source when prompted.
+# username: username
+# password: personal access token
 $credential = (Get-Credential);
 $pkgSourceName = "MyRep";
 $providerName = "NuGet";
@@ -58,18 +37,16 @@ Describe "VSTS Nuget Package Feed" {
 
     it "EXPECTED: Find a package from VSTS feed source" {
 
-        $packages = find-package -name $packageName -source $VSTSsource -credential $credential 
-        $ERROR[0].FullyQualifiedErrorId | Should Not Be "No match was found for the specified search criteria and package name"
-        $packages.Name | Should Be $packageName
-        $packages.Source | Should Be $VSTSsource
+        $package = (find-package -name $packageName -source $VSTSsource -credential $credential) | Select-Object -First 1
+        $package.Name | Should Be $packageName
+        $package.Source | Should Be $VSTSsource
     }
 
     it "EXPECTED: Install a package from VSTS feed source" {
 
-        $packages = install-package -name $packageName -source $VSTSsource -credential $credential 
-        $ERROR[0].FullyQualifiedErrorId | Should Not Be "No match was found for the specified search criteria and package name"
-        $packages.Name | Should Be $packageName
-        $packages.Source | Should Be $VSTSsource
+        $package = install-package -name $packageName -source $VSTSsource -credential $credential 
+        $package.Name | Should Be $packageName
+        $package.Source | Should Be $VSTSsource
 
         # Clean-up - uninstall the package 
         $package = Get-Package -Name $packageName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
@@ -81,12 +58,19 @@ Describe "VSTS Nuget Package Feed" {
     
     it "EXPECTED: Save a package from VSTS feed source" {
 
-        $packages = save-package -name $packageName -source $VSTSsource -credential $credential -path . #create temp path
-        $packages.Name | Should Be $packageName
-        $packages.Source | Should Be $VSTSsource
+        $tempPath = [System.IO.Path]::GetFullPath($env:tmp)
+        $package = save-package -name $packageName -source $VSTSsource -credential $credential -path $tempPath
+        $package.Name | Should Be $packageName
+        $package.Source | Should Be $VSTSsource
+
+        $packagePath = Join-Path -path $tempPath -ChildPath $packageName
+        (Get-ChildItem -Path "$packagePath*") | Should Not Be $null
+
+        # Clean-up - delete saved papackage in temp path
+        Remove-Item "$packagePath*"
     }
 
-    it "EXPECTED: Register a package source from VSTS feed" {
+    it "EXPECTED: Register a VSTS feed as a package source" {
         $pkgSource = Register-PackageSource -name $pkgSourceName -location $VSTSsource -providerName $providerName -Credential $credential
         $pkgSource.Name | Should Be $pkgSourceName
         $pkgSource.ProviderName | Should Be $providerName
@@ -96,6 +80,9 @@ Describe "VSTS Nuget Package Feed" {
         $packageSource = Get-PackageSource -Name $pkgSourceName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         if ($packageSource)
         {
+            $pkgSource.Name | Should Be $pkgSourceName
+            $pkgSource.ProviderName | Should Be $providerName
+            $pkgSource.Location | Should Be $VSTSsource
             Unregister-PackageSource -Name $pkgSourceName
         }
 	}
