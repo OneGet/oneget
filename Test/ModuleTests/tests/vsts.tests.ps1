@@ -20,7 +20,7 @@
 # VSTS NuGet package feed.
 # Comment return statement below to run tests, then uncomment again when pushing to repo.
 
-#return
+return
 
 # Provide your own VSTS package source such as the default value below.
 $VSTSsource = "https://msazure.pkgs.visualstudio.com/_packaging/MSNugetMirror/nuget/v3/index.json";
@@ -80,9 +80,9 @@ Describe "VSTS Nuget Package Feed" {
         $packageSource = Get-PackageSource -Name $pkgSourceName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         if ($packageSource)
         {
-            $pkgSource.Name | Should Be $pkgSourceName
-            $pkgSource.ProviderName | Should Be $providerName
-            $pkgSource.Location | Should Be $VSTSsource
+            $packageSource.Name | Should Be $pkgSourceName
+            $packageSource.ProviderName | Should Be $providerName
+            $packageSource.Location | Should Be $VSTSsource
             Unregister-PackageSource -Name $pkgSourceName
         }
 	}
