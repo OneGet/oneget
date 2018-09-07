@@ -23,6 +23,12 @@ build_script:
 - ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451" Release -EmbedProviderManifest; .\build.ps1 -framework "netcoreapp2.0" Release -EmbedProviderManifest; .\build.ps1 -framework "netstandard1.6" Release -EmbedProviderManifest
 
 
+# branches to build
+branches:
+  # whitelist
+  only:
+    - master
+    - WIP
 
 
 deploy_script: 
@@ -50,5 +56,4 @@ deploy_script:
       }
 
 test_script:
- - ps: >-
-     & "c:\projects\oneget\Test\run-tests.ps1" -nugetApiVersion all
+    - & "c:\projects\oneget\Test\run-tests.ps1" -nugetApiVersion all
