@@ -56,4 +56,7 @@ deploy_script:
       }
 
 test_script:
-    - & "c:\projects\oneget\Test\run-tests.ps1" -nugetApiVersion all
+ - ps: >-
+    if($env:APPVEYOR_REPO_BRANCH -eq "test") {
+        & "c:\projects\oneget\Test\run-tests.ps1" -nugetApiVersion all
+    }
