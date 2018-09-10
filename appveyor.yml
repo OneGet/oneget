@@ -56,7 +56,9 @@ deploy_script:
       }
 
 test_script:
- - ps: >-
-    if($env:APPVEYOR_REPO_BRANCH -eq "test") {
-        & "c:\projects\oneget\Test\run-tests.ps1" -nugetApiVersion all
+ - ps: |
+    & "c:\projects\oneget\Test\run-tests.ps1" -nugetApiVersion all
+    if($LastExitCode -ne 0)
+    {
+          $host.SetShouldExit($LastExitCode)
     }
