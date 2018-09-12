@@ -3,6 +3,7 @@ os:
 - WMF 5
 environment:
   matrix:
+    - fast_finish: true
     - test_framework: fullclr
     - test_framework: coreclr
 configuration: Release
@@ -58,7 +59,3 @@ deploy_script:
 test_script:
  - ps: |
     & "c:\projects\oneget\Test\run-tests.ps1" -nugetApiVersion all
-    if($LastExitCode -ne 0)
-    {
-          $host.SetShouldExit($LastExitCode)
-    }

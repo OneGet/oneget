@@ -534,7 +534,7 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			}
 
 			$testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
-			$command = "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+			$command = "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 			
 			Powershell -command "& {get-packageprovider -verbose; $command}"
 			$x = [xml](Get-Content -raw $testResultsFile)
@@ -544,7 +544,7 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			}
 
 			$testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
-			$command = "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+			$command = "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 			
 			Powershell -command "& {get-packageprovider -verbose; $command}"
 			$x = [xml](Get-Content -raw $testResultsFile)
@@ -573,7 +573,7 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 		
 		$command += "Import-Module '$pesterFolder';"
 
-		$command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+		$command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 
 	 
 		Write-Host "CoreCLR: Calling $powershellFolder\$powershellCoreFilePath -command  $command"
@@ -598,7 +598,7 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			$command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = '$nugetApiUrlAlternate';`$env:NUGET_API_VERSION = '$currentNugetApiVersion';"
 			$command += "Import-Module '$pesterFolder';"
 			$testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
-			$command += "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+			$command += "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 
 			Write-Host "CoreCLR: Calling $powershellFolder\$powershellCoreFilePath -command  $command"
 
@@ -622,7 +622,7 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			$command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = '$nugetApiUrlAlternate';`$env:NUGET_API_VERSION = '$currentNugetApiVersion';"
 			$command += "Import-Module '$pesterFolder';`$global:IsLegacyTestRun=`$true;"
 			$testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
-			$command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -Tag Legacy"
+			$command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -Tag Legacy -EnableExit"
 
 			Write-Host "(Legacy) CoreCLR: Calling $powershellLegacyFolder\$powershellCoreFilePath -command  $command"
 
