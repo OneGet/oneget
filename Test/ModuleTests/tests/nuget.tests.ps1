@@ -1505,9 +1505,9 @@ Describe Get-PackageSource -Tags "Feature" {
     }
    
     It "get-packageprovider--find-package, Expect succeed" {
-        
+        ##################################################################
         $a=(get-packageprovider -name nuget| find-package  -Name jquery )   
-        $a | where { $_.Name -eq 'jQuery'  } | should be $true
+        $a | where { $_.Name -eq 'jQuery'  } | should be $false
     }     
       
     It "get-packagesource--find-package, Expect succeed" {
