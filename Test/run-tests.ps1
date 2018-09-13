@@ -636,6 +636,10 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 		}
 	}
 }
+if ($LastExitCode -ne 0)
+{
+    $host.SetShouldExit($LastExitCode)
+}
 Write-Host -fore White "Finished tests"
 
 #Step3 - cleanup

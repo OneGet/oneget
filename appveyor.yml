@@ -3,7 +3,6 @@ os:
 - WMF 5
 environment:
   matrix:
-    - fast_finish: true
     - test_framework: fullclr
     - test_framework: coreclr
 configuration: Release
