@@ -61,7 +61,7 @@ Describe "find-packageprovider" -Tags "Feature" {
     BeforeAll{        
         Get-PackageProvider -Name NuGet -Force -ForceBootstrap
         Get-PackageProvider -Verbose
-        Register-PackageSource -Name 'OneGetTestSource' -Location $InternalGallery -ProviderName 'PowerShellGet' -ErrorAction SilentlyContinue -force -ForceBootstrap
+        Register-PackageSource -Name 'OneGetTestSource' -Trusted -Location $InternalGallery -ProviderName 'PowerShellGet' -ErrorAction SilentlyContinue -force -ForceBootstrap
     
     }
 
