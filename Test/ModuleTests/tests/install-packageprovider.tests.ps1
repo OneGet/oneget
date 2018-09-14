@@ -34,7 +34,7 @@ try {
 }
 
 $InternalGallery = "https://www.poshtestgallery.com/api/v2/"
-$InternalGallery2 = "https://www.poshtestgallery.com/api/v2/"
+$InternalGallery2 = "https://www.powershellgallery.com/api/v2/"
 $InternalSource = 'OneGetTestSource'
 $InternalSource2 = 'OneGetTestSource2'
 $ProviderFolder = "$env:ProgramFiles\PackageManagement\ProviderAssemblies"
@@ -520,13 +520,13 @@ Describe "Install-Save-Package with multiple sources" -Tags "Feature" {
         }
     }
 
-    It "install-packageprovider -name gistprovider with whatif, Expect succeed" {
+    It "install-packageprovider -name NanoServerPackage with whatif, Expect succeed" {
        
        if($PSCulture -eq 'en-US'){
         # Start Transcript
         Start-Transcript -Path $tempFile
 		
-        install-PackageProvider -name gistprovider -force -source $InternalGallery -warningaction:silentlycontinue -ErrorAction SilentlyContinue -whatif  
+        install-PackageProvider -name NanoServerPackage -force -source $InternalGallery -warningaction:silentlycontinue -ErrorAction SilentlyContinue -whatif
 
         # Stop Transcript and get content of transcript file
         Stop-Transcript
@@ -739,7 +739,7 @@ Describe "install-packageprovider Error Cases" -Tags "Feature" {
 
     It "install-packageprovider - EXPECTED:  returns an error when multiples sources contain the same package provider" {
         $Error.Clear()
-        $providers = find-packageprovider -name gistprovider
+        $providers = find-packageprovider -name NanoServerPackage
         $providers | ?{ $_.Source -match $InternalSource } | should not BeNullOrEmpty
         $providers | ?{ $_.Source -match $InternalSource2 } | should not BeNullOrEmpty
 
