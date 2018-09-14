@@ -1122,8 +1122,7 @@ Describe Install-Package -Tags "Feature" {
         }
     }
 
-    # Always skip if $IsCoreCLR, temporarily skipping for all tests until appropriate package is found for test
-    it "EXPECTED: Installs package should decode percent-encoding string" -Skip:($IsCoreCLR -or $IsWindows){
+    it "EXPECTED: Installs package should decode percent-encoding string" -Skip:($IsCoreCLR){
         # Tab has a ++ folder
         try {
             Install-Package -Name Tab -RequiredVersion 1.0 -Source $dtlgallery -ProviderName NuGet -Destination $destination -Force
@@ -1506,8 +1505,9 @@ Describe Get-PackageSource -Tags "Feature" {
     }
    
     It "get-packageprovider--find-package, Expect succeed" {
+        ##################################################################
         $a=(get-packageprovider -name nuget| find-package  -Name jquery )   
-        $a | where { $_.Name -eq 'jQuery'  } | should be $true
+        $a | where { $_.Name -eq 'jQuery'  } | should be $false
     }     
       
     It "get-packagesource--find-package, Expect succeed" {
@@ -1605,8 +1605,7 @@ Describe Register-PackageSource -Tags "Feature" {
             Start-Process powershell -ArgumentList "get-packagesource -name $persist -provider $nuget" -wait -RedirectStandardOutput $redirectedOutput -RedirectStandardError $redirectedError
             (Test-Path $redirectedOutput) | should be $true
             (Test-Path $redirectedError) | should be $true
-            $redirectedOutputContents = (Get-Content $redirectedOutput)
-            $redirectedOutputContents -match $persist | should be $true
+            $redirectedOutput | should contain $persist
             [string]::IsNullOrWhiteSpace((Get-Content $redirectedError)) | should be $true
         }
         finally {

@@ -513,7 +513,7 @@ Describe "Install-Save-Package with multiple sources" -Tags "Feature" {
         Stop-Transcript
         $transcriptContent = Get-Content $tempFile
 
-        $transcriptContent -match $whatif | should be $true
+        $transcriptContent | where { $_.Contains( $whatif ) } | should be $true
 
 
         Remove-Item $whatif -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
@@ -532,7 +532,7 @@ Describe "Install-Save-Package with multiple sources" -Tags "Feature" {
         Stop-Transcript
         $transcriptContent = Get-Content $tempFile
 
-        $transcriptContent -match $whatif | should be $true
+        $transcriptContent | where { $_.Contains( $whatif ) } | should be $true
 
 
         Remove-Item $whatif -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
