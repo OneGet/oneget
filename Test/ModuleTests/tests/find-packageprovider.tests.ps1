@@ -12,7 +12,7 @@
 #  limitations under the License.
 #
 # ------------------ PackageManagement Test  -----------------------------------
-$InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
+$InternalGallery = "https://www.poshtestgallery.com/api/v2/"
 try {
     $WindowsPowerShell = $PSHOME.Trim('\').EndsWith('\WindowsPowerShell\v1.0', [System.StringComparison]::OrdinalIgnoreCase)    
     $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
