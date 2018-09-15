@@ -33,13 +33,8 @@ try {
     catch { }
 }
 
-<<<<<<< HEAD
 $InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
 $InternalGallery2 = "http://dtlgalleryint.cloudapp.net/api/v2/"
-=======
-$InternalGallery = "https://www.poshtestgallery.com/api/v2/"
-$InternalGallery2 = "https://www.poshtestgallery.com/api/v2/"
->>>>>>> 05c396f0e1bbb3d315980238469a56c905b4f44f
 $InternalSource = 'OneGetTestSource'
 $InternalSource2 = 'OneGetTestSource2'
 $ProviderFolder = "$env:ProgramFiles\PackageManagement\ProviderAssemblies"
