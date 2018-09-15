@@ -92,13 +92,15 @@ Describe "find-packageprovider" -Tags "Feature" {
         $a -contains "GistProvider" | should be $true
         $a -contains "TSDProvider" | should be $true
     }  
-    
+
+<#
     It "find-packageprovider -allversions, Expect succeed" {
         $a = (Find-PackageProvider -allversions)
          
         $a.Name -contains "TSDProvider" | should be $true
         $a.Count -ge 1 | should be $true
     }
+#>
 
     It "find-packageprovider -name -allversions, Expect succeed" {
         $a = (Find-PackageProvider -name TSDProvider -AllVersions).name 
