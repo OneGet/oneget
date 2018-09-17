@@ -49,7 +49,7 @@ else
 
 $UserModuleFolder = "$($mydocument)\WindowsPowerShell\Modules"
 
-$InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
+$InternalGallery = "https://www.poshtestgallery.com/api/v2/"
 $InternalSource = 'OneGetTestSource'
 
 

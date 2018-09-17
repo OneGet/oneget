@@ -47,7 +47,7 @@ $workingMaximumVersions = {"2.0", "2.5", "3.0"};
 $packageNames = @("AzureContrib", "AWSSDK", "TestLib");
 $minimumVersions = @("1.0", "1.3", "1.5");
 $maximumVersions = @("1.8", "2.1", "2.3");
-$dtlgallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
+$poshtestgallery = "https://www.poshtestgallery.com/api/v2/"
 $providerName ="Microsoft-Windows-PowerShell"
 $vstsFeed = "https://powershellgettest.pkgs.visualstudio.com/DefaultCollection/_packaging/psgettestfeed/nuget/v2"
 $vstsFeedWithSlash = "https://powershellgettest.pkgs.visualstudio.com/DefaultCollection/_packaging/psgettestfeed/nuget/v2/"
@@ -395,12 +395,12 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     }
 
     It "EXPECTED: Cannot find unlisted package" {
-        find-package -provider $nuget -source $dtlgallery -name hellops -erroraction silentlycontinue
+        find-package -provider $nuget -source $poshtestgallery -name hellops -erroraction silentlycontinue
         $Error[0].FullyQualifiedErrorId | should be "NoMatchFoundForCriteria,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
     }
 
     It "EXPECTED: Cannot find unlisted package with all versions parameter" {
-        $packages = find-package -name gistprovider -provider $nuget -source $dtlgallery -AllVersions
+        $packages = find-package -name gistprovider -provider $nuget -source $poshtestgallery -AllVersions
         # we should still be able to find at least 2 listed package
         $packages.Count -gt 1 | should be $true
         # this version is unlisted
@@ -410,7 +410,7 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     }
 
     It "EXPECTED: Cannot find unlisted package with all versions and maximum versions" {
-        $packages = find-package -name gistprovider -provider $nuget -source $dtlgallery -AllVersions -MaximumVersion 1.3
+        $packages = find-package -name gistprovider -provider $nuget -source $poshtestgallery -AllVersions -MaximumVersion 1.3
         # we should still be able to find 2 listed package (which is version 1.2 and 1.3)
         $packages.Count -eq 2 | should be $true
         # this version is unlisted
@@ -420,7 +420,7 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     }
 
     It "EXPECTED: Cannot find unlisted package with all versions and minimum versions" {
-        $packages = find-package -name gistprovider -provider $nuget -source $dtlgallery -AllVersions -MinimumVersion 0.5
+        $packages = find-package -name gistprovider -provider $nuget -source $poshtestgallery -AllVersions -MinimumVersion 0.5
         # we should still be able to find at least 2 listed package (which is version 1.2 and 1.3)
         $packages.Count -gt 2 | should be $true
         # this version is unlisted
@@ -430,17 +430,17 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
     }
 
     It "EXPECTED: Finds unlisted package with required version" {
-        (find-package -name hellops -provider $nuget -source $dtlgallery -requiredversion 0.1.0).Name | should match "HellOps"
+        (find-package -name hellops -provider $nuget -source $poshtestgallery -requiredversion 0.1.0).Name | should match "HellOps"
     }
 
     It "EXPECTED: Cannot find unlisted package with maximum versions" {
         # error out because all the versions below 0.6 are unlisted
-        find-package -provider $nuget -source $dtlgallery -name gistprovider -maximumversion 0.6 -erroraction silentlycontinue
+        find-package -provider $nuget -source $poshtestgallery -name gistprovider -maximumversion 0.6 -erroraction silentlycontinue
         $Error[0].FullyQualifiedErrorId | should be "NoMatchFoundForCriteria,Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage"
     }
 
     It "EXPECTED: Cannot find unlisted package with minimum versions" {
-        $packages = find-package -name gistprovider -provider $nuget -source $dtlgallery -AllVersions -MinimumVersion 0.5
+        $packages = find-package -name gistprovider -provider $nuget -source $poshtestgallery -AllVersions -MinimumVersion 0.5
         # we should still be able to find at least 2 listed package (which is version 1.2 and 1.3)
         $packages.Count -gt 2 | should be $true
         # this version is unlisted
@@ -535,7 +535,7 @@ Describe "Save-Package" -Tags "Feature" {
 
     It "EXPECTED success: save-package path should be created with -force " {
         $dest = "$destination\NeverEverExists"
-        $package = save-package -name TSDProvider -path $dest -source $dtlgallery -provider $nuget -force
+        $package = save-package -name TSDProvider -path $dest -source $poshtestgallery -provider $nuget -force
        
         $package.Name | should be "TSDProvider"
         (test-path "$dest\TSDProvider*") | should be $true
@@ -559,7 +559,7 @@ Describe "Save-Package" -Tags "Feature" {
 
     It "EXPECTED success: save-package -LiteralPath" {
         
-        $package = save-package -LiteralPath $destination -ProviderName nuget -Source $dtlgallery -name TSDProvider
+        $package = save-package -LiteralPath $destination -ProviderName nuget -Source $poshtestgallery -name TSDProvider
        
         $package.Name | should be "TSDProvider"
         (test-path "$destination\TSDProvider*") | should be $true
@@ -577,7 +577,7 @@ Describe "Save-Package" -Tags "Feature" {
         {
             $dest = "$destination/NeverEverExists"
         }
-        $package = save-package -LiteralPath $dest -ProviderName nuget -Source $dtlgallery -name TSDProvider -force
+        $package = save-package -LiteralPath $dest -ProviderName nuget -Source $poshtestgallery -name TSDProvider -force
        
         $package.Name | should be "TSDProvider"
         (test-path "$dest\TSDProvider*") | should be $true
@@ -590,7 +590,7 @@ Describe "Save-Package" -Tags "Feature" {
     }
 
     It "EXPECTED success: find-package and save-package" {
-        $package = find-package -name TSDProvider -provider $nuget -source $dtlgallery | save-package -path $destination
+        $package = find-package -name TSDProvider -provider $nuget -source $poshtestgallery | save-package -path $destination
        
         $package.Name | should be "TSDProvider"
         (test-path "$destination\TSDProvider*") | should be $true
@@ -951,7 +951,7 @@ Describe "install-package with Scope" -tags "Feature" {
                 Remove-Item -Recurse -Force -Path $UserInstalledLocation -ErrorAction SilentlyContinue
         }
 
-        $package = install-package -ProviderName nuget  -source  $dtlgallery -name  gistprovider -RequiredVersion 0.6 -force -verbose
+        $package = install-package -ProviderName nuget  -source  $poshtestgallery -name  gistprovider -RequiredVersion 0.6 -force -verbose
     
         $package.Name | Should Match "GistProvider"
 
@@ -978,7 +978,7 @@ Describe "install-package with Scope" -tags "Feature" {
                 Remove-Item -Recurse -Force -Path $UserInstalledLocation -ErrorAction SilentlyContinue
         }
 
-        $package = install-package -ProviderName nuget  -source  $dtlgallery -name  gistprovider -RequiredVersion 0.6 -scope AllUsers -force
+        $package = install-package -ProviderName nuget  -source  $poshtestgallery -name  gistprovider -RequiredVersion 0.6 -scope AllUsers -force
     
         $package.Name | Should Match "GistProvider"
 
@@ -1005,7 +1005,7 @@ Describe "install-package with Scope" -tags "Feature" {
                 Remove-Item -Recurse -Force -Path $UserInstalledLocation -ErrorAction SilentlyContinue
         }
 
-        $package = install-package -ProviderName nuget  -source  $dtlgallery -name  gistprovider -RequiredVersion 0.6 -scope CurrentUser -destination $UserInstalledLocation -force
+        $package = install-package -ProviderName nuget  -source  $poshtestgallery -name  gistprovider -RequiredVersion 0.6 -scope CurrentUser -destination $UserInstalledLocation -force
     
         $package.Name | Should Match "GistProvider"
 
@@ -1020,7 +1020,7 @@ Describe "install-package with Scope" -tags "Feature" {
 
     It "install-package CurrentUser scope in a non-admin console, expect succeed" -Skip:($IsCoreCLR){
         $Error.Clear()                             
-        $job=Start-Job -ScriptBlock {Param ([Parameter(Mandatory = $True)] [string]$dtlgallery) install-package -ProviderName nuget  -source $dtlgallery -name  gistprovider -RequiredVersion 0.6 -force -scope CurrentUser} -Credential $credential -ArgumentList $dtlgallery
+        $job=Start-Job -ScriptBlock {Param ([Parameter(Mandatory = $True)] [string]$poshtestgallery) install-package -ProviderName nuget  -source $poshtestgallery -name  gistprovider -RequiredVersion 0.6 -force -scope CurrentUser} -Credential $credential -ArgumentList $poshtestgallery
 
         $a= Receive-Job -Wait -Job $job
         $a.Name | should match 'gistprovider'
@@ -1085,7 +1085,7 @@ Describe Install-Package -Tags "Feature" {
 	$pkg = Get-PackageProvider -Name NuGet
 	if($pkg.Version -le "2.8.5.205") { return }
         try {
-            Install-Package -Name TestModuleWithDependencyA -Provider $Nuget -source $dtlgallery -Destination $destination -Force -RequiredVersion 1.0
+            Install-Package -Name TestModuleWithDependencyA -Provider $Nuget -source $poshtestgallery -Destination $destination -Force -RequiredVersion 1.0
             (Test-Path $destination\TestModuleWithDependencyA.1.0) | should be $true
             (Test-Path $destination\TestModuleWithDependencyB.1.0) | should be $true
             # should not install B
@@ -1104,7 +1104,7 @@ Describe Install-Package -Tags "Feature" {
 	$pkg = Get-PackageProvider -Name NuGet
 	if($pkg.Version -le "2.8.5.205") { return }
         try {
-            Install-Package -Name TestModuleWithDependencyA -Provider $Nuget -source $dtlgallery -Destination $destination -Force -RequiredVersion 3.0
+            Install-Package -Name TestModuleWithDependencyA -Provider $Nuget -source $poshtestgallery -Destination $destination -Force -RequiredVersion 3.0
             (Test-Path $destination\TestModuleWithDependencyA.3.0) | should be $true
             (Test-Path $destination\TestModuleWithDependencyB.2.0) | should be $true
             (Test-Path $destination\TestModuleWithDependencyE.1.0) | should be $true
@@ -1126,7 +1126,7 @@ Describe Install-Package -Tags "Feature" {
     it "EXPECTED: Installs package should decode percent-encoding string" -Skip:($IsCoreCLR){
         # Tab has a ++ folder
         try {
-            Install-Package -Name Tab -RequiredVersion 1.0 -Source $dtlgallery -ProviderName NuGet -Destination $destination -Force
+            Install-Package -Name Tab -RequiredVersion 1.0 -Source $poshtestgallery -ProviderName NuGet -Destination $destination -Force
             Test-Path "$destination\Tab.1.0.0.0\New folder ++" | should be $true
         }
         finally {
@@ -1802,7 +1802,7 @@ Describe Test-Proxy -Tags "Feature" {
     It "EXPECTED: cannot connect if the server is not on the list allowed by proxy" -Skip {
         try {
             $processId = (Start-Process $proxyPath -PassThru).Id
-            $packages = Find-Package -Provider NuGet -Proxy http://localhost:8080 -Source $dtlgallery -ErrorAction SilentlyContinue
+            $packages = Find-Package -Provider NuGet -Proxy http://localhost:8080 -Source $poshtestgallery -ErrorAction SilentlyContinue
             $packages | should be $null
         }
         finally {

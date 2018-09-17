@@ -33,7 +33,7 @@ try {
     catch { }
 }
 
-$InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
+$InternalGallery = "https://www.poshtestgallery.com/api/v2/"
 $InternalGallery2 = "https://www.powershellgallery.com/api/v2/"
 $InternalSource = 'OneGetTestSource'
 $InternalSource2 = 'OneGetTestSource2'
@@ -420,6 +420,7 @@ Describe "Install-Save-Package with multiple sources" -Tags "Feature" {
     }
     
     # Skip as no chocolatey
+    <#
     It "install-save-package with multiple names, providers and sources, Expect succeed" {   
              
                  
@@ -449,8 +450,8 @@ Describe "Install-Save-Package with multiple sources" -Tags "Feature" {
         if (test-path "$destination\Contoso*") {
             Remove-Item $destination\Contoso* -force -Recurse
         }
-
     }
+    #>
 
     It "save-package with array of registered sources, Expect succeed" {
         if (test-path "$destination") {
@@ -739,11 +740,11 @@ Describe "install-packageprovider Error Cases" -Tags "Feature" {
 
     It "install-packageprovider - EXPECTED:  returns an error when multiples sources contain the same package provider" {
         $Error.Clear()
-        $providers = find-packageprovider -name gistprovider
+        $providers = find-packageprovider -name ContainerImage
         $providers | ?{ $_.Source -match $InternalSource } | should not BeNullOrEmpty
         $providers | ?{ $_.Source -match $InternalSource2 } | should not BeNullOrEmpty
 
-        install-packageprovider -name gistprovider -source @($InternalSource, $InternalSource2) -ErrorVariable theError -force
+        install-packageprovider -name ContainerImage -source @($InternalSource, $InternalSource2) -ErrorVariable theError -force
         $theError.FullyQualifiedErrorId| should BeNullOrEmpty
     }
 
