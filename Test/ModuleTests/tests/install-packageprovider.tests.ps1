@@ -34,7 +34,7 @@ try {
 }
 
 $InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
-$InternalGallery2 = "http://dtlgalleryint.cloudapp.net/api/v2/"
+$InternalGallery2 = "https://www.powershellgallery.com/api/v2/"
 $InternalSource = 'OneGetTestSource'
 $InternalSource2 = 'OneGetTestSource2'
 $ProviderFolder = "$env:ProgramFiles\PackageManagement\ProviderAssemblies"
@@ -513,26 +513,26 @@ Describe "Install-Save-Package with multiple sources" -Tags "Feature" {
         Stop-Transcript
         $transcriptContent = Get-Content $tempFile
 
-        $transcriptContent | where { $_.Contains( $whatif ) } | should be $true
+        $transcriptContent -match $whatif | should be $true
 
 
         Remove-Item $whatif -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
     }
 
-    It "install-packageprovider -name gistprovider with whatif, Expect succeed" {
+    It "install-packageprovider -name NanoServerPackage with whatif, Expect succeed" {
        
        if($PSCulture -eq 'en-US'){
         # Start Transcript
         Start-Transcript -Path $tempFile
 		
-        install-PackageProvider -name gistprovider -force -source $InternalGallery -warningaction:silentlycontinue -ErrorAction SilentlyContinue -whatif  
+        install-PackageProvider -name NanoServerPackage -force -source $InternalGallery -warningaction:silentlycontinue -ErrorAction SilentlyContinue -whatif  
 
         # Stop Transcript and get content of transcript file
         Stop-Transcript
         $transcriptContent = Get-Content $tempFile
 
-        $transcriptContent | where { $_.Contains( $whatif ) } | should be $true
+        $transcriptContent -match $whatif | should be $true
 
 
         Remove-Item $whatif -ErrorAction SilentlyContinue -WarningAction SilentlyContinue

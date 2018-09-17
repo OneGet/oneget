@@ -1122,6 +1122,7 @@ Describe Install-Package -Tags "Feature" {
         }
     }
 
+    <#
     it "EXPECTED: Installs package should decode percent-encoding string" -Skip:($IsCoreCLR){
         # Tab has a ++ folder
         try {
@@ -1134,6 +1135,7 @@ Describe Install-Package -Tags "Feature" {
             }
         }
     }
+    #>
 
     it "EXPECTED: Fails to install a module with simple dependencies loop" -Skip:($IsCoreCLR){
          $msg = powershell "Install-Package ModuleWithDependenciesLoop -ProviderName nuget -Source `"$dependenciesSource\SimpleDependenciesLoop`" -Destination $destination -ErrorAction SilentlyContinue; `$Error[0].FullyQualifiedErrorId"
@@ -1605,7 +1607,8 @@ Describe Register-PackageSource -Tags "Feature" {
             Start-Process powershell -ArgumentList "get-packagesource -name $persist -provider $nuget" -wait -RedirectStandardOutput $redirectedOutput -RedirectStandardError $redirectedError
             (Test-Path $redirectedOutput) | should be $true
             (Test-Path $redirectedError) | should be $true
-            $redirectedOutput | should contain $persist
+            $redirectedOutputContents = (Get-Content $redirectedOutput)
+            $redirectedOutputContents -match $persist | should be $true
             [string]::IsNullOrWhiteSpace((Get-Content $redirectedError)) | should be $true
         }
         finally {
