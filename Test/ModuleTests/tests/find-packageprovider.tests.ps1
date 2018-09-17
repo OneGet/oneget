@@ -114,11 +114,8 @@ Describe "find-packageprovider" -Tags "Feature" {
         $a = find-packageprovider -name nuget -allVersions  
         $a.Count -ge 4| should be $true
 
-        # Temporarily skip this because it takes too long to run on AppVeyor
-        <#
         $b = find-packageprovider -allVersions 
         $b.Count -gt $a.Count| should be $true
-        #>
     }
 
     It "find-packageprovider -Source, Expect succeed" {
