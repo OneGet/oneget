@@ -1,4 +1,5 @@
-﻿param(
+﻿### DELETE ME
+param(
     [ValidateSet("net451", "netcoreapp2.0", "netstandard1.6", "all")]
     [string]$Framework = "netcoreapp2.0",
 
