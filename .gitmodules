@@ -1,7 +1,7 @@
 [submodule "src/Microsoft.PackageManagement.NuGetProvider"]
 	path = src/Microsoft.PackageManagement.NuGetProvider
 	url = https://github.com/OneGet/NuGetProvider.git
-	branch = development
+	branch = updateDotNET
 
 [submodule "src/Modules/PowerShellGet"]
 	
