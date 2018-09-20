@@ -15,6 +15,17 @@ init:
 # Install Pester
 install: 
     - cinst -y pester
+      # Default 2.0.0 Ruby is buggy
+      # Default bundler version is buggy
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+        rvm install ruby-2.3.3;
+        rvm --default use 2.3.3;
+      fi
+    - bash <(wget -O - https://raw.githubusercontent.com/PowerShell/PowerShell/master/tools/install-powershell.sh)
+    - pushd tools
+    - chmod +x travis.sh
+    - popd
+
 clone_folder: c:\projects\oneget
 build_script:
 - git submodule update --init
