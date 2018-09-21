@@ -122,6 +122,7 @@ case "$OSTYPE" in
 esac
 
 echo "I added this... current success code 5: $?"
+powershell
 success=$?
 
 if [[ "$success" != 0 ]]; then
