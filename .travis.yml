@@ -9,6 +9,7 @@ os:
   - osx
 sudo: required
 dist: trusty
+osx_image: xcode8
 env:
     - api=v2
     - api=v3
@@ -16,7 +17,6 @@ env:
 matrix:
   allow_failures:
     - os: osx
-  fast_finish: true
 
 
 addons:
