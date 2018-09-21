@@ -91,7 +91,6 @@ case "$OSTYPE" in
         patched=0
         echo "I added this... current success code 2 is: $?"
         if hash brew 2>/dev/null; then
-            xcode-select --install
             if [[ ! -d $(brew --prefix openssl) ]]; then
                echo "Installing OpenSSL with brew..."
                if ! brew install openssl; then
@@ -123,7 +122,6 @@ case "$OSTYPE" in
 esac
 
 echo "I added this... current success code 5: $?"
-powershell -noprofile -c '"Congratulations! PowerShell is installed at $PSHOME"'
 success=$?
 
 if [[ "$success" != 0 ]]; then
