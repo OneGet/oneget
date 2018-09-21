@@ -91,6 +91,7 @@ case "$OSTYPE" in
         patched=0
         echo "I added this... current success code 2 is: $?"
         if hash brew 2>/dev/null; then
+            rvm reinstall ruby-2.4.0
             if [[ ! -d $(brew --prefix openssl) ]]; then
                echo "Installing OpenSSL with brew..."
                if ! brew install openssl; then
