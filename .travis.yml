@@ -9,7 +9,6 @@ os:
   - osx
 sudo: required
 dist: trusty
-osx_image: xcode7.3
 env:
     - api=v2
     - api=v3

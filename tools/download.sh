@@ -122,7 +122,7 @@ case "$OSTYPE" in
 esac
 
 echo "I added this... current success code 5: $?"
-powershell -noprofile
+powershell -noprofile -c '"Congratulations! PowerShell is installed at $PSHOME"'
 success=$?
 
 if [[ "$success" != 0 ]]; then
