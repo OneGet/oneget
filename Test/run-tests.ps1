@@ -611,6 +611,11 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 				& "$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
 			}
 
+            if ($LastExitCode -ne 0)
+            {
+                $host.SetShouldExit($LastExitCode)
+            }
+
 			$x = [xml](Get-Content -raw $testResultsFile)
 			if ([int]$x.'test-results'.failures -gt 0)
 			{
@@ -627,6 +632,11 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			Write-Host "(Legacy) CoreCLR: Calling $powershellLegacyFolder\$powershellCoreFilePath -command  $command"
 
 			& "$powershellLegacyFolder\$powershellCoreFilePath" -command "& {$command}"
+
+            if ($LastExitCode -ne 0)
+            {
+                $host.SetShouldExit($LastExitCode)
+            }
 
 			$x = [xml](Get-Content -raw $testResultsFile)
 			if ([int]$x.'test-results'.failures -gt 0)
