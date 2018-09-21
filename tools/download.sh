@@ -89,8 +89,8 @@ case "$OSTYPE" in
         ;;
     darwin*)
         patched=0
+        echo "I added this... current success code 2 is: $?"
         if hash brew 2>/dev/null; then
-            echo "brew is installed?"
             if [[ ! -d $(brew --prefix openssl) ]]; then
                echo "Installing OpenSSL with brew..."
                if ! brew install openssl; then
@@ -111,7 +111,9 @@ case "$OSTYPE" in
         fi
 
         echo "Installing $package with sudo ..."
+        echo "I added this... current success code 3: $?"
         sudo installer -pkg "./$package" -target /
+        echo "I added this... current success code 4: $?"
         if [[ $patched -eq 1 ]]; then
             echo "Patching System.Net.Http for libcurl and OpenSSL..."
             find /usr/local/microsoft/powershell -name System.Net.Http.Native.dylib | xargs sudo install_name_tool -change /usr/lib/libcurl.4.dylib /usr/local/opt/curl/lib/libcurl.4.dylib
@@ -119,7 +121,8 @@ case "$OSTYPE" in
         ;;
 esac
 
-powershell -noprofile -c "Congratulations! PowerShell is installed at $PSHOME"
+echo "I added this... current success code 5: $?"
+powershell -noprofile -c '"Congratulations! PowerShell is installed at $PSHOME"'
 success=$?
 
 if [[ "$success" != 0 ]]; then
