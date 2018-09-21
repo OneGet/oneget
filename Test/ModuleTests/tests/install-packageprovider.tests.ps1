@@ -661,7 +661,6 @@ Describe "install-packageprovider Error Cases" -Tags "Feature" {
         }
 
         $destination = Join-Path $TestDrive "installpp"
-        write-host('End of before each')
     }
 
   AfterAll {
