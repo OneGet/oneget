@@ -168,13 +168,13 @@ Describe "Event Test" -Tags "Feature" {
 
     it "EXPECTED: install a package should report destination" -Skip:(-not $WindowsPowerShell) {
 
-        Import-PackageProvider OneGetTest -Force
-        Install-Package Bla -ProviderName OneGetTest -Force
+        Import-PackageProvider OneGetTest -Force -WarningAction SilentlyContinue
+        Install-Package Bla -ProviderName OneGetTest -Force -WarningAction SilentlyContinue
         
         $retryCount= 5
         while($retryCount -gt 0)
         {
-            $events = @(Get-WinEvent -FilterHashtable @{ ProviderName = $providerName; Id = 4101 } -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) 
+            $events = @(Get-WinEvent -FilterHashtable @{ ProviderName = $providerName; Id = 4101 } -WarningAction SilentlyContinue -ErrorAction SilentlyContinue)
 
             try
             {
@@ -213,13 +213,13 @@ Describe "Event Test" -Tags "Feature" {
 
     it "EXPECTED: uninstall a package should raise event" -Skip:(-not $WindowsPowerShell) {
      
-        Install-Package EntityFramework -ProviderName nuget -requiredVersion 6.1.3  -Destination $TestDrive -source $source -force 
+        Install-Package EntityFramework -ProviderName nuget -requiredVersion 6.1.3  -Destination $TestDrive -source $source -force
         UnInstall-Package EntityFramework -ProviderName nuget -Destination $TestDrive
 
         $retryCount= 5
         while($retryCount -gt 0)
         {
-            $events = @(Get-WinEvent -FilterHashtable @{ ProviderName = $providerName; Id = 4102 } -ErrorAction SilentlyContinue)  
+            $events = @(Get-WinEvent -FilterHashtable @{ ProviderName = $providerName; Id = 4102 } -ErrorAction SilentlyContinue)
 
             try
             {
@@ -595,7 +595,7 @@ Describe "Save-Package" -Tags "Feature" {
 
     It "save-package -name with wildcards, Expect error" {
         $Error.Clear()
-        $package =  save-package -path $destination -name DOESNOTEXIST* -warningaction:silentlycontinue -ErrorVariable wildcardError -ErrorAction SilentlyContinue        
+        $package =  save-package -path $destination -name DOESNOTEXIST* -warningaction:silentlycontinue -ErrorVariable wildcardError -ErrorAction SilentlyContinue
         $wildcardError.FullyQualifiedErrorId | should be "WildCardCharsAreNotSupported,Microsoft.PowerShell.PackageManagement.Cmdlets.SavePackage"
     }
 
@@ -808,7 +808,7 @@ Describe "save-package with Whatif" -Tags "Feature" {
         # Start Transcript
         Start-Transcript -Path $tempFile
 
-        Save-Package -name jquery -force -source $source -ProviderName NuGet -Path $tempDir -warningaction:silentlycontinue -ErrorAction SilentlyContinue -whatif  
+        Save-Package -name jquery -force -source $source -ProviderName NuGet -Path $tempDir -warningaction:silentlycontinue -ErrorAction SilentlyContinue -whatif
 
         # Stop Transcript and get content of transcript file
         Stop-Transcript
@@ -855,7 +855,7 @@ Describe "install-package with Whatif" -Tags "Feature" {
             # Start Transcript
             Start-Transcript -Path $tempFile
 
-            install-Package -name jquery -force -source $source -ProviderName NuGet -destination $installationPath -warningaction:silentlycontinue -ErrorAction SilentlyContinue -whatif  
+            install-Package -name jquery -force -source $source -ProviderName NuGet -destination $installationPath -warningaction:silentlycontinue -ErrorAction SilentlyContinue -whatif
 
             # Stop Transcript and get content of transcript file
             Stop-Transcript
@@ -1062,7 +1062,7 @@ Describe Install-Package -Tags "Feature" {
 
     It "install-package -name with wildcards, Expect error" {
         $Error.Clear()
-        install-Package -name gist* -force -source $source -warningaction:silentlycontinue -ErrorVariable wildcardError -ErrorAction SilentlyContinue        
+        install-Package -name gist* -force -source $source -warningaction:silentlycontinue -ErrorVariable wildcardError -ErrorAction SilentlyContinue
         $wildcardError.FullyQualifiedErrorId| should be "WildCardCharsAreNotSupported,Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackage"
     }
 
@@ -1328,8 +1328,8 @@ Describe Uninstall-Package -Tags "Feature" {
 
     it "EXPECTED: Uninstalls The Right version of 'Jquery'" {
 
-        (install-package -name "Jquery" -provider $nuget -source $source -destination $destination -RequiredVersion 2.1.3 -force).Version | Should match "2.1.3" 
-        (install-package -name "Jquery" -provider $nuget -source $source -destination $destination -RequiredVersion 2.1.4 -force).Version | Should match "2.1.4" 
+        (install-package -name "Jquery" -provider $nuget -source $source -destination $destination -RequiredVersion 2.1.3 -force).Version | Should match "2.1.3"
+        (install-package -name "Jquery" -provider $nuget -source $source -destination $destination -RequiredVersion 2.1.4 -force).Version | Should match "2.1.4"
 
         #uninstall the old version
         uninstall-package -name "Jquery" -provider $nuget -destination $destination -RequiredVersion 2.1.3
@@ -1431,13 +1431,13 @@ Describe Uninstall-Package -Tags "Feature" {
 
     It "uninstall-package -name with wildcards, Expect error" {
         $Error.Clear()
-        $package =  uninstall-package -name packagemanagement* -warningaction:silentlycontinue -ErrorVariable wildcardError -ErrorAction SilentlyContinue        
+        $package =  uninstall-package -name packagemanagement* -warningaction:silentlycontinue -ErrorVariable wildcardError -ErrorAction SilentlyContinue
         $wildcardError.FullyQualifiedErrorId | should be "WildCardCharsAreNotSupported,Microsoft.PowerShell.PackageManagement.Cmdlets.UninstallPackage"
     }
 
     It "uninstall-package -name with whitespaces only, Expect error" {
         $Error.Clear()
-        $package =  uninstall-package -name " " -warningaction:silentlycontinue -ErrorVariable wildcardError -ErrorAction SilentlyContinue        
+        $package =  uninstall-package -name " " -warningaction:silentlycontinue -ErrorVariable wildcardError -ErrorAction SilentlyContinue
         $wildcardError.FullyQualifiedErrorId | should be "WhitespacesAreNotSupported,Microsoft.PowerShell.PackageManagement.Cmdlets.UninstallPackage"
     }
 
@@ -1484,7 +1484,7 @@ Describe Get-PackageSource -Tags "Feature" {
         UnRegister-PackageSource -Name 'NugetTemp2' -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
     }
 
-    It "find-install-get-package Expect succeed" {      
+    It "find-install-get-package Expect succeed" {
         find-package jquery -source NugetTemp2 -provider nuget | install-package -destination $destination -force
         (Test-Path $destination\jQuery*) | should be $true
         $a=get-package -Destination $destination -Name jquery
@@ -1493,26 +1493,26 @@ Describe Get-PackageSource -Tags "Feature" {
 
     It "get-packageprovider--find-package, Expect succeed" {
         
-        $a=(get-packageprovider -name nuget| find-package  -Name jquery )   
+        $a=(get-packageprovider -name nuget| find-package  -Name jquery )
         $a | where { $_.Name -eq 'jQuery'  } | should be $true
     }
 
     It "get-packagesource--find-package, Expect succeed" {
 
-        $a=(get-packagesource | find-package jquery)   
+        $a=(get-packagesource | find-package jquery)
         $a | where { $_.Name -eq 'jQuery'  } | should be $true
     }
 
     it "EXPECTED: Gets The 'Nuget' Package Provider" {
-        $a = Get-PackageSource -Name  *Temp* 
-        $a | ?{ $_.name -eq "NugetTemp1" } 
-        $a | ?{ $_.name -eq "NugetTemp2" } 
+        $a = Get-PackageSource -Name  *Temp*
+        $a | ?{ $_.name -eq "NugetTemp1" }
+        $a | ?{ $_.name -eq "NugetTemp2" }
     }
 
     it "EXPECTED: Gets The 'Nuget' Package Provider" {
     	$a = Get-PackageSource -Name  *Temp* -Location "https://www.nuget.org/api/v2"
-        $a | ?{ $_.name -eq "NugetTemp2" } 
-        $a | ?{ $_.name -ne "NugetTemp1" } 
+        $a | ?{ $_.name -eq "NugetTemp2" }
+        $a | ?{ $_.name -ne "NugetTemp1" }
     }
 }
 
