@@ -51,6 +51,7 @@ case "$OSTYPE" in
         ;;
     darwin*)
         # We don't check for curl as macOS should have a system version
+        echo "I added this... current success code: $?"
         package=powershell-6.0.0-beta.5-osx.10.12-x64.pkg
         ;;
     *)
@@ -89,6 +90,7 @@ case "$OSTYPE" in
     darwin*)
         patched=0
         if hash brew 2>/dev/null; then
+            echo "brew is installed?"
             if [[ ! -d $(brew --prefix openssl) ]]; then
                echo "Installing OpenSSL with brew..."
                if ! brew install openssl; then
@@ -117,7 +119,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-powershell -noprofile -c '"Congratulations! PowerShell is installed at $PSHOME"'
+powershell -noprofile -c "Congratulations! PowerShell is installed at $PSHOME"
 success=$?
 
 if [[ "$success" != 0 ]]; then
