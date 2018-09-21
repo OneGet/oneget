@@ -536,7 +536,13 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			$testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
 			$command = "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 			
-			Powershell -command "& {get-packageprovider -verbose; $command}"
+            Powershell -command "& {get-packageprovider -verbose; $command}"
+
+            if ($LastExitCode -ne 0)
+            {
+               $host.SetShouldExit($LastExitCode)
+            }
+
 			$x = [xml](Get-Content -raw $testResultsFile)
 			if ([int]$x.'test-results'.failures -gt 0)
 			{
@@ -546,7 +552,13 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			$testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
 			$command = "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 			
-			Powershell -command "& {get-packageprovider -verbose; $command}"
+            Powershell -command "& {get-packageprovider -verbose; $command}"
+
+            if ($LastExitCode -ne 0)
+            {
+                $host.SetShouldExit($LastExitCode)
+            }
+
 			$x = [xml](Get-Content -raw $testResultsFile)
 			if ([int]$x.'test-results'.failures -gt 0)
 			{
@@ -586,6 +598,11 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 		{
 		  & "$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
 		}
+
+        if ($LastExitCode -ne 0)
+        {
+            $host.SetShouldExit($LastExitCode)
+        }
 
 		$x = [xml](Get-Content -raw $testResultsFile)
 		if ([int]$x.'test-results'.failures -gt 0)
