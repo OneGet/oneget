@@ -36,7 +36,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using Microsoft.PackageManagement.Packaging;
-    using Telemetry.Internal;
     using System.Management.Automation.Runspaces;
     using System.Net;
     using Microsoft.PackageManagement.Internal.Utility.Plugin;
