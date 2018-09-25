@@ -1,6 +1,6 @@
 version: 1.0.{build}
 os:
-- WMF 5
+  - WMF 5
 environment:
   matrix:
     - test_framework: fullclr
@@ -9,20 +9,18 @@ configuration: Release
 platform: Any CPU
 
 init:
-
-- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 # Install Pester
 install: 
-    - cinst -y pester
+  - cinst -y pester
 
 clone_folder: c:\projects\oneget
 build_script:
-- git submodule update --init
-- ps: nuget locals all -clear
-- ps: import-module c:\projects\oneget\test\TestUtility.psm1 -force
-- ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451" Release -EmbedProviderManifest; .\build.ps1 -framework "netcoreapp2.0" Release -EmbedProviderManifest; .\build.ps1 -framework "netstandard1.6" Release -EmbedProviderManifest
-
+  - git submodule update --init
+  - ps: nuget locals all -clear
+  - ps: import-module c:\projects\oneget\test\TestUtility.psm1 -force
+  - ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451" Release -EmbedProviderManifest; .\build.ps1 -framework "netcoreapp2.0" Release -EmbedProviderManifest; .\build.ps1 -framework "netstandard1.6" Release -EmbedProviderManifest
 
 # branches to build
 branches:
@@ -30,7 +28,6 @@ branches:
   only:
     - master
     - WIP
-
 
 deploy_script: 
   - ps: |
@@ -57,5 +54,5 @@ deploy_script:
       }
 
 test_script:
- - ps: |
+  - ps: |
     & "c:\projects\oneget\Test\run-tests.ps1" -nugetApiVersion all
