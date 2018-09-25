@@ -81,7 +81,7 @@
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
-    <PackageReference Include="System.Diagnostics.FileVersionInfo" Version="4.3.0-preview1-24530-04" />
+    <PackageReference Include="System.Diagnostics.FileVersionInfo" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.StackTrace" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
@@ -89,12 +89,12 @@
     <PackageReference Include="System.IO.FileSystem.Watcher" Version="4.3.0" />
     <PackageReference Include="System.IO.Pipes" Version="4.3.0" />
     <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
-    <PackageReference Include="System.Net.NetworkInformation" Version="4.3.0-preview1-24530-04" />
+    <PackageReference Include="System.Net.NetworkInformation" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
     <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
-    <PackageReference Include="System.Xml.XPath.XmlDocument" Version="4.3.0-preview1-24530-04" />
+    <PackageReference Include="System.Xml.XPath.XmlDocument" Version="4.3.0" />
     <PackageReference Include="System.Xml.XmlDocument" Version="4.3.0" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
     <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.0" />
@@ -103,20 +103,20 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
     <PackageReference Update="Microsoft.NETCore.App" Version="2.0.0" />
     <PackageReference Include="NETStandard.Library" Version="2.0.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.4.0-preview1-25305-02" />
-    <PackageReference Include="Microsoft.Win32.Registry.AccessControl" Version="4.4.0-preview1-25305-02" />
-    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.4.0-preview1-25305-02" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
+    <PackageReference Include="Microsoft.Win32.Registry.AccessControl" Version="4.4.0" />
+    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.4.0" />
     <PackageReference Include="System.IO.FileSystem.DriveInfo" Version="4.3.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.2" />
-    <PackageReference Include="System.Security.AccessControl" Version="4.4.0-preview1-25305-02" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.4.0-preview1-25305-02" />
-    <PackageReference Include="System.Security.Principal.Windows" Version="4.4.0-preview1-25305-02" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.4.0-preview1-25305-02" />
+    <PackageReference Include="System.Security.AccessControl" Version="4.4.0" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.4.0" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="4.4.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.3.0-preview1-24530-04" />
-    <PackageReference Include="System.IO.FileSystem.DriveInfo" Version="4.3.0-preview1-24530-04" />
+    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.3.0" />
+    <PackageReference Include="System.IO.FileSystem.DriveInfo" Version="4.3.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.0" />
-    <PackageReference Include="System.Security.AccessControl" Version="4.3.0-preview1-24530-04" />
+    <PackageReference Include="System.Security.AccessControl" Version="4.3.0" />
   </ItemGroup>
 </Project>
