@@ -59,6 +59,7 @@ case "$OSTYPE" in
         ;;
 esac
 
+Write-Output($package)
 curl -L -o "$package" $(get_url "$package")
 
 if [[ ! -r "$package" ]]; then
@@ -78,6 +79,7 @@ case "$OSTYPE" in
                 sudo yum install "./$package"
                 ;;
             ubuntu)
+                Write-Output($package)
                 # dpkg does not automatically resolve dependencies, but spouts ugly errors
                 sudo dpkg -i "./$package" &> /dev/null
                 # Resolve dependencies
