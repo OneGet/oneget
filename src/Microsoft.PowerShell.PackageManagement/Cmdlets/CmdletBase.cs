@@ -479,15 +479,15 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         private void TraceMessageHelper(string message, SoftwareIdentity swidObject)
         {
-            TelemetryAPI.TraceMessage(message, new
-            {
-                PackageName = swidObject.Name,
-                PackageVersion = swidObject.Version,
-                PackageProviderName = swidObject.ProviderName,
-                Repository = swidObject.Source,
-                ExecutionStatus = swidObject.Status,
-                ExecutionTime = DateTime.Today
-            });
+            //TelemetryAPI.TraceMessage(message, new
+            //{
+            //    PackageName = swidObject.Name,
+            //    PackageVersion = swidObject.Version,
+            //    PackageProviderName = swidObject.ProviderName,
+            //    Repository = swidObject.Source,
+            //    ExecutionStatus = swidObject.Status,
+            //    ExecutionTime = DateTime.Today
+            //});
         }
 
         #region Event and telemetry stuff
