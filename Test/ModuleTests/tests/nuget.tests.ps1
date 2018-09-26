@@ -41,7 +41,8 @@ $LinuxProgramFilesFolder="/usr/local/share/PackageManagement/NuGet/Packages"
 
 $source = $env:NUGET_API_URL
 $sourceWithoutSlash = $env:NUGET_API_URL_ALTERNATE
-$fwlink = "http://go.microsoft.com/fwlink/?LinkID=623861&clcid=0x409"
+# Links to https://www.poshtestgallery.com/api/v2/
+$fwlink = "https://go.microsoft.com/fwlink/?linkid=2025994"
 $longName = "THISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERSTHISISOVER255CHARACTERS";
 $workingMaximumVersions = {"2.0", "2.5", "3.0"};
 $packageNames = @("AzureContrib", "AWSSDK", "TestLib");
