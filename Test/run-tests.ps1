@@ -95,6 +95,7 @@ $packageManagementManifest = Test-ModuleManifest "$TestBin\PackageManagement.psd
 $PackageManagementVersion = $packageManagementManifest.Version.ToString()
 
 $testframeworkVariable = $null
+$totalTestFailures = 0
 # For appveyor runs
 try
 {
@@ -538,14 +539,11 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			
             Powershell -command "& {get-packageprovider -verbose; $command}"
 
-            if ($LastExitCode -ne 0)
-            {
-               $host.SetShouldExit($LastExitCode)
-            }
-
-			$x = [xml](Get-Content -raw $testResultsFile)
-			if ([int]$x.'test-results'.failures -gt 0)
+            $x = [xml](Get-Content -raw $testResultsFile)
+            $numTestFailures = [int]$x.'test-results'.failures
+			if ($numTestFailures -gt 0)
 			{
+                $totalTestFailures = $numTestFailures
 				throw "$($x.'test-results'.failures) tests failed"
 			}
 
@@ -554,14 +552,11 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			
             Powershell -command "& {get-packageprovider -verbose; $command}"
 
-            if ($LastExitCode -ne 0)
-            {
-                $host.SetShouldExit($LastExitCode)
-            }
-
-			$x = [xml](Get-Content -raw $testResultsFile)
-			if ([int]$x.'test-results'.failures -gt 0)
+            $x = [xml](Get-Content -raw $testResultsFile)
+            $numTestFailures = [int]$x.'test-results'.failures
+			if ($numTestFailures -gt 0)
 			{
+                $totalTestFailures = $numTestFailures
 				throw "$($x.'test-results'.failures) tests failed"
 			}
 		} catch {}
@@ -599,14 +594,12 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 		  & "$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
 		}
 
-        if ($LastExitCode -ne 0)
-        {
-            $host.SetShouldExit($LastExitCode)
-        }
 
-		$x = [xml](Get-Content -raw $testResultsFile)
-		if ([int]$x.'test-results'.failures -gt 0)
+        $x = [xml](Get-Content -raw $testResultsFile)
+        $numTestFailures = [int]$x.'test-results'.failures
+		if ($numTestFailures -gt 0)
 		{
+            $totalTestFailures = $numTestFailures
 			throw "$($x.'test-results'.failures) tests failed"
 		}
 		<#  Disable DSC tests for Linux for now. #>
@@ -628,14 +621,11 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 				& "$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
 			}
 
-            if ($LastExitCode -ne 0)
-            {
-                $host.SetShouldExit($LastExitCode)
-            }
-
-			$x = [xml](Get-Content -raw $testResultsFile)
-			if ([int]$x.'test-results'.failures -gt 0)
+            $x = [xml](Get-Content -raw $testResultsFile)
+            $numTestFailures = [int]$x.'test-results'.failuress
+			if ($numTestFailures -gt 0)
 			{
+                $totalTestFailures = $numTestFailures
 				throw "$($x.'test-results'.failures) tests failed"
 			}
 		}
@@ -650,22 +640,19 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 
 			& "$powershellLegacyFolder\$powershellCoreFilePath" -command "& {$command}"
 
-            if ($LastExitCode -ne 0)
-            {
-                $host.SetShouldExit($LastExitCode)
-            }
-
-			$x = [xml](Get-Content -raw $testResultsFile)
-			if ([int]$x.'test-results'.failures -gt 0)
+            $x = [xml](Get-Content -raw $testResultsFile)
+            $numTestFailures = [int]$x.'test-results'.failuress
+			if ($numTestFailures -gt 0)
 			{
+                $totalTestFailures = $numTestFailures
 				throw "$($x.'test-results'.failures) tests failed"
 			}
 		}
 	}
 }
-if ($LastExitCode -ne 0)
+if ($totalTestFailures -ne 0)
 {
-    $host.SetShouldExit($LastExitCode)
+    $host.SetShouldExit($totalTestFailures)
 }
 Write-Host -fore White "Finished tests"
 
