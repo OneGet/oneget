@@ -23,11 +23,11 @@
 
 ### What's New
 PackageManagement is supported in Windows, Linux and MacOS now.
-We periodically make binary drop to [PowerShellCore][pscore],
+We periodically make binary drops to [PowerShellCore][pscore],
 meaning PackageManagement is a part of PowerShell Core releases.
-Also PackageManagement and PowershellGet Modules are regularly getting updated in [PowerShellGallery.com](https://www.PowerShellGallery.com).
+Also PackageManagement and PowershellGet Modules are regularly updated in [PowerShellGallery.com](https://www.PowerShellGallery.com).
 
-Thus checkout the latest version from PowerShellGallery.com.
+Thus check out the latest version from PowerShellGallery.com.
 
 [pscore]: https://github.com/PowerShell/PowerShell
 
@@ -51,7 +51,7 @@ You can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notifie
 
 ### What is PackageManagement (OneGet)?
 
-OneGet is a Windows package manager, renamed as PackageManagement. It is a unified interface to package management systems and aims to make Software Discovery, Installation and Inventory (SDII) work via a common set of cmdlets (and eventually a set of APIs). Regardless of the installation technology underneath, users can use these common cmdlets to install/uninstall packages, add/remove/query package repositories, and query a system for the software installed.
+OneGet is a Windows package manager, renamed as PackageManagement. It is a unified interface to package management systems and aims to make Software Discovery, Installation, and Inventory (SDII) work via a common set of cmdlets (and eventually a set of APIs). Regardless of the installation technology underneath, users can use these common cmdlets to install/uninstall packages, add/remove/query package repositories, and query a system for the software installed.
 
 With OneGet, you can
 * Manage a list of software repositories in which packages can be searched, acquired, and installed
@@ -260,9 +260,9 @@ if you are running on Linux or Mac.
 
 ### Understanding the OneGet code repository
 
-OneGet is under rapid development, and so you get to see just how the sausage is being made. I try to keep the master branch clean and buildable, but my own working branch can get pretty damn wild and I make no bones about some of this. I work fast, I make big changes, and I try to keep my eye on the target.
+OneGet is under rapid development, so you get to see just how the sausage is being made. I try to keep the master branch clean and buildable, but my own working branch can get pretty damn wild and I make no bones about some of this. I work fast, I make big changes, and I try to keep my eye on the target.
 
-Feel free to clone the repository, and check out the different branches:
+Feel free to clone the repository and check out the different branches:
 
 #### Branches
 
@@ -282,7 +282,7 @@ Contributions to the OneGet project will require the signing of a CLA -- contact
 
 In the immediate time frame, we won't be taking pull requests to the core itself, as we still have many masters at Microsoft to keep happy, and I have a lot of release process stuff I have to go thru to make them happy.
 
-There are some exceptions to the where I can take Pull Requests immediately:
+There are some exceptions where I can take Pull Requests immediately:
 
 > Pull Requests to the Package Providers are instantly welcome
 
@@ -298,7 +298,7 @@ I'm eager to work with anyone who wants to help shape the future of Package Mana
 
 ### Online Meeting
 
-We have an online meetings. We will twitter the exact time as well as put a note on GitHub site.  (everyone welcome!)
+We have online meetings. We will post the exact times to twitter as well as put a note on GitHub site.  (everyone welcome!)
 
 You can see archives of the previous meetings available on
 
@@ -336,7 +336,7 @@ Throughput Graph
 - [PowerShellGet Provider](https://github.com/PowerShell/PowerShellGet)
 - [MicrosoftDockerProvider](https://github.com/OneGet/MicrosoftDockerProvider)
 - [NanoServerPackage](https://github.com/OneGet/NanoServerPackage)
-- Checkout OneGet providers from our Community such as Gistprovider, OfficeProvider, 0Install and more from powershellgallery.com or simply run [Find-PackageProvider cmdlet](https://msdn.microsoft.com/en-us/powershell/gallery/psget/oneget/packagemanagement_cmdlets)
-- Want to write a provider? Checkout our [sample provider](https://www.powershellgallery.com/packages/MyAlbum/)
-- Wanna to download packages from http://Chocolatey.org, try out [ChocolateyGet provider](https://www.powershellgallery.com/items?q=ChocolateyGet&x=15&y=13)
-- Wanna to control which packages to use and where to get them from based on your organization, checkout [PSL provider](https://github.com/OneGet/PSLProvider)
+- Check out OneGet providers from our Community such as Gistprovider, OfficeProvider, 0Install and more from powershellgallery.com or simply run [Find-PackageProvider cmdlet](https://msdn.microsoft.com/en-us/powershell/gallery/psget/oneget/packagemanagement_cmdlets)
+- Want to write a provider? Check out our [sample provider](https://www.powershellgallery.com/packages/MyAlbum/)
+- Want to download packages from http://Chocolatey.org, try out [ChocolateyGet provider](https://www.powershellgallery.com/items?q=ChocolateyGet&x=15&y=13)
+- Want to control which packages to use and where to get them from based on your organization? Check out [PSL provider](https://github.com/OneGet/PSLProvider)
