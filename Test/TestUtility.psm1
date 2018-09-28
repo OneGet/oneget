@@ -335,5 +335,5 @@ function Install-PowerShellCore {
         $pslPackageSource = Register-PackageSource "$PSLLocation" -ProviderName PSL -Location $PSLLocation -Trusted
     }
 
-    Install-Package PowerShell -Provider PSL -Source $pslPackageSource.Name -Force -verbose
+    Install-Package PowerShell -Provider PSL -Source $pslPackageSource.Name -Force -verbose -SkipHashValidation
 }
