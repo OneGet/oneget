@@ -117,8 +117,8 @@ case "$OSTYPE" in
         ;;
 esac
 
-Write-Output("success:")
-Write-Output($?)
+echo "success:"
+echo $?
 powershell
 #powershell -noprofile -c '"Congratulations! PowerShell is installed at $PSHOME"'
 success=$?
