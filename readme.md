@@ -296,15 +296,6 @@ There are some exceptions where I can take Pull Requests immediately:
 I'm eager to work with anyone who wants to help shape the future of Package Management on Windows -- your opinions, feedback and code can help everyone.
 
 
-### Online Meeting
-
-We have online meetings. We will post the exact times to twitter as well as put a note on GitHub site.  (everyone welcome!)
-
-You can see archives of the previous meetings available on
-
-All meeting notes are recorded under [OneDrive PackageManagement](https://onedrive.live.com/?authkey=%21ABehsy6i3rzQdxE&id=EF4B329A5EB9EA4D%21127&cid=EF4B329A5EB9EA4D)
-
-
 ### Project Dashboard
 
 You can see issues, pull requests, backlog items, etc. in the [OneGet Dashboard](https://waffle.io/oneget/oneget)
