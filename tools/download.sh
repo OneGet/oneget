@@ -59,6 +59,8 @@ case "$OSTYPE" in
         ;;
 esac
 
+echo "package:"
+echo "$package"
 curl -L -o "$package" $(get_url "$package")
 
 if [[ ! -r "$package" ]]; then
@@ -117,11 +119,18 @@ case "$OSTYPE" in
         ;;
 esac
 
-echo "success:"
-echo $?
-powershell
-#powershell -noprofile -c '"Congratulations! PowerShell is installed at $PSHOME"'
+echo "success: $?"
+pwsh -noprofile -c '"Congratulations! PowerShell is installed at $PSHOME"'
 success=$?
+
+#case "$OSTYPE" in
+#    darwin*)
+#        if ("$success" != 0) {
+#            brew cask install powershell
+#            pwsh -noprofile -c '"Congratulations! PowerShell is installed at $PSHOME"'
+#        }
+#        echo "success: $?"
+#        success=0;
 
 if [[ "$success" != 0 ]]; then
     echo "ERROR: PowerShell failed to install!" >&2
