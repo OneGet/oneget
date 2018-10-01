@@ -10,10 +10,10 @@ try {
     Write-Output($PSVersionTable.PSVersion)
     
     $IsCoreCLR = ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core')
-    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
     $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
-    $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
     Write-Output ("is osx in try block: " + $IsOSX)
+    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
+    $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
 } catch {
     # If these are already set, then they're read-only and we're done
     try {
