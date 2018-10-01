@@ -6,7 +6,9 @@ try {
 
     Write-Output("runtime: " + $Runtime)
     Write-Output("OSPlatform: " + $OSPlatform)
-
+    Write-Output($Runtime::IsOSPlatform($OSPlatform::OSX))
+    Write-Output($PSVersionTable.PSVersion)
+    
     $IsCoreCLR = ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core')
     $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
     $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
