@@ -13,11 +13,14 @@ try {
     Write-Output(($PSVersionTable.PSEdition -eq 'Core'))
 
     Write-Output(($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core'))
+    Write-Output($Runtime::IsOSPlatform($OSPlatform::OSX))
+
+    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
+    Write-Output ("is osx in try block: " + $IsOSX)
     
     $IsCoreCLR = ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core')
     Write-Output("IsCoreCLR: " + $IsCoreCLR)
-    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
-    Write-Output ("is osx in try block: " + $IsOSX)
+
     $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
     $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
 } catch {
