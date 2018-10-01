@@ -38,7 +38,7 @@ function Start-DotnetBootstrap {
         # we currently pin dotnet-cli version, because tool
         # is currently migrating to msbuild toolchain
         # and requires constant updates to our build process.
-        [string]$Version = "2.0.0"
+        [string]$Version = "2.1.0"
     )
 
     # Install ours and .NET's dependencies
@@ -47,13 +47,18 @@ function Start-DotnetBootstrap {
         # Build tools
         $Deps += "curl", "g++", "cmake", "make"
 
+        Write-Output("1")
         # .NET Core required runtime libraries
         $Deps += "libunwind8"
         if ($IsUbuntu14) { $Deps += "libicu52" }
         elseif ($IsUbuntu16) { $Deps += "libicu55" }
+        Write-Output("2")
 
         # Install dependencies
         sudo apt-get install -y -qq $Deps
+        Write-Output("3")
+        apt-get update
+        Write-Output("4")
     } elseif ($IsCentOS) {
         # Build tools
         $Deps += "which", "curl", "gcc-c++", "cmake", "make"
@@ -75,8 +80,8 @@ function Start-DotnetBootstrap {
         brew install $Deps
     }
 
+    Write-Output("5")
     $obtainUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain"
-	  
 
     # Install for Linux and OS X
     if ($IsLinux -or $IsOSX) {
@@ -95,7 +100,7 @@ function Start-DotnetBootstrap {
             Write-Warning "This script only removes prior versions of dotnet for Ubuntu 14.04 and OS X"
         }
 
-        # Install new dotnet 1.0.0 preview packages
+        # Install new dotnet packages
         $installScript = "dotnet-install.sh"
         curl -s $obtainUrl/$installScript -o $installScript
         chmod +x $installScript
