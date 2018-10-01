@@ -106,6 +106,8 @@ function Start-DotnetBootstrap {
         chmod +x $installScript
         bash ./$installScript -c $Channel -v $Version
 
+        Write-Output(get-command dotnet)
+
         # .NET Core's crypto library needs brew's OpenSSL libraries added to its rpath
         if ($IsOSX) {
             # This is the library shipped with .NET Core
