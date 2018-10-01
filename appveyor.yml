@@ -5,6 +5,7 @@ environment:
   matrix:
     - test_framework: fullclr
     - test_framework: coreclr
+      PowerShellEdition: Core
 configuration: Release
 platform: Any CPU
 
