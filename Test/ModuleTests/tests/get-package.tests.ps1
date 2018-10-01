@@ -56,16 +56,16 @@ Describe "Get-package with version parameter  - valid scenarios" -Tags "Feature"
     }
 
     It "E2E: Get-package supports -AllVersions parameter for a specific package - with multiple versions from Nuget" {
-        ($foundPackages = Find-Package -Name "adept.nugetrunner" -Provider $nuget -Source $env:NUGET_API_URL -AllVersions)        
+        ($foundPackages = Find-Package -Name "adept.nugetrunner" -Provider $nuget -Source $env:NUGET_API_URL -AllVersions)
 
-        foreach ($package in $foundPackages) 
+        foreach ($package in $foundPackages)
         {
             ($package | Install-Package -Destination $destination -Force)
         }
 		
         $installedPackages = (Get-Package -Name "adept.nugetrunner" -Provider $nuget -Destination $destination -AllVersions)
-        $installedPackages.Name | should be "adept.nugetrunner"
-        $installedPackages.Count -eq $foundPackages.Count | should be $true        
+        $installedPackages.Name[0] | should be "adept.nugetrunner"
+        $installedPackages.Count -eq $foundPackages.Count | should be $true
 
         # check that getting attributes from meta is not case sensitive
         $packageToInspect = $installedPackages[0]

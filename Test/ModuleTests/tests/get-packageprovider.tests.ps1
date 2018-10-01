@@ -48,11 +48,11 @@ Describe "get-packageprovider" -Tags @('BVT', 'DRT'){
     It "EXPECTED:  Gets The 'Programs' Package Provider" -Skip:($IsCoreCLR){
         $x = (get-packageprovider -name "Programs").name | should match "Programs"
     }
-    
+
     It "EXPECTED:  Gets The 'P*' Package Provider" {
         $x = (get-packageprovider -name "P*").name.Contains('PowerShellGet')| should be $true
     }
-   
+
     It "EXPECTED:  returns an error when asking for a provider that does not exist" -Skip:($IsCoreCLR){
         $Error.Clear()
         $msg = powershell 'get-packageprovider -name NOT_EXISTS  -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
@@ -64,7 +64,7 @@ Describe "get-packageprovider" -Tags @('BVT', 'DRT'){
         $msg = powershell 'get-packageprovider -name NOT_EXISTS,NOT_EXISTS2  -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
         $msg | should be "UnknownProviderFromActivatedList,Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackageProvider"
     }
-    
+
     It "EXPECTED:  returns an error when asking for multiple providers that do not exist -list" -Skip:($IsCoreCLR){
         $Error.Clear()
         $msg = powershell 'get-packageprovider -name NOT_EXISTS,NOT_EXISTS2 -ListAvailable -warningaction:silentlycontinue -ea silentlycontinue; $ERROR[0].FullyQualifiedErrorId'
@@ -116,15 +116,13 @@ Describe "Get-PackageProvider with list" -Tags @('BVT', 'DRT'){
         (get-packageprovider -name "PowerShellGet" -ListAvailable).name | should match "PowerShellGet"
 
         $providers = get-packageprovider -Name OneGetTest, PowerShellGet -ListAvailable
-        
         $providers | ?{ $_.name -eq "OneGetTest" } | should not BeNullOrEmpty
-   
-        $providers | ?{ $_.name -eq "PowerShellGet" } | should not BeNullOrEmpty   
+        $providers | ?{ $_.name -eq "PowerShellGet" } | should not BeNullOrEmpty
     }
-       
+
     It "List two providers with wildcard chars" -Skip:($IsCoreCLR){
         $providers = get-packageprovider -Name OneGetTest* -ListAvailable
-        
+
         $providers | ?{ $_.name -eq "OneGetTest" } | should not BeNullOrEmpty
         #all versions of the OneGetTest provider should be displayed
         $providers.Count -ge 3 | should be $true

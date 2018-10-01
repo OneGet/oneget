@@ -4,13 +4,29 @@ try {
     $Runtime = [System.Runtime.InteropServices.RuntimeInformation]
     $OSPlatform = [System.Runtime.InteropServices.OSPlatform]
 
-    $IsCoreCLR = ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core')
-    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
+    Write-Output("runtime: " + $Runtime)
+    Write-Output("OSPlatform: " + $OSPlatform)
+    Write-Output($Runtime::IsOSPlatform($OSPlatform::OSX))
+    Write-Output($PSVersionTable.PSVersion)
+    
+    Write-Output($PSVersionTable.ContainsKey('PSEdition')) 
+    Write-Output(($PSVersionTable.PSEdition -eq 'Core'))
+
+    Write-Output(($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core'))
+    Write-Output($Runtime::IsOSPlatform($OSPlatform::OSX))
+
     $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
+    Write-Output ("is osx in try block: " + $IsOSX)
+    
+    $IsCoreCLR = ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core')
+    Write-Output("IsCoreCLR: " + $IsCoreCLR)
+
+    $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
     $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
 } catch {
     # If these are already set, then they're read-only and we're done
     try {
+        Write-Output("IsOSX is getting set to false")
         $IsCoreCLR = $false
         $IsLinux = $false
         $IsOSX = $false
@@ -38,7 +54,7 @@ function Start-DotnetBootstrap {
         # we currently pin dotnet-cli version, because tool
         # is currently migrating to msbuild toolchain
         # and requires constant updates to our build process.
-        [string]$Version = "2.0.0-preview2-006388"              
+        [string]$Version = "2.1.4"
     )
 
     # Install ours and .NET's dependencies
@@ -48,11 +64,12 @@ function Start-DotnetBootstrap {
         $Deps += "curl", "g++", "cmake", "make"
 
         # .NET Core required runtime libraries
-        $Deps += "libunwind8"
+        $Deps += "libunwind8-dev"
         if ($IsUbuntu14) { $Deps += "libicu52" }
         elseif ($IsUbuntu16) { $Deps += "libicu55" }
 
         # Install dependencies
+        sudo apt-get update
         sudo apt-get install -y -qq $Deps
     } elseif ($IsCentOS) {
         # Build tools
@@ -65,25 +82,33 @@ function Start-DotnetBootstrap {
         sudo yum install -y -q $Deps
     } elseif ($IsOSX) {
 
+        Write-Output("Debugging Mac image 1")
         # Build tools
         $Deps += "curl", "cmake"
+        Write-Output("Debugging Mac image 2")
 
         # .NET Core required runtime libraries
         $Deps += "openssl"
+        Write-Output("Debugging Mac image 3")
 
         # Install dependencies
         brew install $Deps
+        Write-Output("Debugging Mac image 4")
     }
 
+    Write-Output("is osx?: ")
+    Write-Output($IsOSX)
+    Write-Output("Debugging Mac image 5")
     $obtainUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain"
-	  
 
     # Install for Linux and OS X
     if ($IsLinux -or $IsOSX) {
+        Write-Output("Debugging Mac image 6")
         # Uninstall all previous dotnet packages
         $uninstallScript = if ($IsUbuntu) {
             "dotnet-uninstall-debian-packages.sh"
         } elseif ($IsOSX) {
+            Write-Output("Debugging Mac image 7")
             "dotnet-uninstall-pkgs.sh"
         }
 
@@ -95,14 +120,17 @@ function Start-DotnetBootstrap {
             Write-Warning "This script only removes prior versions of dotnet for Ubuntu 14.04 and OS X"
         }
 
-        # Install new dotnet 1.0.0 preview packages
+        Write-Output("Debugging Mac image 8")
+        # Install new dotnet packages
         $installScript = "dotnet-install.sh"
         curl -s $obtainUrl/$installScript -o $installScript
         chmod +x $installScript
         bash ./$installScript -c $Channel -v $Version
+        Write-Output("Debugging Mac image 9")
 
         # .NET Core's crypto library needs brew's OpenSSL libraries added to its rpath
         if ($IsOSX) {
+            Write-Output("Debugging Mac image 10")
             # This is the library shipped with .NET Core
             # This is allowed to fail as the user may have installed other versions of dotnet
             Write-Warning ".NET Core links the incorrect OpenSSL, correcting .NET CLI libraries..."

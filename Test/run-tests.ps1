@@ -95,6 +95,7 @@ $packageManagementManifest = Test-ModuleManifest "$TestBin\PackageManagement.psd
 $PackageManagementVersion = $packageManagementManifest.Version.ToString()
 
 $testframeworkVariable = $null
+$totalTestFailures = 0
 # For appveyor runs
 try
 {
@@ -534,22 +535,28 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			}
 
 			$testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
-			$command = "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+			$command = "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 			
-			Powershell -command "& {get-packageprovider -verbose; $command}"
-			$x = [xml](Get-Content -raw $testResultsFile)
-			if ([int]$x.'test-results'.failures -gt 0)
+            Powershell -command "& {get-packageprovider -verbose; $command}"
+
+            $x = [xml](Get-Content -raw $testResultsFile)
+            $numTestFailures = [int]$x.'test-results'.failures
+			if ($numTestFailures -gt 0)
 			{
+                $totalTestFailures = $numTestFailures
 				throw "$($x.'test-results'.failures) tests failed"
 			}
 
 			$testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
-			$command = "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+			$command = "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 			
-			Powershell -command "& {get-packageprovider -verbose; $command}"
-			$x = [xml](Get-Content -raw $testResultsFile)
-			if ([int]$x.'test-results'.failures -gt 0)
+            Powershell -command "& {get-packageprovider -verbose; $command}"
+
+            $x = [xml](Get-Content -raw $testResultsFile)
+            $numTestFailures = [int]$x.'test-results'.failures
+			if ($numTestFailures -gt 0)
 			{
+                $totalTestFailures = $numTestFailures
 				throw "$($x.'test-results'.failures) tests failed"
 			}
 		} catch {}
@@ -573,7 +580,7 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 		
 		$command += "Import-Module '$pesterFolder';"
 
-		$command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+		$command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 
 	 
 		Write-Host "CoreCLR: Calling $powershellFolder\$powershellCoreFilePath -command  $command"
@@ -587,9 +594,12 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 		  & "$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
 		}
 
-		$x = [xml](Get-Content -raw $testResultsFile)
-		if ([int]$x.'test-results'.failures -gt 0)
+
+        $x = [xml](Get-Content -raw $testResultsFile)
+        $numTestFailures = [int]$x.'test-results'.failures
+		if ($numTestFailures -gt 0)
 		{
+            $totalTestFailures = $numTestFailures
 			throw "$($x.'test-results'.failures) tests failed"
 		}
 		<#  Disable DSC tests for Linux for now. #>
@@ -598,7 +608,7 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			$command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = '$nugetApiUrlAlternate';`$env:NUGET_API_VERSION = '$currentNugetApiVersion';"
 			$command += "Import-Module '$pesterFolder';"
 			$testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
-			$command += "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml"
+			$command += "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 
 			Write-Host "CoreCLR: Calling $powershellFolder\$powershellCoreFilePath -command  $command"
 
@@ -611,9 +621,11 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 				& "$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
 			}
 
-			$x = [xml](Get-Content -raw $testResultsFile)
-			if ([int]$x.'test-results'.failures -gt 0)
+            $x = [xml](Get-Content -raw $testResultsFile)
+            $numTestFailures = [int]$x.'test-results'.failuress
+			if ($numTestFailures -gt 0)
 			{
+                $totalTestFailures = $numTestFailures
 				throw "$($x.'test-results'.failures) tests failed"
 			}
 		}
@@ -622,19 +634,25 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 			$command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = '$nugetApiUrlAlternate';`$env:NUGET_API_VERSION = '$currentNugetApiVersion';"
 			$command += "Import-Module '$pesterFolder';`$global:IsLegacyTestRun=`$true;"
 			$testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
-			$command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -Tag Legacy"
+			$command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -Tag Legacy -EnableExit"
 
 			Write-Host "(Legacy) CoreCLR: Calling $powershellLegacyFolder\$powershellCoreFilePath -command  $command"
 
 			& "$powershellLegacyFolder\$powershellCoreFilePath" -command "& {$command}"
 
-			$x = [xml](Get-Content -raw $testResultsFile)
-			if ([int]$x.'test-results'.failures -gt 0)
+            $x = [xml](Get-Content -raw $testResultsFile)
+            $numTestFailures = [int]$x.'test-results'.failuress
+			if ($numTestFailures -gt 0)
 			{
+                $totalTestFailures = $numTestFailures
 				throw "$($x.'test-results'.failures) tests failed"
 			}
 		}
 	}
+}
+if ($totalTestFailures -ne 0)
+{
+    $host.SetShouldExit($totalTestFailures)
 }
 Write-Host -fore White "Finished tests"
 
