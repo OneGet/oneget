@@ -49,15 +49,15 @@ function Start-DotnetBootstrap {
 
         Write-Output("1")
         # .NET Core required runtime libraries
-        $Deps += "libunwind8"
+        $Deps += "libunwind8-dev"
         if ($IsUbuntu14) { $Deps += "libicu52" }
         elseif ($IsUbuntu16) { $Deps += "libicu55" }
         Write-Output("2")
 
         ## failing here
         # Install dependencies
+        sudo apt-get update
         sudo apt-get install -y -qq $Deps
-        Write-Output("3")
         Write-Output("4")
     } elseif ($IsCentOS) {
         # Build tools
