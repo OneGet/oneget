@@ -55,10 +55,9 @@ function Start-DotnetBootstrap {
         Write-Output("2")
 
         ## failing here
-        apt-get update
-        Write-Output("3")
         # Install dependencies
         sudo apt-get install -y -qq $Deps
+        Write-Output("3")
         Write-Output("4")
     } elseif ($IsCentOS) {
         # Build tools
