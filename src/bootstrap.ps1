@@ -8,9 +8,11 @@ try {
     $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
     $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
     $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
+    Write-Output ("is osx in try block: " + $IsOSX)
 } catch {
     # If these are already set, then they're read-only and we're done
     try {
+        Write-Output("IsOSX is getting set to false")
         $IsCoreCLR = $false
         $IsLinux = $false
         $IsOSX = $false
@@ -80,6 +82,8 @@ function Start-DotnetBootstrap {
         Write-Output("Debugging Mac image 4")
     }
 
+    Write-Output("is osx?: ")
+    Write-Output($IsOSX)
     Write-Output("Debugging Mac image 5")
     $obtainUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain"
 
