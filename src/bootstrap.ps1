@@ -38,7 +38,7 @@ function Start-DotnetBootstrap {
         # we currently pin dotnet-cli version, because tool
         # is currently migrating to msbuild toolchain
         # and requires constant updates to our build process.
-        [string]$Version = "2.1.0"
+        [string]$Version = "2.0.0"
     )
 
     # Install ours and .NET's dependencies
@@ -54,10 +54,11 @@ function Start-DotnetBootstrap {
         elseif ($IsUbuntu16) { $Deps += "libicu55" }
         Write-Output("2")
 
+        ## failing here
+        apt-get update
+        Write-Output("3")
         # Install dependencies
         sudo apt-get install -y -qq $Deps
-        Write-Output("3")
-        apt-get update
         Write-Output("4")
     } elseif ($IsCentOS) {
         # Build tools
