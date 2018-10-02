@@ -56,6 +56,3 @@ deploy_script:
 test_script:
   - ps: |
       & "c:\projects\oneget\Test\run-tests.ps1" -nugetApiVersion all
-
-on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

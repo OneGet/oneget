@@ -18,14 +18,14 @@ case "$OSTYPE" in
         source /etc/os-release
         # Install curl and wget to download package
         case "$ID" in
-            #centos*)
-            #    if ! hash curl 2>/dev/null; then
-            #        echo "curl not found, installing..."
-            #        sudo yum install -y curl
-            #    fi
+            centos*)
+                if ! hash curl 2>/dev/null; then
+                    echo "curl not found, installing..."
+                    sudo yum install -y curl
+                fi
 
-            #    package=powershell-6.0.0_beta.5-1.el7.x86_64.rpm
-            #    ;;
+                package=powershell-6.0.0_beta.5-1.el7.x86_64.rpm
+                ;;
             ubuntu)
                 if ! hash curl 2>/dev/null; then
                     echo "curl not found, installing..."
