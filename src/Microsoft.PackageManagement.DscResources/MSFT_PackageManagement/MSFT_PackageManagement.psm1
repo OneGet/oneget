@@ -344,6 +344,12 @@ function Set-TargetResource
     Write-Verbose -Message ($localizedData.StartSetPackage -f (GetMessageFromParameterDictionary $PSBoundParameters))
     
     $null = $PSBoundParameters.Remove("Ensure")
+
+    if ($PSBoundParameters.ContainsKey("SourceCredential"))
+    {
+        $PSBoundParameters.Add("Credential", $SourceCredential)
+        $null = $PSBoundParameters.Remove("SourceCredential")
+    }
     
     if ($AdditionalParameters)
     {
