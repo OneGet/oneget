@@ -34,7 +34,7 @@ try {
 }
 
 $InternalGallery = "https://www.poshtestgallery.com/api/v2/"
-$InternalGallery2 = "https://www.powershellgallery.com/api/v2/"
+$InternalGallery2 = "http://www.powershellgallery.com/api/v2/"
 $InternalSource = 'OneGetTestSource'
 $InternalSource2 = 'OneGetTestSource2'
 $ProviderFolder = "$env:ProgramFiles\PackageManagement\ProviderAssemblies"
