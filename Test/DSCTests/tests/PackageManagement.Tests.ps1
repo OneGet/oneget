@@ -13,7 +13,7 @@
 #
 # ------------------ PackageManagement Test  -----------------------------------
 
-$InternalGallery = "https://dtlgalleryint.cloudapp.net/api/v2/"
+$InternalGallery = "https://www.poshtestgallery.com/api/v2/"
 $InternalSource = 'OneGetTestSource'
 
 
@@ -33,7 +33,6 @@ Describe "PackageManagement Acceptance Test" -Tags "Feature" {
         $gpp | ?{ $_.name -eq "PowerShellGet" } | should not BeNullOrEmpty   
     }
 
-
     It "find-packageprovider PowerShellGet" {
         $fpp = (Find-PackageProvider -Name "PowerShellGet" -force).name 
         $fpp -contains "PowerShellGet" | should be $true
@@ -43,7 +42,6 @@ Describe "PackageManagement Acceptance Test" -Tags "Feature" {
         $ipp = (install-PackageProvider -name gistprovider -force -source $InternalSource -Scope CurrentUser).name 
         $ipp -contains "gistprovider" | should be $true      
     }
-       
 
     it "Find-package"  {
         $f = Find-Package -ProviderName NuGet -Name jquery -source Nugettest
