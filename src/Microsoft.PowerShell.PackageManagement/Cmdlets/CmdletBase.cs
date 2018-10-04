@@ -480,7 +480,6 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         private void TraceMessageHelper(string message, SoftwareIdentity swidObject)
         {
-            if
             TelemetryAPI.TraceMessage(message, new
             {
                 PackageName = swidObject.Name,
