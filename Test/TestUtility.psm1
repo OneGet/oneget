@@ -233,7 +233,7 @@ function Publish-TestModule {
         if ($_.FullyQualifiedErrorId -ine "ModuleVersionShouldBeGreaterThanGalleryVersion,Publish-Module")
         {
             throw
-        }               
+        }
     }
 }
 
@@ -268,7 +268,7 @@ function Register-Repository
 
         [System.String]
         $SourceLocation=$script:LocalRepositoryPath,
-   
+
         [System.String]
         $PublishLocation=$script:LocalRepositoryPath,
 
@@ -321,7 +321,7 @@ function Register-Repository
         }
 
         PowerShellGet\UnRegister-PSRepository -Name $Name
-    }            
+    }
 }
 
 function Install-PowerShellCore {
@@ -335,5 +335,5 @@ function Install-PowerShellCore {
         $pslPackageSource = Register-PackageSource "$PSLLocation" -ProviderName PSL -Location $PSLLocation -Trusted
     }
 
-    Install-Package PowerShell -Provider PSL -Source $pslPackageSource.Name -Force -verbose
+    Install-Package PowerShell -Provider PSL -Source $pslPackageSource.Name -Force -verbose -SkipHashValidation
 }

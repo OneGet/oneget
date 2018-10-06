@@ -38,7 +38,7 @@ function Start-DotnetBootstrap {
         # we currently pin dotnet-cli version, because tool
         # is currently migrating to msbuild toolchain
         # and requires constant updates to our build process.
-        [string]$Version = "2.0.0-preview2-006388"              
+        [string]$Version = "2.1.4"
     )
 
     # Install ours and .NET's dependencies
@@ -76,7 +76,6 @@ function Start-DotnetBootstrap {
     }
 
     $obtainUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain"
-	  
 
     # Install for Linux and OS X
     if ($IsLinux -or $IsOSX) {
