@@ -1,3 +1,7 @@
+## Annoucement 
+
+PackageManagement is currently in maintainence mode meaning that we are only making critical fixes. Please only submit crash, hang, and security bug fixes. 
+
 ### Build Status - Master
 
 | AppVeyor (Windows)       | Travis CI (Linux / macOS) |
@@ -276,49 +280,14 @@ There are currently three branches in the git repository:
 |`wip`|  The `wip` branch is where the current **unstable** and **not-likely-working** coding is taking place. This lets you see where I'm at before stuff actually hits the master branch. Fun to read, but really, the wild-west of code branches. |
 
 
-### Contributing to OneGet
-
-Contributions to the OneGet project will require the signing of a CLA -- contact @jianyunt for details...
-
-In the immediate time frame, we won't be taking pull requests to the core itself, as we still have many masters at Microsoft to keep happy, and I have a lot of release process stuff I have to go thru to make them happy.
-
-There are some exceptions where I can take Pull Requests immediately:
-
-> Pull Requests to the Package Providers are instantly welcome
-
-> Any unit tests, BVT tests or -Edge only features, we can take pull requests for as well
-
-> Docs, Wiki, content, designs, bugs -- everything gleefully accepted :D
-
-
-### Participating in the OneGet Community
-
-I'm eager to work with anyone who wants to help shape the future of Package Management on Windows -- your opinions, feedback and code can help everyone.
-
-
-### Project Dashboard
-
-You can see issues, pull requests, backlog items, etc. in the [OneGet Dashboard](https://waffle.io/oneget/oneget)
-
-[![Stories in Progress](https://badge.waffle.io/oneget/oneget.svg?label=Bug&title=Bug)](http://waffle.io/OneGet/OneGet)
-[![Stories in Progress](https://badge.waffle.io/oneget/oneget.svg?label=Investigate&title=Investigate)](http://waffle.io/OneGet/OneGet)
-[![Stories in Progress](https://badge.waffle.io/oneget/oneget.svg?label=Discussion&title=Discussion)](http://waffle.io/OneGet/OneGet)
-[![Stories in Progress](https://badge.waffle.io/oneget/oneget.svg?label=New%20Feature&title=New%20Feature)](http://waffle.io/OneGet/OneGet)
-[![Stories in Progress](https://badge.waffle.io/oneget/oneget.svg?label=PowerShellGet&title=PowerShellGet)](http://waffle.io/OneGet/OneGet)
-
-Throughput Graph
-
-[![Throughput Graph](https://graphs.waffle.io/OneGet/oneget/throughput.svg)](https://waffle.io/OneGet/oneget/metrics)
-
-
 ### Team Members
 
 | Branch | Purpose |
 | ------- | ---------------------------|
-|@Xumin|  Program Manager on OneGet. Xumin is the sheriff, trying to keep the law. If there are rules that we need to play by, Xumin make us follow them.   |
+|@Sydney |  Program Manager on OneGet.  |
 |@Jianyun|  Engineer owner on OneGet & its providers. |
-|@Krishna|  Our engineer manager on OneGet, also owner for PowerShell Gallery.   |
-|@Quoc|  Engineer on the team.   |
+|@Edwin|  Our engineer manager on OneGet.   |
+|@Amber|  Engineer on the team.   |
 
 [Follow us on Twitter](https://twitter.com/PSOneGet)
 
