@@ -1,6 +1,6 @@
 ## Annoucement 
 
-PackageManagement is currently in maintainence mode meaning that we are only making critical fixes. Please only submit crash, hang, and security bug fixes. 
+OneGet is in a stable state and is expected to recieve only high-priority bug fixes from Microsoft in the future. We continue to welcome updates and improvements from the community.  
 
 ### Build Status - Master
 
@@ -284,10 +284,10 @@ There are currently three branches in the git repository:
 
 | Branch | Purpose |
 | ------- | ---------------------------|
-|@Sydney |  Program Manager on OneGet.  |
-|@Jianyun|  Engineer owner on OneGet & its providers. |
-|@Edwin|  Our engineer manager on OneGet.   |
-|@Amber|  Engineer on the team.   |
+|@sydneyhsmith |  Program Manager on OneGet.  |
+|@jianyunt|  Engineer owner on OneGet & its providers. |
+|@edyoung|  Our engineer manager on OneGet.   |
+|@alerickson|  Engineer on the team.   |
 
 [Follow us on Twitter](https://twitter.com/PSOneGet)
 
