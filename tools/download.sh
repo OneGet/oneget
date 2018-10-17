@@ -81,7 +81,7 @@ case "$OSTYPE" in
                 # dpkg does not automatically resolve dependencies, but spouts ugly errors
                 sudo dpkg -i "./$package" &> /dev/null
                 # Resolve dependencies
-                sudo apt-get install -f
+                # sudo apt-get install -f
                 ;;
             *)
         esac
