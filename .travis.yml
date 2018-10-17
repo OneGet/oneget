@@ -19,10 +19,6 @@ matrix:
     - os: osx
   fast_finish: true
 
-addons:
-  artifacts:
-    paths: $(ls ./src/out/OneGet.coreclr.zip | tr "\n" ":")
-
 install:
   - export PATH=~/.dotnet:$PATH
   - pushd tools
