@@ -80,6 +80,8 @@ case "$OSTYPE" in
             ubuntu)
                 # dpkg does not automatically resolve dependencies, but spouts ugly errors
                 sudo dpkg -i "./$package" &> /dev/null
+                # Update packages that need updating
+                sudo apt-get update
                 # Resolve dependencies
                 sudo apt-get install -f
                 ;;
