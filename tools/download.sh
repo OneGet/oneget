@@ -74,17 +74,15 @@ case "$OSTYPE" in
         echo "Installing PowerShell with sudo..."
         case "$ID" in
             centos)
-                echo "centos package: $package"
                 # yum automatically resolves dependencies for local packages
                 sudo yum install "./$package"
                 ;;
             ubuntu)
-                echo "ubuntu package: $package"
                 # dpkg does not automatically resolve dependencies, but spouts ugly errors
                 sudo dpkg -i "./$package" &> /dev/null
-                # Resolve dependencies
-                echo "updating..."
+                # Update packages that need updating
                 sudo apt-get update
+                # Resolve dependencies
                 sudo apt-get install -f
                 ;;
             *)
