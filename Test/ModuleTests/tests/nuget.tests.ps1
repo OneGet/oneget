@@ -894,6 +894,15 @@ Describe "Install-Package dependencies" -Tags "Feature" {
         (Test-Path "$tempDir\Nancy.Hosting.Self*") | should be $true
         (Test-Path "$tempDir\Nancy.Hosting.Self*barney*") | should be $false
     }
+
+    It "Install package with unlisted dependencies" {
+        $testModule = Install-Package -Provider $nuget -Source $source -Destination $tempDir -force -name PMTestModule -requiredVersion 1.0.1
+
+        $testModule.Count | should be 3
+        (Test-Path "$tempDir\PMTestModule.1.0.1") | should be $true
+        (Test-Path "$tempDir\PMTestDependency1.1.0.1") | should be $true
+        (Test-Path "$tempDir\PMTestDependency2.1.0.0") | should be $true
+    }
 }
 
 Describe "install-package with Scope" -tags "Feature" {
