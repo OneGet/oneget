@@ -896,12 +896,14 @@ Describe "Install-Package dependencies" -Tags "Feature" {
     }
 
     It "Install package with unlisted dependencies" {
-        $testModule = Install-Package -Provider $nuget -Source $source -Destination $tempDir -force -name PMTestModule -requiredVersion 1.0.1
+        $testModule = Install-Package -Provider $nuget -Source $source -Destination $tempDir -force -name PMTestModule -RequiredVersion 1.0.2
 
-        $testModule.Count | should be 3
-        (Test-Path "$tempDir\PMTestModule.1.0.1") | should be $true
-        (Test-Path "$tempDir\PMTestDependency1.1.0.1") | should be $true
-        (Test-Path "$tempDir\PMTestDependency2.1.0.0") | should be $true
+        $testModule.Count | should be 5
+        (Test-Path "$tempDir\PMTestModule.1.0.2") | should be $true
+        (Test-Path "$tempDir\PMTestDependency1.1.0.2") | should be $true
+        (Test-Path "$tempDir\PMTestDependency1A.1.0.1") | should be $true
+        (Test-Path "$tempDir\PMTestDependency2.1.0.1") | should be $true
+        (Test-Path "$tempDir\PMTestDependency2A.1.0.1") | should be $true
     }
 }
 
