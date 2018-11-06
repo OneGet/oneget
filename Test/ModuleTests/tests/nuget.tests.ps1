@@ -896,7 +896,7 @@ Describe "Install-Package dependencies" -Tags "Feature" {
     }
 
     It "Install package with unlisted dependencies" {
-        $testModule = Install-Package -Provider $nuget -Source $source -Destination $tempDir -force -name PMTestModule -RequiredVersion 1.0.2
+        $testModule = Install-Package -Provider $nuget -Source $source -Destination $tempDir -force -name PMTestModule
 
         $testModule.Count | should be 5
         (Test-Path "$tempDir\PMTestModule.1.0.2") | should be $true
