@@ -1,7 +1,7 @@
 [submodule "src/Microsoft.PackageManagement.NuGetProvider"]
 	path = src/Microsoft.PackageManagement.NuGetProvider
-	url = https://github.com/alerickson/NuGetProvider.git
-	branch = unlistedDependenciesFix
+	url = https://github.com/oneget/NuGetProvider.git
+	branch = development
 
 [submodule "src/Modules/PowerShellGet"]
 	
