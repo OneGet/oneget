@@ -310,7 +310,7 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
         $zlib.name | should match "grpc.dependencies.zlib"
         $zlib.Dependencies.Count | should be 1
 
-        $zlib.Meta.Attributes["packageSize"] | should match "7995520"
+        $zlib.Meta.Attributes["packageSize"] | should match "800509"
         if ($env:NUGET_API_VERSION -eq 'v2')
         {
             [long]$zlib.Meta.Attributes["versionDownloadCount"] -ge 7640 | should be $true
