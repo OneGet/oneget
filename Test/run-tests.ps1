@@ -397,7 +397,7 @@ if ($testframework -eq "coreclr")
     Copy-Item "$CoreCLRTestHome\Examples\*.ps1" (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
 
      # copy the OneGet bits into powershell core
-    $OneGetBinaryPath ="$packagemanagementfolder\coreclr\netcoreapp2.0"
+    $OneGetBinaryPath ="$packagemanagementfolder\coreclr\netcoreapp2.1"
     if(-not (Test-Path -Path $OneGetBinaryPath))
     {
         New-Item -Path $OneGetBinaryPath -ItemType Directory -Force -Verbose
@@ -408,7 +408,7 @@ if ($testframework -eq "coreclr")
     }
 
 
-    Copy-Item "$TestBin\coreclr\netcoreapp2.0\*.dll" $OneGetBinaryPath -Force -Verbose
+    Copy-Item "$TestBin\coreclr\netcoreapp2.1\*.dll" $OneGetBinaryPath -Force -Verbose
 
     if ($powershellLegacyFolder) {
         $OneGetBinaryPath ="$packagemanagementfolder\coreclr\netstandard1.6"
