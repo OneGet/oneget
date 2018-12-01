@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
-    <PackageReference Include="System.Management.Automation" Version="6.0.0" />
+    <PackageReference Include="System.Management.Automation" Version="6.1.1" />
   </ItemGroup>
   <ItemGroup Condition=" ('$(TargetFramework)' == 'net451') Or ('$(TargetFramework)' == 'netstandard1.6') ">
     <PackageReference Include="System.Management.Automation" Version="1.0.0-alpha9" />
@@ -101,7 +101,7 @@
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
-    <PackageReference Update="Microsoft.NETCore.App" Version="2.0.0" />
+    <PackageReference Update="Microsoft.NETCore.App" Version="2.1.6" />
     <PackageReference Include="NETStandard.Library" Version="2.0.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
     <PackageReference Include="Microsoft.Win32.Registry.AccessControl" Version="4.4.0" />
