@@ -71,7 +71,7 @@
     <PackageReference Include="NETStandard.Library" Version="2.0.0" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.4.0" />
     <PackageReference Include="System.Security.AccessControl" Version="4.4.0" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.4.0" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.5.1" />
     <PackageReference Include="System.Security.Principal.Windows" Version="4.4.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.4.0" />
   </ItemGroup>
