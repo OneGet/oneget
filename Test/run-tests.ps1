@@ -411,7 +411,7 @@ if ($testframework -eq "coreclr")
     Copy-Item "$TestBin\coreclr\netcoreapp2.1\*.dll" $OneGetBinaryPath -Force -Verbose
 
     if ($powershellLegacyFolder) {
-        $OneGetBinaryPath ="$packagemanagementfolder\coreclr\netstandard1.6"
+        $OneGetBinaryPath ="$packagemanagementfolder\coreclr\netstandard2.0"
         $packagemanagementfolder = "$powershellLegacyFolder\Modules\PackageManagement\$PackageManagementVersion\"
         Write-Verbose ("OneGet Folder '{0}'" -f $packagemanagementfolder)
 
@@ -452,7 +452,7 @@ if ($testframework -eq "coreclr")
         }
 
 
-        Copy-Item "$TestBin\coreclr\netstandard1.6\*.dll" $OneGetBinaryPath -Force -Verbose
+        Copy-Item "$TestBin\coreclr\netstandard2.0\*.dll" $OneGetBinaryPath -Force -Verbose
     }
 
     $PSGetPath = "$powershellFolder\Modules\PowerShellGet\$PowerShellGetVersion\"

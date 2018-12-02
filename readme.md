@@ -203,7 +203,7 @@ git submodule update --init
 > .\build.ps1 net451
 
 #building OneGet for coreclr
-> .\build.ps1 netstandard1.6
+> .\build.ps1 netstandard2.0
 > .\build.ps1 netcoreapp2.1
 ```
 
