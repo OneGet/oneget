@@ -57,6 +57,7 @@
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
     <DefineConstants>$(DefineConstants);CORECLR</DefineConstants>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
