@@ -145,7 +145,6 @@ foreach ($currentFramework in $frameworks)
 			} else {
 				$env:EMBEDPROVIDERMANIFEST = ''
 			}
-            dotnet restore
             dotnet build --framework $currentFramework --configuration $Configuration
             dotnet publish --framework $currentFramework --configuration $Configuration
             Pop-Location
