@@ -56,7 +56,7 @@
               }
 		},
 
-		"netstandard1.6": {
+		"netstandard2.0": {
           "imports": [ "dnxcore50" ],
 	        "buildOptions": {
             "define": [ "CORECLR" ],
@@ -74,7 +74,7 @@
                 }
 			      },
             "dependencies": {
-            "NETStandard.Library": "1.6.1"
+            "NETStandard.Library": "2.0.3"
             }
 		
         }

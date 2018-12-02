@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net451;netcoreapp2.1;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>net451;netcoreapp2.1;netstandard2.0</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.PackageManagement.MetaProvider.PowerShell</AssemblyName>
@@ -25,8 +25,11 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
     <PackageReference Include="System.Management.Automation" Version="6.1.1" />
   </ItemGroup>
-  <ItemGroup Condition=" ('$(TargetFramework)' == 'net451') Or ('$(TargetFramework)' == 'netstandard1.6') ">
-    <PackageReference Include="System.Management.Automation" Version="1.0.0-alpha9" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Management.Automation" Version="6.0.4" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net451' ">
+    <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
@@ -61,12 +64,12 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <DefineConstants>$(DefineConstants);CORECLR;COREv1</DefineConstants>
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
-  <ItemGroup Condition=" ('$(TargetFramework)' == 'netcoreapp2.1') Or ('$(TargetFramework)' == 'netstandard1.6') ">
+  <ItemGroup Condition=" ('$(TargetFramework)' == 'netcoreapp2.1') Or ('$(TargetFramework)' == 'netstandard2.0') ">
     <Compile Remove="Resources\Messages.Designer.cs" />
     <EmbeddedResource Remove="Resources\Messages.resx" />
   </ItemGroup>

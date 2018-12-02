@@ -1,5 +1,5 @@
 ﻿param(
-    [ValidateSet("net451", "netcoreapp2.1", "netstandard1.6", "all")]
+    [ValidateSet("net451", "netcoreapp2.1", "netstandard2.0", "all")]
     [string]$Framework = "netcoreapp2.1",
 
     [ValidateSet("Debug", "Release")]
@@ -62,7 +62,7 @@ Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $c
 
 if ($Framework -eq "all")
 {
-    $frameworks = @('net451','netcoreapp2.1','netstandard1.6')
+    $frameworks = @('net451','netcoreapp2.1','netstandard2.0')
 } else {
     $frameworks = @($Framework)
 }
@@ -72,7 +72,7 @@ foreach ($currentFramework in $frameworks)
     $solutionPath = Split-Path $MyInvocation.InvocationName
     $solutionDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($solutionPath)
 
-    if (($currentFramework -eq "netcoreapp2.1") -or ($currentFramework -eq "netstandard1.6"))
+    if (($currentFramework -eq "netcoreapp2.1") -or ($currentFramework -eq "netstandard2.0"))
     {
         $packageFramework ="coreclr"
         $assemblyNames = @(
@@ -122,7 +122,7 @@ foreach ($currentFramework in $frameworks)
                         "$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.strings.psd1")
 
     $destinationDir = "$solutionDir/out/PackageManagement"
-    if (($currentFramework -eq "netcoreapp2.1") -or ($currentFramework -eq "netstandard1.6"))
+    if (($currentFramework -eq "netcoreapp2.1") -or ($currentFramework -eq "netstandard2.0"))
     {
         $destinationDirBinaries = "$destinationDir/$packageFramework/$currentFramework"
     } else 
