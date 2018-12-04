@@ -1,4 +1,4 @@
-## Annoucement 
+## Announcement 
 
 OneGet is in a stable state and is expected to recieve only high-priority bug fixes from Microsoft in the future. We continue to welcome updates and improvements from the community.  
 
