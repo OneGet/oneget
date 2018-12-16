@@ -21,13 +21,6 @@ build_script:
   - ps: import-module c:\projects\oneget\test\TestUtility.psm1 -force
   - ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net451" Release -EmbedProviderManifest; .\build.ps1 -framework "netcoreapp2.0" Release -EmbedProviderManifest; .\build.ps1 -framework "netstandard1.6" Release -EmbedProviderManifest
 
-# branches to build
-branches:
-  # whitelist
-  only:
-    - master
-    - WIP
-
 deploy_script: 
   - ps: |
       # Creating NuGet package artifact
