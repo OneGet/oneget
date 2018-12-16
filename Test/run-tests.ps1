@@ -329,44 +329,8 @@ if ($testframework -eq "coreclr")
         $powershellLegacyFilePath = "$powershellCoreFilePath.exe"
     }
 
-    # Workaround: delete installed PackageManagement files   
-    $assemblyNames = @(
-        "Microsoft.PackageManagement",
-        "Microsoft.PackageManagement.ArchiverProviders",
-        "Microsoft.PackageManagement.CoreProviders",
-        "Microsoft.PackageManagement.MetaProvider.PowerShell",
-        "Microsoft.PowerShell.PackageManagement",
-        "Microsoft.PackageManagement.NuGetProvider"
-        )
- 
-    foreach ($assemblyName in $assemblyNames)
-    {
-        $dll = "$powershellFolder\$assemblyName.dll"
-        if (Test-Path ($dll))
-        {
-            Remove-Item -Path $dll -Verbose -force
-        }
-
-        $ni = "$powershellFolder\$assemblyName.ni.dll"
-        if (Test-Path ($ni))
-        {
-            Remove-Item -Path $ni -Verbose -force
-        }
-        if ($powershellLegacyFolder) {
-            $dll = "$powershellLegacyFolder\$assemblyName.dll"
-            if (Test-Path ($dll))
-            {
-                Remove-Item -Path $dll -Verbose -force
-            }
-
-            $ni = "$powershellLegacyFolder\$assemblyName.ni.dll"
-            if (Test-Path ($ni))
-            {
-                Remove-Item -Path $ni -Verbose -force
-            }
-        }
-    }
-
+    # Delete installed PackageManagement  
+    Remove-Item (Join-Path $powershellFolder 'Modules' 'PackageManagement') -Recurse
 
     $packagemanagementfolder = "$powershellFolder\Modules\PackageManagement\$PackageManagementVersion\"
     Write-Verbose ("OneGet Folder '{0}'" -f $packagemanagementfolder)
