@@ -281,7 +281,7 @@ if ($testframework -eq "coreclr")
         }
 
         $powershellVersion = $powershellCore.Version
-        $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
+        $powershellFolder = "$Env:ProgramFiles\PowerShell\6"
         if ((-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'powershell.exe'))) -and
                 -not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'pwsh.exe')) -and 
                 (-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'powershell'))) -and
