@@ -1,0 +1,13 @@
+{
+	"PowerShell": {
+		"displayName": "PowerShell_6.0.5",
+		"source": "https://github.com/PowerShell/PowerShell/releases/download/v6.0.5/PowerShell-6.0.5-win-x64.msi",			   
+		"hash": {
+			"algorithm": "sha512",
+			"hashCode": "452A0330AC50F526E663BF54491C9C7EEF0816B2D5498127D48A715C6B3F0ECD6CA632D8861BA7D70576E842C49650FEDBF3C871FCD1DCE74DCD82AED973C503"
+		},
+		"summary": "Powershell",
+		"type": "msi",
+		"version": "6.0.5"
+	}
+}

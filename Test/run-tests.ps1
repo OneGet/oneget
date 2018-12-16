@@ -251,14 +251,14 @@ if ($testframework -eq "coreclr")
             if ([Environment]::OSVersion.Version.Major -eq 6) {
                 Write-Verbose "Assuming OS is Win 8.1 (includes Win Server 2012 R2)"
                 $pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL.json"
-                $pslLocationLegacy = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL_6.0.0.14.json"
+                $pslLocationLegacy = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL_6.0.5.json"
             } else {
                 Write-Verbose "Assuming OS is Win 10"
                 $pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL.json"
-                $pslLocationLegacy = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL_6.0.0.14.json"
+                $pslLocationLegacy = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL_6.0.5.json"
             }
 
-            $powershellCore = (Get-Package -provider msi -name PowerShell-6.0.0* -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
+            $powershellCore = (Get-Package -provider msi -name PowerShell-6.1* -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
             if ($powershellCore)
             {
                 Write-Warning ("PowerShell already installed" -f $powershellCore.Name)
@@ -268,7 +268,7 @@ if ($testframework -eq "coreclr")
                 $powershellCore = Install-PowerShellCore -PSLLocation $pslLocation
             }
 
-            $powershellCoreLegacy = (Get-Package -provider msi -name PowerShell_6.0.0.14 -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
+            $powershellCoreLegacy = (Get-Package -provider msi -name PowerShell_6.0.5 -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
             if ($powershellCoreLegacy)
             {
                 Write-Warning ("Legacy PowerShell already installed" -f $powershellCoreLegacy.Name)
@@ -396,22 +396,8 @@ if ($testframework -eq "coreclr")
     New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
     Copy-Item "$CoreCLRTestHome\Examples\*.ps1" (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
 
-     # copy the OneGet bits into powershell core
-    $OneGetBinaryPath ="$packagemanagementfolder\coreclr\netcoreapp2.0"
-    if(-not (Test-Path -Path $OneGetBinaryPath))
-    {
-        New-Item -Path $OneGetBinaryPath -ItemType Directory -Force -Verbose
-    }
-    else{
-        Get-ChildItem -Path $OneGetBinaryPath | %{ren "$OneGetBinaryPath\$_" "$OneGetBinaryPath\$_.deleteMe" -ErrorAction SilentlyContinue}
-        Get-ChildItem -Path $OneGetBinaryPath  -Recurse |  Remove-Item -force -Recurse -ErrorAction SilentlyContinue
-    }
-
-
-    Copy-Item "$TestBin\coreclr\netcoreapp2.0\*.dll" $OneGetBinaryPath -Force -Verbose
-
     if ($powershellLegacyFolder) {
-        $OneGetBinaryPath ="$packagemanagementfolder\coreclr\netstandard1.6"
+        $OneGetBinaryPath ="$packagemanagementfolder\coreclr\netstandard2.0"
         $packagemanagementfolder = "$powershellLegacyFolder\Modules\PackageManagement\$PackageManagementVersion\"
         Write-Verbose ("OneGet Folder '{0}'" -f $packagemanagementfolder)
 
@@ -452,7 +438,7 @@ if ($testframework -eq "coreclr")
         }
 
 
-        Copy-Item "$TestBin\coreclr\netstandard1.6\*.dll" $OneGetBinaryPath -Force -Verbose
+        Copy-Item "$TestBin\coreclr\netstandard2.0\*.dll" $OneGetBinaryPath -Force -Verbose
     }
 
     $PSGetPath = "$powershellFolder\Modules\PowerShellGet\$PowerShellGetVersion\"
