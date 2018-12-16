@@ -26,8 +26,8 @@ param(
 
 Import-Module "$PSScriptRoot\TestUtility.psm1" -Force
 
-# Set default TLS version to one supported by GitHub, in case PSCore needs to be downloaded
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+# Add TLS12 for GitHub downloads, in case PSCore needs to be downloaded
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
 #region Step 0 -- remove the strongname from the binaries
 # Get the current OS
@@ -564,7 +564,7 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
             $command += "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
         }
 
-        $command += "Import-Module '$pesterFolder';"
+        $command += "Install-Module 'Pester' -Scope CurrentUser -Force;"
 
         $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 
@@ -616,7 +616,7 @@ If($script:IsWindows)
         if ($powershellLegacyFolder -and $script:IsWindows) {
         # Tests on legacy version of PowerShell Core
             $command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = '$nugetApiUrlAlternate';`$env:NUGET_API_VERSION = '$currentNugetApiVersion';"
-            $command += "Import-Module '$pesterFolder';`$global:IsLegacyTestRun=`$true;"
+            $command += "Install-Module 'Pester' -Scope CurrentUser -Force;`$global:IsLegacyTestRun=`$true;"
             $testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
             $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -Tag Legacy -EnableExit"
 
