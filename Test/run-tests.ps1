@@ -330,15 +330,10 @@ if ($testframework -eq "coreclr")
     }
 
     # Delete installed PackageManagement  
-    Remove-Item (Join-Path $powershellFolder 'Modules' 'PackageManagement') -Recurse
-
-    $packagemanagementfolder = "$powershellFolder\Modules\PackageManagement\$PackageManagementVersion\"
-    Write-Verbose ("OneGet Folder '{0}'" -f $packagemanagementfolder)
-
-    if(-not (Test-Path -Path $packagemanagementfolder))
-    {
-        New-Item -Path $packagemanagementfolder -ItemType Directory -Force -Verbose
-    }
+    Write-Verbose ("PackageManagement Folder '{0}'" -f $packagemanagementfolder)
+    $packagemanagementfolder = (Join-Path $powershellFolder 'Modules' 'PackageManagement')
+    Remove-Item $packagemanagementfolder -Recurse
+    New-Item -Path $packagemanagementfolder -ItemType Directory -Force -Verbose
 
     # copy OneGet module files
     Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
