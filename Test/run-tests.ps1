@@ -532,6 +532,8 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 
         if($script:IsWindows)
         {
+            # TODO: remove temporary debug line below:
+            gci 'C:\program files\powershell\6\Modules\Packagemanagement'
             & "$powershellFolder\$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
         }
         else
