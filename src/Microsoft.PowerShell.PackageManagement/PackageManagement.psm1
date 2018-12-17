@@ -11,7 +11,7 @@ if ($isCore)
 {
     # Using the Assembly.LoadFrom API to determine if this is netcoreapp2.0 or if it's older
     $loadFromMethod = [System.Reflection.Assembly].GetMethods() | Where-Object { $_.Name -eq 'LoadFrom' }
-    if ($loadFromMethod)
+    if ($loadFromMethod -and $PSVersionTable.PSVersion -lt '6.1')
     {
         $binarySubPath = Join-Path -Path 'coreclr' -ChildPath 'netcoreapp2.0'
     } else {

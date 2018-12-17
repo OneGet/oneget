@@ -226,16 +226,16 @@ if ($testframework -eq "fullclr")
     Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($ProgramModulePath)\"  -Recurse -force -verbose
 }
 
-$powershellLegacyFolder = ''
+# $powershellLegacyFolder = ''
 $powershellCoreFilePath = 'powershell'
-$powershellLegacyFilePath = 'powershell'
+# $powershellLegacyFilePath = 'powershell'
 if ($testframework -eq "coreclr")
 {
     # install powershell core if test framework is coreclr 
 
     If($script:IsWindows)
     {
-        $powershellCoreLegacy = $null
+        # $powershellCoreLegacy = $null
         if($env:APPVEYOR_SCHEDULED_BUILD -eq 'True')
         {
             # for the daily run, we need to install PowerShellCore from github.com/powershell/powershell appveryor artifacts
@@ -251,11 +251,11 @@ if ($testframework -eq "coreclr")
             if ([Environment]::OSVersion.Version.Major -eq 6) {
                 Write-Verbose "Assuming OS is Win 8.1 (includes Win Server 2012 R2)"
                 $pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL.json"
-                $pslLocationLegacy = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL_6.0.5.json"
+                # $pslLocationLegacy = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL_6.0.5.json"
             } else {
                 Write-Verbose "Assuming OS is Win 10"
                 $pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL.json"
-                $pslLocationLegacy = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL_6.0.5.json"
+                # $pslLocationLegacy = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL_6.0.5.json"
             }
 
             $powershellCore = (Get-Package -provider msi -name PowerShell-6.1* -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
@@ -268,16 +268,16 @@ if ($testframework -eq "coreclr")
                 $powershellCore = Install-PowerShellCore -PSLLocation $pslLocation
             }
 
-            $powershellCoreLegacy = (Get-Package -provider msi -name PowerShell_6.0.5 -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
-            if ($powershellCoreLegacy)
-            {
-                Write-Warning ("Legacy PowerShell already installed" -f $powershellCoreLegacy.Name)
-            }
-            else
-            {
-                "pslLocationLegacy: $pslLocationLegacy" | Out-File "legacy.log" -Append
-                $powershellCoreLegacy = Install-PowerShellCore -PSLLocation $pslLocationLegacy
-            }
+            # $powershellCoreLegacy = (Get-Package -provider msi -name PowerShell_6.0.5 -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
+            # if ($powershellCoreLegacy)
+            # {
+            #     Write-Warning ("Legacy PowerShell already installed" -f $powershellCoreLegacy.Name)
+            # }
+            # else
+            # {
+            #     "pslLocationLegacy: $pslLocationLegacy" | Out-File "legacy.log" -Append
+            #     $powershellCoreLegacy = Install-PowerShellCore -PSLLocation $pslLocationLegacy
+            # }
         }
 
         $powershellVersion = $powershellCore.Version
@@ -294,21 +294,21 @@ if ($testframework -eq "coreclr")
         Write-host ("PowerShell Version '{0}'" -f $powershellVersion)
         Write-host ("PowerShell Folder '{0}'" -f $powershellFolder)
 
-        if ($powershellCoreLegacy)
-        {
-            $powershellLegacyFolder = "$Env:ProgramFiles\PowerShell\$($powershellCoreLegacy.Version)"
-            Write-host ("Legacy PowerShell Folder '{0}'" -f $powershellLegacyFolder)
-            if ((-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe")) -and (-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath"))) {
-                $powershellLegacyFilePath = "pwsh"
-                if ((-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe")) -and (-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath"))) {
-                    throw "Couldn't find Legacy PowerShell Core exe path in folder: $powershellLegacyFolder"
-                }
-            }
+        # if ($powershellCoreLegacy)
+        # {
+        #     $powershellLegacyFolder = "$Env:ProgramFiles\PowerShell\$($powershellCoreLegacy.Version)"
+        #     Write-host ("Legacy PowerShell Folder '{0}'" -f $powershellLegacyFolder)
+        #     if ((-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe")) -and (-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath"))) {
+        #         $powershellLegacyFilePath = "pwsh"
+        #         if ((-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe")) -and (-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath"))) {
+        #             throw "Couldn't find Legacy PowerShell Core exe path in folder: $powershellLegacyFolder"
+        #         }
+        #     }
 
-            if (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe") {
-                $powershellLegacyFilePath = "$powershellLegacyFilePath.exe"
-            }
-        }
+        #     if (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe") {
+        #         $powershellLegacyFilePath = "$powershellLegacyFilePath.exe"
+        #     }
+        # }
     }
     else
     {
@@ -325,9 +325,9 @@ if ($testframework -eq "coreclr")
         }
     }
 
-    if (Test-Path "$powershellLegacyFolder\$powershellCoreFilePath.exe") {
-        $powershellLegacyFilePath = "$powershellCoreFilePath.exe"
-    }
+    # if (Test-Path "$powershellLegacyFolder\$powershellCoreFilePath.exe") {
+    #     $powershellLegacyFilePath = "$powershellCoreFilePath.exe"
+    # }
 
     # Delete installed PackageManagement  
     Write-Verbose ("PackageManagement Folder '{0}'" -f $packagemanagementfolder)
@@ -418,24 +418,24 @@ if ($testframework -eq "coreclr")
     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
     Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellFolder)\Modules"  -Recurse -force -verbose
 
-    if ($powershellLegacyFolder -and $script:IsWindows) {
-        $PSGetPath = "$powershellLegacyFolder\Modules\PowerShellGet\$PowerShellGetVersion\"
+    # if ($powershellLegacyFolder -and $script:IsWindows) {
+    #     $PSGetPath = "$powershellLegacyFolder\Modules\PowerShellGet\$PowerShellGetVersion\"
 
-        Write-Verbose ("Legacy PowerShellGet Folder '{0}'" -f $PSGetPath)
+    #     Write-Verbose ("Legacy PowerShellGet Folder '{0}'" -f $PSGetPath)
 
-        if(-not (Test-Path -Path $PSGetPath))
-        {
-            New-Item -Path $PSGetPath -ItemType Directory -Force -Verbose
-        }
+    #     if(-not (Test-Path -Path $PSGetPath))
+    #     {
+    #         New-Item -Path $PSGetPath -ItemType Directory -Force -Verbose
+    #     }
 
 
-        # Copying files to Packagemanagement and PowerShellGet folders
-        Copy-Item "$PowerShellGetPath\*" $PSGetPath -force -verbose -Recurse
+    #     # Copying files to Packagemanagement and PowerShellGet folders
+    #     Copy-Item "$PowerShellGetPath\*" $PSGetPath -force -verbose -Recurse
 
-        # copy test modules
-        Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellLegacyFolder)\Modules" -force -verbose
-        Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellLegacyFolder)\Modules"  -Recurse -force -verbose
-    }
+    #     # copy test modules
+    #     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellLegacyFolder)\Modules" -force -verbose
+    #     Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellLegacyFolder)\Modules"  -Recurse -force -verbose
+    # }
 }
 
 #endregion
@@ -573,25 +573,25 @@ If($script:IsWindows)
                 throw "$($x.'test-results'.failures) tests failed"
             }
         }
-        if ($powershellLegacyFolder -and $script:IsWindows) {
-        # Tests on legacy version of PowerShell Core
-            $command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = '$nugetApiUrlAlternate';`$env:NUGET_API_VERSION = '$currentNugetApiVersion';"
-            $command += "Install-Module 'Pester' -Scope CurrentUser -Force;`$global:IsLegacyTestRun=`$true;"
-            $testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
-            $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -Tag Legacy -EnableExit"
+        # if ($powershellLegacyFolder -and $script:IsWindows) {
+        # # Tests on legacy version of PowerShell Core
+        #     $command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = '$nugetApiUrlAlternate';`$env:NUGET_API_VERSION = '$currentNugetApiVersion';"
+        #     $command += "Install-Module 'Pester' -Scope CurrentUser -Force;`$global:IsLegacyTestRun=`$true;"
+        #     $testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
+        #     $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -Tag Legacy -EnableExit"
 
-            Write-Host "(Legacy) CoreCLR: Calling $powershellLegacyFolder\$powershellCoreFilePath -command  $command"
+        #     Write-Host "(Legacy) CoreCLR: Calling $powershellLegacyFolder\$powershellCoreFilePath -command  $command"
 
-            & "$powershellLegacyFolder\$powershellCoreFilePath" -command "& {$command}"
+        #     & "$powershellLegacyFolder\$powershellCoreFilePath" -command "& {$command}"
 
-            $x = [xml](Get-Content -raw $testResultsFile)
-            $numTestFailures = [int]$x.'test-results'.failures
-            if ($numTestFailures -gt 0)
-            {
-                $totalTestFailures = $numTestFailures
-            throw "$($x.'test-results'.failures) tests failed"
-            }
-        }
+        #     $x = [xml](Get-Content -raw $testResultsFile)
+        #     $numTestFailures = [int]$x.'test-results'.failures
+        #     if ($numTestFailures -gt 0)
+        #     {
+        #         $totalTestFailures = $numTestFailures
+        #     throw "$($x.'test-results'.failures) tests failed"
+        #     }
+        # }
     }
 }
 
