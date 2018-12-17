@@ -331,7 +331,7 @@ if ($testframework -eq "coreclr")
 
     # Delete installed PackageManagement  
     Write-Verbose ("PackageManagement Folder '{0}'" -f $packagemanagementfolder)
-    $packagemanagementfolder = (Join-Path $powershellFolder 'Modules' 'PackageManagement')
+    $packagemanagementfolder = [System.IO.Path]::Combine($powershellFolder, 'Modules', 'PackageManagement')
     Remove-Item $packagemanagementfolder -Recurse
     New-Item -Path $packagemanagementfolder -ItemType Directory -Force -Verbose
 
