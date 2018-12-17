@@ -330,9 +330,9 @@ if ($testframework -eq "coreclr")
     # }
 
     # Delete installed PackageManagement  
-    Write-Verbose ("PackageManagement Folder '{0}'" -f $packagemanagementfolder)
     # $packagemanagementfolder = [System.IO.Path]::Combine($powershellFolder, 'Modules', 'PackageManagement')
     $packagemanagementfolder = "$powershellFolder\Modules\PackageManagement\"
+    Write-Verbose -Verbose ("PackageManagement Folder '{0}'" -f $packagemanagementfolder)
     Remove-Item $packagemanagementfolder -Recurse
     New-Item -Path $packagemanagementfolder -ItemType Directory -Force -Verbose
 
@@ -401,18 +401,18 @@ if ($testframework -eq "coreclr")
     #     Copy-Item "$TestBin\coreclr\netstandard2.0\*.dll" $OneGetBinaryPath -Force -Verbose
     # }
 
-    $PSGetPath = "$powershellFolder\Modules\PowerShellGet\$PowerShellGetVersion\"
+    # $PSGetPath = "$powershellFolder\Modules\PowerShellGet\$PowerShellGetVersion\"
 
-    Write-Verbose ("PowerShellGet Folder '{0}'" -f $PSGetPath)
+    # Write-Verbose ("PowerShellGet Folder '{0}'" -f $PSGetPath)
 
-    if(-not (Test-Path -Path $PSGetPath))
-    {
-        New-Item -Path $PSGetPath -ItemType Directory -Force -Verbose
-    }
+    # if(-not (Test-Path -Path $PSGetPath))
+    # {
+    #     New-Item -Path $PSGetPath -ItemType Directory -Force -Verbose
+    # }
 
 
-    # Copying files to Packagemanagement and PowerShellGet folders
-    Copy-Item "$PowerShellGetPath\*" $PSGetPath -force -verbose -Recurse
+    # # Copying files to Packagemanagement and PowerShellGet folders
+    # Copy-Item "$PowerShellGetPath\*" $PSGetPath -force -verbose -Recurse
 
     # copy test modules
     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
