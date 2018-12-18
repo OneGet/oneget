@@ -329,7 +329,7 @@ if ($testframework -eq "coreclr")
     #     $powershellLegacyFilePath = "$powershellCoreFilePath.exe"
     # }
     
-    & pwsh -comand 'Install-Module Pester -Scope CurrentUser -Force'
+    & pwsh -command 'Install-Module Pester -Scope CurrentUser -Force'
 
     # Delete installed PackageManagement  
     # $packagemanagementfolder = [System.IO.Path]::Combine($powershellFolder, 'Modules', 'PackageManagement')
