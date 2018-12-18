@@ -355,7 +355,8 @@ if ($testframework -eq "coreclr")
     Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mfl" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
     New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
     Copy-Item "$CoreCLRTestHome\Examples\*.ps1" (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
-
+    Copy-Item "$TestBin\coreclr" $packagemanagementfolder -Recurse
+    
     # if ($powershellLegacyFolder) {
     #     $OneGetBinaryPath ="$packagemanagementfolder\coreclr\netstandard2.0"
     #     $packagemanagementfolder = "$powershellLegacyFolder\Modules\PackageManagement\$PackageManagementVersion\"
