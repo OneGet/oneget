@@ -328,6 +328,8 @@ if ($testframework -eq "coreclr")
     # if (Test-Path "$powershellLegacyFolder\$powershellCoreFilePath.exe") {
     #     $powershellLegacyFilePath = "$powershellCoreFilePath.exe"
     # }
+    
+    & pwsh -comand 'Install-Module Pester -Scope CurrentUser -Force'
 
     # Delete installed PackageManagement  
     # $packagemanagementfolder = [System.IO.Path]::Combine($powershellFolder, 'Modules', 'PackageManagement')
@@ -525,8 +527,8 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
             $command += "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
         }
         # $command += "Install-PackageProvider Nuget -MinimumVersion 2.8.5.201 -Force;"
-        $command += "Register-PSRepository -Default -ErrorAction SilentlyContinue;"
-        $command += "Install-Module 'Pester' -Scope CurrentUser -Force;"
+        # $command += "Register-PSRepository -Default -ErrorAction SilentlyContinue;"
+        # $command += "Install-Module 'Pester' -Scope CurrentUser -Force;"
 
         $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 
