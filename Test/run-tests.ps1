@@ -34,7 +34,7 @@ Import-Module "$PSScriptRoot\TestUtility.psm1" -Force
 try
 {
     $script:IsLinux = (Get-Variable -Name IsLinux -ErrorAction Ignore) -and $IsLinux
-    $script:IsOSX = (Get-Variable -Name IsOSX -ErrorAction Ignore) -and $IsOSX
+    $script:IsMacOS = (Get-Variable -Name IsMacOS -ErrorAction Ignore) -and $IsMacOS
     $script:IsCoreCLR = (Get-Variable -Name IsCoreCLR -ErrorAction Ignore) -and $IsCoreCLR
     $script:IsWindows = $true
 
@@ -327,7 +327,7 @@ if ($testframework -eq "coreclr")
 #endregion
 
 foreach ($currentNugetApiVersion in $allNugetApiVersions) {
-    Write-host ("testframework={0}, IsCoreCLR={1}, IsLinux={2}, IsOSX={3}, IsWindows={4}, NugetApiVersion={5}" -f $testframework, $script:IsCoreCLR, $script:IsLinux, $script:IsOSX, $script:IsWindows, $currentNugetApiVersion)
+    Write-host ("testframework={0}, IsCoreCLR={1}, IsLinux={2}, IsMacOS={3}, IsWindows={4}, NugetApiVersion={5}" -f $testframework, $script:IsCoreCLR, $script:IsLinux, $script:IsMacOS, $script:IsWindows, $currentNugetApiVersion)
     if ($currentNugetApiVersion -eq 'v2') {
         $nugetApiUrl = "https://nuget.org/api/v2/"
         $nugetApiUrlAlternate = "https://nuget.org/api/v2"
