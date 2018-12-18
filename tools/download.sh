@@ -23,8 +23,8 @@ case "$OSTYPE" in
                     echo "curl not found, installing..."
                     sudo yum install -y curl
                 fi
-
-                package=powershell-6.0.0_beta.5-1.el7.x86_64.rpm
+                
+                package=powershell-6.1.1-1.rhel.7.x86_64.rpm
                 ;;
             ubuntu)
                 if ! hash curl 2>/dev/null; then
@@ -34,10 +34,11 @@ case "$OSTYPE" in
 
                 case "$VERSION_ID" in
                     14.04)
-                        package=powershell_6.1.1-1ubuntu1.14.04.1_amd64.deb
+                    https://github.com/PowerShell/PowerShell/releases/download/v6.1.1/powershell_6.1.1-1.ubuntu.14.04_amd64.deb
+                        package=powershell_6.1.1-1.ubuntu.14.04_amd64.deb
                         ;;
                     16.04)
-                        package=powershell_6.1.1-1ubuntu1.16.04.1_amd64.deb
+                        package=powershell_6.1.1-1.ubuntu.16.04_amd64.deb
                         ;;
                     *)
                         echo "Ubuntu $VERSION_ID is not supported!" >&2
