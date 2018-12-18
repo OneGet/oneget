@@ -554,7 +554,6 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 If($script:IsWindows)
 {
             $command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = '$nugetApiUrlAlternate';`$env:NUGET_API_VERSION = '$currentNugetApiVersion';"
-            $command += "Import-Module '$pesterFolder';"
             $testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
             $command += "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 
