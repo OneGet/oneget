@@ -524,7 +524,8 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
         {
             $command += "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
         }
-        $command += "Install-PackageProvider Nuget -MinimumVersion 2.8.5.201 -Force;"
+        # $command += "Install-PackageProvider Nuget -MinimumVersion 2.8.5.201 -Force;"
+        $command += "Register-PSRepository -Default -ErrorAction SilentlyContinue;"
         $command += "Install-Module 'Pester' -Scope CurrentUser -Force;"
 
         $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
@@ -533,8 +534,6 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 
         if($script:IsWindows)
         {
-            # TODO: remove temporary debug line below:
-            gci 'C:\program files\powershell\6\Modules\Packagemanagement'
             & "$powershellFolder\$powershellCoreFilePath" -command "& {get-packageprovider -verbose; $command}"
         }
         else
