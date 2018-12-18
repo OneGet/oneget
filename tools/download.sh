@@ -120,7 +120,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-powershell -noprofile -c '"Congratulations! PowerShell is installed at $PSHOME"'
+pwsh -noprofile -c '"Congratulations! PowerShell is installed at $PSHOME"'
 success=$?
 
 if [[ "$success" != 0 ]]; then
@@ -250,7 +250,7 @@ case "$OSTYPE" in
             exit "$success"
         fi
 
-        powershell -noprofile -c '"Congratulations! PowerShell DSC for Linux is installed!"'
+        pwsh -noprofile -c '"Congratulations! PowerShell DSC for Linux is installed!"'
         ;;
     darwin*)
         # TODO: Need to do anything here?
