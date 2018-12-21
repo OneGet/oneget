@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net451;netcoreapp2.0;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>net452;netcoreapp2.0;netstandard1.6</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.PackageManagement</AssemblyName>
@@ -24,11 +24,11 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
     <PackageReference Include="System.Management.Automation" Version="6.0.0" />
   </ItemGroup>
-  <ItemGroup Condition=" ('$(TargetFramework)' == 'net451') Or ('$(TargetFramework)' == 'netstandard1.6') ">
+  <ItemGroup Condition=" ('$(TargetFramework)' == 'net452') Or ('$(TargetFramework)' == 'netstandard1.6') ">
     <PackageReference Include="System.Management.Automation" Version="1.0.0-alpha9" />
   </ItemGroup>
   
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Reference Include="System.Runtime" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
@@ -49,7 +49,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Compile Remove="Resources\Messages.Designer.cs" />
     <EmbeddedResource Remove="Resources\Messages.resx" />
   </ItemGroup>
@@ -69,7 +69,7 @@
     <EmbeddedResource Remove="Resources\Messages.resx" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Compile Remove="Resources\Messages.Designer.cs" />
     <EmbeddedResource Remove="Resources\Messages.resx" />
   </ItemGroup>
