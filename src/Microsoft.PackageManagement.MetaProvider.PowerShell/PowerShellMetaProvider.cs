@@ -179,7 +179,7 @@ namespace Microsoft.PackageManagement.MetaProvider.PowerShell.Internal {
 
                             if (!File.Exists(_powershellProviderFunctionsPath))
                             {
-                                // For now just try another level - sometimes this is the framework directory (e.g. net451)
+                                // For now just try another level - sometimes this is the framework directory (e.g. net452)
                                 // Need to fix the BaseFolder calculation
                                 try
                                 {

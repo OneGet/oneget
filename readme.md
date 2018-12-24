@@ -1,4 +1,4 @@
-## Annoucement 
+## Announcement 
 
 OneGet is in a stable state and is expected to recieve only high-priority bug fixes from Microsoft in the future. We continue to welcome updates and improvements from the community.  
 
@@ -200,7 +200,7 @@ git submodule update --init
 > .\bootstrap.ps1
 
 # building OneGet for fullclr
-> .\build.ps1 net451
+> .\build.ps1 net452
 
 #building OneGet for coreclr
 > .\build.ps1 netstandard1.6
