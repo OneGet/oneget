@@ -200,7 +200,7 @@ git submodule update --init
 > .\bootstrap.ps1
 
 # building OneGet for fullclr
-> .\build.ps1 net451
+> .\build.ps1 net452
 
 #building OneGet for coreclr
 > .\build.ps1 netstandard1.6
