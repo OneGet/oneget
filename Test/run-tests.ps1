@@ -83,12 +83,7 @@ if($script:IsWindows)
 #region Step 1 - test setup
 $TestHome = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PSScriptRoot)
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
-$PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\PowerShellGet"
 $CoreCLRTestHome = "$($TestHome)\..\Test"
-
-# Get PowerShellGet version
-$psGetModuleManifest = Test-ModuleManifest "$PowerShellGetPath\PowerShellGet.psd1"
-$PowerShellGetVersion = $psGetModuleManifest.Version.ToString()
 
 # Get OneGet version
 $packageManagementManifest = Test-ModuleManifest "$TestBin\PackageManagement.psd1"
@@ -125,7 +120,7 @@ else
 }
 
 
-# Setting up Packagemanagement and PowerShellGet folders
+# Setting up Packagemanagement
 if ($testframework -eq "fullclr")
 {    
     $ProgramProviderInstalledPath = "$Env:ProgramFiles\PackageManagement\ProviderAssemblies"
@@ -135,7 +130,6 @@ if ($testframework -eq "fullclr")
 
     $UserModulePath = "$($mydocument)\WindowsPowerShell\Modules"
     $packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
-    $powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
 
     if(-not (Test-Path $packagemanagementfolder)){
         New-Item -Path $packagemanagementfolder -ItemType Directory -Force  
@@ -145,18 +139,7 @@ if ($testframework -eq "fullclr")
         Get-ChildItem -Path $packagemanagementfolder  -Recurse |  Remove-Item -force -Recurse -ErrorAction SilentlyContinue
     }
 
-
-    if(-not (Test-Path $powershellGetfolder)){
-        New-Item -Path $powershellGetfolder -ItemType Directory -Force  
-        Write-Host "Created  $powershellGetfolder"
-    } else{
-        Get-ChildItem -Path $powershellGetfolder | %{ren "$powershellGetfolder\$_" "$powershellGetfolder\$_.deleteMe"}
-        Get-ChildItem -Path $powershellGetfolder  -Recurse |  Remove-Item -force -Recurse
-    }
-
-
-    # Copying files to Packagemanagement and PowerShellGet folders
-    Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
+    # Copying files to Packagemanagement
     Copy-Item "$TestBin\fullclr\*.dll" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
