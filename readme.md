@@ -37,7 +37,7 @@ Thus check out the latest version from PowerShellGallery.com.
 
 ### Get Started!
 
-OneGet is shipped in Win10 and Windows Server 2016! For downlevel OS, you can install the [WMF 5.0 RTM][WMF5.0] or [WMF5.1 Preview][WMF5.1] and then start using the OneGet.
+OneGet is shipped in Win10 and Windows Server 2016! For downlevel OS, you can install the [WMF 5.1][WMF5RTM] and then start using the OneGet.
 
 You can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notified of every new build.
 
@@ -50,8 +50,7 @@ You can follow [@PSOneGet on Twitter](http://twitter.com/PSOneGet) to be notifie
 * Check out more help information [in our wiki page](https://github.com/oneget/oneget/wiki)
 
 
-[WMF5.0]: https://www.microsoft.com/en-us/download/details.aspx?id=50395
-[WMF5.1]: https://www.microsoft.com/en-us/download/details.aspx?id=53347
+[WMF5RTM]: https://aka.ms/wmf5download
 
 ### What is PackageManagement (OneGet)?
 
