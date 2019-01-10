@@ -182,7 +182,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         }
 
         public bool ShouldProcessPackageUninstall(string packageName, string version) {
-            return Force || ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageVersion, packageName, version), FormatMessageString(Constants.Messages.ActionUninstallPackage)).Result;
+            return ShouldProcess(FormatMessageString(Constants.Messages.TargetPackageVersion, packageName, version), FormatMessageString(Constants.Messages.ActionUninstallPackage)).Result;
         }
     }
 }
