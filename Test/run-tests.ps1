@@ -26,15 +26,15 @@ param(
 
 Import-Module "$PSScriptRoot\TestUtility.psm1" -Force
 
-# Set default TLS version to one supported by GitHub, in case PSCore needs to be downloaded
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+# Add TLS12 for GitHub downloads, in case PSCore needs to be downloaded
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
 #region Step 0 -- remove the strongname from the binaries
 # Get the current OS
 try
 {
     $script:IsLinux = (Get-Variable -Name IsLinux -ErrorAction Ignore) -and $IsLinux
-    $script:IsOSX = (Get-Variable -Name IsOSX -ErrorAction Ignore) -and $IsOSX
+    $script:IsMacOS = (Get-Variable -Name IsMacOS -ErrorAction Ignore) -and $IsMacOS
     $script:IsCoreCLR = (Get-Variable -Name IsCoreCLR -ErrorAction Ignore) -and $IsCoreCLR
     $script:IsWindows = $true
 
@@ -83,12 +83,7 @@ if($script:IsWindows)
 #region Step 1 - test setup
 $TestHome = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PSScriptRoot)
 $TestBin = "$($TestHome)\..\src\out\PackageManagement\"
-$PowerShellGetPath = "$($TestHome)\..\src\Modules\PowerShellGet\PowerShellGet"
 $CoreCLRTestHome = "$($TestHome)\..\Test"
-
-# Get PowerShellGet version
-$psGetModuleManifest = Test-ModuleManifest "$PowerShellGetPath\PowerShellGet.psd1"
-$PowerShellGetVersion = $psGetModuleManifest.Version.ToString()
 
 # Get OneGet version
 $packageManagementManifest = Test-ModuleManifest "$TestBin\PackageManagement.psd1"
@@ -125,7 +120,7 @@ else
 }
 
 
-# Setting up Packagemanagement and PowerShellGet folders
+# Setting up Packagemanagement
 if ($testframework -eq "fullclr")
 {    
     $ProgramProviderInstalledPath = "$Env:ProgramFiles\PackageManagement\ProviderAssemblies"
@@ -135,7 +130,6 @@ if ($testframework -eq "fullclr")
 
     $UserModulePath = "$($mydocument)\WindowsPowerShell\Modules"
     $packagemanagementfolder = "$ProgramModulePath\PackageManagement\$PackageManagementVersion"
-    $powershellGetfolder = "$ProgramModulePath\PowerShellGet\$PowerShellGetVersion"
 
     if(-not (Test-Path $packagemanagementfolder)){
         New-Item -Path $packagemanagementfolder -ItemType Directory -Force  
@@ -145,18 +139,7 @@ if ($testframework -eq "fullclr")
         Get-ChildItem -Path $packagemanagementfolder  -Recurse |  Remove-Item -force -Recurse -ErrorAction SilentlyContinue
     }
 
-
-    if(-not (Test-Path $powershellGetfolder)){
-        New-Item -Path $powershellGetfolder -ItemType Directory -Force  
-        Write-Host "Created  $powershellGetfolder"
-    } else{
-        Get-ChildItem -Path $powershellGetfolder | %{ren "$powershellGetfolder\$_" "$powershellGetfolder\$_.deleteMe"}
-        Get-ChildItem -Path $powershellGetfolder  -Recurse |  Remove-Item -force -Recurse
-    }
-
-
-    # Copying files to Packagemanagement and PowerShellGet folders
-    Copy-Item "$PowerShellGetPath\*" $powershellGetfolder -force -verbose
+    # Copying files to Packagemanagement
     Copy-Item "$TestBin\fullclr\*.dll" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
     Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
@@ -218,24 +201,18 @@ if ($testframework -eq "fullclr")
 
     # Copy test dependencies
 
-    #Copy-Item  "$($Testbin)\Microsoft.PackageManagement.OneGetTestProvider.dll" "$($ProgramProviderInstalledPath)\" -force 
-    #Copy-Item  "$($Testbin)\Microsoft.PackageManagement.OneGetTestProvider.dll" "$($UserProviderInstalledPath)\" -force
-   
     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($ProgramModulePath)\" -force -verbose
     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($UserModulePath)\" -force -verbose
     Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($ProgramModulePath)\"  -Recurse -force -verbose
 }
 
-$powershellLegacyFolder = ''
 $powershellCoreFilePath = 'powershell'
-$powershellLegacyFilePath = 'powershell'
 if ($testframework -eq "coreclr")
 {
     # install powershell core if test framework is coreclr 
 
     If($script:IsWindows)
     {
-        $powershellCoreLegacy = $null
         if($env:APPVEYOR_SCHEDULED_BUILD -eq 'True')
         {
             # for the daily run, we need to install PowerShellCore from github.com/powershell/powershell appveryor artifacts
@@ -251,14 +228,12 @@ if ($testframework -eq "coreclr")
             if ([Environment]::OSVersion.Version.Major -eq 6) {
                 Write-Verbose "Assuming OS is Win 8.1 (includes Win Server 2012 R2)"
                 $pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL.json"
-                $pslLocationLegacy = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win81\PSL_6.0.0.14.json"
             } else {
                 Write-Verbose "Assuming OS is Win 10"
                 $pslLocation = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL.json"
-                $pslLocationLegacy = Join-Path -Path $PSScriptRoot -ChildPath "PSL\win10\PSL_6.0.0.14.json"
             }
 
-            $powershellCore = (Get-Package -provider msi -name PowerShell-6.0.0* -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
+            $powershellCore = (Get-Package -provider msi -name PowerShell-6.1* -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
             if ($powershellCore)
             {
                 Write-Warning ("PowerShell already installed" -f $powershellCore.Name)
@@ -267,21 +242,10 @@ if ($testframework -eq "coreclr")
             {
                 $powershellCore = Install-PowerShellCore -PSLLocation $pslLocation
             }
-
-            $powershellCoreLegacy = (Get-Package -provider msi -name PowerShell_6.0.0.14 -ErrorAction SilentlyContinue | Sort-Object -Property Version -Descending | Select-Object -First 1)
-            if ($powershellCoreLegacy)
-            {
-                Write-Warning ("Legacy PowerShell already installed" -f $powershellCoreLegacy.Name)
-            }
-            else
-            {
-                "pslLocationLegacy: $pslLocationLegacy" | Out-File "legacy.log" -Append
-                $powershellCoreLegacy = Install-PowerShellCore -PSLLocation $pslLocationLegacy
-            }
         }
 
         $powershellVersion = $powershellCore.Version
-        $powershellFolder = "$Env:ProgramFiles\PowerShell\$powershellVersion"
+        $powershellFolder = "$Env:ProgramFiles\PowerShell\6"
         if ((-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'powershell.exe'))) -and
                 -not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'pwsh.exe')) -and 
                 (-not (Test-Path -Path (Join-Path -Path $powershellFolder -ChildPath 'powershell'))) -and
@@ -293,22 +257,6 @@ if ($testframework -eq "coreclr")
 
         Write-host ("PowerShell Version '{0}'" -f $powershellVersion)
         Write-host ("PowerShell Folder '{0}'" -f $powershellFolder)
-
-        if ($powershellCoreLegacy)
-        {
-            $powershellLegacyFolder = "$Env:ProgramFiles\PowerShell\$($powershellCoreLegacy.Version)"
-            Write-host ("Legacy PowerShell Folder '{0}'" -f $powershellLegacyFolder)
-            if ((-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe")) -and (-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath"))) {
-                $powershellLegacyFilePath = "pwsh"
-                if ((-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe")) -and (-not (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath"))) {
-                    throw "Couldn't find Legacy PowerShell Core exe path in folder: $powershellLegacyFolder"
-                }
-            }
-
-            if (Test-Path "$powershellLegacyFolder\$powershellLegacyFilePath.exe") {
-                $powershellLegacyFilePath = "$powershellLegacyFilePath.exe"
-            }
-        }
     }
     else
     {
@@ -324,57 +272,14 @@ if ($testframework -eq "coreclr")
             throw "Couldn't find PowerShell Core exe path in folder: $powershellFolder"
         }
     }
+    
+    & pwsh -command 'Install-Module Pester -Scope CurrentUser -Force'
 
-    if (Test-Path "$powershellLegacyFolder\$powershellCoreFilePath.exe") {
-        $powershellLegacyFilePath = "$powershellCoreFilePath.exe"
-    }
-
-    # Workaround: delete installed PackageManagement files   
-    $assemblyNames = @(
-        "Microsoft.PackageManagement",
-        "Microsoft.PackageManagement.ArchiverProviders",
-        "Microsoft.PackageManagement.CoreProviders",
-        "Microsoft.PackageManagement.MetaProvider.PowerShell",
-        "Microsoft.PowerShell.PackageManagement",
-        "Microsoft.PackageManagement.NuGetProvider"
-        )
- 
-    foreach ($assemblyName in $assemblyNames)
-    {
-        $dll = "$powershellFolder\$assemblyName.dll"
-        if (Test-Path ($dll))
-        {
-            Remove-Item -Path $dll -Verbose -force
-        }
-
-        $ni = "$powershellFolder\$assemblyName.ni.dll"
-        if (Test-Path ($ni))
-        {
-            Remove-Item -Path $ni -Verbose -force
-        }
-        if ($powershellLegacyFolder) {
-            $dll = "$powershellLegacyFolder\$assemblyName.dll"
-            if (Test-Path ($dll))
-            {
-                Remove-Item -Path $dll -Verbose -force
-            }
-
-            $ni = "$powershellLegacyFolder\$assemblyName.ni.dll"
-            if (Test-Path ($ni))
-            {
-                Remove-Item -Path $ni -Verbose -force
-            }
-        }
-    }
-
-
-    $packagemanagementfolder = "$powershellFolder\Modules\PackageManagement\$PackageManagementVersion\"
-    Write-Verbose ("OneGet Folder '{0}'" -f $packagemanagementfolder)
-
-    if(-not (Test-Path -Path $packagemanagementfolder))
-    {
-        New-Item -Path $packagemanagementfolder -ItemType Directory -Force -Verbose
-    }
+    # Delete installed PackageManagement  
+    $packagemanagementfolder = "$powershellFolder\Modules\PackageManagement\"
+    Write-Verbose -Verbose ("PackageManagement Folder '{0}'" -f $packagemanagementfolder)
+    Remove-Item $packagemanagementfolder -Recurse
+    New-Item -Path $packagemanagementfolder -ItemType Directory -Force -Verbose
 
     # copy OneGet module files
     Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
@@ -395,107 +300,17 @@ if ($testframework -eq "coreclr")
     Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mfl" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
     New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
     Copy-Item "$CoreCLRTestHome\Examples\*.ps1" (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
-
-     # copy the OneGet bits into powershell core
-    $OneGetBinaryPath ="$packagemanagementfolder\coreclr\netcoreapp2.0"
-    if(-not (Test-Path -Path $OneGetBinaryPath))
-    {
-        New-Item -Path $OneGetBinaryPath -ItemType Directory -Force -Verbose
-    }
-    else{
-        Get-ChildItem -Path $OneGetBinaryPath | %{ren "$OneGetBinaryPath\$_" "$OneGetBinaryPath\$_.deleteMe" -ErrorAction SilentlyContinue}
-        Get-ChildItem -Path $OneGetBinaryPath  -Recurse |  Remove-Item -force -Recurse -ErrorAction SilentlyContinue
-    }
-
-
-    Copy-Item "$TestBin\coreclr\netcoreapp2.0\*.dll" $OneGetBinaryPath -Force -Verbose
-
-    if ($powershellLegacyFolder) {
-        $OneGetBinaryPath ="$packagemanagementfolder\coreclr\netstandard1.6"
-        $packagemanagementfolder = "$powershellLegacyFolder\Modules\PackageManagement\$PackageManagementVersion\"
-        Write-Verbose ("OneGet Folder '{0}'" -f $packagemanagementfolder)
-
-        if(-not (Test-Path -Path $packagemanagementfolder))
-        {
-            New-Item -Path $packagemanagementfolder -ItemType Directory -Force -Verbose
-        }
-
-        # copy OneGet module files
-        Copy-Item "$TestBin\*.psd1" $packagemanagementfolder -force -Verbose
-        Copy-Item "$TestBin\*.psm1" $packagemanagementfolder -force -Verbose
-        Copy-Item "$TestBin\*.ps1xml" $packagemanagementfolder -force -Verbose
-        New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources")
-        Copy-Item "$TestBin\DSCResources\*.psm1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources")
-        Copy-Item "$TestBin\DSCResources\*.psd1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources")
-        New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
-        Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.psm1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
-        Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.psd1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
-        Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.mof" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
-        Copy-Item "$TestBin\DSCResources\MSFT_PackageManagement\*.mfl" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagement")
-        New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
-        Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.psm1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
-        Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.psd1" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
-        Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mof" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
-        Copy-Item "$TestBin\DSCResources\MSFT_PackageManagementSource\*.mfl" (Join-Path -Path $packagemanagementfolder -ChildPath "DSCResources\MSFT_PackageManagementSource")
-        New-DirectoryIfNotExist (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
-        Copy-Item "$CoreCLRTestHome\Examples\*.ps1" (Join-Path -Path $packagemanagementfolder -ChildPath "Examples")
-
-        # copy the OneGet bits into powershell core
-        $OneGetBinaryPath ="$packagemanagementfolder\coreclr"
-        if(-not (Test-Path -Path $OneGetBinaryPath))
-        {
-            New-Item -Path $OneGetBinaryPath -ItemType Directory -Force -Verbose
-        }
-        else{
-            Get-ChildItem -Path $OneGetBinaryPath | %{ren "$OneGetBinaryPath\$_" "$OneGetBinaryPath\$_.deleteMe" -ErrorAction SilentlyContinue}
-            Get-ChildItem -Path $OneGetBinaryPath  -Recurse |  Remove-Item -force -Recurse -ErrorAction SilentlyContinue
-        }
-
-
-        Copy-Item "$TestBin\coreclr\netstandard1.6\*.dll" $OneGetBinaryPath -Force -Verbose
-    }
-
-    $PSGetPath = "$powershellFolder\Modules\PowerShellGet\$PowerShellGetVersion\"
-
-    Write-Verbose ("PowerShellGet Folder '{0}'" -f $PSGetPath)
-
-    if(-not (Test-Path -Path $PSGetPath))
-    {
-        New-Item -Path $PSGetPath -ItemType Directory -Force -Verbose
-    }
-
-
-    # Copying files to Packagemanagement and PowerShellGet folders
-    Copy-Item "$PowerShellGetPath\*" $PSGetPath -force -verbose -Recurse
-
+    Copy-Item "$TestBin\coreclr" $packagemanagementfolder -Recurse
+    
     # copy test modules
     Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellFolder)\Modules" -force -verbose
     Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellFolder)\Modules"  -Recurse -force -verbose
-
-    if ($powershellLegacyFolder -and $script:IsWindows) {
-        $PSGetPath = "$powershellLegacyFolder\Modules\PowerShellGet\$PowerShellGetVersion\"
-
-        Write-Verbose ("Legacy PowerShellGet Folder '{0}'" -f $PSGetPath)
-
-        if(-not (Test-Path -Path $PSGetPath))
-        {
-            New-Item -Path $PSGetPath -ItemType Directory -Force -Verbose
-        }
-
-
-        # Copying files to Packagemanagement and PowerShellGet folders
-        Copy-Item "$PowerShellGetPath\*" $PSGetPath -force -verbose -Recurse
-
-        # copy test modules
-        Copy-Item  "$($TestHome)\Unit\Providers\PSChained1Provider.psm1" "$($powershellLegacyFolder)\Modules" -force -verbose
-        Copy-Item  "$($TestHome)\Unit\Providers\PSOneGetTestProvider" "$($powershellLegacyFolder)\Modules"  -Recurse -force -verbose
-    }
 }
 
 #endregion
 
 foreach ($currentNugetApiVersion in $allNugetApiVersions) {
-    Write-host ("testframework={0}, IsCoreCLR={1}, IsLinux={2}, IsOSX={3}, IsWindows={4}, NugetApiVersion={5}" -f $testframework, $script:IsCoreCLR, $script:IsLinux, $script:IsOSX, $script:IsWindows, $currentNugetApiVersion)
+    Write-host ("testframework={0}, IsCoreCLR={1}, IsLinux={2}, IsMacOS={3}, IsWindows={4}, NugetApiVersion={5}" -f $testframework, $script:IsCoreCLR, $script:IsLinux, $script:IsMacOS, $script:IsWindows, $currentNugetApiVersion)
     if ($currentNugetApiVersion -eq 'v2') {
         $nugetApiUrl = "https://nuget.org/api/v2/"
         $nugetApiUrlAlternate = "https://nuget.org/api/v2"
@@ -578,8 +393,6 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
             $command += "Set-ExecutionPolicy -Scope Process Unrestricted -force;"
         }
 
-        $command += "Import-Module '$pesterFolder';"
-
         $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 
         Write-Host "CoreCLR: Calling $powershellFolder\$powershellCoreFilePath -command  $command"
@@ -604,7 +417,6 @@ foreach ($currentNugetApiVersion in $allNugetApiVersions) {
 If($script:IsWindows)
 {
             $command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = '$nugetApiUrlAlternate';`$env:NUGET_API_VERSION = '$currentNugetApiVersion';"
-            $command += "Import-Module '$pesterFolder';"
             $testResultsFile="$($TestHome)\DSCTests\tests\testresult.xml"
             $command += "Invoke-Pester $($TestHome)\DSCTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -EnableExit"
 
@@ -625,25 +437,6 @@ If($script:IsWindows)
             {
                 $totalTestFailures = $numTestFailures
                 throw "$($x.'test-results'.failures) tests failed"
-            }
-        }
-        if ($powershellLegacyFolder -and $script:IsWindows) {
-        # Tests on legacy version of PowerShell Core
-            $command ="`$env:NUGET_API_URL = '$nugetApiUrl';`$env:NUGET_API_URL_ALTERNATE = '$nugetApiUrlAlternate';`$env:NUGET_API_VERSION = '$currentNugetApiVersion';"
-            $command += "Import-Module '$pesterFolder';`$global:IsLegacyTestRun=`$true;"
-            $testResultsFile="$($TestHome)\ModuleTests\tests\testresult.xml"
-            $command += "Invoke-Pester $($TestHome)\ModuleTests\tests -OutputFile $testResultsFile -OutputFormat NUnitXml -Tag Legacy -EnableExit"
-
-            Write-Host "(Legacy) CoreCLR: Calling $powershellLegacyFolder\$powershellCoreFilePath -command  $command"
-
-            & "$powershellLegacyFolder\$powershellCoreFilePath" -command "& {$command}"
-
-            $x = [xml](Get-Content -raw $testResultsFile)
-            $numTestFailures = [int]$x.'test-results'.failures
-            if ($numTestFailures -gt 0)
-            {
-                $totalTestFailures = $numTestFailures
-            throw "$($x.'test-results'.failures) tests failed"
             }
         }
     }
