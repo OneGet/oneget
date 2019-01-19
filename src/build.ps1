@@ -1,5 +1,5 @@
 ﻿param(
-    [ValidateSet("net452", "netcoreapp2.0", "netstandard2.0", "all")]
+    [ValidateSet("net452", "netstandard2.0", "all")]
     [string]$Framework = "netstandard2.0",
 
     [ValidateSet("Debug", "Release")]
@@ -72,7 +72,7 @@ foreach ($currentFramework in $frameworks)
     $solutionPath = Split-Path $MyInvocation.InvocationName
     $solutionDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($solutionPath)
 
-    if (($currentFramework -eq "netcoreapp2.0") -or ($currentFramework -eq "netstandard2.0"))
+    if ($currentFramework -eq "netstandard2.0")
     {
         $packageFramework ="coreclr"
         $assemblyNames = @(
@@ -122,7 +122,7 @@ foreach ($currentFramework in $frameworks)
                         "$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.strings.psd1")
 
     $destinationDir = "$solutionDir/out/PackageManagement"
-    if (($currentFramework -eq "netcoreapp2.0") -or ($currentFramework -eq "netstandard2.0"))
+    if ($currentFramework -eq "netstandard2.0")
     {
         $destinationDirBinaries = "$destinationDir/$packageFramework/$currentFramework"
     } else 
