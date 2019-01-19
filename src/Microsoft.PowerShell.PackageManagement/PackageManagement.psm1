@@ -15,7 +15,7 @@ if ($isCore)
     {
         $binarySubPath = Join-Path -Path 'coreclr' -ChildPath 'netcoreapp2.0'
     } else {
-        $binarySubPath = Join-Path -Path 'coreclr' -ChildPath 'netstandard1.6'
+        $binarySubPath = Join-Path -Path 'coreclr' -ChildPath 'netstandard2.0'
     }
 } else {
     $binarySubPath = 'fullclr'
