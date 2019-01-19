@@ -3,7 +3,7 @@ os:
   - WMF 5
 environment:
   matrix:
-    - test_framework: fullclr
+    # - test_framework: fullclr
     - test_framework: coreclr
 configuration: Release
 platform: Any CPU
