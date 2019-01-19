@@ -1,6 +1,6 @@
 ﻿param(
     [ValidateSet("net452", "netcoreapp2.0", "netstandard2.0", "all")]
-    [string]$Framework = "netcoreapp2.0",
+    [string]$Framework = "netstandard2.0",
 
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
@@ -62,7 +62,7 @@ Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $c
 
 if ($Framework -eq "all")
 {
-    $frameworks = @('net452','netcoreapp2.0','netstandard2.0')
+    $frameworks = @('net452', 'netstandard2.0')
 } else {
     $frameworks = @($Framework)
 }
