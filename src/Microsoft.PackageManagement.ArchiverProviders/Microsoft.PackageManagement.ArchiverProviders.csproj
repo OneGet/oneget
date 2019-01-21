@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net452;netcoreapp2.0;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.PackageManagement.ArchiverProviders</AssemblyName>
@@ -9,8 +9,6 @@
     <SignAssembly>true</SignAssembly>
     <PackageId>Microsoft.PackageManagement.ArchiverProviders</PackageId>
     <RuntimeIdentifiers>win7-x64;win81-x64;win10-x64</RuntimeIdentifiers>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">2.0.0</NetStandardImplicitPackageVersion>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -51,29 +49,13 @@
     <Compile Remove="Resources\Messages.resx" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <DefineConstants>$(DefineConstants);CORECLR</DefineConstants>
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <DefineConstants>$(DefineConstants);CORECLR;COREv1</DefineConstants>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
-
-  <ItemGroup Condition=" ('$(TargetFramework)' == 'netcoreapp2.0') Or ('$(TargetFramework)' == 'netstandard1.6') ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <Compile Remove="Providers\Inbox\Common\*;Resources\*" />
-  </ItemGroup>
-  
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <PackageReference Update="Microsoft.NETCore.App" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Win32.Registry.AccessControl" Version="4.4.0" />
-    <PackageReference Include="NETStandard.Library" Version="2.0.0" />
-    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.4.0" />
-    <PackageReference Include="System.Security.AccessControl" Version="4.4.0" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.4.0" />
-    <PackageReference Include="System.Security.Principal.Windows" Version="4.4.0" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.4.0" />
   </ItemGroup>
 
 </Project>

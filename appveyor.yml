@@ -1,6 +1,5 @@
 version: 1.0.{build}
-os:
-  - WMF 5
+image: Visual Studio 2017
 environment:
   matrix:
     - test_framework: fullclr
@@ -19,7 +18,7 @@ build_script:
   - git submodule update --init
   - ps: nuget locals all -clear
   - ps: import-module c:\projects\oneget\test\TestUtility.psm1 -force
-  - ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net452" Release -EmbedProviderManifest; .\build.ps1 -framework "netcoreapp2.0" Release -EmbedProviderManifest; .\build.ps1 -framework "netstandard1.6" Release -EmbedProviderManifest
+  - ps: cd .\src; .\bootstrap.ps1; .\build.ps1 -framework "net452" Release -EmbedProviderManifest; .\build.ps1 -framework "netstandard2.0" Release -EmbedProviderManifest
 
 deploy_script: 
   - ps: |
