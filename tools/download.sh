@@ -8,7 +8,7 @@ trap '
 ' INT
 
 get_url() {
-    release=v6.1.1
+    release=v6.1.2
     echo "https://github.com/PowerShell/PowerShell/releases/download/$release/$1"
 }
 
@@ -24,7 +24,7 @@ case "$OSTYPE" in
                     sudo yum install -y curl
                 fi
                 
-                package=powershell-6.1.1-1.rhel.7.x86_64.rpm
+                package=powershell-6.1.2-1.rhel.7.x86_64.rpm
                 ;;
             ubuntu)
                 if ! hash curl 2>/dev/null; then
@@ -34,11 +34,11 @@ case "$OSTYPE" in
 
                 case "$VERSION_ID" in
                     14.04)
-                    https://github.com/PowerShell/PowerShell/releases/download/v6.1.1/powershell_6.1.1-1.ubuntu.14.04_amd64.deb
-                        package=powershell_6.1.1-1.ubuntu.14.04_amd64.deb
+                    https://github.com/PowerShell/PowerShell/releases/download/v6.1.2/powershell_6.1.2-1.ubuntu.14.04_amd64.deb
+                        package=powershell_6.1.2-1.ubuntu.14.04_amd64.deb
                         ;;
                     16.04)
-                        package=powershell_6.1.1-1.ubuntu.16.04_amd64.deb
+                        package=powershell_6.1.2-1.ubuntu.16.04_amd64.deb
                         ;;
                     *)
                         echo "Ubuntu $VERSION_ID is not supported!" >&2
@@ -52,7 +52,7 @@ case "$OSTYPE" in
         ;;
     darwin*)
         # We don't check for curl as macOS should have a system version
-        package=powershell-6.1.1-osx-x64.pkg
+        package=powershell-6.1.2-osx-x64.pkg
         ;;
     *)
         echo "$OSTYPE is not supported!" >&2
