@@ -23,14 +23,14 @@ try {
 
     $IsCoreCLR = $true
     $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
-    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
+    $IsMacOS = $Runtime::IsOSPlatform($OSPlatform::OSX)
     $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
 } catch {
     # If these are already set, then they're read-only and we're done
     try {
         $IsCoreCLR = $false
         $IsLinux = $false
-        $IsOSX = $false
+        $IsMacOS = $false
         $IsWindows = $true
     }
     catch { }

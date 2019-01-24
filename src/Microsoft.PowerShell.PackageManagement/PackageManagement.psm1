@@ -9,14 +9,7 @@ $isCore = ($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSE
 $binarySubPath = ''
 if ($isCore)
 {
-    # Using the Assembly.LoadFrom API to determine if this is netcoreapp2.0 or if it's older
-    $loadFromMethod = [System.Reflection.Assembly].GetMethods() | Where-Object { $_.Name -eq 'LoadFrom' }
-    if ($loadFromMethod)
-    {
-        $binarySubPath = Join-Path -Path 'coreclr' -ChildPath 'netcoreapp2.0'
-    } else {
-        $binarySubPath = Join-Path -Path 'coreclr' -ChildPath 'netstandard1.6'
-    }
+    $binarySubPath = Join-Path -Path 'coreclr' -ChildPath 'netstandard2.0'
 } else {
     $binarySubPath = 'fullclr'
 }

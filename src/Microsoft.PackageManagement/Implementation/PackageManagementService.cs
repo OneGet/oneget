@@ -1302,13 +1302,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
             var found = false;
             try {
 
-                Assembly assembly = null;
-// This preprocessor directive is defined in build project (.NET Core csproj)
-#if COREv1
-                assembly = Microsoft.PowerShell.CoreCLR.AssemblyExtensions.LoadFrom(assemblyPath);
-#else
-                assembly = Assembly.LoadFrom(assemblyPath);
-#endif
+                var assembly = Assembly.LoadFrom(assemblyPath);
 
                 if (assembly == null) {
                     return false;

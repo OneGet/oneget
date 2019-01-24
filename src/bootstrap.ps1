@@ -6,14 +6,14 @@ try {
 
     $IsCoreCLR = ($PSVersionTable.ContainsKey('PSEdition')) -and ($PSVersionTable.PSEdition -eq 'Core')
     $IsLinux = $Runtime::IsOSPlatform($OSPlatform::Linux)
-    $IsOSX = $Runtime::IsOSPlatform($OSPlatform::OSX)
+    $IsMacOS = $Runtime::IsOSPlatform($OSPlatform::OSX)
     $IsWindows = $Runtime::IsOSPlatform($OSPlatform::Windows)
 } catch {
     # If these are already set, then they're read-only and we're done
     try {
         $IsCoreCLR = $false
         $IsLinux = $false
-        $IsOSX = $false
+        $IsMacOS = $false
         $IsWindows = $true
     }
     catch { }
@@ -38,7 +38,7 @@ function Start-DotnetBootstrap {
         # we currently pin dotnet-cli version, because tool
         # is currently migrating to msbuild toolchain
         # and requires constant updates to our build process.
-        [string]$Version = "2.1.4"
+        [string]$Version = "2.1.503"
     )
 
     # Install ours and .NET's dependencies
@@ -63,7 +63,7 @@ function Start-DotnetBootstrap {
 
         # Install dependencies
         sudo yum install -y -q $Deps
-    } elseif ($IsOSX) {
+    } elseif ($IsMacOS) {
 
         # Build tools
         $Deps += "curl", "cmake"
@@ -78,11 +78,11 @@ function Start-DotnetBootstrap {
     $obtainUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain"
 
     # Install for Linux and OS X
-    if ($IsLinux -or $IsOSX) {
+    if ($IsLinux -or $IsMacOS) {
         # Uninstall all previous dotnet packages
         $uninstallScript = if ($IsUbuntu) {
             "dotnet-uninstall-debian-packages.sh"
-        } elseif ($IsOSX) {
+        } elseif ($IsMacOS) {
             "dotnet-uninstall-pkgs.sh"
         }
 
@@ -101,7 +101,7 @@ function Start-DotnetBootstrap {
         bash ./$installScript -c $Channel -v $Version
 
         # .NET Core's crypto library needs brew's OpenSSL libraries added to its rpath
-        if ($IsOSX) {
+        if ($IsMacOS) {
             # This is the library shipped with .NET Core
             # This is allowed to fail as the user may have installed other versions of dotnet
             Write-Warning ".NET Core links the incorrect OpenSSL, correcting .NET CLI libraries..."
