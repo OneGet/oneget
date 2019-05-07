@@ -38,7 +38,7 @@ configuration Sample_Install_Package_Using_NuGet
         [string]$InstallationPolicy
     )
 
-    Import-DscResource -Module PackageManagement -ModuleVersion 1.3.1
+    Import-DscResource -Module PackageManagement -ModuleVersion 1.3.2
 
     Node $NodeName
     {
