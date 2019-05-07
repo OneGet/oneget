@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!-- 
+      
+-->
+<SignConfigXML>
+  <!-- AnyCPU Release sign job -->
+  <job platform="AnyCPU" configuration="Release" dest="__OUTPATHROOT__\signed" jobname="PackgeManagement" approvers="vigarg;gstolt">
+    <file src="__INPATHROOT__\artifacts\PackageManagement.format.ps1xml" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\PackageManagement.format.ps1xml" />
+    <file src="__INPATHROOT__\artifacts\PackageManagement.psd1" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\PackageManagement.psd1" />
+    <file src="__INPATHROOT__\artifacts\PackageManagement.psm1" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\PackageManagement.psm1" />   
+    <file src="__INPATHROOT__\artifacts\PackageManagement.Resources.psd1" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\PackageManagement.Resources.psd1" /> 
+    <file src="__INPATHROOT__\artifacts\PackageProviderFunctions.psm1" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\PackageProviderFunctions.psm1" /> 
+
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\coreclr\netstandard2.0\Microsoft.PackageManagement.ArchiverProviders.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\coreclr\netstandard2.0\Microsoft.PackageManagement.ArchiverProviders.dll" /> 
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\coreclr\netstandard2.0\Microsoft.PackageManagement.CoreProviders.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\coreclr\netstandard2.0\Microsoft.PackageManagement.CoreProviders.dll" /> 
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\coreclr\netstandard2.0\Microsoft.PackageManagement.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\coreclr\netstandard2.0\Microsoft.PackageManagement.dll" />
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\coreclr\netstandard2.0\Microsoft.PackageManagement.MetaProvider.PowerShell.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\coreclr\netstandard2.0\Microsoft.PackageManagement.MetaProvider.PowerShell.dll" />
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\coreclr\netstandard2.0\Microsoft.PackageManagement.NuGetProvider.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\coreclr\netstandard2.0\Microsoft.PackageManagement.NuGetProvider.dll" />
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\coreclr\netstandard2.0\Microsoft.PowerShell.PackageManagement.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\coreclr\netstandard2.0\Microsoft.PowerShell.PackageManagement.dll" />
+
+    <file src="__INPATHROOT__\artifacts\DSCResources\PackageManagementDscUtilities.psm1" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\DSCResources\PackageManagementDscUtilities.psm1" />
+    <file src="__INPATHROOT__\artifacts\DSCResources\PackageManagementDscUtilities.strings.psd1" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\DSCResources\PackageManagementDscUtilities.strings.psd1" />
+    <file src="__INPATHROOT__\artifacts\DSCResources\MSFT_PackageManagement\MSFT_PackageManagement.psm1" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\DSCResources\MSFT_PackageManagement\MSFT_PackageManagement.psm1" />
+    <file src="__INPATHROOT__\artifacts\DSCResources\MSFT_PackageManagement\MSFT_PackageManagement.schema.mof" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\DSCResources\MSFT_PackageManagement\MSFT_PackageManagement.schema.mof" />
+    <file src="__INPATHROOT__\artifacts\DSCResources\MSFT_PackageManagement\MSFT_PackageManagement.strings.psd1" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\DSCResources\MSFT_PackageManagement\MSFT_PackageManagement.strings.psd1" />
+    <file src="__INPATHROOT__\artifacts\DSCResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.psm1" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\DSCResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.psm1" />
+    <file src="__INPATHROOT__\artifacts\DSCResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.schema.mof" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\DSCResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.schema.mof" />
+    <file src="__INPATHROOT__\artifacts\DSCResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.strings.psd1" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\DSCResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.strings.psd1" />
+
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.ArchiverProviders.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\fullclr\Microsoft.PackageManagement.ArchiverProviders.dll" />
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.CoreProviders.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\fullclr\Microsoft.PackageManagement.CoreProviders.dll" />
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\fullclr\Microsoft.PackageManagement.dll" />
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.MetaProvider.PowerShell.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\fullclr\Microsoft.PackageManagement.MetaProvider.PowerShell.dll" />
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.MsiProvider.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\fullclr\Microsoft.PackageManagement.MsiProvider.dll" />
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.MsuProvider.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\fullclr\Microsoft.PackageManagement.MsuProvider.dll" />
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.NuGetProvider.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\fullclr\Microsoft.PackageManagement.NuGetProvider.dll" />
+    <file src="__INPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PowerShell.PackageManagement.dll" signType="AuthenticodeFormer" dest="__OUTPATHROOT__\fullclr\Microsoft.PowerShell.PackageManagement.dll" />
+  </job>
+</SignConfigXML>

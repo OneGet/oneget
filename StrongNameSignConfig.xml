@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!-- 
+      
+-->
+<SignConfigXML>
+  <!-- AnyCPU Release sign job -->
+  <job platform="AnyCPU" configuration="Release" dest="__OUTPATHROOT__\signed" jobname="PackageManagement" approvers="vigarg;gstolt">
+
+    <file src="__INPATHROOT__\artifacts\coreclr\netstandard2.0\Microsoft.PackageManagement.ArchiverProviders.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\coreclr\netstandard2.0\Microsoft.PackageManagement.ArchiverProviders.dll" /> 
+    <file src="__INPATHROOT__\artifacts\coreclr\netstandard2.0\Microsoft.PackageManagement.CoreProviders.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\coreclr\netstandard2.0\Microsoft.PackageManagement.CoreProviders.dll" /> 
+    <file src="__INPATHROOT__\artifacts\coreclr\netstandard2.0\Microsoft.PackageManagement.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\coreclr\netstandard2.0\Microsoft.PackageManagement.dll" />
+    <file src="__INPATHROOT__\artifacts\coreclr\netstandard2.0\Microsoft.PackageManagement.MetaProvider.PowerShell.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\coreclr\netstandard2.0\Microsoft.PackageManagement.MetaProvider.PowerShell.dll" />
+    <file src="__INPATHROOT__\artifacts\coreclr\netstandard2.0\Microsoft.PackageManagement.NuGetProvider.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\coreclr\netstandard2.0\Microsoft.PackageManagement.NuGetProvider.dll" />
+    <file src="__INPATHROOT__\artifacts\coreclr\netstandard2.0\Microsoft.PowerShell.PackageManagement.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\coreclr\netstandard2.0\Microsoft.PowerShell.PackageManagement.dll" />
+
+    <file src="__INPATHROOT__\artifacts\fullclr\Microsoft.PackageManagement.ArchiverProviders.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.ArchiverProviders.dll" />
+    <file src="__INPATHROOT__\artifacts\fullclr\Microsoft.PackageManagement.CoreProviders.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.CoreProviders.dll" />
+    <file src="__INPATHROOT__\artifacts\fullclr\Microsoft.PackageManagement.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.dll" />
+    <file src="__INPATHROOT__\artifacts\fullclr\Microsoft.PackageManagement.MetaProvider.PowerShell.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.MetaProvider.PowerShell.dll" />
+    <file src="__INPATHROOT__\artifacts\fullclr\Microsoft.PackageManagement.MsiProvider.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.MsiProvider.dll" />
+    <file src="__INPATHROOT__\artifacts\fullclr\Microsoft.PackageManagement.MsuProvider.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.MsuProvider.dll" />
+    <file src="__INPATHROOT__\artifacts\fullclr\Microsoft.PackageManagement.NuGetProvider.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PackageManagement.NuGetProvider.dll" />
+    <file src="__INPATHROOT__\artifacts\fullclr\Microsoft.PowerShell.PackageManagement.dll" signType="StrongName" dest="__OUTPATHROOT__\artifacts\StrongNameSigned\fullclr\Microsoft.PowerShell.PackageManagement.dll" />
+  </job>
+</SignConfigXML>
