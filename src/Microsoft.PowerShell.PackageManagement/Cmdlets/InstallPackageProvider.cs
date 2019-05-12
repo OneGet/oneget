@@ -185,7 +185,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             }
 
             if (IsPackageByObject) {
-                return InstallPackages(InputObject);
+                return InstallPackages(InputObject, (bool)this.Force);
             }
 
             // otherwise, just do the search right now.
@@ -274,7 +274,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             var list = ProcessMatchedDuplicates().ToArray();
 
             // Now install the provider
-            if(!base.InstallPackages(list)) {
+            if(!base.InstallPackages(list, this.Force)) {
                 return false;
             }
 

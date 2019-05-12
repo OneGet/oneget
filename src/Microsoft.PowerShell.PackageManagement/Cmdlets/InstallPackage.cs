@@ -69,14 +69,16 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
         }
 
+        [Parameter]
+        public SwitchParameter ForceReinstall { get; set; }
 
         protected override void GenerateCmdletSpecificParameters(Dictionary<string, object> unboundArguments) {
 #if DEEP_DEBUG
-            Console.WriteLine("»» Entering GCSP ");
+            Console.WriteLine("Entering GCSP ");
 #endif
             if (!IsInvocation) {
 #if DEEP_DEBUG
-                Console.WriteLine("»»» Does not appear to be Invocation (locked:{0})", IsReentrantLocked);
+                Console.WriteLine("Does not appear to be Invocation (locked:{0})", IsReentrantLocked);
 #endif
                 var providerNames = PackageManagementService.AllProviderNames;
                 var whatsOnCmdline = GetDynamicParameterValue<string[]>("ProviderName");
@@ -95,7 +97,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
             else {
 #if DEEP_DEBUG
-                Console.WriteLine("»»» Does appear to be Invocation (locked:{0})", IsReentrantLocked);
+                Console.WriteLine("Does appear to be Invocation (locked:{0})", IsReentrantLocked);
 #endif
                 DynamicParameterDictionary.AddOrSet("ProviderName", new RuntimeDefinedParameter("ProviderName", typeof(string[]), new Collection<Attribute> {
                     new ParameterAttribute {
@@ -115,7 +117,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
         public override bool ProcessRecordAsync() {
             if (IsPackageByObject) {
-                return InstallPackages(InputObject);
+                return InstallPackages(InputObject, this.ForceReinstall);
             }
             if (MyInvocation.BoundParameters.Count == 0 || (MyInvocation.BoundParameters.Count == 1 &&  MyInvocation.BoundParameters.ContainsKey("ProviderName")) ) {
                 // didn't pass in anything, (except maybe Providername)
@@ -154,7 +156,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             }
 
             // good list. Let's roll...
-            return base.InstallPackages(swids.ToArray());
+            return base.InstallPackages(swids.ToArray(), this.ForceReinstall);
         }
 
         protected override void ProcessPackage(PackageProvider provider, IEnumerable<string> searchKey, SoftwareIdentity package) {

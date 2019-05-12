@@ -617,7 +617,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return packageSourceName;
         }
 
-        protected bool InstallPackages(params SoftwareIdentity[] packagesToInstall) {
+        protected bool InstallPackages(SoftwareIdentity[] packagesToInstall, bool forceReinstall) {
 
             if(packagesToInstall == null || packagesToInstall.Length == 0)
             {
@@ -666,7 +666,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 }
 
                 // todo: this is a terribly simplistic way to do this, we'd better rethink this soon
-                if (!Force) {
+                if (!forceReinstall) {
                     if (installedPkgs.Any(each => each.Name.EqualsIgnoreCase(pkg.Name) && each.Version.EqualsIgnoreCase(pkg.Version))) {
                         // it looks like it's already installed.
                         // skip it.
