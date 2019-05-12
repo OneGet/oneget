@@ -185,7 +185,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets
             }
 
             if (IsPackageByObject) {
-                return InstallPackages(InputObject, (bool)this.Force);
+                return InstallPackages(InputObject, this.Force);
             }
 
             // otherwise, just do the search right now.
