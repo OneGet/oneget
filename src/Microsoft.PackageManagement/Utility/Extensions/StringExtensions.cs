@@ -342,14 +342,14 @@ namespace Microsoft.PackageManagement.Internal.Utility.Extensions {
         }
 
         public static bool IsTrue(this string text) {
-            return !string.IsNullOrWhiteSpace(text) && text.Equals("true", StringComparison.CurrentCultureIgnoreCase);
+            return !string.IsNullOrWhiteSpace(text) && text.Equals("true", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool? IsTruePreserveNull(this string text) {
             if (text == null) {
                 return null;
             }
-            return !string.IsNullOrWhiteSpace(text) && text.Equals("true", StringComparison.CurrentCultureIgnoreCase);
+            return !string.IsNullOrWhiteSpace(text) && text.Equals("true", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
