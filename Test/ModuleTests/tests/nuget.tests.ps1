@@ -77,6 +77,40 @@ function SkipVersion([version]$minVersion,[version]$maxVersion) {
     return $true
 }
 
+Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
+
+     BeforeAll{
+        # Make sure the credential provider is installed (works for Windows, Linux, and Mac)
+        # If the credential provider is already installed, will receive the message: "The netcore Credential Provider is already in C:\Users\<alias>\.nuget\plugins"
+        iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/microsoft/artifacts-credprovider/master/helpers/installcredprovider.ps1'))
+
+        $pkgSourceName = "OneGetTestPrivateFeed"
+        # This pkg source is an Azure DevOps private feed
+        $testSource = "https://pkgs.dev.azure.com/onegettest/_packaging/onegettest/nuget/v3/index.json";
+        $username = "onegettest@hotmail.com"
+        $PAT = "xvj25ardbp5fk3dvvubwl52oibci73bjoylkqptm5bicr7rbk54q"
+        # see https://github.com/Microsoft/artifacts-credprovider#environment-variables for more info on env vars for the credential provider
+        $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS = "{'endpointCredentials': [{'endpoint':'$testSource', 'username':'$username', 'password':'$PAT'}]}"
+        [System.Environment]::SetEnvironmentVariable("VSS_NUGET_EXTERNAL_FEED_ENDPOINTS", $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS, [System.EnvironmentVariableTarget]::Process)
+    }
+
+    AfterAll{
+        UnRegister-PackageSource -Name $pkgSourceName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+    }
+
+    it "Register-PackageSource using credential provider" {
+        register-packagesource $pkgSourceName -Location $testSource -providername Nuget -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+    
+        (Get-PackageSource -Name $pkgSourceName).Name | should match $pkgSourceName
+        (Get-PackageSource -Name $pkgSourceName).Location | should match $testSource
+    }
+
+    it "Find-Package using credential provider" {
+        $pkg = find-package * -provider $nuget -source $pkgSourceName
+        $pkg.Count | should -BeGreaterThan 0
+    }
+}
+
 Describe "Find, Get, Save, and Install-Package with Culture" -Tags "Feature" {
 
     <#
