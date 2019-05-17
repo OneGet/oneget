@@ -105,9 +105,16 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
         Write-Host ("~~~~~~ PRINT ENV VAR ~~~~~~")
         Write-Host ($env:VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)
         Write-Host ($env:UserProfile)
-        Write-Host (get-childitem "$env:UserProfile\.nuget\plugins" -Recurse)
+        if ($IsWindows)
+        {
+            Write-Host (get-childitem "$env:UserProfile\.nuget\plugins" -Recurse)
+        }
+        else {
+            Write-Host (get-childitem "$HOME\.nuget\plugins" -Recurse)
+        }
+        
 
-        register-packagesource $pkgSourceName -Location $testSource -providername Nuget -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        register-packagesource $pkgSourceName -Location $testSource -providername Nuget
     
         (Get-PackageSource -Name $pkgSourceName).Name | should match $pkgSourceName
         (Get-PackageSource -Name $pkgSourceName).Location | should match $testSource
