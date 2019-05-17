@@ -1,6 +1,7 @@
 version: 1.0.{build}
 image: Visual Studio 2017
 environment:
+  - VSS_NUGET_EXTERNAL_FEED_ENDPOINTS: {'endpointCredentials': [{'endpoint':'https://pkgs.dev.azure.com/onegettest/_packaging/onegettest/nuget/v3/index.json', 'username':'onegettest@hotmail.com', 'password':'xvj25ardbp5fk3dvvubwl52oibci73bjoylkqptm5bicr7rbk54q'}]}
   matrix:
     - test_framework: fullclr
     - test_framework: coreclr
