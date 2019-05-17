@@ -104,6 +104,9 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
     it "Register-PackageSource using credential provider" {
         Write-Host ("~~~~~~ PRINT ENV VAR ~~~~~~")
         Write-Host ($env:VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)
+        Write-Host ($env:UserProfile)
+        Write-Host (get-childitem "$env:UserProfile\.nuget\plugins" -Recurse)
+
         register-packagesource $pkgSourceName -Location $testSource -providername Nuget -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
     
         (Get-PackageSource -Name $pkgSourceName).Name | should match $pkgSourceName
