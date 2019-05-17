@@ -91,7 +91,9 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
         $PAT = "xvj25ardbp5fk3dvvubwl52oibci73bjoylkqptm5bicr7rbk54q"
         # see https://github.com/Microsoft/artifacts-credprovider#environment-variables for more info on env vars for the credential provider
         $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS = "{'endpointCredentials': [{'endpoint':'$testSource', 'username':'$username', 'password':'$PAT'}]}"
+        [System.Environment]::SetEnvironmentVariable("VSS_NUGET_EXTERNAL_FEED_ENDPOINTS", $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS, [System.EnvironmentVariableTarget]::Machine)
         [System.Environment]::SetEnvironmentVariable("VSS_NUGET_EXTERNAL_FEED_ENDPOINTS", $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS, [System.EnvironmentVariableTarget]::Process)
+        [System.Environment]::SetEnvironmentVariable("VSS_NUGET_EXTERNAL_FEED_ENDPOINTS", $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS, [System.EnvironmentVariableTarget]::User)
     }
 
     AfterAll{
@@ -386,19 +388,17 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
         (find-package -name "ModuleWithDependenciesLoop" -provider $nuget -source "$dependenciesSource\SimpleDependenciesLoop").name | should match "ModuleWithDependenciesLoop"
     }
 
-
-<# Not working?
-   It "EXPECTED: Finds 'grpc.dependencies.zlib' Package with -IncludeDependencies" {
-       $version = "1.2.8.10"
-        $packages = Find-Package -Name "grpc.dependencies.zlib" -ProviderName $nuget -Source $source -RequiredVersion $version -IncludeDependencies
-        $packages.Count | should match 2
-        $expectedPackages = @("grpc.dependencies.zlib","grpc.dependencies.zlib.redist")
+   It "EXPECTED: Finds 'Microsoft.AspNet.Mvc' Package with -IncludeDependencies" {
+        $version = "5.2.7"
+        $packages = Find-Package -Name "Microsoft.AspNet.Mvc" -ProviderName $nuget -Source $source -RequiredVersion $version -IncludeDependencies
+        $packages.Count | should match 4
+        $expectedPackages = @("Microsoft.AspNet.Razor", "Microsoft.AspNet.WebPages", "Microsoft.AspNet.Razor", "Microsoft.Web.Infrastructure")
 
         foreach ($expectedPackage in $expectedPackages) {
             $match = $false
             foreach ($package in $packages) {
-                # All the packages have the same version for grpc.dependencies.zlib
-                if ($package.Name -match $expectedPackage -and $package.Version -match $version) {
+                # All the packages have the same version for Microsoft.AspNet.Mvc
+                if ($package.Name -match $expectedPackage) {
                     $match = $true
                     break
                 }
@@ -407,7 +407,7 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
             $match | should be $true
         }
     }
-#>
+
     It "EXPECTED: Finds package with Credential" -Skip {
         $credPackage = Find-Package Contoso -Credential $vstsCredential -Source $vstsFeed -ProviderName $Nuget
         $credPackage.Count | should be 1
@@ -501,9 +501,8 @@ Describe "Find-Package" -Tags @('Feature','SLOW'){
         }
     }
 
-    It "EXPECTED: Finds 'grpc.dependencies.zlib' Package After Piping The Provider" {
-        $version = "1.2.8.10"
-        (get-packageprovider -name $nuget | find-package -name grpc.dependencies.zlib -source $source -requiredversion $version).name | should be "grpc.dependencies.zlib"
+    It "EXPECTED: Finds 'Microsoft.AspNet.Mvc' Package After Piping The Provider" {
+        (get-packageprovider -name $nuget | find-package -name Microsoft.AspNet.Mvc -source $source -requiredversion $version).name | should be "Microsoft.AspNet.Mvc"
     }
 
     It "EXPECTED: -FAILS- To Find Package Due To Too Long Of Name" {
@@ -765,12 +764,11 @@ Describe "Save-Package" -Tags "Feature" {
         }
     }
 
-    It "EXPECTED: Saves 'grpc.dependencies.zlib' Package After Having The Provider Piped" {
-        $version = "1.2.8.10"
-        (find-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -requiredversion $version | save-package -Path $destination)
-        (Test-Path -Path $destination\grpc.dependencies.zlib*) | should be $true
-        if (Test-Path -Path $destination\grpc.dependencies.zlib*) {
-            Remove-Item $destination\grpc.dependencies.zlib* -Force -Recurse
+    It "EXPECTED: Saves 'Microsoft.AspNet.Mvc' Package After Having The Provider Piped" {
+        (find-package -name "Microsoft.AspNet.Mvc" -provider $nuget -source $source | save-package -Path $destination)
+        (Test-Path -Path $destination\Microsoft.AspNet.Mvc*) | should be $true
+        if (Test-Path -Path $destination\Microsoft.AspNet.Mvc*) {
+            Remove-Item $destination\Microsoft.AspNet.Mvc* -Force -Recurse
         }
     }
 
@@ -852,8 +850,8 @@ Describe "save-package with Whatif" -Tags "Feature" {
     }
 
      It "install-package -name nuget with whatif where package has a dependencies, Expect succeed" {
-        {Save-Package -name zlib -source $source `
-            -ProviderName NuGet -Path $tempDir -RequiredVersion "1.2.8.10" -whatif -ErrorAction SilentlyContinue} | should not throw
+        {Save-Package -name Microsoft.AspNet.Mvc -source $source `
+            -ProviderName NuGet -Path $tempDir -whatif -ErrorAction SilentlyContinue} | should not throw
     }
 }
 
@@ -898,13 +896,10 @@ Describe "install-package with Whatif" -Tags "Feature" {
         }
     }
 
-# What if not working
-<#
      It "install-package -name nuget with whatif where package has a dependencies, Expect succeed" {
-        {install-Package -name grpc.dependencies.zlib -source $source `
-            -ProviderName NuGet -destination $installationPath -RequiredVersion "1.2.8.10" -whatif} | should not throw
+        {install-Package -name Microsoft.AspNet.Mvc -source $source `
+            -ProviderName NuGet -destination $installationPath -whatif} | should not throw
     }
-#>
 }
 
 Describe "Install-Package dependencies" -Tags "Feature" {
@@ -1262,12 +1257,11 @@ Describe Install-Package -Tags "Feature" {
         }
     }
 
-    It "EXPECTED: Installs 'grpc.dependencies.zlib' Package After Having The Provider Piped" {
-        $version = "1.2.8.10"
-        (find-package -name "grpc.dependencies.zlib" -provider $nuget -source $source -RequiredVersion $version| install-package -destination $destination -force -Verbose)
-        (Test-Path -Path $destination\grpc.dependencies.zlib*) | should be $true
-        if (Test-Path -Path $destination\grpc.dependencies.zlib*) {
-            (Remove-Item -Recurse -Force -Path $destination\grpc.dependencies.zlib* -ErrorAction SilentlyContinue)
+    It "EXPECTED: Installs 'Microsoft.AspNet.Mvc' Package After Having The Provider Piped" {
+        (find-package -name "Microsoft.AspNet.Mvc" -provider $nuget -source $source | install-package -destination $destination -force -Verbose)
+        (Test-Path -Path $destination\Microsoft.AspNet.Mvc*) | should be $true
+        if (Test-Path -Path $destination\Microsoft.AspNet.Mvc*) {
+            (Remove-Item -Recurse -Force -Path $destination\Microsoft.AspNet.Mvc* -ErrorAction SilentlyContinue)
             }
         }
 
