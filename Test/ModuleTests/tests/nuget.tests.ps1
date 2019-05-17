@@ -91,9 +91,8 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
         $PAT = "xvj25ardbp5fk3dvvubwl52oibci73bjoylkqptm5bicr7rbk54q"
         # see https://github.com/Microsoft/artifacts-credprovider#environment-variables for more info on env vars for the credential provider
         $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS = "{'endpointCredentials': [{'endpoint':'$testSource', 'username':'$username', 'password':'$PAT'}]}"
-        [System.Environment]::SetEnvironmentVariable("VSS_NUGET_EXTERNAL_FEED_ENDPOINTS", $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS, [System.EnvironmentVariableTarget]::Machine)
+        # The line below is purely for local testing.  Make sure to update env vars in AppVeyor and Travis CI as necessary.
         [System.Environment]::SetEnvironmentVariable("VSS_NUGET_EXTERNAL_FEED_ENDPOINTS", $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS, [System.EnvironmentVariableTarget]::Process)
-        [System.Environment]::SetEnvironmentVariable("VSS_NUGET_EXTERNAL_FEED_ENDPOINTS", $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS, [System.EnvironmentVariableTarget]::User)
     }
 
     AfterAll{
