@@ -11,6 +11,8 @@ sudo: required
 dist: trusty
 osx_image: xcode9.4
 env:
+  global:
+    VSS_NUGET_EXTERNAL_FEED_ENDPOINTS: '{"endpointCredentials":[{"endpoint":"https://pkgs.dev.azure.com/onegettest/_packaging/onegettest/nuget/v3/index.json","username":"onegettest@hotmail.com","password":"xvj25ardbp5fk3dvvubwl52oibci73bjoylkqptm5bicr7rbk54q"}]}'
   matrix:
     - api=v2
     - api=v3
