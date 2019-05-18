@@ -113,8 +113,8 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
             Write-Host (get-childitem "$HOME\.nuget\plugins" -Recurse)
         }
         
-
-        register-packagesource $pkgSourceName -Location $testSource -providername Nuget
+        $secPAT = ConvertTo-SecureString -String $PAT -AsPlainText -Force
+        register-packagesource $pkgSourceName -Location $testSource -providername Nuget -Credential($username, $secPAT)
     
         (Get-PackageSource -Name $pkgSourceName).Name | should match $pkgSourceName
         (Get-PackageSource -Name $pkgSourceName).Location | should match $testSource
