@@ -87,11 +87,11 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
         $pkgSourceName = "OneGetTestPrivateFeed"
         # This pkg source is an Azure DevOps private feed
         #$testSourceV2 = "https://pkgs.dev.azure.com/onegettest/_packaging/onegettest/nuget/v2";
-        $testSourceV3 = "https://pkgs.dev.azure.com/onegettest/_packaging/onegettest/nuget/v3/index.json";
+        $testSource = "https://pkgs.dev.azure.com/onegettest/_packaging/onegettest/nuget/v3/index.json";
         $username = "onegettest@hotmail.com"
         $PAT = "xvj25ardbp5fk3dvvubwl52oibci73bjoylkqptm5bicr7rbk54q"
         # see https://github.com/Microsoft/artifacts-credprovider#environment-variables for more info on env vars for the credential provider
-        $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS = "{`"endpointCredentials`": [{`"endpoint`":`"$testSource`", `"username`":`"$username`", `"password`":`"$PAT`"}]}"
+        #$VSS_NUGET_EXTERNAL_FEED_ENDPOINTS = "{`"endpointCredentials`": [{`"endpoint`":`"$testSource`", `"username`":`"$username`", `"password`":`"$PAT`"}]}"
         # The line below is purely for local testing.  Make sure to update env vars in AppVeyor and Travis CI as necessary.
         Write-Host ("****** PRINT ENV VAR ******")
         Write-Host ($env:VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)
