@@ -90,34 +90,27 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
         $username = "onegettest@hotmail.com"
         $PAT = "clbe7fmhlizumv6ftm6ozjs7url54fkse62sltcope6oyyhytafa"
         # see https://github.com/Microsoft/artifacts-credprovider#environment-variables for more info on env vars for the credential provider
-        $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS = "{`"endpointCredentials`": [{`"endpoint`":`"$testSource`", `"username`":`"$username`", `"password`":`"$PAT`"}]}"
         # The line below is purely for local testing.  Make sure to update env vars in AppVeyor and Travis CI as necessary.
         Write-Host ("****** PRINT ENV VAR ******")
         Write-Host ($env:VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)
+        $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS = "{`"endpointCredentials`": [{`"endpoint`":`"$testSource`", `"username`":`"$username`", `"password`":`"$PAT`"}]}"
         [System.Environment]::SetEnvironmentVariable("VSS_NUGET_EXTERNAL_FEED_ENDPOINTS", $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS, [System.EnvironmentVariableTarget]::Process)
+        Write-Host ("****** PRINT ENV VAR ******")
+        Write-Host ($env:VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)
     }
 
     AfterAll{
         UnRegister-PackageSource -Name $pkgSourceName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
     }
 
-    it "Register-PackageSource using credential provider" {
-        if ($IsWindows)
-        {
-            Write-Host (get-childitem "$env:UserProfile\.nuget\plugins" -Recurse)
-        }
-        else {
-            Write-Host (get-childitem "$HOME\.nuget\plugins" -Recurse)
-        }
-        
-        #$secPAT = ConvertTo-SecureString -String $PAT -AsPlainText -Force
+    it "Register-PackageSource using credential provider" -Skip:(!$IsWindows){
         register-packagesource $pkgSourceName -Location $testSource -providername Nuget
     
         (Get-PackageSource -Name $pkgSourceName).Name | should match $pkgSourceName
         (Get-PackageSource -Name $pkgSourceName).Location | should match $testSource
     }
 
-    it "Find-Package using credential provider" {
+    it "Find-Package using credential provider" -Skip:(!$IsWindows){
         $pkg = find-package * -provider $nuget -source $pkgSourceName
         $pkg.Count | should -BeGreaterThan 0
     }
