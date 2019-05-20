@@ -93,7 +93,7 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
         # The line below is purely for local testing.  Make sure to update env vars in AppVeyor and Travis CI as necessary.
         Write-Host ("****** PRINT ENV VAR ******")
         Write-Host ($env:VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)
-        $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS = "{`"endpointCredentials`": [{`"endpoint`":`"$testSource`", `"username`":`"$username`", `"password`":`"$PAT`"}]}"
+        #$VSS_NUGET_EXTERNAL_FEED_ENDPOINTS = "{`"endpointCredentials`": [{`"endpoint`":`"$testSource`", `"username`":`"$username`", `"password`":`"$PAT`"}]}"
         [System.Environment]::SetEnvironmentVariable("VSS_NUGET_EXTERNAL_FEED_ENDPOINTS", $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS, [System.EnvironmentVariableTarget]::Process)
         Write-Host ("****** PRINT ENV VAR ******")
         Write-Host ($env:VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)
@@ -103,14 +103,14 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
         UnRegister-PackageSource -Name $pkgSourceName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
     }
 
-    it "Register-PackageSource using credential provider" -Skip:(!$IsWindows){
+    it "Register-PackageSource using credential provider" {
         register-packagesource $pkgSourceName -Location $testSource -providername Nuget
     
         (Get-PackageSource -Name $pkgSourceName).Name | should match $pkgSourceName
         (Get-PackageSource -Name $pkgSourceName).Location | should match $testSource
     }
 
-    it "Find-Package using credential provider" -Skip:(!$IsWindows){
+    it "Find-Package using credential provider" {
         $pkg = find-package * -provider $nuget -source $pkgSourceName
         $pkg.Count | should -BeGreaterThan 0
     }
