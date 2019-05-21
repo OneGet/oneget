@@ -192,7 +192,7 @@
 
         public static bool IsTrue(this string text)
         {
-            return !string.IsNullOrWhiteSpace(text) && text.Equals("true", StringComparison.CurrentCultureIgnoreCase);
+            return !string.IsNullOrWhiteSpace(text) && text.Equals("true", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool CompareVersion(this string version1, string version2)
