@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4
+* Allow credential persistance for registering private repositories and finding or installing packages from those repositories
+
 ## 1.3.2
 * Enable bootstrap on PSCore
 * Bug fix to run on .NET Core 3.0
