@@ -80,10 +80,6 @@ function SkipVersion([version]$minVersion,[version]$maxVersion) {
 Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
 
      BeforeAll{
-        # Make sure the credential provider is installed (works for Windows, Linux, and Mac)
-        # If the credential provider is already installed, will receive the message: "The netcore Credential Provider is already in C:\Users\<alias>\.nuget\plugins"
-        iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/microsoft/artifacts-credprovider/master/helpers/installcredprovider.ps1'))
-
         $pkgSourceName = "OneGetTestPrivateFeed"
         # This pkg source is an Azure DevOps private feed
         $testSource = "https://pkgs.dev.azure.com/onegettest/_packaging/onegettest/nuget/v3/index.json";
@@ -93,13 +89,38 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
         # The line below is purely for local testing.  Make sure to update env vars in AppVeyor and Travis CI as necessary.
         $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS = "{'endpointCredentials': [{'endpoint':'$testSource', 'username':'$username', 'password':'$PAT'}]}"
         [System.Environment]::SetEnvironmentVariable("VSS_NUGET_EXTERNAL_FEED_ENDPOINTS", $VSS_NUGET_EXTERNAL_FEED_ENDPOINTS, [System.EnvironmentVariableTarget]::Process)
+
+
+        # Figure out if Visual Studio is installed, and if it is, we'll use the credential provider that's installed there for the first test
+        $VSinstalledCredProvider = $false;
+        $programFiles = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::ProgramFilesX86);
+        $vswhereExePath = $programFiles + "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
+        $fullVSwhereExePath = [System.Environment]::ExpandEnvironmentVariables($vswhereExePath);
+        # If the env variable exists, check to see if the path itself exists
+        if (Test-Path ($fullVSwhereExePath))
+        {
+            $VSinstalledCredProvider = $true;
+        }
     }
 
     AfterAll{
         UnRegister-PackageSource -Name $pkgSourceName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
     }
 
+    it "Register-PackageSource using Visual Studio installed credential provider" -Skip:(!$VSinstalledCredProvider){
+        register-packagesource $pkgSourceName -Location $testSource -providername Nuget
+    
+        (Get-PackageSource -Name $pkgSourceName).Name | should match $pkgSourceName
+        (Get-PackageSource -Name $pkgSourceName).Location | should match $testSource
+
+        UnRegister-PackageSource -Name $pkgSourceName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+    }
+
     it "Register-PackageSource using credential provider" -Skip:(!$IsWindows){
+        # Make sure the credential provider is installed (works for Windows, Linux, and Mac)
+        # If the credential provider is already installed, will receive the message: "The netcore Credential Provider is already in C:\Users\<alias>\.nuget\plugins"
+        iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/microsoft/artifacts-credprovider/master/helpers/installcredprovider.ps1'))
+
         register-packagesource $pkgSourceName -Location $testSource -providername Nuget
     
         (Get-PackageSource -Name $pkgSourceName).Name | should match $pkgSourceName
