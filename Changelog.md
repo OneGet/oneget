@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.1
+* Bug fix for using credential provider installed in Visual Studio
+
 ## 1.4
 * Allow credential persistance for registering private repositories and finding or installing packages from those repositories
 
