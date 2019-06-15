@@ -82,7 +82,7 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
      BeforeAll{
         $pkgSourceName = "OneGetTestPrivateFeed"
         # This pkg source is an Azure DevOps private feed
-        $testSourceV2 = "https://pkgs.dev.azure.com/onegettest/_packaging/onegettest/nuget/v2";
+        $testSource = "https://pkgs.dev.azure.com/onegettest/_packaging/onegettest/nuget/v2";
         $username = "onegettest@hotmail.com"
         $PAT = "qo2xvzdnfi2mlcq3eq2jkoxup576kt4gnngcicqhup6bbix6sila"
         # see https://github.com/Microsoft/artifacts-credprovider#environment-variables for more info on env vars for the credential provider
