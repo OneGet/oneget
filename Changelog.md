@@ -1,4 +1,6 @@
 # Changelog
+## 1.4.2
+* Bug fix for passing credentials from PowerShellGet when registering repositories
 
 ## 1.4.1
 * Bug fix for using credential provider installed in Visual Studio
