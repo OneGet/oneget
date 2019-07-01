@@ -101,19 +101,19 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
         {
             $VSinstalledCredProvider = $true;
         }
+
+        $secstr = ConvertTo-SecureString $PAT -AsPlainText -Force
+        $credential = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secstr
+        register-packagesource $pkgSourceName -Location $testSource -providername Nuget -Credential $credential
     }
 
     AfterAll{
         UnRegister-PackageSource -Name $pkgSourceName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
     }
 
-    it "Register-PackageSource using Visual Studio installed credential provider" -Skip:(!$VSinstalledCredProvider){
-        register-packagesource $pkgSourceName -Location $testSource -providername Nuget
-    
-        (Get-PackageSource -Name $pkgSourceName).Name | should match $pkgSourceName
-        (Get-PackageSource -Name $pkgSourceName).Location | should match $testSource
-
-        UnRegister-PackageSource -Name $pkgSourceName -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+    it "Find-Package using Visual Studio installed credential provider" -Skip:(!$VSinstalledCredProvider){
+        $pkg = find-package * -provider $nuget -source $pkgSourceName
+        $pkg.Count | should -BeGreaterThan 0
     }
 
     it "Register-PackageSource using credential provider" -Skip:(!$IsWindows){
@@ -121,13 +121,6 @@ Describe "Azure Artifacts Credential Provider Integration" -Tags "Feature" {
         # If the credential provider is already installed, will receive the message: "The netcore Credential Provider is already in C:\Users\<alias>\.nuget\plugins"
         iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/microsoft/artifacts-credprovider/master/helpers/installcredprovider.ps1'))
 
-        register-packagesource $pkgSourceName -Location $testSource -providername Nuget
-    
-        (Get-PackageSource -Name $pkgSourceName).Name | should match $pkgSourceName
-        (Get-PackageSource -Name $pkgSourceName).Location | should match $testSource
-    }
-
-    it "Find-Package using credential provider" -Skip:(!$IsWindows){
         $pkg = find-package * -provider $nuget -source $pkgSourceName
         $pkg.Count | should -BeGreaterThan 0
     }
