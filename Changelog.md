@@ -1,4 +1,7 @@
 # Changelog
+## 1.4.3
+* Another bug fix when registering repositories with PowerShellGet
+
 ## 1.4.2
 * Bug fix for passing credentials from PowerShellGet when registering repositories
 
