@@ -1,4 +1,7 @@
 # Changelog
+## 1.4.4
+* Bug fix when installing modules from private feeds
+
 ## 1.4.3
 * Another bug fix when registering repositories with PowerShellGet
 

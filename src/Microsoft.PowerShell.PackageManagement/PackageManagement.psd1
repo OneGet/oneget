@@ -20,7 +20,7 @@
     CompanyName = "Microsoft Corporation"
     Copyright = "(C) Microsoft Corporation. All rights reserved."
     HelpInfoUri = "https://go.microsoft.com/fwlink/?linkid=855962"
-    ModuleVersion = "1.4.3"
+    ModuleVersion = "1.4.4"
     PowerShellVersion = "3.0"
     ClrVersion = "4.0"
     RootModule = "PackageManagement.psm1"
@@ -54,7 +54,10 @@
             ProjectUri = 'https://oneget.org'
             ReleaseNotes = @'
 
-## 1.4.3
+## 1.4.4
+ * Bug fix when installing modules from private feeds
+
+ ## 1.4.3
 - Another bug fix when registering repositories with PowerShellGet
 
 ## 1.4.2
