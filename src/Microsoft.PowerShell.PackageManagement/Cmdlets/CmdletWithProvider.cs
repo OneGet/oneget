@@ -51,7 +51,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                     //meaning a user specifies -ProviderName, we will use it
                     return _providerName;
                 }
-                //need to call it so that cases like get-packagesource | find-package -name Jquery will work 
+                //need to call it so that cases like get-packagesource | find-package -name Jquery will work
                 return GetDynamicParameterValue<string[]>("ProviderName");
             }
             set {
@@ -103,7 +103,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                     // save the resolved package source name and location
                     potentialSources.SerialForEach(src => UserSpecifiedSourcesList.AddOrSet(src.Name, src.Location));
-                
+
                     // prefer registered sources
                     registeredSources = potentialSources.Where(source => source.IsRegistered).ReEnumerable();
 
@@ -116,7 +116,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         if (!didUserSpecifyProviders) {
                             // if cmdlet is generating parameter, we have to log error that source is wrong
                             if (IsInvocation && CmdletState >= AsyncCmdletState.GenerateParameters ) {
-                                
+
                                 // user didn't actually specify provider(s), the sources can't be tied to any particular provider
                                 QueueHeldMessage(() => Error(Constants.Errors.SourceNotFound, userSpecifiedSources.JoinWithComma()));
                                 IsFailingEarly = true;
@@ -438,9 +438,20 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                         //      any access to MyInvocation.MyCommand.*
                         //      modifying parameter validation sets
                         //
+                        Dictionary<string, ParameterMetadata> parameters = null;
 
-                        if (MyInvocation != null && MyInvocation.MyCommand != null && MyInvocation.MyCommand.Parameters != null) {
-                            GetType().AddOrSet(MyInvocation.MyCommand.Parameters, "MyInvocation.MyCommand.Parameters");
+                        // If MyInvocation.MyCommand.Parameters is not called from the pipeline thread
+                        // then it is rerouted back to the pipeline thread via the EventManager. This
+                        // can cause a deadlock in the rare case that the EventManager is already busy.
+                        ExecuteOnMainThread(
+                            () =>
+                            {
+                                parameters = MyInvocation?.MyCommand?.Parameters;
+                                return true;
+                            }).GetAwaiter().GetResult();
+
+                        if (parameters != null) {
+                            GetType().AddOrSet(parameters, "MyInvocation.MyCommand.Parameters");
                         }
 #if DEEP_DEBUG
                         else {
@@ -477,10 +488,10 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                                 {
                                     ProviderName = new[] { pName.ToString() };
                                 }
-                             
+
                                 // a user specifies -providerName
                                 _isUserSpecifyOneProviderName = (ProviderName.Count() == 1);
-                                
+
                             }
                         }
 
@@ -574,7 +585,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 return _softwareIdentityTypeName;
             }
 
-            //check if a user specifies -source with a long source name such as http://www.powershellgallery.com/api/v2, 
+            //check if a user specifies -source with a long source name such as http://www.powershellgallery.com/api/v2,
             // if so we will choose the longsource column format.
             if (!UseDefaultSourceFormat)
             {
