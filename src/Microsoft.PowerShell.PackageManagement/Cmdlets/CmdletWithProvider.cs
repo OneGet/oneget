@@ -456,12 +456,12 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 #if DEEP_DEBUG
                         else {
                             if (MyInvocation == null) {
-                                Console.WriteLine("��� Attempt to get parameters MyInvocation == NULL");
+                                Console.WriteLine("»»» Attempt to get parameters MyInvocation == NULL");
                             } else {
                                 if (MyInvocation.MyCommand == null) {
-                                    Console.WriteLine("��� Attempt to get parameters MyCommand == NULL");
+                                    Console.WriteLine("»»» Attempt to get parameters MyCommand == NULL");
                                 } else {
-                                    Console.WriteLine("��� Attempt to get parameters Parameters == NULL");
+                                    Console.WriteLine("»»» Attempt to get parameters Parameters == NULL");
                                 }
                             }
                         }
@@ -501,7 +501,7 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
 
                         if (null== CachedSelectedProviders || IsFailingEarly || IsCanceled ) {
 #if DEEP_DEBUG
-                            Console.WriteLine("��� Cancelled before we got finished doing dynamic parameters");
+                            Console.WriteLine("»»» Cancelled before we got finished doing dynamic parameters");
 #endif
                             // this happens if there is a serious failure early in the cmdlet
                             // i.e. - if the SelectedProviders comes back empty (due to aggressive filtering)
