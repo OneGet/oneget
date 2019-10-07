@@ -1,4 +1,7 @@
 # Changelog
+## 1.4.5
+* Bug fix for deadlock when getting parameters in an event
+
 ## 1.4.4
 * Bug fix when installing modules from private feeds
 
