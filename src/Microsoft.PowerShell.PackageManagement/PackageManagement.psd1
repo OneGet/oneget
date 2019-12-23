@@ -20,7 +20,7 @@
     CompanyName = "Microsoft Corporation"
     Copyright = "(C) Microsoft Corporation. All rights reserved."
     HelpInfoUri = "https://go.microsoft.com/fwlink/?linkid=2113634"
-    ModuleVersion = "1.4.5"
+    ModuleVersion = "1.4.6"
     PowerShellVersion = "3.0"
     ClrVersion = "4.0"
     RootModule = "PackageManagement.psm1"
@@ -53,6 +53,9 @@
             Tags = @('PackageManagement', 'PSEdition_Core', 'PSEdition_Desktop', 'Linux', 'Mac')
             ProjectUri = 'https://oneget.org'
             ReleaseNotes = @'
+## 1.4.6
+- Update `HelpInfoUri` to point to the latest content
+
 ## 1.4.5
 - Bug fix for deadlock when getting parameters in an event
 

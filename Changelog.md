@@ -1,4 +1,7 @@
 # Changelog
+## 1.4.6
+* Update `HelpInfoUri` to point to the latest content
+
 ## 1.4.5
 * Bug fix for deadlock when getting parameters in an event
 
