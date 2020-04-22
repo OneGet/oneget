@@ -1,4 +1,7 @@
 # Changelog
+## 1.4.7
+* Update security protocol to use TLS 1.2
+
 ## 1.4.6
 * Update `HelpInfoUri` to point to the latest content
 
