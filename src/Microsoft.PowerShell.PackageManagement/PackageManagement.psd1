@@ -55,6 +55,10 @@
             ReleaseNotes = @'
 ## 1.4.7
 - Update security protocol to use TLS 1.2
+<<<<<<< HEAD
+=======
+- Remove catalog file
+>>>>>>> 08ae6e82df2230a601ed09191b26712b213afbc5
 
 ## 1.4.6
 - Update `HelpInfoUri` to point to the latest content
