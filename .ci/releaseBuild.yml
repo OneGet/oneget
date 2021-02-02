@@ -47,7 +47,9 @@ stages:
 
     # the steps for building the module go here
     - pwsh: |
-        $(Build.SourcesDirectory)/src/build.ps1 -Framework all -Configuration Release
+        dir
+        Set-Location '$(Build.SourcesDirectory)/OneGet/src'
+        ./build.ps1 -Framework all -Configuration Release
       displayName: Execute build
 
     # these are setting vso variables which will be persisted between stages
