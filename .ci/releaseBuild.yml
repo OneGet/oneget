@@ -147,24 +147,3 @@ stages:
         # selections
         APIScan: false # set to false when not using Windows APIs.
 
-
-    # use the templates in the compliance repo
-    # since Package Management has modules, we're using the assembly-module-compliance template
-    # if you don't have assemblies, you should use script-module-compliance template
-    - template: assembly-module-compliance.yml@ComplianceRepo
-      parameters:
-        # component-governance - the path to sources
-        sourceScanPath: '$(Build.SourcesDirectory)/PackageManagement'
-        # binskim - this isn't recursive, so you need the path to the assemblies
-        AnalyzeTarget: '$(Pipeline.Workspace)/coreclr/netstandard2.0/Microsoft.*.dll'
-        # credscan - scan the repo for credentials
-        # you can suppress some files with this.
-        #suppressionsFile: '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/tools/ReleaseBuild/CredScan.Suppressions.json'
-        # TermCheck
-        optionsRulesDBPath: ''
-        optionsFTPath: ''
-        # tsa-upload
-        # the compliance scanning must be uploaded, which you need to request
-        codeBaseName: 'PackageManagement_20200201'
-        # selections
-        APIScan: false # set to false when not using Windows APIs.
