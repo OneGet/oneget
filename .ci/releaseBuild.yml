@@ -147,6 +147,7 @@ stages:
         # selections
         APIScan: false # set to false when not using Windows APIs.
 
+
     # use the templates in the compliance repo
     # since Package Management has modules, we're using the assembly-module-compliance template
     # if you don't have assemblies, you should use script-module-compliance template
