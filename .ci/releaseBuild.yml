@@ -52,7 +52,7 @@ stages:
         dir
         write-host "~~~~~~~~~"
         dir '$(Build.SourcesDirectory)/OneGet/src'
-        ./build.ps1 -Framework all -Configuration Release
+         # ./build.ps1 -Framework all -Configuration Release
       displayName: Execute build
 
     # these are setting vso variables which will be persisted between stages
