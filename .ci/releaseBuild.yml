@@ -134,7 +134,7 @@ stages:
         # component-governance - the path to sources
         sourceScanPath: '$(Build.SourcesDirectory)/PackageManagement'
         # binskim - this isn't recursive, so you need the path to the assemblies
-        AnalyzeTarget: '$(Pipeline.Workspace)/fullclr/Microsoft.*.dll'
+        AnalyzeTarget: '$(Pipeline.Workspace)/fullclr/Microsoft.*.dll',
                        '$(Pipeline.Workspace)/coreclr/netstandard2.0/Microsoft.*.dll'
         # credscan - scan the repo for credentials
         # you can suppress some files with this.
