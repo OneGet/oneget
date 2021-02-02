@@ -105,24 +105,12 @@ stages:
           **\*.mof
           **\Microsoft*.dll
 
-    # now create the nupkg which we will use to publish the module
-    # to the powershell gallery (not part of this yaml)
-    #- pwsh: |
-    #    Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
-    #    ./build -BuildNupkg -signed
-    #  displayName: Create nupkg for publishing
-
     # finally publish the parts of the build which will be used in the next stages
     # if it's not published, the subsequent stages will not be able to access it.
     # This is the build directory (it contains all of the dll/pdb files)
     - publish: "$(Build.SourcesDirectory)/PackageManagement"
       artifact: build
       displayName: publish build directory
-
-      # export the nupkg only which will be used in the release pipeline
-    #- publish: "$(signOutPath)/PackageManagement.$(moduleVersion).nupkg"
-    #  artifact: nupkg
-    #  displayName: Publish module nupkg
 
 # Now on to the compliance stage
 - stage: compliance
@@ -156,18 +144,6 @@ stages:
         optionsFTPath: ''
         # tsa-upload
         # the compliance scanning must be uploaded, which you need to request
-        codeBaseName: 'PSSA_202004'
+        codeBaseName: 'PackageManagement_20200201'
         # selections
         APIScan: false # set to false when not using Windows APIs.
-
-#- template: template/publish.yml
-#  parameters:
-#    stageName: AzArtifactsFeed
-#    environmentName:
-#    feedCredential:
-
-#- template: template/publish.yml
-#  parameters:
-#    stageName: NuGet
-#    environmentName: PSMarkdownRenderNuGetApproval
-#    feedCredential: NugetOrgPush
