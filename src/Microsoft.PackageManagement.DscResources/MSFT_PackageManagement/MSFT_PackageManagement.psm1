@@ -392,12 +392,26 @@ function Add-AdditionalParameters
         $AdditionalParameters
     )
 
+    $rxTypePrefix = [regex]'^(?i)\[(?<type>[a-z]+)\]'
     if ($AdditionalParameters)
     {
         foreach($instance in $AdditionalParameters)
         {
             Write-Verbose ('AdditionalParameter: {0}, AdditionalParameterValue: {1}' -f $instance.Key, $instance.Value)
-            $null = $ParametersDictionary.Add($instance.Key, $instance.Value)
+            $key = $instance.Key
+            $value = $instance.Value
+            $match = $rxTypePrefix.Match($key)
+            if ($match.Success)
+            {
+                if (@('switch', 'bool') -icontains $match.Groups['type'].Value)
+                {
+                    Write-Verbose ('Parsing parameter ''{0}'' value ''{1}'' as bool and removing type prefix ''{2}''' -f $key, $value, $match.Value)
+                    $key = $key.Substring($match.Length)
+                    $value = [bool]::Parse($value)
+                }
+            }
+
+            $null = $ParametersDictionary.Add($key, $value)
         }
     }
 }
