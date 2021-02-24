@@ -98,7 +98,7 @@ function Get-TargetResource
     $null = $PSBoundParameters.Remove("Source")
     $null = $PSBoundParameters.Remove("SourceCredential")
 
-    Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters
+    Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters -IntendedCommand 'PackageManagement\Get-Package'
     $PSBoundParameters.Remove("AdditionalParameters")
     
     $verboseMessage =$localizedData.StartGetPackage -f (GetMessageFromParameterDictionary $PSBoundParameters),$env:PSModulePath
@@ -343,9 +343,6 @@ function Set-TargetResource
         $PSBoundParameters.Add("Credential", $SourceCredential)
         $null = $PSBoundParameters.Remove("SourceCredential")
     }
-    
-    Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters
-    $PSBoundParameters.Remove("AdditionalParameters")
 
        
         # We do not want others to control the behavior of ErrorAction
@@ -353,10 +350,14 @@ function Set-TargetResource
         $PSBoundParameters.Remove("ErrorAction")
         if ($Ensure -eq "Present")
         {
+            Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters -IntendedCommand 'PackageManagement\Install-Package'
+            $PSBoundParameters.Remove("AdditionalParameters")
             PackageManagement\Install-Package @PSBoundParameters -ErrorAction Stop
         }   
         else
         {
+            Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters -IntendedCommand 'PackageManagement\Uninstall-Package'
+            $PSBoundParameters.Remove("AdditionalParameters")
             # we dont source location for uninstalling an already
             # installed package
             $PSBoundParameters.Remove("Source")
@@ -389,26 +390,33 @@ function Add-AdditionalParameters
 
         [Parameter()]
         [Microsoft.Management.Infrastructure.CimInstance[]]
-        $AdditionalParameters
+        $AdditionalParameters,
+
+        [Parameter(Mandatory = $true)]
+        [string]
+        $IntendedCommand
     )
 
-    $rxTypePrefix = [regex]'^(?i)\[(?<type>[a-z]+)\]'
     if ($AdditionalParameters)
     {
+        $cmd = Get-Command -Name $IntendedCommand
         foreach($instance in $AdditionalParameters)
         {
             Write-Verbose ('AdditionalParameter: {0}, AdditionalParameterValue: {1}' -f $instance.Key, $instance.Value)
             $key = $instance.Key
             $value = $instance.Value
-            $match = $rxTypePrefix.Match($key)
-            if ($match.Success)
+            $paramMetadata = $cmd.Parameters[$key]
+            if ($null -ne $paramMetadata)
             {
-                if (@('switch', 'bool') -icontains $match.Groups['type'].Value)
+                if ($paramMetadata.ParameterType -eq [switch] -or $paramMetadata.ParameterType -eq [bool])
                 {
-                    Write-Verbose ('Parsing parameter ''{0}'' value ''{1}'' as bool and removing type prefix ''{2}''' -f $key, $value, $match.Value)
-                    $key = $key.Substring($match.Length)
+                    Write-Verbose ('Parameter ''{0}'' is typed as ''{1}'', parsing value ''{2}'' as bool' -f $key, $paramMetadata.ParameterType, $value)
                     $value = [bool]::Parse($value)
                 }
+            }
+            else
+            {
+                Write-Warning ('AdditionalParameter ''{0}'' is not present in the metadata of command {1}' -f $key, $IntendedCommand)
             }
 
             $null = $ParametersDictionary.Add($key, $value)
