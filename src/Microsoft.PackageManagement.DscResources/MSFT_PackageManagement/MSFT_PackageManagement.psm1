@@ -98,15 +98,8 @@ function Get-TargetResource
     $null = $PSBoundParameters.Remove("Source")
     $null = $PSBoundParameters.Remove("SourceCredential")
 
-    if ($AdditionalParameters)
-    {
-         foreach($instance in $AdditionalParameters)
-         {
-             Write-Verbose ('AdditionalParameter: {0}, AdditionalParameterValue: {1}' -f $instance.Key, $instance.Value)
-             $null = $PSBoundParameters.Add($instance.Key, $instance.Value)
-         }
-    }
-    $null = $PSBoundParameters.Remove("AdditionalParameters")
+    Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters -IntendedCommand 'PackageManagement\Get-Package'
+    $PSBoundParameters.Remove("AdditionalParameters")
     
     $verboseMessage =$localizedData.StartGetPackage -f (GetMessageFromParameterDictionary $PSBoundParameters),$env:PSModulePath
     Write-Verbose -Message $verboseMessage
@@ -350,17 +343,6 @@ function Set-TargetResource
         $PSBoundParameters.Add("Credential", $SourceCredential)
         $null = $PSBoundParameters.Remove("SourceCredential")
     }
-    
-    if ($AdditionalParameters)
-    {
-         foreach($instance in $AdditionalParameters)
-         {
-             Write-Verbose ('AdditionalParameter: {0}, AdditionalParameterValue: {1}' -f $instance.Key, $instance.Value)
-             $null = $PSBoundParameters.Add($instance.Key, $instance.Value)
-         }
-    }
-
-    $PSBoundParameters.Remove("AdditionalParameters")
 
        
         # We do not want others to control the behavior of ErrorAction
@@ -368,10 +350,14 @@ function Set-TargetResource
         $PSBoundParameters.Remove("ErrorAction")
         if ($Ensure -eq "Present")
         {
+            Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters -IntendedCommand 'PackageManagement\Install-Package'
+            $PSBoundParameters.Remove("AdditionalParameters")
             PackageManagement\Install-Package @PSBoundParameters -ErrorAction Stop
         }   
         else
         {
+            Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters -IntendedCommand 'PackageManagement\Uninstall-Package'
+            $PSBoundParameters.Remove("AdditionalParameters")
             # we dont source location for uninstalling an already
             # installed package
             $PSBoundParameters.Remove("Source")
@@ -392,6 +378,51 @@ function Set-TargetResource
     $paramDictionary.Keys | ForEach-Object { $returnValue += "-{0} {1} " -f $_,$paramDictionary[$_] }
     return $returnValue
  }
+
+function Add-AdditionalParameters
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [System.Collections.IDictionary]
+        $ParametersDictionary,
+
+        [Parameter()]
+        [Microsoft.Management.Infrastructure.CimInstance[]]
+        $AdditionalParameters,
+
+        [Parameter(Mandatory = $true)]
+        [string]
+        $IntendedCommand
+    )
+
+    if ($AdditionalParameters)
+    {
+        $cmd = Get-Command -Name $IntendedCommand
+        foreach($instance in $AdditionalParameters)
+        {
+            Write-Verbose ('AdditionalParameter: {0}, AdditionalParameterValue: {1}' -f $instance.Key, $instance.Value)
+            $key = $instance.Key
+            $value = $instance.Value
+            $paramMetadata = $cmd.Parameters[$key]
+            if ($null -ne $paramMetadata)
+            {
+                if ($paramMetadata.ParameterType -eq [switch] -or $paramMetadata.ParameterType -eq [bool])
+                {
+                    Write-Verbose ('Parameter ''{0}'' is typed as ''{1}'', parsing value ''{2}'' as bool' -f $key, $paramMetadata.ParameterType, $value)
+                    $value = [bool]::Parse($value)
+                }
+            }
+            else
+            {
+                Write-Warning ('AdditionalParameter ''{0}'' is not present in the metadata of command {1}' -f $key, $IntendedCommand)
+            }
+
+            $null = $ParametersDictionary.Add($key, $value)
+        }
+    }
+}
 
 Export-ModuleMember -function Get-TargetResource, Set-TargetResource, Test-TargetResource
 
