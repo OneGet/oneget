@@ -98,15 +98,8 @@ function Get-TargetResource
     $null = $PSBoundParameters.Remove("Source")
     $null = $PSBoundParameters.Remove("SourceCredential")
 
-    if ($AdditionalParameters)
-    {
-         foreach($instance in $AdditionalParameters)
-         {
-             Write-Verbose ('AdditionalParameter: {0}, AdditionalParameterValue: {1}' -f $instance.Key, $instance.Value)
-             $null = $PSBoundParameters.Add($instance.Key, $instance.Value)
-         }
-    }
-    $null = $PSBoundParameters.Remove("AdditionalParameters")
+    Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters
+    $PSBoundParameters.Remove("AdditionalParameters")
     
     $verboseMessage =$localizedData.StartGetPackage -f (GetMessageFromParameterDictionary $PSBoundParameters),$env:PSModulePath
     Write-Verbose -Message $verboseMessage
@@ -351,15 +344,7 @@ function Set-TargetResource
         $null = $PSBoundParameters.Remove("SourceCredential")
     }
     
-    if ($AdditionalParameters)
-    {
-         foreach($instance in $AdditionalParameters)
-         {
-             Write-Verbose ('AdditionalParameter: {0}, AdditionalParameterValue: {1}' -f $instance.Key, $instance.Value)
-             $null = $PSBoundParameters.Add($instance.Key, $instance.Value)
-         }
-    }
-
+    Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters
     $PSBoundParameters.Remove("AdditionalParameters")
 
        
@@ -392,6 +377,30 @@ function Set-TargetResource
     $paramDictionary.Keys | ForEach-Object { $returnValue += "-{0} {1} " -f $_,$paramDictionary[$_] }
     return $returnValue
  }
+
+function Add-AdditionalParameters
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [System.Collections.IDictionary]
+        $ParametersDictionary,
+
+        [Parameter()]
+        [Microsoft.Management.Infrastructure.CimInstance[]]
+        $AdditionalParameters
+    )
+
+    if ($AdditionalParameters)
+    {
+        foreach($instance in $AdditionalParameters)
+        {
+            Write-Verbose ('AdditionalParameter: {0}, AdditionalParameterValue: {1}' -f $instance.Key, $instance.Value)
+            $null = $ParametersDictionary.Add($instance.Key, $instance.Value)
+        }
+    }
+}
 
 Export-ModuleMember -function Get-TargetResource, Set-TargetResource, Test-TargetResource
 
