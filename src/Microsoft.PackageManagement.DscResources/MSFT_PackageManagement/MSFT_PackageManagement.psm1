@@ -399,24 +399,52 @@ function Add-AdditionalParameters
 
     if ($AdditionalParameters)
     {
+        $providerName = $ParametersDictionary['ProviderName']
+        if ([string]::IsNullOrEmpty($providerName))
+        {
+            Write-Warning 'Please specify ProviderName when using AdditionalParameters, otherwise they may not work correctly.'
+        }
+        else
+        {
+            # trigger import of the provider, so that Get-Command exposes its dynamic parameters
+            Get-PackageProvider -Name $providerName | Out-Null
+        }
+
         $cmd = Get-Command -Name $IntendedCommand
+        $cmdProviderParameterSet = $cmd.ParameterSets | Where-Object { -not [string]::IsNullOrEmpty($providerName) -and $_.Name -eq $providerName }
+        if ($null -eq $cmdProviderParameterSet)
+        {
+            $cmdParametersSource = 'Parameters collection'
+            Write-Debug 'Using the flat list of command parameters'
+            $cmdParametersLookup = $cmd.Parameters
+        }
+        else
+        {
+            $cmdParametersSource = 'parameter set ''{0}''' -f $cmdProviderParameterSet.Name
+            Write-Debug ('Using the provider-specific command {0}' -f $cmdParametersSource)
+            $cmdParametersLookup = @{}
+            $cmdProviderParameterSet.Parameters | ForEach-Object { $cmdParametersLookup[$_.Name] = $_ }
+        }
+
         foreach($instance in $AdditionalParameters)
         {
-            Write-Verbose ('AdditionalParameter: {0}, AdditionalParameterValue: {1}' -f $instance.Key, $instance.Value)
+            Write-Verbose ('AdditionalParameter: {0}, value: {1}' -f $instance.Key, $instance.Value)
             $key = $instance.Key
             $value = $instance.Value
-            $paramMetadata = $cmd.Parameters[$key]
+            $paramMetadata = $cmdParametersLookup[$key]
             if ($null -ne $paramMetadata)
             {
-                if ($paramMetadata.ParameterType -eq [switch] -or $paramMetadata.ParameterType -eq [bool])
+                $parameterType = $paramMetadata.ParameterType
+                Write-Debug ('AdditionalParameter: {0} is typed as {1} according to the metadata of command {2} ({3})' -f $key, $parameterType, $IntendedCommand, $cmdParametersSource)
+                if ($parameterType -eq [switch] -or $parameterType -eq [bool])
                 {
-                    Write-Verbose ('Parameter ''{0}'' is typed as ''{1}'', parsing value ''{2}'' as bool' -f $key, $paramMetadata.ParameterType, $value)
+                    Write-Debug ('Parsing AdditionalParameter ''{0}''  value ''{1}'' as bool' -f $key, $value)
                     $value = [bool]::Parse($value)
                 }
             }
             else
             {
-                Write-Warning ('AdditionalParameter ''{0}'' is not present in the metadata of command {1}' -f $key, $IntendedCommand)
+                Write-Warning ('AdditionalParameter ''{0}'' is not present in the metadata of command {1} ({2}). This probably means that the provider does not support that parameter.' -f $key, $IntendedCommand, $cmdParametersSource)
             }
 
             $null = $ParametersDictionary.Add($key, $value)
