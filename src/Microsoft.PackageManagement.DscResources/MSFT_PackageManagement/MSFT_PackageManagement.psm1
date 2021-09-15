@@ -411,7 +411,21 @@ function Add-AdditionalParameters
         }
 
         $cmd = Get-Command -Name $IntendedCommand
-        $cmdProviderParameterSet = $cmd.ParameterSets | Where-Object { -not [string]::IsNullOrEmpty($providerName) -and $_.Name -eq $providerName }
+        $skipUndeclaredParameters = $false
+        if ($cmd.Verb -eq 'Get')
+        {
+            $skipUndeclaredParameters = $true
+        }
+
+        $cmdProviderParameterSet = $null
+        if (-not [string]::IsNullOrEmpty($providerName))
+        {
+            $cmdProviderParameterSet = $cmd.ParameterSets `
+                | Where-Object { $_.Name -match "^${providerName}(\:PackageBySearch)?$" } `
+                | Sort-Object -Property @{ Expression = { $_.Name.Length }; Descending = $true } `
+                | Select-Object -First 1
+        }
+
         if ($null -eq $cmdProviderParameterSet)
         {
             $cmdParametersSource = 'Parameters collection'
@@ -444,7 +458,15 @@ function Add-AdditionalParameters
             }
             else
             {
-                Write-Warning ('AdditionalParameter ''{0}'' is not present in the metadata of command {1} ({2}). This probably means that the provider does not support that parameter.' -f $key, $IntendedCommand, $cmdParametersSource)
+                if ($skipUndeclaredParameters)
+                {
+                    Write-Verbose ('AdditionalParameter ''{0}'' is not present in the metadata of command {1} ({2}). This probably means that the provider does not support that parameter. Skipping the parameter.' -f $key, $IntendedCommand, $cmdParametersSource)
+                    continue
+                }
+                else
+                {
+                    Write-Warning ('AdditionalParameter ''{0}'' is not present in the metadata of command {1} ({2}). This probably means that the provider does not support that parameter.' -f $key, $IntendedCommand, $cmdParametersSource)
+                }
             }
 
             $null = $ParametersDictionary.Add($key, $value)
