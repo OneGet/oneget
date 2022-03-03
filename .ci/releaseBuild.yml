@@ -1,176 +1,215 @@
-# The name of the build that will be seen in mscodehub
-name: OneGet-Release-$(Build.BuildId)
-# how is the build triggered
-# since this is a release build, no trigger as it's a manual release
+name: $(BuildDefinitionName)-$(date:yyMM).$(date:dd)$(rev:rrr)
 trigger: none
+pr: none
 
-pr:
-  branches:
-    include:
-    - master
-
-# variables to set in the build environment
 variables:
-  DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  POWERSHELL_TELEMETRY_OPTOUT: 1
+  - group: ESRP
+  - name: ModuleName 
+    value: 'PackageManagement'
+  - name: BuildOutputPath
+    value: '$(BuildSourcePath)\out\PackageManagement'
+  - name: SignedOutputPath
+    value: '$(Build.SourcesDirectory)/signed'
+  - name: SourcePath
+    value: 'src'
+  - name: BuildSourcePath
+    value: '$(Build.SourcesDirectory)/$(SourcePath)'
 
-# since this build relies on templates, we need access to those
-# This needs a service connection in the build to work
-# the *name* of the service connection must be the same as the endpoint
 resources:
   repositories:
   - repository: ComplianceRepo
     type: github
     endpoint: ComplianceGHRepo
     name: PowerShell/compliance
-    # this can be any branch of your choosing
-    ref: master
 
-# the stages in this build. There are 2
-# the assumption is that test is done as part of
-# CI so we needn't do it here
 stages:
 - stage: Build
-  displayName: Build
-  pool:
-    name: Package ES CodeHub Lab E
+  displayName: Build PackageManagement Module Package
   jobs:
-  - job: Build_Job
-    displayName: Build Microsoft.PowerShell.ScriptAnalyzer
-    # note the variable reference to ESRP.
-    # this must be created in Project -> Pipelines -> Library -> VariableGroups
-    # where it describes the link to the SigningServer
-    variables:
-    - group: ESRP
+  - job: BuildPkg
+    displayName: Build Package
+    pool:
+      name: 1ES
+      demands:
+      - ImageOverride -equals PSMMS2019-Secure
+
+
     steps:
-    - checkout: self
 
-    # the steps for building the module go here
     - pwsh: |
-        dir
-        Set-Location '$(Build.SourcesDirectory)/OneGet/src'
-        dir
-        write-host "~~~~~~~~~"
-        dir '$(Build.SourcesDirectory)/OneGet/src'
-         # ./build.ps1 -Framework all -Configuration Release
-      displayName: Execute build????
+        Get-ChildItem -Path env:
+        Get-ChildItem -Path env:
+      displayName: Capture environment for build
+      condition: succeededOrFailed()
 
-    # these are setting vso variables which will be persisted between stages
     - pwsh: |
-        $signSrcPath = "$(Build.SourcesDirectory)/src/out/PackageManagement"
-        # Set signing src path variable
+        Set-Location $(BuildSourcePath)
+        .\bootstrap.ps1
+        .\build.ps1 net452
+        .\build.ps1 netstandard2.0
+        Get-ChildItem ./ -Recurse | Write-Host
+      displayName: Build and publish artifact
+
+    - pwsh: |
+        $signSrcPath = "$(BuildOutputPath)"
         $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${signSrcPath}"
         Write-Host "sending " + $vstsCommandString
         Write-Host "##$vstsCommandString"
 
-        $signOutPath = "$(Build.SourcesDirectory)/PackageManagement/signed"
-        $null = New-Item -ItemType Directory -Path $signOutPath
+        $outSignPath = "$(BuildOutputPath)"
+        $vstsCommandString = "vso[task.setvariable variable=signOutPath]${outSignPath}"
+        Write-Host "sending " + $vstsCommandString
+        Write-Host "##$vstsCommandString"
+      displayName: Create fake source and output variables for signing template and no signing
+      condition: and(succeeded(), eq(variables['SkipSigning'], 'True'))
+
+    - pwsh: |
+        $env:PSModulePath = $modulePath + [System.IO.Path]::PathSeparator + $env:PSModulePath
+        
+        # Created files signing directory
+        $srcPath = "$(BuildOutputPath)"
+        $createdSignSrcPath = "$(SignedOutputPath)\CreatedFiles"
+        if (! (Test-Path -Path $createdSignSrcPath)) {
+          $null = New-Item -Path $createdSignSrcPath -ItemType Directory -Verbose
+        }
+        Copy-Item -Path $srcPath -Dest $createdSignSrcPath -Recurse -Force -Verbose
+
+        $signOutPath = "$(SignedOutputPath)\$(ModuleName)"
+        if (! (Test-Path -Path $signOutPath)) {
+          $null = New-Item -Path $signOutPath -ItemType Directory
+        }
+
+        # Set signing src path variable
+        $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${createdSignSrcPath}"
+        Write-Host "sending " + $vstsCommandString
+        Write-Host "##$vstsCommandString"
+
+        $outSignPath = "$(SignedOutputPath)\$(ModuleName)"
+        if (! (Test-Path -Path $outSignPath)) {
+          $null = New-Item -Path $outSignPath -ItemType Directory -Verbose
+        }
+        
         # Set signing out path variable
-        $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
+        $vstsCommandString = "vso[task.setvariable variable=signOutPath]${outSignPath}"
         Write-Host "sending " + $vstsCommandString
         Write-Host "##$vstsCommandString"
+      displayName: Set up for module created files code signing
+      condition: and(and(succeeded(), eq(variables['Build.Reason'], 'Manual')), ne(variables['SkipSigning'], 'True'))
 
-        # Set path variable for guardian codesign validation
-        $vstsCommandString = "vso[task.setvariable variable=GDN_CODESIGN_TARGETDIRECTORY]${signOutPath}"
-        Write-Host "sending " + $vstsCommandString
-        Write-Host "##$vstsCommandString"
+    - pwsh: |
+        Get-ChildItem -Path env:
+        Get-ChildItem -Path . -Recurse -Directory
+      displayName: Capture environment for code signing
+      condition: succeededOrFailed()
 
-        # Get version and create a variable
-        $moduleData = Import-PowerShellDataFile "$(Build.SourcesDirectory)/src/Microsoft.PowerShell.PackageManagement/PackageManagement.psd1"
-        $moduleVersion = $moduleData.ModuleVersion
-        $vstsCommandString = "vso[task.setvariable variable=moduleVersion]${moduleVersion}"
-        Write-Host "sending " + $vstsCommandString
-        Write-Host "##$vstsCommandString"
-
-      displayName: Setup variables for signing
-
-    # checkout the Compliance repository so it can be used to do the actual signing
-    - checkout: ComplianceRepo
-
-    # this the MS authored step  This cert covers MS autored items
-    # note that the buildOutputPath (where we get the files to sign)
-    # is the same as the signOutputPath in the previous step
-    # at the end of this step we will have all the files signed that should be
-    # signOutPath is the location which contains the files we will use to make the module
     - template: EsrpSign.yml@ComplianceRepo
       parameters:
-        # the folder which contains the binaries to sign
         buildOutputPath: $(signSrcPath)
-        # the location to put the signed output
         signOutputPath: $(signOutPath)
-        # the certificate ID to use
         certificateId: "CP-230012"
-        # use minimatch because we need to exclude the NewtonSoft assembly
-        useMinimatch: true
-        # the file pattern to use - newtonSoft is excluded
         pattern: |
+          **\*.dll
           **\*.psd1
           **\*.psm1
           **\*.ps1xml
           **\*.mof
-          **\Microsoft*.dll
+        useMinimatch: true
 
-    # finally publish the parts of the build which will be used in the next stages
-    # if it's not published, the subsequent stages will not be able to access it.
-    # This is the build directory (it contains all of the dll/pdb files)
-    - publish: "$(Build.SourcesDirectory)/PackageManagement"
-      artifact: build
-      displayName: publish build directory
+    - template: EsrpSign.yml@ComplianceRepo
+      parameters:
+        buildOutputPath: $(signSrcPath)  # TODO: is strongname sign supposed to happen on top of the authenticode signed file?
+        signOutputPath: $(signOutPath)
+        certificateId: "CP-231522"
+        pattern: |
+          **\*.dll
+        useMinimatch: true
+
+
+
+
+    - pwsh: |
+        $srcPath = "$(signOutPath)"                         # "$(Build.SourcesDirectory)/signed/PackageManagement"
+        Write-Host "signOutPath is:"
+        Write-Host "$(signOutPath)"
+        $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"   #'$(Build.SourcesDirectory)/signedOuput/PackageManagement
+        Write-Host "SignedOutputPath\PackageManagement"
+        Write-Host "$(SignedOutputPath)\$(ModuleName)
+
+        if (! (Test-Path -Path $signOutPath)) {
+          $null = New-Item -Path $signOutPath -ItemType Directory
+        }
+
+        Get-ChildItem -Path $srcPath | Foreach-Object {
+          if ($_.Attributes -ne "Directory")
+          {
+            $sig = Get-AuthenticodeSignature -FilePath $_.FullName
+            if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
+              # Copy already signed files directly to output
+              Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose     #'$(Build.SourcesDirectory)/signedOuput/PackageManagement
+            }
+          }
+        }
+      displayName: Copy already properly signed files (.dll, .psd1, .psm1, .ps1xml, .mof)
+      condition: and(and(succeeded(), eq(variables['Build.Reason'], 'Manual')), ne(variables['SkipSigning'], 'True'))
+
+    - ${{ if ne(variables.SkipSigning, 'True') }}:
+      - template: Sbom.yml@ComplianceRepo
+        parameters:
+          BuildDropPath: $(signOutPath)
+          Build_Repository_Uri: 'https://github.com/oneget/oneget'
+          PackageName: 'PackageManagement'
+          PackageVersion: '1.4.7.1'
+
+    - pwsh: |
+        $srcModulePath = Resolve-Path -Path "$(signOutPath)"     #'$(Build.SourcesDirectory)/signedOuput/PackageManagement
+        Write-Host "Contents of signOutPath"
+        Get-ChildItem $srcModulePath | Write-Host
+        $artifactName = "$(ModuleName)"
+
+        $artifactDir = "$(Build.SourcesDirectory)/signedOuput"
+        Register-PSRepository -Name "LocalRepo" -SourceLocation "$artifactDir/nupkg"     # "$(Build.SourcesDirectory)/signedOuput/nupkg"
+        Publish-Module -Path $srcModulePath -Repository "LocalRepo"
+        Write-Host "##vso[artifact.upload containerfolder=$artifactName;artifactname=$artifactName;]$artifactDir"    #"$(Build.SourcesDirectory)/signedOuput"
+      displayName: Create module artifact
 
 # Now on to the compliance stage
 - stage: compliance
   displayName: Compliance
   dependsOn: Build
   jobs:
-  - job: Compliance_Job
+  - job: ComplianceJob
     pool:
-      name: Package ES CodeHub Lab E
+      name: 1ES
+      demands:
+      - ImageOverride -equals PSMMS2019-Secure
+
     steps:
     - checkout: self
+      clean: true
     - checkout: ComplianceRepo
+      clean: true
     - download: current
-      artifact: build
-
-    # use the templates in the compliance repo
-    # since Package Management has modules, we're using the assembly-module-compliance template
-    # if you don't have assemblies, you should use script-module-compliance template
-    - template: assembly-module-compliance.yml@ComplianceRepo
+      artifact: 'PackageManagement'
+    - template: script-module-compliance.yml@ComplianceRepo
       parameters:
+        # binskim
+        AnalyzeTarget: '$(Pipeline.Workspace)/PackageManagement/**/*.dll'
+        AnalyzeSymPath: 'SRV*'
         # component-governance - the path to sources
-        sourceScanPath: '$(Build.SourcesDirectory)/PackageManagement'
-        # binskim - this isn't recursive, so you need the path to the assemblies
-        AnalyzeTarget: '$(Pipeline.Workspace)/fullclr/Microsoft.*.dll'
-        # credscan - scan the repo for credentials
-        # you can suppress some files with this.
-        #suppressionsFile: '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/tools/ReleaseBuild/CredScan.Suppressions.json'
+        sourceScanPath: '$(Build.SourcesDirectory)'   ## TODO: Make sure this is correct
+        # credscan
+        suppressionsFile: ''
         # TermCheck
         optionsRulesDBPath: ''
         optionsFTPath: ''
         # tsa-upload
         # the compliance scanning must be uploaded, which you need to request
-        codeBaseName: 'PackageManagement_20200201'
+        codeBaseName: 'PackageManagement_20220302'
         # selections
         APIScan: false # set to false when not using Windows APIs.
 
-
-    # use the templates in the compliance repo
-    # since Package Management has modules, we're using the assembly-module-compliance template
-    # if you don't have assemblies, you should use script-module-compliance template
-    - template: assembly-module-compliance.yml@ComplianceRepo
-      parameters:
-        # component-governance - the path to sources
-        sourceScanPath: '$(Build.SourcesDirectory)/PackageManagement'
-        # binskim - this isn't recursive, so you need the path to the assemblies
-        AnalyzeTarget: '$(Pipeline.Workspace)/coreclr/netstandard2.0/Microsoft.*.dll'
-        # credscan - scan the repo for credentials
-        # you can suppress some files with this.
-        #suppressionsFile: '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/tools/ReleaseBuild/CredScan.Suppressions.json'
-        # TermCheck
-        optionsRulesDBPath: ''
-        optionsFTPath: ''
-        # tsa-upload
-        # the compliance scanning must be uploaded, which you need to request
-        codeBaseName: 'PackageManagement_20200201'
-        # selections
-        APIScan: false # set to false when not using Windows APIs.
-
+- stage: Release
+  displayName: Publish Package to PSGallery
+  condition: and(and(succeeded(), eq(variables['Build.Reason'], 'Manual')), eq(variables['Publish'], 'True'))
+  jobs:
+  - template: release.yml
