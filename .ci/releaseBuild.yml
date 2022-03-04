@@ -22,7 +22,6 @@ resources:
     endpoint: ComplianceGHRepo
     name: PowerShell/compliance
 
-stages:
 - stage: Build
   displayName: Build PackageManagement Module Package
   jobs:
@@ -35,6 +34,9 @@ stages:
 
 
     steps:
+    - checkout: self
+      clean: true
+      submodules: true
 
     - pwsh: |
         Get-ChildItem -Path env:
@@ -186,6 +188,7 @@ stages:
     steps:
     - checkout: self
       clean: true
+      submodules: true
     - checkout: ComplianceRepo
       clean: true
     - download: current
