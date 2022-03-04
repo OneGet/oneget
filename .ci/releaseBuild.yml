@@ -22,6 +22,7 @@ resources:
     endpoint: ComplianceGHRepo
     name: PowerShell/compliance
 
+stages:
 - stage: Build
   displayName: Build PackageManagement Module Package
   jobs:
@@ -32,14 +33,12 @@ resources:
       demands:
       - ImageOverride -equals PSMMS2019-Secure
 
-
     steps:
     - checkout: self
       clean: true
       submodules: true
 
     - pwsh: |
-        Get-ChildItem -Path env:
         Get-ChildItem -Path env:
       displayName: Capture environment for build
       condition: succeededOrFailed()
@@ -125,9 +124,6 @@ resources:
         pattern: |
           **\*.dll
         useMinimatch: true
-
-
-
 
     - pwsh: |
         $srcPath = "$(signOutPath)"                         # "$(Build.SourcesDirectory)/signed/PackageManagement"
