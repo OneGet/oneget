@@ -1,0 +1,36 @@
+parameters:
+  jobName: release
+  displayName: 'Release PowerShellGet to PSGallery'
+
+jobs:
+- job: ${{ parameters.jobName }}
+  pool:
+    name: 1ES
+    demands:
+    - ImageOverride -equals PSMMS2019-Secure
+  displayName: ${{ parameters.displayName }}
+
+  steps:
+  
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download PackageManagement module artifacts'
+    inputs:
+      artifact: nupkg
+      patterns: '**/*.nupkg'
+      downloadPath: '$(Pipeline.Workspace)/nuget'
+
+  - powershell: |
+      $package = (Get-ChildItem '$(Pipeline.Workspace)/nuget/PackageManagement.*.nupkg').FullName
+      $package
+      $vstsCommandString = "vso[task.setvariable variable=NugetPkgPath]${package}"
+      Write-Host "sending " + $vstsCommandString
+      Write-Host "##$vstsCommandString"
+    displayName: 'Capture PackageManagement module NuGet package path and set environment variable'
+
+  - task: NuGetCommand@2
+    displayName: 'Push PackageManagement module artifacts to PSGallery feed'
+    inputs:
+      command: push
+      packagesToPush: '$(NugetPkgPath)'
+      nuGetFeedType: external
+      publishFeedCredentials: PSGalleryPush
