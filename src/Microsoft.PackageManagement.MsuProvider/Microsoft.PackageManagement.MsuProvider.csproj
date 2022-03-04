@@ -26,10 +26,11 @@
   <ItemGroup Condition="('$(TargetFramework)' == 'netstandard2.0') ">
     <PackageReference Include="System.Management.Automation" Version="6.0.4" />
   </ItemGroup>
+
   <ItemGroup Condition=" ('$(TargetFramework)' == 'net452')">
     <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
   </ItemGroup>
-
+  
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Compile Remove="Resources\Messages.Designer.cs" />
     <EmbeddedResource Remove="Resources\Messages.resx" />
