@@ -1,4 +1,4 @@
-﻿﻿//
+﻿//
 //  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
         private readonly int _callCount;
         private readonly Hashtable _dynamicOptions = new Hashtable();
         private string _bootstrapNuGet = "false";
+        //private static bool telemetryAPIInitialized = false;
+        //private static Type TelemetryAPIType = null;
 
         [Parameter]
         public SwitchParameter Force;
@@ -475,6 +477,23 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
             return true;
         }
 
+/*
+        private void TraceMessageHelper(string message, SoftwareIdentity swidObject)
+        {
+            #if !CORECLR
+            Microsoft.PowerShell.Telemetry.Internal.TelemetryAPI.TraceMessage(message, new
+            {
+                PackageName = swidObject.Name,
+                PackageVersion = swidObject.Version,
+                PackageProviderName = swidObject.ProviderName,
+                Repository = swidObject.Source,
+                ExecutionStatus = swidObject.Status,
+                ExecutionTime = DateTime.Today
+            });
+            #endif
+        }
+*/
+
         #region Event and telemetry stuff
         //Calling PowerShell Telemetry APIs
         protected void TraceMessage(string message, SoftwareIdentity swidObject) {
@@ -484,6 +503,26 @@ namespace Microsoft.PowerShell.PackageManagement.Cmdlets {
                 if (!OSInformation.IsWindowsPowerShell) {
                     return;
                 }
+
+                /*
+                if (!telemetryAPIInitialized)
+                {
+                    telemetryAPIInitialized = true;
+
+                    // try to load telemetry api from sma
+                    // we have to check for telemetry type instead of just running try catch because if telemetryapi cannot be loaded, the error
+                    // will not be caught in this try catch
+                    Assembly sma = typeof(Cmdlet).GetTypeInfo().Assembly;
+
+                    TelemetryAPIType = sma.GetType("Microsoft.PowerShell.Telemetry.Internal.TelemetryAPI");
+                }
+
+                if (TelemetryAPIType != null)
+                {
+                    // if the type exists
+                    TraceMessageHelper(message, swidObject);
+                }
+                */
             }
             catch (Exception ex)
             {
