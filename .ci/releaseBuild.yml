@@ -122,7 +122,7 @@ stages:
 
     - template: EsrpSign.yml@ComplianceRepo
       parameters:
-        buildOutputPath: $(signSrcPath)  # TODO: is strongname sign supposed to happen on top of the authenticode signed file?
+        buildOutputPath: $(signSrcPath)
         signOutputPath: $(signOutPath)
         certificateId: "CP-231522"
         pattern: |
