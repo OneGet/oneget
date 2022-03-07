@@ -200,7 +200,7 @@ stages:
         AnalyzeTarget: '$(Pipeline.Workspace)/PackageManagement/**/*.dll'
         AnalyzeSymPath: 'SRV*'
         # component-governance - the path to sources
-        sourceScanPath: '$(Build.SourcesDirectory)'   ## TODO: Make sure this is correct
+        sourceScanPath: '$(Build.SourcesDirectory)'
         # credscan
         suppressionsFile: ''
         # TermCheck
