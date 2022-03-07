@@ -23,7 +23,7 @@
     <ProjectReference Include="..\Microsoft.PackageManagement\Microsoft.PackageManagement.csproj" />
   </ItemGroup>
 
-  
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Reference Include="System.Runtime" />
     <Reference Include="System.Xml" />
