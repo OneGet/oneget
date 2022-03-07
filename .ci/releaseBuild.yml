@@ -37,6 +37,10 @@ stages:
     - checkout: self
       clean: true
       submodules: true
+    
+    - task: NuGetAuthenticate@0
+      inputs:
+        nuGetServiceConnections: 'InternalPkgMgmtFeed'
 
     - pwsh: |
         Get-ChildItem -Path env:
