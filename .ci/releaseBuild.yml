@@ -130,6 +130,7 @@ stages:
         useMinimatch: true
 
     - pwsh: |
+        Write-Host "entering copy already signed files"
         $srcPath = "$(signOutPath)"                         # "$(Build.SourcesDirectory)/signed/PackageManagement"
         Write-Host "signOutPath is:"
         Write-Host "$(signOutPath)"
