@@ -120,15 +120,6 @@ stages:
           **\*.mof
         useMinimatch: true
 
-    - template: EsrpSign.yml@ComplianceRepo
-      parameters:
-        buildOutputPath: $(signSrcPath)
-        signOutputPath: $(signOutPath)
-        certificateId: "CP-231522"
-        pattern: |
-          **\*.dll
-        useMinimatch: true
-
     - pwsh: |
         Write-Host "entering copy already signed files"
         $srcPath = "$(signOutPath)"                         # "$(Build.SourcesDirectory)/signed/PackageManagement"
