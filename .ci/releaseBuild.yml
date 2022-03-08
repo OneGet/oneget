@@ -128,7 +128,13 @@ stages:
 
     - pwsh: |
         Write-Host "entering copy already signed files"
-        $srcPath = "$(Build.SourcesDirectory)/signed/$(ModuleName)"
+        $srcPathOLD = "$(Build.SourcesDirectory)/signed/$(ModuleName)"
+        Write-Host "writing the contents of srcPathOLD"
+        Get-ChildItem "$srcPathOLD" -Recurse | Write-Host
+
+        $srcPath = "$(signOutPath)"
+        Write-Host "writing the contents of srcPath"
+        Get-ChildItem "$srcPath" -Recurse | Write-Host
 
         $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"
         
