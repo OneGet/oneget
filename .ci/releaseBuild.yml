@@ -192,6 +192,8 @@ stages:
 
         Register-PSRepository -Name "LocalRepo" -SourceLocation "$nupkgArtifactDir"
         Publish-Module -Path $srcModulePath -Repository "LocalRepo"
+        $nupkgName = "nupkg"
+        Write-Host "##vso[artifact.upload containerfolder=$artifactName;artifactname=$nupkgName;]$nupkgArtifactDir"
         Write-Host "##vso[artifact.upload containerfolder=$artifactName;artifactname=$artifactName;]$artifactDir"
       displayName: Create module artifact
 
