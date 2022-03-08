@@ -163,7 +163,7 @@ stages:
 
     - pwsh: |
         $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"
-        $srcModulePath = Resolve-Path -Path "$signOutPath"     #'$(Build.SourcesDirectory)/signedOuput/PackageManagement
+        $srcModulePath = Resolve-Path -Path "$signOutPath"
         Write-Host "Contents of srcModulePath"
         Get-ChildItem "$srcModulePath" -Recurse | Write-Host
         $artifactName = "$(ModuleName)"
@@ -174,9 +174,9 @@ stages:
           $null = New-Item -Path $nupkgArtifactDir -ItemType Directory
         }
 
-        Register-PSRepository -Name "LocalRepo" -SourceLocation "$nupkgArtifactDir"     # "$(Build.SourcesDirectory)/signedOuput/nupkg"
+        Register-PSRepository -Name "LocalRepo" -SourceLocation "$nupkgArtifactDir"
         Publish-Module -Path $srcModulePath -Repository "LocalRepo"
-        Write-Host "##vso[artifact.upload containerfolder=$artifactName;artifactname=$artifactName;]$artifactDir"    #"$(Build.SourcesDirectory)/signedOuput"
+        Write-Host "##vso[artifact.upload containerfolder=$artifactName;artifactname=$artifactName;]$artifactDir"
       displayName: Create module artifact
 
 # Now on to the compliance stage
