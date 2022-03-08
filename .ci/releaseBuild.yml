@@ -113,28 +113,7 @@ stages:
       condition: succeededOrFailed()
 
     - pwsh: |
-        Write-Host "entering copy already signed files"
-        $srcPath = "$(signOutPath)"                         
-        Write-Host "signOutPath is"
-        Write-Host "$(signOutPath)"
-        $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"   
-        Write-Host "SignedOutputPath\PackageManagement"
-        Write-Host "$(SignedOutputPath)\$(ModuleName)
 
-        if (! (Test-Path -Path $signOutPath)) {
-          $null = New-Item -Path $signOutPath -ItemType Directory
-        }
-
-        Get-ChildItem -Path $srcPath | Foreach-Object {
-          if ($_.Attributes -ne "Directory")
-          {
-            $sig = Get-AuthenticodeSignature -FilePath $_.FullName
-            if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
-              # Copy already signed files directly to output
-              Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose 
-            }
-          }
-        }
       displayName: Copy already properly signed files (.dll, .psd1, .psm1, .ps1xml, .mof)
       condition: and(and(succeeded(), eq(variables['Build.Reason'], 'Manual')), ne(variables['SkipSigning'], 'True'))
 
