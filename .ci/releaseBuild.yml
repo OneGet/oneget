@@ -164,8 +164,8 @@ stages:
     - pwsh: |
         $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"
         $srcModulePath = Resolve-Path -Path "$signOutPath"     #'$(Build.SourcesDirectory)/signedOuput/PackageManagement
-        Write-Host "Contents of signOutPath"
-        Get-ChildItem $signOutPath -Recurse | Write-Host
+        Write-Host "Contents of srcModulePath"
+        Get-ChildItem "$srcModulePath" -Recurse | Write-Host
         $artifactName = "$(ModuleName)"
 
         $artifactDir = "$(Build.SourcesDirectory)/signedOuput"
@@ -175,7 +175,7 @@ stages:
         }
 
         Register-PSRepository -Name "LocalRepo" -SourceLocation "$nupkgArtifactDir"     # "$(Build.SourcesDirectory)/signedOuput/nupkg"
-        Publish-Module -Path (Join-Path -Path $srcModulePath -ChildPath "PackageManagement") -Repository "LocalRepo"
+        Publish-Module -Path $srcModulePath -Repository "LocalRepo"
         Write-Host "##vso[artifact.upload containerfolder=$artifactName;artifactname=$artifactName;]$artifactDir"    #"$(Build.SourcesDirectory)/signedOuput"
       displayName: Create module artifact
 
