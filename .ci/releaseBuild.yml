@@ -102,6 +102,12 @@ stages:
       condition: and(and(succeeded(), eq(variables['Build.Reason'], 'Manual')), ne(variables['SkipSigning'], 'True'))
 
     - pwsh: |
+        Write-Host "entering capture environment"
+        Write-Host "signSrcPath is:"
+        Write-Host "$(signSrcPath)"
+        Write-Host "signOutPath is"
+        Write-Host "$(signOutPath)"
+        
         Get-ChildItem -Path env:
         Get-ChildItem -Path . -Recurse -Directory
       displayName: Capture environment for code signing
@@ -122,10 +128,10 @@ stages:
 
     - pwsh: |
         Write-Host "entering copy already signed files"
-        $srcPath = "$(signOutPath)"                         # "$(Build.SourcesDirectory)/signed/PackageManagement"
+        $srcPath = "$(signOutPath)"                         
         Write-Host "signOutPath is:"
         Write-Host "$(signOutPath)"
-        $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"   #'$(Build.SourcesDirectory)/signedOuput/PackageManagement
+        $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"   
         Write-Host "SignedOutputPath\PackageManagement"
         Write-Host "$(SignedOutputPath)\$(ModuleName)
 
@@ -139,7 +145,7 @@ stages:
             $sig = Get-AuthenticodeSignature -FilePath $_.FullName
             if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
               # Copy already signed files directly to output
-              Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose     #'$(Build.SourcesDirectory)/signedOuput/PackageManagement
+              Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose 
             }
           }
         }
