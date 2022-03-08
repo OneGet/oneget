@@ -150,7 +150,7 @@ stages:
         }
 
         Write-Host "writing the contents of signoutpath"
-        Write-Host "$signOutPath"
+        Get-ChildItem $signOutPath" -Recurse
 
       displayName: Copy already properly signed files (.dll, .psd1, .psm1, .ps1xml, .mof)
       condition: and(and(succeeded(), eq(variables['Build.Reason'], 'Manual')), ne(variables['SkipSigning'], 'True'))
@@ -163,10 +163,11 @@ stages:
           PackageName: 'PackageManagement'
           PackageVersion: '1.4.7.1'
 
-    - pwsh: |
-        $srcModulePath = Resolve-Path -Path "$(signOutPath)"     #'$(Build.SourcesDirectory)/signedOuput/PackageManagement
+    - pwsh: |srcModulePath
+        $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"
+        $srcModulePath = Resolve-Path -Path "$signOutPath"     #'$(Build.SourcesDirectory)/signedOuput/PackageManagement
         Write-Host "Contents of signOutPath"
-        Get-ChildItem $srcModulePath -Recurse | Write-Host
+        Get-ChildItem $signOutPath -Recurse | Write-Host
         $artifactName = "$(ModuleName)"
 
         $artifactDir = "$(Build.SourcesDirectory)/signedOuput"
