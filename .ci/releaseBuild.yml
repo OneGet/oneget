@@ -103,7 +103,7 @@ stages:
 
     - pwsh: |
         Write-Host "entering capture environment"
-        Write-Host "signSrcPath is"
+        Write-Host "signSrcPath is:"
         Write-Host "$(signSrcPath)"
         Write-Host "signOutPath is"
         Write-Host "$(signOutPath)"
@@ -112,10 +112,19 @@ stages:
       displayName: Capture environment for code signing
       condition: succeededOrFailed()
 
-    - pwsh: |
+    - template: EsrpSign.yml@ComplianceRepo
+      parameters:
+        buildOutputPath: $(signSrcPath)
+        signOutputPath: $(signOutPath)
+        certificateId: "CP-230012"
+        pattern: |
+          **\*.dll
+          **\*.psd1
+          **\*.psm1
+          **\*.ps1xml
+          **\*.mof
+        useMinimatch: true
 
-      displayName: Copy already properly signed files (.dll, .psd1, .psm1, .ps1xml, .mof)
-      condition: and(and(succeeded(), eq(variables['Build.Reason'], 'Manual')), ne(variables['SkipSigning'], 'True'))
 
     - ${{ if ne(variables.SkipSigning, 'True') }}:
       - template: Sbom.yml@ComplianceRepo
