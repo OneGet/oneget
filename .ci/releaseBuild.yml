@@ -108,7 +108,6 @@ stages:
         Write-Host "signOutPath is"
         Write-Host "$(signOutPath)"
         
-        Get-ChildItem -Path env:
         Get-ChildItem -Path . -Recurse -Directory
       displayName: Capture environment for code signing
       condition: succeededOrFailed()
@@ -116,7 +115,7 @@ stages:
     - pwsh: |
         Write-Host "entering copy already signed files"
         $srcPath = "$(signOutPath)"                         
-        Write-Host "signOutPath is:"
+        Write-Host "signOutPath is"
         Write-Host "$(signOutPath)"
         $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"   
         Write-Host "SignedOutputPath\PackageManagement"
