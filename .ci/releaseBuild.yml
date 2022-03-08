@@ -142,13 +142,19 @@ stages:
           $null = New-Item -Path $signOutPath -ItemType Directory
         }
 
-        Get-ChildItem -Path $srcPath | Foreach-Object {
+        Get-ChildItem -Path $srcPath -Recurse | Foreach-Object {
           if ($_.Attributes -ne "Directory")
           {
             $sig = Get-AuthenticodeSignature -FilePath $_.FullName
             if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
               # Copy already signed files directly to output
               Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose 
+            }
+            else 
+            {
+              Write-Host "could not copy"
+              Write-Host "$_.FullName"
+
             }
           }
         }
