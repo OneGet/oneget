@@ -128,7 +128,7 @@ stages:
 
     - pwsh: |
         Write-Host "entering copy already signed files"
-        $srcPath = "$(signOutPath)"
+        $srcPath = "$(Build.SourcesDirectory)/signed/$(ModuleName)"
 
         $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"
         
@@ -148,7 +148,7 @@ stages:
         }
 
         Write-Host "writing the contents of signoutpath"
-        Get-ChildItem $signOutPath" -Recurse
+        Get-ChildItem "$signOutPath" -Recurse
 
       displayName: Copy already properly signed files (.dll, .psd1, .psm1, .ps1xml, .mof)
       condition: and(and(succeeded(), eq(variables['Build.Reason'], 'Manual')), ne(variables['SkipSigning'], 'True'))
