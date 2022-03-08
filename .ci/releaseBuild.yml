@@ -163,7 +163,7 @@ stages:
           PackageName: 'PackageManagement'
           PackageVersion: '1.4.7.1'
 
-    - pwsh: |srcModulePath
+    - pwsh: |
         $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"
         $srcModulePath = Resolve-Path -Path "$signOutPath"     #'$(Build.SourcesDirectory)/signedOuput/PackageManagement
         Write-Host "Contents of signOutPath"
