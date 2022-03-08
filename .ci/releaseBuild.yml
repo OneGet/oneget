@@ -128,7 +128,12 @@ stages:
 
     - pwsh: |
         Write-Host "entering copy already signed files"
+        $srcPath = "$(signOutPath)"
+        Write-Host "$srcPath"
 
+        $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"
+        Write-Host "$signOutPath"
+        
         if (! (Test-Path -Path $signOutPath)) {
           $null = New-Item -Path $signOutPath -ItemType Directory
         }
