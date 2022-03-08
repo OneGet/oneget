@@ -113,19 +113,6 @@ stages:
       displayName: Capture environment for code signing
       condition: succeededOrFailed()
 
-    - template: EsrpSign.yml@ComplianceRepo
-      parameters:
-        buildOutputPath: $(signSrcPath)
-        signOutputPath: $(signOutPath)
-        certificateId: "CP-230012"
-        pattern: |
-          **\*.dll
-          **\*.psd1
-          **\*.psm1
-          **\*.ps1xml
-          **\*.mof
-        useMinimatch: true
-
     - pwsh: |
         Write-Host "entering copy already signed files"
         $srcPath = "$(signOutPath)"                         
