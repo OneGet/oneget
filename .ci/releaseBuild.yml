@@ -171,8 +171,8 @@ stages:
 
         $artifactDir = "$(Build.SourcesDirectory)/signedOuput"
         $nupkgArtifactDir = "$artifactDir/nupkg" 
-        if (! (Test-Path -Path $signOutPath)) {
-          $null = New-Item -Path $signOutPath -ItemType Directory
+        if (! (Test-Path -Path $nupkgArtifactDir)) {
+          $null = New-Item -Path $nupkgArtifactDir -ItemType Directory
         }
         
         Register-PSRepository -Name "LocalRepo" -SourceLocation "$nupkgArtifactDir"     # "$(Build.SourcesDirectory)/signedOuput/nupkg"
