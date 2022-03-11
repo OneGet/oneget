@@ -184,7 +184,7 @@ stages:
 
         $artifactName = "$(ModuleName)"
 
-        $artifactDir = "$(Build.SourcesDirectory)/signedOuput"
+        $artifactDir = "$(Build.SourcesDirectory)/signedOutput"
         $nupkgArtifactDir = "$artifactDir/nupkg" 
         if (! (Test-Path -Path $nupkgArtifactDir)) {
           $null = New-Item -Path $nupkgArtifactDir -ItemType Directory
