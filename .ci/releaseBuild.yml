@@ -168,7 +168,7 @@ stages:
     - ${{ if ne(variables.SkipSigning, 'True') }}:
       - template: Sbom.yml@ComplianceRepo
         parameters:
-          BuildDropPath: $(signOutPath)
+          BuildDropPath: "$(Build.SourcesDirectory)/signedOutput"
           Build_Repository_Uri: 'https://github.com/oneget/oneget'
           PackageName: 'PackageManagement'
           PackageVersion: '1.4.7.1'
