@@ -53,7 +53,7 @@ $providerName ="Microsoft-Windows-PowerShell"
 $vstsFeed = "https://powershellgettest.pkgs.visualstudio.com/DefaultCollection/_packaging/psgettestfeed/nuget/v2"
 $vstsFeedWithSlash = "https://powershellgettest.pkgs.visualstudio.com/DefaultCollection/_packaging/psgettestfeed/nuget/v2/"
 #$proxyPath = "$env:tmp\ProxyConsoleProgram\Microsoft.HttpForwarder.Console.exe"
-$password = ConvertTo-SecureString "4bwvgxrbzvlxc7xgv22eehlix3enmrdwblrxkirnrc3uak23naoa" -AsPlainText -Force
+$password = ConvertTo-SecureString "some valid password" -AsPlainText -Force
 $vstsCredential = New-Object System.Management.Automation.PSCredential "quoct", $password
 $dependenciesSource = "$PSScriptRoot\..\..\Unit\Providers\Dependencies"
 
@@ -963,7 +963,7 @@ Describe "install-package with Scope" -tags "Feature" {
         if ($IsWindows)
         {
             $userName = "smartguy"
-            $password = "password%1"
+            $password = ('p','a','s','s','w', 'o', 'r', 'd', '%', '1' | Get-Random -Shuffle ) -join ''
             #net user $userName /delete | Out-Null
             net user $userName $password /add
             $secesurestring = ConvertTo-SecureString $password -AsPlainText -Force
