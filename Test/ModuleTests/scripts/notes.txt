@@ -8,7 +8,7 @@
 
 New-SelfsignedCertificateEx -Subject "CN=localhost" -EKU "Server Authentication", "Client authentication" -KeyUsage "KeyEncipherment, DigitalSignature" -SAN "*","127.0.0.1" -AllowSMIME -Exportable -StoreLocation "LocalMachine" -StoreName "Root"
 
--Path C:\test\ssl.pfx -Password (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force) 
+-Path C:\test\ssl.pfx -Password (ConvertTo-SecureString <some password> -AsPlainText -Force)
 
 
 
