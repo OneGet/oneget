@@ -158,10 +158,14 @@ stages:
                 Copy-Item -Path $srcParentDir2 -Destination $destParentDir2 -Force -Verbose 
 
                 Get-ChildItem -Path $srcParentDir2 | Foreach-Object {
-                  $sig1 = Get-AuthenticodeSignature -FilePath $_
-                  if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
+                  $sig3 = Get-AuthenticodeSignature -FilePath $_
+                  if ($sig3.Status -eq 'Valid' -and ($sig3.SignerCertificate.Subject -like '*Microsoft*' -and $sig3.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                     # Copy already signed files directly to output
                     Copy-Item -Path $_ -Dest ("$destParentDir2/" + $_.Name) -Force -Verbose 
+                  }
+                  else 
+                  {
+                    Write-Host "Could not copy file: $_"
                   }
                 }
               }
