@@ -158,24 +158,25 @@ stages:
                 Copy-Item -Path $srcParentDir2 -Destination $destParentDir2 -Force -Verbose 
 
                 Get-ChildItem -Path $srcParentDir2 | Foreach-Object {
-                  $sig1 = Get-AuthenticodeSignature -FilePath $_.FullName
+                  $sig1 = Get-AuthenticodeSignature -FilePath $_
                   if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                     # Copy already signed files directly to output
-                    Copy-Item -Path $_.FullName -Dest ("$destParentDir2/" + $_.Name) -Force -Verbose 
+                    Copy-Item -Path $_ -Dest ("$destParentDir2/" + $_.Name) -Force -Verbose 
                   }
                 }
               }
               else
               {
-                $sig2 = Get-AuthenticodeSignature -FilePath $_.FullName
-                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
+                $sig2 = Get-AuthenticodeSignature -FilePath $_
+                Write-Host "file path is: $_"
+                Write-Host "signature is: $sig2"
+                if ($sig2.Status -eq 'Valid' -and ($sig2.SignerCertificate.Subject -like '*Microsoft*' -and $sig2.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                   # Copy already signed files directly to output
-                  Copy-Item -Path $_.FullName -Dest $destParentDir2 -Force -Verbose 
+                  Copy-Item -Path $_ -Dest $destParentDir2 -Force -Verbose 
                 }
                 else 
                 {
-                  Write-Host "could not copy"
-                  Write-Host "$_.FullName"
+                  Write-Host "Could not copy file: $_"
                 }
               }
             }
@@ -189,8 +190,7 @@ stages:
             }
             else 
             {
-              Write-Host "could not copy"
-              Write-Host "$_.FullName"
+              Write-Host "Could not copy: $_"
             }
           }
         }
