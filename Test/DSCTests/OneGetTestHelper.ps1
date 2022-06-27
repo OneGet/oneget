@@ -53,7 +53,7 @@ configuration Sample_InstallPester
         [string]$DestinationPath       
     )
 
-    Import-DscResource -Module PackageManagement -ModuleVersion 1.4.7
+    Import-DscResource -Module PackageManagement -ModuleVersion 1.4.8
 
     Node "localhost"
     {

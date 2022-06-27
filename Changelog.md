@@ -1,4 +1,7 @@
 # Changelog
+## 1.4.8
+* Add NuGet as a source when generating nuget.config file for user in the NuGet Provider
+
 ## 1.4.7
 * Update security protocol to use TLS 1.2
 * Remove catalog file
