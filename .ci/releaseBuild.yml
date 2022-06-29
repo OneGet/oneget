@@ -116,15 +116,27 @@ stages:
       parameters:
         buildOutputPath: $(signSrcPath)
         signOutputPath: $(signOutPath)
-        certificateId: "CP-230012"
+        certificateId: "CP-233863-SN"
         pattern: |
           **\*.dll
-          **\*.psd1
-          **\*.psm1
-          **\*.ps1xml
-          **\*.mof
         useMinimatch: true
+        displayName: Strong name sign .dll files
 
+    - template: EsrpSign.yml@ComplianceRepo
+      parameters:
+          # Sign in-place, previous task copied the files to this folder
+          buildOutputPath: $(signOutPath)
+          signOutputPath: $(signOutPath)
+          certificateId: "CP-230012"
+          pattern: |
+            **\*.dll
+            **\*.psd1
+            **\*.psm1
+            **\*.ps1xml
+            **\*.mof
+          useMinimatch: true
+          displayName: Authenticode Sign .dlls & PS files)
+          OutputMode: NeverCopy
 
     - pwsh: |
         Write-Host "entering copy already signed files"
