@@ -21,6 +21,7 @@ resources:
     type: github
     endpoint: ComplianceGHRepo
     name: PowerShell/compliance
+    ref: strongNameParam
 
 stages:
 - stage: Build
@@ -155,62 +156,89 @@ stages:
         }
 
         Get-ChildItem -Path "$srcPath/PackageManagement" | Foreach-Object {
-          if ($_.Attributes -eq "Directory")
-          {
-            $srcParentDir1 = $_
-            $destParentDir1 = "$signOutPath/" + $srcParentDir1.Name
-            Copy-Item -Path $srcParentDir1 -Destination $destParentDir1 -Force -Verbose 
-            
-            Get-ChildItem -Path $srcParentDir1 | Foreach-Object {
-              $srcParentDir2 = $_
-              $destParentDir2 = "$destParentDir1/" + $srcParentDir2.Name
-
-              if ($srcParentDir2.Attributes -eq "Directory")
-              {
-                Copy-Item -Path $srcParentDir2 -Destination $destParentDir2 -Force -Verbose 
-
-                Get-ChildItem -Path $srcParentDir2 | Foreach-Object {
-                  $sig3 = Get-AuthenticodeSignature -FilePath $_
-                  if ($sig3.Status -eq 'Valid' -and ($sig3.SignerCertificate.Subject -like '*Microsoft*' -and $sig3.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
-                    # Copy already signed files directly to output
-                    Copy-Item -Path $_ -Dest ("$destParentDir2/" + $_.Name) -Force -Verbose 
-                  }
-                  else 
-                  {
-                    Write-Host "Could not copy file: $_"
-                  }
-                }
-              }
-              else
-              {
-                $sig2 = Get-AuthenticodeSignature -FilePath $_
-                Write-Host "file path is: $_"
-                Write-Host "signature is: $sig2"
-                if ($sig2.Status -eq 'Valid' -and ($sig2.SignerCertificate.Subject -like '*Microsoft*' -and $sig2.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
-                  # Copy already signed files directly to output
-                  Copy-Item -Path $_ -Dest $destParentDir2 -Force -Verbose 
-                }
-                else 
-                {
-                  Write-Host "Could not copy file: $_"
-                }
-              }
-            }
-          }
-          else 
-          {
-            $sig = Get-AuthenticodeSignature -FilePath $_.FullName
-            if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
-              # Copy already signed files directly to output
-              Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose 
+            if ($_.Attributes -neq "Directory") {
+               $sig = Get-AuthenticodeSignature -FilePath $_.FullName
+               if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
+                 # Copy already signed files directly to output
+                 Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose 
+               }
             }
             else 
             {
               Write-Host "Could not copy: $_"
             }
-          }
         }
-
+        
+        Get-ChildItem -Path "$srcPath/PackageManagement/coreclr/netstandard2.0" | Foreach-Object {
+            if ($_.Attributes -neq "Directory") {
+               $sig = Get-AuthenticodeSignature -FilePath $_.FullName
+               if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
+                 # Copy already signed files directly to output
+                 Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose 
+               }
+            }
+            else 
+            {
+              Write-Host "Could not copy: $_"
+            }
+        }
+        
+        Get-ChildItem -Path "$srcPath/PackageManagement/DSCResources" | Foreach-Object {
+            if ($_.Attributes -neq "Directory") {
+               $sig = Get-AuthenticodeSignature -FilePath $_.FullName
+               if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
+                 # Copy already signed files directly to output
+                 Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose 
+               }
+            }
+            else 
+            {
+              Write-Host "Could not copy: $_"
+            }
+        }
+        
+        Get-ChildItem -Path "$srcPath/PackageManagement/DSCResources/MSFT_PackageManagement" | Foreach-Object {
+            if ($_.Attributes -neq "Directory") {
+               $sig = Get-AuthenticodeSignature -FilePath $_.FullName
+               if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
+                 # Copy already signed files directly to output
+                 Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose 
+               }
+            }
+            else 
+            {
+              Write-Host "Could not copy: $_"
+            }
+        }
+        
+        Get-ChildItem -Path "$srcPath/PackageManagement/DSCResources/MSFT_PackageManagementSource" | Foreach-Object {
+            if ($_.Attributes -neq "Directory") {
+               $sig = Get-AuthenticodeSignature -FilePath $_.FullName
+               if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
+                 # Copy already signed files directly to output
+                 Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose 
+               }
+            }
+            else 
+            {
+              Write-Host "Could not copy: $_"
+            }
+        }
+        
+        Get-ChildItem -Path "$srcPath/PackageManagement/fullclr" | Foreach-Object {
+            if ($_.Attributes -neq "Directory") {
+               $sig = Get-AuthenticodeSignature -FilePath $_.FullName
+               if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
+                 # Copy already signed files directly to output
+                 Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose 
+               }
+            }
+            else 
+            {
+              Write-Host "Could not copy: $_"
+            }
+        }
+        
         Write-Host "writing the contents of signoutpath"
         Get-ChildItem "$signOutPath" -Recurse | Write-Host
 
