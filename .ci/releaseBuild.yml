@@ -275,7 +275,7 @@ stages:
           BuildDropPath: "$(Build.SourcesDirectory)/signedOutput"
           Build_Repository_Uri: 'https://github.com/oneget/oneget'
           PackageName: 'PackageManagement'
-          PackageVersion: '1.4.8'
+          PackageVersion: '1.4.8.1'
 
     - pwsh: |
         $signOutPath = "$(Build.SourcesDirectory)/signedOutput/$(ModuleName)"
