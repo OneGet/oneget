@@ -1,4 +1,7 @@
 # Changelog
+## 1.4.8.1
+* Update PackageManagement's strong name signing
+
 ## 1.4.8
 * Add NuGet as a source when generating nuget.config file for user in the NuGet Provider
 
