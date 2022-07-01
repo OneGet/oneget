@@ -171,7 +171,7 @@ stages:
         Get-ChildItem -Path "$srcPath/PackageManagement/coreclr/netstandard2.0" | Foreach-Object {
             if ($_.Attributes -ne "Directory") {
                $destPath = "$signOutPath/PackageManagement/coreclr/netstandard2.0"
-               if (!Test-Path $destPath)
+               if (!(Test-Path $destPath))
                {
                  New-Item -Path "$destPath" -ItemType "Directory"
                }
@@ -190,7 +190,7 @@ stages:
         Get-ChildItem -Path "$srcPath/PackageManagement/DSCResources" | Foreach-Object {
             if ($_.Attributes -ne "Directory") {
                $destPath = "$signOutPath/PackageManagement/DSCResources"
-               if (!Test-Path $destPath)
+               if (!(Test-Path $destPath))
                {
                  New-Item -Path "$destPath" -ItemType "Directory"
                }
@@ -209,7 +209,7 @@ stages:
         Get-ChildItem -Path "$srcPath/PackageManagement/DSCResources/MSFT_PackageManagement" | Foreach-Object {
             if ($_.Attributes -ne "Directory") {
                $destPath = "$signOutPath/PackageManagement/DSCResources/MSFT_PackageManagement"
-               if (!Test-Path $destPath)
+               if (!(Test-Path $destPath))
                {
                  New-Item -Path "$destPath" -ItemType "Directory"
                }
@@ -228,7 +228,7 @@ stages:
         Get-ChildItem -Path "$srcPath/PackageManagement/DSCResources/MSFT_PackageManagementSource" | Foreach-Object {
             if ($_.Attributes -ne "Directory") {
                $destPath = "$signOutPath/PackageManagement/DSCResources/MSFT_PackageManagementSource"
-               if (!Test-Path $destPath)
+               if (!(Test-Path $destPath))
                {
                  New-Item -Path "$destPath" -ItemType "Directory"
                }
@@ -247,7 +247,7 @@ stages:
         Get-ChildItem -Path "$srcPath/PackageManagement/fullclr" | Foreach-Object {
             if ($_.Attributes -ne "Directory") {
                $destPath = "$signOutPath/PackageManagement/fullclr"
-               if (!Test-Path $destPath)
+               if (!(Test-Path $destPath))
                {
                  New-Item -Path "$destPath" -ItemType "Directory"
                }
