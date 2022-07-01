@@ -156,7 +156,7 @@ stages:
         }
 
         Get-ChildItem -Path "$srcPath/PackageManagement" | Foreach-Object {
-            if ($_.Attributes -neq "Directory") {
+            if ($_.Attributes -ne "Directory") {
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                  # Copy already signed files directly to output
@@ -170,7 +170,7 @@ stages:
         }
         
         Get-ChildItem -Path "$srcPath/PackageManagement/coreclr/netstandard2.0" | Foreach-Object {
-            if ($_.Attributes -neq "Directory") {
+            if ($_.Attributes -ne "Directory") {
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                  # Copy already signed files directly to output
@@ -184,7 +184,7 @@ stages:
         }
         
         Get-ChildItem -Path "$srcPath/PackageManagement/DSCResources" | Foreach-Object {
-            if ($_.Attributes -neq "Directory") {
+            if ($_.Attributes -ne "Directory") {
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                  # Copy already signed files directly to output
@@ -198,7 +198,7 @@ stages:
         }
         
         Get-ChildItem -Path "$srcPath/PackageManagement/DSCResources/MSFT_PackageManagement" | Foreach-Object {
-            if ($_.Attributes -neq "Directory") {
+            if ($_.Attributes -ne "Directory") {
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                  # Copy already signed files directly to output
@@ -212,7 +212,7 @@ stages:
         }
         
         Get-ChildItem -Path "$srcPath/PackageManagement/DSCResources/MSFT_PackageManagementSource" | Foreach-Object {
-            if ($_.Attributes -neq "Directory") {
+            if ($_.Attributes -ne "Directory") {
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                  # Copy already signed files directly to output
@@ -226,7 +226,7 @@ stages:
         }
         
         Get-ChildItem -Path "$srcPath/PackageManagement/fullclr" | Foreach-Object {
-            if ($_.Attributes -neq "Directory") {
+            if ($_.Attributes -ne "Directory") {
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                  # Copy already signed files directly to output
