@@ -174,7 +174,7 @@ stages:
                Write-Host "destPath1 is: $destPath1"
                if (! (Test-Path $destPath1))
                {
-                 $null = New-Item -Path $destPath1 -ItemType Directory -Verbose
+                 $null = New-Item -Path $destPath1 -ItemType Directory -Force -Verbose
                }
                
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
@@ -193,7 +193,7 @@ stages:
                $destPath2 = "$signOutPath/PackageManagement/DSCResources"
                if (! (Test-Path $destPath2))
                {
-                 $null = New-Item -Path $destPath2 -ItemType Directory -Verbose
+                 $null = New-Item -Path $destPath2 -ItemType Directory -Force -Verbose
                }
                
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
@@ -212,7 +212,7 @@ stages:
                $destPath3 = "$signOutPath/PackageManagement/DSCResources/MSFT_PackageManagement"
                if (! (Test-Path $destPath3))
                {
-                 $null = New-Item -Path $destPath3 -ItemType Directory -Verbose
+                 $null = New-Item -Path $destPath3 -ItemType Directory -Force -Verbose
                }
               
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
@@ -231,7 +231,7 @@ stages:
                $destPath4 = "$signOutPath/PackageManagement/DSCResources/MSFT_PackageManagementSource"
                if (! (Test-Path $destPath4))
                {
-                 $null = New-Item -Path "$destPath4" -ItemType Directory -Verbose
+                 $null = New-Item -Path  $destPath4 -ItemType Directory -Force -Verbose
                }
                
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
@@ -250,7 +250,7 @@ stages:
                $destPath5 = "$signOutPath/PackageManagement/fullclr"
                if (!(Test-Path $destPath5))
                {
-                 $null = New-Item -Path "$destPath5" -ItemType Directory -Verbose
+                 $null = New-Item -Path $destPath5 -ItemType Directory -Force -Verbose
                }
                
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
