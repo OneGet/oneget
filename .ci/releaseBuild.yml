@@ -21,7 +21,7 @@ resources:
     type: github
     endpoint: ComplianceGHRepo
     name: PowerShell/compliance
-    ref: strongNameParam
+    ref: master
 
 stages:
 - stage: Build
