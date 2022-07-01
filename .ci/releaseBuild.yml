@@ -179,7 +179,7 @@ stages:
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                  # Copy already signed files directly to output
-                 Copy-Item -Path $_.FullName -Dest ($destPath + $_.Name) -Force -Verbose 
+                 Copy-Item -Path $_.FullName -Dest "$destPath/$($_.Name)" -Force -Verbose 
                }
                else {
                  Write-Host "Could not copy: $_"
@@ -198,7 +198,7 @@ stages:
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                  # Copy already signed files directly to output
-                 Copy-Item -Path $_.FullName -Dest ($destPath + $_.Name) -Force -Verbose 
+                 Copy-Item -Path $_.FullName -Dest "$destPath/$($_.Name)" -Force -Verbose 
                }
                else {
                  Write-Host "Could not copy: $_"
@@ -217,7 +217,7 @@ stages:
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                  # Copy already signed files directly to output
-                 Copy-Item -Path $_.FullName -Dest ($destPath + $_.Name) -Force -Verbose 
+                 Copy-Item -Path $_.FullName -Dest "$destPath/$($_.Name)" -Force -Verbose 
                }
                else {
                  Write-Host "Could not copy: $_"
@@ -236,7 +236,7 @@ stages:
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                  # Copy already signed files directly to output
-                 Copy-Item -Path $_.FullName -Dest ($destPath + $_.Name) -Force -Verbose 
+                 Copy-Item -Path $_.FullName -Dest "$destPath/$($_.Name)" -Force -Verbose 
                }
                else {
                  Write-Host "Could not copy: $_"
@@ -255,7 +255,7 @@ stages:
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                  # Copy already signed files directly to output
-                 Copy-Item -Path $_.FullName -Dest ($destPath + $_.Name) -Force -Verbose 
+                 Copy-Item -Path $_.FullName -Dest "$destPath/$($_.Name)" -Force -Verbose 
                }
                else {
                 Write-Host "Could not copy: $_"
