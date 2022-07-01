@@ -173,7 +173,7 @@ stages:
                $destPath1 = "$signOutPath/PackageManagement/coreclr/netstandard2.0"
                if (! (Test-Path $destPath1))
                {
-                 New-Item -Path $destPath1 -ItemType "Directory"
+                 $null = New-Item -Path $destPath1 -ItemType Directory -Verbose
                }
                
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
@@ -192,7 +192,7 @@ stages:
                $destPath2 = "$signOutPath/PackageManagement/DSCResources"
                if (! (Test-Path $destPath2))
                {
-                 New-Item -Path $destPath2 -ItemType "Directory"
+                 $null = New-Item -Path $destPath2 -ItemType Directory -Verbose
                }
                
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
@@ -211,7 +211,7 @@ stages:
                $destPath3 = "$signOutPath/PackageManagement/DSCResources/MSFT_PackageManagement"
                if (! (Test-Path $destPath3))
                {
-                 New-Item -Path $destPath3 -ItemType "Directory"
+                 $null = New-Item -Path $destPath3 -ItemType Directory -Verbose
                }
               
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
@@ -230,7 +230,7 @@ stages:
                $destPath4 = "$signOutPath/PackageManagement/DSCResources/MSFT_PackageManagementSource"
                if (! (Test-Path $destPath4))
                {
-                 New-Item -Path "$destPath4" -ItemType "Directory"
+                 $null = New-Item -Path "$destPath4" -ItemType Directory -Verbose
                }
                
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
@@ -249,7 +249,7 @@ stages:
                $destPath5 = "$signOutPath/PackageManagement/fullclr"
                if (!(Test-Path $destPath5))
                {
-                 New-Item -Path "$destPath5" -ItemType "Directory"
+                 $null = New-Item -Path "$destPath5" -ItemType Directory -Verbose
                }
                
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
