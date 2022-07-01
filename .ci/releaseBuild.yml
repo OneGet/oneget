@@ -160,7 +160,7 @@ stages:
                $sig = Get-AuthenticodeSignature -FilePath $_.FullName
                if ($sig.Status -eq 'Valid' -and ($sig.SignerCertificate.Subject -like '*Microsoft*' -and $sig.SignerCertificate.Issuer -like '*Microsoft Code Signing PCA*')) {
                  # Copy already signed files directly to output
-                 Copy-Item -Path $_.FullName -Dest ("$signOutPath/PackageManagement/" + $_.Name) -Force -Verbose 
+                 Copy-Item -Path $_.FullName -Dest $signOutPath -Force -Verbose 
                }
                else {
                  Write-Host "Could not copy: $_"
