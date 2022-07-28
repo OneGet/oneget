@@ -1,5 +1,4 @@
 parameters:
-  jobName: release
   displayName: 'Release PowerShellGet to PSGallery'
 
 jobs:
