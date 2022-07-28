@@ -1,4 +1,13 @@
 name: $(BuildDefinitionName)-$(date:yyMM).$(date:dd)$(rev:rrr)
+- task: DownloadBuildArtifacts@1
+  inputs:
+    buildType: 'specific'
+    project: 'ee8e8642-4962-4561-8903-18dd0ed7a306'
+    pipeline: '60'
+    buildVersionToDownload: 'latest'
+    downloadType: 'specific'
+    itemPattern: '**nupkg'
+    downloadPath: '$(System.ArtifactsDirectory)'
 trigger: none
 pr: none
 
