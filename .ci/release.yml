@@ -19,7 +19,7 @@ jobs:
       pipeline: '60'
       buildVersionToDownload: 'latest'
       downloadType: 'specific'
-      itemPattern: 'PackageManagement/*.nupkg'
+      itemPattern: 'PackageManagement/nupkg/*.nupkg'
       downloadPath: '$(Pipeline.Workspace)/nuget'
 
   - powershell: |
@@ -28,6 +28,7 @@ jobs:
       $vstsCommandString = "vso[task.setvariable variable=NugetPkgPath]${package}"
       Write-Host "sending " + $vstsCommandString
       Write-Host "##$vstsCommandString"
+      Write-Host "$package"
     displayName: 'Capture PackageManagement module NuGet package path and set environment variable'
 
   - task: NuGetCommand@2
