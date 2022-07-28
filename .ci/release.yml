@@ -19,7 +19,7 @@ jobs:
       pipeline: '60'
       buildVersionToDownload: 'latest'
       downloadType: 'specific'
-      itemPattern: '**nupkg\*.nupkg'
+      itemPattern: '**.nupkg'
       downloadPath: '$(Pipeline.Workspace)/nuget'
 
   - powershell: |
