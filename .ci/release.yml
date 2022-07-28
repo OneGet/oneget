@@ -23,7 +23,7 @@ jobs:
       downloadPath: '$(Pipeline.Workspace)/nuget'
 
   - powershell: |
-      $package = (Get-ChildItem '$(Pipeline.Workspace)/nuget/PackageManagement.*.nupkg').FullName
+      $package = (Get-ChildItem '$(Pipeline.Workspace)/nuget/PackageManagement/nupkg/PackageManagement.*.nupkg').FullName
       $package
       gci $(Pipeline.Workspace) -recurse -force
       $vstsCommandString = "vso[task.setvariable variable=NugetPkgPath]${package}"
