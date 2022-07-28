@@ -12,14 +12,15 @@ jobs:
 
   steps:
   - task: DownloadBuildArtifacts@1
-  inputs:
-    buildType: 'specific'
-    project: 'ee8e8642-4962-4561-8903-18dd0ed7a306'
-    pipeline: '60'
-    buildVersionToDownload: 'latest'
-    downloadType: 'specific'
-    itemPattern: '**nupkg\*.nupkg'
-    downloadPath: '$(System.ArtifactsDirectory)'
+    displayName: 'Download PackageManagement from build pipeline'
+    inputs:
+      buildType: 'specific'
+      project: 'ee8e8642-4962-4561-8903-18dd0ed7a306'
+      pipeline: '60'
+      buildVersionToDownload: 'latest'
+      downloadType: 'specific'
+      itemPattern: '**nupkg\*.nupkg'
+      downloadPath: '$(Pipeline.Workspace)/nuget'
 
   - powershell: |
       $package = (Get-ChildItem '$(Pipeline.Workspace)/nuget/PackageManagement.*.nupkg').FullName
