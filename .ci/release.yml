@@ -19,7 +19,7 @@ jobs:
       pipeline: '60'
       buildVersionToDownload: 'latest'
       downloadType: 'specific'
-      itemPattern: 'PackageManagement/PackageManagement.1.4.8.1.nupkg'
+      itemPattern: 'PackageManagement/*.nupkg'
       downloadPath: '$(Pipeline.Workspace)/nuget'
 
   - powershell: |
