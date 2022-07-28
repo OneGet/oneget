@@ -25,6 +25,7 @@ jobs:
   - powershell: |
       $package = (Get-ChildItem '$(Pipeline.Workspace)/nuget/PackageManagement.*.nupkg').FullName
       $package
+      gci $(Pipeline.Workspace) -recurse -force
       $vstsCommandString = "vso[task.setvariable variable=NugetPkgPath]${package}"
       Write-Host "sending " + $vstsCommandString
       Write-Host "##$vstsCommandString"
