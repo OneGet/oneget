@@ -38,4 +38,4 @@ jobs:
       command: push
       packagesToPush: '$(NugetPkgPath)'
       nuGetFeedType: external
-      publishFeedCredentials: powershell-7.3.0-preview.2
+      publishFeedCredentials: PSInternalFeed
