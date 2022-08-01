@@ -38,4 +38,4 @@ jobs:
       command: push
       packagesToPush: '$(NugetPkgPath)'
       nuGetFeedType: external
-      publishFeedCredentials: PSInternalFeed
+      publishFeedCredentials: PSReleaseInternalFeed
