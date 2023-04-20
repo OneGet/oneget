@@ -2,6 +2,8 @@
 
 This module is currently not in development. We are no longer accepting any pull requests to this repository. OneGet is in a stable state and is expected to recieve only high-priority bug fixes from Microsoft in the future.
 
+Alternatively, we would suggest looking at the community [AnyPackage](https://github.com/anypackage/anypackage) project as an actively developed replacement for OneGet.
+
 If you have a question, or are seeing an unexpected behavior from this module please open up an issue in this repository.
 
 The PowerShell/PowerShellGet repository is actively in development as the new PowerShell package manager.
