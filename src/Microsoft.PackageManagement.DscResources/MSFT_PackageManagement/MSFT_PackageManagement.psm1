@@ -98,15 +98,8 @@ function Get-TargetResource
     $null = $PSBoundParameters.Remove("Source")
     $null = $PSBoundParameters.Remove("SourceCredential")
 
-    if ($AdditionalParameters)
-    {
-         foreach($instance in $AdditionalParameters)
-         {
-             Write-Verbose ('AdditionalParameter: {0}, AdditionalParameterValue: {1}' -f $instance.Key, $instance.Value)
-             $null = $PSBoundParameters.Add($instance.Key, $instance.Value)
-         }
-    }
-    $null = $PSBoundParameters.Remove("AdditionalParameters")
+    Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters -IntendedCommand 'PackageManagement\Get-Package'
+    $PSBoundParameters.Remove("AdditionalParameters")
     
     $verboseMessage =$localizedData.StartGetPackage -f (GetMessageFromParameterDictionary $PSBoundParameters),$env:PSModulePath
     Write-Verbose -Message $verboseMessage
@@ -350,17 +343,6 @@ function Set-TargetResource
         $PSBoundParameters.Add("Credential", $SourceCredential)
         $null = $PSBoundParameters.Remove("SourceCredential")
     }
-    
-    if ($AdditionalParameters)
-    {
-         foreach($instance in $AdditionalParameters)
-         {
-             Write-Verbose ('AdditionalParameter: {0}, AdditionalParameterValue: {1}' -f $instance.Key, $instance.Value)
-             $null = $PSBoundParameters.Add($instance.Key, $instance.Value)
-         }
-    }
-
-    $PSBoundParameters.Remove("AdditionalParameters")
 
        
         # We do not want others to control the behavior of ErrorAction
@@ -368,10 +350,14 @@ function Set-TargetResource
         $PSBoundParameters.Remove("ErrorAction")
         if ($Ensure -eq "Present")
         {
+            Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters -IntendedCommand 'PackageManagement\Install-Package'
+            $PSBoundParameters.Remove("AdditionalParameters")
             PackageManagement\Install-Package @PSBoundParameters -ErrorAction Stop
         }   
         else
         {
+            Add-AdditionalParameters -ParametersDictionary $PSBoundParameters -AdditionalParameters $AdditionalParameters -IntendedCommand 'PackageManagement\Uninstall-Package'
+            $PSBoundParameters.Remove("AdditionalParameters")
             # we dont source location for uninstalling an already
             # installed package
             $PSBoundParameters.Remove("Source")
@@ -392,6 +378,101 @@ function Set-TargetResource
     $paramDictionary.Keys | ForEach-Object { $returnValue += "-{0} {1} " -f $_,$paramDictionary[$_] }
     return $returnValue
  }
+
+function Add-AdditionalParameters
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [System.Collections.IDictionary]
+        $ParametersDictionary,
+
+        [Parameter()]
+        [Microsoft.Management.Infrastructure.CimInstance[]]
+        $AdditionalParameters,
+
+        [Parameter(Mandatory = $true)]
+        [string]
+        $IntendedCommand
+    )
+
+    if ($AdditionalParameters)
+    {
+        $providerName = $ParametersDictionary['ProviderName']
+        if ([string]::IsNullOrEmpty($providerName))
+        {
+            Write-Warning 'Please specify ProviderName when using AdditionalParameters, otherwise they may not work correctly.'
+        }
+        else
+        {
+            # trigger import of the provider, so that Get-Command exposes its dynamic parameters
+            Get-PackageProvider -Name $providerName | Out-Null
+        }
+
+        $cmd = Get-Command -Name $IntendedCommand
+        $skipUndeclaredParameters = $false
+        if ($cmd.Verb -eq 'Get')
+        {
+            $skipUndeclaredParameters = $true
+        }
+
+        $cmdProviderParameterSet = $null
+        if (-not [string]::IsNullOrEmpty($providerName))
+        {
+            $cmdProviderParameterSet = $cmd.ParameterSets `
+                | Where-Object { $_.Name -match "^${providerName}(\:PackageBySearch)?$" } `
+                | Sort-Object -Property @{ Expression = { $_.Name.Length }; Descending = $true } `
+                | Select-Object -First 1
+        }
+
+        if ($null -eq $cmdProviderParameterSet)
+        {
+            $cmdParametersSource = 'Parameters collection'
+            Write-Debug 'Using the flat list of command parameters'
+            $cmdParametersLookup = $cmd.Parameters
+        }
+        else
+        {
+            $cmdParametersSource = 'parameter set ''{0}''' -f $cmdProviderParameterSet.Name
+            Write-Debug ('Using the provider-specific command {0}' -f $cmdParametersSource)
+            $cmdParametersLookup = @{}
+            $cmdProviderParameterSet.Parameters | ForEach-Object { $cmdParametersLookup[$_.Name] = $_ }
+        }
+
+        foreach($instance in $AdditionalParameters)
+        {
+            Write-Verbose ('AdditionalParameter: {0}, value: {1}' -f $instance.Key, $instance.Value)
+            $key = $instance.Key
+            $value = $instance.Value
+            $paramMetadata = $cmdParametersLookup[$key]
+            if ($null -ne $paramMetadata)
+            {
+                $parameterType = $paramMetadata.ParameterType
+                Write-Debug ('AdditionalParameter: {0} is typed as {1} according to the metadata of command {2} ({3})' -f $key, $parameterType, $IntendedCommand, $cmdParametersSource)
+                if ($parameterType -eq [switch] -or $parameterType -eq [bool])
+                {
+                    Write-Debug ('Parsing AdditionalParameter ''{0}''  value ''{1}'' as bool' -f $key, $value)
+                    $value = [bool]::Parse($value)
+                }
+            }
+            else
+            {
+                if ($skipUndeclaredParameters)
+                {
+                    Write-Verbose ('AdditionalParameter ''{0}'' is not present in the metadata of command {1} ({2}). This probably means that the provider does not support that parameter. Skipping the parameter.' -f $key, $IntendedCommand, $cmdParametersSource)
+                    continue
+                }
+                else
+                {
+                    Write-Warning ('AdditionalParameter ''{0}'' is not present in the metadata of command {1} ({2}). This probably means that the provider does not support that parameter.' -f $key, $IntendedCommand, $cmdParametersSource)
+                }
+            }
+
+            $null = $ParametersDictionary.Add($key, $value)
+        }
+    }
+}
 
 Export-ModuleMember -function Get-TargetResource, Set-TargetResource, Test-TargetResource
 
