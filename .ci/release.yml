@@ -11,20 +11,25 @@ jobs:
   displayName: ${{ parameters.displayName }}
 
   steps:
-  
-  - task: DownloadPipelineArtifact@2
-    displayName: 'Download PackageManagement module artifacts'
+  - task: DownloadBuildArtifacts@1
+    displayName: 'Download PackageManagement from build pipeline'
     inputs:
-      artifact: nupkg
-      patterns: '**/*.nupkg'
+      buildType: 'specific'
+      project: 'ee8e8642-4962-4561-8903-18dd0ed7a306'
+      pipeline: '60'
+      buildVersionToDownload: 'latest'
+      downloadType: 'specific'
+      itemPattern: 'PackageManagement/nupkg/*.nupkg'
       downloadPath: '$(Pipeline.Workspace)/nuget'
 
   - powershell: |
-      $package = (Get-ChildItem '$(Pipeline.Workspace)/nuget/PackageManagement.*.nupkg').FullName
+      $package = (Get-ChildItem '$(Pipeline.Workspace)/nuget/PackageManagement/nupkg/PackageManagement.*.nupkg').FullName
       $package
+      gci $(Pipeline.Workspace) -recurse -force
       $vstsCommandString = "vso[task.setvariable variable=NugetPkgPath]${package}"
       Write-Host "sending " + $vstsCommandString
       Write-Host "##$vstsCommandString"
+      Write-Host "$package"
     displayName: 'Capture PackageManagement module NuGet package path and set environment variable'
 
   - task: NuGetCommand@2
@@ -33,4 +38,4 @@ jobs:
       command: push
       packagesToPush: '$(NugetPkgPath)'
       nuGetFeedType: external
-      publishFeedCredentials: PSGalleryPush
+      publishFeedCredentials: PSReleaseFeed
