@@ -1,0 +1,169 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFile).local" Condition="Exists('$(MSBuildThisFile).local')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F2133AC2-39DD-4321-A3B1-8BDBCDFF743E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.PowerShell.PackageManagement</RootNamespace>
+    <AssemblyName>Microsoft.PowerShell.PackageManagement</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), PackageManagement.sln))\</SolutionDir>
+    <SolutionPath Condition="$(SolutionPath) == '' Or $(SolutionPath) == '*Undefined*'">$(SolutionDir)\PackageManagement.sln</SolutionPath>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\../signing/35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DelaySign>true</DelaySign>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), solution.props))\solution.props')" />
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\WindowsPowerShell\3.0\System.Management.Automation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\AsyncCmdLet.cs">
+      <Link>Cmdlets\AsyncCmdLet.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\CmdletWithProvider.cs">
+      <Link>Cmdlets\CmdletWithProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\CmdletWithSearch.cs">
+      <Link>Cmdlets\CmdletWithSearch.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\CmdletWithSource.cs">
+      <Link>Cmdlets\CmdletWithSource.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\FindPackageProvider.cs">
+      <Link>Cmdlets\FindPackageProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\ImportPackageProvider.cs">
+      <Link>Cmdlets\ImportPackageProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\InstallPackageProvider.cs">
+      <Link>Cmdlets\InstallPackageProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\RegisterPackageSource.cs">
+      <Link>Cmdlets\RegisterPackageSource.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\SavePackage.cs">
+      <Link>Cmdlets\SavePackage.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\SetPackageSource.cs">
+      <Link>Cmdlets\SetPackageSource.cs</Link>
+    </Compile>
+    <Compile Include="..\Resources\Messages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Messages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="..\Utility\ErrorMessage.cs">
+      <Link>Utility\ErrorMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\Utility\HostApiExtensions.cs">
+      <Link>Utility\HostApiExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Utility\ProgressTracker.cs">
+      <Link>Utility\ProgressTracker.cs</Link>
+    </Compile>
+    <Compile Include="..\Constants.cs" />
+    <Compile Include="..\Utility\CustomRuntimeDefinedParameter.cs">
+      <Link>Utility\CustomRuntimeDefinedParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\CmdletWithSearchAndSource.cs">
+      <Link>Cmdlets\CmdletWithSearchAndSource.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\FindPackage.cs">
+      <Link>Cmdlets\FindPackage.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\GetPackage.cs">
+      <Link>Cmdlets\GetPackage.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\GetPackageProvider.cs">
+      <Link>Cmdlets\GetPackageProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\GetPackageSource.cs">
+      <Link>Cmdlets\GetPackageSource.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\InstallPackage.cs">
+      <Link>Cmdlets\InstallPackage.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\UnregisterPackageSource.cs">
+      <Link>Cmdlets\UnregisterPackageSource.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\UninstallPackage.cs">
+      <Link>Cmdlets\UninstallPackage.cs</Link>
+    </Compile>
+    <Compile Include="..\Cmdlets\CmdletBase.cs">
+      <Link>Cmdlets\CmdletBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Utility\WebProxy.cs">
+      <Link>Utility\WebProxy.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\Resources\Messages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Microsoft.PackageManagement\vs-csproj\PackageManagement.csproj">
+      <Project>{7044b856-6d51-498f-90f9-01f219909f79}</Project>
+      <Name>PackageManagement</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\PackageManagement.format.ps1xml" />
+    <None Include="..\PackageManagement.psd1" />
+    <None Include="..\PackageProviderFunctions.psm1" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="BeforeBuild">
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

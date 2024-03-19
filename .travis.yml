@@ -1,0 +1,41 @@
+
+language: cpp
+
+git:
+  depth: 1000
+
+os:
+  - linux
+  - osx
+sudo: required
+dist: trusty
+osx_image: xcode9.4
+env:
+    - api=v2
+    - api=v3
+
+matrix:
+  allow_failures:
+    - os: osx
+  fast_finish: true
+
+install:
+  - export PATH=~/.dotnet:$PATH
+  - pushd tools
+  - chmod +x download.sh
+  - chmod +x travis.sh
+  - ./download.sh
+  - popd
+
+script: 
+  - ./tools/travis.sh $api
+
+
+
+
+
+
+
+
+
+

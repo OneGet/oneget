@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ 
+  <PropertyGroup>
+    <PSVersion>$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine@PowerShellVersion)</PSVersion>
+    <!-- 
+        If you have PowerShell 5.0 or greater installed, you must compile this with .NET 4.5 or higher
+        otherwise, we'll assume .Net 4.0 for the assemblies.
+    -->
+    <TargetFrameworkVersion Condition="($(PSVersion.Substring(0,1)) &gt; 4) AND ($(TargetFrameworkVersion) == '' Or $(TargetFrameworkVersion) == '*Undefined*')">v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition="($(PSVersion.Substring(0,1)) &lt; 5) AND ($(TargetFrameworkVersion) == '' Or $(TargetFrameworkVersion) == '*Undefined*')">v4.0</TargetFrameworkVersion>
+      
+    <Prefer32Bit>false</Prefer32Bit>
+    <NoWarn>1591,3002,3003,3008,3009</NoWarn>
+    <RestorePackages>true</RestorePackages>
+    <DefineConstants>FRAMEWORK$(TargetFrameworkVersion.Replace(".",""))</DefineConstants>
+    <OutputRelativePath>output\$(Configuration)\bin\</OutputRelativePath>
+
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">$(MSBuildThisFileDirectory)</SolutionDir>
+
+    <OutputPath>$(SolutionDir)output\$(Configuration)\bin\</OutputPath> 
+    <BaseIntermediateOutputPath>$(SolutionDir)intermediate\$(Configuration)\$(AssemblyName)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath> 
+    <DocumentationFile>$(OutputPath)$(AssemblyName).XML</DocumentationFile> 
+    <SET_MT_EXE>for /f "delims=" %25%25a in ('powershell "$p = ((Get-ItemProperty -Path HKCU:\Software\PackageManagement\tools\MT.EXE -Name Path -ea 0).Path) ;  if( -not $p ) { $p = ((dir ${env:ProgramFiles(x86)} -recurse -ea 0|  where -property name -eq mt.exe | select -first 1 ).FullName) ;    $null = mkdir -Path HKCU:\Software\PackageManagement\tools\MT.EXE -Force ;    $null = New-ItemProperty -Path HKCU:\Software\PackageManagement\tools\MT.EXE -Name Path -Value $p -force } ; $p"') do @set MTEXE=%25%25a</SET_MT_EXE>
+  </PropertyGroup>
+</Project> 
