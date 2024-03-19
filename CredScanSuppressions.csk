@@ -1,0 +1,9 @@
+{
+    "tool": "Credential Scanner",
+    "suppressions": [
+      {
+        "file": "Test/ModuleTests/tests/nuget.tests.ps1",
+        "_justification": "Auto generated fake key"
+      }
+    ]
+  }
