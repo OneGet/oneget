@@ -135,6 +135,11 @@ extends:
         #    ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
 
         - pwsh: |
+            Write-Host "Get-ChildItem Build.SourcesDirectory:"
+            Get-ChildItem $(Build.SourcesDirectory) -Recurse
+          displayName: Get-ChildItem Build.SourcesDirectory
+
+        - pwsh: |
             Set-Location $(Build.SourcesDirectory)
             .\bootstrap.ps1
             .\build.ps1 net452
