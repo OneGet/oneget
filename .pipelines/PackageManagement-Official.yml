@@ -71,6 +71,8 @@ extends:
           value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
         - name: repoRoot
           value: $(Build.SourcesDirectory)\PackageManagement
+        - name: srcPath
+          value: $(repoRoot)\src
         - name: ob_sdl_tsa_configFile
           value: $(Build.SourcesDirectory)\PackageManagement\.config\tsaoptions.json
         - name: signSrcPath
@@ -140,7 +142,7 @@ extends:
           displayName: Get-ChildItem Build.SourcesDirectory
 
         - pwsh: |
-            Set-Location $(Build.SourcesDirectory)
+            Set-Location $(srcPath)
             .\bootstrap.ps1
             .\build.ps1 net452
             .\build.ps1 netstandard2.0
