@@ -148,7 +148,6 @@ extends:
 
         - pwsh: |
             Set-Location $(srcPath)
-            .\bootstrap.ps1
             .\build.ps1 net472
             .\build.ps1 netstandard2.0
             Get-ChildItem ./ -Recurse | Write-Host
