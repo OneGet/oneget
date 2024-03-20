@@ -3,11 +3,15 @@
     "suppressions": [
       {
         "file": "/Test/ModuleTests/tests/install-packageprovider.tests.ps1",
-        "_justification": "Auto generated fake key"
+        "_justification": "Fake password"
       },
       {
         "file": "Test/ModuleTests/tests/nuget.tests.ps1",
         "_justification": "Auto generated fake key"
+      },
+      {
+        "file": "Test/ModuleTests/scripts/notes.txt",
+        "_justification": "Fake password"
       }
     ]
   }
