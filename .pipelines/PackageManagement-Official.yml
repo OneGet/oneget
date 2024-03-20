@@ -108,16 +108,16 @@ extends:
           env:
             ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
 
-        - task: UseDotNet@2
-          displayName: 'Install .NET dependencies'
-          env:
-            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
-          inputs:
-            packageType: 'sdk'
-            useGlobalJson: true
-            # this is to ensure that we are installing the dotnet at the same location as container by default install the dotnet sdks
-            installationPath: 'C:\Program Files\dotnet\'
-            workingDirectory: $(repoRoot)
+        #- task: UseDotNet@2
+        #  displayName: 'Install .NET dependencies'
+        #  env:
+        #    ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
+        #  inputs:
+        #    packageType: 'sdk'
+        #    useGlobalJson: true
+        #    # this is to ensure that we are installing the dotnet at the same location as container by default install the dotnet sdks
+        #    installationPath: 'C:\Program Files\dotnet\'
+        #    workingDirectory: $(repoRoot)
 
         - task: CodeQL3000Init@0 # Add CodeQL Init task right before your 'Build' step.
           env:
