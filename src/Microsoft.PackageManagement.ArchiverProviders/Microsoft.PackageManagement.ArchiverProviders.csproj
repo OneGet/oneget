@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.PackageManagement.ArchiverProviders</AssemblyName>
@@ -24,7 +24,7 @@
   </ItemGroup>
 
   
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Runtime" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
@@ -45,7 +45,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Compile Remove="Resources\Messages.resx" />
   </ItemGroup>
 
