@@ -178,7 +178,6 @@ extends:
             SourceFolder: "$(signSrcPath)"
             Contents: '**'
             TargetFolder: $(ob_outputDirectory)
-####################################
 
         - pwsh: |
             Write-Host "-------------------------Displaying contents of signSrcPath:---------------------------------------"
@@ -189,14 +188,14 @@ extends:
 
       - job: nupkg
         dependsOn: jobbuild
-        displayName: Package Microsoft.PowerShell.PSResourceGet
+        displayName: Package Microsoft.PowerShell.PackageManagement
         variables:
           - name: ob_outputDirectory
             value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
           - name: repoRoot
-            value: $(Build.SourcesDirectory)\PSResourceGet
+            value: $(Build.SourcesDirectory)\PackageManagement
           - name: ob_sdl_tsa_configFile
-            value: $(Build.SourcesDirectory)\PSResourceGet\.config\tsaoptions.json
+            value: $(Build.SourcesDirectory)\PackageManagement\.config\tsaoptions.json
          # Disable because SBOM was already built in the previous job
           - name: ob_sdl_sbom_enabled
             value: false
@@ -230,7 +229,7 @@ extends:
             Write-Host "Contents of signOutPath:"
             Get-ChildItem $(signOutPath) -Recurse
           displayName: Capture artifacts directory structure
-
+############################################
         - pwsh: |
             $module = 'Microsoft.PowerShell.PSResourceGet'
             Write-Verbose "installing $module..." -verbose
@@ -262,7 +261,7 @@ extends:
         - task: CopyFiles@2
           displayName: "Copy nupkg to ob_outputDirectory - '$(ob_outputDirectory)'"
           inputs:
-            Contents: $(signOutPath)\PublishedNupkg\Microsoft.PowerShell.PSResourceGet.*.nupkg
+            Contents: $(signOutPath)\PublishedNupkg\Microsoft.PowerShell.PackageManagement.*.nupkg
             TargetFolder: $(ob_outputDirectory)
         
         - pwsh: |
@@ -271,7 +270,7 @@ extends:
           displayName: Find Signed Nupkg
 
     - stage: release
-      displayName: Release PSResourceGet
+      displayName: Release PackageManagement
       dependsOn: stagebuild
       variables:
         version: $[ stageDependencies.build.main.outputs['package.version'] ]
