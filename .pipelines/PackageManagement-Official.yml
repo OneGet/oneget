@@ -97,6 +97,7 @@ extends:
         - task: NuGetAuthenticate@1
           inputs:
             nuGetServiceConnections: 'PkgMgmtFeedConnectionObj'
+            forceReinstallCredentialProvider: true
 
         - pwsh: |
             if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
