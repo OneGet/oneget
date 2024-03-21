@@ -145,8 +145,8 @@ foreach ($currentFramework in $frameworks)
 			} else {
 				$env:EMBEDPROVIDERMANIFEST = ''
 			}
-            Write-Host "Restoring package for $assemblyName"
-            dotnet restore
+            #Write-Host "Restoring package for $assemblyName"
+            #dotnet restore
             Write-Host "Building $assemblyName for $currentFramework"
             dotnet build --framework $currentFramework --configuration $Configuration
             Write-Host "Publishing $assemblyName for $currentFramework"
