@@ -139,7 +139,6 @@ foreach ($currentFramework in $frameworks)
             Write-Host "Generating resources file for $assemblyName"
             .\New-StronglyTypedCsFileForResx.ps1 -Project $assemblyName
             Push-Location $assemblyName
-            Write-Host "Restoring package for $assemblyName"
 			if ($EmbedProviderManifest) {
 				$env:EMBEDPROVIDERMANIFEST = 'true'
 			} else {
@@ -147,8 +146,8 @@ foreach ($currentFramework in $frameworks)
 			}
             #Write-Host "Restoring package for $assemblyName"
             #dotnet restore
-            Write-Host "Building $assemblyName for $currentFramework"
-            dotnet build --framework $currentFramework --configuration $Configuration
+            #Write-Host "Building $assemblyName for $currentFramework"
+            #dotnet build --framework $currentFramework --configuration $Configuration
             Write-Host "Publishing $assemblyName for $currentFramework"
             dotnet publish --framework $currentFramework --configuration $Configuration
             Write-Host "Completed restoring, building, and publishing"
