@@ -150,18 +150,16 @@ extends:
         - pwsh: |
             Set-Location $(srcPath)
             .\build.ps1 net472
-            Get-ChildItem ./ -Recurse | Write-Host
           displayName: Build and publish artifact
-
-
-###########################
-
-
 
         - task: CodeQL3000Finalize@0 # Add CodeQL Finalize task right after your 'Build' step.
           condition: always()
           env:
             ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
+
+        - pwsh: |
+            Get-ChildItem ./ -Recurse | Write-Host
+          displayName: List all files in current directory
 
         - task: onebranch.pipeline.signing@1
           displayName: Sign 1st party files
@@ -171,36 +169,19 @@ extends:
             files_to_sign: '**\*.psd1;**\*.psm1;**\*.ps1xml;**\Microsoft*.dll'
             search_root: $(signSrcPath)
 
-        - task: onebranch.pipeline.signing@1
-          displayName: Sign 3rd Party files
-          inputs:
-            command: 'sign'
-            signing_profile: 135020002
-            files_to_sign: '**/Dependencies/*.dll'
-            search_root: $(signSrcPath)
-
         - task: CopyFiles@2
           displayName: "Copy signed files to ob_outputDirectory - '$(ob_outputDirectory)'"
           inputs:
             SourceFolder: "$(signSrcPath)"
             Contents: '**'
             TargetFolder: $(ob_outputDirectory)
-
+####################################
         - pwsh: |
-            Write-Host "Displaying contents of signSrcPath:"
+            Write-Host "-------------------------Displaying contents of signSrcPath:---------------------------------------"
             Get-ChildItem $(signSrcPath) -Recurse
-            Write-Host "Displaying contents of ob_outputDirectory:"
+            Write-Host "--------------------------Displaying contents of ob_outputDirectory:---------------------------------"
             Get-ChildItem $(ob_outputDirectory) -Recurse
           displayName: Get contents of dirs with signed files
-
-       # - pwsh: |
-       #     $moduleData = Import-PowerShellDataFile "$(repoRoot)/src/Microsoft.PowerShell.PSResourceGet.psd1"  
-       #     $moduleVersion = $moduleData.ModuleVersion
-       #     $vstsCommandString = "vso[task.setvariable variable=ob_sdl_sbom_packageversion]${moduleVersion}"
-
-       #     Write-Host "sending $vstsCommandString"
-       #     Write-Host "##$vstsCommandString"
-       #   displayName: Setup SBOM Package Version
 
       - job: nupkg
         dependsOn: jobbuild
@@ -222,7 +203,6 @@ extends:
          # This job is not compiling code, so disable codeQL
           - name: ob_sdl_codeql_compiled_enabled
             value: false
-
         pool:
           type: windows
         steps:
@@ -255,12 +235,12 @@ extends:
           displayName: Install PSResourceGet 0.9.0 or above for build.psm1
 
         - pwsh: |
-            Set-Location "$(signOutPath)\Microsoft.PowerShell.PSResourceGet"
+            Set-Location "$(signOutPath)\PackageManagement"
             New-Item -ItemType Directory -Path "$(signOutPath)\PublishedNupkg" -Force
             Register-PSResourceRepository -Name 'localRepo' -Uri "$(signOutPath)\PublishedNupkg"
-            Publish-PSResource -Path "$(signOutPath)\Microsoft.PowerShell.PSResourceGet" -Repository 'localRepo' -Verbose
+            Publish-PSResource -Path "$(signOutPath)\PackageManagement" -Repository 'localRepo' -Verbose
           displayName: Create nupkg for publishing
-
+############################################
         - task: onebranch.pipeline.signing@1
           displayName: Sign nupkg
           inputs:
