@@ -73,10 +73,10 @@ extends:
           value: $(Build.SourcesDirectory)\PackageManagement
         - name: srcPath
           value: $(repoRoot)\src
+        - name: signSrcPath
+          value: $(srcPath)/out
         - name: ob_sdl_tsa_configFile
           value: $(Build.SourcesDirectory)\PackageManagement\.config\tsaoptions.json
-        - name: signSrcPath
-          value: $(repoRoot)/out
         - name: ob_sdl_sbom_enabled
           value: true
         - name: ob_signing_setup_enabled
@@ -133,15 +133,6 @@ extends:
             AnalyzeInPipeline: true
             Language: csharp
 
-        #- pwsh: |
-        #    $module = 'Microsoft.PowerShell.PSResourceGet'
-        #    Write-Verbose "installing $module..." -verbose
-        #    $ProgressPreference = 'SilentlyContinue'
-        #    Install-Module $module -AllowClobber -Force
-        #  displayName: Install PSResourceGet 0.9.0 or above for build.psm1
-        #  env:
-        #    ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
-
         - pwsh: |
             Write-Host "Get-ChildItem Build.SourcesDirectory:"
             Get-ChildItem $(Build.SourcesDirectory) -Recurse
@@ -160,6 +151,10 @@ extends:
         - pwsh: |
             Get-ChildItem ./ -Recurse | Write-Host
           displayName: List all files in current directory
+
+        - pwsh: |
+            Get-ChildItem $(signSrcPath) -Recurse
+          displayName: List all files in signSrcPath
 
         - task: onebranch.pipeline.signing@1
           displayName: Sign 1st party files
