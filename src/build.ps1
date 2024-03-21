@@ -148,6 +148,8 @@ foreach ($currentFramework in $frameworks)
             #dotnet restore
             #Write-Host "Building $assemblyName for $currentFramework"
             #dotnet build --framework $currentFramework --configuration $Configuration
+            Write-Host "Clean package"
+            dotnet clean 
             Write-Host "Publishing $assemblyName for $currentFramework"
             dotnet publish --framework $currentFramework --configuration $Configuration
             Write-Host "Completed restoring, building, and publishing"
