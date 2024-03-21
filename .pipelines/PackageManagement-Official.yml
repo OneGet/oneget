@@ -157,7 +157,7 @@ extends:
           displayName: List all files in signSrcPath
         
         - pwsh: |
-            Remove-Item -Path $(signSrcPath)\OneGet.fullclr.zip
+            Remove-Item -Path $(signSrcPath)\OneGet.fullclr.zip -Force
           displayName: Deleted extraneous files
 
         - pwsh: |
