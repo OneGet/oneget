@@ -255,7 +255,7 @@ extends:
         - pwsh: |
             Set-Location "$(signOutPath)\PublishedNupkg"
             Write-Host "Contents of signOutPath\PublishedNupkg:"
-            Get-ChildItem "$(signOutPath)\PublishedNupkg"" -Recurse 
+            Get-ChildItem "$(signOutPath)\PublishedNupkg" -Recurse 
           displayName: Find Nupkg
 
         - task: CopyFiles@2
