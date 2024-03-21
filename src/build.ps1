@@ -20,13 +20,19 @@ Function CopyToDestinationDir($itemsToCopy, $destination)
 {
     if (-not (Test-Path $destination))
     {
+        Write-Host "Creating directory $destination"
         New-Item -ItemType Directory $destination -Force
     }
     foreach ($file in $itemsToCopy)
     {
+        Write-Host $file
         if (Test-Path $file)
         {
+            Write-Host "Copying $file to $destination"
             Copy-Item -Path $file -Destination (Join-Path $destination (Split-Path $file -Leaf)) -Verbose -Force
+        }
+        else {
+            Write-Host "File $file does not exist"
         }
     }
 }
@@ -35,25 +41,24 @@ Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $c
 {
     if (-not (Test-Path $destination))
     {
+        Write-Host "Creating directory $destination"
         $null = New-Item -ItemType Directory $destination -Force
     }
     foreach ($file in $itemsToCopy)
     {
-        # Set by AppVeyor
-        $platform = [System.Environment]::GetEnvironmentVariable('platform')
-        if (-not $platform) {
-            # If not set at all, try Any CPU
-            $platform = 'Any CPU'
-        }
-
+        Write-Host "Copying $file to $destination"
+        $platform = 'Any CPU'
         $fullPath = Join-Path -Path $solutionDir -ChildPath $file | Join-Path -ChildPath 'bin' | Join-Path -ChildPath $configuration | Join-Path -ChildPath $framework | Join-Path -ChildPath "$file$ext"
         $fullPathWithPlatform = Join-Path -Path $solutionDir -ChildPath $file | Join-Path -ChildPath 'bin' | Join-Path -ChildPath $platform | Join-Path -ChildPath $configuration | Join-Path -ChildPath $framework | Join-Path -ChildPath "$file$ext"
 		if (Test-Path $fullPath)
         {
+            Write-Host "fullpath $fullPath exists"
             Copy-Item -Path $fullPath -Destination (Join-Path $destination "$file$ext") -Verbose -Force
         } elseif (Test-Path $fullPathWithPlatform) {
+            Write-Host "fullPathWithPlatform $fullPathWithPlatform exists"
             Copy-Item -Path $fullPathWithPlatform -Destination (Join-Path $destination "$file$ext") -Verbose -Force
         } else {
+            Write-Host "File $fullPath and $fullPathWithPlatform does not exist"
             return $false
         }
     }
@@ -159,7 +164,6 @@ foreach ($currentFramework in $frameworks)
     finally
     {
     }
-
 
     CopyToDestinationDir $itemsToCopyCommon $destinationDir
     if (-not (CopyBinariesToDestinationDir $assemblyNames $destinationDirBinaries $currentFramework $Configuration '.dll' $solutionDir)) {
