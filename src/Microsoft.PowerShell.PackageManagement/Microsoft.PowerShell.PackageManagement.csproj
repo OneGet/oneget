@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="('$(TargetFramework)' == 'netstandard2.0') ">
-    <PackageReference Include="System.Management.Automation" Version="7.4.2" />
+    <PackageReference Include="System.Management.Automation" Version="7.4.1" />
   </ItemGroup>
   <ItemGroup Condition=" ('$(TargetFramework)' == 'net472')">
     <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
