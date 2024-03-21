@@ -1,6 +1,6 @@
 ﻿param(
-    [ValidateSet("net472", "netstandard2.0", "all")]
-    [string]$Framework = "netstandard2.0",
+    [ValidateSet("net472")]
+    [string]$Framework = "net472",
 
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
@@ -67,7 +67,7 @@ Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $c
 
 if ($Framework -eq "all")
 {
-    $frameworks = @('net472', 'netstandard2.0')
+    $frameworks = @('net472')
 } else {
     $frameworks = @($Framework)
 }
@@ -77,32 +77,17 @@ foreach ($currentFramework in $frameworks)
     $solutionPath = Split-Path $MyInvocation.InvocationName
     $solutionDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($solutionPath)
 
-    if ($currentFramework -eq "netstandard2.0")
-    {
-        $packageFramework ="coreclr"
-        $assemblyNames = @(
-            "Microsoft.PackageManagement",
-            "Microsoft.PackageManagement.ArchiverProviders",
-            "Microsoft.PackageManagement.CoreProviders",
-            "Microsoft.PackageManagement.MetaProvider.PowerShell",
-            "Microsoft.PowerShell.PackageManagement",
-            "Microsoft.PackageManagement.NuGetProvider"
-            )
-    }
-    else
-    {
-        $packageFramework ="fullclr"
-        $assemblyNames = @(
-            "Microsoft.PackageManagement",
-            "Microsoft.PackageManagement.ArchiverProviders",
-            "Microsoft.PackageManagement.CoreProviders",
-            "Microsoft.PackageManagement.MetaProvider.PowerShell",
-            "Microsoft.PackageManagement.MsiProvider",
-            "Microsoft.PackageManagement.MsuProvider",
-            "Microsoft.PowerShell.PackageManagement",
-            "Microsoft.PackageManagement.NuGetProvider"
-            )
-    }
+    $packageFramework ="fullclr"
+    $assemblyNames = @(
+        "Microsoft.PackageManagement",
+        "Microsoft.PackageManagement.ArchiverProviders",
+        "Microsoft.PackageManagement.CoreProviders",
+        "Microsoft.PackageManagement.MetaProvider.PowerShell",
+        "Microsoft.PackageManagement.MsiProvider",
+        "Microsoft.PackageManagement.MsuProvider",
+        "Microsoft.PowerShell.PackageManagement",
+        "Microsoft.PackageManagement.NuGetProvider"
+        )
 
     $itemsToCopyBinaries = $assemblyNames | % { "$solutionDir\$_\bin\$Configuration\$currentFramework\$_.dll" }
     $itemsToCopyPdbs = $assemblyNames | % { "$solutionDir\$_\bin\$Configuration\$currentFramework\$_.pdb" }
@@ -127,14 +112,7 @@ foreach ($currentFramework in $frameworks)
                         "$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.strings.psd1")
 
     $destinationDir = "$solutionDir/out/PackageManagement"
-    if ($currentFramework -eq "netstandard2.0")
-    {
-        $destinationDirBinaries = "$destinationDir/$packageFramework/$currentFramework"
-    } else 
-    {
-        $destinationDirBinaries = "$destinationDir/$packageFramework"
-    }
-
+    $destinationDirBinaries = "$destinationDir/$packageFramework"
     $destinationDirDscResourcesBase = "$destinationDir/DSCResources"
 
     try
@@ -165,6 +143,7 @@ foreach ($currentFramework in $frameworks)
     {
     }
 
+    Get-ChildItem 
     CopyToDestinationDir $itemsToCopyCommon $destinationDir
     if (-not (CopyBinariesToDestinationDir $assemblyNames $destinationDirBinaries $currentFramework $Configuration '.dll' $solutionDir)) {
         throw 'Build failed'
