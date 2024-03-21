@@ -155,6 +155,14 @@ extends:
         - pwsh: |
             Get-ChildItem $(signSrcPath) -Recurse
           displayName: List all files in signSrcPath
+        
+        - pwsh: |
+            Remove-Item -Path $(signSrcPath)\OneGet.fullclr.zip
+          displayName: Deleted extraneous files
+
+        - pwsh: |
+            Get-ChildItem $(signSrcPath) -Recurse
+          displayName: List all files in signSrcPath, again
 
         - task: onebranch.pipeline.signing@1
           displayName: Sign 1st party files
@@ -171,6 +179,7 @@ extends:
             Contents: '**'
             TargetFolder: $(ob_outputDirectory)
 ####################################
+
         - pwsh: |
             Write-Host "-------------------------Displaying contents of signSrcPath:---------------------------------------"
             Get-ChildItem $(signSrcPath) -Recurse
