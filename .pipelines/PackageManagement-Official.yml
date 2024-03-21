@@ -229,7 +229,7 @@ extends:
             Write-Host "Contents of signOutPath:"
             Get-ChildItem $(signOutPath) -Recurse
           displayName: Capture artifacts directory structure
-############################################
+
         - pwsh: |
             $module = 'Microsoft.PowerShell.PSResourceGet'
             Write-Verbose "installing $module..." -verbose
@@ -243,7 +243,7 @@ extends:
             Register-PSResourceRepository -Name 'localRepo' -Uri "$(signOutPath)\PublishedNupkg"
             Publish-PSResource -Path "$(signOutPath)\PackageManagement" -Repository 'localRepo' -Verbose
           displayName: Create nupkg for publishing
-############################################
+
         - task: onebranch.pipeline.signing@1
           displayName: Sign nupkg
           inputs:
@@ -254,14 +254,14 @@ extends:
 
         - pwsh: |
             Set-Location "$(signOutPath)\PublishedNupkg"
-            Write-Host "Contents of signOutPath:"
-            Get-ChildItem "$(signOutPath)" -Recurse 
+            Write-Host "Contents of signOutPath\PublishedNupkg:"
+            Get-ChildItem "$(signOutPath)\PublishedNupkg"" -Recurse 
           displayName: Find Nupkg
 
         - task: CopyFiles@2
           displayName: "Copy nupkg to ob_outputDirectory - '$(ob_outputDirectory)'"
           inputs:
-            Contents: $(signOutPath)\PublishedNupkg\Microsoft.PowerShell.PackageManagement.*.nupkg
+            Contents: $(signOutPath)\PublishedNupkg\PackageManagement.*.nupkg
             TargetFolder: $(ob_outputDirectory)
         
         - pwsh: |
