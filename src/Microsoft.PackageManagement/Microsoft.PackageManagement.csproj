@@ -19,9 +19,6 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
   </PropertyGroup>
 
-  <ItemGroup Condition="('$(TargetFramework)' == 'netstandard2.0') ">
-    <PackageReference Include="System.Management.Automation" Version="7.4.1" />
-  </ItemGroup>
   <ItemGroup Condition=" ('$(TargetFramework)' == 'net472')">
     <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
   </ItemGroup>
@@ -49,16 +46,6 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Compile Remove="Resources\Messages.Designer.cs" />
-    <EmbeddedResource Remove="Resources\Messages.resx" />
-  </ItemGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>$(DefineConstants);CORECLR</DefineConstants>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <Compile Remove="Providers\Inbox\Common\*;Resources\Messages.Designer.cs" />
     <EmbeddedResource Remove="Resources\Messages.resx" />
   </ItemGroup>
 

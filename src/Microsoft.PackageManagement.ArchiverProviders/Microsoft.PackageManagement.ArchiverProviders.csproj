@@ -49,13 +49,4 @@
     <Compile Remove="Resources\Messages.resx" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>$(DefineConstants);CORECLR</DefineConstants>
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <Compile Remove="Providers\Inbox\Common\*;Resources\*" />
-  </ItemGroup>
-
 </Project>
