@@ -149,20 +149,12 @@ extends:
             ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
 
         - pwsh: |
-            Get-ChildItem ./ -Recurse | Write-Host
-          displayName: List all files in current directory
-
-        - pwsh: |
-            Get-ChildItem $(signSrcPath) -Recurse
-          displayName: List all files in signSrcPath
-        
-        - pwsh: |
             Remove-Item -Path $(signSrcPath)\OneGet.fullclr.zip -Force
           displayName: Deleted extraneous files
 
         - pwsh: |
             Get-ChildItem $(signSrcPath) -Recurse
-          displayName: List all files in signSrcPath, again
+          displayName: List all files in signSrcPath
 
         - task: onebranch.pipeline.signing@1
           displayName: Sign 1st party files
@@ -178,13 +170,6 @@ extends:
             SourceFolder: "$(signSrcPath)"
             Contents: '**'
             TargetFolder: $(ob_outputDirectory)
-
-        - pwsh: |
-            Write-Host "-------------------------Displaying contents of signSrcPath:---------------------------------------"
-            Get-ChildItem $(signSrcPath) -Recurse
-            Write-Host "--------------------------Displaying contents of ob_outputDirectory:---------------------------------"
-            Get-ChildItem $(ob_outputDirectory) -Recurse
-          displayName: Get contents of dirs with signed files
 
       - job: nupkg
         dependsOn: jobbuild
@@ -263,11 +248,6 @@ extends:
           inputs:
             Contents: $(signOutPath)\PublishedNupkg\PackageManagement.*.nupkg
             TargetFolder: $(ob_outputDirectory)
-        
-        - pwsh: |
-            Write-Host "Contents of ob_outputDirectory:"
-            Get-ChildItem "$(ob_outputDirectory)" -Recurse 
-          displayName: Find Signed Nupkg
 
     - stage: release
       displayName: Release PackageManagement
