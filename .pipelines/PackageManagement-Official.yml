@@ -307,9 +307,9 @@ extends:
           displayName: Find signed Nupkg
 
         - task: NuGetCommand@2
-          displayName: Push PowerShellGet module artifacts to PSGallery feed
+          displayName: Push PackageManagement module artifacts to PSGallery feed
           inputs:
             command: push
-            packagesToPush: '$(Pipeline.Workspace)\drop_stagebuild_nupkg\PSResourceGet\signed\PublishedNupkg\Microsoft.PowerShell.PSResourceGet.*.nupkg'
+            packagesToPush: '$(Pipeline.Workspace)\drop_stagebuild_nupkg\PackageManagement\signed\PublishedNupkg\PackageManagement.*.nupkg'
             nuGetFeedType: external
             publishFeedCredentials: PSGet-PSGalleryPush
