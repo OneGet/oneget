@@ -52,25 +52,17 @@ Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $c
         $fullPathWithPlatform = Join-Path -Path $solutionDir -ChildPath $file | Join-Path -ChildPath 'bin' | Join-Path -ChildPath $platform | Join-Path -ChildPath $configuration | Join-Path -ChildPath $framework | Join-Path -ChildPath "$file$ext"
 		if (Test-Path $fullPath)
         {
-            Write-Host "fullpath $fullPath exists"
             Copy-Item -Path $fullPath -Destination (Join-Path $destination "$file$ext") -Verbose -Force
         } elseif (Test-Path $fullPathWithPlatform) {
-            Write-Host "fullPathWithPlatform $fullPathWithPlatform exists"
             Copy-Item -Path $fullPathWithPlatform -Destination (Join-Path $destination "$file$ext") -Verbose -Force
         } else {
-            Write-Host "File $fullPath and $fullPathWithPlatform does not exist"
             return $false
         }
     }
     return $true
 }
 
-if ($Framework -eq "all")
-{
-    $frameworks = @('net472')
-} else {
-    $frameworks = @($Framework)
-}
+$frameworks = @('net472')
 
 foreach ($currentFramework in $frameworks)
 {
@@ -127,15 +119,9 @@ foreach ($currentFramework in $frameworks)
 			} else {
 				$env:EMBEDPROVIDERMANIFEST = ''
 			}
-            #Write-Host "Restoring package for $assemblyName"
-            #dotnet restore
-            #Write-Host "Building $assemblyName for $currentFramework"
-            #dotnet build --framework $currentFramework --configuration $Configuration
-            Write-Host "Clean package"
-            dotnet clean 
             Write-Host "Publishing $assemblyName for $currentFramework"
             dotnet publish --framework $currentFramework --configuration $Configuration
-            Write-Host "Completed restoring, building, and publishing"
+            Write-Host "Publishing complete"
             Pop-Location
         }
     }
@@ -143,7 +129,6 @@ foreach ($currentFramework in $frameworks)
     {
     }
 
-    Get-ChildItem 
     CopyToDestinationDir $itemsToCopyCommon $destinationDir
     if (-not (CopyBinariesToDestinationDir $assemblyNames $destinationDirBinaries $currentFramework $Configuration '.dll' $solutionDir)) {
         throw 'Build failed'
