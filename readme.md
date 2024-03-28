@@ -83,96 +83,66 @@ With OneGet, you can
 
  ```powershell
  # 1.check available providers
-
  PS E:\> get-packageprovider
-
 Name                     Version          DynamicOptions
 ----                     -------          --------------
 msi                      3.0.0.0          AdditionalArguments
 msu                      3.0.0.0
 PowerShellGet            1.1.0.0          PackageManagementProvider, Type...
 Programs                 3.0.0.0          IncludeWindowsInstaller,...
-
 # 2. find a module from the PowerShell gallery, for example, xjea
-
 PS E:\> find-module xjea
-
 NuGet provider is required to continue
 PowerShellGet requires NuGet provider version '2.8.5.201' or newer to interact with NuGet-based repositories. The NuGet provider must be available in 'C:\Program
 Files\PackageManagement\ProviderAssemblies' or 'C:\Users\jianyunt\AppData\Local\PackageManagement\ProviderAssemblies'. You can also install the NuGet provider by
 running 'Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force'. Do you want PowerShellGet to install and import the NuGet provider now?
 [Y] Yes  [N] No  [S] Suspend  [?] Help (default is "Y"): y
-
 Version    Name           Repository           Description
 -------    ----           ----------           -----------
 0.3.0.0    xJea           PSGallery             Module with DSC Resources for Just Enough...
-
 # 3. install a module from the PowerShell gallery
-
 PS E:\> Install-Module xjea
-
 Untrusted repository
 You are installing the modules from an untrusted repository. If you trust this repository, change its InstallationPolicy value by running the Set-PSRepository cmdlet. Are
 you sure you want to install the modules from 'gallery'?
 [Y] Yes  [A] Yes to All  [N] No  [L] No to All  [S] Suspend  [?] Help (default is "N"): y
-
 # 4. Find out if a module is installed
-
 PS E:\> Get-InstalledModule -name xjea
-
 Version    Name        Repository      Description
 -------    ----        ----------       -----------
 0.3.0.0    xJea        gallery          Module with DSC Resources for Just Enough Admin (JEA)..
-
 # 5. Uninstall a module
-
 PS E:\> Uninstall-Module -name xjea
 ```
 
 #### Working with http://www.NuGet.org repository
 
 ```powershell
-
 # find a package from the nuget repository
-
 PS E:\> find-package -name jquery -provider Nuget -Source https://www.nuget.org/api/v2
-
 Name           Version          Source           Summary
 ----           -------          ------           -------
 jQuery          3.1.1            nuget.org        jQuery is a new kind of JavaScript Library....
-
 # install a package from NuGet repository
-
 PS E:\> install-package -name jquery -provider Nuget -Source https://www.nuget.org/api/v2
-
 The package(s) come(s) from a package source that is not marked as trusted.
 Are you sure you want to install software from 'nuget.org'?
 [Y] Yes  [A] Yes to All  [N] No  [L] No to All  [S] Suspend  [?] Help (default is "N"): y
-
 Name             Version          Source           Summary
 ----             -------          ------           -------
 jQuery           3.1.1            nuget.org        jQuery is a new kind of JavaScript Library....
-
 # Uninstall the package
-
 PS E:\> uninstall-package jquery
-
 Name            Version          Source           Summary
 ----            -------          ------           -------
 jQuery          3.1.1            C:\Program Fi... jQuery is a new kind of JavaScript Library....
-
 # Register a package Source
-
 PS E:\> Register-PackageSource -name test -ProviderName NuGet -Location https://www.nuget.org/api/v2
-
 Name             ProviderName     IsTrusted  Location
 ----              ------------     ---------  --------
 test              NuGet            False      https://www.nuget.org/api/v2
-
 # find a package from the registered package Source
-
 PS E:\> find-package -Source test -name jquery
-
 Name                Version          Source           Summary
 ----                -------          ------           -------
 jQuery              3.1.1            test             jQuery is a new kind of JavaScript Library....
@@ -198,13 +168,10 @@ git submodule update --init
 # After cloning this repository, go to the project folder:
 > cd oneget
 > cd src
-
 # download the dotnet cli tool
 > .\bootstrap.ps1
-
 # building OneGet for fullclr
 > .\build.ps1 net452
-
 #building OneGet for coreclr
 > .\build.ps1 netstandard2.0
 ```
@@ -229,10 +196,7 @@ Register-PSRepository -name local -SourceLocation c:\test
 Get-PSRepository
 Publish-Module -path .\ -Repository local
 PS E:\OneGet\oneget\src\out\PackageManagement> dir c:\test\PackageManagement*.nupkg
-
     Directory: C:\test
-
-
 Mode                LastWriteTime         Length Name
 ----                -------------         ------ ----
 -a----        11/4/2016   4:15 PM        1626335 PackageManagement.1.1.0.0.nupkg
