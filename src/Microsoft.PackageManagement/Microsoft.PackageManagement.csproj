@@ -24,6 +24,11 @@
   </ItemGroup>
   
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+  <ItemGroup Condition=" ('$(TargetFramework)' == 'net452') Or ('$(TargetFramework)' == 'netstandard2.0') ">
+    <PackageReference Include="System.Management.Automation" Version="1.0.0-alpha9" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Reference Include="System.Runtime" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />

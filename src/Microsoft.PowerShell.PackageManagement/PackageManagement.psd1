@@ -20,7 +20,7 @@
     CompanyName = "Microsoft Corporation"
     Copyright = "(C) Microsoft Corporation. All rights reserved."
     HelpInfoUri = "https://go.microsoft.com/fwlink/?linkid=2113634"
-    ModuleVersion = "1.4.7"
+    ModuleVersion = "1.4.8.1"
     PowerShellVersion = "3.0"
     ClrVersion = "4.0"
     RootModule = "PackageManagement.psm1"
@@ -53,6 +53,12 @@
             Tags = @('PackageManagement', 'PSEdition_Core', 'PSEdition_Desktop', 'Linux', 'Mac')
             ProjectUri = 'https://oneget.org'
             ReleaseNotes = @'
+## 1.4.8.1
+- Update PackageManagement's strong name signing
+
+## 1.4.8
+- Add NuGet as a source when generating nuget.config file for user in the NuGet Provider
+
 ## 1.4.7
 - Update security protocol to use TLS 1.2
 - Remove catalog file

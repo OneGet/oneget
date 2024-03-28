@@ -518,7 +518,7 @@ Describe "install-packageprovider with Scope" -Tags "Feature" {
         if ($IsWindows)
         {
             $userName = "smartguy"
-            $password = "password%1"
+            $password = ('p','a','s','s','w', 'o', 'r', 'd', '%', '1' | Get-Random -Shuffle ) -join ''
             #net user $userName /delete | Out-Null
             net user $userName $password /add
             $secesurestring = ConvertTo-SecureString $password -AsPlainText -Force
