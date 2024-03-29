@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.PackageManagement.MsuProvider</AssemblyName>
@@ -23,16 +23,18 @@
     <ProjectReference Include="..\Microsoft.PackageManagement.ArchiverProviders\Microsoft.PackageManagement.ArchiverProviders.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition=" ('$(TargetFramework)' == 'net472')">
+    <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
   <ItemGroup>
     <PackageReference Include="System.Management.Automation" Version="1.0.0-alpha9" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Compile Remove="Resources\Messages.Designer.cs" />
     <EmbeddedResource Remove="Resources\Messages.resx" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Runtime" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />

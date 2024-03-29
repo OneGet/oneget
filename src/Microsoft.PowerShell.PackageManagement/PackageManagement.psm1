@@ -5,14 +5,7 @@ Set-StrictMode -Version Latest
 Microsoft.PowerShell.Utility\Import-LocalizedData  LocalizedData -filename PackageManagement.Resources.psd1
 
 # Summary: PackageManagement is supported on Windows PowerShell 3.0 or later, Nano Server and PowerShellCore
-$isCore = ($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')
-$binarySubPath = ''
-if ($isCore)
-{
-    $binarySubPath = Join-Path -Path 'coreclr' -ChildPath 'netstandard2.0'
-} else {
-    $binarySubPath = 'fullclr'
-}
+$binarySubPath = 'fullclr'
 
 # Set up some helper variables to make it easier to work with the module
 $script:PSModule = $ExecutionContext.SessionState.Module
@@ -22,7 +15,7 @@ $script:PkgMgmt = 'Microsoft.PackageManagement.dll'
 $script:PSPkgMgmt = 'Microsoft.PowerShell.PackageManagement.dll'
 
 
-# Try to import the OneGet assemblies at the same directory regardless fullclr or coreclr
+# Try to import the OneGet assemblies
 $OneGetModulePath = Join-Path -Path $script:PSModuleRoot -ChildPath $script:PkgMgmt
 $binaryModuleRoot = $script:PSModuleRoot
 

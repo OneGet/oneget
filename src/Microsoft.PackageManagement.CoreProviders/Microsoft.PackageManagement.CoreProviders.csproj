@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net472;</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.PackageManagement.CoreProviders</AssemblyName>
@@ -23,11 +23,13 @@
     <ProjectReference Include="..\Microsoft.PackageManagement\Microsoft.PackageManagement.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition=" ('$(TargetFramework)' == 'net472')">
+    <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
   <ItemGroup Condition=" ('$(TargetFramework)' == 'net452') Or ('$(TargetFramework)' == 'netstandard2.0') ">
     <PackageReference Include="System.Management.Automation" Version="1.0.0-alpha9" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Runtime" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
@@ -48,7 +50,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Compile Remove="Resources\Messages.Designer.cs" />
     <EmbeddedResource Remove="Resources\Messages.resx" />
   </ItemGroup>
