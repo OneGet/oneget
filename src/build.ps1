@@ -1,6 +1,6 @@
 ﻿param(
-    [ValidateSet("net452", "netstandard2.0", "all")]
-    [string]$Framework = "netstandard2.0",
+    [ValidateSet("net472")]
+    [string]$Framework = "net472",
 
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
@@ -20,13 +20,19 @@ Function CopyToDestinationDir($itemsToCopy, $destination)
 {
     if (-not (Test-Path $destination))
     {
+        Write-Host "Creating directory $destination"
         New-Item -ItemType Directory $destination -Force
     }
     foreach ($file in $itemsToCopy)
     {
+        Write-Host $file
         if (Test-Path $file)
         {
+            Write-Host "Copying $file to $destination"
             Copy-Item -Path $file -Destination (Join-Path $destination (Split-Path $file -Leaf)) -Verbose -Force
+        }
+        else {
+            Write-Host "File $file does not exist"
         }
     }
 }
@@ -35,17 +41,13 @@ Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $c
 {
     if (-not (Test-Path $destination))
     {
+        Write-Host "Creating directory $destination"
         $null = New-Item -ItemType Directory $destination -Force
     }
     foreach ($file in $itemsToCopy)
     {
-        # Set by AppVeyor
-        $platform = [System.Environment]::GetEnvironmentVariable('platform')
-        if (-not $platform) {
-            # If not set at all, try Any CPU
-            $platform = 'Any CPU'
-        }
-
+        Write-Host "Copying $file to $destination"
+        $platform = 'Any CPU'
         $fullPath = Join-Path -Path $solutionDir -ChildPath $file | Join-Path -ChildPath 'bin' | Join-Path -ChildPath $configuration | Join-Path -ChildPath $framework | Join-Path -ChildPath "$file$ext"
         $fullPathWithPlatform = Join-Path -Path $solutionDir -ChildPath $file | Join-Path -ChildPath 'bin' | Join-Path -ChildPath $platform | Join-Path -ChildPath $configuration | Join-Path -ChildPath $framework | Join-Path -ChildPath "$file$ext"
 		if (Test-Path $fullPath)
@@ -60,44 +62,24 @@ Function CopyBinariesToDestinationDir($itemsToCopy, $destination, $framework, $c
     return $true
 }
 
-if ($Framework -eq "all")
-{
-    $frameworks = @('net452', 'netstandard2.0')
-} else {
-    $frameworks = @($Framework)
-}
+$frameworks = @('net472')
 
 foreach ($currentFramework in $frameworks)
 {
     $solutionPath = Split-Path $MyInvocation.InvocationName
     $solutionDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($solutionPath)
 
-    if ($currentFramework -eq "netstandard2.0")
-    {
-        $packageFramework ="coreclr"
-        $assemblyNames = @(
-            "Microsoft.PackageManagement",
-            "Microsoft.PackageManagement.ArchiverProviders",
-            "Microsoft.PackageManagement.CoreProviders",
-            "Microsoft.PackageManagement.MetaProvider.PowerShell",
-            "Microsoft.PowerShell.PackageManagement",
-            "Microsoft.PackageManagement.NuGetProvider"
-            )
-    }
-    else
-    {
-        $packageFramework ="fullclr"
-        $assemblyNames = @(
-            "Microsoft.PackageManagement",
-            "Microsoft.PackageManagement.ArchiverProviders",
-            "Microsoft.PackageManagement.CoreProviders",
-            "Microsoft.PackageManagement.MetaProvider.PowerShell",
-            "Microsoft.PackageManagement.MsiProvider",
-            "Microsoft.PackageManagement.MsuProvider",
-            "Microsoft.PowerShell.PackageManagement",
-            "Microsoft.PackageManagement.NuGetProvider"
-            )
-    }
+    $packageFramework ="fullclr"
+    $assemblyNames = @(
+        "Microsoft.PackageManagement",
+        "Microsoft.PackageManagement.ArchiverProviders",
+        "Microsoft.PackageManagement.CoreProviders",
+        "Microsoft.PackageManagement.MetaProvider.PowerShell",
+        "Microsoft.PackageManagement.MsiProvider",
+        "Microsoft.PackageManagement.MsuProvider",
+        "Microsoft.PowerShell.PackageManagement",
+        "Microsoft.PackageManagement.NuGetProvider"
+        )
 
     $itemsToCopyBinaries = $assemblyNames | % { "$solutionDir\$_\bin\$Configuration\$currentFramework\$_.dll" }
     $itemsToCopyPdbs = $assemblyNames | % { "$solutionDir\$_\bin\$Configuration\$currentFramework\$_.pdb" }
@@ -122,14 +104,7 @@ foreach ($currentFramework in $frameworks)
                         "$solutionDir\Microsoft.PackageManagement.DscResources\MSFT_PackageManagementSource\MSFT_PackageManagementSource.strings.psd1")
 
     $destinationDir = "$solutionDir/out/PackageManagement"
-    if ($currentFramework -eq "netstandard2.0")
-    {
-        $destinationDirBinaries = "$destinationDir/$packageFramework/$currentFramework"
-    } else 
-    {
-        $destinationDirBinaries = "$destinationDir/$packageFramework"
-    }
-
+    $destinationDirBinaries = "$destinationDir/$packageFramework"
     $destinationDirDscResourcesBase = "$destinationDir/DSCResources"
 
     try
@@ -139,22 +114,20 @@ foreach ($currentFramework in $frameworks)
             Write-Host "Generating resources file for $assemblyName"
             .\New-StronglyTypedCsFileForResx.ps1 -Project $assemblyName
             Push-Location $assemblyName
-            Write-Host "Restoring package for $assemblyName"
 			if ($EmbedProviderManifest) {
 				$env:EMBEDPROVIDERMANIFEST = 'true'
 			} else {
 				$env:EMBEDPROVIDERMANIFEST = ''
 			}
-            dotnet restore
-            dotnet build --framework $currentFramework --configuration $Configuration
+            Write-Host "Publishing $assemblyName for $currentFramework"
             dotnet publish --framework $currentFramework --configuration $Configuration
+            Write-Host "Publishing complete"
             Pop-Location
         }
     }
     finally
     {
     }
-
 
     CopyToDestinationDir $itemsToCopyCommon $destinationDir
     if (-not (CopyBinariesToDestinationDir $assemblyNames $destinationDirBinaries $currentFramework $Configuration '.dll' $solutionDir)) {
