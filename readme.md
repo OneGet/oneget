@@ -268,8 +268,6 @@ if you are running on Linux or Mac.
 
 ### Understanding the OneGet code repository
 
-OneGet is under rapid development, so you get to see just how the sausage is being made. I try to keep the master branch clean and buildable, but my own working branch can get pretty damn wild and I make no bones about some of this. I work fast, I make big changes, and I try to keep my eye on the target.
-
 Feel free to clone the repository and check out the different branches:
 
 #### Branches
