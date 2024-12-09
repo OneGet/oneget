@@ -6,7 +6,7 @@ Alternatively, we would suggest looking at the community [AnyPackage](https://gi
 
 If you have a question, or are seeing an unexpected behavior from this module please open up an issue in this repository.
 
-The PowerShell/PowerShellGet repository is actively in development as the new PowerShell package manager.
+The [PowerShell/PSResourceGet repository](https://github.com/PowerShell/PSResourceGet/) is actively in development as the new PowerShell package manager.
 
 ### Build Status - Master
 
